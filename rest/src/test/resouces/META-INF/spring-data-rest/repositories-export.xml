@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
+
+  <import resource="shared.xml"/>
+
+  <jpa:repositories base-package="org.springframework.data.rest.test.mvc"/>
+
+  <bean class="org.springframework.data.rest.test.mvc.PersonLoader">
+    <property name="personRepository" ref="personRepository"/>
+    <property name="profileRepository" ref="profileRepository"/>
+    <property name="addressRepository" ref="addressRepository"/>
+  </bean>
+
+</beans>

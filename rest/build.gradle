@@ -1,0 +1,22 @@
+apply plugin: "war"
+apply plugin: "jetty"
+
+dependencies {
+
+  // APIS
+  compile "javax.servlet:servlet-api:2.5"
+
+  // JPA
+  compile "org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final"
+  compile "org.hibernate:hibernate-entitymanager:$hibernateVersion"
+
+  // H2
+  compile "org.hsqldb:hsqldb:1.8.0.10"
+
+  // Spring
+  compile "org.springframework:spring-webmvc:$springVersion"
+
+  // Repository Exporter support
+  compile project(":repository")
+
+}
