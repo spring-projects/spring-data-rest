@@ -1,3 +1,5 @@
+archivesBaseName = "spring-data-rest-core"
+
 dependencies {
 
   // Google Guava

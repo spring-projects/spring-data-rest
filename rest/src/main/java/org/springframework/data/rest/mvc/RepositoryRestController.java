@@ -342,7 +342,7 @@ public class RepositoryRestController implements InitializingBean {
                       model.addAttribute(RESOURCE, child);
                     }
                   }
-                } else if (uriCnt == 4) {
+                } else {
                   final String childId = UriUtils.path(uris.get(3));
                   Class<? extends Serializable> childIdType = childEntityInfo.getIdType();
                   final Serializable childSerId;

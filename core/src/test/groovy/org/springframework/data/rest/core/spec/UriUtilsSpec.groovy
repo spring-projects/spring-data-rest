@@ -1,4 +1,4 @@
-package org.springframework.data.rest.core
+package org.springframework.data.rest.core.spec
 
 import org.springframework.data.rest.core.util.UriUtils
 import spock.lang.Specification

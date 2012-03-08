@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.rest.repository.JpaRepositoryMetadata;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -27,6 +29,8 @@ public class RepositoryRestConfiguration {
   @Autowired(required = false)
   JpaRepositoryMetadata jpaRepositoryMetadata;
   @Autowired(required = false)
+  ConversionService conversionService;
+  @Autowired(required = false)
   List<HttpMessageConverter<?>> httpMessageConverters = new ArrayList<HttpMessageConverter<?>>();
 
   @Bean URI baseUri() {
@@ -34,6 +38,13 @@ public class RepositoryRestConfiguration {
       baseUri = URI.create("");
     }
     return baseUri;
+  }
+
+  @Bean ConversionService conversionService() {
+    if (null == conversionService) {
+      conversionService = new DefaultConversionService();
+    }
+    return conversionService;
   }
 
   @Bean List<HttpMessageConverter<?>> httpMessageConverters() {

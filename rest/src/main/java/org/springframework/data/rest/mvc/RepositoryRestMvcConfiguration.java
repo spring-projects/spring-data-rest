@@ -48,6 +48,7 @@ public class RepositoryRestMvcConfiguration {
       this.repositoryRestController = new RepositoryRestController()
           .baseUri(repositoryRestConfiguration.baseUri())
           .repositoryMetadata(repositoryRestConfiguration.jpaRepositoryMetadata())
+          .conversionService(repositoryRestConfiguration.conversionService())
           .httpMessageConverters(repositoryRestConfiguration.httpMessageConverters())
           .jsonMediaType("application/json");
     }

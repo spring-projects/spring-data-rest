@@ -1,3 +1,5 @@
+archivesBaseName = "spring-data-rest-repository"
+
 dependencies {
 
   // Spring
