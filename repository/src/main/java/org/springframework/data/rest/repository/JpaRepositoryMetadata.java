@@ -1,5 +1,6 @@
 package org.springframework.data.rest.repository;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -39,7 +40,8 @@ public class JpaRepositoryMetadata implements InitializingBean, ApplicationConte
     this.metamodel = entityManager.getMetamodel();
   }
 
-  public CrudRepository repositoryFor(String name) {
+  @SuppressWarnings({"unchecked"})
+  public <T> CrudRepository<T, ? extends Serializable> repositoryFor(String name) {
     if (null != name) {
       for (Map.Entry<Class<?>, RepositoryCacheEntry> entry : repositories.entrySet()) {
         if (name.equals(repositoryNameFor(entry.getValue().repository))) {
@@ -50,7 +52,8 @@ public class JpaRepositoryMetadata implements InitializingBean, ApplicationConte
     return null;
   }
 
-  public CrudRepository repositoryFor(Class<?> domainClass) {
+  @SuppressWarnings({"unchecked"})
+  public <T> CrudRepository<T, ? extends Serializable> repositoryFor(Class<T> domainClass) {
     RepositoryCacheEntry entry = repositories.get(domainClass);
     if (null != entry) {
       return entry.repository;
@@ -58,7 +61,8 @@ public class JpaRepositoryMetadata implements InitializingBean, ApplicationConte
     return null;
   }
 
-  public EntityInformation entityInfoFor(Class<?> domainClass) {
+  @SuppressWarnings({"unchecked"})
+  public <T> EntityInformation<T, ? extends Serializable> entityInfoFor(Class<T> domainClass) {
     RepositoryCacheEntry entry = repositories.get(domainClass);
     if (null != entry) {
       return entry.entityInfo;
@@ -70,7 +74,8 @@ public class JpaRepositoryMetadata implements InitializingBean, ApplicationConte
     return metamodel.entity(domainClass);
   }
 
-  public EntityInformation entityInfoFor(CrudRepository repository) {
+  @SuppressWarnings({"unchecked"})
+  public <T> EntityInformation<T, ? extends Serializable> entityInfoFor(CrudRepository<T, ? extends Serializable> repository) {
     for (Map.Entry<Class<?>, RepositoryCacheEntry> entry : repositories.entrySet()) {
       if (entry.getValue().repository == repository) {
         return entry.getValue().entityInfo;
@@ -116,7 +121,7 @@ public class JpaRepositoryMetadata implements InitializingBean, ApplicationConte
     return names;
   }
 
-  public void setRepositories(Collection<CrudRepository> repositories) {
+  public void setRepositories(Collection<? extends CrudRepository> repositories) {
     for (CrudRepository repository : repositories) {
       Class<?> repoClass = AopUtils.getTargetClass(repository);
       Field infoField = ReflectionUtils.findField(repoClass, "entityInformation");

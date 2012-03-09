@@ -127,18 +127,26 @@ public class JpaEntityMetadata {
   }
 
   public Object get(String name, Object target) {
-    try {
-      return fields.get(name).get(target);
-    } catch (IllegalAccessException e) {
-      throw new IllegalStateException(e);
+    if (fields.containsKey(name)) {
+      try {
+        return fields.get(name).get(target);
+      } catch (IllegalAccessException e) {
+        throw new IllegalStateException(e);
+      }
+    } else {
+      throw new NoSuchFieldError(name);
     }
   }
 
   public void set(String name, Object arg, Object target) {
-    try {
-      fields.get(name).set(target, arg);
-    } catch (IllegalAccessException e) {
-      throw new IllegalStateException(e);
+    if (fields.containsKey(name)) {
+      try {
+        fields.get(name).set(target, arg);
+      } catch (IllegalAccessException e) {
+        throw new IllegalStateException(e);
+      }
+    } else {
+      throw new NoSuchFieldError(name);
     }
   }
 

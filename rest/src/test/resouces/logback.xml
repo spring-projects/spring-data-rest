@@ -9,8 +9,7 @@
   </appender>
 
   <logger name="org.springframework.data.rest" level="DEBUG"/>
-  <logger name="org.springframework.data" level="DEBUG"/>
-  <logger name="org.springframework" level="INFO"/>
+  <logger name="org.springframework.data" level="INFO"/>
 
   <root level="INFO">
     <appender-ref ref="stdout"/>

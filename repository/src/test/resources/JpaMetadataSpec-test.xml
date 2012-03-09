@@ -7,6 +7,8 @@
        http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
        http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.0.xsd">
 
+  <jdbc:embedded-database id="dataSource" type="HSQL"/>
+
   <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
     <property name="dataSource" ref="dataSource"/>
     <property name="jpaVendorAdapter">
@@ -18,9 +20,14 @@
     <property name="persistenceUnitName" value="jpa.sample"/>
     <property name="persistenceXmlLocation" value="/JpaMetadataSpec-persistence.xml"/>
   </bean>
+  <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+    <property name="entityManagerFactory" ref="entityManagerFactory"/>
+  </bean>
 
-  <jdbc:embedded-database id="dataSource" type="HSQL"/>
+  <jpa:repositories base-package="org.springframework.data.rest.repository.test"/>
 
-  <jpa:repositories base-package="org.springframework.data.rest.repository.spec"/>
+  <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
+
+  <bean id="jpaRepositoryMetadata" class="org.springframework.data.rest.repository.JpaRepositoryMetadata"/>
 
 </beans>

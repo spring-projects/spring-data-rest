@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
   <persistence-unit name="jpa.sample">
-    <class>org.springframework.data.rest.repository.spec.Simple</class>
+    <class>org.springframework.data.rest.repository.test.Person</class>
+    <class>org.springframework.data.rest.repository.test.Family</class>
     <properties>
       <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
       <property name="hibernate.connection.url" value="jdbc:hsqldb:mem:spring"/>
