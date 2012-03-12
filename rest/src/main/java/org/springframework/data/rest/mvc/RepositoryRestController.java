@@ -204,10 +204,6 @@ public class RepositoryRestController implements InitializingBean {
 
       URI relativeUri = baseUri.relativize(request.getURI());
       final Stack<URI> uris = UriUtils.explode(baseUri, relativeUri);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("uris: " + uris);
-      }
-
       final int uriCnt = uris.size();
       if (uris.size() > 0) {
         final String repoName = uris.get(0).getPath();
@@ -447,6 +443,11 @@ public class RepositoryRestController implements InitializingBean {
                   final Object entity = request.getMethod() == HttpMethod.PUT ?
                       repo.findOne(serId) :
                       entityMetadata.targetType().newInstance();
+
+                  if (null == entity) {
+                    model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+                    return;
+                  }
 
                   entityMetadata.doWithEmbedded(new Handler<Attribute, Void>() {
                     @Override public Void handle(Attribute attribute) {

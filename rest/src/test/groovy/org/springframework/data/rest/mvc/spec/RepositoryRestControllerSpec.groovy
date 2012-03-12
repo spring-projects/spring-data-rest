@@ -14,6 +14,7 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.ui.ExtendedModelMap
+import org.springframework.ui.Model
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -30,19 +31,45 @@ class RepositoryRestControllerSpec extends Specification {
   @Autowired
   RepositoryRestController controller
 
-  ServletServerHttpRequest createRequest(String method, String path) {
-    return new ServletServerHttpRequest(new MockHttpServletRequest(
+  MockHttpServletRequest createRequest(String method, String path) {
+    return new MockHttpServletRequest(
         serverPort: 8080,
         requestURI: "/data/$path",
         method: method
-    ))
+    )
   }
 
-  Map GET(String path) {
+  Model GET(String path) {
     def request = createRequest("GET", path)
     def model = new ExtendedModelMap()
-    controller.get(request, model)
+    controller.get(new ServletServerHttpRequest(request), model)
     return model
+  }
+
+  Model POST(String path, m) {
+    def request = createRequest("POST", path)
+    request.contentType = "application/json"
+    request.setContent(mapper.writeValueAsBytes(m))
+    def model = new ExtendedModelMap()
+    controller.createOrUpdate(new ServletServerHttpRequest(request), model)
+    return model
+  }
+
+  Model PUT(String path, m) {
+    def request = createRequest("PUT", path)
+    request.contentType = "application/json"
+    request.setContent(mapper.writeValueAsBytes(m))
+    def model = new ExtendedModelMap()
+    controller.createOrUpdate(new ServletServerHttpRequest(request), model)
+    return model
+  }
+
+  Model DELETE(String path) {
+    def request = createRequest("DELETE", path)
+    def model = new ExtendedModelMap()
+    controller.delete(new ServletServerHttpRequest(request), model)
+    return model
+
   }
 
   def setupSpec() {
@@ -74,14 +101,85 @@ class RepositoryRestControllerSpec extends Specification {
     def person = GET("person/1")
 
     then:
-    person?.resource.name == "John Doe"
+    person?.resource?.name == "John Doe"
 
     when:
     def profiles = GET("person/1/profiles")
-    def profilesLinks = profiles?.resource.profiles
+    def profilesLinks = profiles.resource?.profiles
 
     then:
     profilesLinks.size() == 2
+
+  }
+
+  @Transactional
+  def "responds to POST with ID"() {
+
+    when:
+    def created = POST("person/3", [name: "James Doe"])
+
+    then:
+    created.status == HttpStatus.CREATED
+
+  }
+
+  @Transactional
+  def "responds to PUT"() {
+
+    given:
+    POST("person/3", [name: "James Doe"])
+
+    when:
+    def updated = PUT("person/3", [name: "James Doe Jr."])
+    def getUpdated = GET("person/3")
+
+    then:
+    updated.status == HttpStatus.NO_CONTENT
+    getUpdated.status == HttpStatus.OK
+    getUpdated.resource?.name == "James Doe Jr."
+
+  }
+
+  @Transactional
+  def "updates links"() {
+
+    given:
+    POST("person/3", [name: "James Doe"])
+
+    when:
+    def link = POST("person/3/addresses", [[href: "$baseUri/address/1".toString()]])
+    def getUpdated = GET("person/3/addresses")
+
+    then:
+    link.status == HttpStatus.CREATED
+    getUpdated.status == HttpStatus.OK
+    getUpdated.resource?.size() == 1
+
+  }
+
+  @Transactional
+  def "responds to DELETE"() {
+
+    given:
+    POST("person/3", [name: "James Doe"])
+    POST("person/3/addresses", [[href: "$baseUri/address/1".toString()]])
+
+    when:
+    def deleted = DELETE("person/3/addresses/1")
+    def getUpdated = GET("person/3/addresses")
+
+    then:
+    deleted.status == HttpStatus.NO_CONTENT
+    getUpdated.status == HttpStatus.OK
+    getUpdated.resource?._links?.size() == 0
+
+    when:
+    def delEntity = DELETE("person/3")
+    def getUpdEntity = GET("person/3")
+
+    then:
+    delEntity.status == HttpStatus.NO_CONTENT
+    getUpdEntity.status == HttpStatus.NOT_FOUND
 
   }
 
