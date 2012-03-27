@@ -1,4 +1,4 @@
-package org.springframework.data.rest.mvc;
+package org.springframework.data.rest.webmvc;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Map;

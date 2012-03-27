@@ -1,4 +1,4 @@
-package org.springframework.data.rest.test.mvc;
+package org.springframework.data.rest.test.webmvc;
 
 import java.util.Arrays;
 import java.util.HashMap;

@@ -12,8 +12,8 @@ managing associations.
 
 To use the Spring Data Rest exporter, first package your domain classes and repositories into a JAR
 file. Include some Spring XML configuration files in the `META-INF/spring-data-rest` directory (the
-file name should end with "-export.xml" to be picked up by the scanner) in that JAR file that include
-an applicable EntityManager and DataSource and the Repository configuration (using the special JPA
+file name should end with "-export.xml" to be picked up by the scanner). In that JAR file include
+an applicable EntityManager and DataSource and Repository configuration (using the special JPA
 Repository namespace).
 
 You can either deploy this JAR file into your Servlet container in a "shared" configuration, or you
@@ -73,7 +73,8 @@ The configuration used in testing looks like this:
 
       <import resource="shared.xml"/>
 
-      <jpa:repositories base-package="org.springframework.data.rest.test.mvc"/>
+      <!-- Search for Repositories under this package name -->
+      <jpa:repositories base-package="org.springframework.data.rest.test.webmvc"/>
 
     </beans>
 

@@ -1,13 +1,13 @@
-package org.springframework.data.rest.mvc.spec
+package org.springframework.data.rest.webmvc.spec
 
 import org.codehaus.jackson.map.ObjectMapper
 import org.codehaus.jackson.map.ser.CustomSerializerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.rest.core.SimpleLink
 import org.springframework.data.rest.core.util.FluentBeanSerializer
-import org.springframework.data.rest.mvc.RepositoryRestConfiguration
-import org.springframework.data.rest.mvc.RepositoryRestController
-import org.springframework.data.rest.mvc.RepositoryRestMvcConfiguration
+import org.springframework.data.rest.webmvc.RepositoryRestConfiguration
+import org.springframework.data.rest.webmvc.RepositoryRestController
+import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration
 import org.springframework.http.HttpStatus
 import org.springframework.http.server.ServletServerHttpRequest
 import org.springframework.mock.web.MockHttpServletRequest

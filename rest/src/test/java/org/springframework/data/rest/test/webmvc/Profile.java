@@ -1,4 +1,4 @@
-package org.springframework.data.rest.test.mvc;
+package org.springframework.data.rest.test.webmvc;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

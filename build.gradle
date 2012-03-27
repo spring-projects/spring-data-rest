@@ -7,32 +7,23 @@ allprojects {
   group = "org.springframework.data.rest"
   version = "$sdRestVersion"
 
-  releaseBuild = version.endsWith("RELEASE")
-  snapshotBuild = version.endsWith("SNAPSHOT")
-
-  sourceCompatibility = 6
-  targetCompatibility = 6
-
   configurations.all {
     exclude group: "commons-logging"
     exclude module: "slf4j-log4j12"
     exclude module: "groovy-all", version: "1.8.0-beta-3-SNAPSHOT"
   }
 
-}
-
-subprojects {
-
   repositories {
     mavenCentral(artifactUrls: [
-        "http://maven.springframework.org/release",
-        "http://maven.springframework.org/milestone",
-        //"http://repository.jboss.org/maven2/",
-        //"http://download.java.net/maven/2/"
+        "http://repo.springframework.org/release",
+        "http://repo.springframework.org/milestone"
     ])
     mavenLocal()
   }
 
+}
+
+subprojects {
   apply plugin: "java"
   apply plugin: "groovy"
 
@@ -66,7 +57,7 @@ subprojects {
 
 }
 
-task wrapper(type: Wrapper) { gradleVersion = "1.0-milestone-8" }
+task wrapper(type: Wrapper) { gradleVersion = "1.0-milestone-9" }
 
 idea {
   project.ipr.withXml { provider ->
