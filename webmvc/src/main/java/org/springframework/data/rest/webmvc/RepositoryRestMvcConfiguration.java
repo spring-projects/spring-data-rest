@@ -1,12 +1,24 @@
 package org.springframework.data.rest.webmvc;
 
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.persistence.EntityManagerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportResource;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.rest.repository.JpaRepositoryMetadata;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
+import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver;
@@ -23,7 +35,7 @@ import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 public class RepositoryRestMvcConfiguration {
 
   @Autowired
-  RepositoryRestConfiguration repositoryRestConfiguration;
+  RepositoryRestConfiguration parentConfig;
   RepositoryRestController repositoryRestController;
 
   @Bean ContentNegotiatingViewResolver contentNegotiatingViewResolver() {
@@ -46,10 +58,10 @@ public class RepositoryRestMvcConfiguration {
   @Bean RepositoryRestController repositoryRestController() throws Exception {
     if (null == repositoryRestController) {
       this.repositoryRestController = new RepositoryRestController()
-          .baseUri(repositoryRestConfiguration.baseUri())
-          .repositoryMetadata(repositoryRestConfiguration.jpaRepositoryMetadata())
-          .conversionService(repositoryRestConfiguration.conversionService())
-          .httpMessageConverters(repositoryRestConfiguration.httpMessageConverters())
+          .baseUri(parentConfig.baseUri())
+          .repositoryMetadata(parentConfig.jpaRepositoryMetadata())
+          .conversionService(parentConfig.conversionService())
+          .httpMessageConverters(parentConfig.httpMessageConverters())
           .jsonMediaType("application/json");
     }
     return repositoryRestController;

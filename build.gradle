@@ -29,6 +29,9 @@ subprojects {
 
   [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial", "-Xlint:-unchecked"]
 
+  sourceCompatibility = 1.6
+  targetCompatibility = 1.6
+
   dependencies {
     groovy "org.codehaus.groovy:groovy:$groovyVersion"
 
@@ -63,5 +66,5 @@ idea {
   project.ipr.withXml { provider ->
     provider.node.component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git'
   }
-  module.jdkName = "OpenJDK 1.7"
+  module.jdkName = "1.6"
 }

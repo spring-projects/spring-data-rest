@@ -1,7 +1,7 @@
-apply plugin: "war"
-apply plugin: "jetty"
+//apply plugin: "war"
+//apply plugin: "jetty"
 
-archivesBaseName = "spring-data-rest"
+archivesBaseName = "${rootProject.name}-${name}"
 
 dependencies {
 
@@ -10,15 +10,16 @@ dependencies {
 
   // JPA
   compile "org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final"
-  compile "org.hibernate:hibernate-entitymanager:$hibernateVersion"
-
-  // H2
-  compile "org.hsqldb:hsqldb:1.8.0.10"
 
   // Spring
   compile "org.springframework:spring-webmvc:$springVersion"
+  runtime "cglib:cglib-nodep:2.2.2"
 
   // Repository Exporter support
   compile project(":repository")
+
+  // Testing
+  testRuntime "org.hibernate:hibernate-entitymanager:$hibernateVersion"
+  testRuntime "org.hsqldb:hsqldb:1.8.0.10"
 
 }

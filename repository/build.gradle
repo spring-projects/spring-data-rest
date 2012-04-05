@@ -1,4 +1,4 @@
-archivesBaseName = "spring-data-rest-repository"
+archivesBaseName = "${rootProject.name}-${name}"
 
 dependencies {
 

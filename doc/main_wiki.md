@@ -1,0 +1,155 @@
+# Spring Data JPA Repository Web Exporter
+
+The Spring Data JPA Repository Web Exporter allows you to export your [JPA Repositories](http://static.springsource.org/spring-data/data-jpa/docs/current/reference/html/#jpa.repositories) as a RESTful web application. The exporter exposes the CRUD methods of a [CrudRepository](http://static.springsource.org/spring-data/data-commons/docs/1.1.0.RELEASE/api/org/springframework/data/repository/CrudRepository.html) for doing basic entity management. Relationships can also be managed between linked entities. The exporter is deployed as a traditional Spring MVC Controller, which means all the traditional Spring MVC tools are available to work with the Web Exporter (like Spring Security, for instance).
+
+### Installation
+
+Installation is as simple as downloading a WAR file. To expose your Repositories to the exporter, include a Spring XML configuration file in the classpath. The filename should end with "-export.xml" and reside under the path `META-INF/spring-data-rest/`. Your configuration should include a properly-instaniated EntityManagerFactoryBean, an appropriate DataSource, and the appropriate repository configuration. It's easiest to use the special XML namespace for this purpose. An example configuration (named `WEB-INF/spring-data-rest/repositories-export.xml`) would look like something like this:
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/data/jpa 
+           http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
+
+      <import resource="shared.xml"/>
+
+      <bean id="baseUri" class="java.net.URI">
+        <constructor-arg value="http://localhost:8080/data"/>
+      </bean>
+
+      <jpa:repositories base-package="com.mycompany.domain.repositories"/>
+
+    </beans>
+
+The file `shared.xml` contains a JDBC DataSource configuration, an EntityManagerFactoryBean, and a JpaTransactionManager.
+
+Of note in this configuration is the bean named `baseUri`. This is the fully-qualified URI at which the exporter is deployed. This tells the exporter what base URI to use when generating links to your entities.
+
+### Including your domain artifacts
+
+To expose your domain objects (your JPA entities, Repositories) and Spring configuration using the web exporter, you need to copy those resources to the web exporter's `WEB-INF/lib` or `WEB-INF/classes` directory. There are potentially other ways to deploy these artifacts without modifying the web exporter's WAR file, but those methods are considerably more complicated and prone to classpath problems. The easiest and most reliable way to deploy your user artifacts are by deploying them alongside the web exporter's artifacts.
+
+### Exposing your repositories
+
+By default, any repositories found are exported using the bean name of the repository in the Spring configuration (minus the word "Repository", if it appears in the bean name). 
+
+If you have a JPA entity in your domain model that looks like this:
+
+    @Entity
+    public class Person {
+      @Id 
+      private Long id;
+      private String name;
+      @Version 
+      private Long version;
+      @OneToMany 
+      private List<Address> addresses;
+      @OneToMany 
+      private Map<String, Profile> profiles;
+    }
+
+An appropriate CrudRepository interface defined like this:
+
+    public interface PersonRepository extends CrudRepository<Person, Long> {
+    }
+
+Your PersonRepository will by default be declared in the ApplicationContext with a bean name of "personRepository". The web exporter will strip the word "Repository" from it and expose a resource named "person". The resulting URL of this repository will be `http://localhost:8080/data/person`.
+
+### Discoverability
+
+The Web Exporter implements some aspects of the [HATEOS](http://en.wikipedia.org/wiki/HATEOAS) methodology. That means all the services of the web exporter are discoverable and exposed to the client using links.
+
+If you issue an HTTP request to the root of the exporter:
+
+    curl -v http://localhost:8080/data/
+
+You'll get back a chunk of JSON that points your user agent to the locations of the exposed repositories:
+
+    {
+      "_links" : [{
+        "rel" : "person",
+        "href" : "http://localhost:8080/data/person"
+      }]
+    }
+
+The "rel" of the link will match the exposed name of the repository. Your application should keep track of this rel value as the key to this repository.
+
+Similarly, if you issue a GET to `http://localhost:8080/data/person`, you should get back a list of entities exposed at this resource (as returned by the CrudRepository.findAll method).
+
+    curl -v http://localhost:8080/data/person
+    
+    {
+      "_links" : [ {
+        "rel" : "Person",
+        "href" : "http://localhost:8080/data/person/1"
+      }, {
+        "rel" : "Person",
+        "href" : "http://localhost:8080/data/person/2"
+      } ]
+    }
+
+The "rel" of these links will be the simple class name of the entity managed by this repository.
+
+Following these links will give your user agent a chunk of JSON that represents the entity. Besides properly handling nested objects and simple values, the web exporter will show relationships between entities using links just like those presented previously.
+
+    curl -v http://localhost:8080/data/person/1
+    
+    {
+      "name" : "John Doe",
+      "_links" : [ {
+        "rel" : "profiles",
+        "href" : "http://localhost:8080/data/person/1/profiles"
+      }, {
+        "rel" : "addresses",
+        "href" : "http://localhost:8080/data/person/1/addresses"
+      }, {
+        "rel" : "self",
+        "href" : "http://localhost:8080/data/person/1"
+      } ],
+      "version" : 1
+    }
+
+This entity has a simple String value called "name", and two relationships to other entities ("profiles", and "addresses"). Note that the "rel" value of the link corresponds to the property name of the @Entity.
+
+The "self" link will always point to the resource for this entity. Use the "self" link to access the entity itself if you wish to update or delete the entity.
+
+Following the links for the "profiles" property, gives us a list of links to the actual entities that are referenced by this relationship:
+
+    curl -v http://localhost:8080/data/person/1/profiles
+    
+    {
+      "profiles" : [ {
+        "rel" : "twitter",
+        "href" : "http://localhost:8080/data/person/1/profiles/1"
+      }, {
+        "rel" : "facebook",
+        "href" : "http://localhost:8080/data/person/1/profiles/2"
+      } ]
+    }
+
+Retrieving the linked entity gives us a JSON representation of the entity, as well as the "self" link necessary to update and delete the entity.
+
+    curl -v http://localhost:8080/data/person/1/profiles/1
+    
+    {
+      "_links" : [ {
+        "rel" : "self",
+        "href" : "http://localhost:8080/data/profile/1"
+      } ],
+      "type" : "twitter",
+      "url" : "#!/johndoe"
+    }
+
+### Updating relationships
+
+To maintain a relationship between two entities, access the resource of the relationship by using the id of the entity as the last element in the resource path. For example, to add a link to a Profile with id 3 to a Person with id 1, issue a POST to the "profiles" resource and include in the body of the request a list of resource paths to entities you want to link to (make sure to use the special Content-Type "text/uri-list" which, as the name implies, is a representation of a list of URIs):
+
+    curl -v -X POST -H "Content-Type: text/uri-list" -d "http://localhost:8080/data/profile/3" http://localhost:8080/data/person/1/profiles
+
+You can also delete a relationship by issuing a DELETE request to the resource path that represents the relationship between parent and child entities. For example, to delete a relationship between a Profile entity with an id of 2 and a Person with an id of 1:
+
+    curl -v -X DELETE http://localhost:8080/data/person/1/profiles/2

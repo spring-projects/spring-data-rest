@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.persistence.EntityManagerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -26,10 +27,13 @@ public class RepositoryRestConfiguration {
 
   @Autowired(required = false)
   URI baseUri;
+  @Autowired
+  EntityManagerFactory entityManagerFactory;
   @Autowired(required = false)
   JpaRepositoryMetadata jpaRepositoryMetadata;
   @Autowired(required = false)
-  ConversionService conversionService;
+  ConversionService customConversionService;
+  ConversionService defaultConversionService = new DefaultConversionService();
   @Autowired(required = false)
   List<HttpMessageConverter<?>> httpMessageConverters = new ArrayList<HttpMessageConverter<?>>();
 
@@ -41,10 +45,11 @@ public class RepositoryRestConfiguration {
   }
 
   @Bean ConversionService conversionService() {
-    if (null == conversionService) {
-      conversionService = new DefaultConversionService();
+    if (null != customConversionService) {
+      return customConversionService;
+    } else {
+      return defaultConversionService;
     }
-    return conversionService;
   }
 
   @Bean List<HttpMessageConverter<?>> httpMessageConverters() {

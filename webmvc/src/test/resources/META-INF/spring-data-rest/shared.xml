@@ -9,6 +9,8 @@
     <constructor-arg value="http://localhost:8080/data"/>
   </bean>
 
+  <jdbc:embedded-database id="dataSource" type="HSQL"/>
+
   <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
     <property name="dataSource" ref="dataSource"/>
     <property name="jpaVendorAdapter">
@@ -23,7 +25,5 @@
   <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
     <property name="entityManagerFactory" ref="entityManagerFactory"/>
   </bean>
-
-  <jdbc:embedded-database id="dataSource" type="HSQL"/>
 
 </beans>
