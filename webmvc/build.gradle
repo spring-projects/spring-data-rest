@@ -1,7 +1,7 @@
 //apply plugin: "war"
 //apply plugin: "jetty"
 
-archivesBaseName = "${rootProject.name}-${name}"
+archivesBaseName = "rest-${name}"
 
 dependencies {
 

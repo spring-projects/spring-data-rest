@@ -1,4 +1,4 @@
-archivesBaseName = "${rootProject.name}-${name}"
+archivesBaseName = "rest-${name}"
 
 dependencies {
 

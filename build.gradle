@@ -4,7 +4,7 @@ allprojects {
   apply plugin: "idea"
   apply plugin: "maven"
 
-  group = "org.springframework.data.rest"
+  group = "org.springframework.data"
   version = "$sdRestVersion"
 
   configurations.all {
