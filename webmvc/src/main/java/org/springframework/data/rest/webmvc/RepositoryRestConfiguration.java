@@ -1,6 +1,5 @@
 package org.springframework.data.rest.webmvc;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,8 +24,6 @@ import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcesso
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*-export.xml")
 public class RepositoryRestConfiguration {
 
-  @Autowired(required = false)
-  URI baseUri;
   @Autowired
   EntityManagerFactory entityManagerFactory;
   @Autowired(required = false)
@@ -36,13 +33,6 @@ public class RepositoryRestConfiguration {
   ConversionService defaultConversionService = new DefaultConversionService();
   @Autowired(required = false)
   List<HttpMessageConverter<?>> httpMessageConverters = new ArrayList<HttpMessageConverter<?>>();
-
-  @Bean URI baseUri() {
-    if (null == baseUri) {
-      baseUri = URI.create("");
-    }
-    return baseUri;
-  }
 
   @Bean ConversionService conversionService() {
     if (null != customConversionService) {

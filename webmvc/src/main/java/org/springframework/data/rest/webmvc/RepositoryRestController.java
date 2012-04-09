@@ -495,13 +495,13 @@ public class RepositoryRestController implements InitializingBean {
           if (child instanceof Collection) {
             for (Object o : (Collection) child) {
               String childId = childTypeMeta.entityInfo.getId(o).toString();
-              URI uri = buildUri(baseUri, repositoryMetadata.repositoryNameFor(childRepo), childId);
+              URI uri = buildUri(baseUri, repository, id, property, childId);
               links.add(new SimpleLink(childType.getSimpleName(), uri));
             }
           } else if (child instanceof Map) {
             for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) child).entrySet()) {
               String childId = childTypeMeta.entityInfo.getId(entry.getValue()).toString();
-              URI uri = buildUri(baseUri, repositoryMetadata.repositoryNameFor(childRepo), childId);
+              URI uri = buildUri(baseUri, repository, id, property, childId);
               Object oKey = entry.getKey();
               String sKey;
               if (ClassUtils.isAssignable(oKey.getClass(), String.class)) {
@@ -688,6 +688,63 @@ public class RepositoryRestController implements InitializingBean {
   @RequestMapping(
       value = "/{repository}/{id}/{property}/{childId}",
       method = {
+          RequestMethod.GET
+      },
+      produces = {
+          "application/json"
+      }
+  )
+  public void childEntity(UriComponentsBuilder uriBuilder,
+                          @PathVariable String repository,
+                          @PathVariable String id,
+                          @PathVariable String property,
+                          @PathVariable String childId,
+                          Model model) {
+    URI baseUri = uriBuilder.build().toUri();
+
+    CrudRepository repo = repositoryMetadata.repositoryFor(repository);
+    if (null == repo) {
+      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+      return;
+    }
+
+    final TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
+
+    Serializable serId = stringToSerializable(id, typeMeta.idType);
+    final Object entity = repo.findOne(serId);
+    if (null != entity) {
+      final Attribute attr = typeMeta.entityMetadata.linkedAttributes().get(property);
+      if (null != attr) {
+        // Find child entity
+        CrudRepository childRepo = repositoryFromAttribute(attr);
+        if (null != childRepo) {
+          TypeMetaCacheEntry childTypeMeta = typeMetaEntry(childRepo);
+          Serializable sChildId = stringToSerializable(childId, childTypeMeta.idType);
+          Object childEntity = childRepo.findOne(sChildId);
+          if (null != childEntity) {
+            Map<String, Object> entityDto = extractPropertiesLinkAware(childEntity,
+                                                                       childTypeMeta.entityMetadata,
+                                                                       baseUri);
+            URI selfUri = addSelfLink(baseUri, entityDto, repository, id);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Location", selfUri.toString());
+            model.addAttribute(HEADERS, headers);
+            model.addAttribute(STATUS, HttpStatus.OK);
+            model.addAttribute(RESOURCE, entityDto);
+            return;
+          }
+        }
+      }
+    }
+
+    model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+  }
+
+  @SuppressWarnings({"unchecked"})
+  @RequestMapping(
+      value = "/{repository}/{id}/{property}/{childId}",
+      method = {
           RequestMethod.DELETE
       }
   )
@@ -712,8 +769,7 @@ public class RepositoryRestController implements InitializingBean {
       final Attribute attr = typeMeta.entityMetadata.linkedAttributes().get(property);
       if (null != attr) {
         // Find child entity
-        Class<?> childType = attr.getJavaType();
-        CrudRepository childRepo = repositoryMetadata.repositoryFor(childType);
+        CrudRepository childRepo = repositoryFromAttribute(attr);
         if (null != childRepo) {
           TypeMetaCacheEntry childTypeMeta = typeMetaEntry(childRepo);
           Serializable sChildId = stringToSerializable(childId, childTypeMeta.idType);
@@ -780,7 +836,18 @@ public class RepositoryRestController implements InitializingBean {
   }
 
   @SuppressWarnings({"unchecked"})
-  private void addSelfLink(URI baseUri, Map<String, Object> model, String... pathComponents) {
+  private CrudRepository repositoryFromAttribute(Attribute attr) {
+    CrudRepository repo = null;
+    if (attr instanceof PluralAttribute) {
+      repo = repositoryMetadata.repositoryFor(((PluralAttribute) attr).getElementType().getJavaType());
+    } else {
+      repo = repositoryMetadata.repositoryFor(attr.getJavaType());
+    }
+    return repo;
+  }
+
+  @SuppressWarnings({"unchecked"})
+  private URI addSelfLink(URI baseUri, Map<String, Object> model, String... pathComponents) {
     List<Link> links = (List<Link>) model.get(LINKS);
     if (null == links) {
       links = new ArrayList<Link>();
@@ -788,6 +855,7 @@ public class RepositoryRestController implements InitializingBean {
     }
     URI selfUri = buildUri(baseUri, pathComponents);
     links.add(new SimpleLink(SELF, selfUri));
+    return selfUri;
   }
 
   @SuppressWarnings({"unchecked"})

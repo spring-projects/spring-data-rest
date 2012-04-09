@@ -17,17 +17,11 @@ Installation is as simple as downloading a WAR file. To expose your Repositories
 
       <import resource="shared.xml"/>
 
-      <bean id="baseUri" class="java.net.URI">
-        <constructor-arg value="http://localhost:8080/data"/>
-      </bean>
-
       <jpa:repositories base-package="com.mycompany.domain.repositories"/>
 
     </beans>
 
 The file `shared.xml` contains a JDBC DataSource configuration, an EntityManagerFactoryBean, and a JpaTransactionManager.
-
-Of note in this configuration is the bean named `baseUri`. This is the fully-qualified URI at which the exporter is deployed. This tells the exporter what base URI to use when generating links to your entities.
 
 ### Including your domain artifacts
 
@@ -37,7 +31,7 @@ To expose your domain objects (your JPA entities, Repositories) and Spring confi
 
 By default, any repositories found are exported using the bean name of the repository in the Spring configuration (minus the word "Repository", if it appears in the bean name). 
 
-If you have a JPA entity in your domain model that looks like this:
+If you have a JPA entity in your domain model that looks like...
 
     @Entity
     public class Person {
@@ -52,12 +46,12 @@ If you have a JPA entity in your domain model that looks like this:
       private Map<String, Profile> profiles;
     }
 
-An appropriate CrudRepository interface defined like this:
+...and an appropriate CrudRepository interface defined like...
 
     public interface PersonRepository extends CrudRepository<Person, Long> {
     }
 
-Your PersonRepository will by default be declared in the ApplicationContext with a bean name of "personRepository". The web exporter will strip the word "Repository" from it and expose a resource named "person". The resulting URL of this repository will be `http://localhost:8080/data/person`.
+...your PersonRepository will by default be declared in the ApplicationContext with a bean name of "personRepository". The web exporter will strip the word "Repository" from it and expose a resource named "person". The resulting URL of this repository (assuming the exporter webapp is deployed at context path `/data` in your servlet container) will be `http://localhost:8080/data/person`.
 
 ### Discoverability
 
@@ -78,7 +72,7 @@ You'll get back a chunk of JSON that points your user agent to the locations of 
 
 The "rel" of the link will match the exposed name of the repository. Your application should keep track of this rel value as the key to this repository.
 
-Similarly, if you issue a GET to `http://localhost:8080/data/person`, you should get back a list of entities exposed at this resource (as returned by the CrudRepository.findAll method).
+Similarly, if you issue a GET to `http://localhost:8080/data/person`, you should get back a list of entities exposed at this resource (as returned by the CrudRepository.findAll method). At the moment, there is no paging, sorting, or querying capability.
 
     curl -v http://localhost:8080/data/person
     
@@ -117,7 +111,7 @@ This entity has a simple String value called "name", and two relationships to ot
 
 The "self" link will always point to the resource for this entity. Use the "self" link to access the entity itself if you wish to update or delete the entity.
 
-Following the links for the "profiles" property, gives us a list of links to the actual entities that are referenced by this relationship:
+Following the links for the "profiles" property gives us a list of links to the actual entities that are referenced by this relationship:
 
     curl -v http://localhost:8080/data/person/1/profiles
     
