@@ -2,6 +2,8 @@ package org.springframework.data.rest.repository;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +15,7 @@ import javax.persistence.metamodel.SingularAttribute;
 
 import org.springframework.data.rest.core.Handler;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Jon Brisbin <jon@jbrisbin.com>
@@ -22,6 +25,8 @@ public class JpaEntityMetadata {
   private Class<?> targetType;
   private Map<String, Attribute> embeddedAttributes = new HashMap<String, Attribute>();
   private Map<String, Field> fields = new HashMap<String, Field>();
+  private Map<String, Method> setters = new HashMap<String, Method>();
+  private Map<String, Method> getters = new HashMap<String, Method>();
   private Map<String, Attribute> linkedAttributes = new HashMap<String, Attribute>();
   private final Attribute idAttribute;
   private final Attribute versionAttribute;
@@ -37,6 +42,20 @@ public class JpaEntityMetadata {
       Field f = ReflectionUtils.findField(targetType, attr.getName());
       ReflectionUtils.makeAccessible(f);
       fields.put(name, f);
+      Method setter = null;
+      try {
+        setter = targetType.getMethod("set" + StringUtils.capitalize(name), attr.getJavaType());
+      } catch (NoSuchMethodException e) {}
+      if (null != setter) {
+        setters.put(name, setter);
+      }
+      Method getter = null;
+      try {
+        getter = targetType.getMethod("get" + StringUtils.capitalize(name));
+      } catch (NoSuchMethodException e) {}
+      if (null != setter) {
+        getters.put(name, getter);
+      }
 
       if (attr instanceof SingularAttribute) {
         SingularAttribute sattr = (SingularAttribute) attr;
@@ -127,26 +146,36 @@ public class JpaEntityMetadata {
   }
 
   public Object get(String name, Object target) {
-    if (fields.containsKey(name)) {
-      try {
-        return fields.get(name).get(target);
-      } catch (IllegalAccessException e) {
-        throw new IllegalStateException(e);
+    try {
+      Method getter = getters.get(name);
+      if (null != getter) {
+        return getter.invoke(target);
+      } else {
+        Field f = fields.get(name);
+        return (null != f ? f.get(target) : null);
       }
-    } else {
-      throw new NoSuchFieldError(name);
+    } catch (IllegalAccessException e) {
+      throw new IllegalStateException(e);
+    } catch (InvocationTargetException e) {
+      throw new IllegalStateException(e);
     }
   }
 
   public void set(String name, Object arg, Object target) {
-    if (fields.containsKey(name)) {
-      try {
-        fields.get(name).set(target, arg);
-      } catch (IllegalAccessException e) {
-        throw new IllegalStateException(e);
+    try {
+      Method setter = setters.get(name);
+      if (null != setter) {
+        setter.invoke(target, arg);
+      } else {
+        Field f = fields.get(name);
+        if (null != f) {
+          f.set(target, arg);
+        }
       }
-    } else {
-      throw new NoSuchFieldError(name);
+    } catch (IllegalAccessException e) {
+      throw new IllegalStateException(e);
+    } catch (InvocationTargetException e) {
+      throw new IllegalStateException(e);
     }
   }
 

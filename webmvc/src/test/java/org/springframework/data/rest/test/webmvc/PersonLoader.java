@@ -48,7 +48,13 @@ public class PersonLoader implements InitializingBean {
     pers1profiles.put("twitter", twitter);
     pers1profiles.put("facebook", fb);
 
-    personRepository.save(new Person(1L, "John Doe", Arrays.asList(pers1addr), pers1profiles));
+    Person p1 = personRepository.save(
+        new Person(
+            "John Doe",
+            Arrays.asList(addressRepository.findOne(pers1addr.getId())),
+            pers1profiles
+        )
+    );
 
     Address pers2addr = addressRepository.save(new Address(new String[]{"1234 E. 2nd St."}, "Univille", "ST", "12345"));
 
@@ -57,7 +63,8 @@ public class PersonLoader implements InitializingBean {
     Profile fb2 = profileRepository.save(new Profile("facebook", "/janedoe"));
     pers2profiles.put("facebook", fb2);
 
-    personRepository.save(new Person(2L, "Jane Doe", Arrays.asList(pers2addr), pers2profiles));
+    Person p2 = personRepository.save(new Person("Jane Doe", Arrays.asList(pers2addr), pers2profiles));
+
   }
 
 }

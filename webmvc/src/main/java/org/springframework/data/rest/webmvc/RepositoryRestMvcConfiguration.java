@@ -58,7 +58,6 @@ public class RepositoryRestMvcConfiguration {
   @Bean RepositoryRestController repositoryRestController() throws Exception {
     if (null == repositoryRestController) {
       this.repositoryRestController = new RepositoryRestController()
-          .baseUri(parentConfig.baseUri())
           .repositoryMetadata(parentConfig.jpaRepositoryMetadata())
           .conversionService(parentConfig.conversionService())
           .httpMessageConverters(parentConfig.httpMessageConverters())

@@ -3,6 +3,7 @@ package org.springframework.data.rest.test.webmvc;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
@@ -13,7 +14,7 @@ import javax.persistence.Version;
 @Entity
 public class Person {
 
-  @Id private Long id;
+  @Id @GeneratedValue private Long id;
   private String name;
   @Version
   private Long version;

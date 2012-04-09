@@ -26,6 +26,10 @@ public class Address {
     this.postalCode = postalCode;
   }
 
+  public Long getId() {
+    return id;
+  }
+
   public String[] getLines() {
     return lines;
   }

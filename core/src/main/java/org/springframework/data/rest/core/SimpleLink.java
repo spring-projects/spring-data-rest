@@ -10,6 +10,9 @@ public class SimpleLink implements Link {
   private String rel;
   private URI href;
 
+  public SimpleLink() {
+  }
+
   public SimpleLink(String rel, URI href) {
     this.rel = rel;
     this.href = href;

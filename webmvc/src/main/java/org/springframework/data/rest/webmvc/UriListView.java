@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.data.rest.core.Link;
+import org.springframework.data.rest.core.SimpleLink;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.view.AbstractView;
@@ -31,18 +32,20 @@ public class UriListView extends AbstractView {
 
     HttpStatus status = (HttpStatus) model.get("status");
     HttpHeaders headers = (HttpHeaders) model.get("headers");
-    List<Link> links = null;
+    List<SimpleLink> links = null;
     if (resource instanceof List) {
-      links = (List<Link>) resource;
+      links = (List<SimpleLink>) resource;
     } else if (resource instanceof Map) {
       Map m = (Map) resource;
       Object o = m.get("_links");
       if (null != o && o instanceof List) {
-        links = (List<Link>) o;
+        links = (List<SimpleLink>) o;
       } else {
         response.setStatus(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
         return;
       }
+    } else if (resource instanceof Links) {
+      links = ((Links) resource).getLinks();
     }
 
     if (null != status) {
