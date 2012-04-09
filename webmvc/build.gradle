@@ -1,7 +1,7 @@
 //apply plugin: "war"
 //apply plugin: "jetty"
 
-archivesBaseName = "rest-${name}"
+archivesBaseName = "spring-data-rest-${name}"
 
 dependencies {
 

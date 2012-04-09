@@ -5,6 +5,7 @@ import org.codehaus.jackson.map.ser.CustomSerializerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.rest.core.SimpleLink
 import org.springframework.data.rest.core.util.FluentBeanSerializer
+import org.springframework.data.rest.test.webmvc.Address
 import org.springframework.data.rest.webmvc.RepositoryRestConfiguration
 import org.springframework.data.rest.webmvc.RepositoryRestController
 import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration
@@ -14,7 +15,7 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.ui.ExtendedModelMap
-import org.springframework.ui.Model
+import org.springframework.web.util.UriComponentsBuilder
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -24,6 +25,8 @@ import spock.lang.Specification
 @ContextConfiguration(classes = [RepositoryRestConfiguration, RepositoryRestMvcConfiguration])
 class RepositoryRestControllerSpec extends Specification {
 
+  @Shared
+  UriComponentsBuilder uriBuilder
   @Shared
   ObjectMapper mapper = new ObjectMapper()
   @Autowired
@@ -39,147 +42,82 @@ class RepositoryRestControllerSpec extends Specification {
     )
   }
 
-  Model GET(String path) {
-    def request = createRequest("GET", path)
-    def model = new ExtendedModelMap()
-    controller.get(new ServletServerHttpRequest(request), model)
-    return model
-  }
-
-  Model POST(String path, m) {
-    def request = createRequest("POST", path)
-    request.contentType = "application/json"
-    request.setContent(mapper.writeValueAsBytes(m))
-    def model = new ExtendedModelMap()
-    controller.createOrUpdate(new ServletServerHttpRequest(request), model)
-    return model
-  }
-
-  Model PUT(String path, m) {
-    def request = createRequest("PUT", path)
-    request.contentType = "application/json"
-    request.setContent(mapper.writeValueAsBytes(m))
-    def model = new ExtendedModelMap()
-    controller.createOrUpdate(new ServletServerHttpRequest(request), model)
-    return model
-  }
-
-  Model DELETE(String path) {
-    def request = createRequest("DELETE", path)
-    def model = new ExtendedModelMap()
-    controller.delete(new ServletServerHttpRequest(request), model)
-    return model
-
-  }
-
   def setupSpec() {
+    uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:8080/data")
     def customSerializerFactory = new CustomSerializerFactory()
     customSerializerFactory.addSpecificMapping(SimpleLink, new FluentBeanSerializer(SimpleLink))
     mapper.setSerializerFactory(customSerializerFactory)
   }
 
   @Transactional
-  def "responds to GET"() {
+  def "API Test"() {
 
-    when:
-    def repos = GET("")
-    def reposLinks = repos.resource?._links
+    given:
+    def model = new ExtendedModelMap()
+
+    when: "listing available repositories"
+    controller.listRepositories(uriBuilder, model)
+    def reposLinks = model.resource?.links
 
     then:
-    repos.status == HttpStatus.OK
+    model.status == HttpStatus.OK
     reposLinks?.size() == 3
 
-    when:
-    def persons = GET("person")
-    def personsLinks = persons.resource?._links
+    when: "adding an entity"
+    model.clear()
+    def req = createRequest("POST", "person")
+    def data = mapper.writeValueAsBytes([name: "John Doe"])
+    req.content = data
+    controller.create(new ServletServerHttpRequest(req), uriBuilder, "person", model)
 
     then:
-    persons.status == HttpStatus.OK
+    model.status == HttpStatus.CREATED
+
+    when: "listing available entities"
+    model.clear()
+    controller.listEntities(uriBuilder, "person", model)
+    def personsLinks = model.resource?.links
+
+    then:
+    model.status == HttpStatus.OK
     personsLinks[0].href().toString() == "http://localhost:8080/data/person/1"
 
-    when:
-    def person = GET("person/1")
+    when: "getting specific entity"
+    model.clear()
+    req = createRequest("GET", "person/1")
+    controller.entity(new ServletServerHttpRequest(req), uriBuilder, "person", "1", model)
 
     then:
-    person?.resource?.name == "John Doe"
+    model.resource?.name == "John Doe"
 
-    when:
-    def profiles = GET("person/1/profiles")
-    def profilesLinks = profiles.resource?.profiles
-
-    then:
-    profilesLinks.size() == 2
-
-  }
-
-  @Transactional
-  def "responds to POST with ID"() {
-
-    when:
-    def created = POST("person/3", [name: "James Doe"])
+    when: "creating child entity"
+    model.clear()
+    req = createRequest("POST", "address")
+    data = mapper.writeValueAsBytes(new Address(["1 W. 1st St."] as String[], "Univille", "ST", "12345"))
+    req.content = data
+    controller.create(new ServletServerHttpRequest(req), uriBuilder, "address", model)
 
     then:
-    created.status == HttpStatus.CREATED
+    model.status == HttpStatus.CREATED
 
-  }
-
-  @Transactional
-  def "responds to PUT"() {
-
-    given:
-    POST("person/3", [name: "James Doe"])
-
-    when:
-    def updated = PUT("person/3", [name: "James Doe Jr."])
-    def getUpdated = GET("person/3")
+    when: "linking child to parent entity"
+    model.clear()
+    req = createRequest("POST", "person/1/addresses")
+    req.contentType = "text/uri-list"
+    data = "http://localhost:8080/data/address/1".bytes
+    req.content = data
+    controller.updateLinks(new ServletServerHttpRequest(req), uriBuilder, "person", "1", "addresses", model)
 
     then:
-    updated.status == HttpStatus.NO_CONTENT
-    getUpdated.status == HttpStatus.OK
-    getUpdated.resource?.name == "James Doe Jr."
+    model.status == HttpStatus.CREATED
 
-  }
-
-  @Transactional
-  def "updates links"() {
-
-    given:
-    POST("person/3", [name: "James Doe"])
-
-    when:
-    def link = POST("person/3/addresses", [[href: "$baseUri/address/1".toString()]])
-    def getUpdated = GET("person/3/addresses")
+    when: "getting property of entity"
+    model.clear()
+    controller.propertyOfEntity(uriBuilder, "person", "1", "addresses", model)
+    def addrLinks = model.resource?.links
 
     then:
-    link.status == HttpStatus.CREATED
-    getUpdated.status == HttpStatus.OK
-    getUpdated.resource?.size() == 1
-
-  }
-
-  @Transactional
-  def "responds to DELETE"() {
-
-    given:
-    POST("person/3", [name: "James Doe"])
-    POST("person/3/addresses", [[href: "$baseUri/address/1".toString()]])
-
-    when:
-    def deleted = DELETE("person/3/addresses/1")
-    def getUpdated = GET("person/3/addresses")
-
-    then:
-    deleted.status == HttpStatus.NO_CONTENT
-    getUpdated.status == HttpStatus.OK
-    getUpdated.resource?._links?.size() == 0
-
-    when:
-    def delEntity = DELETE("person/3")
-    def getUpdEntity = GET("person/3")
-
-    then:
-    delEntity.status == HttpStatus.NO_CONTENT
-    getUpdEntity.status == HttpStatus.NOT_FOUND
+    addrLinks.size() == 1
 
   }
 

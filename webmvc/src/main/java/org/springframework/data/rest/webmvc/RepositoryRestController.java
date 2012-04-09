@@ -572,26 +572,31 @@ public class RepositoryRestController implements InitializingBean {
               PluralAttribute plAttr = (PluralAttribute) attr;
               switch (plAttr.getCollectionType()) {
                 case COLLECTION:
-                case LIST:
+                case LIST: {
                   Collection c = new ArrayList();
-                  if (request.getMethod() == HttpMethod.POST) {
-                    c.addAll((Collection) typeMeta.entityMetadata.get(property, entity));
+                  Collection current = (Collection) typeMeta.entityMetadata.get(property, entity);
+                  if (request.getMethod() == HttpMethod.POST && null != current) {
+                    c.addAll(current);
                   }
                   c.add(childEntity);
                   typeMeta.entityMetadata.set(property, c, entity);
-                  break;
-                case SET:
+                }
+                break;
+                case SET: {
                   Set s = new HashSet();
-                  if (request.getMethod() == HttpMethod.POST) {
-                    s.addAll((Set) typeMeta.entityMetadata.get(property, entity));
+                  Set current = (Set) typeMeta.entityMetadata.get(property, entity);
+                  if (request.getMethod() == HttpMethod.POST && null != current) {
+                    s.addAll(current);
                   }
                   s.add(childEntity);
                   typeMeta.entityMetadata.set(property, s, entity);
-                  break;
-                case MAP:
+                }
+                break;
+                case MAP: {
                   Map m = new HashMap();
-                  if (request.getMethod() == HttpMethod.POST) {
-                    m.putAll((Map) typeMeta.entityMetadata.get(property, entity));
+                  Map current = (Map) typeMeta.entityMetadata.get(property, entity);
+                  if (request.getMethod() == HttpMethod.POST && null != current) {
+                    m.putAll(current);
                   }
                   String key = rel.get();
                   if (null == key) {
@@ -601,7 +606,8 @@ public class RepositoryRestController implements InitializingBean {
                     m.put(rel.get(), childEntity);
                     typeMeta.entityMetadata.set(property, m, entity);
                   }
-                  break;
+                }
+                break;
               }
             } else if (attr instanceof SingularAttribute) {
               typeMeta.entityMetadata.set(property, childEntity, entity);
@@ -618,7 +624,9 @@ public class RepositoryRestController implements InitializingBean {
             while (null != (line = in.readLine())) {
               String sLinkUri = line.trim();
               Object o = resolveTopLevelResource(baseUri, sLinkUri);
-              entityHandler.handle(o);
+              if (null != o) {
+                entityHandler.handle(o);
+              }
             }
           } else if (jsonMediaType.equals(incomingMediaType)) {
             final Map<String, List<Map<String, String>>> incoming = readIncoming(request, incomingMediaType, Map.class);
@@ -626,7 +634,9 @@ public class RepositoryRestController implements InitializingBean {
               String sLinkUri = link.get("href");
               Object o = resolveTopLevelResource(baseUri, sLinkUri);
               rel.set(link.get("rel"));
-              entityHandler.handle(o);
+              if (null != o) {
+                entityHandler.handle(o);
+              }
             }
           }
 
