@@ -20,12 +20,6 @@ You can either deploy this JAR file into your Servlet container in a "shared" co
 can add this JAR file (and any other application dependencies) to the exporter WAR file's `WEB-INF/lib`
 directory.
 
-Somewhere in the Spring configuration files you need to define a bean called "baseUri" that is a
-`java.net.URI` and is the fully-qualified URI in which the exporter servlet has been deployed. In the
-case of the sample below, the servlet is deployed to a context path of `/data`. Using the default
-host and port settings, this yields a `baseUri` of `http://localhost:8080/data`. You'll want to change
-this to reflect your deployment configuration.
-
 ### Sample Configuration
 
 The configuration used in testing looks like this:
@@ -38,10 +32,6 @@ The configuration used in testing looks like this:
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
            http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
-
-      <bean id="baseUri" class="java.net.URI">
-        <constructor-arg value="http://localhost:8080/data"/>
-      </bean>
 
       <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="dataSource" ref="dataSource"/>
