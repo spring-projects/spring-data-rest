@@ -1,5 +1,3 @@
-archivesBaseName = "spring-data-rest-${name}"
-
 dependencies {
 
   // Google Guava

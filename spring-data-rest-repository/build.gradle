@@ -1,5 +1,3 @@
-archivesBaseName = "spring-data-rest-${name}"
-
 dependencies {
 
   // Spring
@@ -15,7 +13,7 @@ dependencies {
   compile "org.springframework.data:spring-data-jpa:$sdJpaVersion"
 
   // Exporter core
-  compile project(":core")
+  compile project(":spring-data-rest-core")
 
   // Testing
   testCompile "org.hibernate:hibernate-entitymanager:$hibernateVersion"

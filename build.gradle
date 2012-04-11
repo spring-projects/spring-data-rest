@@ -27,6 +27,7 @@ subprojects {
   apply plugin: "java"
   apply plugin: "groovy"
 
+  [compileJava, compileTestJava]*.options*.debugOptions*.debugLevel = "source,lines,vars"
   [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial", "-Xlint:-unchecked"]
 
   sourceCompatibility = 1.6
