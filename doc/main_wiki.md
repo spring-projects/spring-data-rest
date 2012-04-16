@@ -4,7 +4,54 @@ The Spring Data JPA Repository Web Exporter allows you to export your [JPA Repos
 
 ### Installation
 
-Installation is as simple as downloading a WAR file. To expose your Repositories to the exporter, include a Spring XML configuration file in the classpath. The filename should end with "-export.xml" and reside under the path `META-INF/spring-data-rest/`. Your configuration should include a properly-instaniated EntityManagerFactoryBean, an appropriate DataSource, and the appropriate repository configuration. It's easiest to use the special XML namespace for this purpose. An example configuration (named `WEB-INF/spring-data-rest/repositories-export.xml`) would look like something like this:
+#### Servlet environment
+
+To use the Spring Data Web Exporter, you need to build a WAR file. Start by cloning the base web application project that contains the web.xml file you'll need to run the Web Exporter: [https://github.com/SpringSource/spring-data-rest-webmvc](https://github.com/SpringSource/spring-data-rest-webmvc).
+
+    git clone https://github.com/SpringSource/spring-data-rest-web.git
+    cd spring-data-rest-web
+    ./gradlew war
+
+Deploy the built WAR file to your servlet container:
+
+    cp build/libs/spring-data-rest-webmvc-1.0.0.BUILD-SNAPSHOT.war $TOMCAT_HOME/webapps/data.war
+    cd $TOMCAT_HOME
+    bin/catalina.sh run
+
+ The WAR file has a couple example domain classes and exposes a couple repositories by default. You can verify that this configuration is working by issuing an HTTP GET to the root of the web application:
+
+    curl -v http://localhost:8080/data/
+
+ In return, you should see:
+
+     > GET /data/ HTTP/1.1
+     > User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 OpenSSL/0.9.8r zlib/1.2.3
+     > Host: localhost:8080
+     > Accept: */*
+     >
+     < HTTP/1.1 200 OK
+     < Server: Apache-Coyote/1.1
+     < Content-Type: application/json;charset=ISO-8859-1
+     < Content-Language: en-US
+     < Content-Length: 257
+     < Date: Mon, 16 Apr 2012 14:32:44 GMT
+     <
+     {
+       "_links" : [ {
+         "rel" : "address",
+         "href" : "http://localhost:8080/data/address"
+       }, {
+         "rel" : "person",
+         "href" : "http://localhost:8080/data/person"
+       }, {
+         "rel" : "profile",
+         "href" : "http://localhost:8080/data/profile"
+       } ]
+     }
+
+### Export Repositories
+
+To expose your Repositories to the exporter, include a Spring XML configuration file in the classpath (e.g. in a client JAR or in `WEB-INF/classes`). The filename should end with "-export.xml" and reside under the path `META-INF/spring-data-rest/`. Your configuration should include a properly-instaniated EntityManagerFactoryBean, an appropriate DataSource, and the appropriate repository configuration. It's easiest to use the special XML namespace for this purpose. An example configuration (named `WEB-INF/spring-data-rest/repositories-export.xml`) would look like something like this:
 
     <?xml version="1.0" encoding="UTF-8"?>
     <beans xmlns="http://www.springframework.org/schema/beans"
@@ -124,6 +171,8 @@ Following the links for the "profiles" property gives us a list of links to the 
         "href" : "http://localhost:8080/data/person/1/profiles/2"
       } ]
     }
+
+In this case, the "profiles" property is a Map, so the "rel" value of the links is the key in the Map. The resource link, however, does not use the Map key in the URL. It is consistent with all other links to child resources and uses the ID of the child entity as the last component of the URL.
 
 Retrieving the linked entity gives us a JSON representation of the entity, as well as the "self" link necessary to update and delete the entity.
 
