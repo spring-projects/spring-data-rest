@@ -392,11 +392,11 @@ public class RepositoryRestController implements InitializingBean {
     } else {
       final MediaType incomingMediaType = request.getHeaders().getContentType();
       try {
-        if (request.getMethod() == HttpMethod.POST) {
-          final Object incoming = readIncoming(request, incomingMediaType, typeMeta.domainClass);
-          if (null == incoming) {
-            model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
-          } else {
+        final Object incoming = readIncoming(request, incomingMediaType, typeMeta.domainClass);
+        if (null == incoming) {
+          model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
+        } else {
+          if (request.getMethod() == HttpMethod.POST) {
             typeMeta.entityMetadata.id(serId, incoming);
             Object savedEntity = repo.save(entity);
             String savedId = typeMeta.entityInfo.getId(savedEntity).toString();
@@ -405,23 +405,19 @@ public class RepositoryRestController implements InitializingBean {
             headers.set(LOCATION, selfUri.toString());
             model.addAttribute(HEADERS, headers);
             model.addAttribute(STATUS, HttpStatus.CREATED);
-          }
-        } else {
-          final Map incoming = readIncoming(request, incomingMediaType, Map.class);
-          if (null == incoming) {
-            model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
+
           } else {
             for (Map.Entry<String, Attribute> entry : typeMeta.entityMetadata.embeddedAttributes().entrySet()) {
               String name = entry.getKey();
-              if (incoming.containsKey(name)) {
-                typeMeta.entityMetadata.set(name, incoming.get(name), entity);
+              Object o = typeMeta.entityMetadata.get(name, incoming);
+              if (null != o) {
+                typeMeta.entityMetadata.set(name, o, entity);
               }
             }
             repo.save(entity);
             model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
           }
         }
-
       } catch (IOException e) {
         model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
         LOG.error(e.getMessage(), e);
