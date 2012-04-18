@@ -392,25 +392,36 @@ public class RepositoryRestController implements InitializingBean {
     } else {
       final MediaType incomingMediaType = request.getHeaders().getContentType();
       try {
-        final Object incoming = readIncoming(request, incomingMediaType, typeMeta.domainClass);
-        if (null == incoming) {
-          model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
-        } else {
-          typeMeta.entityMetadata.id(serId, incoming);
-
-          Object savedEntity = repo.save(entity);
-          String savedId = typeMeta.entityInfo.getId(savedEntity).toString();
-
-          if (request.getMethod() == HttpMethod.POST) {
+        if (request.getMethod() == HttpMethod.POST) {
+          final Object incoming = readIncoming(request, incomingMediaType, typeMeta.domainClass);
+          if (null == incoming) {
+            model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
+          } else {
+            typeMeta.entityMetadata.id(serId, incoming);
+            Object savedEntity = repo.save(entity);
+            String savedId = typeMeta.entityInfo.getId(savedEntity).toString();
             URI selfUri = buildUri(baseUri, repository, savedId);
             HttpHeaders headers = new HttpHeaders();
             headers.set(LOCATION, selfUri.toString());
             model.addAttribute(HEADERS, headers);
             model.addAttribute(STATUS, HttpStatus.CREATED);
+          }
+        } else {
+          final Map incoming = readIncoming(request, incomingMediaType, Map.class);
+          if (null == incoming) {
+            model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
           } else {
+            for (Map.Entry<String, Attribute> entry : typeMeta.entityMetadata.embeddedAttributes().entrySet()) {
+              String name = entry.getKey();
+              if (incoming.containsKey(name)) {
+                typeMeta.entityMetadata.set(name, incoming.get(name), entity);
+              }
+            }
+            repo.save(entity);
             model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
           }
         }
+
       } catch (IOException e) {
         model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
         LOG.error(e.getMessage(), e);
@@ -889,7 +900,13 @@ public class RepositoryRestController implements InitializingBean {
       String sId = UriUtils.path(uris.get(1));
 
       CrudRepository repo = repositoryMetadata.repositoryFor(repoName);
+      if (null == repo) {
+        return null;
+      }
       EntityInformation entityInfo = repositoryMetadata.entityInfoFor(repo);
+      if (null == entityInfo) {
+        return null;
+      }
       Class<? extends Serializable> idType = entityInfo.getIdType();
 
       Serializable serId = stringToSerializable(sId, idType);
