@@ -40,6 +40,10 @@ public class JpaRepositoryMetadata implements InitializingBean, ApplicationConte
     this.metamodel = entityManager.getMetamodel();
   }
 
+  public EntityManager entityManager() {
+    return this.entityManager;
+  }
+
   @SuppressWarnings({"unchecked"})
   public <T> CrudRepository<T, ? extends Serializable> repositoryFor(String name) {
     if (null != name) {

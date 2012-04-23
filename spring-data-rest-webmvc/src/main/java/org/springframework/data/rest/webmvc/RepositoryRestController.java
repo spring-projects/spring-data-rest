@@ -21,11 +21,11 @@ import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.PluralAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.rest.core.Handler;
@@ -39,15 +39,19 @@ import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -63,19 +67,13 @@ public class RepositoryRestController implements InitializingBean {
   public static final String SELF = "self";
   public static final String LINKS = "_links";
 
-  public static final int HAS_RESOURCE = 1;
-  public static final int HAS_RESOURCE_ID = 2;
-  public static final int HAS_SECOND_LEVEL_RESOURCE = 3;
-  public static final int HAS_SECOND_LEVEL_ID = 4;
-
-  private static final Logger LOG = LoggerFactory.getLogger(RepositoryRestController.class);
-
   private MediaType uriListMediaType = MediaType.parseMediaType("text/uri-list");
   private MediaType jsonMediaType = MediaType.parseMediaType("application/x-spring-data+json");
   private JpaRepositoryMetadata repositoryMetadata;
   private Map<CrudRepository, TypeMetaCacheEntry> typeMetaCache = new ConcurrentHashMap<CrudRepository, TypeMetaCacheEntry>();
   private ConversionService conversionService = new DefaultConversionService();
   private List<HttpMessageConverter<?>> httpMessageConverters;
+  private ObjectMapper objectMapper = new ObjectMapper();
 
   public JpaRepositoryMetadata getRepositoryMetadata() {
     return repositoryMetadata;
@@ -249,7 +247,7 @@ public class RepositoryRestController implements InitializingBean {
   public void create(ServerHttpRequest request,
                      UriComponentsBuilder uriBuilder,
                      @PathVariable String repository,
-                     Model model) {
+                     Model model) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
 
     CrudRepository repo = repositoryMetadata.repositoryFor(repository);
@@ -261,25 +259,20 @@ public class RepositoryRestController implements InitializingBean {
     final TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
 
     MediaType incomingMediaType = request.getHeaders().getContentType();
-    try {
-      final Object incoming = readIncoming(request, incomingMediaType, typeMeta.domainClass);
-      if (null == incoming) {
-        model.addAttribute(STATUS, HttpStatus.NOT_ACCEPTABLE);
-      } else {
-        Object savedEntity = repo.save(incoming);
-        String sId = typeMeta.entityInfo.getId(savedEntity).toString();
+    final Object incoming = readIncoming(request, incomingMediaType, typeMeta.domainClass);
+    if (null == incoming) {
+      model.addAttribute(STATUS, HttpStatus.NOT_ACCEPTABLE);
+    } else {
+      Object savedEntity = repo.save(incoming);
+      String sId = typeMeta.entityInfo.getId(savedEntity).toString();
 
-        URI selfUri = buildUri(baseUri, repository, sId);
+      URI selfUri = buildUri(baseUri, repository, sId);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(LOCATION, selfUri.toString());
+      HttpHeaders headers = new HttpHeaders();
+      headers.set(LOCATION, selfUri.toString());
 
-        model.addAttribute(HEADERS, headers);
-        model.addAttribute(STATUS, HttpStatus.CREATED);
-      }
-    } catch (IOException e) {
-      model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
-      LOG.error(e.getMessage(), e);
+      model.addAttribute(HEADERS, headers);
+      model.addAttribute(STATUS, HttpStatus.CREATED);
     }
   }
 
@@ -355,7 +348,10 @@ public class RepositoryRestController implements InitializingBean {
                              UriComponentsBuilder uriBuilder,
                              @PathVariable String repository,
                              @PathVariable String id,
-                             Model model) {
+                             Model model)
+      throws IOException,
+             IllegalAccessException,
+             InstantiationException {
     URI baseUri = uriBuilder.build().toUri();
 
     CrudRepository repo = repositoryMetadata.repositoryFor(repository);
@@ -370,17 +366,7 @@ public class RepositoryRestController implements InitializingBean {
     Object entity = null;
     switch (request.getMethod()) {
       case POST:
-        try {
-          entity = typeMeta.domainClass.newInstance();
-        } catch (InstantiationException e) {
-          model.addAttribute(STATUS, HttpStatus.INTERNAL_SERVER_ERROR);
-          LOG.error(e.getMessage(), e);
-          return;
-        } catch (IllegalAccessException e) {
-          model.addAttribute(STATUS, HttpStatus.INTERNAL_SERVER_ERROR);
-          LOG.error(e.getMessage(), e);
-          return;
-        }
+        entity = typeMeta.domainClass.newInstance();
         break;
       case PUT:
         entity = repo.findOne(serId);
@@ -391,36 +377,23 @@ public class RepositoryRestController implements InitializingBean {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
     } else {
       final MediaType incomingMediaType = request.getHeaders().getContentType();
-      try {
-        final Object incoming = readIncoming(request, incomingMediaType, typeMeta.domainClass);
-        if (null == incoming) {
-          model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
+      final Object incoming = readIncoming(request, incomingMediaType, typeMeta.domainClass);
+      if (null == incoming) {
+        throw new HttpMessageNotReadableException("Could not create an instance of " + typeMeta.domainClass
+            .getSimpleName() + " from input.");
+      } else {
+        typeMeta.entityMetadata.id(serId, incoming);
+        if (request.getMethod() == HttpMethod.POST) {
+          repo.save(incoming);
+          URI selfUri = buildUri(baseUri, repository, id);
+          HttpHeaders headers = new HttpHeaders();
+          headers.set(LOCATION, selfUri.toString());
+          model.addAttribute(HEADERS, headers);
+          model.addAttribute(STATUS, HttpStatus.CREATED);
         } else {
-          if (request.getMethod() == HttpMethod.POST) {
-            typeMeta.entityMetadata.id(serId, incoming);
-            Object savedEntity = repo.save(entity);
-            String savedId = typeMeta.entityInfo.getId(savedEntity).toString();
-            URI selfUri = buildUri(baseUri, repository, savedId);
-            HttpHeaders headers = new HttpHeaders();
-            headers.set(LOCATION, selfUri.toString());
-            model.addAttribute(HEADERS, headers);
-            model.addAttribute(STATUS, HttpStatus.CREATED);
-
-          } else {
-            for (Map.Entry<String, Attribute> entry : typeMeta.entityMetadata.embeddedAttributes().entrySet()) {
-              String name = entry.getKey();
-              Object o = typeMeta.entityMetadata.get(name, incoming);
-              if (null != o) {
-                typeMeta.entityMetadata.set(name, o, entity);
-              }
-            }
-            repo.save(entity);
-            model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
-          }
+          repo.save(incoming);
+          model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
         }
-      } catch (IOException e) {
-        model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
-        LOG.error(e.getMessage(), e);
       }
     }
   }
@@ -478,7 +451,9 @@ public class RepositoryRestController implements InitializingBean {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
     } else {
       Attribute attr = typeMeta.entityType.getAttribute(property);
-      if (null != attr) {
+      if (null == attr) {
+        model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+      } else {
         Class<?> childType;
         if (attr instanceof PluralAttribute) {
           childType = ((PluralAttribute) attr).getElementType().getJavaType();
@@ -527,8 +502,6 @@ public class RepositoryRestController implements InitializingBean {
         } else {
           model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
         }
-      } else {
-        model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
       }
     }
   }
@@ -554,7 +527,7 @@ public class RepositoryRestController implements InitializingBean {
                           @PathVariable String repository,
                           @PathVariable String id,
                           final @PathVariable String property,
-                          final Model model) {
+                          final Model model) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
 
     CrudRepository repo = repositoryMetadata.repositoryFor(repository);
@@ -571,7 +544,9 @@ public class RepositoryRestController implements InitializingBean {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
     } else {
       final Attribute attr = typeMeta.entityMetadata.linkedAttributes().get(property);
-      if (null != attr) {
+      if (null == attr) {
+        model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+      } else {
         final AtomicReference<String> rel = new AtomicReference<String>();
         Handler<Object, Void> entityHandler = new Handler<Object, Void>() {
           @Override public Void handle(Object childEntity) {
@@ -624,42 +599,35 @@ public class RepositoryRestController implements InitializingBean {
           }
         };
         MediaType incomingMediaType = request.getHeaders().getContentType();
-        try {
-          if (uriListMediaType.equals(incomingMediaType)) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(request.getBody()));
-            String line;
-            while (null != (line = in.readLine())) {
-              String sLinkUri = line.trim();
-              Object o = resolveTopLevelResource(baseUri, sLinkUri);
-              if (null != o) {
-                entityHandler.handle(o);
-              }
-            }
-          } else if (jsonMediaType.equals(incomingMediaType)) {
-            final Map<String, List<Map<String, String>>> incoming = readIncoming(request, incomingMediaType, Map.class);
-            for (Map<String, String> link : incoming.get(LINKS)) {
-              String sLinkUri = link.get("href");
-              Object o = resolveTopLevelResource(baseUri, sLinkUri);
-              rel.set(link.get("rel"));
-              if (null != o) {
-                entityHandler.handle(o);
-              }
+        if (uriListMediaType.equals(incomingMediaType)) {
+          BufferedReader in = new BufferedReader(new InputStreamReader(request.getBody()));
+          String line;
+          while (null != (line = in.readLine())) {
+            String sLinkUri = line.trim();
+            Object o = resolveTopLevelResource(baseUri, sLinkUri);
+            if (null != o) {
+              entityHandler.handle(o);
             }
           }
-
-          repo.save(entity);
-
-          if (request.getMethod() == HttpMethod.PUT) {
-            model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
-          } else {
-            model.addAttribute(STATUS, HttpStatus.CREATED);
+        } else if (jsonMediaType.equals(incomingMediaType)) {
+          final Map<String, List<Map<String, String>>> incoming = readIncoming(request, incomingMediaType, Map.class);
+          for (Map<String, String> link : incoming.get(LINKS)) {
+            String sLinkUri = link.get("href");
+            Object o = resolveTopLevelResource(baseUri, sLinkUri);
+            rel.set(link.get("rel"));
+            if (null != o) {
+              entityHandler.handle(o);
+            }
           }
-        } catch (IOException e) {
-          model.addAttribute(STATUS, HttpStatus.INTERNAL_SERVER_ERROR);
-          LOG.error(e.getMessage(), e);
         }
-      } else {
-        model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+
+        repo.save(entity);
+
+        if (request.getMethod() == HttpMethod.PUT) {
+          model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
+        } else {
+          model.addAttribute(STATUS, HttpStatus.CREATED);
+        }
       }
     }
   }
@@ -784,10 +752,14 @@ public class RepositoryRestController implements InitializingBean {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
     } else {
       final Attribute attr = typeMeta.entityMetadata.linkedAttributes().get(property);
-      if (null != attr) {
+      if (null == attr) {
+        model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+      } else {
         // Find child entity
         CrudRepository childRepo = repositoryFromAttribute(attr);
-        if (null != childRepo) {
+        if (null == childRepo) {
+          model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+        } else {
           TypeMetaCacheEntry childTypeMeta = typeMetaEntry(childRepo);
           Serializable sChildId = stringToSerializable(childId, childTypeMeta.idType);
           Object childEntity = childRepo.findOne(sChildId);
@@ -832,11 +804,20 @@ public class RepositoryRestController implements InitializingBean {
 
             model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
           }
-        } else {
-          model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
         }
       }
     }
+  }
+
+  @SuppressWarnings({"unchecked"})
+  @ExceptionHandler(OptimisticLockingFailureException.class)
+  @ResponseBody
+  public ResponseEntity handleLockingFailure(OptimisticLockingFailureException ex) throws IOException {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    Map m = new HashMap();
+    m.put("message", ex.getMessage());
+    return new ResponseEntity(objectMapper.writeValueAsBytes(m), headers, HttpStatus.BAD_REQUEST);
   }
 
   private static URI buildUri(URI baseUri, String... pathSegments) {
@@ -854,7 +835,7 @@ public class RepositoryRestController implements InitializingBean {
 
   @SuppressWarnings({"unchecked"})
   private CrudRepository repositoryFromAttribute(Attribute attr) {
-    CrudRepository repo = null;
+    CrudRepository repo;
     if (attr instanceof PluralAttribute) {
       repo = repositoryMetadata.repositoryFor(((PluralAttribute) attr).getElementType().getJavaType());
     } else {

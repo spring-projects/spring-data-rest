@@ -73,10 +73,18 @@ class RepositoryRestControllerSpec extends Specification {
     then:
     model.status == HttpStatus.CREATED
 
+    when: "getting specific entity"
+    model.clear()
+    req = createRequest("GET", "person/1")
+    controller.entity(new ServletServerHttpRequest(req), uriBuilder, "person", "1", model)
+
+    then:
+    model.resource?.name == "John Doe"
+
     when: "updating an entity"
     model.clear()
     req = createRequest("PUT", "person/1")
-    data = mapper.writeValueAsBytes([name: "Johnnie Doe"])
+    data = mapper.writeValueAsBytes([name: "Johnnie Doe", version: 0])
     req.content = data
     controller.createOrUpdate(new ServletServerHttpRequest(req), uriBuilder, "person", "1", model)
 
@@ -91,14 +99,6 @@ class RepositoryRestControllerSpec extends Specification {
     then:
     model.status == HttpStatus.OK
     personsLinks[0].href().toString() == "http://localhost:8080/data/person/1"
-
-    when: "getting specific entity"
-    model.clear()
-    req = createRequest("GET", "person/1")
-    controller.entity(new ServletServerHttpRequest(req), uriBuilder, "person", "1", model)
-
-    then:
-    model.resource?.name == "Johnnie Doe"
 
     when: "creating child entity"
     model.clear()
