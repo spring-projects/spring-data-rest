@@ -13,4 +13,4 @@ Installation instructions are in the wiki.
 
 ### License
 
-The Spring Data Web Exporter is [Apache 2.0 licensed](http://www.apache.org/licenses/LICENSE-2.0.html).
+The Spring Data REST Exporter is [Apache 2.0 licensed](http://www.apache.org/licenses/LICENSE-2.0.html).
