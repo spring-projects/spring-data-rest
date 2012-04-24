@@ -14,8 +14,8 @@ allprojects {
   }
 
   repositories {
-    maven { url "http://repo.springframework.org/milestone" }
-    maven { url "http://repo.springframework.org/release" }
+    maven { url "http://repo.springframework.org/libs-milestone" }
+    maven { url "http://repo.springframework.org/libs-release" }
     mavenCentral()
     mavenLocal()
   }
