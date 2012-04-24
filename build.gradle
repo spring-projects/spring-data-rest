@@ -14,24 +14,45 @@ allprojects {
   }
 
   repositories {
-    mavenCentral(artifactUrls: [
-        "http://repo.springframework.org/release",
-        "http://repo.springframework.org/milestone"
-    ])
+    maven { url "http://repo.springframework.org/milestone" }
+    maven { url "http://repo.springframework.org/release" }
+    mavenCentral()
     mavenLocal()
   }
 
 }
 
-subprojects {
+configure(subprojects) { subproject ->
   apply plugin: "java"
   apply plugin: "groovy"
 
   [compileJava, compileTestJava]*.options*.debugOptions*.debugLevel = "source,lines,vars"
   [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial", "-Xlint:-unchecked"]
 
-  sourceCompatibility = 1.6
-  targetCompatibility = 1.6
+  project.sourceCompatibility = 1.6
+  project.targetCompatibility = 1.6
+
+  javadoc {
+    options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
+    options.author = true
+    options.header = project.name
+    //options.overview = "${projectDir}/src/main/java/overview.html"
+  }
+
+  task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = "sources"
+    from sourceSets.main.allJava
+  }
+
+  task javadocJar(type: Jar) {
+    classifier = "javadoc"
+    from javadoc
+  }
+
+  artifacts {
+    archives sourcesJar
+    archives javadocJar
+  }
 
   dependencies {
     groovy "org.codehaus.groovy:groovy:$groovyVersion"
@@ -48,6 +69,7 @@ subprojects {
     compile "org.springframework:spring-beans:$springVersion"
     compile "org.springframework:spring-context:$springVersion"
     compile "org.springframework:spring-core:$springVersion"
+    compile "org.springframework:spring-orm:$springVersion"
     compile "org.springframework:spring-web:$springVersion"
 
     // Testing
@@ -64,8 +86,19 @@ subprojects {
 task wrapper(type: Wrapper) { gradleVersion = "1.0-rc-1" }
 
 idea {
-  project.ipr.withXml { provider ->
-    provider.node.component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git'
+  module {
+    inheritOutputDirs = false
+    outputDir = file("build/classes/main")
+    testOutputDir = file("build/classes/test")
+    downloadJavadoc = true
+    downloadSources = true
   }
-  module.jdkName = "1.6"
+  project {
+    ipr {
+      withXml { xml ->
+        xml.node.component.find { it.@name == "VcsDirectoryMappings" }.mapping.@vcs = "Git"
+        xml.node.component.find { it.@name == "ProjectRootManager" }.output.@url = "file://\$PROJECT_DIR\$/build"
+      }
+    }
+  }
 }

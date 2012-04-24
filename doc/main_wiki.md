@@ -8,15 +8,19 @@ The Spring Data JPA Repository Web Exporter allows you to export your [JPA Repos
 
 To use the Spring Data Web Exporter, you need to build a WAR file. Start by cloning the base web application project that contains the web.xml file you'll need to run the Web Exporter: [https://github.com/SpringSource/spring-data-rest-webmvc](https://github.com/SpringSource/spring-data-rest-webmvc).
 
-    git clone https://github.com/SpringSource/spring-data-rest-web.git
-    cd spring-data-rest-web
+    git clone https://github.com/SpringSource/spring-data-rest-webmvc.git
+    cd spring-data-rest-webmvc
     ./gradlew war
 
 Deploy the built WAR file to your servlet container:
 
-    cp build/libs/spring-data-rest-webmvc-1.0.0.BUILD-SNAPSHOT.war $TOMCAT_HOME/webapps/data.war
+    cp build/libs/spring-data-rest-webmvc-1.0.0.M1.war $TOMCAT_HOME/webapps/data.war
     cd $TOMCAT_HOME
     bin/catalina.sh run
+
+You can also deploy to a Jetty web container embedded in the build:
+
+    ./gradlew jettyRun
 
  The WAR file has a couple example domain classes and exposes a couple repositories by default. You can verify that this configuration is working by issuing an HTTP GET to the root of the web application:
 
@@ -189,7 +193,7 @@ Retrieving the linked entity gives us a JSON representation of the entity, as we
 
 ### Updating relationships
 
-To maintain a relationship between two entities, access the resource of the relationship by using the id of the entity as the last element in the resource path. For example, to add a link to a Profile with id 3 to a Person with id 1, issue a POST to the "profiles" resource and include in the body of the request a list of resource paths to entities you want to link to (make sure to use the special Content-Type "text/uri-list" which, as the name implies, is a representation of a list of URIs):
+To maintain a relationship between two entities, access the resource of the relationship by using the id of the entity as the last element in the resource path. For example, to add a link to a Profile with id 3 to a Person with id 1, issue a POST to the "profiles" resource and include in the body of the request a list of resource paths to entities you want to link to (make sure to use the [special Content-Type "text/uri-list"](http://www.ietf.org/rfc/rfc2483.txt) which, as the name implies, is a representation of a list of URIs):
 
     curl -v -X POST -H "Content-Type: text/uri-list" -d "http://localhost:8080/data/profile/3" http://localhost:8080/data/person/1/profiles
 
