@@ -37,10 +37,10 @@ import org.springframework.data.rest.core.util.UriUtils;
 import org.springframework.data.rest.repository.JpaEntityMetadata;
 import org.springframework.data.rest.repository.JpaRepositoryMetadata;
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
-import org.springframework.data.rest.repository.context.AfterChildSaveEvent;
+import org.springframework.data.rest.repository.context.AfterLinkSaveEvent;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
 import org.springframework.data.rest.repository.context.AfterSaveEvent;
-import org.springframework.data.rest.repository.context.BeforeChildSaveEvent;
+import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.http.HttpHeaders;
@@ -686,12 +686,12 @@ public class RepositoryRestController
 
         if (null != eventPublisher) {
           eventPublisher.publishEvent(new BeforeSaveEvent(entity));
-          eventPublisher.publishEvent(new BeforeChildSaveEvent(entity, child));
+          eventPublisher.publishEvent(new BeforeLinkSaveEvent(entity, child));
         }
         Object savedEntity = repo.save(entity);
         if (null != eventPublisher) {
           child = typeMeta.entityMetadata.get(attr.getName(), savedEntity);
-          eventPublisher.publishEvent(new AfterChildSaveEvent(savedEntity, child));
+          eventPublisher.publishEvent(new AfterLinkSaveEvent(savedEntity, child));
           eventPublisher.publishEvent(new AfterSaveEvent(savedEntity));
         }
 
@@ -734,11 +734,11 @@ public class RepositoryRestController
         typeMeta.entityMetadata.set(property, null, entity);
 
         if (null != eventPublisher) {
-          eventPublisher.publishEvent(new BeforeChildSaveEvent(entity, child));
+          eventPublisher.publishEvent(new BeforeLinkSaveEvent(entity, child));
         }
         Object savedEntity = repo.save(entity);
         if (null != eventPublisher) {
-          eventPublisher.publishEvent(new AfterChildSaveEvent(savedEntity, null));
+          eventPublisher.publishEvent(new AfterLinkSaveEvent(savedEntity, null));
         }
 
         model.addAttribute(STATUS, HttpStatus.NO_CONTENT);

@@ -68,13 +68,13 @@ public class ValidatingRepositoryEventListener
     validate("afterSave", entity);
   }
 
-  @Override protected void onBeforeChildSave(Object parent, Object child) {
-    LOG.info("onBeforeChildSave: " + parent + "/" + child);
+  @Override protected void onBeforeLinkSave(Object parent, Object linked) {
+    LOG.info("onBeforeLinkSave: " + parent + "/" + linked);
     validate("beforeChildSave", parent);
   }
 
-  @Override protected void onAfterChildSave(Object parent, Object child) {
-    LOG.info("onAfterChildSave: " + parent + "/" + child);
+  @Override protected void onAfterLinkSave(Object parent, Object linked) {
+    LOG.info("onAfterLinkSave: " + parent + "/" + linked);
     validate("afterChildSave", parent);
   }
 

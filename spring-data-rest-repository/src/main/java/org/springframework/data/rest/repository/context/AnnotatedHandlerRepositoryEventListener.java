@@ -17,10 +17,10 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.data.rest.repository.annotation.HandleAfterChildSave;
+import org.springframework.data.rest.repository.annotation.HandleAfterLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleAfterDelete;
 import org.springframework.data.rest.repository.annotation.HandleAfterSave;
-import org.springframework.data.rest.repository.annotation.HandleBeforeChildSave;
+import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.repository.annotation.HandleBeforeSave;
 import org.springframework.data.rest.repository.annotation.RepositoryEventHandler;
@@ -80,8 +80,8 @@ public class AnnotatedHandlerRepositoryEventListener
                 @Override public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
                   inspect(targetType, handler, method, HandleBeforeSave.class, BeforeSaveEvent.class);
                   inspect(targetType, handler, method, HandleAfterSave.class, AfterSaveEvent.class);
-                  inspect(targetType, handler, method, HandleBeforeChildSave.class, BeforeChildSaveEvent.class);
-                  inspect(targetType, handler, method, HandleAfterChildSave.class, AfterChildSaveEvent.class);
+                  inspect(targetType, handler, method, HandleBeforeLinkSave.class, BeforeLinkSaveEvent.class);
+                  inspect(targetType, handler, method, HandleAfterLinkSave.class, AfterLinkSaveEvent.class);
                   inspect(targetType, handler, method, HandleBeforeDelete.class, BeforeDeleteEvent.class);
                   inspect(targetType, handler, method, HandleAfterDelete.class, AfterDeleteEvent.class);
                 }
@@ -109,10 +109,10 @@ public class AnnotatedHandlerRepositoryEventListener
           if (ClassUtils.isAssignable(handlerMethod.targetType, src.getClass())) {
             List<Object> params = new ArrayList<Object>();
             params.add(src);
-            if (event instanceof BeforeChildSaveEvent) {
-              params.add(((BeforeChildSaveEvent) event).getChild());
-            } else if (event instanceof AfterChildSaveEvent) {
-              params.add(((AfterChildSaveEvent) event).getChild());
+            if (event instanceof BeforeLinkSaveEvent) {
+              params.add(((BeforeLinkSaveEvent) event).getLinked());
+            } else if (event instanceof AfterLinkSaveEvent) {
+              params.add(((AfterLinkSaveEvent) event).getLinked());
             }
             handlerMethod.method.invoke(handlerMethod.handler, params.toArray());
           }

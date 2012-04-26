@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface HandleBeforeChildSave {
+public @interface HandleAfterLinkSave {
 
   Class<?>[] value() default {};
 

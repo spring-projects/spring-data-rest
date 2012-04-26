@@ -45,10 +45,10 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
       onBeforeSave(event.getSource());
     } else if (event instanceof AfterSaveEvent) {
       onAfterSave(event.getSource());
-    } else if (event instanceof BeforeChildSaveEvent) {
-      onBeforeChildSave(event.getSource(), ((BeforeChildSaveEvent) event).getChild());
-    } else if (event instanceof AfterChildSaveEvent) {
-      onAfterChildSave(event.getSource(), ((AfterChildSaveEvent) event).getChild());
+    } else if (event instanceof BeforeLinkSaveEvent) {
+      onBeforeLinkSave(event.getSource(), ((BeforeLinkSaveEvent) event).getLinked());
+    } else if (event instanceof AfterLinkSaveEvent) {
+      onAfterLinkSave(event.getSource(), ((AfterLinkSaveEvent) event).getLinked());
     } else if (event instanceof BeforeDeleteEvent) {
       onBeforeDelete(event.getSource());
     } else if (event instanceof AfterDeleteEvent) {
@@ -60,9 +60,9 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
 
   protected void onAfterSave(Object entity) {}
 
-  protected void onBeforeChildSave(Object parent, Object child) {}
+  protected void onBeforeLinkSave(Object parent, Object linked) {}
 
-  protected void onAfterChildSave(Object parent, Object child) {}
+  protected void onAfterLinkSave(Object parent, Object linked) {}
 
   protected void onBeforeDelete(Object entity) {}
 
