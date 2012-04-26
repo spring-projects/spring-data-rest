@@ -25,4 +25,22 @@
   -->
   <bean id="beforeSavePersonValidator" class="org.springframework.data.rest.test.webmvc.PersonValidator"/>
 
+  <!--
+    The manual configuration (which doesn't look at the bean name) can be done by declaring the
+    event listener instance yourself. It's significantly more XML, but if you need more control:
+  -->
+  <!--
+  <bean class="org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener">
+    <property name="validators">
+      <map>
+        <entry key="beforeSave">
+          <list>
+            <bean class="org.springframework.data.rest.test.webmvc.PersonValidator"/>
+          </list>
+        </entry>
+      </map>
+    </property>
+  </bean>
+  -->
+
 </beans>
