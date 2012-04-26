@@ -35,7 +35,7 @@ configure(subprojects) { subproject ->
   javadoc {
     options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
     options.author = true
-    options.header = project.name
+    options.header = subproject.name
     //options.overview = "${projectDir}/src/main/java/overview.html"
   }
 
@@ -90,7 +90,7 @@ idea {
     inheritOutputDirs = false
     outputDir = file("build/classes/main")
     testOutputDir = file("build/classes/test")
-    downloadJavadoc = true
+    downloadJavadoc = false
     downloadSources = true
   }
   project {

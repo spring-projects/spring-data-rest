@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,12 +21,13 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Jon Brisbin <jon@jbrisbin.com>
  */
-public class JpaRepositoryMetadata implements InitializingBean, ApplicationContextAware {
+public class JpaRepositoryMetadata
+    implements InitializingBean,
+               ApplicationContextAware {
 
   private ApplicationContext applicationContext;
   private Map<Class<?>, RepositoryCacheEntry> repositories = new HashMap<Class<?>, RepositoryCacheEntry>();
@@ -125,8 +125,10 @@ public class JpaRepositoryMetadata implements InitializingBean, ApplicationConte
     return names;
   }
 
-  public void setRepositories(Collection<? extends CrudRepository> repositories) {
-    for (CrudRepository repository : repositories) {
+  public void setRepositories(Map<String, CrudRepository> repositories) {
+    for (Map.Entry<String, CrudRepository> entry : repositories.entrySet()) {
+      String name = entry.getKey();
+      CrudRepository repository = entry.getValue();
       Class<?> repoClass = AopUtils.getTargetClass(repository);
       Field infoField = ReflectionUtils.findField(repoClass, "entityInformation");
       ReflectionUtils.makeAccessible(infoField);
@@ -136,7 +138,10 @@ public class JpaRepositoryMetadata implements InitializingBean, ApplicationConte
         SingletonTargetSource targetRepo = (SingletonTargetSource) m.invoke(repository);
         EntityInformation entityInfo = (EntityInformation) infoField.get(targetRepo.getTarget());
         Class<?>[] intfs = repository.getClass().getInterfaces();
-        String name = StringUtils.uncapitalize(intfs[0].getSimpleName().replaceAll("Repository", ""));
+        //String name = StringUtils.uncapitalize(intfs[0].getSimpleName().replaceAll("Repository", ""));
+        if (name.contains("Repository")) {
+          name = name.replaceAll("Repository", "");
+        }
         this.repositories.put(entityInfo.getJavaType(), new RepositoryCacheEntry(name, repository, entityInfo, null));
       } catch (Throwable t) {
         throw new IllegalStateException(t);
@@ -149,7 +154,7 @@ public class JpaRepositoryMetadata implements InitializingBean, ApplicationConte
       ApplicationContext appCtx = applicationContext;
       while (null != appCtx) {
         Map<String, CrudRepository> beans = appCtx.getBeansOfType(CrudRepository.class);
-        setRepositories(beans.values());
+        setRepositories(beans);
         appCtx = appCtx.getParent();
       }
     }

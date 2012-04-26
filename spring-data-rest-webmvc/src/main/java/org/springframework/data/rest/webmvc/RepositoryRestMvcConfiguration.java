@@ -1,24 +1,12 @@
 package org.springframework.data.rest.webmvc;
 
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import javax.persistence.EntityManagerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.rest.repository.JpaRepositoryMetadata;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
-import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver;
@@ -37,21 +25,23 @@ public class RepositoryRestMvcConfiguration {
   @Autowired
   RepositoryRestConfiguration parentConfig;
   RepositoryRestController repositoryRestController;
+  @Autowired(required = false)
+  ContentNegotiatingViewResolver viewResolver;
 
   @Bean ContentNegotiatingViewResolver contentNegotiatingViewResolver() {
-    ContentNegotiatingViewResolver viewResolver = new ContentNegotiatingViewResolver();
-    Map<String, String> jsonTypes = new HashMap<String, String>() {{
-      put("json", "application/json");
-      put("sdjson", "application/x-spring-data+json");
-      put("urilist", "text/uri-list");
-    }};
+    if (null == viewResolver) {
+      viewResolver = new ContentNegotiatingViewResolver();
+      Map<String, String> jsonTypes = new HashMap<String, String>() {{
+        put("json", "application/json");
+        put("urilist", "text/uri-list");
+      }};
 
-    viewResolver.setMediaTypes(jsonTypes);
-    viewResolver.setDefaultViews(
-        Arrays.asList((View) new JsonView("application/json"),
-                      (View) new JsonView("application/x-spring-data+json"),
-                      (View) new UriListView())
-    );
+      viewResolver.setMediaTypes(jsonTypes);
+      viewResolver.setDefaultViews(
+          Arrays.asList((View) new JsonView("application/json"),
+                        (View) new UriListView())
+      );
+    }
     return viewResolver;
   }
 
@@ -61,6 +51,7 @@ public class RepositoryRestMvcConfiguration {
           .repositoryMetadata(parentConfig.jpaRepositoryMetadata())
           .conversionService(parentConfig.conversionService())
           .httpMessageConverters(parentConfig.httpMessageConverters())
+          .viewResolver(contentNegotiatingViewResolver())
           .jsonMediaType("application/json");
     }
     return repositoryRestController;

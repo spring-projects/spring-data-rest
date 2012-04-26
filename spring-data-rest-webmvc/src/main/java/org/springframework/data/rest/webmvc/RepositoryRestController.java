@@ -23,6 +23,8 @@ import javax.persistence.metamodel.SingularAttribute;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -34,6 +36,13 @@ import org.springframework.data.rest.core.SimpleLink;
 import org.springframework.data.rest.core.util.UriUtils;
 import org.springframework.data.rest.repository.JpaEntityMetadata;
 import org.springframework.data.rest.repository.JpaRepositoryMetadata;
+import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
+import org.springframework.data.rest.repository.context.AfterChildSaveEvent;
+import org.springframework.data.rest.repository.context.AfterDeleteEvent;
+import org.springframework.data.rest.repository.context.AfterSaveEvent;
+import org.springframework.data.rest.repository.context.BeforeChildSaveEvent;
+import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
+import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpMethod;
@@ -44,21 +53,26 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Jon Brisbin <jon@jbrisbin.com>
  */
 @Controller
-public class RepositoryRestController implements InitializingBean {
+public class RepositoryRestController
+    implements ApplicationEventPublisherAware,
+               InitializingBean {
 
   public static final String STATUS = "status";
   public static final String HEADERS = "headers";
@@ -67,13 +81,20 @@ public class RepositoryRestController implements InitializingBean {
   public static final String SELF = "self";
   public static final String LINKS = "_links";
 
+  private ApplicationEventPublisher eventPublisher;
+
   private MediaType uriListMediaType = MediaType.parseMediaType("text/uri-list");
   private MediaType jsonMediaType = MediaType.parseMediaType("application/x-spring-data+json");
   private JpaRepositoryMetadata repositoryMetadata;
   private Map<CrudRepository, TypeMetaCacheEntry> typeMetaCache = new ConcurrentHashMap<CrudRepository, TypeMetaCacheEntry>();
   private ConversionService conversionService = new DefaultConversionService();
   private List<HttpMessageConverter<?>> httpMessageConverters;
+  private ContentNegotiatingViewResolver viewResolver;
   private ObjectMapper objectMapper = new ObjectMapper();
+
+  @Override public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
+    this.eventPublisher = eventPublisher;
+  }
 
   public JpaRepositoryMetadata getRepositoryMetadata() {
     return repositoryMetadata;
@@ -123,6 +144,23 @@ public class RepositoryRestController implements InitializingBean {
 
   public RepositoryRestController httpMessageConverters(List<HttpMessageConverter<?>> httpMessageConverters) {
     this.httpMessageConverters = httpMessageConverters;
+    return this;
+  }
+
+  public ContentNegotiatingViewResolver getViewResolver() {
+    return viewResolver;
+  }
+
+  public void setViewResolver(ContentNegotiatingViewResolver viewResolver) {
+    this.viewResolver = viewResolver;
+  }
+
+  public ContentNegotiatingViewResolver viewResolver() {
+    return viewResolver;
+  }
+
+  public RepositoryRestController viewResolver(ContentNegotiatingViewResolver viewResolver) {
+    this.viewResolver = viewResolver;
     return this;
   }
 
@@ -263,7 +301,13 @@ public class RepositoryRestController implements InitializingBean {
     if (null == incoming) {
       model.addAttribute(STATUS, HttpStatus.NOT_ACCEPTABLE);
     } else {
+      if (null != eventPublisher) {
+        eventPublisher.publishEvent(new BeforeSaveEvent(incoming));
+      }
       Object savedEntity = repo.save(incoming);
+      if (null != eventPublisher) {
+        eventPublisher.publishEvent(new AfterSaveEvent(savedEntity));
+      }
       String sId = typeMeta.entityInfo.getId(savedEntity).toString();
 
       URI selfUri = buildUri(baseUri, repository, sId);
@@ -384,14 +428,26 @@ public class RepositoryRestController implements InitializingBean {
       } else {
         typeMeta.entityMetadata.id(serId, incoming);
         if (request.getMethod() == HttpMethod.POST) {
-          repo.save(incoming);
+          if (null != eventPublisher) {
+            eventPublisher.publishEvent(new BeforeSaveEvent(incoming));
+          }
+          Object savedEntity = repo.save(incoming);
+          if (null != eventPublisher) {
+            eventPublisher.publishEvent(new AfterSaveEvent(savedEntity));
+          }
           URI selfUri = buildUri(baseUri, repository, id);
           HttpHeaders headers = new HttpHeaders();
           headers.set(LOCATION, selfUri.toString());
           model.addAttribute(HEADERS, headers);
           model.addAttribute(STATUS, HttpStatus.CREATED);
         } else {
-          repo.save(incoming);
+          if (null != eventPublisher) {
+            eventPublisher.publishEvent(new BeforeSaveEvent(incoming));
+          }
+          Object savedEntity = repo.save(incoming);
+          if (null != eventPublisher) {
+            eventPublisher.publishEvent(new AfterSaveEvent(savedEntity));
+          }
           model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
         }
       }
@@ -415,7 +471,13 @@ public class RepositoryRestController implements InitializingBean {
     TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
     Serializable serId = stringToSerializable(id, typeMeta.idType);
 
+    if (null != eventPublisher) {
+      eventPublisher.publishEvent(new BeforeDeleteEvent(serId));
+    }
     repo.delete(serId);
+    if (null != eventPublisher) {
+      eventPublisher.publishEvent(new AfterDeleteEvent(serId));
+    }
 
     model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
   }
@@ -547,6 +609,7 @@ public class RepositoryRestController implements InitializingBean {
       if (null == attr) {
         model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
       } else {
+        Object child = typeMeta.entityMetadata.get(attr.getName(), entity);
         final AtomicReference<String> rel = new AtomicReference<String>();
         Handler<Object, Void> entityHandler = new Handler<Object, Void>() {
           @Override public Void handle(Object childEntity) {
@@ -621,7 +684,16 @@ public class RepositoryRestController implements InitializingBean {
           }
         }
 
-        repo.save(entity);
+        if (null != eventPublisher) {
+          eventPublisher.publishEvent(new BeforeSaveEvent(entity));
+          eventPublisher.publishEvent(new BeforeChildSaveEvent(entity, child));
+        }
+        Object savedEntity = repo.save(entity);
+        if (null != eventPublisher) {
+          child = typeMeta.entityMetadata.get(attr.getName(), savedEntity);
+          eventPublisher.publishEvent(new AfterChildSaveEvent(savedEntity, child));
+          eventPublisher.publishEvent(new AfterSaveEvent(savedEntity));
+        }
 
         if (request.getMethod() == HttpMethod.PUT) {
           model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
@@ -658,9 +730,16 @@ public class RepositoryRestController implements InitializingBean {
     } else {
       final Attribute attr = typeMeta.entityMetadata.linkedAttributes().get(property);
       if (null != attr) {
+        Object child = typeMeta.entityMetadata.get(property, entity);
         typeMeta.entityMetadata.set(property, null, entity);
 
-        repo.save(entity);
+        if (null != eventPublisher) {
+          eventPublisher.publishEvent(new BeforeChildSaveEvent(entity, child));
+        }
+        Object savedEntity = repo.save(entity);
+        if (null != eventPublisher) {
+          eventPublisher.publishEvent(new AfterChildSaveEvent(savedEntity, null));
+        }
 
         model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
       } else {
@@ -817,7 +896,24 @@ public class RepositoryRestController implements InitializingBean {
     headers.setContentType(MediaType.APPLICATION_JSON);
     Map m = new HashMap();
     m.put("message", ex.getMessage());
-    return new ResponseEntity(objectMapper.writeValueAsBytes(m), headers, HttpStatus.BAD_REQUEST);
+    return new ResponseEntity(objectMapper.writeValueAsBytes(m), headers, HttpStatus.CONFLICT);
+  }
+
+  @SuppressWarnings({"unchecked"})
+  @ExceptionHandler(RepositoryConstraintViolationException.class)
+  public Model handleValidationFailure(RepositoryConstraintViolationException ex) throws IOException {
+    Model model = new ExtendedModelMap();
+    model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
+
+    Map m = new HashMap();
+    List<String> errors = new ArrayList<String>();
+    for (FieldError fe : ex.getErrors().getFieldErrors()) {
+      errors.add(fe.getDefaultMessage());
+    }
+    m.put("errors", errors);
+
+    model.addAttribute(RESOURCE, m);
+    return model;
   }
 
   private static URI buildUri(URI baseUri, String... pathSegments) {

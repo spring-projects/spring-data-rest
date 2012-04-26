@@ -3,8 +3,11 @@ package org.springframework.data.rest.webmvc.spec
 import org.codehaus.jackson.map.ObjectMapper
 import org.codehaus.jackson.map.ser.CustomSerializerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.data.rest.core.SimpleLink
 import org.springframework.data.rest.core.util.FluentBeanSerializer
+import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener
 import org.springframework.data.rest.test.webmvc.Address
 import org.springframework.data.rest.webmvc.RepositoryRestConfiguration
 import org.springframework.data.rest.webmvc.RepositoryRestController
@@ -22,7 +25,7 @@ import spock.lang.Specification
 /**
  * @author Jon Brisbin <jon@jbrisbin.com>
  */
-@ContextConfiguration(classes = [RepositoryRestConfiguration, RepositoryRestMvcConfiguration])
+@ContextConfiguration(classes = [RepositoryRestConfiguration, RepositoryRestMvcConfiguration, RepositorySpecConfig])
 class RepositoryRestControllerSpec extends Specification {
 
   @Shared
@@ -129,6 +132,15 @@ class RepositoryRestControllerSpec extends Specification {
     then:
     addrLinks.size() == 1
 
+  }
+
+}
+
+@Configuration
+class RepositorySpecConfig {
+
+  @Bean ValidatingRepositoryEventListener validator() {
+    new ValidatingRepositoryEventListener()
   }
 
 }
