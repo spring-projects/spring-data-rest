@@ -12,6 +12,7 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.rest.repository.JpaRepositoryMetadata;
+import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
@@ -33,6 +34,8 @@ public class RepositoryRestConfiguration {
   ConversionService defaultConversionService = new DefaultConversionService();
   @Autowired(required = false)
   List<HttpMessageConverter<?>> httpMessageConverters = new ArrayList<HttpMessageConverter<?>>();
+  @Autowired(required = false)
+  ValidatingRepositoryEventListener validatingRepositoryEventListener;
 
   @Bean ConversionService conversionService() {
     if (null != customConversionService) {
@@ -58,6 +61,13 @@ public class RepositoryRestConfiguration {
       jpaRepositoryMetadata = new JpaRepositoryMetadata();
     }
     return jpaRepositoryMetadata;
+  }
+
+  @Bean ValidatingRepositoryEventListener validatingRepositoryEventListener() {
+    if (null == validatingRepositoryEventListener) {
+      validatingRepositoryEventListener = new ValidatingRepositoryEventListener();
+    }
+    return validatingRepositoryEventListener;
   }
 
   @Bean PersistenceAnnotationBeanPostProcessor persistenceAnnotationBeanPostProcessor() {

@@ -64,27 +64,22 @@ public class ValidatingRepositoryEventListener
   }
 
   @Override protected void onAfterSave(Object entity) {
-    LOG.info("onAfterSave: " + entity);
     validate("afterSave", entity);
   }
 
   @Override protected void onBeforeLinkSave(Object parent, Object linked) {
-    LOG.info("onBeforeLinkSave: " + parent + "/" + linked);
     validate("beforeChildSave", parent);
   }
 
   @Override protected void onAfterLinkSave(Object parent, Object linked) {
-    LOG.info("onAfterLinkSave: " + parent + "/" + linked);
     validate("afterChildSave", parent);
   }
 
   @Override protected void onBeforeDelete(Object entity) {
-    LOG.info("onBeforeDelete: " + entity);
     validate("beforeDelete", entity);
   }
 
   @Override protected void onAfterDelete(Object entity) {
-    LOG.info("onAfterDelete: " + entity);
     validate("afterDelete", entity);
   }
 

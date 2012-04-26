@@ -11,14 +11,4 @@
 
   <bean id="beforeSavePersonValidator" class="org.springframework.data.rest.test.webmvc.PersonValidator"/>
 
-  <bean class="org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener"/>
-
-  <!--
-  <bean class="org.springframework.data.rest.test.webmvc.PersonLoader">
-    <property name="personRepository" ref="personRepository"/>
-    <property name="profileRepository" ref="profileRepository"/>
-    <property name="addressRepository" ref="addressRepository"/>
-  </bean>
-  -->
-
 </beans>
