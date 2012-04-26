@@ -9,6 +9,20 @@
 
   <jpa:repositories base-package="org.springframework.data.rest.test.webmvc"/>
 
+  <!--
+    This validator will be picked up automatically. The default configuration is to look at the bean name
+    and figure out what event you're interested in. This validator is interested in 'beforeSave' events
+    because the word 'beforeSave' appears in the first part of the bean name. It recognizes:
+
+      - beforeSave
+      - afterSave
+      - beforeDelete
+      - afterDelete
+      - beforeLinkSave
+      - afterLinkSave
+
+    What you put after that doesn't matter, you just need to make the bean name unique, of course.
+  -->
   <bean id="beforeSavePersonValidator" class="org.springframework.data.rest.test.webmvc.PersonValidator"/>
 
 </beans>

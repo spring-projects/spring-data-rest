@@ -68,11 +68,11 @@ public class ValidatingRepositoryEventListener
   }
 
   @Override protected void onBeforeLinkSave(Object parent, Object linked) {
-    validate("beforeChildSave", parent);
+    validate("beforeLinkSave", parent);
   }
 
   @Override protected void onAfterLinkSave(Object parent, Object linked) {
-    validate("afterChildSave", parent);
+    validate("afterLinkSave", parent);
   }
 
   @Override protected void onBeforeDelete(Object entity) {
