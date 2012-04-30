@@ -86,9 +86,10 @@ public class ValidatingRepositoryEventListener
   private Errors validate(String event, Object entity) {
     Errors errors = null;
     if (null != entity) {
-      errors = new ValidationErrors(entity.getClass().getSimpleName(),
+      Class<?> domainType = entity.getClass();
+      errors = new ValidationErrors(domainType.getSimpleName(),
                                     entity,
-                                    repositoryMetadata.entityMetadataFor(entity.getClass()));
+                                    repositoryMetadataFor(domainType).entityMetadata());
       Collection<Validator> validators = this.validators.get(event);
       if (null != validators) {
         for (Validator v : validators) {

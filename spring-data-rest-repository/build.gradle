@@ -17,6 +17,6 @@ dependencies {
 
   // Testing
   testCompile "org.hibernate:hibernate-entitymanager:$hibernateVersion"
-  testCompile "org.hsqldb:hsqldb:1.8.0.10"
+  testCompile "org.hsqldb:hsqldb:2.2.8"
 
 }

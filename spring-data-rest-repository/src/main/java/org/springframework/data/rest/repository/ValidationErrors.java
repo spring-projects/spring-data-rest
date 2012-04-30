@@ -15,11 +15,11 @@ public class ValidationErrors extends AbstractErrors {
 
   private String name;
   private Object entity;
-  private JpaEntityMetadata entityMetadata;
+  private EntityMetadata entityMetadata;
   private List<ObjectError> globalErrors = new ArrayList<ObjectError>();
   private List<FieldError> fieldErrors = new ArrayList<FieldError>();
 
-  public ValidationErrors(String name, Object entity, JpaEntityMetadata entityMetadata) {
+  public ValidationErrors(String name, Object entity, EntityMetadata entityMetadata) {
     this.name = name;
     this.entity = entity;
     this.entityMetadata = entityMetadata;
@@ -56,6 +56,6 @@ public class ValidationErrors extends AbstractErrors {
   }
 
   @Override public Object getFieldValue(String field) {
-    return entityMetadata.get(field, entity);
+    return entityMetadata.attribute(field).get(entity);
   }
 }

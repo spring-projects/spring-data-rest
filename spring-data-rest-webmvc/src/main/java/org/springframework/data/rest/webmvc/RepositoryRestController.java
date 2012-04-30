@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,12 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.PluralAttribute;
-import javax.persistence.metamodel.SingularAttribute;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.InitializingBean;
@@ -29,19 +25,21 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.rest.core.Handler;
 import org.springframework.data.rest.core.Link;
 import org.springframework.data.rest.core.SimpleLink;
 import org.springframework.data.rest.core.util.UriUtils;
-import org.springframework.data.rest.repository.JpaEntityMetadata;
-import org.springframework.data.rest.repository.JpaRepositoryMetadata;
+import org.springframework.data.rest.repository.AttributeMetadata;
+import org.springframework.data.rest.repository.EntityMetadata;
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
-import org.springframework.data.rest.repository.context.AfterLinkSaveEvent;
+import org.springframework.data.rest.repository.RepositoryExporter;
+import org.springframework.data.rest.repository.RepositoryExporterSupport;
+import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
+import org.springframework.data.rest.repository.context.AfterLinkSaveEvent;
 import org.springframework.data.rest.repository.context.AfterSaveEvent;
-import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
+import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
@@ -63,7 +61,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -71,6 +68,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Controller
 public class RepositoryRestController
+    extends RepositoryExporterSupport<RepositoryRestController>
     implements ApplicationEventPublisherAware,
                InitializingBean {
 
@@ -85,32 +83,12 @@ public class RepositoryRestController
 
   private MediaType uriListMediaType = MediaType.parseMediaType("text/uri-list");
   private MediaType jsonMediaType = MediaType.parseMediaType("application/x-spring-data+json");
-  private JpaRepositoryMetadata repositoryMetadata;
-  private Map<CrudRepository, TypeMetaCacheEntry> typeMetaCache = new ConcurrentHashMap<CrudRepository, TypeMetaCacheEntry>();
   private ConversionService conversionService = new DefaultConversionService();
-  private List<HttpMessageConverter<?>> httpMessageConverters;
-  private ContentNegotiatingViewResolver viewResolver;
+  private List<HttpMessageConverter<?>> httpMessageConverters = Collections.emptyList();
   private ObjectMapper objectMapper = new ObjectMapper();
 
   @Override public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
     this.eventPublisher = eventPublisher;
-  }
-
-  public JpaRepositoryMetadata getRepositoryMetadata() {
-    return repositoryMetadata;
-  }
-
-  public void setRepositoryMetadata(JpaRepositoryMetadata repositoryMetadata) {
-    this.repositoryMetadata = repositoryMetadata;
-  }
-
-  public JpaRepositoryMetadata repositoryMetadata() {
-    return repositoryMetadata;
-  }
-
-  public RepositoryRestController repositoryMetadata(JpaRepositoryMetadata repositoryMetadata) {
-    this.repositoryMetadata = repositoryMetadata;
-    return this;
   }
 
   public ConversionService getConversionService() {
@@ -144,23 +122,6 @@ public class RepositoryRestController
 
   public RepositoryRestController httpMessageConverters(List<HttpMessageConverter<?>> httpMessageConverters) {
     this.httpMessageConverters = httpMessageConverters;
-    return this;
-  }
-
-  public ContentNegotiatingViewResolver getViewResolver() {
-    return viewResolver;
-  }
-
-  public void setViewResolver(ContentNegotiatingViewResolver viewResolver) {
-    this.viewResolver = viewResolver;
-  }
-
-  public ContentNegotiatingViewResolver viewResolver() {
-    return viewResolver;
-  }
-
-  public RepositoryRestController viewResolver(ContentNegotiatingViewResolver viewResolver) {
-    this.viewResolver = viewResolver;
     return this;
   }
 
@@ -220,6 +181,7 @@ public class RepositoryRestController
     Assert.notNull(httpMessageConverters, "HttpMessageConverters cannot be null");
   }
 
+  @SuppressWarnings({"unchecked"})
   @RequestMapping(
       value = "/",
       method = RequestMethod.GET,
@@ -232,8 +194,10 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     Links links = new Links();
-    for (String name : repositoryMetadata.repositoryNames()) {
-      links.add(new SimpleLink(name, buildUri(baseUri, name)));
+    for (RepositoryExporter repoMeta : repositoryExporters) {
+      for (String name : (Set<String>) repoMeta.repositoryNames()) {
+        links.add(new SimpleLink(name, buildUri(baseUri, name)));
+      }
     }
 
     model.addAttribute(STATUS, HttpStatus.OK);
@@ -253,20 +217,13 @@ public class RepositoryRestController
                            Model model) {
     URI baseUri = uriBuilder.build().toUri();
 
-    final CrudRepository repo = repositoryMetadata.repositoryFor(repository);
-    if (null == repo) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
-      return;
-    }
-
-    final TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
-
+    RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Links links = new Links();
 
-    Iterator iter = repo.findAll().iterator();
+    Iterator iter = ((CrudRepository) repoMeta.repository()).findAll().iterator();
     while (iter.hasNext()) {
       Object o = iter.next();
-      Serializable id = typeMeta.entityInfo.getId(o);
+      Serializable id = (Serializable) repoMeta.entityMetadata().idAttribute().get(o);
       links.add(new SimpleLink(o.getClass().getSimpleName(), buildUri(baseUri, repository, id.toString())));
     }
 
@@ -288,16 +245,10 @@ public class RepositoryRestController
                      Model model) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
 
-    CrudRepository repo = repositoryMetadata.repositoryFor(repository);
-    if (null == repo) {
-      model.addAttribute(STATUS, HttpStatus.NOT_IMPLEMENTED);
-      return;
-    }
-
-    final TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
-
+    RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    CrudRepository repo = (CrudRepository) repoMeta.repository();
     MediaType incomingMediaType = request.getHeaders().getContentType();
-    final Object incoming = readIncoming(request, incomingMediaType, typeMeta.domainClass);
+    final Object incoming = readIncoming(request, incomingMediaType, repoMeta.entityMetadata().type());
     if (null == incoming) {
       model.addAttribute(STATUS, HttpStatus.NOT_ACCEPTABLE);
     } else {
@@ -308,7 +259,7 @@ public class RepositoryRestController
       if (null != eventPublisher) {
         eventPublisher.publishEvent(new AfterSaveEvent(savedEntity));
       }
-      String sId = typeMeta.entityInfo.getId(savedEntity).toString();
+      String sId = repoMeta.entityMetadata().idAttribute().get(savedEntity).toString();
 
       URI selfUri = buildUri(baseUri, repository, sId);
 
@@ -335,21 +286,18 @@ public class RepositoryRestController
                      Model model) {
     URI baseUri = uriBuilder.build().toUri();
 
-    CrudRepository repo = repositoryMetadata.repositoryFor(repository);
-    if (null == repo) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
-      return;
-    }
-
-    TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
-
-    Serializable serId = stringToSerializable(id, typeMeta.idType);
+    RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    Serializable serId = stringToSerializable(id,
+                                              (Class<? extends Serializable>) repoMeta.entityMetadata()
+                                                  .idAttribute()
+                                                  .type());
+    CrudRepository repo = (CrudRepository) repoMeta.repository();
     Object entity = repo.findOne(serId);
     if (null == entity) {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
     } else {
       HttpHeaders headers = new HttpHeaders();
-      Object version = typeMeta.entityMetadata.version(entity);
+      Object version = repoMeta.entityMetadata().versionAttribute().get(entity);
       if (null != version) {
         List<String> etags = request.getHeaders().getIfNoneMatch();
         for (String etag : etags) {
@@ -361,7 +309,7 @@ public class RepositoryRestController
         headers.set("ETag", "\"" + version.toString() + "\"");
       }
       Map<String, Object> entityDto = extractPropertiesLinkAware(entity,
-                                                                 typeMeta.entityMetadata,
+                                                                 repoMeta.entityMetadata(),
                                                                  UriComponentsBuilder.fromUri(baseUri)
                                                                      .pathSegment(repository, id)
                                                                      .build()
@@ -398,19 +346,17 @@ public class RepositoryRestController
              InstantiationException {
     URI baseUri = uriBuilder.build().toUri();
 
-    CrudRepository repo = repositoryMetadata.repositoryFor(repository);
-    if (null == repo) {
-      model.addAttribute(STATUS, HttpStatus.NOT_IMPLEMENTED);
-      return;
-    }
-
-    final TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
-
-    Serializable serId = stringToSerializable(id, typeMeta.idType);
+    RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    Serializable serId = stringToSerializable(id,
+                                              (Class<? extends Serializable>) repoMeta.entityMetadata()
+                                                  .idAttribute()
+                                                  .type());
+    CrudRepository repo = (CrudRepository) repoMeta.repository();
     Object entity = null;
+    Class<?> domainType = repoMeta.entityMetadata().type();
     switch (request.getMethod()) {
       case POST:
-        entity = typeMeta.domainClass.newInstance();
+        entity = domainType.newInstance();
         break;
       case PUT:
         entity = repo.findOne(serId);
@@ -421,12 +367,11 @@ public class RepositoryRestController
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
     } else {
       final MediaType incomingMediaType = request.getHeaders().getContentType();
-      final Object incoming = readIncoming(request, incomingMediaType, typeMeta.domainClass);
+      final Object incoming = readIncoming(request, incomingMediaType, domainType);
       if (null == incoming) {
-        throw new HttpMessageNotReadableException("Could not create an instance of " + typeMeta.domainClass
-            .getSimpleName() + " from input.");
+        throw new HttpMessageNotReadableException("Could not create an instance of " + domainType.getSimpleName() + " from input.");
       } else {
-        typeMeta.entityMetadata.id(serId, incoming);
+        repoMeta.entityMetadata().idAttribute().set(serId, incoming);
         if (request.getMethod() == HttpMethod.POST) {
           if (null != eventPublisher) {
             eventPublisher.publishEvent(new BeforeSaveEvent(incoming));
@@ -462,14 +407,12 @@ public class RepositoryRestController
   public void deleteEntity(@PathVariable String repository,
                            @PathVariable String id,
                            Model model) {
-    CrudRepository repo = repositoryMetadata.repositoryFor(repository);
-    if (null == repo) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
-      return;
-    }
-
-    TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
-    Serializable serId = stringToSerializable(id, typeMeta.idType);
+    RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    Serializable serId = stringToSerializable(id,
+                                              (Class<? extends Serializable>) repoMeta.entityMetadata()
+                                                  .idAttribute()
+                                                  .type());
+    CrudRepository repo = (CrudRepository) repoMeta.repository();
 
     if (null != eventPublisher) {
       eventPublisher.publishEvent(new BeforeDeleteEvent(serId));
@@ -499,53 +442,41 @@ public class RepositoryRestController
                                Model model) {
     URI baseUri = uriBuilder.build().toUri();
 
-    CrudRepository repo = repositoryMetadata.repositoryFor(repository);
-    if (null == repo) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
-      return;
-    }
-
-    TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
-
-    Serializable serId = stringToSerializable(id, typeMeta.idType);
+    RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    Serializable serId = stringToSerializable(id,
+                                              (Class<? extends Serializable>) repoMeta.entityMetadata()
+                                                  .idAttribute()
+                                                  .type());
+    CrudRepository repo = (CrudRepository) repoMeta.repository();
     Object entity = repo.findOne(serId);
     if (null == entity) {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
     } else {
-      Attribute attr = typeMeta.entityType.getAttribute(property);
-      if (null == attr) {
+      AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(property);
+      if (null == attrMeta) {
         model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
       } else {
-        Class<?> childType;
-        if (attr instanceof PluralAttribute) {
-          childType = ((PluralAttribute) attr).getElementType().getJavaType();
-        } else {
-          childType = attr.getJavaType();
+        Class<?> attrType = attrMeta.elementType();
+        if (null == attrType) {
+          attrType = attrMeta.type();
         }
 
-        CrudRepository childRepo = repositoryMetadata.repositoryFor(childType);
-        if (null == childRepo) {
-          model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
-          return;
-        }
-
+        RepositoryMetadata propRepoMeta = repositoryMetadataFor(attrType);
         model.addAttribute(STATUS, HttpStatus.OK);
-
-        TypeMetaCacheEntry childTypeMeta = typeMetaEntry(childRepo);
-
-        Object child = typeMeta.entityMetadata.get(property, entity);
-        if (null != child) {
+        Object propVal = attrMeta.get(entity);
+        AttributeMetadata idAttr = propRepoMeta.entityMetadata().idAttribute();
+        if (null != propVal) {
           Links links = new Links();
-          if (child instanceof Collection) {
-            for (Object o : (Collection) child) {
-              String childId = childTypeMeta.entityInfo.getId(o).toString();
-              URI uri = buildUri(baseUri, repository, id, property, childId);
-              links.add(new SimpleLink(childType.getSimpleName(), uri));
+          if (propVal instanceof Collection) {
+            for (Object o : (Collection) propVal) {
+              String propValId = idAttr.get(o).toString();
+              URI uri = buildUri(baseUri, repository, id, property, propValId);
+              links.add(new SimpleLink(attrType.getSimpleName(), uri));
             }
-          } else if (child instanceof Map) {
-            for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) child).entrySet()) {
-              String childId = childTypeMeta.entityInfo.getId(entry.getValue()).toString();
-              URI uri = buildUri(baseUri, repository, id, property, childId);
+          } else if (propVal instanceof Map) {
+            for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) propVal).entrySet()) {
+              String propValId = idAttr.get(entry.getValue()).toString();
+              URI uri = buildUri(baseUri, repository, id, property, propValId);
               Object oKey = entry.getKey();
               String sKey;
               if (ClassUtils.isAssignable(oKey.getClass(), String.class)) {
@@ -556,8 +487,8 @@ public class RepositoryRestController
               links.add(new SimpleLink(sKey, uri));
             }
           } else {
-            String childId = childTypeMeta.entityInfo.getId(child).toString();
-            URI uri = buildUri(baseUri, repository, id, property, childId);
+            String propValId = idAttr.get(propVal).toString();
+            URI uri = buildUri(baseUri, repository, id, property, propValId);
             links.add(new SimpleLink(property, uri));
           }
           model.addAttribute(RESOURCE, links);
@@ -592,72 +523,57 @@ public class RepositoryRestController
                           final Model model) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
 
-    CrudRepository repo = repositoryMetadata.repositoryFor(repository);
-    if (null == repo) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
-      return;
-    }
-
-    final TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
-
-    Serializable serId = stringToSerializable(id, typeMeta.idType);
+    final RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    Serializable serId = stringToSerializable(id,
+                                              (Class<? extends Serializable>) repoMeta.entityMetadata()
+                                                  .idAttribute()
+                                                  .type());
+    CrudRepository repo = (CrudRepository) repoMeta.repository();
     final Object entity = repo.findOne(serId);
     if (null == entity) {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
     } else {
-      final Attribute attr = typeMeta.entityMetadata.linkedAttributes().get(property);
-      if (null == attr) {
+      final AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(property);
+      if (null == attrMeta) {
         model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
       } else {
-        Object child = typeMeta.entityMetadata.get(attr.getName(), entity);
+        Object linked = attrMeta.get(entity);
         final AtomicReference<String> rel = new AtomicReference<String>();
         Handler<Object, Void> entityHandler = new Handler<Object, Void>() {
-          @Override public Void handle(Object childEntity) {
-            if (attr instanceof PluralAttribute) {
-              PluralAttribute plAttr = (PluralAttribute) attr;
-              switch (plAttr.getCollectionType()) {
-                case COLLECTION:
-                case LIST: {
-                  Collection c = new ArrayList();
-                  Collection current = (Collection) typeMeta.entityMetadata.get(property, entity);
-                  if (request.getMethod() == HttpMethod.POST && null != current) {
-                    c.addAll(current);
-                  }
-                  c.add(childEntity);
-                  typeMeta.entityMetadata.set(property, c, entity);
-                }
-                break;
-                case SET: {
-                  Set s = new HashSet();
-                  Set current = (Set) typeMeta.entityMetadata.get(property, entity);
-                  if (request.getMethod() == HttpMethod.POST && null != current) {
-                    s.addAll(current);
-                  }
-                  s.add(childEntity);
-                  typeMeta.entityMetadata.set(property, s, entity);
-                }
-                break;
-                case MAP: {
-                  Map m = new HashMap();
-                  Map current = (Map) typeMeta.entityMetadata.get(property, entity);
-                  if (request.getMethod() == HttpMethod.POST && null != current) {
-                    m.putAll(current);
-                  }
-                  String key = rel.get();
-                  if (null == key) {
-                    model.addAttribute(STATUS, HttpStatus.NOT_ACCEPTABLE);
-                    return null;
-                  } else {
-                    m.put(rel.get(), childEntity);
-                    typeMeta.entityMetadata.set(property, m, entity);
-                  }
-                }
-                break;
+          @Override public Void handle(Object linkedEntity) {
+            if (attrMeta.isCollectionLike()) {
+              Collection c = new ArrayList();
+              Collection current = (Collection) attrMeta.get(entity);
+              if (request.getMethod() == HttpMethod.POST && null != current) {
+                c.addAll(current);
               }
-            } else if (attr instanceof SingularAttribute) {
-              typeMeta.entityMetadata.set(property, childEntity, entity);
+              c.add(linkedEntity);
+              attrMeta.set(c, entity);
+            } else if (attrMeta.isSetLike()) {
+              Set s = new HashSet();
+              Set current = (Set) attrMeta.get(entity);
+              if (request.getMethod() == HttpMethod.POST && null != current) {
+                s.addAll(current);
+              }
+              s.add(linkedEntity);
+              attrMeta.set(s, entity);
+            } else if (attrMeta.isMapLike()) {
+              Map m = new HashMap();
+              Map current = (Map) attrMeta.get(entity);
+              if (request.getMethod() == HttpMethod.POST && null != current) {
+                m.putAll(current);
+              }
+              String key = rel.get();
+              if (null == key) {
+                model.addAttribute(STATUS, HttpStatus.NOT_ACCEPTABLE);
+                return null;
+              } else {
+                m.put(rel.get(), linkedEntity);
+                attrMeta.set(m, entity);
+              }
+            } else {
+              attrMeta.set(linkedEntity, entity);
             }
-
             return null;
           }
         };
@@ -686,12 +602,12 @@ public class RepositoryRestController
 
         if (null != eventPublisher) {
           eventPublisher.publishEvent(new BeforeSaveEvent(entity));
-          eventPublisher.publishEvent(new BeforeLinkSaveEvent(entity, child));
+          eventPublisher.publishEvent(new BeforeLinkSaveEvent(entity, linked));
         }
         Object savedEntity = repo.save(entity);
         if (null != eventPublisher) {
-          child = typeMeta.entityMetadata.get(attr.getName(), savedEntity);
-          eventPublisher.publishEvent(new AfterLinkSaveEvent(savedEntity, child));
+          linked = attrMeta.get(savedEntity);
+          eventPublisher.publishEvent(new AfterLinkSaveEvent(savedEntity, linked));
           eventPublisher.publishEvent(new AfterSaveEvent(savedEntity));
         }
 
@@ -715,26 +631,23 @@ public class RepositoryRestController
                          @PathVariable String id,
                          @PathVariable String property,
                          Model model) {
-    CrudRepository repo = repositoryMetadata.repositoryFor(repository);
-    if (null == repo) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
-      return;
-    }
-
-    final TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
-
-    Serializable serId = stringToSerializable(id, typeMeta.idType);
+    RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    Serializable serId = stringToSerializable(id,
+                                              (Class<? extends Serializable>) repoMeta.entityMetadata()
+                                                  .idAttribute()
+                                                  .type());
+    CrudRepository repo = (CrudRepository) repoMeta.repository();
     final Object entity = repo.findOne(serId);
     if (null == entity) {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
     } else {
-      final Attribute attr = typeMeta.entityMetadata.linkedAttributes().get(property);
-      if (null != attr) {
-        Object child = typeMeta.entityMetadata.get(property, entity);
-        typeMeta.entityMetadata.set(property, null, entity);
+      AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(property);
+      if (null != attrMeta) {
+        Object linked = attrMeta.get(entity);
+        attrMeta.set(null, entity);
 
         if (null != eventPublisher) {
-          eventPublisher.publishEvent(new BeforeLinkSaveEvent(entity, child));
+          eventPublisher.publishEvent(new BeforeLinkSaveEvent(entity, linked));
         }
         Object savedEntity = repo.save(entity);
         if (null != eventPublisher) {
@@ -750,7 +663,7 @@ public class RepositoryRestController
 
   @SuppressWarnings({"unchecked"})
   @RequestMapping(
-      value = "/{repository}/{id}/{property}/{childId}",
+      value = "/{repository}/{id}/{property}/{linkedId}",
       method = {
           RequestMethod.GET
       },
@@ -758,36 +671,36 @@ public class RepositoryRestController
           "application/json"
       }
   )
-  public void childEntity(UriComponentsBuilder uriBuilder,
-                          @PathVariable String repository,
-                          @PathVariable String id,
-                          @PathVariable String property,
-                          @PathVariable String childId,
-                          Model model) {
+  public void linkedEntity(UriComponentsBuilder uriBuilder,
+                           @PathVariable String repository,
+                           @PathVariable String id,
+                           @PathVariable String property,
+                           @PathVariable String linkedId,
+                           Model model) {
     URI baseUri = uriBuilder.build().toUri();
 
-    CrudRepository repo = repositoryMetadata.repositoryFor(repository);
-    if (null == repo) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
-      return;
-    }
-
-    final TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
-
-    Serializable serId = stringToSerializable(id, typeMeta.idType);
+    RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    Serializable serId = stringToSerializable(id,
+                                              (Class<? extends Serializable>) repoMeta.entityMetadata()
+                                                  .idAttribute()
+                                                  .type());
+    CrudRepository repo = (CrudRepository) repoMeta.repository();
     final Object entity = repo.findOne(serId);
     if (null != entity) {
-      final Attribute attr = typeMeta.entityMetadata.linkedAttributes().get(property);
-      if (null != attr) {
-        // Find child entity
-        CrudRepository childRepo = repositoryFromAttribute(attr);
-        if (null != childRepo) {
-          TypeMetaCacheEntry childTypeMeta = typeMetaEntry(childRepo);
-          Serializable sChildId = stringToSerializable(childId, childTypeMeta.idType);
-          Object childEntity = childRepo.findOne(sChildId);
-          if (null != childEntity) {
-            Map<String, Object> entityDto = extractPropertiesLinkAware(childEntity,
-                                                                       childTypeMeta.entityMetadata,
+      AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(property);
+      if (null != attrMeta) {
+        // Find linked entity
+        RepositoryMetadata linkedRepoMeta = repositoryMetadataFor(attrMeta);
+        if (null != linkedRepoMeta) {
+          CrudRepository linkedRepo = (CrudRepository) linkedRepoMeta.repository();
+          Serializable sChildId = stringToSerializable(linkedId,
+                                                       (Class<? extends Serializable>) linkedRepoMeta.entityMetadata()
+                                                           .idAttribute()
+                                                           .type());
+          Object linkedEntity = linkedRepo.findOne(sChildId);
+          if (null != linkedEntity) {
+            Map<String, Object> entityDto = extractPropertiesLinkAware(linkedEntity,
+                                                                       linkedRepoMeta.entityMetadata(),
                                                                        baseUri);
             URI selfUri = addSelfLink(baseUri, entityDto, repository, id);
 
@@ -807,7 +720,7 @@ public class RepositoryRestController
 
   @SuppressWarnings({"unchecked"})
   @RequestMapping(
-      value = "/{repository}/{id}/{property}/{childId}",
+      value = "/{repository}/{id}/{property}/{linkedId}",
       method = {
           RequestMethod.DELETE
       }
@@ -815,77 +728,68 @@ public class RepositoryRestController
   public void deleteLink(@PathVariable String repository,
                          @PathVariable String id,
                          @PathVariable String property,
-                         @PathVariable String childId,
+                         @PathVariable String linkedId,
                          Model model) {
-    CrudRepository repo = repositoryMetadata.repositoryFor(repository);
-    if (null == repo) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
-      return;
-    }
-
-    final TypeMetaCacheEntry typeMeta = typeMetaEntry(repo);
-
-    Serializable serId = stringToSerializable(id, typeMeta.idType);
+    RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    Serializable serId = stringToSerializable(id,
+                                              (Class<? extends Serializable>) repoMeta.entityMetadata()
+                                                  .idAttribute()
+                                                  .type());
+    CrudRepository repo = (CrudRepository) repoMeta.repository();
     final Object entity = repo.findOne(serId);
     if (null == entity) {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
     } else {
-      final Attribute attr = typeMeta.entityMetadata.linkedAttributes().get(property);
-      if (null == attr) {
-        model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
-      } else {
-        // Find child entity
-        CrudRepository childRepo = repositoryFromAttribute(attr);
-        if (null == childRepo) {
-          model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
-        } else {
-          TypeMetaCacheEntry childTypeMeta = typeMetaEntry(childRepo);
-          Serializable sChildId = stringToSerializable(childId, childTypeMeta.idType);
-          Object childEntity = childRepo.findOne(sChildId);
-          if (null != childEntity) {
-            // Remove child entity from relationship based on property type
-            if (attr instanceof PluralAttribute) {
-              PluralAttribute plAttr = (PluralAttribute) attr;
-              switch (plAttr.getCollectionType()) {
-                case COLLECTION:
-                case LIST:
-                  Collection c = (Collection) typeMeta.entityMetadata.get(property, entity);
-                  if (null != c) {
-                    c.remove(childEntity);
-                  }
-                  break;
-                case SET:
-                  Set s = (Set) typeMeta.entityMetadata.get(property, entity);
-                  if (null != s) {
-                    s.remove(childEntity);
-                  }
-                  break;
-                case MAP:
-                  Object keyToRemove = null;
-                  Map<Object, Object> m = (Map) typeMeta.entityMetadata.get(property, entity);
-                  if (null != m) {
-                    for (Map.Entry<Object, Object> entry : m.entrySet()) {
-                      Object val = entry.getValue();
-                      if (null != val && val.equals(childEntity)) {
-                        keyToRemove = entry.getKey();
-                        break;
-                      }
-                    }
-                    if (null != keyToRemove) {
-                      m.remove(keyToRemove);
-                    }
-                  }
-                  break;
+      AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(property);
+      if (null != attrMeta) {
+        // Find linked entity
+        RepositoryMetadata linkedRepoMeta = repositoryMetadataFor(attrMeta);
+        if (null != linkedRepoMeta) {
+          CrudRepository linkedRepo = (CrudRepository) linkedRepoMeta.repository();
+          Serializable sChildId = stringToSerializable(linkedId,
+                                                       (Class<? extends Serializable>) linkedRepoMeta.entityMetadata()
+                                                           .idAttribute()
+                                                           .type());
+          Object linkedEntity = linkedRepo.findOne(sChildId);
+          if (null != linkedEntity) {
+            // Remove linked entity from relationship based on property type
+            if (attrMeta.isCollectionLike()) {
+              Collection c = (Collection) attrMeta.get(entity);
+              if (null != c) {
+                c.remove(linkedEntity);
               }
-            } else if (attr instanceof SingularAttribute) {
-              typeMeta.entityMetadata.set(property, childEntity, entity);
+            } else if (attrMeta.isSetLike()) {
+              Set s = (Set) attrMeta.get(entity);
+              if (null != s) {
+                s.remove(linkedEntity);
+              }
+            } else if (attrMeta.isMapLike()) {
+              Object keyToRemove = null;
+              Map<Object, Object> m = (Map) attrMeta.get(entity);
+              if (null != m) {
+                for (Map.Entry<Object, Object> entry : m.entrySet()) {
+                  Object val = entry.getValue();
+                  if (null != val && val.equals(linkedEntity)) {
+                    keyToRemove = entry.getKey();
+                    break;
+                  }
+                }
+                if (null != keyToRemove) {
+                  m.remove(keyToRemove);
+                }
+              }
+            } else {
+              attrMeta.set(linkedEntity, entity);
             }
 
             model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
+            return;
           }
         }
       }
     }
+
+    model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -920,26 +824,6 @@ public class RepositoryRestController
     return UriComponentsBuilder.fromUri(baseUri).pathSegment(pathSegments).build().toUri();
   }
 
-  private TypeMetaCacheEntry typeMetaEntry(CrudRepository repo) {
-    TypeMetaCacheEntry entry = typeMetaCache.get(repo);
-    if (null == entry) {
-      entry = new TypeMetaCacheEntry(repo);
-      typeMetaCache.put(repo, entry);
-    }
-    return entry;
-  }
-
-  @SuppressWarnings({"unchecked"})
-  private CrudRepository repositoryFromAttribute(Attribute attr) {
-    CrudRepository repo;
-    if (attr instanceof PluralAttribute) {
-      repo = repositoryMetadata.repositoryFor(((PluralAttribute) attr).getElementType().getJavaType());
-    } else {
-      repo = repositoryMetadata.repositoryFor(attr.getJavaType());
-    }
-    return repo;
-  }
-
   @SuppressWarnings({"unchecked"})
   private URI addSelfLink(URI baseUri, Map<String, Object> model, String... pathComponents) {
     List<Link> links = (List<Link>) model.get(LINKS);
@@ -972,15 +856,16 @@ public class RepositoryRestController
       String repoName = UriUtils.path(uris.get(0));
       String sId = UriUtils.path(uris.get(1));
 
-      CrudRepository repo = repositoryMetadata.repositoryFor(repoName);
+      RepositoryMetadata repoMeta = repositoryMetadataFor(repoName);
+      CrudRepository repo = (CrudRepository) repoMeta.repository();
       if (null == repo) {
         return null;
       }
-      EntityInformation entityInfo = repositoryMetadata.entityInfoFor(repo);
-      if (null == entityInfo) {
+      EntityMetadata entityMeta = repoMeta.entityMetadata();
+      if (null == entityMeta) {
         return null;
       }
-      Class<? extends Serializable> idType = entityInfo.getIdType();
+      Class<? extends Serializable> idType = (Class<? extends Serializable>) entityMeta.idAttribute().type();
 
       Serializable serId = stringToSerializable(sId, idType);
 
@@ -1001,58 +886,34 @@ public class RepositoryRestController
   }
 
   @SuppressWarnings({"unchecked"})
-  private Map<String, Object> extractPropertiesLinkAware(final Object entity,
-                                                         final JpaEntityMetadata entityMetadata,
-                                                         final URI baseUri) {
+  private Map<String, Object> extractPropertiesLinkAware(Object entity,
+                                                         EntityMetadata<AttributeMetadata> entityMetadata,
+                                                         URI baseUri) {
     final Map<String, Object> entityDto = new HashMap<String, Object>();
 
-    entityMetadata.doWithEmbedded(new Handler<Attribute, Void>() {
-      @Override public Void handle(Attribute attr) {
-        String name = attr.getName();
-        Object val = entityMetadata.get(name, entity);
-        if (null != val) {
-          entityDto.put(name, val);
-        }
-        return null;
+    for (Map.Entry<String, AttributeMetadata> attrMeta : entityMetadata.embeddedAttributes().entrySet()) {
+      String name = attrMeta.getKey();
+      Object val = attrMeta.getValue().get(entity);
+      if (null != val) {
+        entityDto.put(name, val);
       }
-    });
+    }
 
-    entityMetadata.doWithLinked(new Handler<Attribute, Void>() {
-      @Override public Void handle(Attribute attr) {
-        String name = attr.getName();
-        URI uri = UriComponentsBuilder.fromUri(baseUri)
-            .pathSegment(name)
-            .build()
-            .toUri();
-        Link l = new SimpleLink(name, uri);
-        List<Link> links = (List<Link>) entityDto.get(LINKS);
-        if (null == links) {
-          links = new ArrayList<Link>();
-          entityDto.put(LINKS, links);
-        }
-        links.add(l);
-        return null;
+    for (String attrName : entityMetadata.linkedAttributes().keySet()) {
+      URI uri = UriComponentsBuilder.fromUri(baseUri)
+          .pathSegment(attrName)
+          .build()
+          .toUri();
+      Link l = new SimpleLink(attrName, uri);
+      List<Link> links = (List<Link>) entityDto.get(LINKS);
+      if (null == links) {
+        links = new ArrayList<Link>();
+        entityDto.put(LINKS, links);
       }
-    });
+      links.add(l);
+    }
 
     return entityDto;
-  }
-
-  private class TypeMetaCacheEntry {
-    EntityInformation entityInfo;
-    Class<?> domainClass;
-    Class<? extends Serializable> idType;
-    EntityType entityType;
-    JpaEntityMetadata entityMetadata;
-
-    @SuppressWarnings({"unchecked"})
-    private TypeMetaCacheEntry(CrudRepository repo) {
-      entityInfo = repositoryMetadata.entityInfoFor(repo);
-      domainClass = entityInfo.getJavaType();
-      idType = entityInfo.getIdType();
-      entityType = repositoryMetadata.entityTypeFor(domainClass);
-      entityMetadata = repositoryMetadata.entityMetadataFor(domainClass);
-    }
   }
 
 }

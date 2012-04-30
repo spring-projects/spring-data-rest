@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.rest.repository.JpaRepositoryMetadata;
 import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
+import org.springframework.data.rest.repository.jpa.JpaRepositoryExporter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
@@ -28,7 +28,7 @@ public class RepositoryRestConfiguration {
   @Autowired
   EntityManagerFactory entityManagerFactory;
   @Autowired(required = false)
-  JpaRepositoryMetadata jpaRepositoryMetadata;
+  JpaRepositoryExporter jpaRepositoryExporter;
   @Autowired(required = false)
   ConversionService customConversionService;
   ConversionService defaultConversionService = new DefaultConversionService();
@@ -56,18 +56,11 @@ public class RepositoryRestConfiguration {
     return httpMessageConverters;
   }
 
-  @Bean JpaRepositoryMetadata jpaRepositoryMetadata() throws Exception {
-    if (null == jpaRepositoryMetadata) {
-      jpaRepositoryMetadata = new JpaRepositoryMetadata();
+  @Bean JpaRepositoryExporter jpaRepositoryExporter() {
+    if (null == jpaRepositoryExporter) {
+      jpaRepositoryExporter = new JpaRepositoryExporter();
     }
-    return jpaRepositoryMetadata;
-  }
-
-  @Bean ValidatingRepositoryEventListener validatingRepositoryEventListener() {
-    if (null == validatingRepositoryEventListener) {
-      validatingRepositoryEventListener = new ValidatingRepositoryEventListener();
-    }
-    return validatingRepositoryEventListener;
+    return jpaRepositoryExporter;
   }
 
   @Bean PersistenceAnnotationBeanPostProcessor persistenceAnnotationBeanPostProcessor() {

@@ -7,6 +7,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
+import org.springframework.data.rest.repository.jpa.JpaRepositoryExporter;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver;
@@ -48,14 +50,20 @@ public class RepositoryRestMvcConfiguration {
   @Bean RepositoryRestController repositoryRestController() throws Exception {
     if (null == repositoryRestController) {
       this.repositoryRestController = new RepositoryRestController()
-          .repositoryMetadata(parentConfig.jpaRepositoryMetadata())
           .conversionService(parentConfig.conversionService())
           .httpMessageConverters(parentConfig.httpMessageConverters())
-          .viewResolver(contentNegotiatingViewResolver())
           .jsonMediaType("application/json");
     }
     return repositoryRestController;
   }
+
+  @Bean ValidatingRepositoryEventListener validatingRepositoryEventListener() {
+    if (null == parentConfig.validatingRepositoryEventListener) {
+      return new ValidatingRepositoryEventListener();
+    }
+    return parentConfig.validatingRepositoryEventListener;
+  }
+
 
   @Bean RequestMappingHandlerMapping handlerMapping() {
     return new RequestMappingHandlerMapping();

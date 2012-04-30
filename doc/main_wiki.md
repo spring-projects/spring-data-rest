@@ -200,3 +200,6 @@ To maintain a relationship between two entities, access the resource of the rela
 You can also delete a relationship by issuing a DELETE request to the resource path that represents the relationship between parent and child entities. For example, to delete a relationship between a Profile entity with an id of 2 and a Person with an id of 1:
 
     curl -v -X DELETE http://localhost:8080/data/person/1/profiles/2
+
+### Handling events
+

@@ -130,6 +130,7 @@ class RepositoryRestControllerSpec extends Specification {
     def addrLinks = model.resource?.links
 
     then:
+    null != addrLinks
     addrLinks.size() == 1
 
   }
