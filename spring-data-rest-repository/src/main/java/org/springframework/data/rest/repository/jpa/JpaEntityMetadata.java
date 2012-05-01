@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.PluralAttribute;
+import javax.persistence.metamodel.SingularAttribute;
 
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.EntityMetadata;
@@ -35,7 +36,8 @@ public class JpaEntityMetadata implements EntityMetadata<JpaAttributeMetadata> {
       if (repositories.hasRepositoryFor(attrType)) {
         linkedAttributes.put(attr.getName(), new JpaAttributeMetadata(entityType, attr));
       } else {
-        if (attr != idAttribute && attr != versionAttribute) {
+        if (!(attr instanceof SingularAttribute && ((SingularAttribute) attr).isId())
+            && !(attr instanceof SingularAttribute && ((SingularAttribute) attr).isVersion())) {
           embeddedAttributes.put(attr.getName(), new JpaAttributeMetadata(entityType, attr));
         }
       }
