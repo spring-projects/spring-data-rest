@@ -26,8 +26,8 @@
 
   <jpa:repositories base-package="org.springframework.data.rest.repository.test"/>
 
-  <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
-
   <bean class="org.springframework.data.rest.repository.jpa.JpaRepositoryExporter"/>
+
+  <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
 </beans>
