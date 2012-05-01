@@ -13,6 +13,6 @@ import org.springframework.data.rest.repository.annotation.RestPathSegment;
 public interface PersonRepository extends CrudRepository<Person, Long> {
 
   @RestPathSegment("byName")
-  public List<Person> findByName(@Param("nme") String name);
+  public List<Person> findByName(@Param("name") String name);
 
 }
