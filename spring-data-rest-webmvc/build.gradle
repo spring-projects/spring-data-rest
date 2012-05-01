@@ -17,8 +17,7 @@ dependencies {
   // Repository Exporter support
   compile project(":spring-data-rest-repository")
 
-  // Testing
-  testRuntime "org.hibernate:hibernate-entitymanager:$hibernateVersion"
-  testRuntime "org.hsqldb:hsqldb:1.8.0.10"
+  runtime "org.hibernate:hibernate-entitymanager:$hibernateVersion"
+  runtime "org.hsqldb:hsqldb:2.2.8"
 
 }

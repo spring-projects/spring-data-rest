@@ -35,7 +35,9 @@ public class JpaEntityMetadata implements EntityMetadata<JpaAttributeMetadata> {
       if (repositories.hasRepositoryFor(attrType)) {
         linkedAttributes.put(attr.getName(), new JpaAttributeMetadata(entityType, attr));
       } else {
-        embeddedAttributes.put(attr.getName(), new JpaAttributeMetadata(entityType, attr));
+        if (attr != idAttribute && attr != versionAttribute) {
+          embeddedAttributes.put(attr.getName(), new JpaAttributeMetadata(entityType, attr));
+        }
       }
     }
   }
@@ -71,6 +73,16 @@ public class JpaEntityMetadata implements EntityMetadata<JpaAttributeMetadata> {
       return linkedAttributes.get(name);
     }
     return null;
+  }
+
+  @Override public String toString() {
+    return "JpaEntityMetadata{" +
+        "type=" + type +
+        ", idAttribute=" + idAttribute +
+        ", versionAttribute=" + versionAttribute +
+        ", embeddedAttributes=" + embeddedAttributes +
+        ", linkedAttributes=" + linkedAttributes +
+        '}';
   }
 
 }

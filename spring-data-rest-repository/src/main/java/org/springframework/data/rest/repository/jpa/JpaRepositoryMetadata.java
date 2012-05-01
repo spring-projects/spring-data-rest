@@ -13,6 +13,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.RepositoryMetadata;
+import org.springframework.data.rest.repository.RepositoryQueryMethod;
 import org.springframework.data.rest.repository.annotation.RestPathSegment;
 import org.springframework.util.ReflectionUtils;
 
@@ -25,7 +26,7 @@ public class JpaRepositoryMetadata<R extends Repository<Object, Serializable>> i
   private final Class<?> repoClass;
   private final R repository;
   private final EntityInformation entityInfo;
-  private final Map<String, Method> queryMethods = new HashMap<String, Method>();
+  private final Map<String, RepositoryQueryMethod> queryMethods = new HashMap<String, RepositoryQueryMethod>();
   private JpaEntityMetadata entityMetadata;
 
   @SuppressWarnings({"unchecked"})
@@ -46,7 +47,7 @@ public class JpaRepositoryMetadata<R extends Repository<Object, Serializable>> i
           @Override public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
             String pathSeg = AnnotationUtils.findAnnotation(method, RestPathSegment.class).value();
             ReflectionUtils.makeAccessible(method);
-            queryMethods.put(pathSeg, method);
+            queryMethods.put(pathSeg, new RepositoryQueryMethod(method));
           }
         },
         new ReflectionUtils.MethodFilter() {
@@ -80,12 +81,23 @@ public class JpaRepositoryMetadata<R extends Repository<Object, Serializable>> i
     return entityMetadata;
   }
 
-  @Override public Method queryMethod(String key) {
+  @Override public RepositoryQueryMethod queryMethod(String key) {
     return queryMethods.get(key);
   }
 
-  @Override public Map<String, Method> queryMethods() {
+  @Override public Map<String, RepositoryQueryMethod> queryMethods() {
     return Collections.unmodifiableMap(queryMethods);
+  }
+
+  @Override public String toString() {
+    return "JpaRepositoryMetadata{" +
+        "name='" + name + '\'' +
+        ", repoClass=" + repoClass +
+        ", repository=" + repository +
+        ", entityInfo=" + entityInfo +
+        ", queryMethods=" + queryMethods +
+        ", entityMetadata=" + entityMetadata +
+        '}';
   }
 
 }

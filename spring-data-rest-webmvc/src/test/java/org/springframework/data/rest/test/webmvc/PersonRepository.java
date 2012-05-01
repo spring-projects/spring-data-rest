@@ -1,6 +1,9 @@
 package org.springframework.data.rest.test.webmvc;
 
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.repository.annotation.RestPathSegment;
 
 /**
@@ -8,4 +11,8 @@ import org.springframework.data.rest.repository.annotation.RestPathSegment;
  */
 @RestPathSegment("person")
 public interface PersonRepository extends CrudRepository<Person, Long> {
+
+  @RestPathSegment("byName")
+  public List<Person> findByName(@Param("nme") String name);
+
 }

@@ -1,7 +1,6 @@
 package org.springframework.data.rest.repository;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.springframework.data.repository.Repository;
@@ -19,8 +18,8 @@ public interface RepositoryMetadata<R extends Repository<? extends Object, ? ext
 
   E entityMetadata();
 
-  Method queryMethod(String key);
+  RepositoryQueryMethod queryMethod(String key);
 
-  Map<String, Method> queryMethods();
+  Map<String, RepositoryQueryMethod> queryMethods();
 
 }

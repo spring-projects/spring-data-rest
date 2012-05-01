@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,8 +24,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.rest.core.Handler;
 import org.springframework.data.rest.core.Link;
 import org.springframework.data.rest.core.SimpleLink;
@@ -35,6 +38,7 @@ import org.springframework.data.rest.repository.RepositoryConstraintViolationExc
 import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
 import org.springframework.data.rest.repository.RepositoryMetadata;
+import org.springframework.data.rest.repository.RepositoryQueryMethod;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
 import org.springframework.data.rest.repository.context.AfterLinkSaveEvent;
 import org.springframework.data.rest.repository.context.AfterSaveEvent;
@@ -61,6 +65,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -224,11 +229,81 @@ public class RepositoryRestController
     while (iter.hasNext()) {
       Object o = iter.next();
       Serializable id = (Serializable) repoMeta.entityMetadata().idAttribute().get(o);
-      links.add(new SimpleLink(o.getClass().getSimpleName(), buildUri(baseUri, repository, id.toString())));
+      links.add(new SimpleLink(repository + "." + o.getClass().getSimpleName(),
+                               buildUri(baseUri, repository, id.toString())));
+    }
+    for (Map.Entry<String, RepositoryQueryMethod> entry : ((Map<String, RepositoryQueryMethod>) repoMeta.queryMethods())
+        .entrySet()) {
+      links.add(new SimpleLink(repository + "." + entry.getKey(),
+                               buildUri(baseUri, repository, "search", entry.getKey())));
     }
 
     model.addAttribute(STATUS, HttpStatus.OK);
     model.addAttribute(RESOURCE, links);
+  }
+
+  @SuppressWarnings({"unchecked"})
+  @RequestMapping(
+      value = "/{repository}/search/{query}",
+      method = RequestMethod.GET,
+      produces = {
+          "application/json"
+      }
+  )
+  public void query(WebRequest request,
+                    UriComponentsBuilder uriBuilder,
+                    @PathVariable String repository,
+                    @PathVariable String query,
+                    Model model) {
+    URI baseUri = uriBuilder.build().toUri();
+
+    RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    Repository repo = repoMeta.repository();
+    RepositoryQueryMethod queryMethod = repoMeta.queryMethod(query);
+
+    Class<?>[] paramTypes = queryMethod.paramTypes();
+    String[] paramNames = queryMethod.paramNames();
+    Object[] paramVals = new Object[paramTypes.length];
+    for (int i = 0; i < paramVals.length; i++) {
+      String queryVal = request.getParameter(paramNames[i]);
+      if (paramTypes[i].isAssignableFrom(String.class)) {
+        paramVals[i] = queryVal;
+      } else {
+        paramVals[i] = conversionService.convert(queryVal, paramTypes[i]);
+      }
+    }
+
+    try {
+      Object result = queryMethod.method().invoke(repo, paramVals);
+      if (result instanceof Collection) {
+        Collection coll = new ArrayList();
+        for (Object o : (Collection) result) {
+          RepositoryMetadata elemRepoMeta = repositoryMetadataFor(o.getClass());
+          if (null != elemRepoMeta) {
+            Map<String, Object> dto = extractPropertiesLinkAware(o, elemRepoMeta.entityMetadata(), baseUri);
+            coll.add(dto);
+          } else {
+            coll.add(o);
+          }
+        }
+
+        model.addAttribute(RESOURCE, coll);
+        model.addAttribute(STATUS, HttpStatus.OK);
+      } else {
+        RepositoryMetadata elemRepoMeta = repositoryMetadataFor(result.getClass());
+        if (null != elemRepoMeta) {
+          Map<String, Object> dto = extractPropertiesLinkAware(result, elemRepoMeta.entityMetadata(), baseUri);
+          model.addAttribute(RESOURCE, dto);
+        } else {
+          model.addAttribute(RESOURCE, result);
+        }
+        model.addAttribute(STATUS, HttpStatus.OK);
+      }
+    } catch (IllegalAccessException e) {
+      throw new DataRetrievalFailureException(e.getMessage(), e);
+    } catch (InvocationTargetException e) {
+      throw new DataRetrievalFailureException(e.getMessage(), e);
+    }
   }
 
   @SuppressWarnings({"unchecked"})

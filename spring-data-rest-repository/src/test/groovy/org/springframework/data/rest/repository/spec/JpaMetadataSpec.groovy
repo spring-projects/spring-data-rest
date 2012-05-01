@@ -5,7 +5,8 @@ import javax.persistence.PersistenceContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.data.repository.CrudRepository
-import org.springframework.data.rest.repository.JpaRepositoryMetadata
+import org.springframework.data.rest.repository.RepositoryExporter
+import org.springframework.data.rest.repository.RepositoryMetadata
 import org.springframework.data.rest.repository.test.Family
 import org.springframework.data.rest.repository.test.FamilyRepository
 import org.springframework.data.rest.repository.test.Person
@@ -26,19 +27,23 @@ class JpaMetadataSpec extends Specification {
   @Autowired
   Collection<CrudRepository> repositories
   @Autowired
-  JpaRepositoryMetadata repoMeta
+  List<RepositoryExporter> exporters
+
+  RepositoryMetadata repositoryMetadataFor(name) {
+    exporters.find { null != it.repositoryMetadataFor(name) }?.repositoryMetadataFor(name)
+  }
 
   def "finds repositories in ApplicationContext"() {
 
     when: "find repo by String identifier"
-    def repo = repoMeta.repositoryFor("person")
+    def repo = repositoryMetadataFor("person").repository()
 
     then:
     null != repo
     repo instanceof PersonRepository
 
     when: "find repo by domain Class<?>"
-    repo = repoMeta.repositoryFor(Family)
+    repo = repositoryMetadataFor(Family).repository()
 
     then:
     null != repo
@@ -49,8 +54,8 @@ class JpaMetadataSpec extends Specification {
   def "provides entity metadata"() {
 
     given:
-    def personRepo = repoMeta.repositoryFor(Person)
-    def familyRepo = repoMeta.repositoryFor(Family)
+    def personRepo = repositoryMetadataFor(Person).repository()
+    def familyRepo = repositoryMetadataFor(Family).repository()
     def johnDoe = personRepo.save(new Person("John Doe"))
     def janeDoe = personRepo.save(new Person("Jane Doe"))
     def doeFamily = familyRepo.save(new Family(
@@ -59,13 +64,13 @@ class JpaMetadataSpec extends Specification {
     ))
 
     when:
-    def personMeta = repoMeta.entityMetadataFor(Person)
-    def familyMeta = repoMeta.entityMetadataFor(Family)
+    def personMeta = repositoryMetadataFor(Person).entityMetadata()
+    def familyMeta = repositoryMetadataFor(Family).entityMetadata()
 
     then:
-    personMeta.get("name", johnDoe) == "John Doe"
-    familyMeta.get("surname", doeFamily) == "Doe"
-    familyMeta.get("members", doeFamily).size() == 2
+    personMeta.attribute("name").get(johnDoe) == "John Doe"
+    familyMeta.attribute("surname").get(doeFamily) == "Doe"
+    familyMeta.attribute("members").get(doeFamily).size() == 2
     personMeta.embeddedAttributes().size() == 1
     familyMeta.linkedAttributes().size() == 1
 

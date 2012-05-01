@@ -139,4 +139,15 @@ public class JpaAttributeMetadata implements AttributeMetadata {
     return this;
   }
 
+  @Override public String toString() {
+    return "JpaAttributeMetadata{" +
+        "name='" + name + '\'' +
+        ", attribute=" + attribute +
+        ", type=" + type +
+        ", field=" + field +
+        ", getter=" + getter +
+        ", setter=" + setter +
+        '}';
+  }
+
 }

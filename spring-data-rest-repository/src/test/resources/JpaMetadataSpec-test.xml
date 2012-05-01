@@ -28,6 +28,6 @@
 
   <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
-  <bean id="jpaRepositoryMetadata" class="org.springframework.data.rest.repository.JpaRepositoryMetadata"/>
+  <bean class="org.springframework.data.rest.repository.jpa.JpaRepositoryExporter"/>
 
 </beans>
