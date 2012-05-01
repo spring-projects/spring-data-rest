@@ -36,14 +36,14 @@ class JpaMetadataSpec extends Specification {
   def "finds repositories in ApplicationContext"() {
 
     when: "find repo by String identifier"
-    def repo = repositoryMetadataFor("person").repository()
+    def repo = repositoryMetadataFor("person")?.repository()
 
     then:
     null != repo
     repo instanceof PersonRepository
 
     when: "find repo by domain Class<?>"
-    repo = repositoryMetadataFor(Family).repository()
+    repo = repositoryMetadataFor(Family)?.repository()
 
     then:
     null != repo
@@ -54,8 +54,8 @@ class JpaMetadataSpec extends Specification {
   def "provides entity metadata"() {
 
     given:
-    def personRepo = repositoryMetadataFor(Person).repository()
-    def familyRepo = repositoryMetadataFor(Family).repository()
+    def personRepo = repositoryMetadataFor(Person)?.repository()
+    def familyRepo = repositoryMetadataFor(Family)?.repository()
     def johnDoe = personRepo.save(new Person("John Doe"))
     def janeDoe = personRepo.save(new Person("Jane Doe"))
     def doeFamily = familyRepo.save(new Family(
@@ -64,8 +64,8 @@ class JpaMetadataSpec extends Specification {
     ))
 
     when:
-    def personMeta = repositoryMetadataFor(Person).entityMetadata()
-    def familyMeta = repositoryMetadataFor(Family).entityMetadata()
+    def personMeta = repositoryMetadataFor(Person)?.entityMetadata()
+    def familyMeta = repositoryMetadataFor(Family)?.entityMetadata()
 
     then:
     personMeta.attribute("name").get(johnDoe) == "John Doe"
