@@ -56,9 +56,9 @@ class JpaMetadataSpec extends Specification {
     given:
     def personRepo = repositoryMetadataFor(Person)?.repository()
     def familyRepo = repositoryMetadataFor(Family)?.repository()
-    def johnDoe = personRepo.save(new Person("John Doe"))
-    def janeDoe = personRepo.save(new Person("Jane Doe"))
-    def doeFamily = familyRepo.save(new Family(
+    def johnDoe = personRepo?.save(new Person("John Doe"))
+    def janeDoe = personRepo?.save(new Person("Jane Doe"))
+    def doeFamily = familyRepo?.save(new Family(
         surname: "Doe",
         members: [johnDoe, janeDoe]
     ))
@@ -68,11 +68,11 @@ class JpaMetadataSpec extends Specification {
     def familyMeta = repositoryMetadataFor(Family)?.entityMetadata()
 
     then:
-    personMeta.attribute("name").get(johnDoe) == "John Doe"
-    familyMeta.attribute("surname").get(doeFamily) == "Doe"
-    familyMeta.attribute("members").get(doeFamily).size() == 2
-    personMeta.embeddedAttributes().size() == 1
-    familyMeta.linkedAttributes().size() == 1
+    personMeta?.attribute("name")?.get(johnDoe) == "John Doe"
+    familyMeta?.attribute("surname")?.get(doeFamily) == "Doe"
+    familyMeta?.attribute("members")?.get(doeFamily)?.size() == 2
+    personMeta?.embeddedAttributes()?.size() == 1
+    familyMeta?.linkedAttributes()?.size() == 1
 
   }
 
