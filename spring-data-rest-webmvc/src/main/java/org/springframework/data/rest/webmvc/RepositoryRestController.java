@@ -280,7 +280,7 @@ public class RepositoryRestController
         for (Object o : (Collection) result) {
           RepositoryMetadata elemRepoMeta = repositoryMetadataFor(o.getClass());
           if (null != elemRepoMeta) {
-            Map<String, Object> dto = extractPropertiesLinkAware(o, elemRepoMeta.entityMetadata(), baseUri);
+            Map<String, Object> dto = extractPropertiesLinkAware(repository, o, elemRepoMeta.entityMetadata(), baseUri);
             coll.add(dto);
           } else {
             coll.add(o);
@@ -292,7 +292,10 @@ public class RepositoryRestController
       } else {
         RepositoryMetadata elemRepoMeta = repositoryMetadataFor(result.getClass());
         if (null != elemRepoMeta) {
-          Map<String, Object> dto = extractPropertiesLinkAware(result, elemRepoMeta.entityMetadata(), baseUri);
+          Map<String, Object> dto = extractPropertiesLinkAware(repository,
+                                                               result,
+                                                               elemRepoMeta.entityMetadata(),
+                                                               baseUri);
           model.addAttribute(RESOURCE, dto);
         } else {
           model.addAttribute(RESOURCE, result);
@@ -383,7 +386,8 @@ public class RepositoryRestController
         }
         headers.set("ETag", "\"" + version.toString() + "\"");
       }
-      Map<String, Object> entityDto = extractPropertiesLinkAware(entity,
+      Map<String, Object> entityDto = extractPropertiesLinkAware(repository,
+                                                                 entity,
                                                                  repoMeta.entityMetadata(),
                                                                  UriComponentsBuilder.fromUri(baseUri)
                                                                      .pathSegment(repository, id)
@@ -546,7 +550,8 @@ public class RepositoryRestController
             for (Object o : (Collection) propVal) {
               String propValId = idAttr.get(o).toString();
               URI uri = buildUri(baseUri, repository, id, property, propValId);
-              links.add(new SimpleLink(attrType.getSimpleName(), uri));
+              links.add(new SimpleLink(repository + "." + entity.getClass()
+                  .getSimpleName() + "." + attrType.getSimpleName(), uri));
             }
           } else if (propVal instanceof Map) {
             for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) propVal).entrySet()) {
@@ -559,12 +564,14 @@ public class RepositoryRestController
               } else {
                 sKey = conversionService.convert(oKey, String.class);
               }
-              links.add(new SimpleLink(sKey, uri));
+              links.add(new SimpleLink(repository + "." + entity.getClass()
+                  .getSimpleName() + "." + sKey, uri));
             }
           } else {
             String propValId = idAttr.get(propVal).toString();
             URI uri = buildUri(baseUri, repository, id, property, propValId);
-            links.add(new SimpleLink(property, uri));
+            links.add(new SimpleLink(repository + "." + entity.getClass()
+                .getSimpleName() + "." + property, uri));
           }
           model.addAttribute(RESOURCE, links);
         } else {
@@ -774,7 +781,8 @@ public class RepositoryRestController
                                                            .type());
           Object linkedEntity = linkedRepo.findOne(sChildId);
           if (null != linkedEntity) {
-            Map<String, Object> entityDto = extractPropertiesLinkAware(linkedEntity,
+            Map<String, Object> entityDto = extractPropertiesLinkAware(repository,
+                                                                       linkedEntity,
                                                                        linkedRepoMeta.entityMetadata(),
                                                                        baseUri);
             URI selfUri = addSelfLink(baseUri, entityDto, repository, id);
@@ -961,7 +969,8 @@ public class RepositoryRestController
   }
 
   @SuppressWarnings({"unchecked"})
-  private Map<String, Object> extractPropertiesLinkAware(Object entity,
+  private Map<String, Object> extractPropertiesLinkAware(String repository,
+                                                         Object entity,
                                                          EntityMetadata<AttributeMetadata> entityMetadata,
                                                          URI baseUri) {
     final Map<String, Object> entityDto = new HashMap<String, Object>();
@@ -979,7 +988,7 @@ public class RepositoryRestController
           .pathSegment(attrName)
           .build()
           .toUri();
-      Link l = new SimpleLink(attrName, uri);
+      Link l = new SimpleLink(repository + "." + entity.getClass().getSimpleName() + "." + attrName, uri);
       List<Link> links = (List<Link>) entityDto.get(LINKS);
       if (null == links) {
         links = new ArrayList<Link>();
