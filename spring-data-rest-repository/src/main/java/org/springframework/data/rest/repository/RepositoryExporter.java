@@ -1,7 +1,5 @@
 package org.springframework.data.rest.repository;
 
-import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -9,13 +7,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.core.EntityInformation;
-import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.util.StringUtils;
@@ -26,9 +20,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public abstract class RepositoryExporter<M extends RepositoryMetadata<R, E>,
-    R extends Repository<? extends Object, ? extends Serializable>,
-    E extends EntityMetadata<? extends AttributeMetadata>>
+public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E extends EntityMetadata<? extends AttributeMetadata>>
     implements ApplicationContextAware,
                InitializingBean {
 
@@ -67,14 +59,12 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<R, E>,
   @Override public void afterPropertiesSet() throws Exception {
     repositories = new Repositories(applicationContext);
     repositoryMetadata = new HashMap<String, M>();
-    Collection<RepositoryFactoryInformation> providers = BeanFactoryUtils.beansOfTypeIncludingAncestors(
-        applicationContext,
-        RepositoryFactoryInformation.class
-    ).values();
-
-    for (RepositoryFactoryInformation entry : providers) {
-      EntityInformation entityInfo = entry.getEntityInformation();
-      Class<?> repoClass = entry.getRepositoryInterface();
+    for (Class<?> domainType : repositories) {
+      if (!exportOnlyTheseClasses.isEmpty() && !exportOnlyTheseClasses.contains(domainType.getName())) {
+        // Don't export this domain type
+        continue;
+      }
+      Class<?> repoClass = repositories.getRepositoryInformationFor(domainType).getRepositoryInterface();
       String name;
       RestResource pathSeg = repoClass.getAnnotation(RestResource.class);
       if (null != pathSeg) {
@@ -82,9 +72,7 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<R, E>,
       } else {
         name = StringUtils.uncapitalize(repoClass.getSimpleName().replaceAll("Repository", ""));
       }
-      R repo = (R) BeanFactoryUtils.beanOfTypeIncludingAncestors(applicationContext, repoClass);
-      M repoMeta = createRepositoryMetadata(repoClass, repo, name, entityInfo);
-      repositoryMetadata.put(name, repoMeta);
+      repositoryMetadata.put(name, createRepositoryMetadata(name, domainType, repoClass, repositories));
     }
   }
 
@@ -137,11 +125,9 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<R, E>,
     return repositoryMetadata.get(name);
   }
 
-  protected abstract M createRepositoryMetadata(
-      Class repoClass,
-      R repo,
-      String name,
-      EntityInformation entityInfo
-  );
+  protected abstract M createRepositoryMetadata(String name,
+                                                Class<?> domainType,
+                                                Class<?> repoClass,
+                                                Repositories repositories);
 
 }

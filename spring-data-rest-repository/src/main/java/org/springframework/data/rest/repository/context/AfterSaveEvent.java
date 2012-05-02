@@ -1,8 +1,8 @@
 package org.springframework.data.rest.repository.context;
 
-import org.springframework.context.ApplicationEvent;
-
 /**
+ * Emitted immediately after a save to the repository.
+ *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class AfterSaveEvent extends RepositoryEvent {

@@ -1,8 +1,8 @@
 package org.springframework.data.rest.repository.context;
 
-import org.springframework.context.ApplicationEvent;
-
 /**
+ * Emitted before an entity is deleted from the repository.
+ *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class BeforeDeleteEvent extends RepositoryEvent {

@@ -41,6 +41,13 @@ public class AnnotatedHandlerRepositoryEventListener
   private ApplicationContext applicationContext;
   private Multimap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = ArrayListMultimap.create();
 
+  public AnnotatedHandlerRepositoryEventListener() {
+  }
+
+  public AnnotatedHandlerRepositoryEventListener(String basePackage) {
+    this.basePackage = basePackage;
+  }
+
   @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
     this.applicationContext = applicationContext;
   }

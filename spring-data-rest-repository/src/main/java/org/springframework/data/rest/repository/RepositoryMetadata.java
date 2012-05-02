@@ -3,6 +3,7 @@ package org.springframework.data.rest.repository;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 
 /**
@@ -10,7 +11,7 @@ import org.springframework.data.repository.Repository;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public interface RepositoryMetadata<R extends Repository<? extends Object, ? extends Serializable>, E extends EntityMetadata<? extends AttributeMetadata>> {
+public interface RepositoryMetadata<E extends EntityMetadata<? extends AttributeMetadata>> {
 
   /**
    * The name this {@link Repository} is exported under.
@@ -31,21 +32,21 @@ public interface RepositoryMetadata<R extends Repository<? extends Object, ? ext
    *
    * @return
    */
-  Class<? extends Object> domainType();
+  Class<?> domainType();
 
   /**
    * The Class of the {@link Repository} subinterface.
    *
    * @return
    */
-  Class<? extends Repository<? extends Object, ? extends Serializable>> repositoryClass();
+  Class<?> repositoryClass();
 
   /**
    * The {@link Repository} instance.
    *
    * @return
    */
-  R repository();
+  CrudRepository<Object, Serializable> repository();
 
   /**
    * The {@link EntityMetadata} associated with the domain type of this {@literal Repository}.

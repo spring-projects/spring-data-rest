@@ -16,7 +16,6 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockServletConfig
 import org.springframework.mock.web.MockServletContext
 import org.springframework.orm.jpa.EntityManagerHolder
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.ui.ExtendedModelMap
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
@@ -75,7 +74,6 @@ class RepositoryRestControllerSpec extends Specification {
     }
   }
 
-  @Transactional
   def "API Test"() {
 
     given:
@@ -99,7 +97,7 @@ class RepositoryRestControllerSpec extends Specification {
     then:
     model.status == HttpStatus.CREATED
 
-    when: "getting specific entity"
+    when: "getting a specific entity"
     model.clear()
     req = createRequest("GET", "people/1")
     controller.entity(new ServletServerHttpRequest(req), uriBuilder, "people", "1", model)
@@ -126,7 +124,7 @@ class RepositoryRestControllerSpec extends Specification {
     model.status == HttpStatus.OK
     peopleLinks[0].href().toString() == "http://localhost:8080/data/people/1"
 
-    when: "creating child entity"
+    when: "creating a child entity"
     model.clear()
     req = createRequest("POST", "address")
     data = mapper.writeValueAsBytes(new Address(["1 W. 1st St."] as String[], "Univille", "ST", "12345"))
@@ -147,7 +145,7 @@ class RepositoryRestControllerSpec extends Specification {
     then:
     model.status == HttpStatus.CREATED
 
-    when: "getting property of entity"
+    when: "getting property of an entity"
     model.clear()
     controller.propertyOfEntity(uriBuilder, "people", "1", "addresses", model)
     def addrLinks = model.resource?.links

@@ -1,11 +1,10 @@
 package org.springframework.data.rest.repository.jpa;
 
-import java.io.Serializable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.RepositoryExporter;
 
 /**
@@ -13,10 +12,7 @@ import org.springframework.data.rest.repository.RepositoryExporter;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class JpaRepositoryExporter extends RepositoryExporter<
-    JpaRepositoryMetadata<Repository<Object, Serializable>>,
-    Repository<Object, Serializable>,
-    JpaEntityMetadata> {
+public class JpaRepositoryExporter extends RepositoryExporter<JpaRepositoryMetadata, JpaEntityMetadata> {
 
   protected EntityManager entityManager;
 
@@ -27,17 +23,8 @@ public class JpaRepositoryExporter extends RepositoryExporter<
 
   @SuppressWarnings({"unchecked"})
   @Override
-  protected JpaRepositoryMetadata<Repository<Object, Serializable>> createRepositoryMetadata(
-      Class repoClass,
-      Repository<Object, Serializable> repo,
-      String name,
-      EntityInformation entityInfo) {
-    return new JpaRepositoryMetadata(repositories,
-                                     name,
-                                     repoClass,
-                                     repo,
-                                     entityInfo,
-                                     entityManager);
+  protected JpaRepositoryMetadata createRepositoryMetadata(String name, Class<?> domainType, Class<?> repoClass, Repositories repositories) {
+    return new JpaRepositoryMetadata(name, domainType, repoClass, repositories, entityManager);
   }
 
 }

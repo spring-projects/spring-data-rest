@@ -11,9 +11,11 @@ allprojects {
     exclude group: "commons-logging"
     exclude module: "slf4j-log4j12"
     exclude module: "groovy-all", version: "1.8.0-beta-3-SNAPSHOT"
+    resolutionStrategy.cacheChangingModulesFor(0, "seconds")
   }
 
   repositories {
+    maven { url "http://repo.springsource.org/libs-snapshot" }
     maven { url "http://repo.springsource.org/libs-milestone" }
     maven { url "http://repo.springsource.org/libs-release" }
   }
