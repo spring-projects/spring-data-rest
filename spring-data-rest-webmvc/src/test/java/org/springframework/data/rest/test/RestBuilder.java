@@ -26,7 +26,7 @@ import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class RestBuilder {
 

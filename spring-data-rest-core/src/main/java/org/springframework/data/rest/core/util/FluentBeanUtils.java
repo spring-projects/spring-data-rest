@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public abstract class FluentBeanUtils {
 

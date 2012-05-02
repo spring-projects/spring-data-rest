@@ -7,7 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * Annotate a {@link org.springframework.data.repository.Repository} with this to influence how it is exported and what
+ * the value of the {@literal rel} attribute will be in links.
+ *
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @Target({
             ElementType.METHOD,
@@ -15,8 +18,10 @@ import java.lang.annotation.Target;
         })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface RestPathSegment {
+public @interface RestResource {
 
-  String value();
+  String path();
+
+  String rel() default "";
 
 }

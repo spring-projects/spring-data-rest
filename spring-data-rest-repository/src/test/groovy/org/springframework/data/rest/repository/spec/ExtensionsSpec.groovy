@@ -22,7 +22,7 @@ import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave
 import org.springframework.data.rest.repository.annotation.HandleAfterLinkSave
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @ContextConfiguration(locations = ["/ExtensionsSpec-test.xml"])
 class ExtensionsSpec extends Specification {

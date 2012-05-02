@@ -11,7 +11,10 @@ import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * Abstract class that listens for generic {@link RepositoryEvent}s and dispatches them to a specific
+ * method based on the event type.
+ *
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public abstract class AbstractRepositoryEventListener<T extends AbstractRepositoryEventListener<? super T>>
     extends RepositoryExporterSupport<T>
@@ -45,16 +48,48 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
     }
   }
 
+  /**
+   * Override this method if you are interested in {@literal beforeSave} events.
+   *
+   * @param entity
+   */
   protected void onBeforeSave(Object entity) {}
 
+  /**
+   * Override this method if you are interested in {@literal afterSave} events.
+   *
+   * @param entity
+   */
   protected void onAfterSave(Object entity) {}
 
+  /**
+   * Override this method if you are interested in {@literal beforeLinkSave} events.
+   *
+   * @param parent
+   * @param linked
+   */
   protected void onBeforeLinkSave(Object parent, Object linked) {}
 
+  /**
+   * Override this method if you are interested in {@literal afterLinkSave} events.
+   *
+   * @param parent
+   * @param linked
+   */
   protected void onAfterLinkSave(Object parent, Object linked) {}
 
+  /**
+   * Override this method if you are interested in {@literal beforeDelete} events.
+   *
+   * @param entity
+   */
   protected void onBeforeDelete(Object entity) {}
 
+  /**
+   * Override this method if you are interested in {@literal afterDelete} events.
+   *
+   * @param entity
+   */
   protected void onAfterDelete(Object entity) {}
 
 }

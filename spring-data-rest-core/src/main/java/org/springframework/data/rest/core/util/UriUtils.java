@@ -9,7 +9,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public abstract class UriUtils {
 

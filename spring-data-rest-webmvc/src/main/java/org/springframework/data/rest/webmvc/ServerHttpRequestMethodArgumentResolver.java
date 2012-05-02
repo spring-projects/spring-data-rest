@@ -12,7 +12,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class ServerHttpRequestMethodArgumentResolver implements HandlerMethodArgumentResolver {
 

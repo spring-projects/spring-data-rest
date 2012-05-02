@@ -4,15 +4,15 @@ import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.rest.repository.annotation.RestPathSegment;
+import org.springframework.data.rest.repository.annotation.RestResource;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-@RestPathSegment("person")
+@RestResource(path = "people", rel = "peeps")
 public interface PersonRepository extends CrudRepository<Person, Long> {
 
-  @RestPathSegment("byName")
+  @RestResource(path = "name", rel = "names")
   public List<Person> findByName(@Param("name") String name);
 
 }

@@ -13,7 +13,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.util.ClassUtils;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class FluentBeanDeserializer extends StdDeserializer {
 

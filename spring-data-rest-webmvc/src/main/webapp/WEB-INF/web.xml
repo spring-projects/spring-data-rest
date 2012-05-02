@@ -5,12 +5,10 @@
          version="2.5">
 
   <context-param>
-    <param-name>contextClass</param-name>
-    <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
-  </context-param>
-  <context-param>
     <param-name>contextConfigLocation</param-name>
-    <param-value>org.springframework.data.rest.webmvc.RepositoryRestConfiguration</param-value>
+    <param-value>
+      classpath*:META-INF/spring-data-rest/**/*-export.xml
+    </param-value>
   </context-param>
 
   <listener>
@@ -26,7 +24,10 @@
     </init-param>
     <init-param>
       <param-name>contextConfigLocation</param-name>
-      <param-value>org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration</param-value>
+      <param-value>
+        org.springframework.data.rest.webmvc.RepositoryRestConfiguration
+        org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration
+      </param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>

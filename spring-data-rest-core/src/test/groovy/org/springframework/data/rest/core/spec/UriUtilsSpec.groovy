@@ -4,7 +4,7 @@ import org.springframework.data.rest.core.util.UriUtils
 import spock.lang.Specification
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 class UriUtilsSpec extends Specification {
 

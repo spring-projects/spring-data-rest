@@ -3,7 +3,7 @@ package org.springframework.data.rest.repository;
 import org.springframework.dao.DataAccessResourceFailureException;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class RepositoryNotFoundException extends DataAccessResourceFailureException {
 

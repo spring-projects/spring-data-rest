@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.view.AbstractView;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @SuppressWarnings({"unchecked"})
 public class JsonView extends AbstractView {

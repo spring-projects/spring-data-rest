@@ -7,7 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class PersonLoader implements InitializingBean {
 

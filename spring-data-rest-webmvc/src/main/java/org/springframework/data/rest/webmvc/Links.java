@@ -9,7 +9,7 @@ import org.springframework.data.rest.core.Link;
 import org.springframework.data.rest.core.SimpleLink;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class Links {
 

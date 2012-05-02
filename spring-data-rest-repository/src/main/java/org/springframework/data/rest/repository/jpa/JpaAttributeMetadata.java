@@ -15,7 +15,7 @@ import org.springframework.data.rest.repository.AttributeMetadata;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class JpaAttributeMetadata implements AttributeMetadata {
 

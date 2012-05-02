@@ -19,7 +19,7 @@ import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolv
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @Configuration
 public class RepositoryRestMvcConfiguration {

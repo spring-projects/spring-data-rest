@@ -15,20 +15,22 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.data.rest.repository.annotation.HandleAfterLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleAfterDelete;
+import org.springframework.data.rest.repository.annotation.HandleAfterLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleAfterSave;
-import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleBeforeDelete;
+import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleBeforeSave;
 import org.springframework.data.rest.repository.annotation.RepositoryEventHandler;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * {@link ApplicationListener} that will dispatch {@link RepositoryEvent}s to handlers annotated with {@link
+ * RepositoryEventHandler}.
+ *
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class AnnotatedHandlerRepositoryEventListener
     implements ApplicationListener<RepositoryEvent>,
@@ -43,19 +45,41 @@ public class AnnotatedHandlerRepositoryEventListener
     this.applicationContext = applicationContext;
   }
 
+  /**
+   * Get the base package in which to search for event handlers.
+   *
+   * @return
+   */
   public String getBasePackage() {
     return basePackage;
   }
 
+  /**
+   * Set the base package in which to search for event handlers.
+   *
+   * @param basePackage
+   * @return
+   */
   public AnnotatedHandlerRepositoryEventListener setBasePackage(String basePackage) {
     this.basePackage = basePackage;
     return this;
   }
 
+  /**
+   * Get the base package in which to search for event handlers.
+   *
+   * @return
+   */
   public String basePackage() {
     return basePackage;
   }
 
+  /**
+   * Set the base package in which to search for event handlers.
+   *
+   * @param basePackage
+   * @return
+   */
   public AnnotatedHandlerRepositoryEventListener basePackage(String basePackage) {
     this.basePackage = basePackage;
     return this;
@@ -67,7 +91,7 @@ public class AnnotatedHandlerRepositoryEventListener
     for (BeanDefinition beanDef : scanner.findCandidateComponents(basePackage)) {
       String typeName = beanDef.getBeanClassName();
       Class<?> handlerType = ClassUtils.forName(typeName, ClassUtils.getDefaultClassLoader());
-      RepositoryEventHandler typeAnno = AnnotationUtils.findAnnotation(handlerType, RepositoryEventHandler.class);
+      RepositoryEventHandler typeAnno = handlerType.getAnnotation(RepositoryEventHandler.class);
       Class<?>[] targetTypes = typeAnno.value();
       if (targetTypes.length == 0) {
         targetTypes = new Class<?>[]{null};
@@ -128,7 +152,7 @@ public class AnnotatedHandlerRepositoryEventListener
                                               Method method,
                                               Class<T> annoType,
                                               Class<? extends RepositoryEvent> eventType) {
-    T anno = AnnotationUtils.findAnnotation(method, annoType);
+    T anno = method.getAnnotation(annoType);
     if (null != anno) {
       try {
         Class<?>[] targetTypes;

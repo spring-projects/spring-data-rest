@@ -6,25 +6,47 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * Abstract class used as a helper for those classes that need access to the exported repositories.
+ *
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupport<? super S>> {
 
   @Autowired
   protected List<RepositoryExporter> repositoryExporters = Collections.emptyList();
 
+  /**
+   * Get a List of {@link RepositoryExporter}s.
+   *
+   * @return
+   */
   public List<RepositoryExporter> getRepositoryExporters() {
     return repositoryExporters;
   }
 
+  /**
+   * Set the List of {@link RepositoryExporter}s.
+   *
+   * @param repositoryExporters
+   */
   public void setRepositoryExporters(List<RepositoryExporter> repositoryExporters) {
     this.repositoryExporters = repositoryExporters;
   }
 
+  /**
+   * Get a List of {@link RepositoryExporter}s.
+   *
+   * @return
+   */
   public List<RepositoryExporter> repositoryExporters() {
     return repositoryExporters;
   }
 
+  /**
+   * Set the List of {@link RepositoryExporter}s.
+   *
+   * @param repositoryExporters
+   */
   @SuppressWarnings({"unchecked"})
   public S repositoryExporters(List<RepositoryExporter> repositoryExporters) {
     this.repositoryExporters = repositoryExporters;

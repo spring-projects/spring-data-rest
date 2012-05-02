@@ -7,13 +7,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * Advertises classes annotated with this that they are event handlers.
+ *
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface RepositoryEventHandler {
 
+  /**
+   * The list of {@link org.springframework.context.ApplicationEvent} classes this event handler cares about.
+   *
+   * @return
+   */
   Class<?>[] value() default {};
 
 }

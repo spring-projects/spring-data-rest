@@ -2,12 +2,9 @@ package org.springframework.data.rest.webmvc.spec
 
 import org.codehaus.jackson.map.ObjectMapper
 import org.codehaus.jackson.map.ser.CustomSerializerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
+import org.springframework.context.support.ClassPathXmlApplicationContext
 import org.springframework.data.rest.core.SimpleLink
 import org.springframework.data.rest.core.util.FluentBeanSerializer
-import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener
 import org.springframework.data.rest.test.webmvc.Address
 import org.springframework.data.rest.webmvc.RepositoryRestConfiguration
 import org.springframework.data.rest.webmvc.RepositoryRestController
@@ -15,26 +12,25 @@ import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration
 import org.springframework.http.HttpStatus
 import org.springframework.http.server.ServletServerHttpRequest
 import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.test.context.ContextConfiguration
+import org.springframework.mock.web.MockServletConfig
+import org.springframework.mock.web.MockServletContext
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.ui.ExtendedModelMap
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
 import org.springframework.web.util.UriComponentsBuilder
 import spock.lang.Shared
 import spock.lang.Specification
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-@ContextConfiguration(classes = [RepositoryRestConfiguration, RepositoryRestMvcConfiguration, RepositorySpecConfig])
 class RepositoryRestControllerSpec extends Specification {
 
   @Shared
   UriComponentsBuilder uriBuilder
   @Shared
   ObjectMapper mapper = new ObjectMapper()
-  @Autowired
-  URI baseUri
-  @Autowired
+  @Shared
   RepositoryRestController controller
 
   MockHttpServletRequest createRequest(String method, String path) {
@@ -46,6 +42,14 @@ class RepositoryRestControllerSpec extends Specification {
   }
 
   def setupSpec() {
+    def appCtx = new ClassPathXmlApplicationContext("classpath*:META-INF/spring-data-rest/**/*-export.xml")
+    def webAppCtx = new AnnotationConfigWebApplicationContext()
+    webAppCtx.setServletConfig(new MockServletConfig())
+    webAppCtx.setServletContext(new MockServletContext())
+    webAppCtx.setConfigLocations([RepositoryRestConfiguration.name, RepositoryRestMvcConfiguration.name] as String[])
+    webAppCtx.setParent(appCtx)
+    webAppCtx.afterPropertiesSet()
+    controller = webAppCtx.getBean(RepositoryRestController)
     uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:8080/data")
     def customSerializerFactory = new CustomSerializerFactory()
     customSerializerFactory.addSpecificMapping(SimpleLink, new FluentBeanSerializer(SimpleLink))
@@ -68,40 +72,40 @@ class RepositoryRestControllerSpec extends Specification {
 
     when: "adding an entity"
     model.clear()
-    def req = createRequest("POST", "person")
+    def req = createRequest("POST", "people")
     def data = mapper.writeValueAsBytes([name: "John Doe"])
     req.content = data
-    controller.create(new ServletServerHttpRequest(req), uriBuilder, "person", model)
+    controller.create(new ServletServerHttpRequest(req), uriBuilder, "people", model)
 
     then:
     model.status == HttpStatus.CREATED
 
     when: "getting specific entity"
     model.clear()
-    req = createRequest("GET", "person/1")
-    controller.entity(new ServletServerHttpRequest(req), uriBuilder, "person", "1", model)
+    req = createRequest("GET", "people/1")
+    controller.entity(new ServletServerHttpRequest(req), uriBuilder, "people", "1", model)
 
     then:
     model.resource?.name == "John Doe"
 
     when: "updating an entity"
     model.clear()
-    req = createRequest("PUT", "person/1")
+    req = createRequest("PUT", "people/1")
     data = mapper.writeValueAsBytes([name: "Johnnie Doe", version: 0])
     req.content = data
-    controller.createOrUpdate(new ServletServerHttpRequest(req), uriBuilder, "person", "1", model)
+    controller.createOrUpdate(new ServletServerHttpRequest(req), uriBuilder, "people", "1", model)
 
     then:
     model.status == HttpStatus.NO_CONTENT
 
     when: "listing available entities"
     model.clear()
-    controller.listEntities(uriBuilder, "person", model)
-    def personsLinks = model.resource?.links
+    controller.listEntities(uriBuilder, "people", model)
+    def peopleLinks = model.resource?.links
 
     then:
     model.status == HttpStatus.OK
-    personsLinks[0].href().toString() == "http://localhost:8080/data/person/1"
+    peopleLinks[0].href().toString() == "http://localhost:8080/data/people/1"
 
     when: "creating child entity"
     model.clear()
@@ -115,33 +119,24 @@ class RepositoryRestControllerSpec extends Specification {
 
     when: "linking child to parent entity"
     model.clear()
-    req = createRequest("POST", "person/1/addresses")
+    req = createRequest("POST", "people/1/addresses")
     req.contentType = "text/uri-list"
     data = "http://localhost:8080/data/address/1".bytes
     req.content = data
-    controller.updateLinks(new ServletServerHttpRequest(req), uriBuilder, "person", "1", "addresses", model)
+    controller.updatePropertyOfEntity(new ServletServerHttpRequest(req), uriBuilder, "people", "1", "addresses", model)
 
     then:
     model.status == HttpStatus.CREATED
 
     when: "getting property of entity"
     model.clear()
-    controller.propertyOfEntity(uriBuilder, "person", "1", "addresses", model)
+    controller.propertyOfEntity(uriBuilder, "people", "1", "addresses", model)
     def addrLinks = model.resource?.links
 
     then:
     null != addrLinks
     addrLinks.size() == 1
 
-  }
-
-}
-
-@Configuration
-class RepositorySpecConfig {
-
-  @Bean ValidatingRepositoryEventListener validator() {
-    new ValidatingRepositoryEventListener()
   }
 
 }

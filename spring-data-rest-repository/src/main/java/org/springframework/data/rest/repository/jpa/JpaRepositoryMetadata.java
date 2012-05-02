@@ -8,31 +8,33 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.metamodel.Metamodel;
 
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.data.rest.repository.RepositoryQueryMethod;
-import org.springframework.data.rest.repository.annotation.RestPathSegment;
+import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class JpaRepositoryMetadata<R extends Repository<Object, Serializable>> implements RepositoryMetadata<R, JpaEntityMetadata> {
 
   private final String name;
-  private final Class<?> repoClass;
+  private final Class<? extends Repository<? extends Object, ? extends Serializable>> repoClass;
   private final R repository;
   private final EntityInformation entityInfo;
   private final Map<String, RepositoryQueryMethod> queryMethods = new HashMap<String, RepositoryQueryMethod>();
+
+  private String rel;
   private JpaEntityMetadata entityMetadata;
 
   @SuppressWarnings({"unchecked"})
   public JpaRepositoryMetadata(Repositories repositories,
                                String name,
-                               final Class<?> repoClass,
+                               final Class<? extends Repository<? extends Object, ? extends Serializable>> repoClass,
                                R repository,
                                EntityInformation entityInfo,
                                EntityManager entityManager) {
@@ -41,11 +43,19 @@ public class JpaRepositoryMetadata<R extends Repository<Object, Serializable>> i
     this.repository = repository;
     this.entityInfo = entityInfo;
 
+    RestResource resourceAnno = repoClass.getAnnotation(RestResource.class);
+    if (null != resourceAnno && StringUtils.hasText(resourceAnno.rel())) {
+      rel = resourceAnno.rel();
+    } else {
+      rel = name;
+    }
+
     ReflectionUtils.doWithMethods(
         repoClass,
         new ReflectionUtils.MethodCallback() {
           @Override public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-            String pathSeg = AnnotationUtils.findAnnotation(method, RestPathSegment.class).value();
+            RestResource resourceAnno = method.getAnnotation(RestResource.class);
+            String pathSeg = resourceAnno.path();
             ReflectionUtils.makeAccessible(method);
             queryMethods.put(pathSeg, new RepositoryQueryMethod(method));
           }
@@ -56,7 +66,7 @@ public class JpaRepositoryMetadata<R extends Repository<Object, Serializable>> i
                 && !method.isBridge()
                 && method.getDeclaringClass() != Object.class
                 && !method.getName().contains("$")
-                && null != AnnotationUtils.findAnnotation(method, RestPathSegment.class));
+                && null != method.getAnnotation(RestResource.class));
           }
         }
     );
@@ -69,8 +79,16 @@ public class JpaRepositoryMetadata<R extends Repository<Object, Serializable>> i
     return name;
   }
 
+  @Override public String rel() {
+    return rel;
+  }
+
   @Override public Class<? extends Object> domainType() {
     return entityMetadata.type();
+  }
+
+  @Override public Class<? extends Repository<? extends Object, ? extends Serializable>> repositoryClass() {
+    return repoClass;
   }
 
   @Override public R repository() {

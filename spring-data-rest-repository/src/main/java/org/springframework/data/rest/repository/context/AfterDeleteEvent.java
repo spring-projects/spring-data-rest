@@ -1,7 +1,7 @@
 package org.springframework.data.rest.repository.context;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class AfterDeleteEvent extends RepositoryEvent {
   public AfterDeleteEvent(Object source) {

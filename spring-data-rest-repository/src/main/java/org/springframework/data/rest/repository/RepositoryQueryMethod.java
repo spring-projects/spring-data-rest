@@ -7,16 +7,10 @@ import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.data.repository.query.Param;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class RepositoryQueryMethod {
 
-  private static final Class[] SIMPLE_TYPES = new Class[]{
-      String.class,
-      Integer.class,
-      Long.class,
-      Boolean.class
-  };
   private static final LocalVariableTableParameterNameDiscoverer nameLookup = new LocalVariableTableParameterNameDiscoverer();
 
   private Method method;

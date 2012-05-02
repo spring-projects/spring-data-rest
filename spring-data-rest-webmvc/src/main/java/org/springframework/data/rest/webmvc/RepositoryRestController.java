@@ -26,6 +26,8 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.rest.core.Handler;
@@ -39,6 +41,7 @@ import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
 import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.data.rest.repository.RepositoryQueryMethod;
+import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
 import org.springframework.data.rest.repository.context.AfterLinkSaveEvent;
 import org.springframework.data.rest.repository.context.AfterSaveEvent;
@@ -55,10 +58,12 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -69,7 +74,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @Controller
 public class RepositoryRestController
@@ -90,6 +95,7 @@ public class RepositoryRestController
   private MediaType jsonMediaType = MediaType.parseMediaType("application/x-spring-data+json");
   private ConversionService conversionService = new DefaultConversionService();
   private List<HttpMessageConverter<?>> httpMessageConverters = Collections.emptyList();
+  private Map<String, Handler<Object, Object>> resourceHandlers = Collections.emptyMap();
   private ObjectMapper objectMapper = new ObjectMapper();
 
   @Override public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
@@ -127,6 +133,24 @@ public class RepositoryRestController
 
   public RepositoryRestController httpMessageConverters(List<HttpMessageConverter<?>> httpMessageConverters) {
     this.httpMessageConverters = httpMessageConverters;
+    return this;
+  }
+
+  public Map<String, Handler<Object, Object>> getResourceHandlers() {
+    return resourceHandlers;
+  }
+
+  public RepositoryRestController setResourceHandlers(Map<String, Handler<Object, Object>> resourceHandlers) {
+    this.resourceHandlers = resourceHandlers;
+    return this;
+  }
+
+  public Map<String, Handler<Object, Object>> resourceHandlers() {
+    return resourceHandlers;
+  }
+
+  public RepositoryRestController resourceHandlers(Map<String, Handler<Object, Object>> resourceHandlers) {
+    this.resourceHandlers = resourceHandlers;
     return this;
   }
 
@@ -199,9 +223,12 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     Links links = new Links();
-    for (RepositoryExporter repoMeta : repositoryExporters) {
-      for (String name : (Set<String>) repoMeta.repositoryNames()) {
-        links.add(new SimpleLink(name, buildUri(baseUri, name)));
+    for (RepositoryExporter repoExporter : repositoryExporters) {
+      for (String name : (Set<String>) repoExporter.repositoryNames()) {
+        RepositoryMetadata repoMeta = repoExporter.repositoryMetadataFor(name);
+        String rel = repoMeta.rel();
+        URI path = buildUri(baseUri, name);
+        links.add(new SimpleLink(rel, path));
       }
     }
 
@@ -229,13 +256,44 @@ public class RepositoryRestController
     while (iter.hasNext()) {
       Object o = iter.next();
       Serializable id = (Serializable) repoMeta.entityMetadata().idAttribute().get(o);
-      links.add(new SimpleLink(repository + "." + o.getClass().getSimpleName(),
+      links.add(new SimpleLink(repoMeta.rel() + "." + o.getClass().getSimpleName(),
                                buildUri(baseUri, repository, id.toString())));
     }
+    links.add(new SimpleLink(repoMeta.rel() + ".search",
+                             buildUri(baseUri, repository, "search")));
+
+    model.addAttribute(STATUS, HttpStatus.OK);
+    model.addAttribute(RESOURCE, links);
+  }
+
+  @SuppressWarnings({"unchecked"})
+  @RequestMapping(
+      value = "/{repository}/search",
+      method = RequestMethod.GET,
+      produces = {
+          "application/json"
+      }
+  )
+  public void listQueryMethods(UriComponentsBuilder uriBuilder,
+                               @PathVariable String repository,
+                               Model model) {
+    URI baseUri = uriBuilder.build().toUri();
+
+    RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    Links links = new Links();
+
     for (Map.Entry<String, RepositoryQueryMethod> entry : ((Map<String, RepositoryQueryMethod>) repoMeta.queryMethods())
         .entrySet()) {
-      links.add(new SimpleLink(repository + "." + entry.getKey(),
-                               buildUri(baseUri, repository, "search", entry.getKey())));
+      String rel = repoMeta.rel() + "." + entry.getKey();
+      URI path = buildUri(baseUri, repository, "search", entry.getKey());
+      RestResource resourceAnno = entry.getValue().method().getAnnotation(RestResource.class);
+      if (null != resourceAnno) {
+        path = buildUri(baseUri, repository, "search", resourceAnno.path());
+        if (StringUtils.hasText(resourceAnno.rel())) {
+          rel = repoMeta.rel() + "." + resourceAnno.rel();
+        }
+      }
+      links.add(new SimpleLink(rel, path));
     }
 
     model.addAttribute(STATUS, HttpStatus.OK);
@@ -266,10 +324,23 @@ public class RepositoryRestController
     Object[] paramVals = new Object[paramTypes.length];
     for (int i = 0; i < paramVals.length; i++) {
       String queryVal = request.getParameter(paramNames[i]);
-      if (paramTypes[i].isAssignableFrom(String.class)) {
+      if (String.class.isAssignableFrom(paramTypes[i])) {
+        // Param type is a String
         paramVals[i] = queryVal;
-      } else {
+      } else if (Pageable.class.isAssignableFrom(paramTypes[i])) {
+        // Handle paging
+      } else if (Sort.class.isAssignableFrom(paramTypes[i])) {
+        // Handle sorting
+      } else if (conversionService.canConvert(String.class, paramTypes[i])) {
+        // There's a converter from String -> param type
         paramVals[i] = conversionService.convert(queryVal, paramTypes[i]);
+      } else {
+        // Param type isn't a "simple" type or no converter exists, try JSON
+        try {
+          paramVals[i] = objectMapper.readValue(queryVal, paramTypes[i]);
+        } catch (IOException e) {
+          throw new IllegalArgumentException(e);
+        }
       }
     }
 
@@ -280,8 +351,10 @@ public class RepositoryRestController
         for (Object o : (Collection) result) {
           RepositoryMetadata elemRepoMeta = repositoryMetadataFor(o.getClass());
           if (null != elemRepoMeta) {
-            Map<String, Object> dto = extractPropertiesLinkAware(repository, o, elemRepoMeta.entityMetadata(), baseUri);
-            coll.add(dto);
+            String id = elemRepoMeta.entityMetadata().idAttribute().get(o).toString();
+            String rel = elemRepoMeta.rel() + "." + elemRepoMeta.entityMetadata().type().getSimpleName();
+            URI path = buildUri(baseUri, repository, id);
+            coll.add(new SimpleLink(rel, path));
           } else {
             coll.add(o);
           }
@@ -292,11 +365,11 @@ public class RepositoryRestController
       } else {
         RepositoryMetadata elemRepoMeta = repositoryMetadataFor(result.getClass());
         if (null != elemRepoMeta) {
-          Map<String, Object> dto = extractPropertiesLinkAware(repository,
-                                                               result,
-                                                               elemRepoMeta.entityMetadata(),
-                                                               baseUri);
-          model.addAttribute(RESOURCE, dto);
+          String id = elemRepoMeta.entityMetadata().idAttribute().get(result).toString();
+          String rel = elemRepoMeta.rel() + "." + elemRepoMeta.entityMetadata().type().getSimpleName();
+          URI path = buildUri(baseUri, repository, id);
+          Link link = new SimpleLink(rel, path);
+          model.addAttribute(RESOURCE, link);
         } else {
           model.addAttribute(RESOURCE, result);
         }
@@ -387,12 +460,10 @@ public class RepositoryRestController
         headers.set("ETag", "\"" + version.toString() + "\"");
       }
       Map<String, Object> entityDto = extractPropertiesLinkAware(repository,
+                                                                 repoMeta.rel(),
                                                                  entity,
                                                                  repoMeta.entityMetadata(),
-                                                                 UriComponentsBuilder.fromUri(baseUri)
-                                                                     .pathSegment(repository, id)
-                                                                     .build()
-                                                                     .toUri());
+                                                                 buildUri(baseUri, repository, id));
       addSelfLink(baseUri, entityDto, repository, id);
 
       model.addAttribute(HEADERS, headers);
@@ -549,14 +620,14 @@ public class RepositoryRestController
           if (propVal instanceof Collection) {
             for (Object o : (Collection) propVal) {
               String propValId = idAttr.get(o).toString();
-              URI uri = buildUri(baseUri, repository, id, property, propValId);
-              links.add(new SimpleLink(repository + "." + entity.getClass()
-                  .getSimpleName() + "." + attrType.getSimpleName(), uri));
+              String rel = repository + "." + entity.getClass().getSimpleName() + "." + attrType.getSimpleName();
+              URI path = buildUri(baseUri, repository, id, property, propValId);
+              links.add(new SimpleLink(rel, path));
             }
           } else if (propVal instanceof Map) {
             for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) propVal).entrySet()) {
               String propValId = idAttr.get(entry.getValue()).toString();
-              URI uri = buildUri(baseUri, repository, id, property, propValId);
+              URI path = buildUri(baseUri, repository, id, property, propValId);
               Object oKey = entry.getKey();
               String sKey;
               if (ClassUtils.isAssignable(oKey.getClass(), String.class)) {
@@ -564,14 +635,14 @@ public class RepositoryRestController
               } else {
                 sKey = conversionService.convert(oKey, String.class);
               }
-              links.add(new SimpleLink(repository + "." + entity.getClass()
-                  .getSimpleName() + "." + sKey, uri));
+              String rel = repository + "." + entity.getClass().getSimpleName() + "." + sKey;
+              links.add(new SimpleLink(rel, path));
             }
           } else {
             String propValId = idAttr.get(propVal).toString();
-            URI uri = buildUri(baseUri, repository, id, property, propValId);
-            links.add(new SimpleLink(repository + "." + entity.getClass()
-                .getSimpleName() + "." + property, uri));
+            String rel = repository + "." + entity.getClass().getSimpleName() + "." + property;
+            URI path = buildUri(baseUri, repository, id, property, propValId);
+            links.add(new SimpleLink(rel, path));
           }
           model.addAttribute(RESOURCE, links);
         } else {
@@ -597,12 +668,12 @@ public class RepositoryRestController
           "text/uri-list"
       }
   )
-  public void updateLinks(final ServerHttpRequest request,
-                          UriComponentsBuilder uriBuilder,
-                          @PathVariable String repository,
-                          @PathVariable String id,
-                          final @PathVariable String property,
-                          final Model model) throws IOException {
+  public void updatePropertyOfEntity(final ServerHttpRequest request,
+                                     UriComponentsBuilder uriBuilder,
+                                     @PathVariable String repository,
+                                     @PathVariable String id,
+                                     final @PathVariable String property,
+                                     final Model model) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
 
     final RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
@@ -625,7 +696,7 @@ public class RepositoryRestController
           @Override public Void handle(Object linkedEntity) {
             if (attrMeta.isCollectionLike()) {
               Collection c = new ArrayList();
-              Collection current = (Collection) attrMeta.get(entity);
+              Collection current = attrMeta.asCollection(entity);
               if (request.getMethod() == HttpMethod.POST && null != current) {
                 c.addAll(current);
               }
@@ -633,7 +704,7 @@ public class RepositoryRestController
               attrMeta.set(c, entity);
             } else if (attrMeta.isSetLike()) {
               Set s = new HashSet();
-              Set current = (Set) attrMeta.get(entity);
+              Set current = attrMeta.asSet(entity);
               if (request.getMethod() == HttpMethod.POST && null != current) {
                 s.addAll(current);
               }
@@ -641,7 +712,7 @@ public class RepositoryRestController
               attrMeta.set(s, entity);
             } else if (attrMeta.isMapLike()) {
               Map m = new HashMap();
-              Map current = (Map) attrMeta.get(entity);
+              Map current = attrMeta.asMap(entity);
               if (request.getMethod() == HttpMethod.POST && null != current) {
                 m.putAll(current);
               }
@@ -671,7 +742,9 @@ public class RepositoryRestController
             }
           }
         } else if (jsonMediaType.equals(incomingMediaType)) {
-          final Map<String, List<Map<String, String>>> incoming = readIncoming(request, incomingMediaType, Map.class);
+          final Map<String, List<Map<String, String>>> incoming = readIncoming(request,
+                                                                               incomingMediaType,
+                                                                               Map.class);
           for (Map<String, String> link : incoming.get(LINKS)) {
             String sLinkUri = link.get("href");
             Object o = resolveTopLevelResource(baseUri, sLinkUri);
@@ -782,6 +855,7 @@ public class RepositoryRestController
           Object linkedEntity = linkedRepo.findOne(sChildId);
           if (null != linkedEntity) {
             Map<String, Object> entityDto = extractPropertiesLinkAware(repository,
+                                                                       linkedRepoMeta.rel(),
                                                                        linkedEntity,
                                                                        linkedRepoMeta.entityMetadata(),
                                                                        baseUri);
@@ -969,7 +1043,8 @@ public class RepositoryRestController
   }
 
   @SuppressWarnings({"unchecked"})
-  private Map<String, Object> extractPropertiesLinkAware(String repository,
+  private Map<String, Object> extractPropertiesLinkAware(String repoName,
+                                                         String repoRel,
                                                          Object entity,
                                                          EntityMetadata<AttributeMetadata> entityMetadata,
                                                          URI baseUri) {
@@ -988,7 +1063,7 @@ public class RepositoryRestController
           .pathSegment(attrName)
           .build()
           .toUri();
-      Link l = new SimpleLink(repository + "." + entity.getClass().getSimpleName() + "." + attrName, uri);
+      Link l = new SimpleLink(repoRel + "." + entity.getClass().getSimpleName() + "." + attrName, uri);
       List<Link> links = (List<Link>) entityDto.get(LINKS);
       if (null == links) {
         links = new ArrayList<Link>();

@@ -15,7 +15,7 @@ import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @ContextConfiguration(locations = ["/JpaMetadataSpec-test.xml"])
 class JpaMetadataSpec extends Specification {

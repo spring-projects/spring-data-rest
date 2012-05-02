@@ -15,7 +15,10 @@ import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * {@link org.springframework.context.ApplicationListener} implementation that dispatches {@link RepositoryEvent}s to a
+ * specific {@link Validator}.
+ *
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class ValidatingRepositoryEventListener
     extends AbstractRepositoryEventListener<ValidatingRepositoryEventListener>
@@ -43,10 +46,20 @@ public class ValidatingRepositoryEventListener
     }
   }
 
+  /**
+   * Get a Map of {@link Validator}s that are assigned to the various {@link RepositoryEvent}s.
+   *
+   * @return
+   */
   public Map<String, Collection<Validator>> getValidators() {
     return validators.asMap();
   }
 
+  /**
+   * Assign a Map of {@link Validator}s that are assigned to the various {@link RepositoryEvent}s.
+   *
+   * @return
+   */
   public ValidatingRepositoryEventListener setValidators(Map<String, Collection<Validator>> validators) {
     for (Map.Entry<String, Collection<Validator>> entry : validators.entrySet()) {
       this.validators.replaceValues(entry.getKey(), entry.getValue());
@@ -54,6 +67,13 @@ public class ValidatingRepositoryEventListener
     return this;
   }
 
+  /**
+   * Add a {@link Validator} that will be triggered on the given event.
+   *
+   * @param event
+   * @param validator
+   * @return
+   */
   public ValidatingRepositoryEventListener addValidator(String event, Validator validator) {
     validators.put(event, validator);
     return this;

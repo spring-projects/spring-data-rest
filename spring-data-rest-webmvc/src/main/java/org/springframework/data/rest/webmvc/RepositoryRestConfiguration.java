@@ -6,10 +6,11 @@ import java.util.List;
 import javax.persistence.EntityManagerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.repository.jpa.JpaRepositoryExporter;
@@ -19,10 +20,11 @@ import org.springframework.http.converter.json.MappingJacksonHttpMessageConverte
 import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * Base configuration for the Spring Data REST Exporter.
+ *
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @Configuration
-@ImportResource("classpath*:META-INF/spring-data-rest/**/*-export.xml")
 public class RepositoryRestConfiguration {
 
   @Autowired
@@ -31,12 +33,17 @@ public class RepositoryRestConfiguration {
   JpaRepositoryExporter jpaRepositoryExporter;
   @Autowired(required = false)
   ConversionService customConversionService;
-  ConversionService defaultConversionService = new DefaultConversionService();
+  ConfigurableConversionService defaultConversionService = new DefaultConversionService();
   @Autowired(required = false)
   List<HttpMessageConverter<?>> httpMessageConverters = new ArrayList<HttpMessageConverter<?>>();
   @Autowired(required = false)
   ValidatingRepositoryEventListener validatingRepositoryEventListener;
 
+  /**
+   * Either the user's pre-configured {@link ConversionService} or the {@link DefaultConversionService}.
+   *
+   * @return
+   */
   @Bean ConversionService conversionService() {
     if (null != customConversionService) {
       return customConversionService;
@@ -45,6 +52,11 @@ public class RepositoryRestConfiguration {
     }
   }
 
+  /**
+   * A list of {@link HttpMessageConverter}s to be used to read incoming data and to write outgoing responses.
+   *
+   * @return
+   */
   @Bean List<HttpMessageConverter<?>> httpMessageConverters() {
     if (httpMessageConverters.isEmpty()) {
       MappingJacksonHttpMessageConverter json = new MappingJacksonHttpMessageConverter();
@@ -56,6 +68,11 @@ public class RepositoryRestConfiguration {
     return httpMessageConverters;
   }
 
+  /**
+   * Export any JPA {@link org.springframework.data.repository.Repository} implementations we find.
+   *
+   * @return
+   */
   @Bean JpaRepositoryExporter jpaRepositoryExporter() {
     if (null == jpaRepositoryExporter) {
       jpaRepositoryExporter = new JpaRepositoryExporter();

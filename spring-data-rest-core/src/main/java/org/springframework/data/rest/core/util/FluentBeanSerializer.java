@@ -13,7 +13,7 @@ import org.codehaus.jackson.map.ser.std.SerializerBase;
 import org.springframework.util.ClassUtils;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class FluentBeanSerializer extends SerializerBase {
 

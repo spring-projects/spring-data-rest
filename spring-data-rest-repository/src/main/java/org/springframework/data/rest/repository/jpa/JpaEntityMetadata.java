@@ -11,7 +11,7 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.EntityMetadata;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class JpaEntityMetadata implements EntityMetadata<JpaAttributeMetadata> {
 

@@ -3,14 +3,14 @@ package org.springframework.data.rest.repository.test;
 import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.rest.repository.annotation.RestPathSegment;
+import org.springframework.data.rest.repository.annotation.RestResource;
 
 /**
- * @author Jon Brisbin <jon@jbrisbin.com>
+ * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public interface PersonRepository extends CrudRepository<Person, Long> {
 
-  @RestPathSegment("byName")
+  @RestResource(path = "byName")
   public List<Person> findByName(String name);
 
 }
