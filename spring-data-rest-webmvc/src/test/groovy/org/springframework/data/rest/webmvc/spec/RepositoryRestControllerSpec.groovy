@@ -1,5 +1,6 @@
 package org.springframework.data.rest.webmvc.spec
 
+import javax.persistence.EntityManagerFactory
 import org.codehaus.jackson.map.ObjectMapper
 import org.codehaus.jackson.map.ser.CustomSerializerFactory
 import org.springframework.context.support.ClassPathXmlApplicationContext
@@ -14,7 +15,9 @@ import org.springframework.http.server.ServletServerHttpRequest
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockServletConfig
 import org.springframework.mock.web.MockServletContext
+import org.springframework.orm.jpa.EntityManagerHolder
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.ui.ExtendedModelMap
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
 import org.springframework.web.util.UriComponentsBuilder
@@ -32,6 +35,8 @@ class RepositoryRestControllerSpec extends Specification {
   ObjectMapper mapper = new ObjectMapper()
   @Shared
   RepositoryRestController controller
+  @Shared
+  EntityManagerFactory emf
 
   MockHttpServletRequest createRequest(String method, String path) {
     return new MockHttpServletRequest(
@@ -41,19 +46,33 @@ class RepositoryRestControllerSpec extends Specification {
     )
   }
 
+  /**
+   * Try to set up things similarly to how they get loaded in the webapp.
+   */
   def setupSpec() {
     def appCtx = new ClassPathXmlApplicationContext("classpath*:META-INF/spring-data-rest/**/*-export.xml")
+    emf = appCtx.getBean(EntityManagerFactory)
+
     def webAppCtx = new AnnotationConfigWebApplicationContext()
     webAppCtx.setServletConfig(new MockServletConfig())
     webAppCtx.setServletContext(new MockServletContext())
     webAppCtx.setConfigLocations([RepositoryRestConfiguration.name, RepositoryRestMvcConfiguration.name] as String[])
     webAppCtx.setParent(appCtx)
     webAppCtx.afterPropertiesSet()
+
     controller = webAppCtx.getBean(RepositoryRestController)
+
     uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:8080/data")
+
     def customSerializerFactory = new CustomSerializerFactory()
     customSerializerFactory.addSpecificMapping(SimpleLink, new FluentBeanSerializer(SimpleLink))
     mapper.setSerializerFactory(customSerializerFactory)
+  }
+
+  def setup() {
+    if (!TransactionSynchronizationManager.hasResource(emf)) {
+      TransactionSynchronizationManager.bindResource(emf, new EntityManagerHolder(emf.createEntityManager()))
+    }
   }
 
   @Transactional
