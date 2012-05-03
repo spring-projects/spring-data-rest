@@ -53,7 +53,6 @@ import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.server.ServerHttpRequest;
@@ -68,7 +67,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -251,7 +249,7 @@ public class RepositoryRestController
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Links links = new Links();
 
-    Iterator iter = ((CrudRepository) repoMeta.repository()).findAll().iterator();
+    Iterator iter = repoMeta.repository().findAll().iterator();
     while (iter.hasNext()) {
       Object o = iter.next();
       Serializable id = (Serializable) repoMeta.entityMetadata().idAttribute().get(o);
@@ -396,7 +394,7 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
-    CrudRepository repo = (CrudRepository) repoMeta.repository();
+    CrudRepository repo = repoMeta.repository();
     MediaType incomingMediaType = request.getHeaders().getContentType();
     final Object incoming = readIncoming(request, incomingMediaType, repoMeta.entityMetadata().type());
     if (null == incoming) {
@@ -441,7 +439,7 @@ public class RepositoryRestController
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
                                                   .idAttribute()
                                                   .type());
-    CrudRepository repo = (CrudRepository) repoMeta.repository();
+    CrudRepository repo = repoMeta.repository();
     Object entity = repo.findOne(serId);
     if (null == entity) {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
@@ -500,7 +498,7 @@ public class RepositoryRestController
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
                                                   .idAttribute()
                                                   .type());
-    CrudRepository repo = (CrudRepository) repoMeta.repository();
+    CrudRepository repo = repoMeta.repository();
     Object entity = null;
     Class<?> domainType = repoMeta.entityMetadata().type();
     switch (request.getMethod()) {
@@ -561,7 +559,7 @@ public class RepositoryRestController
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
                                                   .idAttribute()
                                                   .type());
-    CrudRepository repo = (CrudRepository) repoMeta.repository();
+    CrudRepository repo = repoMeta.repository();
 
     if (null != eventPublisher) {
       eventPublisher.publishEvent(new BeforeDeleteEvent(serId));
@@ -596,7 +594,7 @@ public class RepositoryRestController
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
                                                   .idAttribute()
                                                   .type());
-    CrudRepository repo = (CrudRepository) repoMeta.repository();
+    CrudRepository repo = repoMeta.repository();
     Object entity = repo.findOne(serId);
     if (null == entity) {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
@@ -680,7 +678,7 @@ public class RepositoryRestController
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
                                                   .idAttribute()
                                                   .type());
-    CrudRepository repo = (CrudRepository) repoMeta.repository();
+    CrudRepository repo = repoMeta.repository();
     final Object entity = repo.findOne(serId);
     if (null == entity) {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
@@ -790,7 +788,7 @@ public class RepositoryRestController
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
                                                   .idAttribute()
                                                   .type());
-    CrudRepository repo = (CrudRepository) repoMeta.repository();
+    CrudRepository repo = repoMeta.repository();
     final Object entity = repo.findOne(serId);
     if (null == entity) {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
@@ -838,7 +836,7 @@ public class RepositoryRestController
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
                                                   .idAttribute()
                                                   .type());
-    CrudRepository repo = (CrudRepository) repoMeta.repository();
+    CrudRepository repo = repoMeta.repository();
     final Object entity = repo.findOne(serId);
     if (null != entity) {
       AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(property);
@@ -891,7 +889,7 @@ public class RepositoryRestController
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
                                                   .idAttribute()
                                                   .type());
-    CrudRepository repo = (CrudRepository) repoMeta.repository();
+    CrudRepository repo = repoMeta.repository();
     final Object entity = repo.findOne(serId);
     if (null == entity) {
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
@@ -901,7 +899,7 @@ public class RepositoryRestController
         // Find linked entity
         RepositoryMetadata linkedRepoMeta = repositoryMetadataFor(attrMeta);
         if (null != linkedRepoMeta) {
-          CrudRepository linkedRepo = (CrudRepository) linkedRepoMeta.repository();
+          CrudRepository linkedRepo = linkedRepoMeta.repository();
           Serializable sChildId = stringToSerializable(linkedId,
                                                        (Class<? extends Serializable>) linkedRepoMeta.entityMetadata()
                                                            .idAttribute()
@@ -950,13 +948,15 @@ public class RepositoryRestController
 
   @SuppressWarnings({"unchecked"})
   @ExceptionHandler(OptimisticLockingFailureException.class)
-  @ResponseBody
-  public ResponseEntity handleLockingFailure(OptimisticLockingFailureException ex) throws IOException {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
+  public Model handleLockingFailure(OptimisticLockingFailureException ex) throws IOException {
+    Model model = new ExtendedModelMap();
+    model.addAttribute(STATUS, HttpStatus.CONFLICT);
+
     Map m = new HashMap();
     m.put("message", ex.getMessage());
-    return new ResponseEntity(objectMapper.writeValueAsBytes(m), headers, HttpStatus.CONFLICT);
+
+    model.addAttribute(RESOURCE, m);
+    return model;
   }
 
   @SuppressWarnings({"unchecked"})
@@ -1013,7 +1013,7 @@ public class RepositoryRestController
       String sId = UriUtils.path(uris.get(1));
 
       RepositoryMetadata repoMeta = repositoryMetadataFor(repoName);
-      CrudRepository repo = (CrudRepository) repoMeta.repository();
+      CrudRepository repo = repoMeta.repository();
       if (null == repo) {
         return null;
       }
@@ -1057,18 +1057,14 @@ public class RepositoryRestController
       }
     }
 
+    List<Link> links = (List<Link>) entityDto.get(LINKS);
+    if (null == links) {
+      links = new ArrayList<Link>();
+      entityDto.put(LINKS, links);
+    }
     for (String attrName : entityMetadata.linkedAttributes().keySet()) {
-      URI uri = UriComponentsBuilder.fromUri(baseUri)
-          .pathSegment(attrName)
-          .build()
-          .toUri();
-      Link l = new SimpleLink(repoRel + "." + entity.getClass().getSimpleName() + "." + attrName, uri);
-      List<Link> links = (List<Link>) entityDto.get(LINKS);
-      if (null == links) {
-        links = new ArrayList<Link>();
-        entityDto.put(LINKS, links);
-      }
-      links.add(l);
+      links.add(new SimpleLink(repoRel + "." + entity.getClass().getSimpleName() + "." + attrName,
+                               buildUri(baseUri, attrName)));
     }
 
     return entityDto;

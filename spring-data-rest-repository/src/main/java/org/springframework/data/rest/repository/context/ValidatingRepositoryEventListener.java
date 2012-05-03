@@ -7,6 +7,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
 import org.springframework.data.rest.repository.ValidationErrors;
@@ -30,18 +31,20 @@ public class ValidatingRepositoryEventListener
 
   @Override public void afterPropertiesSet() throws Exception {
     if (validators.size() == 0) {
-      Map<String, Validator> validators = applicationContext.getBeansOfType(Validator.class);
-      for (Map.Entry<String, Validator> entry : validators.entrySet()) {
-        String name = entry.getKey();
+      for (Map.Entry<String, Validator> entry : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
+                                                                                               Validator.class)
+          .entrySet()) {
+        String name = null;
         Validator v = entry.getValue();
 
-        if (name.contains("Save")) {
-          name = name.substring(0, name.indexOf("Save") + 4);
-        } else if (name.contains("Delete")) {
-          name = name.substring(0, name.indexOf("Delete") + 6);
+        if (entry.getKey().contains("Save")) {
+          name = entry.getKey().substring(0, name.indexOf("Save") + 4);
+        } else if (entry.getKey().contains("Delete")) {
+          name = entry.getKey().substring(0, name.indexOf("Delete") + 6);
         }
-
-        this.validators.put(name, v);
+        if (null != name) {
+          this.validators.put(name, v);
+        }
       }
     }
   }
