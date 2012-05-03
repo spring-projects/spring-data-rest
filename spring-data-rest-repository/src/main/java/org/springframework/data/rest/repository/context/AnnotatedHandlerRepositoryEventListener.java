@@ -55,7 +55,7 @@ public class AnnotatedHandlerRepositoryEventListener
   /**
    * Get the base package in which to search for event handlers.
    *
-   * @return
+   * @return Base package to search.
    */
   public String getBasePackage() {
     return basePackage;
@@ -64,8 +64,8 @@ public class AnnotatedHandlerRepositoryEventListener
   /**
    * Set the base package in which to search for event handlers.
    *
-   * @param basePackage
-   * @return
+   * @param basePackage Base package to search for handlers.
+   * @return @this
    */
   public AnnotatedHandlerRepositoryEventListener setBasePackage(String basePackage) {
     this.basePackage = basePackage;
@@ -75,7 +75,7 @@ public class AnnotatedHandlerRepositoryEventListener
   /**
    * Get the base package in which to search for event handlers.
    *
-   * @return
+   * @return Base package to search.
    */
   public String basePackage() {
     return basePackage;
@@ -84,8 +84,8 @@ public class AnnotatedHandlerRepositoryEventListener
   /**
    * Set the base package in which to search for event handlers.
    *
-   * @param basePackage
-   * @return
+   * @param basePackage Base package to search for handlers.
+   * @return @this
    */
   public AnnotatedHandlerRepositoryEventListener basePackage(String basePackage) {
     this.basePackage = basePackage;

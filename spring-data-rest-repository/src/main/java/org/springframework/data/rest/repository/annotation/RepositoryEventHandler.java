@@ -18,8 +18,6 @@ public @interface RepositoryEventHandler {
 
   /**
    * The list of {@link org.springframework.context.ApplicationEvent} classes this event handler cares about.
-   *
-   * @return
    */
   Class<?>[] value() default {};
 

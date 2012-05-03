@@ -3,6 +3,8 @@ package org.springframework.data.rest.core;
 import java.net.URI;
 
 /**
+ * Implementation of {@link Link}.
+ *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class SimpleLink implements Link {

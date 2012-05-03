@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
 
 /**
+ * Helper methods for dealing with the metadata of "fluent" beans.
+ *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public abstract class FluentBeanUtils {
@@ -53,6 +55,12 @@ public abstract class FluentBeanUtils {
       }
   );
 
+  /**
+   * Interrogate a bean and collect {@link Metadata} on it.
+   *
+   * @param targetType The type to interrogate.
+   * @return {@link Metadata} for the fluent bean.
+   */
   public static Metadata metadata(Class<?> targetType) {
     try {
       return metadata.get(targetType);
@@ -61,6 +69,15 @@ public abstract class FluentBeanUtils {
     }
   }
 
+  /**
+   * Set the property of a fluent bean.
+   *
+   * @param property Name of the property to set.
+   * @param value    Value of the property.
+   * @param bean     Bean on which to set this property.
+   * @return Usually {@literal null} but will return whatever the "setter" returns, which could be {@this} or something
+   *         else.
+   */
   public static Object set(String property, Object value, Object bean) {
     if (null == bean) {
       return null;
@@ -82,6 +99,13 @@ public abstract class FluentBeanUtils {
     }
   }
 
+  /**
+   * Get the value of a property.
+   *
+   * @param property Name of the property.
+   * @param bean     Bean of which to get the property.
+   * @return Value of the property. Could be {@literal null}
+   */
   public static Object get(String property, Object bean) {
     if (null == bean) {
       return null;
@@ -103,6 +127,14 @@ public abstract class FluentBeanUtils {
     }
   }
 
+  /**
+   * Determines whether a given type looks like a fluent bean. That means it has methods whose names exactly correspond
+   * to a field of the same name. A "getter" is that method which is named the same as the field and has 0 parameters.
+   * The "setter" is that method which is named the same as the field and has a single argument.
+   *
+   * @param type The class to inspect.
+   * @return {@literal true} if this looks like a fluent bean, {@literal false} otherwise.
+   */
   public static boolean isFluentBean(Class<?> type) {
     try {
       return metadata.get(type).getters.size() > 0;

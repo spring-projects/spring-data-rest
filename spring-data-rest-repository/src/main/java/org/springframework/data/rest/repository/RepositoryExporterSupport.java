@@ -18,7 +18,7 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
   /**
    * Get a List of {@link RepositoryExporter}s.
    *
-   * @return
+   * @return Exported {@link RepositoryExporter}s.
    */
   public List<RepositoryExporter> getRepositoryExporters() {
     return repositoryExporters;
@@ -27,7 +27,7 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
   /**
    * Set the List of {@link RepositoryExporter}s.
    *
-   * @param repositoryExporters
+   * @param repositoryExporters Export this {@link List} of {@link RepositoryExporter}s.
    */
   public void setRepositoryExporters(List<RepositoryExporter> repositoryExporters) {
     this.repositoryExporters = repositoryExporters;
@@ -36,7 +36,7 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
   /**
    * Get a List of {@link RepositoryExporter}s.
    *
-   * @return
+   * @return Exported {@link RepositoryExporter}s.
    */
   public List<RepositoryExporter> repositoryExporters() {
     return repositoryExporters;
@@ -45,7 +45,8 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
   /**
    * Set the List of {@link RepositoryExporter}s.
    *
-   * @param repositoryExporters
+   * @param repositoryExporters Export this {@link List} of {@link RepositoryExporter}s.
+   * @return @this
    */
   @SuppressWarnings({"unchecked"})
   public S repositoryExporters(List<RepositoryExporter> repositoryExporters) {
@@ -53,6 +54,13 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
     return (S) this;
   }
 
+  /**
+   * Find {@link RepositoryMetadata} for the {@link org.springframework.data.repository.Repository} exported under this
+   * name.
+   *
+   * @param name URL segment name.
+   * @return {@link RepositoryMetadata} or {@literal null} if none found.
+   */
   @SuppressWarnings({"unchecked"})
   protected RepositoryMetadata repositoryMetadataFor(String name) {
     for (RepositoryExporter exporter : repositoryExporters) {
@@ -64,6 +72,13 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
     throw new RepositoryNotFoundException("No repository found for name " + name);
   }
 
+  /**
+   * Find the {@link RepositoryMetadata} for the {@link org.springframework.data.repository.Repository} responsible for
+   * the given domain type.
+   *
+   * @param domainType Type of the domain class.
+   * @return {@link RepositoryMetadata} or {@literal null} if none found.
+   */
   @SuppressWarnings({"unchecked"})
   protected RepositoryMetadata repositoryMetadataFor(Class<?> domainType) {
     for (RepositoryExporter exporter : repositoryExporters) {
@@ -75,6 +90,13 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
     throw new RepositoryNotFoundException("No repository found for type " + domainType.getName());
   }
 
+  /**
+   * Find the {@link RepositoryMetadata} for an attribute of an entity which is possibly managed by a {@link
+   * org.springframework.data.repository.Repository}.
+   *
+   * @param attrMeta {@link AttributeMetadata} of a possibly-managed entity.
+   * @return {@link RepositoryMetadata} or {@literal null} if none found.
+   */
   @SuppressWarnings({"unchecked"})
   protected RepositoryMetadata repositoryMetadataFor(AttributeMetadata attrMeta) {
     if (attrMeta.isCollectionLike() || attrMeta.isMapLike()) {

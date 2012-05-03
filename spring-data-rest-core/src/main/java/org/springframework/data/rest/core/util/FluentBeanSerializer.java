@@ -1,9 +1,7 @@
 package org.springframework.data.rest.core.util;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.jackson.JsonGenerationException;
@@ -13,6 +11,9 @@ import org.codehaus.jackson.map.ser.std.SerializerBase;
 import org.springframework.util.ClassUtils;
 
 /**
+ * A "fluent" bean is one that does not use the JavaBean conventions of "setProperty" and "getProperty" but instead
+ * uses just "property" with 0 or 1 arguments to distinguish between getter (0 arg) and setter (1 arg).
+ *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class FluentBeanSerializer extends SerializerBase {

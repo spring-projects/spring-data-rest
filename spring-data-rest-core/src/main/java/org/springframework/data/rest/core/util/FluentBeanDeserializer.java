@@ -13,6 +13,9 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.util.ClassUtils;
 
 /**
+ * A "fluent" bean is one that does not use the JavaBean conventions of "setProperty" and "getProperty" but instead
+ * uses just "property" with 0 or 1 arguments to distinguish between getter (0 arg) and setter (1 arg).
+ *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class FluentBeanDeserializer extends StdDeserializer {

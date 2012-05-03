@@ -16,57 +16,57 @@ public interface RepositoryMetadata<E extends EntityMetadata<? extends Attribute
   /**
    * The name this {@link Repository} is exported under.
    *
-   * @return
+   * @return Name used in the URL for this Repository.
    */
   String name();
 
   /**
    * Get the string value to be used as part of a link {@literal rel} attribute.
    *
-   * @return
+   * @return Rel value used in links.
    */
   String rel();
 
   /**
    * The type of domain object this {@link Repository} is repsonsible for.
    *
-   * @return
+   * @return Type of the domain class.
    */
   Class<?> domainType();
 
   /**
    * The Class of the {@link Repository} subinterface.
    *
-   * @return
+   * @return Type of the Repository being proxied.
    */
   Class<?> repositoryClass();
 
   /**
    * The {@link Repository} instance.
    *
-   * @return
+   * @return The actual {@link Repository} instance.
    */
   CrudRepository<Object, Serializable> repository();
 
   /**
    * The {@link EntityMetadata} associated with the domain type of this {@literal Repository}.
    *
-   * @return
+   * @return EntityMetadata associated with this Repository's domain type.
    */
   E entityMetadata();
 
   /**
    * Get a {@link RepositoryQueryMethod} by key.
    *
-   * @param key
-   * @return
+   * @param key Segment of the URL to find a query method for.
+   * @return Found {@link RepositoryQueryMethod} or {@literal null} if none found.
    */
   RepositoryQueryMethod queryMethod(String key);
 
   /**
    * Get a Map of all {@link RepositoryQueryMethod}s, keyed by name.
    *
-   * @return
+   * @return All query methods for this Repository.
    */
   Map<String, RepositoryQueryMethod> queryMethods();
 

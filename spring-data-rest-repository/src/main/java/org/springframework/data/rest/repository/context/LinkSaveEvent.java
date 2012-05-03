@@ -17,7 +17,7 @@ public abstract class LinkSaveEvent extends RepositoryEvent {
   /**
    * Get the linked object.
    *
-   * @return
+   * @return The entity representing the right-hand side of this relationship.
    */
   public Object getLinked() {
     return linked;

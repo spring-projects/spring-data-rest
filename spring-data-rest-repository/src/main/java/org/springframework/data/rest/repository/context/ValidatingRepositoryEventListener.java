@@ -38,9 +38,9 @@ public class ValidatingRepositoryEventListener
         Validator v = entry.getValue();
 
         if (entry.getKey().contains("Save")) {
-          name = entry.getKey().substring(0, name.indexOf("Save") + 4);
+          name = entry.getKey().substring(0, entry.getKey().indexOf("Save") + 4);
         } else if (entry.getKey().contains("Delete")) {
-          name = entry.getKey().substring(0, name.indexOf("Delete") + 6);
+          name = entry.getKey().substring(0, entry.getKey().indexOf("Delete") + 6);
         }
         if (null != name) {
           this.validators.put(name, v);
@@ -52,7 +52,7 @@ public class ValidatingRepositoryEventListener
   /**
    * Get a Map of {@link Validator}s that are assigned to the various {@link RepositoryEvent}s.
    *
-   * @return
+   * @return Validators assigned to events.
    */
   public Map<String, Collection<Validator>> getValidators() {
     return validators.asMap();
@@ -61,7 +61,8 @@ public class ValidatingRepositoryEventListener
   /**
    * Assign a Map of {@link Validator}s that are assigned to the various {@link RepositoryEvent}s.
    *
-   * @return
+   * @param validators A Map of Validators to wire.
+   * @return @this
    */
   public ValidatingRepositoryEventListener setValidators(Map<String, Collection<Validator>> validators) {
     for (Map.Entry<String, Collection<Validator>> entry : validators.entrySet()) {
@@ -73,9 +74,9 @@ public class ValidatingRepositoryEventListener
   /**
    * Add a {@link Validator} that will be triggered on the given event.
    *
-   * @param event
-   * @param validator
-   * @return
+   * @param event     The event to listen for.
+   * @param validator The Validator to execute when that event fires.
+   * @return @this
    */
   public ValidatingRepositoryEventListener addValidator(String event, Validator validator) {
     validators.put(event, validator);

@@ -42,7 +42,7 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
    * Set the class names of only those Repositories you want exported.
    * Default is to export all found Repositories.
    *
-   * @param exportOnlyTheseClasses
+   * @param exportOnlyTheseClasses {@link List} of class names to export.
    * @return @this
    */
   @SuppressWarnings({"unchecked"})
@@ -79,7 +79,7 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
   /**
    * Get the list of Repository names being exported.
    *
-   * @return
+   * @return {@link List} of class names to export.
    */
   public Set<String> repositoryNames() {
     return repositoryMetadata.keySet();
@@ -88,7 +88,7 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
   /**
    * Is a Repository being exporter that supports this domain type?
    *
-   * @param domainType
+   * @param domainType Type of the domain class.
    * @return {@literal true} if a Repository is being exported, {@literal false} otherwise.
    */
   public boolean hasRepositoryFor(Class<?> domainType) {
@@ -103,7 +103,7 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
   /**
    * Get the RepositoryMetadata for the Repository responsible for this domain type.
    *
-   * @param domainType
+   * @param domainType Type of the domain class.
    * @return {@link RepositoryMetadata} instance
    */
   public M repositoryMetadataFor(Class<?> domainType) {
@@ -118,7 +118,7 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
   /**
    * Get the {@link RepositoryMetadata} for the Repository exported under the given name.
    *
-   * @param name
+   * @param name Name a Repository would be exported under.
    * @return {@link RepositoryMetadata} instance
    */
   public M repositoryMetadataFor(String name) {
