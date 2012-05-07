@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -214,6 +215,10 @@ public class RepositoryRestController
 
   @SuppressWarnings({"unchecked"})
   @Override public void afterPropertiesSet() throws Exception {
+    for (ConversionService convsvc : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
+                                                                                    ConversionService.class).values()) {
+      conversionService.addConversionServices(convsvc);
+    }
   }
 
   @SuppressWarnings({"unchecked"})

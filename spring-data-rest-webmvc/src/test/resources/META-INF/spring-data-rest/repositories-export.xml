@@ -17,7 +17,6 @@
 
     Uncomment this block to add the included UUID <-> String converters, which are not included by default.
   -->
-  <!--
   <bean class="org.springframework.context.support.ConversionServiceFactoryBean">
     <property name="converters">
       <set>
@@ -26,7 +25,6 @@
       </set>
     </property>
   </bean>
-  -->
 
   <!--
     This validator will be picked up automatically. The default configuration is to look at the bean name

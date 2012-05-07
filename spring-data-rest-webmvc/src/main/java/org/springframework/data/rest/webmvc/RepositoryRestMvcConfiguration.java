@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.repository.jpa.JpaRepositoryExporter;
@@ -45,9 +44,6 @@ public class RepositoryRestMvcConfiguration {
 
   @Autowired(required = false)
   JpaRepositoryExporter customJpaRepositoryExporter;
-
-  @Autowired(required = false)
-  ConversionService customConversionService;
 
   @Autowired(required = false)
   List<HttpMessageConverter<?>> httpMessageConverters = new ArrayList<HttpMessageConverter<?>>();
@@ -118,9 +114,6 @@ public class RepositoryRestMvcConfiguration {
           .repositoryExporters(Arrays.<RepositoryExporter>asList(jpaRepositoryExporter()))
           .httpMessageConverters(httpMessageConverters())
           .jsonMediaType("application/json");
-      if (null != customConversionService) {
-        repositoryRestController.conversionService(customConversionService);
-      }
     }
     return repositoryRestController;
   }
