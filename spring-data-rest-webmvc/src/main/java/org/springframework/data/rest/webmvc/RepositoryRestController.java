@@ -19,11 +19,11 @@ import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +33,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.rest.core.Handler;
 import org.springframework.data.rest.core.Link;
 import org.springframework.data.rest.core.SimpleLink;
+import org.springframework.data.rest.core.convert.DelegatingConversionService;
 import org.springframework.data.rest.core.util.UriUtils;
 import org.springframework.data.rest.repository.AttributeMetadata;
 import org.springframework.data.rest.repository.EntityMetadata;
@@ -48,11 +49,13 @@ import org.springframework.data.rest.repository.context.AfterSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
+import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.server.ServerHttpRequest;
@@ -67,6 +70,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -76,7 +80,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Controller
 public class RepositoryRestController
     extends RepositoryExporterSupport<RepositoryRestController>
-    implements ApplicationEventPublisherAware,
+    implements ApplicationContextAware,
                InitializingBean {
 
   public static final String STATUS = "status";
@@ -86,17 +90,19 @@ public class RepositoryRestController
   public static final String SELF = "self";
   public static final String LINKS = "_links";
 
-  private ApplicationEventPublisher eventPublisher;
+  private ApplicationContext applicationContext;
 
   private MediaType uriListMediaType = MediaType.parseMediaType("text/uri-list");
   private MediaType jsonMediaType = MediaType.parseMediaType("application/x-spring-data+json");
-  private ConversionService conversionService = new DefaultConversionService();
+  private DelegatingConversionService conversionService = new DelegatingConversionService(
+      new DefaultFormattingConversionService()
+  );
   private List<HttpMessageConverter<?>> httpMessageConverters = Collections.emptyList();
   private Map<String, Handler<Object, Object>> resourceHandlers = Collections.emptyMap();
   private ObjectMapper objectMapper = new ObjectMapper();
 
-  @Override public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
-    this.eventPublisher = eventPublisher;
+  @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    this.applicationContext = applicationContext;
   }
 
   public ConversionService getConversionService() {
@@ -104,7 +110,9 @@ public class RepositoryRestController
   }
 
   public void setConversionService(ConversionService conversionService) {
-    this.conversionService = conversionService;
+    if (null != conversionService) {
+      this.conversionService.addConversionServices(conversionService);
+    }
   }
 
   public ConversionService conversionService() {
@@ -112,7 +120,7 @@ public class RepositoryRestController
   }
 
   public RepositoryRestController conversionService(ConversionService conversionService) {
-    this.conversionService = conversionService;
+    setConversionService(conversionService);
     return this;
   }
 
@@ -121,6 +129,7 @@ public class RepositoryRestController
   }
 
   public void setHttpMessageConverters(List<HttpMessageConverter<?>> httpMessageConverters) {
+    Assert.notNull(httpMessageConverters);
     this.httpMessageConverters = httpMessageConverters;
   }
 
@@ -129,7 +138,7 @@ public class RepositoryRestController
   }
 
   public RepositoryRestController httpMessageConverters(List<HttpMessageConverter<?>> httpMessageConverters) {
-    this.httpMessageConverters = httpMessageConverters;
+    setHttpMessageConverters(httpMessageConverters);
     return this;
   }
 
@@ -147,7 +156,7 @@ public class RepositoryRestController
   }
 
   public RepositoryRestController resourceHandlers(Map<String, Handler<Object, Object>> resourceHandlers) {
-    this.resourceHandlers = resourceHandlers;
+    setResourceHandlers(resourceHandlers);
     return this;
   }
 
@@ -203,8 +212,8 @@ public class RepositoryRestController
     return this;
   }
 
+  @SuppressWarnings({"unchecked"})
   @Override public void afterPropertiesSet() throws Exception {
-    Assert.notNull(httpMessageConverters, "HttpMessageConverters cannot be null");
   }
 
   @SuppressWarnings({"unchecked"})
@@ -400,12 +409,12 @@ public class RepositoryRestController
     if (null == incoming) {
       model.addAttribute(STATUS, HttpStatus.NOT_ACCEPTABLE);
     } else {
-      if (null != eventPublisher) {
-        eventPublisher.publishEvent(new BeforeSaveEvent(incoming));
+      if (null != applicationContext) {
+        applicationContext.publishEvent(new BeforeSaveEvent(incoming));
       }
       Object savedEntity = repo.save(incoming);
-      if (null != eventPublisher) {
-        eventPublisher.publishEvent(new AfterSaveEvent(savedEntity));
+      if (null != applicationContext) {
+        applicationContext.publishEvent(new AfterSaveEvent(savedEntity));
       }
       String sId = repoMeta.entityMetadata().idAttribute().get(savedEntity).toString();
 
@@ -445,19 +454,20 @@ public class RepositoryRestController
       model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
     } else {
       HttpHeaders headers = new HttpHeaders();
-      Object version = repoMeta.entityMetadata().versionAttribute().get(entity);
-      if (null != version) {
-        List<String> etags = request.getHeaders().getIfNoneMatch();
-        for (String etag : etags) {
-          if (("\"" + version.toString() + "\"").equals(etag)) {
-            model.addAttribute(STATUS, HttpStatus.NOT_MODIFIED);
-            return;
+      if (null != repoMeta.entityMetadata().versionAttribute()) {
+        Object version = repoMeta.entityMetadata().versionAttribute().get(entity);
+        if (null != version) {
+          List<String> etags = request.getHeaders().getIfNoneMatch();
+          for (String etag : etags) {
+            if (("\"" + version.toString() + "\"").equals(etag)) {
+              model.addAttribute(STATUS, HttpStatus.NOT_MODIFIED);
+              return;
+            }
           }
+          headers.set("ETag", "\"" + version.toString() + "\"");
         }
-        headers.set("ETag", "\"" + version.toString() + "\"");
       }
-      Map<String, Object> entityDto = extractPropertiesLinkAware(repository,
-                                                                 repoMeta.rel(),
+      Map<String, Object> entityDto = extractPropertiesLinkAware(repoMeta.rel(),
                                                                  entity,
                                                                  repoMeta.entityMetadata(),
                                                                  buildUri(baseUri, repository, id));
@@ -520,12 +530,12 @@ public class RepositoryRestController
       } else {
         repoMeta.entityMetadata().idAttribute().set(serId, incoming);
         if (request.getMethod() == HttpMethod.POST) {
-          if (null != eventPublisher) {
-            eventPublisher.publishEvent(new BeforeSaveEvent(incoming));
+          if (null != applicationContext) {
+            applicationContext.publishEvent(new BeforeSaveEvent(incoming));
           }
           Object savedEntity = repo.save(incoming);
-          if (null != eventPublisher) {
-            eventPublisher.publishEvent(new AfterSaveEvent(savedEntity));
+          if (null != applicationContext) {
+            applicationContext.publishEvent(new AfterSaveEvent(savedEntity));
           }
           URI selfUri = buildUri(baseUri, repository, id);
           HttpHeaders headers = new HttpHeaders();
@@ -533,12 +543,12 @@ public class RepositoryRestController
           model.addAttribute(HEADERS, headers);
           model.addAttribute(STATUS, HttpStatus.CREATED);
         } else {
-          if (null != eventPublisher) {
-            eventPublisher.publishEvent(new BeforeSaveEvent(incoming));
+          if (null != applicationContext) {
+            applicationContext.publishEvent(new BeforeSaveEvent(incoming));
           }
           Object savedEntity = repo.save(incoming);
-          if (null != eventPublisher) {
-            eventPublisher.publishEvent(new AfterSaveEvent(savedEntity));
+          if (null != applicationContext) {
+            applicationContext.publishEvent(new AfterSaveEvent(savedEntity));
           }
           model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
         }
@@ -561,12 +571,12 @@ public class RepositoryRestController
                                                   .type());
     CrudRepository repo = repoMeta.repository();
 
-    if (null != eventPublisher) {
-      eventPublisher.publishEvent(new BeforeDeleteEvent(serId));
+    if (null != applicationContext) {
+      applicationContext.publishEvent(new BeforeDeleteEvent(serId));
     }
     repo.delete(serId);
-    if (null != eventPublisher) {
-      eventPublisher.publishEvent(new AfterDeleteEvent(serId));
+    if (null != applicationContext) {
+      applicationContext.publishEvent(new AfterDeleteEvent(serId));
     }
 
     model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
@@ -752,15 +762,15 @@ public class RepositoryRestController
           }
         }
 
-        if (null != eventPublisher) {
-          eventPublisher.publishEvent(new BeforeSaveEvent(entity));
-          eventPublisher.publishEvent(new BeforeLinkSaveEvent(entity, linked));
+        if (null != applicationContext) {
+          applicationContext.publishEvent(new BeforeSaveEvent(entity));
+          applicationContext.publishEvent(new BeforeLinkSaveEvent(entity, linked));
         }
         Object savedEntity = repo.save(entity);
-        if (null != eventPublisher) {
+        if (null != applicationContext) {
           linked = attrMeta.get(savedEntity);
-          eventPublisher.publishEvent(new AfterLinkSaveEvent(savedEntity, linked));
-          eventPublisher.publishEvent(new AfterSaveEvent(savedEntity));
+          applicationContext.publishEvent(new AfterLinkSaveEvent(savedEntity, linked));
+          applicationContext.publishEvent(new AfterSaveEvent(savedEntity));
         }
 
         if (request.getMethod() == HttpMethod.PUT) {
@@ -798,12 +808,12 @@ public class RepositoryRestController
         Object linked = attrMeta.get(entity);
         attrMeta.set(null, entity);
 
-        if (null != eventPublisher) {
-          eventPublisher.publishEvent(new BeforeLinkSaveEvent(entity, linked));
+        if (null != applicationContext) {
+          applicationContext.publishEvent(new BeforeLinkSaveEvent(entity, linked));
         }
         Object savedEntity = repo.save(entity);
-        if (null != eventPublisher) {
-          eventPublisher.publishEvent(new AfterLinkSaveEvent(savedEntity, null));
+        if (null != applicationContext) {
+          applicationContext.publishEvent(new AfterLinkSaveEvent(savedEntity, null));
         }
 
         model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
@@ -844,15 +854,14 @@ public class RepositoryRestController
         // Find linked entity
         RepositoryMetadata linkedRepoMeta = repositoryMetadataFor(attrMeta);
         if (null != linkedRepoMeta) {
-          CrudRepository linkedRepo = (CrudRepository) linkedRepoMeta.repository();
+          CrudRepository linkedRepo = linkedRepoMeta.repository();
           Serializable sChildId = stringToSerializable(linkedId,
                                                        (Class<? extends Serializable>) linkedRepoMeta.entityMetadata()
                                                            .idAttribute()
                                                            .type());
           Object linkedEntity = linkedRepo.findOne(sChildId);
           if (null != linkedEntity) {
-            Map<String, Object> entityDto = extractPropertiesLinkAware(repository,
-                                                                       linkedRepoMeta.rel(),
+            Map<String, Object> entityDto = extractPropertiesLinkAware(linkedRepoMeta.rel(),
                                                                        linkedEntity,
                                                                        linkedRepoMeta.entityMetadata(),
                                                                        baseUri);
@@ -908,18 +917,18 @@ public class RepositoryRestController
           if (null != linkedEntity) {
             // Remove linked entity from relationship based on property type
             if (attrMeta.isCollectionLike()) {
-              Collection c = (Collection) attrMeta.get(entity);
+              Collection c = attrMeta.asCollection(entity);
               if (null != c) {
                 c.remove(linkedEntity);
               }
             } else if (attrMeta.isSetLike()) {
-              Set s = (Set) attrMeta.get(entity);
+              Set s = attrMeta.asSet(entity);
               if (null != s) {
                 s.remove(linkedEntity);
               }
             } else if (attrMeta.isMapLike()) {
               Object keyToRemove = null;
-              Map<Object, Object> m = (Map) attrMeta.get(entity);
+              Map<Object, Object> m = attrMeta.asMap(entity);
               if (null != m) {
                 for (Map.Entry<Object, Object> entry : m.entrySet()) {
                   Object val = entry.getValue();
@@ -948,15 +957,13 @@ public class RepositoryRestController
 
   @SuppressWarnings({"unchecked"})
   @ExceptionHandler(OptimisticLockingFailureException.class)
-  public Model handleLockingFailure(OptimisticLockingFailureException ex) throws IOException {
-    Model model = new ExtendedModelMap();
-    model.addAttribute(STATUS, HttpStatus.CONFLICT);
-
+  @ResponseBody
+  public ResponseEntity handleLockingFailure(OptimisticLockingFailureException ex) throws IOException {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
     Map m = new HashMap();
     m.put("message", ex.getMessage());
-
-    model.addAttribute(RESOURCE, m);
-    return model;
+    return new ResponseEntity(objectMapper.writeValueAsBytes(m), headers, HttpStatus.CONFLICT);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -1042,8 +1049,7 @@ public class RepositoryRestController
   }
 
   @SuppressWarnings({"unchecked"})
-  private Map<String, Object> extractPropertiesLinkAware(String repoName,
-                                                         String repoRel,
+  private Map<String, Object> extractPropertiesLinkAware(String repoRel,
                                                          Object entity,
                                                          EntityMetadata<AttributeMetadata> entityMetadata,
                                                          URI baseUri) {
@@ -1057,14 +1063,18 @@ public class RepositoryRestController
       }
     }
 
-    List<Link> links = (List<Link>) entityDto.get(LINKS);
-    if (null == links) {
-      links = new ArrayList<Link>();
-      entityDto.put(LINKS, links);
-    }
     for (String attrName : entityMetadata.linkedAttributes().keySet()) {
-      links.add(new SimpleLink(repoRel + "." + entity.getClass().getSimpleName() + "." + attrName,
-                               buildUri(baseUri, attrName)));
+      URI uri = UriComponentsBuilder.fromUri(baseUri)
+          .pathSegment(attrName)
+          .build()
+          .toUri();
+      Link l = new SimpleLink(repoRel + "." + entity.getClass().getSimpleName() + "." + attrName, uri);
+      List<Link> links = (List<Link>) entityDto.get(LINKS);
+      if (null == links) {
+        links = new ArrayList<Link>();
+        entityDto.put(LINKS, links);
+      }
+      links.add(l);
     }
 
     return entityDto;

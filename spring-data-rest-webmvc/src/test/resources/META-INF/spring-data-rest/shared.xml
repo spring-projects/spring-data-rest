@@ -5,10 +5,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
 
-  <bean id="baseUri" class="java.net.URI">
-    <constructor-arg value="http://localhost:8080/data"/>
-  </bean>
-
   <jdbc:embedded-database id="dataSource" type="HSQL"/>
 
   <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">

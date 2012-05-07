@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupport<? super S>> {
 
-  @Autowired
+  @Autowired(required = false)
   protected List<RepositoryExporter> repositoryExporters = Collections.emptyList();
 
   /**
@@ -50,7 +50,7 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
    */
   @SuppressWarnings({"unchecked"})
   public S repositoryExporters(List<RepositoryExporter> repositoryExporters) {
-    this.repositoryExporters = repositoryExporters;
+    setRepositoryExporters(repositoryExporters);
     return (S) this;
   }
 
@@ -99,7 +99,7 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
    */
   @SuppressWarnings({"unchecked"})
   protected RepositoryMetadata repositoryMetadataFor(AttributeMetadata attrMeta) {
-    if (attrMeta.isCollectionLike() || attrMeta.isMapLike()) {
+    if (null != attrMeta.elementType()) {
       return repositoryMetadataFor(attrMeta.elementType());
     } else {
       return repositoryMetadataFor(attrMeta.type());

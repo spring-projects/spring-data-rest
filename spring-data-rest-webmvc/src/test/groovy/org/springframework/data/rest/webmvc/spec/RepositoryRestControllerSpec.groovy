@@ -7,7 +7,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext
 import org.springframework.data.rest.core.SimpleLink
 import org.springframework.data.rest.core.util.FluentBeanSerializer
 import org.springframework.data.rest.test.webmvc.Address
-import org.springframework.data.rest.webmvc.RepositoryRestConfiguration
 import org.springframework.data.rest.webmvc.RepositoryRestController
 import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration
 import org.springframework.http.HttpStatus
@@ -49,18 +48,20 @@ class RepositoryRestControllerSpec extends Specification {
    * Try to set up things similarly to how they get loaded in the webapp.
    */
   def setupSpec() {
-    def appCtx = new ClassPathXmlApplicationContext("classpath*:META-INF/spring-data-rest/**/*-export.xml")
-    emf = appCtx.getBean(EntityManagerFactory)
+    def servletConfig = new MockServletConfig()
+    def servletContext = new MockServletContext()
+
+    def parentCtx = new ClassPathXmlApplicationContext("classpath*:META-INF/spring-data-rest/**/*-export.xml")
 
     def webAppCtx = new AnnotationConfigWebApplicationContext()
-    webAppCtx.setServletConfig(new MockServletConfig())
-    webAppCtx.setServletContext(new MockServletContext())
-    webAppCtx.setConfigLocations([RepositoryRestConfiguration.name, RepositoryRestMvcConfiguration.name] as String[])
-    webAppCtx.setParent(appCtx)
-    webAppCtx.afterPropertiesSet()
+    webAppCtx.servletConfig = servletConfig
+    webAppCtx.servletContext = servletContext
+    webAppCtx.configLocations = [RepositoryRestMvcConfiguration.name] as String[]
+    webAppCtx.parent = parentCtx
+    webAppCtx.refresh()
 
+    emf = webAppCtx.getBean(EntityManagerFactory)
     controller = webAppCtx.getBean(RepositoryRestController)
-
     uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:8080/data")
 
     def customSerializerFactory = new CustomSerializerFactory()
