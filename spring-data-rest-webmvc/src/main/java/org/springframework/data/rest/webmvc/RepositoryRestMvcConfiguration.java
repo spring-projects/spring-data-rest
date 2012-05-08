@@ -22,19 +22,18 @@ import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcesso
 import org.springframework.util.Assert;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver;
-import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @Configuration
+@EnableWebMvc
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*-export.xml")
-public class RepositoryRestMvcConfiguration {
+public class RepositoryRestMvcConfiguration extends WebMvcConfigurerAdapter {
 
   ContentNegotiatingViewResolver viewResolver;
   RepositoryRestController repositoryRestController;
@@ -50,6 +49,14 @@ public class RepositoryRestMvcConfiguration {
 
   @Autowired(required = false)
   ValidatingRepositoryEventListener validatingRepositoryEventListener;
+
+  @Override public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+    argumentResolvers.add(new ServerHttpRequestMethodArgumentResolver());
+  }
+
+  @Override public void addInterceptors(InterceptorRegistry registry) {
+    registry.addWebRequestInterceptor(openEntityManagerInViewInterceptor());
+  }
 
   @Bean List<HttpMessageConverter<?>> httpMessageConverters() {
     Assert.notNull(httpMessageConverters);
@@ -116,30 +123,6 @@ public class RepositoryRestMvcConfiguration {
           .jsonMediaType("application/json");
     }
     return repositoryRestController;
-  }
-
-  @Bean RequestMappingHandlerMapping handlerMapping() {
-    return new RequestMappingHandlerMapping();
-  }
-
-  @Bean RequestMappingHandlerAdapter handlerAdapter() {
-    RequestMappingHandlerAdapter handlerAdapter = new RequestMappingHandlerAdapter();
-    handlerAdapter.setCustomArgumentResolvers(
-        Arrays.asList((HandlerMethodArgumentResolver) new ServerHttpRequestMethodArgumentResolver())
-    );
-    return handlerAdapter;
-  }
-
-  @Bean ExceptionHandlerExceptionResolver exceptionHandlerExceptionResolver() {
-    return new ExceptionHandlerExceptionResolver();
-  }
-
-  @Bean DefaultHandlerExceptionResolver handlerExceptionResolver() {
-    return new DefaultHandlerExceptionResolver();
-  }
-
-  @Bean ResponseStatusExceptionResolver responseStatusExceptionResolver() {
-    return new ResponseStatusExceptionResolver();
   }
 
 }
