@@ -13,6 +13,7 @@ import java.lang.annotation.Target;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @Target({
+            ElementType.FIELD,
             ElementType.METHOD,
             ElementType.TYPE
         })
@@ -20,7 +21,9 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface RestResource {
 
-  String path();
+  boolean exported() default true;
+
+  String path() default "";
 
   String rel() default "";
 

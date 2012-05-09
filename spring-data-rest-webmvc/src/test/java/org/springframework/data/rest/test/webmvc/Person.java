@@ -8,6 +8,8 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
 
+import org.springframework.data.rest.repository.annotation.RestResource;
+
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */

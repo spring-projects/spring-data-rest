@@ -1,5 +1,6 @@
 package org.springframework.data.rest.repository.jpa;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import javax.persistence.metamodel.Attribute;
@@ -9,6 +10,8 @@ import javax.persistence.metamodel.SingularAttribute;
 
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.EntityMetadata;
+import org.springframework.data.rest.repository.annotation.RestResource;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -30,15 +33,25 @@ public class JpaEntityMetadata implements EntityMetadata<JpaAttributeMetadata> {
     }
 
     for (Attribute attr : entityType.getAttributes()) {
-      Class<?> attrType = (attr instanceof PluralAttribute
-          ? ((PluralAttribute) attr).getElementType().getJavaType()
-          : attr.getJavaType());
-      if (repositories.hasRepositoryFor(attrType)) {
-        linkedAttributes.put(attr.getName(), new JpaAttributeMetadata(entityType, attr));
-      } else {
-        if (!(attr instanceof SingularAttribute && ((SingularAttribute) attr).isId())
-            && !(attr instanceof SingularAttribute && ((SingularAttribute) attr).isVersion())) {
-          embeddedAttributes.put(attr.getName(), new JpaAttributeMetadata(entityType, attr));
+      boolean exported = true;
+      Field field = ReflectionUtils.findField(type, attr.getJavaMember().getName());
+      if (null != field) {
+        RestResource fieldResourceAnno = field.getAnnotation(RestResource.class);
+        if (null != fieldResourceAnno) {
+          exported = fieldResourceAnno.exported();
+        }
+      }
+      if (exported) {
+        Class<?> attrType = (attr instanceof PluralAttribute
+            ? ((PluralAttribute) attr).getElementType().getJavaType()
+            : attr.getJavaType());
+        if (repositories.hasRepositoryFor(attrType)) {
+          linkedAttributes.put(attr.getName(), new JpaAttributeMetadata(entityType, attr));
+        } else {
+          if (!(attr instanceof SingularAttribute && ((SingularAttribute) attr).isId())
+              && !(attr instanceof SingularAttribute && ((SingularAttribute) attr).isVersion())) {
+            embeddedAttributes.put(attr.getName(), new JpaAttributeMetadata(entityType, attr));
+          }
         }
       }
     }

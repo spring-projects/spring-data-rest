@@ -98,3 +98,34 @@ This would result in a link value of:
       } ]
     }
 
+### Hiding certain Repositories, query methods, or fields
+
+You may not want a certain Repository, a query method on a Repository, or a field of your entity to be exported at all. To tell the exporter to not export your these items, annotate them with `@RestResource` and set `exported = false`.
+
+For example, to skip exporting a Repository:
+
+    @RestResource(exported = false)
+    public interface PersonRepository extends CrudRepository<Person, Long> {
+    }
+
+To skip exporting a query method:
+
+    @RestResource(path = "people", rel = "people")
+    public interface PersonRepository extends CrudRepository<Person, Long> {
+
+      @RestResource(exported = false)
+      public List<Person> findByName(String name);
+
+    }
+
+Or to skip exporting a field:
+
+    @Entity
+    @RestResource(exported = false)
+    public class Person {
+      @Id @GeneratedValue private Long id;
+      @OneToMany
+      @RestResource(exported = false)
+      private Map<String, Profile> profiles;
+    }
+

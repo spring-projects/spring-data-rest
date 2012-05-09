@@ -299,7 +299,9 @@ public class RepositoryRestController
       URI path = buildUri(baseUri, repository, "search", entry.getKey());
       RestResource resourceAnno = entry.getValue().method().getAnnotation(RestResource.class);
       if (null != resourceAnno) {
-        path = buildUri(baseUri, repository, "search", resourceAnno.path());
+        if (StringUtils.hasText(resourceAnno.path())) {
+          path = buildUri(baseUri, repository, "search", resourceAnno.path());
+        }
         if (StringUtils.hasText(resourceAnno.rel())) {
           rel = repoMeta.rel() + "." + resourceAnno.rel();
         }
@@ -1069,10 +1071,7 @@ public class RepositoryRestController
     }
 
     for (String attrName : entityMetadata.linkedAttributes().keySet()) {
-      URI uri = UriComponentsBuilder.fromUri(baseUri)
-          .pathSegment(attrName)
-          .build()
-          .toUri();
+      URI uri = buildUri(baseUri, attrName);
       Link l = new SimpleLink(repoRel + "." + entity.getClass().getSimpleName() + "." + attrName, uri);
       List<Link> links = (List<Link>) entityDto.get(LINKS);
       if (null == links) {

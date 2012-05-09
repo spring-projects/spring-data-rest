@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -124,19 +123,21 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
       repositories = new Repositories(applicationContext);
       repositoryMetadata = new HashMap<String, M>();
       for (Class<?> domainType : repositories) {
-        if (!exportOnlyTheseClasses.isEmpty() && !exportOnlyTheseClasses.contains(domainType.getName())) {
-          // Don't export this domain type
-          continue;
+        if (exportOnlyTheseClasses.isEmpty() || !exportOnlyTheseClasses.contains(domainType.getName())) {
+          Class<?> repoClass = repositories.getRepositoryInformationFor(domainType).getRepositoryInterface();
+          String name = StringUtils.uncapitalize(repoClass.getSimpleName().replaceAll("Repository", ""));
+          RestResource resourceAnno = repoClass.getAnnotation(RestResource.class);
+          boolean exported = true;
+          if (null != resourceAnno) {
+            if (StringUtils.hasText(resourceAnno.path())) {
+              name = resourceAnno.path();
+            }
+            exported = resourceAnno.exported();
+          }
+          if (exported) {
+            repositoryMetadata.put(name, createRepositoryMetadata(name, domainType, repoClass, repositories));
+          }
         }
-        Class<?> repoClass = repositories.getRepositoryInformationFor(domainType).getRepositoryInterface();
-        String name;
-        RestResource pathSeg = repoClass.getAnnotation(RestResource.class);
-        if (null != pathSeg) {
-          name = pathSeg.path();
-        } else {
-          name = StringUtils.uncapitalize(repoClass.getSimpleName().replaceAll("Repository", ""));
-        }
-        repositoryMetadata.put(name, createRepositoryMetadata(name, domainType, repoClass, repositories));
       }
     }
   }

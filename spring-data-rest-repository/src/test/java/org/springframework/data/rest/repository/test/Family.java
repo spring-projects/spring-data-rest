@@ -6,6 +6,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import org.springframework.data.rest.repository.annotation.RestResource;
+
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
@@ -16,6 +18,7 @@ public class Family {
   @GeneratedValue
   private Long id;
   private String surname;
+  @RestResource(exported = false)
   @OneToMany
   private List<Person> members;
 

@@ -104,6 +104,8 @@ If you have a JPA entity in your domain model that looks like...
 
 ...your PersonRepository will by default be declared in the ApplicationContext with a bean name of "personRepository". The web exporter will strip the word "Repository" from it and expose a resource named "person". The resulting URL of this repository (assuming the exporter webapp is deployed at context path `/data` in your servlet container) will be `http://localhost:8080/data/person`.
 
+You can configure under what path, or whether a resource is exported at all, by using the `@RestResource` annotation. Details are here: [Configuring the REST URL path](../wiki/Configuring-the-REST-URL-path)
+
 ### Discoverability
 
 The Web Exporter implements some aspects of the [HATEOS](http://en.wikipedia.org/wiki/HATEOAS) methodology. That means all the services of the web exporter are discoverable and exposed to the client using links.

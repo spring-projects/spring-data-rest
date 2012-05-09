@@ -52,11 +52,17 @@ public class JpaRepositoryMetadata implements RepositoryMetadata<JpaEntityMetada
     for (Method method : repositories.getRepositoryInformationFor(domainType).getQueryMethods()) {
       String pathSeg = method.getName();
       RestResource methodResourceAnno = method.getAnnotation(RestResource.class);
+      boolean methodExported = true;
       if (null != methodResourceAnno) {
-        pathSeg = methodResourceAnno.path();
+        if (StringUtils.hasText(methodResourceAnno.path())) {
+          pathSeg = methodResourceAnno.path();
+        }
+        methodExported = methodResourceAnno.exported();
       }
-      ReflectionUtils.makeAccessible(method);
-      queryMethods.put(pathSeg, new RepositoryQueryMethod(method));
+      if (methodExported) {
+        ReflectionUtils.makeAccessible(method);
+        queryMethods.put(pathSeg, new RepositoryQueryMethod(method));
+      }
     }
 
     Metamodel metamodel = entityManager.getMetamodel();
