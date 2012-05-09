@@ -86,7 +86,7 @@ class RepositoryRestControllerSpec extends Specification {
 
     then:
     model.status == HttpStatus.OK
-    reposLinks?.size() == 4
+    reposLinks?.size() == 3
 
     when: "adding an entity"
     model.clear()
