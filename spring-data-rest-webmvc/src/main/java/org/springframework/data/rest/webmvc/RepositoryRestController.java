@@ -516,44 +516,44 @@ public class RepositoryRestController
                                                   .idAttribute()
                                                   .type());
     CrudRepository repo = repoMeta.repository();
-    Object entity = null;
     Class<?> domainType = repoMeta.entityMetadata().type();
-    switch (request.getMethod()) {
-      case POST:
-        entity = domainType.newInstance();
-        break;
-      case PUT:
-        entity = repo.findOne(serId);
-        break;
-    }
 
-    if (null == entity) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+    final MediaType incomingMediaType = request.getHeaders().getContentType();
+    final Object incoming = readIncoming(request, incomingMediaType, domainType);
+    if (null == incoming) {
+      throw new HttpMessageNotReadableException("Could not create an instance of " + domainType.getSimpleName() + " from input.");
     } else {
-      final MediaType incomingMediaType = request.getHeaders().getContentType();
-      final Object incoming = readIncoming(request, incomingMediaType, domainType);
-      if (null == incoming) {
-        throw new HttpMessageNotReadableException("Could not create an instance of " + domainType.getSimpleName() + " from input.");
+      repoMeta.entityMetadata().idAttribute().set(serId, incoming);
+      if (request.getMethod() == HttpMethod.POST) {
+        if (null != applicationContext) {
+          applicationContext.publishEvent(new BeforeSaveEvent(incoming));
+        }
+        Object savedEntity = repo.save(incoming);
+        if (null != applicationContext) {
+          applicationContext.publishEvent(new AfterSaveEvent(savedEntity));
+        }
+        URI selfUri = buildUri(baseUri, repository, id);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(LOCATION, selfUri.toString());
+        model.addAttribute(HEADERS, headers);
+        model.addAttribute(STATUS, HttpStatus.CREATED);
       } else {
-        repoMeta.entityMetadata().idAttribute().set(serId, incoming);
-        if (request.getMethod() == HttpMethod.POST) {
-          if (null != applicationContext) {
-            applicationContext.publishEvent(new BeforeSaveEvent(incoming));
-          }
-          Object savedEntity = repo.save(incoming);
-          if (null != applicationContext) {
-            applicationContext.publishEvent(new AfterSaveEvent(savedEntity));
-          }
-          URI selfUri = buildUri(baseUri, repository, id);
-          HttpHeaders headers = new HttpHeaders();
-          headers.set(LOCATION, selfUri.toString());
-          model.addAttribute(HEADERS, headers);
-          model.addAttribute(STATUS, HttpStatus.CREATED);
+        Object entity = repo.findOne(serId);
+        if (null == entity) {
+          model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
         } else {
-          if (null != applicationContext) {
-            applicationContext.publishEvent(new BeforeSaveEvent(incoming));
+          for (AttributeMetadata attrMeta : (Collection<AttributeMetadata>) repoMeta.entityMetadata()
+              .embeddedAttributes()
+              .values()) {
+            Object incomingVal = attrMeta.get(incoming);
+            if (null != incomingVal) {
+              attrMeta.set(incomingVal, entity);
+            }
           }
-          Object savedEntity = repo.save(incoming);
+          if (null != applicationContext) {
+            applicationContext.publishEvent(new BeforeSaveEvent(entity));
+          }
+          Object savedEntity = repo.save(entity);
           if (null != applicationContext) {
             applicationContext.publishEvent(new AfterSaveEvent(savedEntity));
           }
