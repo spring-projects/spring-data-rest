@@ -55,7 +55,7 @@ You can also deploy to a Jetty web container embedded in the build:
 
 ### Export Repositories
 
-To expose your Repositories to the exporter, include a Spring XML configuration file in the classpath (e.g. in a client JAR or in `WEB-INF/classes`). The filename should end with "-export.xml" and reside under the path `META-INF/spring-data-rest/`. Your configuration should include a properly-instaniated EntityManagerFactoryBean, an appropriate DataSource, and the appropriate repository configuration. It's easiest to use the special XML namespace for this purpose. An example configuration (named `WEB-INF/spring-data-rest/repositories-export.xml`) would look like something like this:
+To expose your Repositories to the exporter, include a Spring XML configuration file in the classpath (e.g. in a client JAR or in `WEB-INF/classes`). The filename should end with "-export.xml" and reside under the path `META-INF/spring-data-rest/`. Your configuration should include a properly instantiated EntityManagerFactoryBean, an appropriate DataSource, and the appropriate repository configuration. It's easiest to use the special XML namespace for this purpose. An example configuration (named `WEB-INF/spring-data-rest/repositories-export.xml`) would look like something like this:
 
     <?xml version="1.0" encoding="UTF-8"?>
     <beans xmlns="http://www.springframework.org/schema/beans"
