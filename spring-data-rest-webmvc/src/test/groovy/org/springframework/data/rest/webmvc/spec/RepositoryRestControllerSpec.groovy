@@ -81,11 +81,11 @@ class RepositoryRestControllerSpec extends Specification {
     def model = new ExtendedModelMap()
 
     when: "listing available repositories"
-    controller.listRepositories(uriBuilder, model)
-    def reposLinks = model.resource?.links
+    def mv = controller.listRepositories(uriBuilder)
+    def reposLinks = mv.model.resource?.links
 
     then:
-    model.status == HttpStatus.OK
+    mv.model.status == HttpStatus.OK
     reposLinks?.size() == 3
 
     when: "adding an entity"
@@ -93,63 +93,63 @@ class RepositoryRestControllerSpec extends Specification {
     def req = createRequest("POST", "people")
     def data = mapper.writeValueAsBytes([name: "John Doe"])
     req.content = data
-    controller.create(new ServletServerHttpRequest(req), uriBuilder, "people", model)
+    mv = controller.create(new ServletServerHttpRequest(req), uriBuilder, "people")
 
     then:
-    model.status == HttpStatus.CREATED
+    mv.model.status == HttpStatus.CREATED
 
     when: "getting a specific entity"
     model.clear()
     req = createRequest("GET", "people/1")
-    controller.entity(new ServletServerHttpRequest(req), uriBuilder, "people", "1", model)
+    mv = controller.entity(new ServletServerHttpRequest(req), uriBuilder, "people", "1")
 
     then:
-    model.resource?.name == "John Doe"
+    mv.model.resource?.name == "John Doe"
 
     when: "updating an entity"
-    model.clear()
+    mv.model.clear()
     req = createRequest("PUT", "people/1")
     data = mapper.writeValueAsBytes([name: "Johnnie Doe", version: 0])
     req.content = data
-    controller.createOrUpdate(new ServletServerHttpRequest(req), uriBuilder, "people", "1", model)
+    mv = controller.createOrUpdate(new ServletServerHttpRequest(req), uriBuilder, "people", "1")
 
     then:
-    model.status == HttpStatus.NO_CONTENT
+    mv.model.status == HttpStatus.NO_CONTENT
 
     when: "listing available entities"
-    model.clear()
-    controller.listEntities(uriBuilder, "people", model)
-    def peopleLinks = model.resource?.links
+    mv.model.clear()
+    mv = controller.listEntities(uriBuilder, "people")
+    def peopleLinks = mv.model.resource?.links
 
     then:
-    model.status == HttpStatus.OK
+    mv.model.status == HttpStatus.OK
     peopleLinks[0].href().toString() == "http://localhost:8080/data/people/1"
 
     when: "creating a child entity"
-    model.clear()
+    mv.model.clear()
     req = createRequest("POST", "address")
     data = mapper.writeValueAsBytes(new Address(["1 W. 1st St."] as String[], "Univille", "ST", "12345"))
     req.content = data
-    controller.create(new ServletServerHttpRequest(req), uriBuilder, "address", model)
+    mv = controller.create(new ServletServerHttpRequest(req), uriBuilder, "address")
 
     then:
-    model.status == HttpStatus.CREATED
+    mv.model.status == HttpStatus.CREATED
 
     when: "linking child to parent entity"
-    model.clear()
+    mv.model.clear()
     req = createRequest("POST", "people/1/addresses")
     req.contentType = "text/uri-list"
     data = "http://localhost:8080/data/address/1".bytes
     req.content = data
-    controller.updatePropertyOfEntity(new ServletServerHttpRequest(req), uriBuilder, "people", "1", "addresses", model)
+    mv = controller.updatePropertyOfEntity(new ServletServerHttpRequest(req), uriBuilder, "people", "1", "addresses")
 
     then:
-    model.status == HttpStatus.CREATED
+    mv.model.status == HttpStatus.CREATED
 
     when: "getting property of an entity"
-    model.clear()
-    controller.propertyOfEntity(uriBuilder, "people", "1", "addresses", model)
-    def addrLinks = model.resource?.links
+    mv.model.clear()
+    mv = controller.propertyOfEntity(uriBuilder, "people", "1", "addresses")
+    def addrLinks = mv.model.resource?.links
 
     then:
     null != addrLinks

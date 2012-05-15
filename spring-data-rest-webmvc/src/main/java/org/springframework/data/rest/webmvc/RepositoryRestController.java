@@ -73,6 +73,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -229,8 +230,7 @@ public class RepositoryRestController
           "application/json"
       }
   )
-  public void listRepositories(UriComponentsBuilder uriBuilder,
-                               Model model) {
+  public ModelAndView listRepositories(UriComponentsBuilder uriBuilder) {
     URI baseUri = uriBuilder.build().toUri();
 
     Links links = new Links();
@@ -243,8 +243,10 @@ public class RepositoryRestController
       }
     }
 
-    model.addAttribute(STATUS, HttpStatus.OK);
-    model.addAttribute(RESOURCE, links);
+    Map model = new HashMap();
+    model.put(STATUS, HttpStatus.OK);
+    model.put(RESOURCE, links);
+    return new ModelAndView(viewName("list_links"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -255,9 +257,8 @@ public class RepositoryRestController
           "application/json"
       }
   )
-  public void listEntities(UriComponentsBuilder uriBuilder,
-                           @PathVariable String repository,
-                           Model model) {
+  public ModelAndView listEntities(UriComponentsBuilder uriBuilder,
+                                   @PathVariable String repository) {
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
@@ -273,8 +274,10 @@ public class RepositoryRestController
     links.add(new SimpleLink(repoMeta.rel() + ".search",
                              buildUri(baseUri, repository, "search")));
 
-    model.addAttribute(STATUS, HttpStatus.OK);
-    model.addAttribute(RESOURCE, links);
+    Map model = new HashMap();
+    model.put(STATUS, HttpStatus.OK);
+    model.put(RESOURCE, links);
+    return new ModelAndView(viewName("list_entities"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -285,9 +288,8 @@ public class RepositoryRestController
           "application/json"
       }
   )
-  public void listQueryMethods(UriComponentsBuilder uriBuilder,
-                               @PathVariable String repository,
-                               Model model) {
+  public ModelAndView listQueryMethods(UriComponentsBuilder uriBuilder,
+                                       @PathVariable String repository) {
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
@@ -309,8 +311,10 @@ public class RepositoryRestController
       links.add(new SimpleLink(rel, path));
     }
 
-    model.addAttribute(STATUS, HttpStatus.OK);
-    model.addAttribute(RESOURCE, links);
+    Map model = new HashMap();
+    model.put(STATUS, HttpStatus.OK);
+    model.put(RESOURCE, links);
+    return new ModelAndView(viewName("list_queries"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -321,17 +325,17 @@ public class RepositoryRestController
           "application/json"
       }
   )
-  public void query(WebRequest request,
-                    UriComponentsBuilder uriBuilder,
-                    @PathVariable String repository,
-                    @PathVariable String query,
-                    Model model) {
+  public ModelAndView query(WebRequest request,
+                            UriComponentsBuilder uriBuilder,
+                            @PathVariable String repository,
+                            @PathVariable String query) {
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Repository repo = repoMeta.repository();
     RepositoryQueryMethod queryMethod = repoMeta.queryMethod(query);
 
+    Map model = new HashMap();
     Class<?>[] paramTypes = queryMethod.paramTypes();
     String[] paramNames = queryMethod.paramNames();
     Object[] paramVals = new Object[paramTypes.length];
@@ -373,8 +377,8 @@ public class RepositoryRestController
           }
         }
 
-        model.addAttribute(RESOURCE, coll);
-        model.addAttribute(STATUS, HttpStatus.OK);
+        model.put(RESOURCE, coll);
+        model.put(STATUS, HttpStatus.OK);
       } else {
         RepositoryMetadata elemRepoMeta = repositoryMetadataFor(result.getClass());
         if (null != elemRepoMeta) {
@@ -382,17 +386,19 @@ public class RepositoryRestController
           String rel = elemRepoMeta.rel() + "." + elemRepoMeta.entityMetadata().type().getSimpleName();
           URI path = buildUri(baseUri, repository, id);
           Link link = new SimpleLink(rel, path);
-          model.addAttribute(RESOURCE, link);
+          model.put(RESOURCE, link);
         } else {
-          model.addAttribute(RESOURCE, result);
+          model.put(RESOURCE, result);
         }
-        model.addAttribute(STATUS, HttpStatus.OK);
+        model.put(STATUS, HttpStatus.OK);
       }
     } catch (IllegalAccessException e) {
       throw new DataRetrievalFailureException(e.getMessage(), e);
     } catch (InvocationTargetException e) {
       throw new DataRetrievalFailureException(e.getMessage(), e);
     }
+
+    return new ModelAndView(viewName("query_results"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -403,18 +409,18 @@ public class RepositoryRestController
           "application/json"
       }
   )
-  public void create(ServerHttpRequest request,
-                     UriComponentsBuilder uriBuilder,
-                     @PathVariable String repository,
-                     Model model) throws IOException {
+  public ModelAndView create(ServerHttpRequest request,
+                             UriComponentsBuilder uriBuilder,
+                             @PathVariable String repository) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
 
+    Map model = new HashMap();
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     CrudRepository repo = repoMeta.repository();
     MediaType incomingMediaType = request.getHeaders().getContentType();
     final Object incoming = readIncoming(request, incomingMediaType, repoMeta.entityMetadata().type());
     if (null == incoming) {
-      model.addAttribute(STATUS, HttpStatus.NOT_ACCEPTABLE);
+      model.put(STATUS, HttpStatus.NOT_ACCEPTABLE);
     } else {
       if (null != applicationContext) {
         applicationContext.publishEvent(new BeforeSaveEvent(incoming));
@@ -430,9 +436,10 @@ public class RepositoryRestController
       HttpHeaders headers = new HttpHeaders();
       headers.set(LOCATION, selfUri.toString());
 
-      model.addAttribute(HEADERS, headers);
-      model.addAttribute(STATUS, HttpStatus.CREATED);
+      model.put(HEADERS, headers);
+      model.put(STATUS, HttpStatus.CREATED);
     }
+    return new ModelAndView(viewName("after_create"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -443,13 +450,13 @@ public class RepositoryRestController
           "application/json"
       }
   )
-  public void entity(ServerHttpRequest request,
-                     UriComponentsBuilder uriBuilder,
-                     @PathVariable String repository,
-                     @PathVariable String id,
-                     Model model) {
+  public ModelAndView entity(ServerHttpRequest request,
+                             UriComponentsBuilder uriBuilder,
+                             @PathVariable String repository,
+                             @PathVariable String id) {
     URI baseUri = uriBuilder.build().toUri();
 
+    Map model = new HashMap();
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
@@ -458,7 +465,7 @@ public class RepositoryRestController
     CrudRepository repo = repoMeta.repository();
     Object entity = repo.findOne(serId);
     if (null == entity) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+      model.put(STATUS, HttpStatus.NOT_FOUND);
     } else {
       HttpHeaders headers = new HttpHeaders();
       if (null != repoMeta.entityMetadata().versionAttribute()) {
@@ -467,8 +474,8 @@ public class RepositoryRestController
           List<String> etags = request.getHeaders().getIfNoneMatch();
           for (String etag : etags) {
             if (("\"" + version.toString() + "\"").equals(etag)) {
-              model.addAttribute(STATUS, HttpStatus.NOT_MODIFIED);
-              return;
+              model.put(STATUS, HttpStatus.NOT_MODIFIED);
+              return new ModelAndView(viewName("empty"), model);
             }
           }
           headers.set("ETag", "\"" + version.toString() + "\"");
@@ -480,10 +487,12 @@ public class RepositoryRestController
                                                                  buildUri(baseUri, repository, id));
       addSelfLink(baseUri, entityDto, repository, id);
 
-      model.addAttribute(HEADERS, headers);
-      model.addAttribute(STATUS, HttpStatus.OK);
-      model.addAttribute(RESOURCE, entityDto);
+      model.put(HEADERS, headers);
+      model.put(STATUS, HttpStatus.OK);
+      model.put(RESOURCE, entityDto);
     }
+
+    return new ModelAndView(viewName("entity"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -500,16 +509,16 @@ public class RepositoryRestController
           "application/json"
       }
   )
-  public void createOrUpdate(ServerHttpRequest request,
-                             UriComponentsBuilder uriBuilder,
-                             @PathVariable String repository,
-                             @PathVariable String id,
-                             Model model)
+  public ModelAndView createOrUpdate(ServerHttpRequest request,
+                                     UriComponentsBuilder uriBuilder,
+                                     @PathVariable String repository,
+                                     @PathVariable String id)
       throws IOException,
              IllegalAccessException,
              InstantiationException {
     URI baseUri = uriBuilder.build().toUri();
 
+    Map model = new HashMap();
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
@@ -535,12 +544,12 @@ public class RepositoryRestController
         URI selfUri = buildUri(baseUri, repository, id);
         HttpHeaders headers = new HttpHeaders();
         headers.set(LOCATION, selfUri.toString());
-        model.addAttribute(HEADERS, headers);
-        model.addAttribute(STATUS, HttpStatus.CREATED);
+        model.put(HEADERS, headers);
+        model.put(STATUS, HttpStatus.CREATED);
       } else {
         Object entity = repo.findOne(serId);
         if (null == entity) {
-          model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+          model.put(STATUS, HttpStatus.NOT_FOUND);
         } else {
           for (AttributeMetadata attrMeta : (Collection<AttributeMetadata>) repoMeta.entityMetadata()
               .embeddedAttributes()
@@ -557,10 +566,12 @@ public class RepositoryRestController
           if (null != applicationContext) {
             applicationContext.publishEvent(new AfterSaveEvent(savedEntity));
           }
-          model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
+          model.put(STATUS, HttpStatus.NO_CONTENT);
         }
       }
     }
+
+    return new ModelAndView(viewName("empty"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -568,9 +579,8 @@ public class RepositoryRestController
       value = "/{repository}/{id}",
       method = RequestMethod.DELETE
   )
-  public void deleteEntity(@PathVariable String repository,
-                           @PathVariable String id,
-                           Model model) {
+  public ModelAndView deleteEntity(@PathVariable String repository,
+                                   @PathVariable String id) {
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
@@ -586,7 +596,9 @@ public class RepositoryRestController
       applicationContext.publishEvent(new AfterDeleteEvent(serId));
     }
 
-    model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
+    Map model = new HashMap();
+    model.put(STATUS, HttpStatus.NO_CONTENT);
+    return new ModelAndView(viewName("empty"), model);
   }
 
 
@@ -599,13 +611,13 @@ public class RepositoryRestController
           "text/uri-list"
       }
   )
-  public void propertyOfEntity(UriComponentsBuilder uriBuilder,
-                               @PathVariable String repository,
-                               @PathVariable String id,
-                               @PathVariable String property,
-                               Model model) {
+  public ModelAndView propertyOfEntity(UriComponentsBuilder uriBuilder,
+                                       @PathVariable String repository,
+                                       @PathVariable String id,
+                                       @PathVariable String property) {
     URI baseUri = uriBuilder.build().toUri();
 
+    Map model = new HashMap();
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
@@ -614,11 +626,11 @@ public class RepositoryRestController
     CrudRepository repo = repoMeta.repository();
     Object entity = repo.findOne(serId);
     if (null == entity) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+      model.put(STATUS, HttpStatus.NOT_FOUND);
     } else {
       AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(property);
       if (null == attrMeta) {
-        model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+        model.put(STATUS, HttpStatus.NOT_FOUND);
       } else {
         Class<?> attrType = attrMeta.elementType();
         if (null == attrType) {
@@ -626,7 +638,7 @@ public class RepositoryRestController
         }
 
         RepositoryMetadata propRepoMeta = repositoryMetadataFor(attrType);
-        model.addAttribute(STATUS, HttpStatus.OK);
+        model.put(STATUS, HttpStatus.OK);
         Object propVal = attrMeta.get(entity);
         AttributeMetadata idAttr = propRepoMeta.entityMetadata().idAttribute();
         if (null != propVal) {
@@ -658,12 +670,14 @@ public class RepositoryRestController
             URI path = buildUri(baseUri, repository, id, property, propValId);
             links.add(new SimpleLink(rel, path));
           }
-          model.addAttribute(RESOURCE, links);
+          model.put(RESOURCE, links);
         } else {
-          model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+          model.put(STATUS, HttpStatus.NOT_FOUND);
         }
       }
     }
+
+    return new ModelAndView(viewName("entity_property"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -682,14 +696,14 @@ public class RepositoryRestController
           "text/uri-list"
       }
   )
-  public void updatePropertyOfEntity(final ServerHttpRequest request,
-                                     UriComponentsBuilder uriBuilder,
-                                     @PathVariable String repository,
-                                     @PathVariable String id,
-                                     final @PathVariable String property,
-                                     final Model model) throws IOException {
+  public ModelAndView updatePropertyOfEntity(final ServerHttpRequest request,
+                                             UriComponentsBuilder uriBuilder,
+                                             @PathVariable String repository,
+                                             @PathVariable String id,
+                                             final @PathVariable String property) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
 
+    final Map model = new HashMap();
     final RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
@@ -698,11 +712,11 @@ public class RepositoryRestController
     CrudRepository repo = repoMeta.repository();
     final Object entity = repo.findOne(serId);
     if (null == entity) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+      model.put(STATUS, HttpStatus.NOT_FOUND);
     } else {
       final AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(property);
       if (null == attrMeta) {
-        model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+        model.put(STATUS, HttpStatus.NOT_FOUND);
       } else {
         Object linked = attrMeta.get(entity);
         final AtomicReference<String> rel = new AtomicReference<String>();
@@ -732,7 +746,7 @@ public class RepositoryRestController
               }
               String key = rel.get();
               if (null == key) {
-                model.addAttribute(STATUS, HttpStatus.NOT_ACCEPTABLE);
+                model.put(STATUS, HttpStatus.NOT_ACCEPTABLE);
                 return null;
               } else {
                 m.put(rel.get(), linkedEntity);
@@ -781,12 +795,14 @@ public class RepositoryRestController
         }
 
         if (request.getMethod() == HttpMethod.PUT) {
-          model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
+          model.put(STATUS, HttpStatus.NO_CONTENT);
         } else {
-          model.addAttribute(STATUS, HttpStatus.CREATED);
+          model.put(STATUS, HttpStatus.CREATED);
         }
       }
     }
+
+    return new ModelAndView(viewName("empty"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -796,10 +812,10 @@ public class RepositoryRestController
           RequestMethod.DELETE
       }
   )
-  public void clearLinks(@PathVariable String repository,
-                         @PathVariable String id,
-                         @PathVariable String property,
-                         Model model) {
+  public ModelAndView clearLinks(@PathVariable String repository,
+                                 @PathVariable String id,
+                                 @PathVariable String property) {
+    Map model = new HashMap();
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
@@ -808,7 +824,7 @@ public class RepositoryRestController
     CrudRepository repo = repoMeta.repository();
     final Object entity = repo.findOne(serId);
     if (null == entity) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+      model.put(STATUS, HttpStatus.NOT_FOUND);
     } else {
       AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(property);
       if (null != attrMeta) {
@@ -823,11 +839,13 @@ public class RepositoryRestController
           applicationContext.publishEvent(new AfterLinkSaveEvent(savedEntity, null));
         }
 
-        model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
+        model.put(STATUS, HttpStatus.NO_CONTENT);
       } else {
-        model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+        model.put(STATUS, HttpStatus.NOT_FOUND);
       }
     }
+
+    return new ModelAndView(viewName("empty"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -840,14 +858,14 @@ public class RepositoryRestController
           "application/json"
       }
   )
-  public void linkedEntity(UriComponentsBuilder uriBuilder,
-                           @PathVariable String repository,
-                           @PathVariable String id,
-                           @PathVariable String property,
-                           @PathVariable String linkedId,
-                           Model model) {
+  public ModelAndView linkedEntity(UriComponentsBuilder uriBuilder,
+                                   @PathVariable String repository,
+                                   @PathVariable String id,
+                                   @PathVariable String property,
+                                   @PathVariable String linkedId) {
     URI baseUri = uriBuilder.build().toUri();
 
+    Map model = new HashMap();
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
@@ -876,16 +894,17 @@ public class RepositoryRestController
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Location", selfUri.toString());
-            model.addAttribute(HEADERS, headers);
-            model.addAttribute(STATUS, HttpStatus.OK);
-            model.addAttribute(RESOURCE, entityDto);
-            return;
+            model.put(HEADERS, headers);
+            model.put(STATUS, HttpStatus.OK);
+            model.put(RESOURCE, entityDto);
+            return new ModelAndView(viewName("linked_entity"), model);
           }
         }
       }
     }
 
-    model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+    model.put(STATUS, HttpStatus.NOT_FOUND);
+    return new ModelAndView(viewName("empty"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -895,20 +914,20 @@ public class RepositoryRestController
           RequestMethod.DELETE
       }
   )
-  public void deleteLink(@PathVariable String repository,
-                         @PathVariable String id,
-                         @PathVariable String property,
-                         @PathVariable String linkedId,
-                         Model model) {
+  public ModelAndView deleteLink(@PathVariable String repository,
+                                 @PathVariable String id,
+                                 @PathVariable String property,
+                                 @PathVariable String linkedId) {
+    Map model = new HashMap();
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
                                                   .idAttribute()
                                                   .type());
     CrudRepository repo = repoMeta.repository();
-    final Object entity = repo.findOne(serId);
+    Object entity = repo.findOne(serId);
     if (null == entity) {
-      model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+      model.put(STATUS, HttpStatus.NOT_FOUND);
     } else {
       AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(property);
       if (null != attrMeta) {
@@ -952,14 +971,15 @@ public class RepositoryRestController
               attrMeta.set(linkedEntity, entity);
             }
 
-            model.addAttribute(STATUS, HttpStatus.NO_CONTENT);
-            return;
+            model.put(STATUS, HttpStatus.NO_CONTENT);
+            return new ModelAndView(viewName("empty"), model);
           }
         }
       }
     }
 
-    model.addAttribute(STATUS, HttpStatus.NOT_FOUND);
+    model.put(STATUS, HttpStatus.NOT_FOUND);
+    return new ModelAndView(viewName("empty"), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -1082,6 +1102,10 @@ public class RepositoryRestController
     }
 
     return entityDto;
+  }
+
+  private String viewName(String name) {
+    return "org.springframework.data.rest." + name;
   }
 
 }

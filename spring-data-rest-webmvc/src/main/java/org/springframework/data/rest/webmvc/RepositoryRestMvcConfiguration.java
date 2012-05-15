@@ -21,7 +21,7 @@ import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 import org.springframework.util.Assert;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -98,19 +98,27 @@ public class RepositoryRestMvcConfiguration extends WebMvcConfigurerAdapter {
     }
   }
 
+  @Bean JsonView jsonView() {
+    return new JsonView("application/json");
+  }
+
+  @Bean UriListView urilistView() {
+    return new UriListView();
+  }
+
   @Bean ContentNegotiatingViewResolver contentNegotiatingViewResolver() {
     if (null == viewResolver) {
       viewResolver = new ContentNegotiatingViewResolver();
-      Map<String, String> jsonTypes = new HashMap<String, String>() {{
+
+      Map<String, String> mediaTypes = new HashMap<String, String>() {{
         put("json", "application/json");
         put("urilist", "text/uri-list");
       }};
+      viewResolver.setMediaTypes(mediaTypes);
 
-      viewResolver.setMediaTypes(jsonTypes);
-      viewResolver.setDefaultViews(
-          Arrays.asList((View) new JsonView("application/json"),
-                        (View) new UriListView())
-      );
+      RepositoryRestViewResolver jsonvr = new RepositoryRestViewResolver(jsonView());
+      RepositoryRestViewResolver urilistvr = new RepositoryRestViewResolver(urilistView());
+      viewResolver.setViewResolvers(Arrays.<ViewResolver>asList(jsonvr, urilistvr));
     }
     return viewResolver;
   }
