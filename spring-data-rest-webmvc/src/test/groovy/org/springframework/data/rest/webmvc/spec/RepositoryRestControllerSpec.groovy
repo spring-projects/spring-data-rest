@@ -93,7 +93,7 @@ class RepositoryRestControllerSpec extends Specification {
     def req = createRequest("POST", "people")
     def data = mapper.writeValueAsBytes([name: "John Doe"])
     req.content = data
-    mv = controller.create(new ServletServerHttpRequest(req), uriBuilder, "people")
+    mv = controller.create(new ServletServerHttpRequest(req), req, uriBuilder, "people")
 
     then:
     mv.model.status == HttpStatus.CREATED
@@ -130,7 +130,7 @@ class RepositoryRestControllerSpec extends Specification {
     req = createRequest("POST", "address")
     data = mapper.writeValueAsBytes(new Address(["1 W. 1st St."] as String[], "Univille", "ST", "12345"))
     req.content = data
-    mv = controller.create(new ServletServerHttpRequest(req), uriBuilder, "address")
+    mv = controller.create(new ServletServerHttpRequest(req), req, uriBuilder, "address")
 
     then:
     mv.model.status == HttpStatus.CREATED
