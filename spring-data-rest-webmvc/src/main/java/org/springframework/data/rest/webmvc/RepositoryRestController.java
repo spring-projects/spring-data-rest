@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.BeansException;
@@ -410,6 +411,7 @@ public class RepositoryRestController
       }
   )
   public ModelAndView create(ServerHttpRequest request,
+                             HttpServletRequest servletRequest,
                              UriComponentsBuilder uriBuilder,
                              @PathVariable String repository) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
@@ -438,6 +440,14 @@ public class RepositoryRestController
 
       model.put(HEADERS, headers);
       model.put(STATUS, HttpStatus.CREATED);
+      if (null != servletRequest.getParameter("returnBody") && "true".equals(servletRequest.getParameter("returnBody"))) {
+        Map<String, Object> entityDto = extractPropertiesLinkAware(repoMeta.rel(),
+                                                                   savedEntity,
+                                                                   repoMeta.entityMetadata(),
+                                                                   buildUri(baseUri, repository, sId));
+        addSelfLink(baseUri, entityDto, repository, sId);
+        model.put(RESOURCE, entityDto);
+      }
     }
     return new ModelAndView(viewName("after_create"), model);
   }
