@@ -114,7 +114,7 @@ If you issue an HTTP request to the root of the exporter:
 
     curl -v http://localhost:8080/data/
 
-You'll get back a chunk of JSON that points your user agent to the locations of the exposed repositories:
+You'll get back a chunk of JSON that points your user agent to the locations of the exported repositories:
 
     {
       "_links" : [{
@@ -123,23 +123,26 @@ You'll get back a chunk of JSON that points your user agent to the locations of 
       }]
     }
 
-The "rel" of the link will match the exposed name of the repository. Your application should keep track of this rel value as the key to this repository.
+The "rel" of the link will match the exported name of the repository. Your application should keep track of this rel value as the key to this repository.
 
-Similarly, if you issue a GET to `http://localhost:8080/data/person`, you should get back a list of entities exposed at this resource (as returned by the CrudRepository.findAll method). At the moment, there is no paging, sorting, or querying capability.
+Similarly, if you issue a GET to `http://localhost:8080/data/person`, you should get back a list of entities exported at this resource (as returned by the CrudRepository.findAll method). At the moment, there is no paging, sorting, or querying capability.
 
     curl -v http://localhost:8080/data/person
     
     {
       "_links" : [ {
-        "rel" : "Person",
+        "rel" : "person.Person",
         "href" : "http://localhost:8080/data/person/1"
       }, {
-        "rel" : "Person",
+        "rel" : "person.Person",
         "href" : "http://localhost:8080/data/person/2"
+      }, {
+        "rel" : "person.search",
+        "href" : "http://localhost:8080/data/person/search"
       } ]
     }
 
-The "rel" of these links will be the simple class name of the entity managed by this repository.
+The default "rel" of these links will be the rel of the repository plus a dot '.' plus the simple class name of the entity managed by this repository. The rel value can be configured using the `@RestResource` annotation, discussed on [Configuring the REST URL path](wiki/Configuring-the-REST-URL-path).
 
 Following these links will give your user agent a chunk of JSON that represents the entity. Besides properly handling nested objects and simple values, the web exporter will show relationships between entities using links just like those presented previously.
 
@@ -203,5 +206,41 @@ You can also delete a relationship by issuing a DELETE request to the resource p
 
     curl -v -X DELETE http://localhost:8080/data/person/1/profiles/2
 
-### Handling events
+### Calling Query methods
+
+Starting with Spring Data REST 1.0.0.M2, the exporter exposes Repository query methods under the special URL path `/repository/search/*`.
+
+To see what query methods are exported, issue a GET request to the entity resource URL and add the segment "search". You'll get back a list of links to the exported search methods.
+
+    curl -v http://localhost:8080/data/person/search
+
+    {
+      "_links" : [ {
+        "rel" : "person.findByName",
+        "href" : "http://localhost:8080/data/person/search/findByName"
+      } ]
+    }
+
+To query for entities using this search method, add a query parameter to the URL. The response will be a list of links to the top-level URL for that resource.
+
+    curl -v http://localhost:8080/data/person/search/findByName?name=John+Doe
+
+    [ {
+      "rel" : "person.Person",
+      "href" : "http://localhost:8080/data/person/1"
+    } ]
+
+To change the URL under which the query method is exported or set the name of the query parameter containing the search term, use the new `@RestResource` annotation.
+
+    @RestResource(path = "people")
+    public interface PersonRepository extends CrudRepository<Person, Long> {
+
+      @RestResource(path = "name", rel = "names")
+      public List<Person> findByName(@Param("name") String name);
+
+    }
+
+This changes the path the PersonRepository is exported under to `/people`, changes the rel of the search URL to `people.names`, changes the path under with the query method is exported to `/name`, and sets the query parameter containing the search term to `name`. To search the Repository using this method, issue a GET request.
+
+    curl -v http://localhost:8080/data/people/search/name?name=John+Doe
 
