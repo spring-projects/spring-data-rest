@@ -900,7 +900,7 @@ public class RepositoryRestController
                                                                        linkedEntity,
                                                                        linkedRepoMeta.entityMetadata(),
                                                                        baseUri);
-            URI selfUri = addSelfLink(baseUri, entityDto, repository, id);
+            URI selfUri = addSelfLink(baseUri, entityDto, linkedRepoMeta.name(), linkedId);
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Location", selfUri.toString());
