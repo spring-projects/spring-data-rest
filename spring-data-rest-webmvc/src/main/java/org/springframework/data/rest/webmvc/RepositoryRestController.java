@@ -899,7 +899,9 @@ public class RepositoryRestController
             Map<String, Object> entityDto = extractPropertiesLinkAware(linkedRepoMeta.rel(),
                                                                        linkedEntity,
                                                                        linkedRepoMeta.entityMetadata(),
-                                                                       baseUri);
+                                                                       buildUri(baseUri,
+                                                                                linkedRepoMeta.name(),
+                                                                                linkedId));
             URI selfUri = addSelfLink(baseUri, entityDto, linkedRepoMeta.name(), linkedId);
 
             HttpHeaders headers = new HttpHeaders();
