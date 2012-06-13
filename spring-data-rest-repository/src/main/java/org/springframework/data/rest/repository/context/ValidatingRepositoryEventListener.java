@@ -107,19 +107,19 @@ public class ValidatingRepositoryEventListener
     validate("afterDelete", entity);
   }
 
-  private Errors validate(String event, Object entity) {
+  private Errors validate(String event, Object o) {
     Errors errors = null;
-    if (null != entity) {
-      Class<?> domainType = entity.getClass();
+    if (null != o) {
+      Class<?> domainType = o.getClass();
       errors = new ValidationErrors(domainType.getSimpleName(),
-                                    entity,
+                                    o,
                                     repositoryMetadataFor(domainType).entityMetadata());
       Collection<Validator> validators = this.validators.get(event);
       if (null != validators) {
         for (Validator v : validators) {
-          if (v.supports(entity.getClass())) {
-            LOG.debug(event + ": " + entity + " with " + v);
-            ValidationUtils.invokeValidator(v, entity, errors);
+          if (v.supports(o.getClass())) {
+            LOG.debug(event + ": " + o + " with " + v);
+            ValidationUtils.invokeValidator(v, o, errors);
           }
         }
       }

@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -92,6 +94,8 @@ public class RepositoryRestController
   public static final String RESOURCE = "resource";
   public static final String SELF = "self";
   public static final String LINKS = "_links";
+
+  private static final Logger LOG = LoggerFactory.getLogger(RepositoryRestController.class);
 
   private ApplicationContext applicationContext;
 
@@ -269,7 +273,7 @@ public class RepositoryRestController
     while (iter.hasNext()) {
       Object o = iter.next();
       Serializable id = (Serializable) repoMeta.entityMetadata().idAttribute().get(o);
-      links.add(new SimpleLink(repoMeta.rel() + "." + o.getClass().getSimpleName(),
+      links.add(new SimpleLink(repoMeta.rel() + "." + o.getClass().getSimpleName() + "." + id.toString(),
                                buildUri(baseUri, repository, id.toString())));
     }
     links.add(new SimpleLink(repoMeta.rel() + ".search",
@@ -591,23 +595,27 @@ public class RepositoryRestController
   )
   public ModelAndView deleteEntity(@PathVariable String repository,
                                    @PathVariable String id) {
+    Map model = new HashMap();
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>) repoMeta.entityMetadata()
                                                   .idAttribute()
                                                   .type());
     CrudRepository repo = repoMeta.repository();
-
-    if (null != applicationContext) {
-      applicationContext.publishEvent(new BeforeDeleteEvent(serId));
+    Object entity = repo.findOne(serId);
+    if (null == entity) {
+      model.put(STATUS, HttpStatus.NOT_FOUND);
+    } else {
+      if (null != applicationContext) {
+        applicationContext.publishEvent(new BeforeDeleteEvent(entity));
+      }
+      repo.delete(serId);
+      if (null != applicationContext) {
+        applicationContext.publishEvent(new AfterDeleteEvent(entity));
+      }
+      model.put(STATUS, HttpStatus.NO_CONTENT);
     }
-    repo.delete(serId);
-    if (null != applicationContext) {
-      applicationContext.publishEvent(new AfterDeleteEvent(serId));
-    }
 
-    Map model = new HashMap();
-    model.put(STATUS, HttpStatus.NO_CONTENT);
     return new ModelAndView(viewName("empty"), model);
   }
 
@@ -656,7 +664,10 @@ public class RepositoryRestController
           if (propVal instanceof Collection) {
             for (Object o : (Collection) propVal) {
               String propValId = idAttr.get(o).toString();
-              String rel = repository + "." + entity.getClass().getSimpleName() + "." + attrType.getSimpleName();
+              String rel = repository + "."
+                  + entity.getClass().getSimpleName() + "."
+                  + attrType.getSimpleName() + "."
+                  + propValId;
               URI path = buildUri(baseUri, repository, id, property, propValId);
               links.add(new SimpleLink(rel, path));
             }
@@ -998,6 +1009,7 @@ public class RepositoryRestController
   @ExceptionHandler(OptimisticLockingFailureException.class)
   @ResponseBody
   public ResponseEntity handleLockingFailure(OptimisticLockingFailureException ex) throws IOException {
+    LOG.error(ex.getMessage(), ex);
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
     Map m = new HashMap();
@@ -1008,6 +1020,7 @@ public class RepositoryRestController
   @SuppressWarnings({"unchecked"})
   @ExceptionHandler(RepositoryConstraintViolationException.class)
   public Model handleValidationFailure(RepositoryConstraintViolationException ex) throws IOException {
+    LOG.error(ex.getMessage(), ex);
     Model model = new ExtendedModelMap();
     model.addAttribute(STATUS, HttpStatus.BAD_REQUEST);
 
@@ -1020,6 +1033,18 @@ public class RepositoryRestController
 
     model.addAttribute(RESOURCE, m);
     return model;
+  }
+
+  @SuppressWarnings({"unchecked"})
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  @ResponseBody
+  public ResponseEntity handleMessageConversionFailure(HttpMessageNotReadableException ex) throws IOException {
+    LOG.error(ex.getMessage(), ex);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    Map m = new HashMap();
+    m.put("message", ex.getMessage());
+    return new ResponseEntity(objectMapper.writeValueAsBytes(m), headers, HttpStatus.BAD_REQUEST);
   }
 
   private static URI buildUri(URI baseUri, String... pathSegments) {

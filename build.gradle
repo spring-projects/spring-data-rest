@@ -74,7 +74,7 @@ configure(subprojects) { subproject ->
     // Testing
     testCompile "org.spockframework:spock-core:$spockVersion"
     testCompile "org.spockframework:spock-spring:$spockVersion"
-    testCompile "org.hamcrest:hamcrest-all:1.1"
+    testCompile "org.hamcrest:hamcrest-library:1.1"
     testCompile "org.springframework:spring-test:$springVersion"
     testRuntime "org.springframework:spring-context-support:$springVersion"
 
