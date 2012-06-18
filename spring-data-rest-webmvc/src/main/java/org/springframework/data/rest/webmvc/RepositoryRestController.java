@@ -30,9 +30,11 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.rest.core.Handler;
 import org.springframework.data.rest.core.Link;
@@ -262,14 +264,22 @@ public class RepositoryRestController
           "application/json"
       }
   )
-  public ModelAndView listEntities(UriComponentsBuilder uriBuilder,
+  public ModelAndView listEntities(PagingAndSorting pageSort,
+                                   UriComponentsBuilder uriBuilder,
                                    @PathVariable String repository) {
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Links links = new Links();
 
-    Iterator iter = repoMeta.repository().findAll().iterator();
+    Page page = null;
+    Iterator iter;
+    if (repoMeta.repository() instanceof PagingAndSortingRepository) {
+      page = ((PagingAndSortingRepository) repoMeta.repository()).findAll(pageSort);
+      iter = page.iterator();
+    } else {
+      iter = repoMeta.repository().findAll().iterator();
+    }
     while (iter.hasNext()) {
       Object o = iter.next();
       Serializable id = (Serializable) repoMeta.entityMetadata().idAttribute().get(o);
@@ -280,6 +290,35 @@ public class RepositoryRestController
                              buildUri(baseUri, repository, "search")));
 
     Map model = new HashMap();
+    // Add paging links
+    if (null != page) {
+      HttpHeaders headers = new HttpHeaders();
+      headers.set("x-springdata-meta-total-count", String.valueOf(page.getTotalElements()));
+      headers.set("x-springdata-meta-current-page", String.valueOf(page.getNumber() + 1));
+      headers.set("x-springdata-meta-total-pages", String.valueOf(page.getTotalPages()));
+      model.put(HEADERS, headers);
+      maybeAddPrevNextLink(
+          buildUri(baseUri, repository),
+          repoMeta,
+          pageSort,
+          page,
+          !page.isFirstPage() && page.hasPreviousPage(),
+          page.getNumber(),
+          "prev",
+          links.getLinks()
+      );
+      maybeAddPrevNextLink(
+          buildUri(baseUri, repository),
+          repoMeta,
+          pageSort,
+          page,
+          !page.isLastPage() && page.hasNextPage(),
+          page.getNumber() + 2,
+          "next",
+          links.getLinks()
+      );
+    }
+
     model.put(STATUS, HttpStatus.OK);
     model.put(RESOURCE, links);
     return new ModelAndView(viewName("list_entities"), model);
@@ -331,10 +370,12 @@ public class RepositoryRestController
       }
   )
   public ModelAndView query(WebRequest request,
+                            PagingAndSorting pageSort,
                             UriComponentsBuilder uriBuilder,
                             @PathVariable String repository,
                             @PathVariable String query) {
     URI baseUri = uriBuilder.build().toUri();
+    Page page = null;
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Repository repo = repoMeta.repository();
@@ -351,8 +392,10 @@ public class RepositoryRestController
         paramVals[i] = queryVal;
       } else if (Pageable.class.isAssignableFrom(paramTypes[i])) {
         // Handle paging
+        paramVals[i] = pageSort;
       } else if (Sort.class.isAssignableFrom(paramTypes[i])) {
         // Handle sorting
+        paramVals[i] = (null != pageSort ? pageSort.getSort() : null);
       } else if (conversionService.canConvert(String.class, paramTypes[i])) {
         // There's a converter from String -> param type
         paramVals[i] = conversionService.convert(queryVal, paramTypes[i]);
@@ -368,35 +411,64 @@ public class RepositoryRestController
 
     try {
       Object result = queryMethod.method().invoke(repo, paramVals);
+      Iterator iter;
       if (result instanceof Collection) {
-        Collection coll = new ArrayList();
-        for (Object o : (Collection) result) {
-          RepositoryMetadata elemRepoMeta = repositoryMetadataFor(o.getClass());
-          if (null != elemRepoMeta) {
-            String id = elemRepoMeta.entityMetadata().idAttribute().get(o).toString();
-            String rel = elemRepoMeta.rel() + "." + elemRepoMeta.entityMetadata().type().getSimpleName();
-            URI path = buildUri(baseUri, repository, id);
-            coll.add(new SimpleLink(rel, path));
-          } else {
-            coll.add(o);
-          }
-        }
-
-        model.put(RESOURCE, coll);
-        model.put(STATUS, HttpStatus.OK);
+        iter = ((Collection) result).iterator();
+      } else if (result instanceof Page) {
+        page = (Page) result;
+        iter = page.iterator();
       } else {
-        RepositoryMetadata elemRepoMeta = repositoryMetadataFor(result.getClass());
-        if (null != elemRepoMeta) {
-          String id = elemRepoMeta.entityMetadata().idAttribute().get(result).toString();
-          String rel = elemRepoMeta.rel() + "." + elemRepoMeta.entityMetadata().type().getSimpleName();
-          URI path = buildUri(baseUri, repository, id);
-          Link link = new SimpleLink(rel, path);
-          model.put(RESOURCE, link);
-        } else {
-          model.put(RESOURCE, result);
-        }
-        model.put(STATUS, HttpStatus.OK);
+        List l = new ArrayList();
+        l.add(result);
+        iter = l.iterator();
       }
+
+      List resultList = new ArrayList();
+      while (iter.hasNext()) {
+        Object obj = iter.next();
+        RepositoryMetadata elemRepoMeta = repositoryMetadataFor(obj.getClass());
+        if (null != elemRepoMeta) {
+          String id = elemRepoMeta.entityMetadata().idAttribute().get(obj).toString();
+          String rel = elemRepoMeta.rel() + "." + elemRepoMeta.entityMetadata().type().getSimpleName() + "." + id;
+          URI path = buildUri(baseUri, repository, id);
+          resultList.add(new SimpleLink(rel, path));
+        } else {
+          resultList.add(obj);
+        }
+      }
+
+      // Add paging links
+      if (null != page) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("x-springdata-meta-total-count", String.valueOf(page.getTotalElements()));
+        headers.set("x-springdata-meta-current-page", String.valueOf(page.getNumber() + 1));
+        headers.set("x-springdata-meta-total-pages", String.valueOf(page.getTotalPages()));
+        model.put(HEADERS, headers);
+        maybeAddPrevNextLink(
+            buildUri(baseUri, repository, "search", query),
+            repoMeta,
+            pageSort,
+            page,
+            !page.isFirstPage() && page.hasPreviousPage(),
+            page.getNumber(),
+            "prev",
+            resultList
+        );
+        maybeAddPrevNextLink(
+            buildUri(baseUri, repository, "search", query),
+            repoMeta,
+            pageSort,
+            page,
+            !page.isLastPage() && page.hasNextPage(),
+            page.getNumber() + 2,
+            "next",
+            resultList
+        );
+      }
+
+      model.put(RESOURCE, resultList);
+      model.put(STATUS, HttpStatus.OK);
+
     } catch (IllegalAccessException e) {
       throw new DataRetrievalFailureException(e.getMessage(), e);
     } catch (InvocationTargetException e) {
@@ -1061,6 +1133,24 @@ public class RepositoryRestController
     URI selfUri = buildUri(baseUri, pathComponents);
     links.add(new SimpleLink(SELF, selfUri));
     return selfUri;
+  }
+
+  @SuppressWarnings({"unchecked"})
+  private void maybeAddPrevNextLink(URI resourceUri,
+                                    RepositoryMetadata repoMeta,
+                                    PagingAndSorting pageSort,
+                                    Page page,
+                                    boolean addIf,
+                                    int nextPage,
+                                    String rel,
+                                    List links) {
+    if (null != page && addIf) {
+      UriComponentsBuilder urib = UriComponentsBuilder.fromUri(resourceUri);
+      urib.queryParam(pageSort.pageParameter, nextPage); // PageRequest is 0-based, so it's already (page - 1)
+      urib.queryParam(pageSort.limitParameter, page.getSize());
+      pageSort.addSortParameters(urib);
+      links.add(new SimpleLink(repoMeta.rel() + "." + rel, urib.build().toUri()));
+    }
   }
 
   @SuppressWarnings({"unchecked"})

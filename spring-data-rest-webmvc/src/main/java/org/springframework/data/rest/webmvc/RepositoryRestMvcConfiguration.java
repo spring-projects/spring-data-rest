@@ -52,6 +52,7 @@ public class RepositoryRestMvcConfiguration extends WebMvcConfigurerAdapter {
 
   @Override public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
     argumentResolvers.add(new ServerHttpRequestMethodArgumentResolver());
+    argumentResolvers.add(new PagingAndSortingMethodArgumentResolver());
   }
 
   @Override public void addInterceptors(InterceptorRegistry registry) {

@@ -1,12 +1,13 @@
 package org.springframework.data.rest.webmvc.spec
 
-import javax.persistence.EntityManagerFactory
 import org.codehaus.jackson.map.ObjectMapper
 import org.codehaus.jackson.map.ser.CustomSerializerFactory
 import org.springframework.context.support.ClassPathXmlApplicationContext
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.rest.core.SimpleLink
 import org.springframework.data.rest.core.util.FluentBeanSerializer
 import org.springframework.data.rest.test.webmvc.Address
+import org.springframework.data.rest.webmvc.PagingAndSorting
 import org.springframework.data.rest.webmvc.RepositoryRestController
 import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration
 import org.springframework.http.HttpStatus
@@ -22,6 +23,8 @@ import org.springframework.web.util.UriComponentsBuilder
 import spock.lang.Shared
 import spock.lang.Specification
 
+import javax.persistence.EntityManagerFactory
+
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
@@ -33,6 +36,8 @@ class RepositoryRestControllerSpec extends Specification {
   ObjectMapper mapper = new ObjectMapper()
   @Shared
   RepositoryRestController controller
+  @Shared
+  PagingAndSorting pageSort
   @Shared
   EntityManagerFactory emf
 
@@ -62,6 +67,7 @@ class RepositoryRestControllerSpec extends Specification {
 
     emf = webAppCtx.getBean(EntityManagerFactory)
     controller = webAppCtx.getBean(RepositoryRestController)
+    pageSort = new PagingAndSorting("page", "limit", "sort", new PageRequest(0, 1000))
     uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:8080/data")
 
     def customSerializerFactory = new CustomSerializerFactory()
@@ -118,7 +124,7 @@ class RepositoryRestControllerSpec extends Specification {
 
     when: "listing available entities"
     mv.model.clear()
-    mv = controller.listEntities(uriBuilder, "people")
+    mv = controller.listEntities(pageSort, uriBuilder, "people")
     def peopleLinks = mv.model.resource?.links
 
     then:
