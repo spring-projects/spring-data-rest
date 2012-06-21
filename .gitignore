@@ -2,3 +2,6 @@
 .gradle/
 build/
 *.i*
+.classpath
+.project
+.settings
