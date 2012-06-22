@@ -22,7 +22,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
   private static final int DEFAULT_PAGE = 1; // We're 1-based, not 0-based
-  private static final int DEFAULT_LIMIT = 1000;
+  private static final int DEFAULT_LIMIT = 20;
 
   private String pageParameter = "page";
   private String limitParameter = "limit";
