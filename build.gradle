@@ -74,7 +74,7 @@ configure(subprojects) { subproject ->
     // Testing
     testCompile "org.spockframework:spock-core:$spockVersion"
     testCompile "org.spockframework:spock-spring:$spockVersion"
-    testCompile "org.hamcrest:hamcrest-library:1.1"
+    testCompile "org.hamcrest:hamcrest-library:1.2.1"
     testCompile "org.springframework:spring-test:$springVersion"
     testRuntime "org.springframework:spring-context-support:$springVersion"
 
@@ -82,13 +82,10 @@ configure(subprojects) { subproject ->
 
 }
 
-task wrapper(type: Wrapper) { gradleVersion = "1.0-rc-1" }
+task wrapper(type: Wrapper) { gradleVersion = "1.0" }
 
 idea {
   module {
-    inheritOutputDirs = false
-    outputDir = file("build/classes/main")
-    testOutputDir = file("build/classes/test")
     downloadJavadoc = false
     downloadSources = true
   }
