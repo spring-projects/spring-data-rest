@@ -65,7 +65,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.server.ServerHttpRequest;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.util.Assert;
@@ -84,7 +83,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-@Controller
 public class RepositoryRestController
     extends RepositoryExporterSupport<RepositoryRestController>
     implements ApplicationContextAware,

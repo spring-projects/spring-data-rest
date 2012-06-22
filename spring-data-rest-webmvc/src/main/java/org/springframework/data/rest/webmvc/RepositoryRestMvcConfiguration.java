@@ -11,29 +11,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.core.Ordered;
 import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.repository.jpa.JpaRepositoryExporter;
-import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
-import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
-import org.springframework.util.Assert;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @Configuration
-@EnableWebMvc
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*-export.xml")
-public class RepositoryRestMvcConfiguration extends WebMvcConfigurerAdapter {
+public class RepositoryRestMvcConfiguration {
 
   ContentNegotiatingViewResolver viewResolver;
   RepositoryRestController repositoryRestController;
@@ -50,37 +42,25 @@ public class RepositoryRestMvcConfiguration extends WebMvcConfigurerAdapter {
   @Autowired(required = false)
   ValidatingRepositoryEventListener validatingRepositoryEventListener;
 
-  @Override public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-    argumentResolvers.add(new ServerHttpRequestMethodArgumentResolver());
-    argumentResolvers.add(new PagingAndSortingMethodArgumentResolver());
-  }
+  RepositoryExporterHandlerAdapter repositoryExporterHandlerAdapter;
+  RepositoryExporterHandlerMapping repositoryExporterHandlerMapping;
 
-  @Override public void addInterceptors(InterceptorRegistry registry) {
-    registry.addWebRequestInterceptor(openEntityManagerInViewInterceptor());
-  }
-
-  @Bean List<HttpMessageConverter<?>> httpMessageConverters() {
-    Assert.notNull(httpMessageConverters);
-
-    if (httpMessageConverters.isEmpty()) {
-      MappingJacksonHttpMessageConverter json = new MappingJacksonHttpMessageConverter();
-      json.setSupportedMediaTypes(
-          Arrays.asList(MediaType.APPLICATION_JSON, MediaType.valueOf("application/x-spring-data+json"))
-      );
-      httpMessageConverters.add(json);
+  @Bean RepositoryExporterHandlerAdapter repositoryExporterHandlerAdapter() {
+    if (null == repositoryExporterHandlerAdapter) {
+      repositoryExporterHandlerAdapter = new RepositoryExporterHandlerAdapter();
     }
+    return repositoryExporterHandlerAdapter;
+  }
 
-    return httpMessageConverters;
+  @Bean RepositoryExporterHandlerMapping repositoryExporterHandlerMapping() {
+    if (null == repositoryExporterHandlerMapping) {
+      repositoryExporterHandlerMapping = new RepositoryExporterHandlerMapping(entityManagerFactory);
+    }
+    return repositoryExporterHandlerMapping;
   }
 
   @Bean PersistenceAnnotationBeanPostProcessor persistenceAnnotationBeanPostProcessor() {
     return new PersistenceAnnotationBeanPostProcessor();
-  }
-
-  @Bean OpenEntityManagerInViewInterceptor openEntityManagerInViewInterceptor() {
-    OpenEntityManagerInViewInterceptor oemiv = new OpenEntityManagerInViewInterceptor();
-    oemiv.setEntityManagerFactory(entityManagerFactory);
-    return oemiv;
   }
 
   @Bean JpaRepositoryExporter jpaRepositoryExporter() {
@@ -110,6 +90,7 @@ public class RepositoryRestMvcConfiguration extends WebMvcConfigurerAdapter {
   @Bean ContentNegotiatingViewResolver contentNegotiatingViewResolver() {
     if (null == viewResolver) {
       viewResolver = new ContentNegotiatingViewResolver();
+      viewResolver.setOrder(Ordered.HIGHEST_PRECEDENCE);
 
       Map<String, String> mediaTypes = new HashMap<String, String>() {{
         put("json", "application/json");
@@ -128,7 +109,7 @@ public class RepositoryRestMvcConfiguration extends WebMvcConfigurerAdapter {
     if (null == repositoryRestController) {
       this.repositoryRestController = new RepositoryRestController()
           .repositoryExporters(Arrays.<RepositoryExporter>asList(jpaRepositoryExporter()))
-          .httpMessageConverters(httpMessageConverters())
+          .httpMessageConverters(repositoryExporterHandlerAdapter().getMessageConverters())
           .jsonMediaType("application/json");
     }
     return repositoryRestController;
