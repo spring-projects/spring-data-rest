@@ -1,5 +1,6 @@
 package org.springframework.data.rest.repository;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,6 +52,18 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
   @SuppressWarnings({"unchecked"})
   public S repositoryExporters(List<RepositoryExporter> repositoryExporters) {
     setRepositoryExporters(repositoryExporters);
+    return (S) this;
+  }
+
+  /**
+   * Set the {@link RepositoryExporter}s to use.
+   *
+   * @param repositoryExporter
+   * @return
+   */
+  @SuppressWarnings({"unchecked"})
+  public S repositoryExporters(RepositoryExporter... repositoryExporter) {
+    setRepositoryExporters(Arrays.asList(repositoryExporter));
     return (S) this;
   }
 

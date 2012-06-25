@@ -1,21 +1,16 @@
 package org.springframework.data.rest.webmvc;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import javax.persistence.EntityManagerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.Ordered;
-import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.repository.jpa.JpaRepositoryExporter;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
@@ -27,37 +22,11 @@ import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*-export.xml")
 public class RepositoryRestMvcConfiguration {
 
-  ContentNegotiatingViewResolver viewResolver;
-  RepositoryRestController repositoryRestController;
-
-  @Autowired
-  EntityManagerFactory entityManagerFactory;
-
   @Autowired(required = false)
   JpaRepositoryExporter customJpaRepositoryExporter;
 
   @Autowired(required = false)
-  List<HttpMessageConverter<?>> httpMessageConverters = new ArrayList<HttpMessageConverter<?>>();
-
-  @Autowired(required = false)
   ValidatingRepositoryEventListener validatingRepositoryEventListener;
-
-  RepositoryExporterHandlerAdapter repositoryExporterHandlerAdapter;
-  RepositoryExporterHandlerMapping repositoryExporterHandlerMapping;
-
-  @Bean RepositoryExporterHandlerAdapter repositoryExporterHandlerAdapter() {
-    if (null == repositoryExporterHandlerAdapter) {
-      repositoryExporterHandlerAdapter = new RepositoryExporterHandlerAdapter();
-    }
-    return repositoryExporterHandlerAdapter;
-  }
-
-  @Bean RepositoryExporterHandlerMapping repositoryExporterHandlerMapping() {
-    if (null == repositoryExporterHandlerMapping) {
-      repositoryExporterHandlerMapping = new RepositoryExporterHandlerMapping(entityManagerFactory);
-    }
-    return repositoryExporterHandlerMapping;
-  }
 
   @Bean PersistenceAnnotationBeanPostProcessor persistenceAnnotationBeanPostProcessor() {
     return new PersistenceAnnotationBeanPostProcessor();
@@ -88,31 +57,32 @@ public class RepositoryRestMvcConfiguration {
   }
 
   @Bean ContentNegotiatingViewResolver contentNegotiatingViewResolver() {
-    if (null == viewResolver) {
-      viewResolver = new ContentNegotiatingViewResolver();
-      viewResolver.setOrder(Ordered.HIGHEST_PRECEDENCE);
+    ContentNegotiatingViewResolver viewResolver = new ContentNegotiatingViewResolver();
+    viewResolver.setOrder(Ordered.HIGHEST_PRECEDENCE);
 
-      Map<String, String> mediaTypes = new HashMap<String, String>() {{
-        put("json", "application/json");
-        put("urilist", "text/uri-list");
-      }};
-      viewResolver.setMediaTypes(mediaTypes);
+    Map<String, String> mediaTypes = new HashMap<String, String>() {{
+      put("json", "application/json");
+      put("urilist", "text/uri-list");
+    }};
+    viewResolver.setMediaTypes(mediaTypes);
 
-      RepositoryRestViewResolver jsonvr = new RepositoryRestViewResolver(jsonView());
-      RepositoryRestViewResolver urilistvr = new RepositoryRestViewResolver(urilistView());
-      viewResolver.setViewResolvers(Arrays.<ViewResolver>asList(jsonvr, urilistvr));
-    }
+    RepositoryRestViewResolver jsonvr = new RepositoryRestViewResolver(jsonView());
+    RepositoryRestViewResolver urilistvr = new RepositoryRestViewResolver(urilistView());
+    viewResolver.setViewResolvers(Arrays.<ViewResolver>asList(jsonvr, urilistvr));
+
     return viewResolver;
   }
 
   @Bean RepositoryRestController repositoryRestController() throws Exception {
-    if (null == repositoryRestController) {
-      this.repositoryRestController = new RepositoryRestController()
-          .repositoryExporters(Arrays.<RepositoryExporter>asList(jpaRepositoryExporter()))
-          .httpMessageConverters(repositoryExporterHandlerAdapter().getMessageConverters())
-          .jsonMediaType("application/json");
-    }
-    return repositoryRestController;
+    return new RepositoryRestController();
+  }
+
+  @Bean RepositoryExporterHandlerAdapter repositoryExporterHandlerAdapter() {
+    return new RepositoryExporterHandlerAdapter();
+  }
+
+  @Bean RepositoryExporterHandlerMapping repositoryExporterHandlerMapping() {
+    return new RepositoryExporterHandlerMapping();
   }
 
 }

@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
@@ -62,8 +63,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
@@ -100,13 +105,22 @@ public class RepositoryRestController
   private ApplicationContext applicationContext;
 
   private MediaType uriListMediaType = MediaType.parseMediaType("text/uri-list");
-  private MediaType jsonMediaType = MediaType.parseMediaType("application/x-spring-data+json");
+  private MediaType jsonMediaType = MediaType.parseMediaType("application/json");
+  @Autowired(required = false)
   private DelegatingConversionService conversionService = new DelegatingConversionService(
       new DefaultFormattingConversionService()
   );
-  private List<HttpMessageConverter<?>> httpMessageConverters = Collections.emptyList();
+  @Autowired(required = false)
+  private List<HttpMessageConverter> httpMessageConverters = new ArrayList<HttpMessageConverter>();
   private Map<String, Handler<Object, Object>> resourceHandlers = Collections.emptyMap();
   private ObjectMapper objectMapper = new ObjectMapper();
+
+  {
+    httpMessageConverters.add(0, new StringHttpMessageConverter());
+    httpMessageConverters.add(0, new ByteArrayHttpMessageConverter());
+    httpMessageConverters.add(0, new FormHttpMessageConverter());
+    httpMessageConverters.add(0, new MappingJacksonHttpMessageConverter());
+  }
 
   @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
     this.applicationContext = applicationContext;
@@ -131,20 +145,20 @@ public class RepositoryRestController
     return this;
   }
 
-  public List<HttpMessageConverter<?>> getHttpMessageConverters() {
+  public List<HttpMessageConverter> getHttpMessageConverters() {
     return httpMessageConverters;
   }
 
-  public void setHttpMessageConverters(List<HttpMessageConverter<?>> httpMessageConverters) {
+  public void setHttpMessageConverters(List<HttpMessageConverter> httpMessageConverters) {
     Assert.notNull(httpMessageConverters);
     this.httpMessageConverters = httpMessageConverters;
   }
 
-  public List<HttpMessageConverter<?>> httpMessageConverters() {
+  public List<HttpMessageConverter> httpMessageConverters() {
     return httpMessageConverters;
   }
 
-  public RepositoryRestController httpMessageConverters(List<HttpMessageConverter<?>> httpMessageConverters) {
+  public RepositoryRestController httpMessageConverters(List<HttpMessageConverter> httpMessageConverters) {
     setHttpMessageConverters(httpMessageConverters);
     return this;
   }
