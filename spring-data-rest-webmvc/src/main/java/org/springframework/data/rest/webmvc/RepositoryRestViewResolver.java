@@ -27,8 +27,11 @@ public class RepositoryRestViewResolver implements ViewResolver {
   @Override public View resolveViewName(String viewName, Locale locale) throws Exception {
     if (customViewMappings.containsKey(viewName)) {
       return customViewMappings.get(viewName);
+    } else if (viewName.startsWith("org.springframework.data.rest")) {
+      return view;
+    } else {
+      return null;
     }
-    return view;
   }
 
 }

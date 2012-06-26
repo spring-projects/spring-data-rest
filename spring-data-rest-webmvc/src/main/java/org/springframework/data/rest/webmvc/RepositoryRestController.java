@@ -48,6 +48,7 @@ import org.springframework.data.rest.repository.RepositoryConstraintViolationExc
 import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
 import org.springframework.data.rest.repository.RepositoryMetadata;
+import org.springframework.data.rest.repository.RepositoryNotFoundException;
 import org.springframework.data.rest.repository.RepositoryQueryMethod;
 import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
@@ -1087,6 +1088,15 @@ public class RepositoryRestController
 
     model.put(STATUS, HttpStatus.NOT_FOUND);
     return new ModelAndView(viewName("empty"), model);
+  }
+
+  @ExceptionHandler(RepositoryNotFoundException.class)
+  @ResponseBody
+  public ResponseEntity handleRepositoryNotFoundFailure(RepositoryNotFoundException e) {
+    if (LOG.isWarnEnabled()) {
+      LOG.warn("RepositoryNotFoundException: " + e.getMessage());
+    }
+    return new ResponseEntity(HttpStatus.NOT_FOUND);
   }
 
   @SuppressWarnings({"unchecked"})
