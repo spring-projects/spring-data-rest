@@ -11,9 +11,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 /**
  * @author Jon Brisbin
  */
-public class RepositoryExporterHandlerAdapter extends RequestMappingHandlerAdapter {
+public class RepositoryRestHandlerAdapter extends RequestMappingHandlerAdapter {
 
-  public RepositoryExporterHandlerAdapter() {
+  public RepositoryRestHandlerAdapter() {
     setCustomArgumentResolvers(Arrays.asList(
         new ServerHttpRequestMethodArgumentResolver(),
         new PagingAndSortingMethodArgumentResolver()

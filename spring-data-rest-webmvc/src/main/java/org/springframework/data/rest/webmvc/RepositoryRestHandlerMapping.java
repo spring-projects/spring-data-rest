@@ -17,7 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 /**
  * @author Jon Brisbin
  */
-public class RepositoryExporterHandlerMapping extends RequestMappingHandlerMapping {
+public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 
   @Autowired
   private EntityManagerFactory entityManagerFactory;
@@ -25,7 +25,7 @@ public class RepositoryExporterHandlerMapping extends RequestMappingHandlerMappi
   private List<RepositoryExporter> repositoryExporters = Collections.emptyList();
   private Set<String> repositoryNames = new HashSet<String>();
 
-  public RepositoryExporterHandlerMapping() {
+  public RepositoryRestHandlerMapping() {
     setOrder(Ordered.HIGHEST_PRECEDENCE);
   }
 

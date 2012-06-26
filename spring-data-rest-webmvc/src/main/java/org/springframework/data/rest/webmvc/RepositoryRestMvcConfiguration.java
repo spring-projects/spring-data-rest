@@ -77,12 +77,12 @@ public class RepositoryRestMvcConfiguration {
     return new RepositoryRestController();
   }
 
-  @Bean RepositoryExporterHandlerAdapter repositoryExporterHandlerAdapter() {
-    return new RepositoryExporterHandlerAdapter();
+  @Bean RepositoryRestHandlerAdapter repositoryExporterHandlerAdapter() {
+    return new RepositoryRestHandlerAdapter();
   }
 
-  @Bean RepositoryExporterHandlerMapping repositoryExporterHandlerMapping() {
-    return new RepositoryExporterHandlerMapping();
+  @Bean RepositoryRestHandlerMapping repositoryExporterHandlerMapping() {
+    return new RepositoryRestHandlerMapping();
   }
 
 }
