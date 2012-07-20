@@ -14,18 +14,12 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 public class PagingAndSorting implements Pageable {
 
-  final String pageParameter;
-  final String limitParameter;
-  final String orderParameter;
+  private final RepositoryRestConfiguration config;
   private final PageRequest pageRequest;
 
-  public PagingAndSorting(String pageParameter,
-                          String limitParameter,
-                          String orderParameter,
+  public PagingAndSorting(RepositoryRestConfiguration config,
                           PageRequest pageRequest) {
-    this.pageParameter = pageParameter;
-    this.limitParameter = limitParameter;
-    this.orderParameter = orderParameter;
+    this.config = config;
     this.pageRequest = pageRequest;
   }
 
@@ -35,7 +29,7 @@ public class PagingAndSorting implements Pageable {
       Iterator<Sort.Order> iter = sort.iterator();
       while (iter.hasNext()) {
         Sort.Order order = iter.next();
-        urib.queryParam(orderParameter, order.getProperty());
+        urib.queryParam(config.getSortParamName(), order.getProperty());
         try {
           urib.queryParam(URLEncoder.encode(order.getProperty() + ".dir", "ISO-8859-1"),
                           order.getDirection().toString().toLowerCase());

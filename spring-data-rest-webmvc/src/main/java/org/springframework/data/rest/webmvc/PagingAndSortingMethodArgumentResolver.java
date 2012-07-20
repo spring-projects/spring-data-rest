@@ -22,37 +22,13 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
   private static final int DEFAULT_PAGE = 1; // We're 1-based, not 0-based
-  private static final int DEFAULT_LIMIT = 20;
 
-  private String pageParameter = "page";
-  private String limitParameter = "limit";
-  private String sortParameter = "sort";
+  private RepositoryRestConfiguration config = RepositoryRestConfiguration.DEFAULT;
 
-  public String getPageParameter() {
-    return pageParameter;
-  }
-
-  public PagingAndSortingMethodArgumentResolver setPageParameter(String pageParameter) {
-    this.pageParameter = pageParameter;
-    return this;
-  }
-
-  public String getLimitParameter() {
-    return limitParameter;
-  }
-
-  public PagingAndSortingMethodArgumentResolver setLimitParameter(String limitParameter) {
-    this.limitParameter = limitParameter;
-    return this;
-  }
-
-  public String getSortParameter() {
-    return sortParameter;
-  }
-
-  public PagingAndSortingMethodArgumentResolver setSortParameter(String sortParameter) {
-    this.sortParameter = sortParameter;
-    return this;
+  public PagingAndSortingMethodArgumentResolver(RepositoryRestConfiguration config) {
+    if (null != config) {
+      this.config = config;
+    }
   }
 
   @Override public boolean supportsParameter(MethodParameter parameter) {
@@ -76,14 +52,14 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
     }
     if (null == pr) {
       int page = DEFAULT_PAGE;
-      String sPage = request.getParameter(pageParameter);
+      String sPage = request.getParameter(config.getPageParamName());
       if (StringUtils.hasText(sPage)) {
         try {
           page = Integer.parseInt(sPage);
         } catch (NumberFormatException ignored) {}
       }
-      int limit = DEFAULT_LIMIT;
-      String sLimit = request.getParameter(limitParameter);
+      int limit = config.getDefaultPageSize();
+      String sLimit = request.getParameter(config.getLimitParamName());
       if (StringUtils.hasText(sLimit)) {
         try {
           limit = Integer.parseInt(sLimit);
@@ -92,7 +68,7 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
 
       Sort sort = null;
       List<Sort.Order> orders = new ArrayList<Sort.Order>();
-      String[] orderValues = request.getParameterValues(sortParameter);
+      String[] orderValues = request.getParameterValues(config.getSortParamName());
       if (null != orderValues) {
         for (String orderParam : orderValues) {
           String sortDir = request.getParameter(orderParam + ".dir");
@@ -111,7 +87,7 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
       }
     }
 
-    return new PagingAndSorting(pageParameter, limitParameter, sortParameter, pr);
+    return new PagingAndSorting(config, pr);
   }
 
 }

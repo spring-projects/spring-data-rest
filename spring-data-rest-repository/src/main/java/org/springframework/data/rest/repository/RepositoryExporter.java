@@ -123,7 +123,7 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
       repositories = new Repositories(applicationContext);
       repositoryMetadata = new HashMap<String, M>();
       for (Class<?> domainType : repositories) {
-        if (exportOnlyTheseClasses.isEmpty() || !exportOnlyTheseClasses.contains(domainType.getName())) {
+        if (exportOnlyTheseClasses.isEmpty() || exportOnlyTheseClasses.contains(domainType.getName())) {
           Class<?> repoClass = repositories.getRepositoryInformationFor(domainType).getRepositoryInterface();
           String name = StringUtils.uncapitalize(repoClass.getSimpleName().replaceAll("Repository", ""));
           RestResource resourceAnno = repoClass.getAnnotation(RestResource.class);
