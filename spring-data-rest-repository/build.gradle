@@ -1,9 +1,9 @@
 dependencies {
 
   // Spring
-  compile "org.springframework:spring-orm:$springVersion"
-  compile "org.springframework:spring-oxm:$springVersion"
-  compile "org.springframework:spring-tx:$springVersion"
+  compile("org.springframework:spring-orm:$springVersion") { force = true }
+  compile("org.springframework:spring-oxm:$springVersion") { force = true }
+  compile("org.springframework:spring-tx:$springVersion") { force = true }
 
   // JPA
   compile "org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final"

@@ -66,11 +66,11 @@ configure(subprojects) { subproject ->
     compile "org.codehaus.jackson:jackson-mapper-asl:$jacksonVersion"
 
     // Spring
-    compile "org.springframework:spring-beans:$springVersion"
-    compile "org.springframework:spring-context:$springVersion"
-    compile "org.springframework:spring-core:$springVersion"
-    compile "org.springframework:spring-orm:$springVersion"
-    compile "org.springframework:spring-web:$springVersion"
+    compile("org.springframework:spring-beans:$springVersion") { force = true }
+    compile("org.springframework:spring-context:$springVersion") { force = true }
+    compile("org.springframework:spring-core:$springVersion") { force = true }
+    compile("org.springframework:spring-orm:$springVersion") { force = true }
+    compile("org.springframework:spring-web:$springVersion") { force = true }
 
     // Testing
     testCompile "org.spockframework:spock-core:$spockVersion"
