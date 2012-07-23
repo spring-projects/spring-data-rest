@@ -16,6 +16,8 @@ public class RepositoryRestConfiguration {
   private String pageParamName = "page";
   private String limitParamName = "limit";
   private String sortParamName = "sort";
+  private String jsonpParamName = "callback";
+  private String jsonpOnErrParamName = null;
   private List<HttpMessageConverter<?>> customConverters = Collections.emptyList();
 
   public int getDefaultPageSize() {
@@ -60,6 +62,24 @@ public class RepositoryRestConfiguration {
 
   public RepositoryRestConfiguration setCustomConverters( List<HttpMessageConverter<?>> customConverters ) {
     this.customConverters = customConverters;
+    return this;
+  }
+
+  public String getJsonpParamName() {
+    return jsonpParamName;
+  }
+
+  public RepositoryRestConfiguration setJsonpParamName( String jsonpParamName ) {
+    this.jsonpParamName = jsonpParamName;
+    return this;
+  }
+
+  public String getJsonpOnErrParamName() {
+    return jsonpOnErrParamName;
+  }
+
+  public RepositoryRestConfiguration setJsonpOnErrParamName( String jsonpOnErrParamName ) {
+    this.jsonpOnErrParamName = jsonpOnErrParamName;
     return this;
   }
 

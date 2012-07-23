@@ -16,60 +16,60 @@ import org.springframework.util.ClassUtils;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class FluentBeanSerializer extends SerializerBase {
+public class FluentBeanSerializer extends SerializerBase<Object> {
 
-  @SuppressWarnings({"unchecked"})
-  public FluentBeanSerializer(final Class<?> t) {
-    super(t);
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public FluentBeanSerializer( final Class t ) {
+    super( t );
 
-    if (!FluentBeanUtils.isFluentBean(t)) {
-      throw new IllegalArgumentException("Class of type " + t + " is not a FluentBean");
+    if ( !FluentBeanUtils.isFluentBean( t ) ) {
+      throw new IllegalArgumentException( "Class of type " + t + " is not a FluentBean" );
     }
   }
 
   @SuppressWarnings({"unchecked"})
   @Override
-  public void serialize(final Object value,
-                        final JsonGenerator jgen,
-                        final SerializerProvider provider)
+  public void serialize( final Object value,
+                         final JsonGenerator jgen,
+                         final SerializerProvider provider )
       throws IOException,
              JsonGenerationException {
-    if (null == value) {
-      provider.defaultSerializeNull(jgen);
+    if ( null == value ) {
+      provider.defaultSerializeNull( jgen );
     } else {
       Class<?> type = value.getClass();
-      if (ClassUtils.isAssignable(type, Collection.class)) {
+      if ( ClassUtils.isAssignable( type, Collection.class ) ) {
         jgen.writeStartArray();
-        for (Object o : (Collection) value) {
-          write(o, jgen, provider);
+        for ( Object o : (Collection) value ) {
+          write( o, jgen, provider );
         }
         jgen.writeEndArray();
-      } else if (ClassUtils.isAssignable(type, Map.class)) {
+      } else if ( ClassUtils.isAssignable( type, Map.class ) ) {
         jgen.writeStartObject();
-        for (Map.Entry<String, Object> entry : ((Map<String, Object>) value).entrySet()) {
-          jgen.writeFieldName(entry.getKey());
-          write(entry.getValue(), jgen, provider);
+        for ( Map.Entry<String, Object> entry : ((Map<String, Object>) value).entrySet() ) {
+          jgen.writeFieldName( entry.getKey() );
+          write( entry.getValue(), jgen, provider );
         }
         jgen.writeEndObject();
       } else {
-        write(value, jgen, provider);
+        write( value, jgen, provider );
       }
     }
   }
 
-  private void write(final Object value,
-                     final JsonGenerator jgen,
-                     final SerializerProvider provider) throws IOException {
+  private void write( final Object value,
+                      final JsonGenerator jgen,
+                      final SerializerProvider provider ) throws IOException {
     Class<?> type = value.getClass();
-    if (ClassUtils.isAssignable(type, _handledType)) {
+    if ( ClassUtils.isAssignable( type, _handledType ) ) {
       jgen.writeStartObject();
-      for (String fname : FluentBeanUtils.metadata(type).fieldNames()) {
-        jgen.writeFieldName(fname);
-        write(FluentBeanUtils.get(fname, value), jgen, provider);
+      for ( String fname : FluentBeanUtils.metadata( type ).fieldNames() ) {
+        jgen.writeFieldName( fname );
+        write( FluentBeanUtils.get( fname, value ), jgen, provider );
       }
       jgen.writeEndObject();
     } else {
-      jgen.writeObject(value);
+      jgen.writeObject( value );
     }
   }
 

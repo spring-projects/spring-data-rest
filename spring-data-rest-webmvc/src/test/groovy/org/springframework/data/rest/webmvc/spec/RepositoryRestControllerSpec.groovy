@@ -8,6 +8,7 @@ import org.springframework.data.rest.core.SimpleLink
 import org.springframework.data.rest.core.util.FluentBeanSerializer
 import org.springframework.data.rest.test.webmvc.Address
 import org.springframework.data.rest.webmvc.PagingAndSorting
+import org.springframework.data.rest.webmvc.RepositoryRestConfiguration
 import org.springframework.data.rest.webmvc.RepositoryRestController
 import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration
 import org.springframework.http.HttpStatus
@@ -67,7 +68,7 @@ class RepositoryRestControllerSpec extends Specification {
 
     emf = webAppCtx.getBean(EntityManagerFactory)
     controller = webAppCtx.getBean(RepositoryRestController)
-    pageSort = new PagingAndSorting("page", "limit", "sort", new PageRequest(0, 1000))
+    pageSort = new PagingAndSorting(RepositoryRestConfiguration.DEFAULT, new PageRequest(0, 1000))
     uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:8080/data")
 
     def customSerializerFactory = new CustomSerializerFactory()
@@ -87,75 +88,71 @@ class RepositoryRestControllerSpec extends Specification {
     def model = new ExtendedModelMap()
 
     when: "listing available repositories"
-    def mv = controller.listRepositories(uriBuilder)
-    def reposLinks = mv.model.resource?.links
+    def req = createRequest("POST", "people")
+    def response = controller.listRepositories(new ServletServerHttpRequest(req), uriBuilder)
+    def reposLinks = mapper.readValue(response.body, Map)?._links
 
     then:
-    mv.model.status == HttpStatus.OK
+    response.statusCode == HttpStatus.OK
     reposLinks?.size() == 4
 
     when: "adding an entity"
     model.clear()
-    def req = createRequest("POST", "people")
     def data = mapper.writeValueAsBytes([name: "John Doe"])
     req.content = data
-    mv = controller.create(new ServletServerHttpRequest(req), req, uriBuilder, "people")
+    response = controller.create(new ServletServerHttpRequest(req), req, uriBuilder, "people")
 
     then:
-    mv.model.status == HttpStatus.CREATED
+    response.statusCode == HttpStatus.CREATED
 
     when: "getting a specific entity"
     model.clear()
     req = createRequest("GET", "people/1")
-    mv = controller.entity(new ServletServerHttpRequest(req), uriBuilder, "people", "1")
+    response = controller.entity(new ServletServerHttpRequest(req), uriBuilder, "people", "1")
+    def entityData = mapper.readValue(response.body, Map)
 
     then:
-    mv.model.resource?.name == "John Doe"
+    entityData?.name == "John Doe"
 
     when: "updating an entity"
-    mv.model.clear()
     req = createRequest("PUT", "people/1")
     data = mapper.writeValueAsBytes([name: "Johnnie Doe", version: 0])
     req.content = data
-    mv = controller.createOrUpdate(new ServletServerHttpRequest(req), uriBuilder, "people", "1")
+    response = controller.createOrUpdate(new ServletServerHttpRequest(req), uriBuilder, "people", "1")
 
     then:
-    mv.model.status == HttpStatus.NO_CONTENT
+    response.statusCode == HttpStatus.NO_CONTENT
 
     when: "listing available entities"
-    mv.model.clear()
-    mv = controller.listEntities(pageSort, uriBuilder, "people")
-    def peopleLinks = mv.model.resource?.links
+    response = controller.listEntities(new ServletServerHttpRequest(req), pageSort, uriBuilder, "people")
+    def selfLink = mapper.readValue(response.body, Map)?.results[0]?._links[2]
 
     then:
-    mv.model.status == HttpStatus.OK
-    peopleLinks[0].href().toString() == "http://localhost:8080/data/people/1"
+    response.statusCode == HttpStatus.OK
+    selfLink.href == "http://localhost:8080/data/people/1"
 
     when: "creating a child entity"
-    mv.model.clear()
     req = createRequest("POST", "address")
     data = mapper.writeValueAsBytes(new Address(["1 W. 1st St."] as String[], "Univille", "ST", "12345"))
     req.content = data
-    mv = controller.create(new ServletServerHttpRequest(req), req, uriBuilder, "address")
+    response = controller.create(new ServletServerHttpRequest(req), req, uriBuilder, "address")
 
     then:
-    mv.model.status == HttpStatus.CREATED
+    response.statusCode == HttpStatus.CREATED
 
     when: "linking child to parent entity"
-    mv.model.clear()
     req = createRequest("POST", "people/1/addresses")
     req.contentType = "text/uri-list"
     data = "http://localhost:8080/data/address/1".bytes
     req.content = data
-    mv = controller.updatePropertyOfEntity(new ServletServerHttpRequest(req), uriBuilder, "people", "1", "addresses")
+    response = controller.updatePropertyOfEntity(new ServletServerHttpRequest(req), uriBuilder, "people", "1", "addresses")
 
     then:
-    mv.model.status == HttpStatus.CREATED
+    response.statusCode == HttpStatus.CREATED
 
     when: "getting property of an entity"
-    mv.model.clear()
-    mv = controller.propertyOfEntity(uriBuilder, "people", "1", "addresses")
-    def addrLinks = mv.model.resource?.links
+    response = controller.propertyOfEntity(new ServletServerHttpRequest(req), uriBuilder, "people", "1", "addresses")
+    def addrLinks = mapper.readValue((byte[]) response.body, Map)?._links
 
     then:
     null != addrLinks

@@ -13,27 +13,27 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 public class RepositoryRestHandlerAdapter extends RequestMappingHandlerAdapter {
 
-  public RepositoryRestHandlerAdapter() {
-    setCustomArgumentResolvers(Arrays.asList(
+  public RepositoryRestHandlerAdapter( RepositoryRestConfiguration config ) {
+    setCustomArgumentResolvers( Arrays.asList(
         new ServerHttpRequestMethodArgumentResolver(),
-        new PagingAndSortingMethodArgumentResolver()
-    ));
+        new PagingAndSortingMethodArgumentResolver( config )
+    ) );
 
     // Add JSON converter for special Spring Data media type
     MappingJacksonHttpMessageConverter json = new MappingJacksonHttpMessageConverter();
     json.setSupportedMediaTypes(
-        Arrays.asList(MediaType.APPLICATION_JSON, MediaType.valueOf("application/x-spring-data+json"))
+        Arrays.asList( MediaType.APPLICATION_JSON, MediaType.valueOf( "application/x-spring-data+json" ) )
     );
-    getMessageConverters().add(json);
+    getMessageConverters().add( json );
   }
 
   @Override public int getOrder() {
     return Ordered.HIGHEST_PRECEDENCE;
   }
 
-  @Override protected boolean supportsInternal(HandlerMethod handlerMethod) {
-    return super.supportsInternal(handlerMethod)
-        && RepositoryRestController.class.isAssignableFrom(handlerMethod.getBeanType());
+  @Override protected boolean supportsInternal( HandlerMethod handlerMethod ) {
+    return super.supportsInternal( handlerMethod )
+        && RepositoryRestController.class.isAssignableFrom( handlerMethod.getBeanType() );
   }
 
 }

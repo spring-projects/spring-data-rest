@@ -3,7 +3,6 @@ package org.springframework.data.rest.webmvc;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -16,16 +15,16 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  */
 public class ServerHttpRequestMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-  @Override public boolean supportsParameter(MethodParameter parameter) {
-    return ClassUtils.isAssignable(parameter.getParameterType(), ServerHttpRequest.class);
+  @Override public boolean supportsParameter( MethodParameter parameter ) {
+    return ClassUtils.isAssignable( parameter.getParameterType(), ServletServerHttpRequest.class );
   }
 
   @Override
-  public Object resolveArgument(MethodParameter parameter,
-                                ModelAndViewContainer mavContainer,
-                                NativeWebRequest webRequest,
-                                WebDataBinderFactory binderFactory) throws Exception {
-    return new ServletServerHttpRequest((HttpServletRequest) webRequest.getNativeRequest());
+  public Object resolveArgument( MethodParameter parameter,
+                                 ModelAndViewContainer mavContainer,
+                                 NativeWebRequest webRequest,
+                                 WebDataBinderFactory binderFactory ) throws Exception {
+    return new ServletServerHttpRequest( (HttpServletRequest) webRequest.getNativeRequest() );
   }
 
 }
