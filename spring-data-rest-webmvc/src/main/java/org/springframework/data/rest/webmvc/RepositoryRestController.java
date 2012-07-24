@@ -419,15 +419,19 @@ public class RepositoryRestController
 
     Object result = queryMethod.method().invoke( repo, paramVals );
     Iterator iter;
-    if ( result instanceof Collection ) {
-      iter = ((Collection) result).iterator();
-    } else if ( result instanceof Page ) {
-      page = (Page) result;
-      iter = page.iterator();
+    if ( null != result ) {
+      if ( result instanceof Collection ) {
+        iter = ((Collection) result).iterator();
+      } else if ( result instanceof Page ) {
+        page = (Page) result;
+        iter = page.iterator();
+      } else {
+        List l = new ArrayList();
+        l.add( result );
+        iter = l.iterator();
+      }
     } else {
-      List l = new ArrayList();
-      l.add( result );
-      iter = l.iterator();
+      iter = Collections.emptyList().iterator();
     }
 
     Map<String, Object> resultMap = new HashMap<String, Object>();
