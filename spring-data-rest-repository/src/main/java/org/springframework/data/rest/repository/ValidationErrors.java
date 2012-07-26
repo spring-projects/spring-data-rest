@@ -11,13 +11,14 @@ import org.springframework.validation.ObjectError;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class ValidationErrors extends AbstractErrors {
+public class ValidationErrors
+    extends AbstractErrors {
 
-  private String name;
-  private Object entity;
+  private String         name;
+  private Object         entity;
   private EntityMetadata entityMetadata;
   private List<ObjectError> globalErrors = new ArrayList<ObjectError>();
-  private List<FieldError> fieldErrors = new ArrayList<FieldError>();
+  private List<FieldError>  fieldErrors  = new ArrayList<FieldError>();
 
   public ValidationErrors(String name, Object entity, EntityMetadata entityMetadata) {
     this.name = name;

@@ -12,10 +12,10 @@ import javax.persistence.OneToMany;
 @Entity
 public class Family {
 
-  @Id @GeneratedValue private Long id;
-  private String surname;
+  @Id @GeneratedValue private Long         id;
+  private                     String       surname;
   @OneToMany
-  private List<Person> members;
+  private                     List<Person> members;
 
   public Long getId() {
     return id;

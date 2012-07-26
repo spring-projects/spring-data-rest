@@ -47,7 +47,9 @@ public interface EntityMetadata<A extends AttributeMetadata> {
   /**
    * Get {@link AttributeMetadata} by name.
    *
-   * @param name The name of the attribute.
+   * @param name
+   *     The name of the attribute.
+   *
    * @return {@link AttributeMetadata} or {@literal null} if that attribute doesn't exist.
    */
   A attribute(String name);

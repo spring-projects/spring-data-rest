@@ -12,23 +12,24 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.RepositoryMetadata;
-import org.springframework.data.rest.repository.RepositoryQueryMethod;
 import org.springframework.data.rest.repository.annotation.RestResource;
+import org.springframework.data.rest.repository.invoke.RepositoryQueryMethod;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class JpaRepositoryMetadata implements RepositoryMetadata<JpaEntityMetadata> {
+public class JpaRepositoryMetadata
+    implements RepositoryMetadata<JpaEntityMetadata> {
 
-  private final String name;
-  private final Class<?> repoClass;
+  private final String                               name;
+  private final Class<?>                             repoClass;
   private final CrudRepository<Object, Serializable> repository;
-  private final EntityInformation entityInfo;
+  private final EntityInformation                    entityInfo;
   private final Map<String, RepositoryQueryMethod> queryMethods = new HashMap<String, RepositoryQueryMethod>();
 
-  private String rel;
+  private String            rel;
   private JpaEntityMetadata entityMetadata;
 
   @SuppressWarnings({"unchecked"})
@@ -43,23 +44,23 @@ public class JpaRepositoryMetadata implements RepositoryMetadata<JpaEntityMetada
     this.entityInfo = repositories.getEntityInformationFor(domainType);
 
     RestResource resourceAnno = repoClass.getAnnotation(RestResource.class);
-    if (null != resourceAnno && StringUtils.hasText(resourceAnno.rel())) {
+    if(null != resourceAnno && StringUtils.hasText(resourceAnno.rel())) {
       rel = resourceAnno.rel();
     } else {
       rel = name;
     }
 
-    for (Method method : repositories.getRepositoryInformationFor(domainType).getQueryMethods()) {
+    for(Method method : repositories.getRepositoryInformationFor(domainType).getQueryMethods()) {
       String pathSeg = method.getName();
       RestResource methodResourceAnno = method.getAnnotation(RestResource.class);
       boolean methodExported = true;
-      if (null != methodResourceAnno) {
-        if (StringUtils.hasText(methodResourceAnno.path())) {
+      if(null != methodResourceAnno) {
+        if(StringUtils.hasText(methodResourceAnno.path())) {
           pathSeg = methodResourceAnno.path();
         }
         methodExported = methodResourceAnno.exported();
       }
-      if (methodExported) {
+      if(methodExported) {
         ReflectionUtils.makeAccessible(method);
         queryMethods.put(pathSeg, new RepositoryQueryMethod(method));
       }

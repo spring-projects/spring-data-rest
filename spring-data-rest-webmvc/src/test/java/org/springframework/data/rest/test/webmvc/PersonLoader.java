@@ -9,9 +9,10 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class PersonLoader implements InitializingBean {
+public class PersonLoader
+    implements InitializingBean {
 
-  private PersonRepository personRepository;
+  private PersonRepository  personRepository;
   private ProfileRepository profileRepository;
   private AddressRepository addressRepository;
 
@@ -39,7 +40,8 @@ public class PersonLoader implements InitializingBean {
     this.addressRepository = addressRepository;
   }
 
-  @Override public void afterPropertiesSet() throws Exception {
+  @Override public void afterPropertiesSet()
+      throws Exception {
     Address pers1addr = addressRepository.save(new Address(new String[]{"1234 W. 1st St."}, "Univille", "ST", "12345"));
 
     Map<String, Profile> pers1profiles = new HashMap<String, Profile>();

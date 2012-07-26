@@ -37,7 +37,7 @@ public class AnnotatedHandlerRepositoryEventListener
                ApplicationContextAware,
                InitializingBean {
 
-  private String basePackage;
+  private String             basePackage;
   private ApplicationContext applicationContext;
   private Multimap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = ArrayListMultimap.create();
 
@@ -48,7 +48,8 @@ public class AnnotatedHandlerRepositoryEventListener
     this.basePackage = basePackage;
   }
 
-  @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+  @Override public void setApplicationContext(ApplicationContext applicationContext)
+      throws BeansException {
     this.applicationContext = applicationContext;
   }
 
@@ -64,7 +65,9 @@ public class AnnotatedHandlerRepositoryEventListener
   /**
    * Set the base package in which to search for event handlers.
    *
-   * @param basePackage Base package to search for handlers.
+   * @param basePackage
+   *     Base package to search for handlers.
+   *
    * @return @this
    */
   public AnnotatedHandlerRepositoryEventListener setBasePackage(String basePackage) {
@@ -84,7 +87,9 @@ public class AnnotatedHandlerRepositoryEventListener
   /**
    * Set the base package in which to search for event handlers.
    *
-   * @param basePackage Base package to search for handlers.
+   * @param basePackage
+   *     Base package to search for handlers.
+   *
    * @return @this
    */
   public AnnotatedHandlerRepositoryEventListener basePackage(String basePackage) {
@@ -92,23 +97,25 @@ public class AnnotatedHandlerRepositoryEventListener
     return this;
   }
 
-  @Override public void afterPropertiesSet() throws Exception {
+  @Override public void afterPropertiesSet()
+      throws Exception {
     ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
     scanner.addIncludeFilter(new AnnotationTypeFilter(RepositoryEventHandler.class, true, true));
-    for (BeanDefinition beanDef : scanner.findCandidateComponents(basePackage)) {
+    for(BeanDefinition beanDef : scanner.findCandidateComponents(basePackage)) {
       String typeName = beanDef.getBeanClassName();
       Class<?> handlerType = ClassUtils.forName(typeName, ClassUtils.getDefaultClassLoader());
       RepositoryEventHandler typeAnno = handlerType.getAnnotation(RepositoryEventHandler.class);
       Class<?>[] targetTypes = typeAnno.value();
-      if (targetTypes.length == 0) {
+      if(targetTypes.length == 0) {
         targetTypes = new Class<?>[]{null};
       }
-      for (final Class<?> targetType : targetTypes) {
-        for (final Object handler : applicationContext.getBeansOfType(handlerType).values()) {
+      for(final Class<?> targetType : targetTypes) {
+        for(final Object handler : applicationContext.getBeansOfType(handlerType).values()) {
           ReflectionUtils.doWithMethods(
               handler.getClass(),
               new ReflectionUtils.MethodCallback() {
-                @Override public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+                @Override public void doWith(Method method)
+                    throws IllegalArgumentException, IllegalAccessException {
                   inspect(targetType, handler, method, HandleBeforeSave.class, BeforeSaveEvent.class);
                   inspect(targetType, handler, method, HandleAfterSave.class, AfterSaveEvent.class);
                   inspect(targetType, handler, method, HandleBeforeLinkSave.class, BeforeLinkSaveEvent.class);
@@ -133,21 +140,21 @@ public class AnnotatedHandlerRepositoryEventListener
 
   @Override public void onApplicationEvent(RepositoryEvent event) {
     Class<? extends RepositoryEvent> eventType = event.getClass();
-    if (handlerMethods.containsKey(eventType)) {
-      for (EventHandlerMethod handlerMethod : handlerMethods.get(eventType)) {
+    if(handlerMethods.containsKey(eventType)) {
+      for(EventHandlerMethod handlerMethod : handlerMethods.get(eventType)) {
         try {
           Object src = event.getSource();
-          if (ClassUtils.isAssignable(handlerMethod.targetType, src.getClass())) {
+          if(ClassUtils.isAssignable(handlerMethod.targetType, src.getClass())) {
             List<Object> params = new ArrayList<Object>();
             params.add(src);
-            if (event instanceof BeforeLinkSaveEvent) {
-              params.add(((BeforeLinkSaveEvent) event).getLinked());
-            } else if (event instanceof AfterLinkSaveEvent) {
-              params.add(((AfterLinkSaveEvent) event).getLinked());
+            if(event instanceof BeforeLinkSaveEvent) {
+              params.add(((BeforeLinkSaveEvent)event).getLinked());
+            } else if(event instanceof AfterLinkSaveEvent) {
+              params.add(((AfterLinkSaveEvent)event).getLinked());
             }
             handlerMethod.method.invoke(handlerMethod.handler, params.toArray());
           }
-        } catch (Exception e) {
+        } catch(Exception e) {
           throw new IllegalStateException(e);
         }
       }
@@ -160,31 +167,31 @@ public class AnnotatedHandlerRepositoryEventListener
                                               Class<T> annoType,
                                               Class<? extends RepositoryEvent> eventType) {
     T anno = method.getAnnotation(annoType);
-    if (null != anno) {
+    if(null != anno) {
       try {
         Class<?>[] targetTypes;
-        if (null == targetType) {
-          targetTypes = (Class<?>[]) anno.getClass().getMethod("value", new Class[0]).invoke(anno);
+        if(null == targetType) {
+          targetTypes = (Class<?>[])anno.getClass().getMethod("value", new Class[0]).invoke(anno);
         } else {
           targetTypes = new Class<?>[]{targetType};
         }
-        for (Class<?> type : targetTypes) {
+        for(Class<?> type : targetTypes) {
           handlerMethods.put(eventType,
                              new EventHandlerMethod(type,
                                                     handler,
                                                     method));
         }
-      } catch (NoSuchMethodException ignored) {
-      } catch (InvocationTargetException ignored) {
-      } catch (IllegalAccessException ignored) {
+      } catch(NoSuchMethodException ignored) {
+      } catch(InvocationTargetException ignored) {
+      } catch(IllegalAccessException ignored) {
       }
     }
   }
 
   private class EventHandlerMethod {
     final Class<?> targetType;
-    final Method method;
-    final Object handler;
+    final Method   method;
+    final Object   handler;
 
     private EventHandlerMethod(Class<?> targetType,
                                Object handler,

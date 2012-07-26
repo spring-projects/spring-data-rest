@@ -5,7 +5,8 @@ package org.springframework.data.rest.repository.context;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public abstract class LinkSaveEvent extends RepositoryEvent {
+public abstract class LinkSaveEvent
+    extends RepositoryEvent {
 
   private final Object linked;
 

@@ -10,7 +10,8 @@ import org.springframework.validation.Validator;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class PersonValidator implements Validator {
+public class PersonValidator
+    implements Validator {
 
   private static final Logger LOG = LoggerFactory.getLogger(PersonValidator.class);
 
@@ -19,7 +20,7 @@ public class PersonValidator implements Validator {
   }
 
   @Override public void validate(Object target, Errors errors) {
-    Person p = (Person) target;
+    Person p = (Person)target;
     LOG.debug("validating Person " + p);
     ValidationUtils.rejectIfEmpty(errors, "name", "field.name.required", "Field 'name' cannot be blank.");
   }

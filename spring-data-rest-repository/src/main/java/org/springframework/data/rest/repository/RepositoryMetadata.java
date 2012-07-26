@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.rest.repository.invoke.RepositoryQueryMethod;
 
 /**
  * Encapsulates necessary metadata about a {@link Repository}.
@@ -56,10 +57,13 @@ public interface RepositoryMetadata<E extends EntityMetadata<? extends Attribute
   E entityMetadata();
 
   /**
-   * Get a {@link RepositoryQueryMethod} by key.
+   * Get a {@link org.springframework.data.rest.repository.invoke.RepositoryQueryMethod} by key.
    *
-   * @param key Segment of the URL to find a query method for.
-   * @return Found {@link RepositoryQueryMethod} or {@literal null} if none found.
+   * @param key
+   *     Segment of the URL to find a query method for.
+   *
+   * @return Found {@link org.springframework.data.rest.repository.invoke.RepositoryQueryMethod} or {@literal null} if
+   *         none found.
    */
   RepositoryQueryMethod queryMethod(String key);
 

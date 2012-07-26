@@ -1,7 +1,6 @@
 package org.springframework.data.rest.webmvc;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import org.codehaus.jackson.JsonEncoding;
@@ -16,51 +15,50 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
 
 /**
+ * Utility class for creating a custom-configured {@see MappingJacksonHttpMessageConverter} that has our own
+ * serializers and {@see MediaType} mappings on it.
+ *
  * @author Jon Brisbin
  */
 public abstract class JacksonUtil {
 
-  public static final Charset DEFAULT_CHARSET = Charset.forName( "UTF-8" );
-  public static final MediaType COMPACT_JSON = new MediaType( "application",
-                                                              "x-spring-data-compact+json",
-                                                              DEFAULT_CHARSET );
-  public static final MediaType VERBOSE_JSON = new MediaType( "application",
-                                                              "x-spring-data-verbose+json",
-                                                              DEFAULT_CHARSET );
-  public static final MediaType APPLICATION_JAVASCRIPT = new MediaType( "application",
-                                                                        "javascript",
-                                                                        DEFAULT_CHARSET );
-
   private JacksonUtil() {
   }
 
-  public static MappingJacksonHttpMessageConverter createJacksonHttpMessageConverter( final ObjectMapper objectMapper ) {
+  public static MappingJacksonHttpMessageConverter createJacksonHttpMessageConverter(final ObjectMapper objectMapper) {
+    // We need a custom serializer for handling beans that don't conform to the JavaBeans standard 'get' and 'set'
     CustomSerializerFactory customSerializerFactory = new CustomSerializerFactory();
-    customSerializerFactory.addSpecificMapping( SimpleLink.class, new FluentBeanSerializer( SimpleLink.class ) );
-    objectMapper.setSerializerFactory( customSerializerFactory );
+    customSerializerFactory.addSpecificMapping(SimpleLink.class, new FluentBeanSerializer(SimpleLink.class));
+    objectMapper.setSerializerFactory(customSerializerFactory);
+    // We want to support all our custom types of JSON and also the catch-all
     MappingJacksonHttpMessageConverter jsonConverter = new MappingJacksonHttpMessageConverter() {
       {
-        setSupportedMediaTypes( Arrays.asList( MediaType.APPLICATION_JSON, COMPACT_JSON, VERBOSE_JSON ) );
+        setSupportedMediaTypes(Arrays.asList(
+            MediaType.APPLICATION_JSON,
+            MediaTypes.COMPACT_JSON,
+            MediaTypes.VERBOSE_JSON,
+            MediaType.ALL
+        ));
       }
 
       @Override
-      protected void writeInternal( Object object, HttpOutputMessage outputMessage )
+      protected void writeInternal(Object object, HttpOutputMessage outputMessage)
           throws IOException,
                  HttpMessageNotWritableException {
-        JsonEncoding encoding = getJsonEncoding( outputMessage.getHeaders().getContentType() );
+        JsonEncoding encoding = getJsonEncoding(outputMessage.getHeaders().getContentType());
         // Believe it or not, this is the only way to get pretty-printing from Jackson in this configuration
         JsonGenerator jsonGenerator = objectMapper
             .getJsonFactory()
-            .createJsonGenerator( outputMessage.getBody(), encoding )
+            .createJsonGenerator(outputMessage.getBody(), encoding)
             .useDefaultPrettyPrinter();
         try {
-          objectMapper.writeValue( jsonGenerator, object );
-        } catch ( IOException ex ) {
-          throw new HttpMessageNotWritableException( "Could not write JSON: " + ex.getMessage(), ex );
+          objectMapper.writeValue(jsonGenerator, object);
+        } catch(IOException ex) {
+          throw new HttpMessageNotWritableException("Could not write JSON: " + ex.getMessage(), ex);
         }
       }
     };
-    jsonConverter.setObjectMapper( objectMapper );
+    jsonConverter.setObjectMapper(objectMapper);
 
     return jsonConverter;
   }

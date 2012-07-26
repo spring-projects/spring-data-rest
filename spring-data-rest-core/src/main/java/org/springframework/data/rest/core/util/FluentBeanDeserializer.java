@@ -18,9 +18,10 @@ import org.springframework.util.ClassUtils;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class FluentBeanDeserializer extends StdDeserializer {
+public class FluentBeanDeserializer
+    extends StdDeserializer {
 
-  private ConversionService conversionService;
+  private ConversionService        conversionService;
   private FluentBeanUtils.Metadata beanMeta;
 
   @SuppressWarnings({"unchecked"})
@@ -29,7 +30,7 @@ public class FluentBeanDeserializer extends StdDeserializer {
     this.conversionService = conversionService;
     this.beanMeta = FluentBeanUtils.metadata(valueClass);
 
-    if (!FluentBeanUtils.isFluentBean(valueClass)) {
+    if(!FluentBeanUtils.isFluentBean(valueClass)) {
       throw new IllegalArgumentException("Class of type " + valueClass + " is not a FluentBean");
     }
   }
@@ -39,46 +40,46 @@ public class FluentBeanDeserializer extends StdDeserializer {
                             DeserializationContext ctxt)
       throws IOException,
              JsonProcessingException {
-    if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
+    if(jp.getCurrentToken() != JsonToken.START_OBJECT) {
       throw ctxt.mappingException(_valueClass);
     }
 
     Object bean;
     try {
       bean = _valueClass.newInstance();
-    } catch (InstantiationException e) {
+    } catch(InstantiationException e) {
       throw new IllegalStateException(e);
-    } catch (IllegalAccessException e) {
+    } catch(IllegalAccessException e) {
       throw new IllegalStateException(e);
     }
 
-    while (jp.nextToken() != JsonToken.END_OBJECT) {
+    while(jp.nextToken() != JsonToken.END_OBJECT) {
       String name = jp.getCurrentName();
       Method setter = beanMeta.setters().get(name);
 
       Object obj;
-      if (null != setter) {
+      if(null != setter) {
         Class<?> targetType = setter.getParameterTypes()[0];
-        if (ClassUtils.isAssignable(targetType, Long.class)) {
+        if(ClassUtils.isAssignable(targetType, Long.class)) {
           obj = jp.nextLongValue(-1);
-        } else if (ClassUtils.isAssignable(targetType, Integer.class)) {
+        } else if(ClassUtils.isAssignable(targetType, Integer.class)) {
           obj = jp.nextIntValue(-1);
-        } else if (ClassUtils.isAssignable(targetType, Boolean.class)) {
+        } else if(ClassUtils.isAssignable(targetType, Boolean.class)) {
           obj = jp.nextBooleanValue();
         } else {
           obj = jp.nextTextValue();
         }
 
-        if (null != obj) {
-          if (!ClassUtils.isAssignable(obj.getClass(), targetType)) {
+        if(null != obj) {
+          if(!ClassUtils.isAssignable(obj.getClass(), targetType)) {
             obj = conversionService.convert(obj, targetType);
           }
 
           try {
             setter.invoke(bean, obj);
-          } catch (IllegalAccessException e) {
+          } catch(IllegalAccessException e) {
             throw new IllegalStateException(e);
-          } catch (InvocationTargetException e) {
+          } catch(InvocationTargetException e) {
             throw new IllegalStateException(e);
           }
         }

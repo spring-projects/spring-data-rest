@@ -3,6 +3,7 @@ package org.springframework.data.rest.webmvc;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 
 /**
@@ -12,19 +13,20 @@ public class RepositoryRestConfiguration {
 
   public static final RepositoryRestConfiguration DEFAULT = new RepositoryRestConfiguration();
 
-  private int defaultPageSize = 20;
-  private String pageParamName = "page";
-  private String limitParamName = "limit";
-  private String sortParamName = "sort";
-  private String jsonpParamName = "callback";
-  private String jsonpOnErrParamName = null;
-  private List<HttpMessageConverter<?>> customConverters = Collections.emptyList();
+  private int                           defaultPageSize     = 20;
+  private String                        pageParamName       = "page";
+  private String                        limitParamName      = "limit";
+  private String                        sortParamName       = "sort";
+  private String                        jsonpParamName      = "callback";
+  private String                        jsonpOnErrParamName = null;
+  private List<HttpMessageConverter<?>> customConverters    = Collections.emptyList();
+  private MediaType                     defaultMediaType    = MediaType.APPLICATION_JSON;
 
   public int getDefaultPageSize() {
     return defaultPageSize;
   }
 
-  public RepositoryRestConfiguration setDefaultPageSize( int defaultPageSize ) {
+  public RepositoryRestConfiguration setDefaultPageSize(int defaultPageSize) {
     this.defaultPageSize = defaultPageSize;
     return this;
   }
@@ -33,7 +35,7 @@ public class RepositoryRestConfiguration {
     return pageParamName;
   }
 
-  public RepositoryRestConfiguration setPageParamName( String pageParamName ) {
+  public RepositoryRestConfiguration setPageParamName(String pageParamName) {
     this.pageParamName = pageParamName;
     return this;
   }
@@ -42,7 +44,7 @@ public class RepositoryRestConfiguration {
     return limitParamName;
   }
 
-  public RepositoryRestConfiguration setLimitParamName( String limitParamName ) {
+  public RepositoryRestConfiguration setLimitParamName(String limitParamName) {
     this.limitParamName = limitParamName;
     return this;
   }
@@ -51,7 +53,7 @@ public class RepositoryRestConfiguration {
     return sortParamName;
   }
 
-  public RepositoryRestConfiguration setSortParamName( String sortParamName ) {
+  public RepositoryRestConfiguration setSortParamName(String sortParamName) {
     this.sortParamName = sortParamName;
     return this;
   }
@@ -60,7 +62,7 @@ public class RepositoryRestConfiguration {
     return customConverters;
   }
 
-  public RepositoryRestConfiguration setCustomConverters( List<HttpMessageConverter<?>> customConverters ) {
+  public RepositoryRestConfiguration setCustomConverters(List<HttpMessageConverter<?>> customConverters) {
     this.customConverters = customConverters;
     return this;
   }
@@ -69,7 +71,7 @@ public class RepositoryRestConfiguration {
     return jsonpParamName;
   }
 
-  public RepositoryRestConfiguration setJsonpParamName( String jsonpParamName ) {
+  public RepositoryRestConfiguration setJsonpParamName(String jsonpParamName) {
     this.jsonpParamName = jsonpParamName;
     return this;
   }
@@ -78,8 +80,17 @@ public class RepositoryRestConfiguration {
     return jsonpOnErrParamName;
   }
 
-  public RepositoryRestConfiguration setJsonpOnErrParamName( String jsonpOnErrParamName ) {
+  public RepositoryRestConfiguration setJsonpOnErrParamName(String jsonpOnErrParamName) {
     this.jsonpOnErrParamName = jsonpOnErrParamName;
+    return this;
+  }
+
+  public MediaType getDefaultMediaType() {
+    return defaultMediaType;
+  }
+
+  public RepositoryRestConfiguration setDefaultMediaType(MediaType defaultMediaType) {
+    this.defaultMediaType = defaultMediaType;
     return this;
   }
 

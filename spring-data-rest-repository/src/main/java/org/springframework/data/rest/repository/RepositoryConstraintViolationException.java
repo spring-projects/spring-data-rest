@@ -6,7 +6,8 @@ import org.springframework.validation.Errors;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class RepositoryConstraintViolationException extends DataIntegrityViolationException {
+public class RepositoryConstraintViolationException
+    extends DataIntegrityViolationException {
 
   private Errors errors;
 

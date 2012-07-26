@@ -38,12 +38,12 @@ public class RestBuilder {
 
   private ConversionService conversionService = new DefaultConversionService();
   private ClientHttpRequestFactory requestFactory;
-  private RestTemplate restTemplate;
+  private RestTemplate             restTemplate;
   private HttpHeaders headers = new HttpHeaders();
   private MediaType contentType;
   private Class<?> responseType = byte[].class;
-  private Map uriParams;
-  private Object body;
+  private Map     uriParams;
+  private Object  body;
   private Closure errorHandler;
 
   public RestBuilder() {
@@ -57,7 +57,7 @@ public class RestBuilder {
 
   public Object call(Closure cl) {
     RestBuilder b = null != requestFactory ? new RestBuilder(requestFactory) : new RestBuilder();
-    if (null != errorHandler) {
+    if(null != errorHandler) {
       b.setErrorHandler(errorHandler);
     }
     b.conversionService = conversionService;
@@ -78,7 +78,7 @@ public class RestBuilder {
 
   @SuppressWarnings({"unchecked"})
   public Object post(String url) {
-    if (responseType == URI.class) {
+    if(responseType == URI.class) {
       return restTemplate.postForLocation(maybeAddParams(url), new HttpEntity(body, headers));
     } else {
       return restTemplate.postForEntity(maybeAddParams(url), new HttpEntity(body, headers), responseType);
@@ -87,7 +87,7 @@ public class RestBuilder {
 
   @SuppressWarnings({"unchecked"})
   public Object put(String url) {
-    if (null != uriParams) {
+    if(null != uriParams) {
       restTemplate.put(maybeAddParams(url), new HttpEntity(body, headers), uriParams);
     } else {
       restTemplate.put(maybeAddParams(url), new HttpEntity(body, headers));
@@ -118,23 +118,24 @@ public class RestBuilder {
 
   @SuppressWarnings({"unchecked"})
   public Object date(String date) {
-    for (String fmt : DATE_FORMATS) {
+    for(String fmt : DATE_FORMATS) {
       try {
         Date dte = new SimpleDateFormat(fmt).parse(date);
         headers.setDate(dte.getTime());
         break;
-      } catch (ParseException e) {}
+      } catch(ParseException e) {
+      }
     }
     return this;
   }
 
   @SuppressWarnings({"unchecked"})
   public Object header(String key, Object val) {
-    if (null != val) {
-      if (val instanceof List) {
-        headers.put(key, (List) val);
-      } else if (ClassUtils.isAssignable(val.getClass(), String.class)) {
-        headers.set(key, (String) val);
+    if(null != val) {
+      if(val instanceof List) {
+        headers.put(key, (List)val);
+      } else if(ClassUtils.isAssignable(val.getClass(), String.class)) {
+        headers.set(key, (String)val);
       } else {
         headers.set(key, conversionService.convert(val, String.class));
       }
@@ -156,7 +157,7 @@ public class RestBuilder {
 
   @SuppressWarnings({"unchecked"})
   public Object param(String key, String value) {
-    if (null == uriParams) {
+    if(null == uriParams) {
       uriParams = new HashMap();
     }
     uriParams.put(key, value);
@@ -180,9 +181,10 @@ public class RestBuilder {
 
   public Object setErrorHandler(Closure errorHandler) {
     this.errorHandler = errorHandler;
-    if (null != errorHandler) {
+    if(null != errorHandler) {
       this.restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
-        @Override public void handleError(ClientHttpResponse response) throws IOException {
+        @Override public void handleError(ClientHttpResponse response)
+            throws IOException {
           RestBuilder.this.errorHandler.call(response);
         }
       });
@@ -198,12 +200,12 @@ public class RestBuilder {
   @SuppressWarnings({"unchecked"})
   private String maybeAddParams(String url) {
     StringBuffer buff = new StringBuffer(url);
-    if (null != uriParams) {
+    if(null != uriParams) {
       buff.append("?");
-      for (Map.Entry<String, String> entry : ((Map<String, String>) uriParams).entrySet()) {
+      for(Map.Entry<String, String> entry : ((Map<String, String>)uriParams).entrySet()) {
         try {
           buff.append(entry.getKey()).append("=").append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
+        } catch(UnsupportedEncodingException e) {
           throw new IllegalStateException(e);
         }
       }

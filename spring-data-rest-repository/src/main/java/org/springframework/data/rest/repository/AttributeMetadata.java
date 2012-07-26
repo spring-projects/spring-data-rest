@@ -42,7 +42,9 @@ public interface AttributeMetadata {
   /**
    * Get the path of this attribute as a {@link Collection}.
    *
-   * @param target The entity to inspect for this attribute.
+   * @param target
+   *     The entity to inspect for this attribute.
+   *
    * @return attribute value as a {@link Collection}
    */
   Collection<?> asCollection(Object target);
@@ -57,7 +59,9 @@ public interface AttributeMetadata {
   /**
    * Get the path of this attribute as a {@link Set}.
    *
-   * @param target The entity to inspect for this attribute.
+   * @param target
+   *     The entity to inspect for this attribute.
+   *
    * @return attribute value as a {@link Set}
    */
   Set<?> asSet(Object target);
@@ -72,7 +76,9 @@ public interface AttributeMetadata {
   /**
    * Get the path of this attribute as a {@link Map}.
    *
-   * @param target The entity to inspect for this attribute.
+   * @param target
+   *     The entity to inspect for this attribute.
+   *
    * @return attribute value as a {@link Map}
    */
   Map asMap(Object target);
@@ -80,7 +86,9 @@ public interface AttributeMetadata {
   /**
    * Get the path of this attribute.
    *
-   * @param target The entity to inspect for this attribute.
+   * @param target
+   *     The entity to inspect for this attribute.
+   *
    * @return attribute value
    */
   Object get(Object target);
@@ -88,8 +96,11 @@ public interface AttributeMetadata {
   /**
    * Set the path of this attribute.
    *
-   * @param value  Value to set on this attribute.
-   * @param target The entity to set this attribute's value on.
+   * @param value
+   *     Value to set on this attribute.
+   * @param target
+   *     The entity to set this attribute's value on.
+   *
    * @return @this
    */
   AttributeMetadata set(Object value, Object target);

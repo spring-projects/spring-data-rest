@@ -24,8 +24,11 @@ public abstract class UriUtils {
    * http://localhost:8080/data/person}, this method would report the baseUri being a valid base of the given URI.
    * </p>
    *
-   * @param baseUri {@link URI} to check.
-   * @param uri     {@link URI} against which to compare the base.
+   * @param baseUri
+   *     {@link URI} to check.
+   * @param uri
+   *     {@link URI} against which to compare the base.
+   *
    * @return {@literal true} if the baseUri is valid against the given {@link URI}, {@literal false} otherwise.
    */
   public static boolean validBaseUri(URI baseUri, URI uri) {
@@ -41,16 +44,21 @@ public abstract class UriUtils {
    * second time passing a relative {@link URI} of "1".
    * </p>
    *
-   * @param baseUri base {@link URI}
-   * @param uri     {@link URI} to explode and iteratre over.
-   * @param handler {@link Handler} to call for each segment of the URI's path.
-   * @param <V>     Return type of the handler.
+   * @param baseUri
+   *     base {@link URI}
+   * @param uri
+   *     {@link URI} to explode and iteratre over.
+   * @param handler
+   *     {@link Handler} to call for each segment of the URI's path.
+   * @param <V>
+   *     Return type of the handler.
+   *
    * @return Handler return value, or possibly {@literal null}.
    */
   public static <V> V foreach(URI baseUri, URI uri, Handler<URI, V> handler) {
     List<URI> uris = explode(baseUri, uri);
     V v = null;
-    for (URI u : uris) {
+    for(URI u : uris) {
       v = handler.handle(u);
     }
     return v;
@@ -63,16 +71,19 @@ public abstract class UriUtils {
    * in
    * a {@link Stack} of relative {@link URI}s of size 2--one for "person" and one for "1".</p>
    *
-   * @param baseUri base {@link URI}
-   * @param uri     {@link URI} to explode
+   * @param baseUri
+   *     base {@link URI}
+   * @param uri
+   *     {@link URI} to explode
+   *
    * @return {@link Stack} of relative {@link URI}s.
    */
   public static Stack<URI> explode(URI baseUri, URI uri) {
     Stack<URI> uris = new Stack<URI>();
-    if (StringUtils.hasText(uri.getPath())) {
+    if(StringUtils.hasText(uri.getPath())) {
       URI relativeUri = baseUri.relativize(uri);
-      if (StringUtils.hasText(relativeUri.getPath())) {
-        for (String part : relativeUri.getPath().split("/")) {
+      if(StringUtils.hasText(relativeUri.getPath())) {
+        for(String part : relativeUri.getPath().split("/")) {
           uris.add(URI.create(part + (StringUtils.hasText(uri.getQuery()) ? "?" + uri.getQuery() : "")));
         }
       }
@@ -86,38 +97,41 @@ public abstract class UriUtils {
    * <p>e.g. merging base URI {@literal http://localhost:8080/data} and relative uri {@literal person/1?name=John+Doe}
    * would result in an absolute URI of {@literal http://localhost:8080/data/person/1?name=John+Doe}</p>
    *
-   * @param baseUri base {@link URI}
-   * @param uris    {@link URI}s to merge
+   * @param baseUri
+   *     base {@link URI}
+   * @param uris
+   *     {@link URI}s to merge
+   *
    * @return {@link URI} that is the combination of all the given (possibly relative, possibly absolute) URIs.
    */
   public static URI merge(URI baseUri, URI... uris) {
     StringBuilder query = new StringBuilder();
 
     UriComponentsBuilder ub = UriComponentsBuilder.fromUri(baseUri);
-    for (URI uri : uris) {
+    for(URI uri : uris) {
       String s = uri.getScheme();
-      if (null != s) {
+      if(null != s) {
         ub.scheme(s);
       }
 
       s = uri.getUserInfo();
-      if (null != s) {
+      if(null != s) {
         ub.userInfo(s);
       }
 
       s = uri.getHost();
-      if (null != s) {
+      if(null != s) {
         ub.host(s);
       }
 
       int i = uri.getPort();
-      if (i > 0) {
+      if(i > 0) {
         ub.port(i);
       }
 
       s = uri.getPath();
-      if (null != s) {
-        if (!uri.isAbsolute() && StringUtils.hasText(s)) {
+      if(null != s) {
+        if(!uri.isAbsolute() && StringUtils.hasText(s)) {
           ub.pathSegment(s);
         } else {
           ub.path(s);
@@ -125,20 +139,20 @@ public abstract class UriUtils {
       }
 
       s = uri.getQuery();
-      if (null != s) {
-        if (query.length() > 0) {
+      if(null != s) {
+        if(query.length() > 0) {
           query.append("&");
         }
         query.append(s);
       }
 
       s = uri.getFragment();
-      if (null != s) {
+      if(null != s) {
         ub.fragment(s);
       }
     }
 
-    if (query.length() > 0) {
+    if(query.length() > 0) {
       ub.query(query.toString());
     }
 
@@ -149,14 +163,15 @@ public abstract class UriUtils {
    * Just the path portion of the {@link URI}, but with any trailing slash "/" removed.
    *
    * @param uri
+   *
    * @return
    */
   public static String path(URI uri) {
-    if (null == uri) {
+    if(null == uri) {
       return null;
     }
     String s = uri.getPath();
-    if (s.endsWith("/")) {
+    if(s.endsWith("/")) {
       return s.substring(0, s.length() - 1);
     } else {
       return s;
@@ -166,8 +181,11 @@ public abstract class UriUtils {
   /**
    * The very last segment of the {@link URI}.
    *
-   * @param baseUri base {@link URI}
-   * @param uri     {@link URI} to explode
+   * @param baseUri
+   *     base {@link URI}
+   * @param uri
+   *     {@link URI} to explode
+   *
    * @return Relative {@link URI} that is the last segment of the path for the given URI.
    */
   public static URI tail(URI baseUri, URI uri) {

@@ -1,12 +1,10 @@
 package org.springframework.data.rest.repository.spec
 
-import javax.persistence.EntityManager
-import javax.persistence.PersistenceContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
-
 import org.springframework.data.rest.repository.RepositoryExporter
 import org.springframework.data.rest.repository.RepositoryMetadata
+import org.springframework.data.rest.repository.test.ApplicationConfig
 import org.springframework.data.rest.repository.test.Family
 import org.springframework.data.rest.repository.test.FamilyRepository
 import org.springframework.data.rest.repository.test.Person
@@ -14,10 +12,13 @@ import org.springframework.data.rest.repository.test.PersonRepository
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
+import javax.persistence.EntityManager
+import javax.persistence.PersistenceContext
+
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-@ContextConfiguration(locations = ["/JpaMetadataSpec-test.xml"])
+@ContextConfiguration(classes = [ApplicationConfig])
 class JpaMetadataSpec extends Specification {
 
   @Autowired

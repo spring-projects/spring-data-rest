@@ -5,10 +5,9 @@ import java.util.Map;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
-
-import org.springframework.data.rest.repository.annotation.RestResource;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -16,14 +15,15 @@ import org.springframework.data.rest.repository.annotation.RestResource;
 @Entity
 public class Person {
 
-  @Id @GeneratedValue private Long id;
-  private String name;
+  @Id @GeneratedValue private Long                 id;
+  private                     String               name;
   @Version
-  private Long version;
+  private                     Long                 version;
   @OneToMany
-  private List<Address> addresses;
+  private                     List<Address>        addresses;
   @OneToMany
-  private Map<String, Profile> profiles;
+  @MapKey(name = "type")
+  private                     Map<String, Profile> profiles;
 
   public Person() {
   }

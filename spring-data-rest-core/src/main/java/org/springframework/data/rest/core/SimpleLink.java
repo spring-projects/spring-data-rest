@@ -7,10 +7,11 @@ import java.net.URI;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class SimpleLink implements Link {
+public class SimpleLink
+    implements Link {
 
   private String rel;
-  private URI href;
+  private URI    href;
 
   public SimpleLink() {
   }

@@ -5,7 +5,8 @@ import org.springframework.dao.DataAccessResourceFailureException;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class RepositoryNotFoundException extends DataAccessResourceFailureException {
+public class RepositoryNotFoundException
+    extends DataAccessResourceFailureException {
 
   public RepositoryNotFoundException(String msg) {
     super(msg);

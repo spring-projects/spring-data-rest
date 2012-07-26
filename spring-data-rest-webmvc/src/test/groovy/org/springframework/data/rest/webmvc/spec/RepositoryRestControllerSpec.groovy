@@ -21,6 +21,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.ui.ExtendedModelMap
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
 import org.springframework.web.util.UriComponentsBuilder
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -29,6 +30,7 @@ import javax.persistence.EntityManagerFactory
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
+@Ignore
 class RepositoryRestControllerSpec extends Specification {
 
   @Shared

@@ -25,7 +25,7 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
                InitializingBean {
 
   protected ApplicationContext applicationContext;
-  protected Repositories repositories;
+  protected Repositories       repositories;
   protected List<String> exportOnlyTheseClasses = Collections.emptyList();
   protected Map<String, M> repositoryMetadata;
 
@@ -42,22 +42,24 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
    * Set the class names of only those Repositories you want exported.
    * Default is to export all found Repositories.
    *
-   * @param exportOnlyTheseClasses {@link List} of class names to export.
+   * @param exportOnlyTheseClasses
+   *     {@link List} of class names to export.
+   *
    * @return @this
    */
   @SuppressWarnings({"unchecked"})
   public M setExportOnlyTheseClasses(List<String> exportOnlyTheseClasses) {
     this.exportOnlyTheseClasses = exportOnlyTheseClasses;
-    return (M) this;
+    return (M)this;
   }
 
-  @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+  @Override public void setApplicationContext(ApplicationContext applicationContext)
+      throws BeansException {
     this.applicationContext = applicationContext;
   }
 
   @SuppressWarnings({"unchecked"})
   @Override public void afterPropertiesSet() throws Exception {
-
   }
 
   /**
@@ -66,20 +68,22 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
    * @return {@link List} of class names to export.
    */
   public Set<String> repositoryNames() {
-    findRepositories();
+    refresh();
     return repositoryMetadata.keySet();
   }
 
   /**
    * Is a Repository being exporter that supports this domain type?
    *
-   * @param domainType Type of the domain class.
+   * @param domainType
+   *     Type of the domain class.
+   *
    * @return {@literal true} if a Repository is being exported, {@literal false} otherwise.
    */
   public boolean hasRepositoryFor(Class<?> domainType) {
-    findRepositories();
-    for (M repoMeta : repositoryMetadata.values()) {
-      if (repoMeta.domainType().isAssignableFrom(domainType)) {
+    refresh();
+    for(M repoMeta : repositoryMetadata.values()) {
+      if(repoMeta.domainType().isAssignableFrom(domainType)) {
         return true;
       }
     }
@@ -89,13 +93,15 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
   /**
    * Get the RepositoryMetadata for the Repository responsible for this domain type.
    *
-   * @param domainType Type of the domain class.
+   * @param domainType
+   *     Type of the domain class.
+   *
    * @return {@link RepositoryMetadata} instance
    */
   public M repositoryMetadataFor(Class<?> domainType) {
-    findRepositories();
-    for (M repoMeta : repositoryMetadata.values()) {
-      if (repoMeta.domainType().isAssignableFrom(domainType)) {
+    refresh();
+    for(M repoMeta : repositoryMetadata.values()) {
+      if(repoMeta.domainType().isAssignableFrom(domainType)) {
         return repoMeta;
       }
     }
@@ -105,11 +111,13 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
   /**
    * Get the {@link RepositoryMetadata} for the Repository exported under the given name.
    *
-   * @param name Name a Repository would be exported under.
+   * @param name
+   *     Name a Repository would be exported under.
+   *
    * @return {@link RepositoryMetadata} instance
    */
   public M repositoryMetadataFor(String name) {
-    findRepositories();
+    refresh();
     return repositoryMetadata.get(name);
   }
 
@@ -118,25 +126,27 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
                                                 Class<?> repoClass,
                                                 Repositories repositories);
 
-  private void findRepositories() {
-    if (null == repositories) {
-      repositories = new Repositories(applicationContext);
-      repositoryMetadata = new HashMap<String, M>();
-      for (Class<?> domainType : repositories) {
-        if (exportOnlyTheseClasses.isEmpty() || exportOnlyTheseClasses.contains(domainType.getName())) {
-          Class<?> repoClass = repositories.getRepositoryInformationFor(domainType).getRepositoryInterface();
-          String name = StringUtils.uncapitalize(repoClass.getSimpleName().replaceAll("Repository", ""));
-          RestResource resourceAnno = repoClass.getAnnotation(RestResource.class);
-          boolean exported = true;
-          if (null != resourceAnno) {
-            if (StringUtils.hasText(resourceAnno.path())) {
-              name = resourceAnno.path();
-            }
-            exported = resourceAnno.exported();
+  @SuppressWarnings({"unchecked"})
+  public void refresh() {
+    if(null != repositories) {
+      return;
+    }
+    repositories = new Repositories(applicationContext);
+    repositoryMetadata = new HashMap<String, M>();
+    for(Class<?> domainType : repositories) {
+      if(exportOnlyTheseClasses.isEmpty() || exportOnlyTheseClasses.contains(domainType.getName())) {
+        Class<?> repoClass = repositories.getRepositoryInformationFor(domainType).getRepositoryInterface();
+        String name = StringUtils.uncapitalize(repoClass.getSimpleName().replaceAll("Repository", ""));
+        RestResource resourceAnno = repoClass.getAnnotation(RestResource.class);
+        boolean exported = true;
+        if(null != resourceAnno) {
+          if(StringUtils.hasText(resourceAnno.path())) {
+            name = resourceAnno.path();
           }
-          if (exported) {
-            repositoryMetadata.put(name, createRepositoryMetadata(name, domainType, repoClass, repositories));
-          }
+          exported = resourceAnno.exported();
+        }
+        if(exported) {
+          repositoryMetadata.put(name, createRepositoryMetadata(name, domainType, repoClass, repositories));
         }
       }
     }

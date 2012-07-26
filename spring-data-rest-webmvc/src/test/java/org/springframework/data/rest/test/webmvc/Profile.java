@@ -3,6 +3,7 @@ package org.springframework.data.rest.test.webmvc;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -10,9 +11,11 @@ import javax.persistence.Id;
 @Entity
 public class Profile {
 
-  @Id @GeneratedValue private Long id;
-  private String type;
-  private String url;
+  @Id @GeneratedValue private Long   id;
+  private                     String type;
+  private                     String url;
+  @ManyToOne
+  private                     Person person;
 
   public Profile() {
   }
@@ -38,29 +41,37 @@ public class Profile {
     this.url = url;
   }
 
+  public Person getPerson() {
+    return person;
+  }
+
+  public void setPerson(Person person) {
+    this.person = person;
+  }
+
   @Override public boolean equals(Object o) {
-    if (!(o instanceof Profile)) {
+    if(!(o instanceof Profile)) {
       return false;
     }
 
-    Profile p2 = (Profile) o;
+    Profile p2 = (Profile)o;
 
     boolean idEq;
-    if (null != id) {
+    if(null != id) {
       idEq = id.equals(p2.id);
     } else {
       idEq = p2.id == null;
     }
 
     boolean typeEq;
-    if (null != type) {
+    if(null != type) {
       typeEq = type.equals(p2.type);
     } else {
       typeEq = p2.type == null;
     }
 
     boolean urlEq;
-    if (null != url) {
+    if(null != url) {
       urlEq = url.equals(p2.url);
     } else {
       urlEq = p2.url == null;

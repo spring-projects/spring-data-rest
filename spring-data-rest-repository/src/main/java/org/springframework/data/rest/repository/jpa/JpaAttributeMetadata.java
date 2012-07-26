@@ -17,14 +17,15 @@ import org.springframework.util.ReflectionUtils;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class JpaAttributeMetadata implements AttributeMetadata {
+public class JpaAttributeMetadata
+    implements AttributeMetadata {
 
-  private String name;
+  private String    name;
   private Attribute attribute;
-  private Class<?> type;
-  private Field field;
-  private Method getter;
-  private Method setter;
+  private Class<?>  type;
+  private Field     field;
+  private Method    getter;
+  private Method    setter;
 
   public JpaAttributeMetadata(EntityType<?> entityType, Attribute attribute) {
     this.attribute = attribute;
@@ -35,14 +36,16 @@ public class JpaAttributeMetadata implements AttributeMetadata {
     ReflectionUtils.makeAccessible(field);
 
     PropertyDescriptor property = BeanUtils.getPropertyDescriptor(entityType.getJavaType(), name);
-    if (null != property) {
+    if(null != property) {
       getter = property.getReadMethod();
-      if (null != getter)
+      if(null != getter) {
         ReflectionUtils.makeAccessible(getter);
+      }
 
       setter = property.getWriteMethod();
-      if (null != setter)
+      if(null != setter) {
         ReflectionUtils.makeAccessible(setter);
+      }
     }
   }
 
@@ -56,14 +59,14 @@ public class JpaAttributeMetadata implements AttributeMetadata {
 
   @Override public Class<?> elementType() {
     return (attribute instanceof PluralAttribute
-        ? ((PluralAttribute) attribute).getElementType().getJavaType()
-        : null);
+            ? ((PluralAttribute)attribute).getElementType().getJavaType()
+            : null);
   }
 
   @Override public boolean isCollectionLike() {
-    if (attribute instanceof PluralAttribute) {
-      PluralAttribute plattr = (PluralAttribute) attribute;
-      switch (plattr.getCollectionType()) {
+    if(attribute instanceof PluralAttribute) {
+      PluralAttribute plattr = (PluralAttribute)attribute;
+      switch(plattr.getCollectionType()) {
         case COLLECTION:
         case LIST:
           return true;
@@ -76,13 +79,13 @@ public class JpaAttributeMetadata implements AttributeMetadata {
   }
 
   @Override public Collection<?> asCollection(Object target) {
-    return (Collection<?>) get(target);
+    return (Collection<?>)get(target);
   }
 
   @Override public boolean isSetLike() {
-    if (attribute instanceof PluralAttribute) {
-      PluralAttribute plattr = (PluralAttribute) attribute;
-      switch (plattr.getCollectionType()) {
+    if(attribute instanceof PluralAttribute) {
+      PluralAttribute plattr = (PluralAttribute)attribute;
+      switch(plattr.getCollectionType()) {
         case SET:
           return true;
         default:
@@ -94,13 +97,13 @@ public class JpaAttributeMetadata implements AttributeMetadata {
   }
 
   @Override public Set<?> asSet(Object target) {
-    return (Set<?>) get(target);
+    return (Set<?>)get(target);
   }
 
   @Override public boolean isMapLike() {
-    if (attribute instanceof PluralAttribute) {
-      PluralAttribute plattr = (PluralAttribute) attribute;
-      switch (plattr.getCollectionType()) {
+    if(attribute instanceof PluralAttribute) {
+      PluralAttribute plattr = (PluralAttribute)attribute;
+      switch(plattr.getCollectionType()) {
         case MAP:
           return true;
         default:
@@ -112,29 +115,29 @@ public class JpaAttributeMetadata implements AttributeMetadata {
   }
 
   @Override public Map asMap(Object target) {
-    return (Map) get(target);
+    return (Map)get(target);
   }
 
   @Override public Object get(Object target) {
     try {
-      if (null != getter) {
+      if(null != getter) {
         return getter.invoke(target);
       } else {
         return field.get(target);
       }
-    } catch (Exception e) {
+    } catch(Exception e) {
       return null;
     }
   }
 
   @Override public AttributeMetadata set(Object value, Object target) {
     try {
-      if (null != setter) {
+      if(null != setter) {
         setter.invoke(target, value);
       } else {
         field.set(target, value);
       }
-    } catch (Exception e) {
+    } catch(Exception e) {
     }
     return this;
   }

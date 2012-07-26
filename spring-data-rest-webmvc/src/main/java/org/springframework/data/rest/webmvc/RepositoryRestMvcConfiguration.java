@@ -29,7 +29,7 @@ public class RepositoryRestMvcConfiguration {
   }
 
   @Bean public JpaRepositoryExporter jpaRepositoryExporter() {
-    if ( null == customJpaRepositoryExporter ) {
+    if(null == customJpaRepositoryExporter) {
       return new JpaRepositoryExporter();
     } else {
       return customJpaRepositoryExporter;
@@ -37,19 +37,20 @@ public class RepositoryRestMvcConfiguration {
   }
 
   @Bean public ValidatingRepositoryEventListener validatingRepositoryEventListener() {
-    if ( null == validatingRepositoryEventListener ) {
+    if(null == validatingRepositoryEventListener) {
       return new ValidatingRepositoryEventListener();
     } else {
       return validatingRepositoryEventListener;
     }
   }
 
-  @Bean public RepositoryRestController repositoryRestController() throws Exception {
+  @Bean public RepositoryRestController repositoryRestController()
+      throws Exception {
     return new RepositoryRestController();
   }
 
   @Bean public RepositoryRestHandlerAdapter repositoryExporterHandlerAdapter() {
-    return new RepositoryRestHandlerAdapter( repositoryRestConfig );
+    return new RepositoryRestHandlerAdapter(repositoryRestConfig);
   }
 
   @Bean public RepositoryRestHandlerMapping repositoryExporterHandlerMapping() {

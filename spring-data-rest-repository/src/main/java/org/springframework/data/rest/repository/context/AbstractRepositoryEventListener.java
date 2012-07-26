@@ -23,7 +23,8 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
 
   protected ApplicationContext applicationContext;
 
-  @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+  @Override public void setApplicationContext(ApplicationContext applicationContext)
+      throws BeansException {
     this.applicationContext = applicationContext;
   }
 
@@ -33,17 +34,17 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
   }
 
   @Override public final void onApplicationEvent(RepositoryEvent event) {
-    if (event instanceof BeforeSaveEvent) {
+    if(event instanceof BeforeSaveEvent) {
       onBeforeSave(event.getSource());
-    } else if (event instanceof AfterSaveEvent) {
+    } else if(event instanceof AfterSaveEvent) {
       onAfterSave(event.getSource());
-    } else if (event instanceof BeforeLinkSaveEvent) {
-      onBeforeLinkSave(event.getSource(), ((BeforeLinkSaveEvent) event).getLinked());
-    } else if (event instanceof AfterLinkSaveEvent) {
-      onAfterLinkSave(event.getSource(), ((AfterLinkSaveEvent) event).getLinked());
-    } else if (event instanceof BeforeDeleteEvent) {
+    } else if(event instanceof BeforeLinkSaveEvent) {
+      onBeforeLinkSave(event.getSource(), ((BeforeLinkSaveEvent)event).getLinked());
+    } else if(event instanceof AfterLinkSaveEvent) {
+      onAfterLinkSave(event.getSource(), ((AfterLinkSaveEvent)event).getLinked());
+    } else if(event instanceof BeforeDeleteEvent) {
       onBeforeDelete(event.getSource());
-    } else if (event instanceof AfterDeleteEvent) {
+    } else if(event instanceof AfterDeleteEvent) {
       onAfterDelete(event.getSource());
     }
   }
@@ -53,14 +54,16 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
    *
    * @param entity
    */
-  protected void onBeforeSave(Object entity) {}
+  protected void onBeforeSave(Object entity) {
+  }
 
   /**
    * Override this method if you are interested in {@literal afterSave} events.
    *
    * @param entity
    */
-  protected void onAfterSave(Object entity) {}
+  protected void onAfterSave(Object entity) {
+  }
 
   /**
    * Override this method if you are interested in {@literal beforeLinkSave} events.
@@ -68,7 +71,8 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
    * @param parent
    * @param linked
    */
-  protected void onBeforeLinkSave(Object parent, Object linked) {}
+  protected void onBeforeLinkSave(Object parent, Object linked) {
+  }
 
   /**
    * Override this method if you are interested in {@literal afterLinkSave} events.
@@ -76,20 +80,23 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
    * @param parent
    * @param linked
    */
-  protected void onAfterLinkSave(Object parent, Object linked) {}
+  protected void onAfterLinkSave(Object parent, Object linked) {
+  }
 
   /**
    * Override this method if you are interested in {@literal beforeDelete} events.
    *
    * @param entity
    */
-  protected void onBeforeDelete(Object entity) {}
+  protected void onBeforeDelete(Object entity) {
+  }
 
   /**
    * Override this method if you are interested in {@literal afterDelete} events.
    *
    * @param entity
    */
-  protected void onAfterDelete(Object entity) {}
+  protected void onAfterDelete(Object entity) {
+  }
 
 }

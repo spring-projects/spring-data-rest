@@ -1,8 +1,7 @@
-package org.springframework.data.rest.repository;
+package org.springframework.data.rest.repository.invoke;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.data.domain.Pageable;
@@ -23,16 +22,16 @@ public class RepositoryMethod {
     FIND_ONE,
     SAVE;
 
-    public static Type fromMethodName( String s ) {
-      if ( "count".equals( s ) ) {
+    public static Type fromMethodName(String s) {
+      if("count".equals(s)) {
         return COUNT;
-      } else if ( "delete".equals( s ) ) {
+      } else if("delete".equals(s)) {
         return DELETE;
-      } else if ( "findAll".equals( s ) ) {
+      } else if("findAll".equals(s)) {
         return FIND_ALL;
-      } else if ( "findOne".equals( s ) ) {
+      } else if("findOne".equals(s)) {
         return FIND_ONE;
-      } else if ( "save".equals( s ) ) {
+      } else if("save".equals(s)) {
         return SAVE;
       } else {
         return CUSTOM;
@@ -40,7 +39,7 @@ public class RepositoryMethod {
     }
 
     public String toMethodName() {
-      switch (this) {
+      switch(this) {
         case COUNT:
           return "count";
         case DELETE:
@@ -58,49 +57,49 @@ public class RepositoryMethod {
 
   }
 
-  public static final ReflectionUtils.MethodFilter USER_METHODS = new ReflectionUtils.MethodFilter() {
-    @Override public boolean matches( Method method ) {
+  public static final ReflectionUtils.MethodFilter              USER_METHODS    = new ReflectionUtils.MethodFilter() {
+    @Override public boolean matches(Method method) {
       return (!method.isSynthetic()
           && !method.isBridge()
           && method.getDeclaringClass() != Object.class
-          && !method.getName().contains( "$" ));
+          && !method.getName().contains("$"));
     }
   };
   public static final LocalVariableTableParameterNameDiscoverer NAME_DISCOVERER = new LocalVariableTableParameterNameDiscoverer();
 
-  private Method method;
+  private Method     method;
   private Class<?>[] paramTypes;
-  private String[] paramNames;
+  private String[]   paramNames;
   private boolean pageable = false;
   private boolean sortable = false;
 
-  public RepositoryMethod( Method method ) {
+  public RepositoryMethod(Method method) {
     this.method = method;
     paramTypes = method.getParameterTypes();
-    for ( Class<?> type : paramTypes ) {
-      if ( Pageable.class.isAssignableFrom( type ) ) {
+    for(Class<?> type : paramTypes) {
+      if(Pageable.class.isAssignableFrom(type)) {
         pageable = true;
       }
-      if ( Sort.class.isAssignableFrom( type ) ) {
+      if(Sort.class.isAssignableFrom(type)) {
         sortable = true;
       }
     }
-    paramNames = NAME_DISCOVERER.getParameterNames( method );
-    if ( null == paramNames ) {
+    paramNames = NAME_DISCOVERER.getParameterNames(method);
+    if(null == paramNames) {
       paramNames = new String[paramTypes.length];
     }
     Annotation[][] paramAnnos = method.getParameterAnnotations();
-    for ( int i = 0; i < paramAnnos.length; i++ ) {
-      if ( paramAnnos[i].length > 0 ) {
-        for ( Annotation anno : paramAnnos[i] ) {
-          if ( Param.class.isAssignableFrom( anno.getClass() ) ) {
-            Param p = (Param) anno;
+    for(int i = 0; i < paramAnnos.length; i++) {
+      if(paramAnnos[i].length > 0) {
+        for(Annotation anno : paramAnnos[i]) {
+          if(Param.class.isAssignableFrom(anno.getClass())) {
+            Param p = (Param)anno;
             paramNames[i] = p.value();
             break;
           }
         }
       }
-      if ( null == paramNames[i] ) {
+      if(null == paramNames[i]) {
         paramNames[i] = "arg" + i;
       }
     }

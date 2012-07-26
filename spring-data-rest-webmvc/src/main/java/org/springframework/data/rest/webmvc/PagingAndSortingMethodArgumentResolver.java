@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.ClassUtils;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefaults;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -19,14 +19,15 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 /**
  * @author Jon Brisbin
  */
-public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgumentResolver {
+public class PagingAndSortingMethodArgumentResolver
+    implements HandlerMethodArgumentResolver {
 
   private static final int DEFAULT_PAGE = 1; // We're 1-based, not 0-based
 
   private RepositoryRestConfiguration config = RepositoryRestConfiguration.DEFAULT;
 
   public PagingAndSortingMethodArgumentResolver(RepositoryRestConfiguration config) {
-    if (null != config) {
+    if(null != config) {
       this.config = config;
     }
   }
@@ -40,47 +41,49 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
                                 ModelAndViewContainer mavContainer,
                                 NativeWebRequest webRequest,
                                 WebDataBinderFactory binderFactory) throws Exception {
-    HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
+    HttpServletRequest request = (HttpServletRequest)webRequest.getNativeRequest();
 
     PageRequest pr = null;
-    for (Annotation annotation : parameter.getParameterAnnotations()) {
-      if (annotation instanceof PageableDefaults) {
-        PageableDefaults defaults = (PageableDefaults) annotation;
+    for(Annotation annotation : parameter.getParameterAnnotations()) {
+      if(annotation instanceof PageableDefaults) {
+        PageableDefaults defaults = (PageableDefaults)annotation;
         pr = new PageRequest(defaults.pageNumber(), defaults.value());
         break;
       }
     }
-    if (null == pr) {
+    if(null == pr) {
       int page = DEFAULT_PAGE;
       String sPage = request.getParameter(config.getPageParamName());
-      if (StringUtils.hasText(sPage)) {
+      if(StringUtils.hasText(sPage)) {
         try {
           page = Integer.parseInt(sPage);
-        } catch (NumberFormatException ignored) {}
+        } catch(NumberFormatException ignored) {
+        }
       }
       int limit = config.getDefaultPageSize();
       String sLimit = request.getParameter(config.getLimitParamName());
-      if (StringUtils.hasText(sLimit)) {
+      if(StringUtils.hasText(sLimit)) {
         try {
           limit = Integer.parseInt(sLimit);
-        } catch (NumberFormatException ignored) {}
+        } catch(NumberFormatException ignored) {
+        }
       }
 
       Sort sort = null;
       List<Sort.Order> orders = new ArrayList<Sort.Order>();
       String[] orderValues = request.getParameterValues(config.getSortParamName());
-      if (null != orderValues) {
-        for (String orderParam : orderValues) {
+      if(null != orderValues) {
+        for(String orderParam : orderValues) {
           String sortDir = request.getParameter(orderParam + ".dir");
           Sort.Direction dir = (null != sortDir ? Sort.Direction.valueOf(sortDir.toUpperCase()) : Sort.Direction.ASC);
           orders.add(new Sort.Order(dir, orderParam));
         }
-        if (!orders.isEmpty()) {
+        if(!orders.isEmpty()) {
           sort = new Sort(orders);
         }
       }
 
-      if (null != sort) {
+      if(null != sort) {
         pr = new PageRequest(page - 1, limit, sort);
       } else {
         pr = new PageRequest(page - 1, limit);

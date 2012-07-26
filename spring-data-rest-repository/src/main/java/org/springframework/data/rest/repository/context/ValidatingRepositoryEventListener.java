@@ -29,20 +29,21 @@ public class ValidatingRepositoryEventListener
 
   private Multimap<String, Validator> validators = ArrayListMultimap.create();
 
-  @Override public void afterPropertiesSet() throws Exception {
-    if (validators.size() == 0) {
-      for (Map.Entry<String, Validator> entry : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
-                                                                                               Validator.class)
-          .entrySet()) {
+  @Override public void afterPropertiesSet()
+      throws Exception {
+    if(validators.size() == 0) {
+      for(Map.Entry<String, Validator> entry : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
+                                                                                              Validator.class)
+                                                               .entrySet()) {
         String name = null;
         Validator v = entry.getValue();
 
-        if (entry.getKey().contains("Save")) {
+        if(entry.getKey().contains("Save")) {
           name = entry.getKey().substring(0, entry.getKey().indexOf("Save") + 4);
-        } else if (entry.getKey().contains("Delete")) {
+        } else if(entry.getKey().contains("Delete")) {
           name = entry.getKey().substring(0, entry.getKey().indexOf("Delete") + 6);
         }
-        if (null != name) {
+        if(null != name) {
           this.validators.put(name, v);
         }
       }
@@ -61,11 +62,13 @@ public class ValidatingRepositoryEventListener
   /**
    * Assign a Map of {@link Validator}s that are assigned to the various {@link RepositoryEvent}s.
    *
-   * @param validators A Map of Validators to wire.
+   * @param validators
+   *     A Map of Validators to wire.
+   *
    * @return @this
    */
   public ValidatingRepositoryEventListener setValidators(Map<String, Collection<Validator>> validators) {
-    for (Map.Entry<String, Collection<Validator>> entry : validators.entrySet()) {
+    for(Map.Entry<String, Collection<Validator>> entry : validators.entrySet()) {
       this.validators.replaceValues(entry.getKey(), entry.getValue());
     }
     return this;
@@ -74,8 +77,11 @@ public class ValidatingRepositoryEventListener
   /**
    * Add a {@link Validator} that will be triggered on the given event.
    *
-   * @param event     The event to listen for.
-   * @param validator The Validator to execute when that event fires.
+   * @param event
+   *     The event to listen for.
+   * @param validator
+   *     The Validator to execute when that event fires.
+   *
    * @return @this
    */
   public ValidatingRepositoryEventListener addValidator(String event, Validator validator) {
@@ -109,21 +115,21 @@ public class ValidatingRepositoryEventListener
 
   private Errors validate(String event, Object o) {
     Errors errors = null;
-    if (null != o) {
+    if(null != o) {
       Class<?> domainType = o.getClass();
       errors = new ValidationErrors(domainType.getSimpleName(),
                                     o,
                                     repositoryMetadataFor(domainType).entityMetadata());
       Collection<Validator> validators = this.validators.get(event);
-      if (null != validators) {
-        for (Validator v : validators) {
-          if (v.supports(o.getClass())) {
+      if(null != validators) {
+        for(Validator v : validators) {
+          if(v.supports(o.getClass())) {
             LOG.debug(event + ": " + o + " with " + v);
             ValidationUtils.invokeValidator(v, o, errors);
           }
         }
       }
-      if (errors.getErrorCount() > 0) {
+      if(errors.getErrorCount() > 0) {
         throw new RepositoryConstraintViolationException(errors);
       }
     }

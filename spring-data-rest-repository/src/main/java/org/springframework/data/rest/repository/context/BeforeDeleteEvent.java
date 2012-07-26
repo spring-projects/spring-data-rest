@@ -5,7 +5,8 @@ package org.springframework.data.rest.repository.context;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class BeforeDeleteEvent extends RepositoryEvent {
+public class BeforeDeleteEvent
+    extends RepositoryEvent {
   public BeforeDeleteEvent(Object source) {
     super(source);
   }

@@ -7,9 +7,14 @@ import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.core.convert.TypeDescriptor;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * This {@link ConversionService} implementation delegates the actual conversion the ConversionService if finds in its
+ * internal List that claims to be able to convert a given class. It will roll through the internal <code>Stack</code>
+ * of <code>ConversionService</code>s until it finds one that can convert the given type.
+ *
+ * @author Jon Brisbin
  */
-public class DelegatingConversionService implements ConversionService {
+public class DelegatingConversionService
+    implements ConversionService {
 
   private Stack<ConversionService> conversionServices = new Stack<ConversionService>();
 
@@ -20,21 +25,39 @@ public class DelegatingConversionService implements ConversionService {
     addConversionServices(svcs);
   }
 
+  /**
+   * Add {@link ConversionService}s to the internal list of those to delegate to.
+   *
+   * @param svcs
+   *     The ConversionServices to delegate to (in order).
+   *
+   * @return @this
+   */
   public DelegatingConversionService addConversionServices(ConversionService... svcs) {
-    for (ConversionService svc : svcs) {
+    for(ConversionService svc : svcs) {
       conversionServices.add(svc);
     }
     return this;
   }
 
+  /**
+   * Add a {@link ConversionService} to the internal list at a specific index for controlling the priority.
+   *
+   * @param atIndex
+   *     Where in the stack to add this ConversionService.
+   * @param svc
+   *     The ConversionService to add.
+   *
+   * @return
+   */
   public DelegatingConversionService addConversionService(int atIndex, ConversionService svc) {
     conversionServices.add(atIndex, svc);
     return this;
   }
 
   @Override public boolean canConvert(Class<?> from, Class<?> to) {
-    for (ConversionService svc : conversionServices) {
-      if (svc.canConvert(from, to)) {
+    for(ConversionService svc : conversionServices) {
+      if(svc.canConvert(from, to)) {
         return true;
       }
     }
@@ -42,8 +65,8 @@ public class DelegatingConversionService implements ConversionService {
   }
 
   @Override public boolean canConvert(TypeDescriptor from, TypeDescriptor to) {
-    for (ConversionService svc : conversionServices) {
-      if (svc.canConvert(from, to)) {
+    for(ConversionService svc : conversionServices) {
+      if(svc.canConvert(from, to)) {
         return true;
       }
     }
@@ -51,8 +74,8 @@ public class DelegatingConversionService implements ConversionService {
   }
 
   @Override public <T> T convert(Object o, Class<T> type) {
-    for (ConversionService svc : conversionServices) {
-      if (svc.canConvert(o.getClass(), type)) {
+    for(ConversionService svc : conversionServices) {
+      if(svc.canConvert(o.getClass(), type)) {
         return svc.convert(o, type);
       }
     }
@@ -60,8 +83,8 @@ public class DelegatingConversionService implements ConversionService {
   }
 
   @Override public Object convert(Object o, TypeDescriptor from, TypeDescriptor to) {
-    for (ConversionService svc : conversionServices) {
-      if (svc.canConvert(from, to)) {
+    for(ConversionService svc : conversionServices) {
+      if(svc.canConvert(from, to)) {
         return svc.convert(o, from, to);
       }
     }

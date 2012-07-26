@@ -9,5 +9,6 @@ import org.springframework.data.rest.repository.annotation.RestResource;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 @RestResource(exported = false)
-public interface UuidTestRepository extends CrudRepository<UuidTest, UUID> {
+public interface UuidTestRepository
+    extends CrudRepository<UuidTest, UUID> {
 }

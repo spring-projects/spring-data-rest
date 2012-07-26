@@ -23,7 +23,7 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
   private EntityManagerFactory entityManagerFactory;
   @Autowired(required = false)
   private List<RepositoryExporter> repositoryExporters = Collections.emptyList();
-  private Set<String> repositoryNames = new HashSet<String>();
+  private Set<String>              repositoryNames     = new HashSet<String>();
 
   public RepositoryRestHandlerMapping() {
     setOrder(Ordered.HIGHEST_PRECEDENCE);
@@ -31,18 +31,19 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 
   @SuppressWarnings({"unchecked"})
   @Override
-  protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
-    if (repositoryNames.isEmpty() && !repositoryExporters.isEmpty()) {
-      for (RepositoryExporter re : repositoryExporters) {
+  protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request)
+      throws Exception {
+    if(repositoryNames.isEmpty() && !repositoryExporters.isEmpty()) {
+      for(RepositoryExporter re : repositoryExporters) {
         repositoryNames.addAll(re.repositoryNames());
       }
     }
     String[] parts = lookupPath.split("/");
-    if (parts.length == 0) {
+    if(parts.length == 0) {
       // Root request
       return super.lookupHandlerMethod(lookupPath, request);
     } else {
-      if (repositoryNames.contains(parts[1])) {
+      if(repositoryNames.contains(parts[1])) {
         return super.lookupHandlerMethod(lookupPath, request);
       } else {
         return null;
@@ -55,7 +56,7 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
   }
 
   @Override protected void extendInterceptors(List<Object> interceptors) {
-    if (null != entityManagerFactory) {
+    if(null != entityManagerFactory) {
       OpenEntityManagerInViewInterceptor omivi = new OpenEntityManagerInViewInterceptor();
       omivi.setEntityManagerFactory(entityManagerFactory);
       interceptors.add(omivi);
