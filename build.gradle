@@ -26,8 +26,11 @@ configure(subprojects) { subproject ->
   apply plugin: "java"
   apply plugin: "groovy"
 
-  [compileJava, compileTestJava]*.options*.debugOptions*.debugLevel = "source,lines,vars"
-  [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:-serial", "-Xlint:-unchecked"]
+  configurations {
+    compile.extendsFrom providedCompile
+  }
+
+  [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:serial", "-Xlint:unchecked", "-Xlint:rawtypes"]
 
   project.sourceCompatibility = 1.6
   project.targetCompatibility = 1.6
