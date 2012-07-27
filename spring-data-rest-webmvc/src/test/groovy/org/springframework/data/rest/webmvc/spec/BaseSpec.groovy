@@ -58,15 +58,15 @@ abstract class BaseSpec extends Specification {
   }
 
   def createJsonRequest(method, path, query, obj) {
-    createRequest(method, path, null, "application/json", mapper.writeValueAsString(obj))
+    createRequest(method, path, query, "application/json", mapper.writeValueAsString(obj))
   }
 
   def createUriListRequest(method, path, query, obj) {
-    createRequest(method, path, null, "text/uri-list", obj.join("\n"))
+    createRequest(method, path, query, "text/uri-list", obj.join("\n"))
   }
 
   def createRequest(method, path, query) {
-    createRequest(method, path, null, null, null)
+    createRequest(method, path, query, null, null)
   }
 
   def createRequest(method, path, query, contentType, content) {
@@ -76,9 +76,7 @@ abstract class BaseSpec extends Specification {
         method: method
     )
     if (query) {
-      req.queryString = URLEncoder.encode(
-          query.collect {k, v -> "$k=$v"}.join("&")
-      )
+      query.collect {k, v -> req.addParameter(k, v)}
     }
     if (contentType) {
       req.contentType = contentType

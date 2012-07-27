@@ -36,4 +36,34 @@ class TopLevelEntitySpec extends BaseSpec {
 
   }
 
+  def "updates top-level entity"() {
+
+    given:
+    def person = newPerson()
+    person.name = "Johnnie Doe"
+    person = people.save(person)
+    def persId = person.id
+    def request = createJsonRequest("PUT", "people/$persId", null, person)
+    def retrReq = createRequest("GET", "people/$persId", null)
+
+    when:
+    def response = controller.createOrUpdate(request, baseUri, "people", "$persId")
+
+    then:
+    response.statusCode == HttpStatus.NO_CONTENT
+
+    when:
+    response = controller.entity(retrReq, baseUri, "people", "$persId")
+
+    then:
+    response.statusCode == HttpStatus.OK
+
+    when:
+    def pers = readJson(response)
+
+    then:
+    pers.name == "Johnnie Doe"
+
+  }
+
 }

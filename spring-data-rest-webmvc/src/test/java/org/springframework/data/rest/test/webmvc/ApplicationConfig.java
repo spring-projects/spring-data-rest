@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.rest.webmvc.RepositoryRestConfiguration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaDialect;
@@ -55,6 +56,11 @@ public class ApplicationConfig {
     JpaTransactionManager txManager = new JpaTransactionManager();
     txManager.setEntityManagerFactory(entityManagerFactory());
     return txManager;
+  }
+
+  @Bean public RepositoryRestConfiguration repositoryRestConfiguration() {
+    return new RepositoryRestConfiguration()
+        .setJsonpOnErrParamName("errback");
   }
 
   @Bean public TestRepositoryEventListener testRepositoryEventListener() {
