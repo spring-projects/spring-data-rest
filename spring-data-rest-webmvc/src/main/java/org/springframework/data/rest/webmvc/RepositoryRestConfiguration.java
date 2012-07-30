@@ -22,7 +22,7 @@ public class RepositoryRestConfiguration {
   private String                        jsonpOnErrParamName = null;
   private List<HttpMessageConverter<?>> customConverters    = Collections.emptyList();
   private MediaType                     defaultMediaType    = MediaType.APPLICATION_JSON;
-  private boolean                       dumpErrors          = false;
+  private boolean                       dumpErrors          = true;
 
   public int getDefaultPageSize() {
     return defaultPageSize;

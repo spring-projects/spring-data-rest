@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -1367,38 +1366,8 @@ public class RepositoryRestController
   @ResponseBody
   public ResponseEntity handleNPE(NullPointerException e,
                                   ServletServerHttpRequest request) throws IOException {
-    if(LOG.isErrorEnabled()) {
-      LOG.error(e.getMessage(), e);
-    }
-    return negotiateResponse(request, HttpStatus.INTERNAL_SERVER_ERROR, new HttpHeaders(), null);
-  }
-
-  /**
-   * Handle {@link InvocationTargetException}s as a 400 Bad Request because these are likely to occur if, e.g. the user
-   * does not provide a value for a query parameter.
-   *
-   * @param e
-   * @param request
-   *
-   * @return
-   *
-   * @throws IOException
-   */
-  @ExceptionHandler(InvocationTargetException.class)
-  @ResponseBody
-  public ResponseEntity handleInvocationTargetException(InvocationTargetException e,
-                                                        ServletServerHttpRequest request) throws IOException {
-    if(LOG.isErrorEnabled()) {
-      LOG.error(e.getMessage(), e);
-    }
-
-    for(Throwable cause = e.getCause(); (null != cause && cause != e.getCause()); cause = cause.getCause()) {
-      if(cause instanceof InvalidDataAccessApiUsageException || cause instanceof IllegalArgumentException) {
-        return negotiateResponse(request, HttpStatus.BAD_REQUEST, new HttpHeaders(), null);
-      }
-    }
-
-    return negotiateResponse(request, HttpStatus.INTERNAL_SERVER_ERROR, new HttpHeaders(), e);
+    LOG.error(e.getMessage(), e);
+    return errorResponse(request, HttpStatus.INTERNAL_SERVER_ERROR, e);
   }
 
   /**
@@ -1413,6 +1382,7 @@ public class RepositoryRestController
    */
   @ExceptionHandler(
       {
+          InvocationTargetException.class,
           IllegalArgumentException.class,
           ClassCastException.class
       }
@@ -1420,10 +1390,8 @@ public class RepositoryRestController
   @ResponseBody
   public ResponseEntity handleMiscFailures(Throwable t,
                                            ServletServerHttpRequest request) throws IOException {
-    if(LOG.isErrorEnabled()) {
-      LOG.error(t.getMessage(), t);
-    }
-    return negotiateResponse(request, HttpStatus.BAD_REQUEST, new HttpHeaders(), t);
+    LOG.error(t.getMessage(), t);
+    return errorResponse(request, HttpStatus.BAD_REQUEST, t);
   }
 
   /**
@@ -1442,11 +1410,7 @@ public class RepositoryRestController
   public ResponseEntity handleLockingFailure(OptimisticLockingFailureException ex,
                                              ServletServerHttpRequest request) throws IOException {
     LOG.error(ex.getMessage(), ex);
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    Map m = new HashMap();
-    m.put("message", ex.getMessage());
-    return negotiateResponse(request, HttpStatus.CONFLICT, headers, objectMapper.writeValueAsBytes(m));
+    return errorResponse(request, HttpStatus.CONFLICT, ex);
   }
 
   /**
@@ -1493,13 +1457,11 @@ public class RepositoryRestController
                                                        ServletServerHttpRequest request) throws IOException {
     LOG.error(ex.getMessage(), ex);
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
     Map m = new HashMap();
     m.put("message", ex.getMessage());
     m.put("acceptableTypes", availableMediaTypes);
 
-    return negotiateResponse(request, HttpStatus.BAD_REQUEST, headers, objectMapper.writeValueAsBytes(m));
+    return negotiateResponse(request, HttpStatus.BAD_REQUEST, new HttpHeaders(), m);
   }
 
   /*
@@ -1657,8 +1619,28 @@ public class RepositoryRestController
         && !config.getSortParamName().equals(name));
   }
 
+  @SuppressWarnings({"unchecked"})
+  private Map throwableToMap(Throwable t) {
+    Map m = new HashMap();
+    m.put("message", t.getMessage());
+    if(null != t.getCause()) {
+      m.put("cause", throwableToMap(t.getCause()));
+    }
+    return m;
+  }
+
   private ResponseEntity<byte[]> notFoundResponse(ServletServerHttpRequest request) throws IOException {
     return negotiateResponse(request, HttpStatus.NOT_FOUND, new HttpHeaders(), null);
+  }
+
+  @SuppressWarnings({"unchecked"})
+  private ResponseEntity<byte[]> errorResponse(ServletServerHttpRequest request, HttpStatus status, Throwable t)
+      throws IOException {
+    Object body = null;
+    if(config.isDumpErrors()) {
+      body = throwableToMap(t);
+    }
+    return negotiateResponse(request, status, new HttpHeaders(), body);
   }
 
   @SuppressWarnings({"unchecked"})
