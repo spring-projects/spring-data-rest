@@ -16,6 +16,7 @@ import org.springframework.http.server.ServletServerHttpRequest
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.orm.jpa.EntityManagerHolder
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.util.UriComponentsBuilder
 import spock.lang.Specification
 
@@ -38,6 +39,7 @@ abstract class BaseSpec extends Specification {
   UriComponentsBuilder baseUri
   ObjectMapper mapper = new ObjectMapper()
 
+  @Transactional
   def setup() {
     baseUri = UriComponentsBuilder.fromUriString("http://localhost:8080/data")
 

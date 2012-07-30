@@ -30,7 +30,7 @@ configure(subprojects) { subproject ->
     compile.extendsFrom providedCompile
   }
 
-  [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:serial", "-Xlint:unchecked", "-Xlint:rawtypes"]
+  [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:serial", "-Xlint:unchecked"]
 
   project.sourceCompatibility = 1.6
   project.targetCompatibility = 1.6

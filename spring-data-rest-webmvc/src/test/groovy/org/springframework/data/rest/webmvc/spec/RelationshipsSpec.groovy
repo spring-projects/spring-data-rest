@@ -1,12 +1,14 @@
 package org.springframework.data.rest.webmvc.spec
 
 import org.springframework.http.HttpStatus
+import org.springframework.transaction.annotation.Transactional
 
 /**
  * @author Jon Brisbin
  */
 class RelationshipsSpec extends BaseSpec {
 
+  @Transactional
   def "saves entity relationship"() {
 
     given:
