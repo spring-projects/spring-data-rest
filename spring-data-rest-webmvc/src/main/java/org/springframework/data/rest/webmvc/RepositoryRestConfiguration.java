@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.util.Assert;
 
 /**
  * @author Jon Brisbin
@@ -27,6 +28,7 @@ public class RepositoryRestConfiguration {
   }
 
   public RepositoryRestConfiguration setDefaultPageSize(int defaultPageSize) {
+    Assert.isTrue((defaultPageSize > 0), "Page size must be greater than 0.");
     this.defaultPageSize = defaultPageSize;
     return this;
   }
@@ -36,6 +38,7 @@ public class RepositoryRestConfiguration {
   }
 
   public RepositoryRestConfiguration setPageParamName(String pageParamName) {
+    Assert.notNull(pageParamName, "Page param name cannot be null.");
     this.pageParamName = pageParamName;
     return this;
   }
@@ -45,6 +48,7 @@ public class RepositoryRestConfiguration {
   }
 
   public RepositoryRestConfiguration setLimitParamName(String limitParamName) {
+    Assert.notNull(limitParamName, "Limit param name cannot be null.");
     this.limitParamName = limitParamName;
     return this;
   }
@@ -54,6 +58,7 @@ public class RepositoryRestConfiguration {
   }
 
   public RepositoryRestConfiguration setSortParamName(String sortParamName) {
+    Assert.notNull(sortParamName, "Sort param name cannot be null.");
     this.sortParamName = sortParamName;
     return this;
   }
@@ -63,6 +68,7 @@ public class RepositoryRestConfiguration {
   }
 
   public RepositoryRestConfiguration setCustomConverters(List<HttpMessageConverter<?>> customConverters) {
+    Assert.notNull(customConverters, "Custom converters list cannot be null.");
     this.customConverters = customConverters;
     return this;
   }
