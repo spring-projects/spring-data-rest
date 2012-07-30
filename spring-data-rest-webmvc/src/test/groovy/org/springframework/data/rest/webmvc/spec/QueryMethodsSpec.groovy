@@ -5,6 +5,7 @@ import org.springframework.data.rest.test.webmvc.Person
 import org.springframework.data.rest.webmvc.PagingAndSorting
 import org.springframework.data.rest.webmvc.RepositoryRestConfiguration
 import org.springframework.http.HttpStatus
+import org.springframework.transaction.annotation.Transactional
 import spock.lang.Shared
 
 import java.lang.reflect.InvocationTargetException
@@ -32,6 +33,7 @@ class QueryMethodsSpec extends BaseSpec {
 
   }
 
+  @Transactional
   def "invokes query methods"() {
 
     given:
@@ -49,6 +51,7 @@ class QueryMethodsSpec extends BaseSpec {
 
   }
 
+  @Transactional
   def "blows up on empty query parameters"() {
 
     given:
