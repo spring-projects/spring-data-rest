@@ -3,69 +3,15 @@ package org.springframework.data.rest.repository.invoke;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
-import org.springframework.util.ReflectionUtils;
+import org.springframework.data.rest.repository.support.Methods;
 
 /**
  * @author Jon Brisbin
  */
 public class RepositoryMethod {
-
-  public enum Type {
-    COUNT,
-    CUSTOM,
-    DELETE,
-    FIND_ALL,
-    FIND_ONE,
-    SAVE;
-
-    public static Type fromMethodName(String s) {
-      if("count".equals(s)) {
-        return COUNT;
-      } else if("delete".equals(s)) {
-        return DELETE;
-      } else if("findAll".equals(s)) {
-        return FIND_ALL;
-      } else if("findOne".equals(s)) {
-        return FIND_ONE;
-      } else if("save".equals(s)) {
-        return SAVE;
-      } else {
-        return CUSTOM;
-      }
-    }
-
-    public String toMethodName() {
-      switch(this) {
-        case COUNT:
-          return "count";
-        case DELETE:
-          return "delete";
-        case FIND_ALL:
-          return "findAll";
-        case FIND_ONE:
-          return "findOne";
-        case SAVE:
-          return "save";
-        default:
-          return null;
-      }
-    }
-
-  }
-
-  public static final ReflectionUtils.MethodFilter              USER_METHODS    = new ReflectionUtils.MethodFilter() {
-    @Override public boolean matches(Method method) {
-      return (!method.isSynthetic()
-          && !method.isBridge()
-          && method.getDeclaringClass() != Object.class
-          && !method.getName().contains("$"));
-    }
-  };
-  public static final LocalVariableTableParameterNameDiscoverer NAME_DISCOVERER = new LocalVariableTableParameterNameDiscoverer();
 
   private Method     method;
   private Class<?>[] paramTypes;
@@ -84,7 +30,7 @@ public class RepositoryMethod {
         sortable = true;
       }
     }
-    paramNames = NAME_DISCOVERER.getParameterNames(method);
+    paramNames = Methods.NAME_DISCOVERER.getParameterNames(method);
     if(null == paramNames) {
       paramNames = new String[paramTypes.length];
     }

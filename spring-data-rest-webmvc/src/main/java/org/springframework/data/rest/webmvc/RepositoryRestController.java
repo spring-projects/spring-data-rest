@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -53,12 +54,15 @@ import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.data.rest.repository.RepositoryNotFoundException;
 import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
+import org.springframework.data.rest.repository.context.AfterLinkDeleteEvent;
 import org.springframework.data.rest.repository.context.AfterLinkSaveEvent;
 import org.springframework.data.rest.repository.context.AfterSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
+import org.springframework.data.rest.repository.context.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.data.rest.repository.context.RepositoryEvent;
+import org.springframework.data.rest.repository.invoke.CrudMethod;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodResponse;
 import org.springframework.data.rest.repository.invoke.RepositoryQueryMethod;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -348,6 +352,10 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    if(!repoMeta.exportsMethod(CrudMethod.FIND_ALL)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
+
     RepositoryMethodResponse response = new RepositoryMethodResponse();
 
     Iterator allEntities = Collections.emptyList().iterator();
@@ -515,8 +523,18 @@ public class RepositoryRestController
     String[] paramNames = queryMethod.paramNames();
     Object[] paramVals = new Object[paramTypes.length];
     for(int i = 0; i < paramVals.length; i++) {
-      String queryVal = request.getServletRequest().getParameter(paramNames[i]);
-      if(null == queryVal) {
+      if(Pageable.class.isAssignableFrom(paramTypes[i])) {
+        // Handle paging
+        paramVals[i] = pageSort;
+        continue;
+      } else if(Sort.class.isAssignableFrom(paramTypes[i])) {
+        // Handle sorting
+        paramVals[i] = (null != pageSort ? pageSort.getSort() : null);
+        continue;
+      }
+
+      String queryVal;
+      if(null == (queryVal = request.getServletRequest().getParameter(paramNames[i]))) {
         continue;
       }
 
@@ -524,12 +542,6 @@ public class RepositoryRestController
       if(String.class.isAssignableFrom(paramTypes[i])) {
         // Param type is a String
         paramVals[i] = queryVal;
-      } else if(Pageable.class.isAssignableFrom(paramTypes[i])) {
-        // Handle paging
-        paramVals[i] = pageSort;
-      } else if(Sort.class.isAssignableFrom(paramTypes[i])) {
-        // Handle sorting
-        paramVals[i] = (null != pageSort ? pageSort.getSort() : null);
       } else if(null != (paramRepoMeta = repositoryMetadataFor(paramTypes[i]))) {
         // Complex parameter is a managed type
         Serializable id = stringToSerializable(queryVal,
@@ -667,6 +679,9 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    if(!repoMeta.exportsMethod(CrudMethod.SAVE_ONE)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
     CrudRepository repo = repoMeta.repository();
 
     MediaType incomingMediaType = request.getHeaders().getContentType();
@@ -726,6 +741,9 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    if(!repoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>)repoMeta.entityMetadata()
                                                                                      .idAttribute()
@@ -790,6 +808,9 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    if(!repoMeta.exportsMethod(CrudMethod.SAVE_ONE) || !repoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>)repoMeta.entityMetadata()
                                                                                      .idAttribute()
@@ -865,6 +886,9 @@ public class RepositoryRestController
                                         @PathVariable String repository,
                                         @PathVariable String id) throws IOException {
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    if(!repoMeta.exportsMethod(CrudMethod.DELETE_ONE)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>)repoMeta.entityMetadata()
                                                                                      .idAttribute()
@@ -909,6 +933,9 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    if(!repoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>)repoMeta.entityMetadata()
                                                                                      .idAttribute()
@@ -931,6 +958,10 @@ public class RepositoryRestController
     }
 
     RepositoryMetadata propRepoMeta = repositoryMetadataFor(attrType);
+    if(!propRepoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
+
 
     Object propVal;
     if(null == (propVal = attrMeta.get(entity))) {
@@ -1001,6 +1032,9 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     final RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    if(!repoMeta.exportsMethod(CrudMethod.SAVE_ONE)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>)repoMeta.entityMetadata()
                                                                                      .idAttribute()
@@ -1109,6 +1143,9 @@ public class RepositoryRestController
                                       @PathVariable String id,
                                       @PathVariable String property) throws IOException {
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    if(!repoMeta.exportsMethod(CrudMethod.SAVE_ONE)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
     CrudRepository repo = repoMeta.repository();
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>)repoMeta.entityMetadata()
@@ -1162,6 +1199,9 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
+    if(!repoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
 
     AttributeMetadata attrMeta;
     if(null == (attrMeta = repoMeta.entityMetadata().attribute(property))) {
@@ -1226,6 +1266,9 @@ public class RepositoryRestController
                                       @PathVariable String linkedId) throws IOException {
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     CrudRepository repo = repoMeta.repository();
+    if(!repoMeta.exportsMethod(CrudMethod.FIND_ONE) || !repoMeta.exportsMethod(CrudMethod.SAVE_ONE)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
     Serializable serId = stringToSerializable(id,
                                               (Class<? extends Serializable>)repoMeta.entityMetadata()
                                                                                      .idAttribute()
@@ -1283,6 +1326,10 @@ public class RepositoryRestController
       attrMeta.set(linkedEntity, entity);
     }
 
+    publishEvent(new BeforeLinkDeleteEvent(entity, linkedEntity));
+    Object savedEntity = repo.save(entity);
+    publishEvent(new AfterLinkDeleteEvent(savedEntity, linkedEntity));
+
     return negotiateResponse(request, HttpStatus.NO_CONTENT, new HttpHeaders(), null);
   }
 
@@ -1306,11 +1353,67 @@ public class RepositoryRestController
     return notFoundResponse(request);
   }
 
+  /**
+   * Handle NPEs as a regular 500 error.
+   *
+   * @param e
+   * @param request
+   *
+   * @return
+   *
+   * @throws IOException
+   */
+  @ExceptionHandler(NullPointerException.class)
+  @ResponseBody
+  public ResponseEntity handleNPE(NullPointerException e,
+                                  ServletServerHttpRequest request) throws IOException {
+    if(LOG.isErrorEnabled()) {
+      LOG.error(e.getMessage(), e);
+    }
+    return negotiateResponse(request, HttpStatus.INTERNAL_SERVER_ERROR, new HttpHeaders(), null);
+  }
+
+  /**
+   * Handle {@link InvocationTargetException}s as a 400 Bad Request because these are likely to occur if, e.g. the user
+   * does not provide a value for a query parameter.
+   *
+   * @param e
+   * @param request
+   *
+   * @return
+   *
+   * @throws IOException
+   */
+  @ExceptionHandler(InvocationTargetException.class)
+  @ResponseBody
+  public ResponseEntity handleInvocationTargetException(InvocationTargetException e,
+                                                        ServletServerHttpRequest request) throws IOException {
+    if(LOG.isErrorEnabled()) {
+      LOG.error(e.getMessage(), e);
+    }
+
+    for(Throwable cause = e.getCause(); (null != cause && cause != e.getCause()); cause = cause.getCause()) {
+      if(cause instanceof InvalidDataAccessApiUsageException || cause instanceof IllegalArgumentException) {
+        return negotiateResponse(request, HttpStatus.BAD_REQUEST, new HttpHeaders(), null);
+      }
+    }
+
+    return negotiateResponse(request, HttpStatus.INTERNAL_SERVER_ERROR, new HttpHeaders(), e);
+  }
+
+  /**
+   * Handle failures commonly thrown from code tries to read incoming data and convert or cast it to the right type.
+   *
+   * @param t
+   * @param request
+   *
+   * @return
+   *
+   * @throws IOException
+   */
   @ExceptionHandler(
       {
-          NullPointerException.class,
           IllegalArgumentException.class,
-          IllegalStateException.class,
           ClassCastException.class
       }
   )
@@ -1320,7 +1423,7 @@ public class RepositoryRestController
     if(LOG.isErrorEnabled()) {
       LOG.error(t.getMessage(), t);
     }
-    return negotiateResponse(request, HttpStatus.BAD_REQUEST, new HttpHeaders(), null);
+    return negotiateResponse(request, HttpStatus.BAD_REQUEST, new HttpHeaders(), t);
   }
 
   /**

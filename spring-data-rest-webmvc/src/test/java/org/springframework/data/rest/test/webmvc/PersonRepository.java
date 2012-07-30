@@ -14,10 +14,15 @@ import org.springframework.data.rest.repository.annotation.RestResource;
 @RestResource(path = "people", rel = "peeps")
 public interface PersonRepository extends PagingAndSortingRepository<Person, Long> {
 
-  @RestResource(path = "name", rel = "names")
-  public List<Person> findByName(@Param("name") String name);
+  @Override
+  @RestResource(exported = false) void delete(Long id);
+
+  @Override
+  @RestResource(exported = false) void delete(Person entity);
+
+  @RestResource(path = "name", rel = "names") List<Person> findByName(@Param("name") String name);
 
   @RestResource(path = "nameStartsWith", rel = "nameStartsWith")
-  public Page findByNameStartsWith(@Param("name") String name, Pageable p);
+  Page findByNameStartsWith(@Param("name") String name, Pageable p);
 
 }

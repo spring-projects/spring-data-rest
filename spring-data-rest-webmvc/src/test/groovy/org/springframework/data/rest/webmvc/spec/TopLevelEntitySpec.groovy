@@ -66,4 +66,19 @@ class TopLevelEntitySpec extends BaseSpec {
 
   }
 
+  def "won't delete entities whose delete methods are not exported"() {
+
+    given:
+    def person = people.save(new Person(name: "John Doe"))
+    def persId = person.id
+    def request = createRequest("DELETE", "people/$persId", null)
+
+    when:
+    def response = controller.deleteEntity(request, "people", "$persId")
+
+    then:
+    response.statusCode == HttpStatus.METHOD_NOT_ALLOWED
+
+  }
+
 }

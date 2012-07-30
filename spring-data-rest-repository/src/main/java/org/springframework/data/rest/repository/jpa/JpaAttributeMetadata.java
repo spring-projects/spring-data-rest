@@ -17,8 +17,7 @@ import org.springframework.util.ReflectionUtils;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class JpaAttributeMetadata
-    implements AttributeMetadata {
+public class JpaAttributeMetadata implements AttributeMetadata {
 
   private String    name;
   private Attribute attribute;

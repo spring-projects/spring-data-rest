@@ -13,21 +13,23 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.data.rest.repository.annotation.RestResource;
+import org.springframework.data.rest.repository.invoke.CrudMethod;
 import org.springframework.data.rest.repository.invoke.RepositoryQueryMethod;
+import org.springframework.data.rest.repository.support.Methods;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class JpaRepositoryMetadata
-    implements RepositoryMetadata<JpaEntityMetadata> {
+public class JpaRepositoryMetadata implements RepositoryMetadata<JpaEntityMetadata> {
 
   private final String                               name;
   private final Class<?>                             repoClass;
   private final CrudRepository<Object, Serializable> repository;
   private final EntityInformation                    entityInfo;
-  private final Map<String, RepositoryQueryMethod> queryMethods = new HashMap<String, RepositoryQueryMethod>();
+  private final Map<CrudMethod, Boolean>           crudMethodExposed = new HashMap<CrudMethod, Boolean>();
+  private final Map<String, RepositoryQueryMethod> queryMethods      = new HashMap<String, RepositoryQueryMethod>();
 
   private String            rel;
   private JpaEntityMetadata entityMetadata;
@@ -66,6 +68,24 @@ public class JpaRepositoryMetadata
       }
     }
 
+    ReflectionUtils.doWithMethods(
+        repoClass,
+        new ReflectionUtils.MethodCallback() {
+          @Override public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+            CrudMethod cr = CrudMethod.fromMethod(method);
+            RestResource rr = method.getAnnotation(RestResource.class);
+            if(null != rr) {
+              crudMethodExposed.put(cr, rr.exported());
+            }
+          }
+        },
+        new ReflectionUtils.MethodFilter() {
+          @Override public boolean matches(Method method) {
+            return (null != CrudMethod.fromMethod(method) && Methods.USER_METHODS.matches(method));
+          }
+        }
+    );
+
     Metamodel metamodel = entityManager.getMetamodel();
     entityMetadata = new JpaEntityMetadata(repositories, metamodel.entity(entityInfo.getJavaType()));
   }
@@ -100,6 +120,15 @@ public class JpaRepositoryMetadata
 
   @Override public Map<String, RepositoryQueryMethod> queryMethods() {
     return Collections.unmodifiableMap(queryMethods);
+  }
+
+  @Override public Boolean exportsMethod(CrudMethod method) {
+    Boolean b = crudMethodExposed.get(method);
+    if(null == b) {
+      return true;
+    } else {
+      return b;
+    }
   }
 
   @Override public String toString() {

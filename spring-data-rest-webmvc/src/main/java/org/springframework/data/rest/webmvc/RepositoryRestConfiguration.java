@@ -22,6 +22,7 @@ public class RepositoryRestConfiguration {
   private String                        jsonpOnErrParamName = null;
   private List<HttpMessageConverter<?>> customConverters    = Collections.emptyList();
   private MediaType                     defaultMediaType    = MediaType.APPLICATION_JSON;
+  private boolean                       dumpErrors          = false;
 
   public int getDefaultPageSize() {
     return defaultPageSize;
@@ -97,6 +98,15 @@ public class RepositoryRestConfiguration {
 
   public RepositoryRestConfiguration setDefaultMediaType(MediaType defaultMediaType) {
     this.defaultMediaType = defaultMediaType;
+    return this;
+  }
+
+  public boolean isDumpErrors() {
+    return dumpErrors;
+  }
+
+  public RepositoryRestConfiguration setDumpErrors(boolean dumpErrors) {
+    this.dumpErrors = dumpErrors;
     return this;
   }
 

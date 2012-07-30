@@ -6,8 +6,10 @@ import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.rest.webmvc.RepositoryRestConfiguration;
+import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaDialect;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @author Jon Brisbin
  */
 @Configuration
+@Import(RepositoryRestMvcConfiguration.class)
 @ComponentScan(basePackageClasses = ApplicationConfig.class)
 @EnableJpaRepositories
 @EnableTransactionManagement

@@ -1,10 +1,12 @@
 package org.springframework.data.rest.repository;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.rest.repository.invoke.CrudMethod;
 import org.springframework.data.rest.repository.invoke.RepositoryQueryMethod;
 
 /**
@@ -73,5 +75,14 @@ public interface RepositoryMetadata<E extends EntityMetadata<? extends Attribute
    * @return All query methods for this Repository.
    */
   Map<String, RepositoryQueryMethod> queryMethods();
+
+  /**
+   * Does this Repository all this method to be exported?
+   *
+   * @param method
+   *
+   * @return
+   */
+  Boolean exportsMethod(CrudMethod method);
 
 }

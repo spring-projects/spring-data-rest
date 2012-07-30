@@ -42,6 +42,10 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
       onBeforeLinkSave(event.getSource(), ((BeforeLinkSaveEvent)event).getLinked());
     } else if(event instanceof AfterLinkSaveEvent) {
       onAfterLinkSave(event.getSource(), ((AfterLinkSaveEvent)event).getLinked());
+    } else if(event instanceof BeforeLinkDeleteEvent) {
+      onBeforeLinkDelete(event.getSource(), ((BeforeLinkDeleteEvent)event).getLinked());
+    } else if(event instanceof AfterLinkDeleteEvent) {
+      onAfterLinkDelete(event.getSource(), ((BeforeLinkDeleteEvent)event).getLinked());
     } else if(event instanceof BeforeDeleteEvent) {
       onBeforeDelete(event.getSource());
     } else if(event instanceof AfterDeleteEvent) {
@@ -81,6 +85,24 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
    * @param linked
    */
   protected void onAfterLinkSave(Object parent, Object linked) {
+  }
+
+  /**
+   * Override this method if you are interested in {@literal beforeLinkDelete} events.
+   *
+   * @param parent
+   * @param linked
+   */
+  protected void onBeforeLinkDelete(Object parent, Object linked) {
+  }
+
+  /**
+   * Override this method if you are interested in {@literal afterLinkDelete} events.
+   *
+   * @param parent
+   * @param linked
+   */
+  protected void onAfterLinkDelete(Object parent, Object linked) {
   }
 
   /**

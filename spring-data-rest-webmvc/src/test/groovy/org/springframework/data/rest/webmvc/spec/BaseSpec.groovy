@@ -76,7 +76,7 @@ abstract class BaseSpec extends Specification {
         method: method
     )
     if (query) {
-      query.collect {k, v -> req.addParameter(k, v)}
+      query.collect { String k, String v -> req.addParameter(k, v)}
     }
     if (contentType) {
       req.contentType = contentType

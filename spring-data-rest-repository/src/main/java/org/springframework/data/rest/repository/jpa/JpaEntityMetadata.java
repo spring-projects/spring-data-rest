@@ -12,6 +12,7 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.EntityMetadata;
 import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -36,22 +37,28 @@ public class JpaEntityMetadata
     for(Attribute attr : entityType.getAttributes()) {
       boolean exported = true;
       Field field = ReflectionUtils.findField(type, attr.getJavaMember().getName());
-      if(null != field) {
-        RestResource fieldResourceAnno = field.getAnnotation(RestResource.class);
-        if(null != fieldResourceAnno) {
-          exported = fieldResourceAnno.exported();
-        }
+      if(null == field) {
+        continue;
+      }
+
+      RestResource fieldResourceAnno = field.getAnnotation(RestResource.class);
+      if(null != fieldResourceAnno) {
+        exported = fieldResourceAnno.exported();
       }
       if(exported) {
+        String name = attr.getName();
+        if(null != fieldResourceAnno && StringUtils.hasText(fieldResourceAnno.path())) {
+          name = fieldResourceAnno.path();
+        }
         Class<?> attrType = (attr instanceof PluralAttribute
                              ? ((PluralAttribute)attr).getElementType().getJavaType()
                              : attr.getJavaType());
         if(repositories.hasRepositoryFor(attrType)) {
-          linkedAttributes.put(attr.getName(), new JpaAttributeMetadata(entityType, attr));
+          linkedAttributes.put(name, new JpaAttributeMetadata(entityType, attr));
         } else {
           if(!(attr instanceof SingularAttribute && ((SingularAttribute)attr).isId())
               && !(attr instanceof SingularAttribute && ((SingularAttribute)attr).isVersion())) {
-            embeddedAttributes.put(attr.getName(), new JpaAttributeMetadata(entityType, attr));
+            embeddedAttributes.put(name, new JpaAttributeMetadata(entityType, attr));
           }
         }
       }
