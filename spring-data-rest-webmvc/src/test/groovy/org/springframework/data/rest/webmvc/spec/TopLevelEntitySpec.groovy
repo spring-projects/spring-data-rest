@@ -2,12 +2,14 @@ package org.springframework.data.rest.webmvc.spec
 
 import org.springframework.data.rest.test.webmvc.Person
 import org.springframework.http.HttpStatus
+import org.springframework.transaction.annotation.Transactional
 
 /**
  * @author Jon Brisbin
  */
 class TopLevelEntitySpec extends BaseSpec {
 
+  @Transactional
   def "saves top-level entity"() {
 
     given:
@@ -22,6 +24,7 @@ class TopLevelEntitySpec extends BaseSpec {
 
   }
 
+  @Transactional
   def "retrieves top-level entity"() {
 
     given:
@@ -36,6 +39,7 @@ class TopLevelEntitySpec extends BaseSpec {
 
   }
 
+  @Transactional
   def "updates top-level entity"() {
 
     given:
@@ -66,6 +70,7 @@ class TopLevelEntitySpec extends BaseSpec {
 
   }
 
+  @Transactional
   def "won't delete entities whose delete methods are not exported"() {
 
     given:
