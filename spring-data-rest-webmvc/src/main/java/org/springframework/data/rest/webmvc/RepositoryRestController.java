@@ -537,11 +537,11 @@ public class RepositoryRestController
         continue;
       }
 
-      RepositoryMetadata paramRepoMeta;
       if(String.class.isAssignableFrom(paramTypes[i])) {
         // Param type is a String
         paramVals[i] = queryVal;
-      } else if(null != (paramRepoMeta = repositoryMetadataFor(paramTypes[i]))) {
+      } else if(hasRepositoryMetadataFor(paramTypes[i])) {
+        RepositoryMetadata paramRepoMeta = repositoryMetadataFor(paramTypes[i]);
         // Complex parameter is a managed type
         Serializable id = stringToSerializable(queryVal,
                                                (Class<Serializable>)paramRepoMeta.entityMetadata()

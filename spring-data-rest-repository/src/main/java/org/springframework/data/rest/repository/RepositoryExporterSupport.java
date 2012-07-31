@@ -72,6 +72,36 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
   }
 
   /**
+   * Does a Repository exist for this name?
+   *
+   * @param name
+   *
+   * @return true
+   */
+  public boolean hasRepositoryMetadataFor(String name) {
+    try {
+      return (null != repositoryMetadataFor(name));
+    } catch(RepositoryNotFoundException ignored) {
+      return false;
+    }
+  }
+
+  /**
+   * Is there a Repository responsible for this domain type?
+   *
+   * @param domainType
+   *
+   * @return
+   */
+  public boolean hasRepositoryMetadataFor(Class<?> domainType) {
+    try {
+      return (null != repositoryMetadataFor(domainType));
+    } catch(RepositoryNotFoundException ignored) {
+      return false;
+    }
+  }
+
+  /**
    * Find {@link RepositoryMetadata} for the {@link org.springframework.data.repository.Repository} exported under this
    * name.
    *
