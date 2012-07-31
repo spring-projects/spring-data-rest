@@ -30,6 +30,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
@@ -1384,7 +1385,8 @@ public class RepositoryRestController
       {
           InvocationTargetException.class,
           IllegalArgumentException.class,
-          ClassCastException.class
+          ClassCastException.class,
+          ConversionFailedException.class
       }
   )
   @ResponseBody
