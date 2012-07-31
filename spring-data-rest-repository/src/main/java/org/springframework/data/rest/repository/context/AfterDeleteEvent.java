@@ -1,9 +1,9 @@
 package org.springframework.data.rest.repository.context;
 
 /**
- * Emitted after the entity is delete from the repository.
+ * Emitted after the entity is deleted from the repository.
  *
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  */
 public class AfterDeleteEvent
     extends RepositoryEvent {

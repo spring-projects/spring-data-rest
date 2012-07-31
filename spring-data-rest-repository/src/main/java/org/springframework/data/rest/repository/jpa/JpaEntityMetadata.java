@@ -15,7 +15,9 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * Implementation of {@link EntityMetadata} for JPA.
+ *
+ * @author Jon Brisbin
  */
 public class JpaEntityMetadata
     implements EntityMetadata<JpaAttributeMetadata> {

@@ -32,10 +32,9 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class AnnotatedHandlerRepositoryEventListener
-    implements ApplicationListener<RepositoryEvent>,
-               ApplicationContextAware,
-               InitializingBean {
+public class AnnotatedHandlerRepositoryEventListener implements ApplicationListener<RepositoryEvent>,
+                                                                ApplicationContextAware,
+                                                                InitializingBean {
 
   private String             basePackage;
   private ApplicationContext applicationContext;

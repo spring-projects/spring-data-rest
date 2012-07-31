@@ -9,6 +9,9 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import org.springframework.data.rest.core.Link;
 
 /**
+ * JSON-serializable response for returns that have a mix of results and links. Also used in responses that have just
+ * links (in that case, 'results' will be an empty array).
+ *
  * @author Jon Brisbin
  */
 public class RepositoryMethodResponse {

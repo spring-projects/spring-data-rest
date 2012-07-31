@@ -3,6 +3,9 @@ package org.springframework.data.rest.repository.invoke;
 import java.lang.reflect.Method;
 
 /**
+ * Represents one of the CRUD methods supported by {@link org.springframework.data.repository.PagingAndSortingRepository}
+ * or {@link org.springframework.data.repository.CrudRepository}.
+ *
  * @author Jon Brisbin
  */
 public enum CrudMethod {
@@ -17,6 +20,14 @@ public enum CrudMethod {
   SAVE_ONE,
   SAVE_SOME;
 
+  /**
+   * Get an enum from a {@link Method}. Narrow down overriden methods by looking for {@link Iterable} in the first
+   * parameter, which tells us it is a '_SOME' type.
+   *
+   * @param m
+   *
+   * @return
+   */
   public static CrudMethod fromMethod(Method m) {
     String s = m.getName();
     Class<?>[] paramTypes = m.getParameterTypes();
@@ -38,6 +49,11 @@ public enum CrudMethod {
     }
   }
 
+  /**
+   * Turn this enum into a method name.
+   *
+   * @return
+   */
   public String toMethodName() {
     switch(this) {
       case COUNT:

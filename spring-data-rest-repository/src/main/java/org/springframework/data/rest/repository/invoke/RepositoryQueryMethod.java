@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.util.Assert;
 
 /**
+ * Represents a query method on a repository interface.
+ *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class RepositoryQueryMethod {
@@ -49,14 +51,29 @@ public class RepositoryQueryMethod {
     }
   }
 
+  /**
+   * The method's parameter types.
+   *
+   * @return
+   */
   public Class<?>[] paramTypes() {
     return paramTypes;
   }
 
+  /**
+   * The parameter names as pulled from the {@link Param} annotations.
+   *
+   * @return
+   */
   public String[] paramNames() {
     return paramNames;
   }
 
+  /**
+   * The {@link Method} to invoke.
+   *
+   * @return
+   */
   public Method method() {
     return method;
   }

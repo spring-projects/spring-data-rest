@@ -5,7 +5,10 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * Convenience {@link DispatcherServlet} that sets the 'contextClass' and 'contextConfigLocation' properties to the
+ * correct values for using the REST exporter in a web.xml file.
+ *
+ * @author Jon Brisbin
  */
 public class RepositoryRestExporterServlet extends DispatcherServlet {
 

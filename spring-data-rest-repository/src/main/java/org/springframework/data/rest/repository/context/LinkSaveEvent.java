@@ -1,9 +1,9 @@
 package org.springframework.data.rest.repository.context;
 
 /**
- * Base class for {@link RepositoryEvent}s that deal with saving a linked object.
+ * Base class for {@link RepositoryEvent}s that deal with saving/updating or deleting a linked object.
  *
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  */
 public abstract class LinkSaveEvent
     extends RepositoryEvent {

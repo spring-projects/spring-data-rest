@@ -20,7 +20,9 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * Implementation of {@link RepositoryMetadata} for JPA.
+ *
+ * @author Jon Brisbin
  */
 public class JpaRepositoryMetadata implements RepositoryMetadata<JpaEntityMetadata> {
 

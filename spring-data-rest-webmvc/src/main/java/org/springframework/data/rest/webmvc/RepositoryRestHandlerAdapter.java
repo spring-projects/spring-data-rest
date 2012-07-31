@@ -7,6 +7,11 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
 /**
+ * {@link RequestMappingHandlerAdapter} implementation that adds a couple argument resolvers for controller method
+ * parameters used in the REST exporter controller. Also only looks for handler methods in the {@link
+ * RepositoryRestController} class to help isolate this handler adapter from other handler adapters the user might have
+ * configured in their Spring MVC context.
+ *
  * @author Jon Brisbin
  */
 public class RepositoryRestHandlerAdapter extends RequestMappingHandlerAdapter {

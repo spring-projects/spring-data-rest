@@ -15,6 +15,11 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
+ * {@link RequestMappingHandlerMapping} implementation that will only find a handler method if a {@link
+ * org.springframework.data.repository.Repository} is exported under that URL path segment. Also ensures the {@link
+ * OpenEntityManagerInViewInterceptor} is registered in the application context. The OEMIVI is required for the REST
+ * exporter to function properly.
+ *
  * @author Jon Brisbin
  */
 public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {

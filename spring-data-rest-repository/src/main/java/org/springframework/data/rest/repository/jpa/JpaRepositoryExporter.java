@@ -10,7 +10,7 @@ import org.springframework.data.rest.repository.RepositoryExporter;
 /**
  * Implementation of {@link RepositoryExporter} for exporting JPA {@link Repository} subinterfaces.
  *
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  */
 public class JpaRepositoryExporter
     extends RepositoryExporter<JpaRepositoryMetadata, JpaEntityMetadata> {

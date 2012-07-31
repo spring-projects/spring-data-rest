@@ -17,6 +17,9 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
+ * {@link HandlerMethodArgumentResolver} implementation responsible for inspecting a request for page and sort
+ * parameters for use by the repositories.
+ *
  * @author Jon Brisbin
  */
 public class PagingAndSortingMethodArgumentResolver

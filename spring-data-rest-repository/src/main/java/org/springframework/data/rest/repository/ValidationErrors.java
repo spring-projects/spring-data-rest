@@ -9,10 +9,11 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * An {@link Errors} implementation for use in the events mechanism of Spring Data REST.
+ *
+ * @author Jon Brisbin
  */
-public class ValidationErrors
-    extends AbstractErrors {
+public class ValidationErrors extends AbstractErrors {
 
   private String         name;
   private Object         entity;
