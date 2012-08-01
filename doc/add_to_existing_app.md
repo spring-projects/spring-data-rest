@@ -14,22 +14,6 @@ There are a couple Spring MVC resources that Spring Data REST depends on that mu
 
 The most important things that we configure especially for use by Spring Data REST include:
 
-#### View Resolvers
-
-We register a `ContentNegotiatingViewResolver` that will order itself in the highest priority, which means it will attempt to override any other `ViewResolver`s you already have configured. Currently there are two views registered with this view resolver: a special `JsonView` and a `UrilistView` (for rendering `text/uri-list` resources which are used for links as an alternative to JSON). These views will only respond to special view names returned by the `RepositoryRestController`. These view names begin with "org.springframework.data.rest" as follows:
-
- * `org.springframework.data.rest.list_links` - For listing repositories registered and exported.
- * `org.springframework.data.rest.list_entities` - List entities (not a query but uses the `findAll` Repository method).
- * `org.springframework.data.rest.list_queries` - List query methods found and exported on a Repository.
- * `org.springframework.data.rest.query_results` - Results of calling a query method.
- * `org.springframework.data.rest.after_create` - Used after an entity is created.
- * `org.springframework.data.rest.empty` - Used whenever an empty response is sent back.
- * `org.springframework.data.rest.entity` - Renders an entity.
- * `org.springframework.data.rest.entity_property` - Renders the property of an entity.
- * `org.springframework.data.rest.linked_entity` - Renders a linked property of an entity.
-
-To register your own custom view for any of these internal view names, you need to subclass `RepositoryRestMvcConfiguration.contentNegotiatingViewResolver()` and mimic the functionality you find [in the source code](https://github.com/SpringSource/spring-data-rest/blob/master/spring-data-rest-webmvc/src/main/java/org/springframework/data/rest/webmvc/RepositoryRestMvcConfiguration.java#L59). You do not need to completely override all these views. You simply register custom views on the `RepositoryRestViewResolver` for either the JSON or uri-list views by setting the `customViewMappings` property with a `Map<String, View>` that overrides one or more of the above default views.
-
 #### RepositoryRestHandlerMapping
 
 We register a custom `HandlerMapping` instance that responds only to the `RepositoryRestController` and only if a path is meant to be handled by Spring Data REST. In order to keep paths that are meant to be handled by your application separate from those handled by Spring Data REST, this custom HandlerMapping inspects the URL path and checks to see if a Repository has been exported under that name. If it has, it allows the request to be handled by Spring Data REST. If there is no Repository exported under that name, it returns `null`, which just means "let other HandlerMapping instances try to service this request".

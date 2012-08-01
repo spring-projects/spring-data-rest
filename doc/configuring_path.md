@@ -128,3 +128,21 @@ Or to skip exporting a field:
       private Map<String, Profile> profiles;
     }
 
+### Hiding Repository CRUD methods
+
+If you don't want to expose a save or delete method on your `CrudRepository`, you can use the `@RestResource(exported = false)` setting by overriding the method you want to turn off and placing the annotation on the overriden version. For example, to prevent HTTP users from invoking the delete methods of `CrudRepository`, override all of them and add the annotation to the overriden methods.
+
+    @RestResource(path = "people", rel = "people")
+    public interface PersonRepository extends CrudRepository<Person, Long> {
+
+			@Override
+			@RestResource(exported = false)
+			void delete(Long id);
+
+			@Override
+			@RestResource(exported = false)
+			void delete(Person entity);
+
+    }
+
+NOTE: It is important that you override _both_ delete methods as the exporter currently uses a somewhat naive algorithm for determing which CRUD method to use in the interest of faster runtime performance. It's not currently possible to turn off the version of delete which takes an ID but leave exported the version that takes an entity instance. For the time being, you can either export the delete methods or not. If you want turn them off, then just keep in mind you have to annotate both versions with `exported = false`.
