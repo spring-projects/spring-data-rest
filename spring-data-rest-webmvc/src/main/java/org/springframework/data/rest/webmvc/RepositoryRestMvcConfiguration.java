@@ -92,6 +92,10 @@ public class RepositoryRestMvcConfiguration {
     return new RepositoryRestController();
   }
 
+  @Bean ResourcesReturnValueHandler resourcesReturnValueHandler() {
+    return new ResourcesReturnValueHandler(repositoryRestConfig);
+  }
+
   /**
    * Special {@link org.springframework.web.servlet.HandlerAdapter} that only recognizes handler methods defined in the
    * {@link RepositoryRestController} class.

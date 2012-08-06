@@ -1,8 +1,11 @@
 package org.springframework.data.rest.webmvc;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.Assert;
@@ -17,15 +20,17 @@ public class RepositoryRestConfiguration {
 
   public static final RepositoryRestConfiguration DEFAULT = new RepositoryRestConfiguration();
 
-  private int                           defaultPageSize     = 20;
-  private String                        pageParamName       = "page";
-  private String                        limitParamName      = "limit";
-  private String                        sortParamName       = "sort";
-  private String                        jsonpParamName      = "callback";
-  private String                        jsonpOnErrParamName = null;
-  private List<HttpMessageConverter<?>> customConverters    = Collections.emptyList();
-  private MediaType                     defaultMediaType    = MediaType.APPLICATION_JSON;
-  private boolean                       dumpErrors          = true;
+  private int                                       defaultPageSize        = 20;
+  private String                                    pageParamName          = "page";
+  private String                                    limitParamName         = "limit";
+  private String                                    sortParamName          = "sort";
+  private String                                    jsonpParamName         = "callback";
+  private String                                    jsonpOnErrParamName    = null;
+  private List<HttpMessageConverter<?>>             customConverters       = Collections.emptyList();
+  private Multimap<Class<?>, ResourcePostProcessor> resourcePostProcessors = ArrayListMultimap.create();
+  private List<ResponsePostProcessor>               responsePostProcessors = Collections.emptyList();
+  private MediaType                                 defaultMediaType       = MediaType.APPLICATION_JSON;
+  private boolean                                   dumpErrors             = true;
 
   /**
    * Get the default size of {@link org.springframework.data.domain.Pageable}s. Default is 20.
@@ -224,6 +229,54 @@ public class RepositoryRestConfiguration {
   public RepositoryRestConfiguration setDumpErrors(boolean dumpErrors) {
     this.dumpErrors = dumpErrors;
     return this;
+  }
+
+  /**
+   * Get the list of {@link ResponsePostProcessor}s that will potentially alter the responses going back to the
+   * client.
+   *
+   * @return
+   */
+  public List<ResponsePostProcessor> getResponsePostProcessors() {
+    return responsePostProcessors;
+  }
+
+  /**
+   * Set the list of {@link ResponsePostProcessor}s that will potentially alter the responses going back to the
+   *
+   * @param responsePostProcessors
+   */
+  public void setResponsePostProcessors(List<ResponsePostProcessor> responsePostProcessors) {
+    this.responsePostProcessors = responsePostProcessors;
+  }
+
+  /**
+   * Add a {@link ResourcePostProcessor} that is responsible for post-processing a particular domain type.
+   *
+   * @param type
+   * @param postProcessor
+   *
+   * @return
+   */
+  public RepositoryRestConfiguration addResourcePostProcessor(Class<?> type, ResourcePostProcessor postProcessor) {
+    resourcePostProcessors.put(type, postProcessor);
+    return this;
+  }
+
+  /**
+   * Get the {@link ResourcePostProcessor}s assigned to a particular domain type.
+   *
+   * @param type
+   *
+   * @return
+   */
+  public Collection<ResourcePostProcessor> getResourcePostProcessors(Class<?> type) {
+    Collection<ResourcePostProcessor> pps = resourcePostProcessors.get(type);
+    if(null == pps) {
+      return Collections.emptyList();
+    } else {
+      return pps;
+    }
   }
 
 }

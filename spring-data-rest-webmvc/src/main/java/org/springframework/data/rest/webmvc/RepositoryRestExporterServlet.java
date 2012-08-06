@@ -12,6 +12,8 @@ import org.springframework.web.servlet.DispatcherServlet;
  */
 public class RepositoryRestExporterServlet extends DispatcherServlet {
 
+  private static final long serialVersionUID = 1L;
+
   public RepositoryRestExporterServlet() {
     configure();
   }

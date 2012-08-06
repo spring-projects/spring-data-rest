@@ -29,7 +29,7 @@ class QueryMethodsSpec extends BaseSpec {
 
     then:
     response.statusCode == HttpStatus.OK
-    body["_links"].size() == 2
+    body.links.size() == 2
 
   }
 
@@ -47,7 +47,7 @@ class QueryMethodsSpec extends BaseSpec {
 
     then:
     response.statusCode == HttpStatus.OK
-    body["results"].size() == 1
+    body.resources.size() == 1
 
   }
 

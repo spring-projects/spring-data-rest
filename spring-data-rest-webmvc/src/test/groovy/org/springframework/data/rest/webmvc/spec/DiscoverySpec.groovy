@@ -22,7 +22,7 @@ class DiscoverySpec extends BaseSpec {
     response.statusCode == HttpStatus.OK
 
     when:
-    def links = readJson(response)._links
+    def links = readJson(response).links
 
     then:
     links.size() == 4
@@ -38,9 +38,13 @@ class DiscoverySpec extends BaseSpec {
 
     when:
     def response = controller.listEntities(request, pageSort, baseUri, "people")
+    def body = readJson(response)
 
     then:
     response.statusCode == HttpStatus.OK
+    body.resources.size() == 10
+    body.page.total == 2
+    body.page.current == 1
 
   }
 

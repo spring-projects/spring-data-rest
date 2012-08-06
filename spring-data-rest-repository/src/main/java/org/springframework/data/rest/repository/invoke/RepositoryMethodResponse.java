@@ -18,7 +18,7 @@ public class RepositoryMethodResponse {
 
   @JsonProperty("results")
   private List<Object> results     = new ArrayList<Object>();
-  @JsonProperty("_links")
+  @JsonProperty("links")
   private List<Link>   links       = new ArrayList<Link>();
   private long         totalCount  = 0;
   private int          totalPages  = 1;

@@ -2,8 +2,10 @@ package org.springframework.data.rest.webmvc;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
 /**
@@ -16,10 +18,16 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 public class RepositoryRestHandlerAdapter extends RequestMappingHandlerAdapter {
 
+  @Autowired
+  private ResourcesReturnValueHandler resourcesReturnValueHandler;
+
   public RepositoryRestHandlerAdapter(RepositoryRestConfiguration config) {
     setCustomArgumentResolvers(Arrays.asList(
         new ServerHttpRequestMethodArgumentResolver(),
         new PagingAndSortingMethodArgumentResolver(config)
+    ));
+    setCustomReturnValueHandlers(Arrays.<HandlerMethodReturnValueHandler>asList(
+        resourcesReturnValueHandler
     ));
   }
 

@@ -3,8 +3,6 @@ package org.springframework.data.rest.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
@@ -17,7 +15,6 @@ public class Links {
     return this;
   }
 
-  @JsonProperty("_links")
   public List<Link> getLinks() {
     return this.links;
   }

@@ -42,11 +42,16 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.rest.core.Handler;
 import org.springframework.data.rest.core.Link;
 import org.springframework.data.rest.core.Links;
+import org.springframework.data.rest.core.MapResource;
+import org.springframework.data.rest.core.Resource;
+import org.springframework.data.rest.core.Resources;
 import org.springframework.data.rest.core.SimpleLink;
 import org.springframework.data.rest.core.convert.DelegatingConversionService;
 import org.springframework.data.rest.core.util.UriUtils;
 import org.springframework.data.rest.repository.AttributeMetadata;
 import org.springframework.data.rest.repository.EntityMetadata;
+import org.springframework.data.rest.repository.PageableResources;
+import org.springframework.data.rest.repository.PagingMetadata;
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
 import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
@@ -63,7 +68,6 @@ import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.data.rest.repository.context.RepositoryEvent;
 import org.springframework.data.rest.repository.invoke.CrudMethod;
-import org.springframework.data.rest.repository.invoke.RepositoryMethodResponse;
 import org.springframework.data.rest.repository.invoke.RepositoryQueryMethod;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.http.HttpHeaders;
@@ -151,7 +155,7 @@ public class RepositoryRestController
   /**
    * List of {@link MediaType}s we can support, given the list of {@link HttpMessageConverter}s currently configured.
    */
-  private SortedSet<MediaType>        availableMediaTypes   = new TreeSet<MediaType>();
+  private SortedSet<String>           availableMediaTypes   = new TreeSet<String>();
   @Autowired(required = false)
   private RepositoryRestConfiguration config                = RepositoryRestConfiguration.DEFAULT;
   private ObjectMapper                objectMapper          = new ObjectMapper();
@@ -312,17 +316,17 @@ public class RepositoryRestController
                                             UriComponentsBuilder uriBuilder) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
 
-    Links links = new Links();
+    Resources resources = new Resources();
     for(RepositoryExporter repoExporter : repositoryExporters) {
       for(String name : (Set<String>)repoExporter.repositoryNames()) {
         RepositoryMetadata repoMeta = repoExporter.repositoryMetadataFor(name);
         String rel = repoMeta.rel();
         URI path = buildUri(baseUri, name);
-        links.add(new SimpleLink(rel, path));
+        resources.addLink(new SimpleLink(rel, path));
       }
     }
 
-    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), links);
+    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
 
   /**
@@ -356,19 +360,19 @@ public class RepositoryRestController
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
     }
 
-    RepositoryMethodResponse response = new RepositoryMethodResponse();
-
     Iterator allEntities = Collections.emptyList().iterator();
+    final Resources resources;
     if(repoMeta.repository() instanceof PagingAndSortingRepository) {
+      PageableResources pr = new PageableResources();
+
       Page page = ((PagingAndSortingRepository)repoMeta.repository()).findAll(pageSort);
       if(page.hasContent()) {
         allEntities = page.iterator();
       }
 
       // Set page counts in the response
-      response.setTotalCount(page.getTotalElements());
-      response.setTotalPages(page.getTotalPages());
-      response.setCurrentPage(page.getNumber() + 1);
+      pr.setPaging(new PagingMetadata(page.getNumber() + 1, page.getTotalPages()));
+      pr.setResourceCount(page.getTotalElements());
 
       // Copy over parameters
       UriComponentsBuilder selfUri = UriComponentsBuilder.fromUri(baseUri).pathSegment(repository);
@@ -388,7 +392,7 @@ public class RepositoryRestController
           !page.isFirstPage() && page.hasPreviousPage(),
           page.getNumber(),
           "prev",
-          response.getLinks()
+          pr.getLinks()
       );
       maybeAddPrevNextLink(
           nextPrevBase,
@@ -398,35 +402,43 @@ public class RepositoryRestController
           !page.isLastPage() && page.hasNextPage(),
           page.getNumber() + 2,
           "next",
-          response.getLinks()
+          pr.getLinks()
       );
 
+      resources = pr;
     } else {
       Iterable it = repoMeta.repository().findAll();
       if(null != it) {
         allEntities = it.iterator();
       }
+      resources = new Resources();
     }
 
     while(allEntities.hasNext()) {
       Object o = allEntities.next();
       Serializable id = (Serializable)repoMeta.entityMetadata().idAttribute().get(o);
       if(shouldReturnLinks(request.getServletRequest().getHeader("Accept"))) {
-        response.addLink(new SimpleLink(repoMeta.rel() + "." + o.getClass().getSimpleName(),
-                                        buildUri(baseUri, repository, id.toString())));
+        resources.addLink(new SimpleLink(repoMeta.rel() + "." + o.getClass().getSimpleName(),
+                                         buildUri(baseUri, repository, id.toString())));
       } else {
-        Map<String, Object> entityDto = extractPropertiesLinkAware(repoMeta.rel(),
-                                                                   o,
-                                                                   repoMeta.entityMetadata(),
-                                                                   buildUri(baseUri, repository, id.toString()));
-        addSelfLink(baseUri, entityDto, repository, id.toString());
-        response.addResult(entityDto);
+        MapResource res = createResource(repoMeta.rel(),
+                                         o,
+                                         repoMeta.entityMetadata(),
+                                         buildUri(baseUri, repository, id.toString()));
+
+        URI selfUri = buildUri(baseUri, repository, id.toString());
+        res.addLink(new SimpleLink(SELF, selfUri));
+
+        resources.addResource(res);
       }
     }
-    response.addLink(new SimpleLink(repoMeta.rel() + ".search",
-                                    buildUri(baseUri, repository, "search")));
 
-    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), response);
+    if(!repoMeta.queryMethods().isEmpty()) {
+      resources.addLink(new SimpleLink(repoMeta.rel() + ".search",
+                                       buildUri(baseUri, repository, "search")));
+    }
+
+    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
 
   /**
@@ -452,7 +464,7 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
-    Links links = new Links();
+    Resources resources = new Resources();
 
     for(Map.Entry<String, RepositoryQueryMethod> entry : ((Map<String, RepositoryQueryMethod>)repoMeta.queryMethods())
         .entrySet()) {
@@ -462,7 +474,7 @@ public class RepositoryRestController
       Method m = entry.getValue().method();
       if(m.isAnnotationPresent(RestResource.class)) {
         RestResource resourceAnno = m.getAnnotation(RestResource.class);
-        links.add(new SimpleLink(
+        resources.addLink(new SimpleLink(
             (StringUtils.hasText(resourceAnno.rel())
              ? repoMeta.rel() + "." + resourceAnno.rel()
              : repoMeta.rel() + "." + entry.getKey()),
@@ -473,12 +485,12 @@ public class RepositoryRestController
         ));
       } else {
         // No customizations, use the default
-        links.add(new SimpleLink(repoMeta.rel() + "." + entry.getKey(),
-                                 buildUri(baseSearchUri, entry.getKey())));
+        resources.addLink(new SimpleLink(repoMeta.rel() + "." + entry.getKey(),
+                                         buildUri(baseSearchUri, entry.getKey())));
       }
     }
 
-    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), links);
+    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
 
   /**
@@ -567,17 +579,15 @@ public class RepositoryRestController
       }
     }
 
-    RepositoryMethodResponse response = new RepositoryMethodResponse();
-
     Object result;
     if(null == (result = queryMethod.method().invoke(repo, paramVals))) {
-      return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), response);
+      return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), new Resources());
     }
 
+    Resources resources = new Resources();
     Iterator entities = Collections.emptyList().iterator();
     if(result instanceof Collection) {
       entities = ((Collection)result).iterator();
-      response.setTotalCount(((Collection)result).size());
     } else if(result instanceof Page) {
       Page page = (Page)result;
 
@@ -586,9 +596,9 @@ public class RepositoryRestController
       }
 
       // Set page counts in the response
-      response.setTotalCount(page.getTotalElements());
-      response.setTotalPages(page.getTotalPages());
-      response.setCurrentPage(page.getNumber() + 1);
+      PageableResources pr = new PageableResources();
+      pr.setResourceCount(page.getTotalElements());
+      pr.setPaging(new PagingMetadata(page.getNumber() + 1, page.getTotalPages()));
 
       // Copy over parameters
       UriComponentsBuilder selfUri = UriComponentsBuilder.fromUri(baseUri).pathSegment(repository, "search", query);
@@ -608,7 +618,7 @@ public class RepositoryRestController
           !page.isFirstPage() && page.hasPreviousPage(),
           page.getNumber(),
           "prev",
-          response.getLinks()
+          pr.getLinks()
       );
       maybeAddPrevNextLink(
           nextPrevBase,
@@ -618,9 +628,10 @@ public class RepositoryRestController
           !page.isLastPage() && page.hasNextPage(),
           page.getNumber() + 2,
           "next",
-          response.getLinks()
+          pr.getLinks()
       );
 
+      resources = pr;
     } else {
       entities = Collections.singletonList(result).iterator();
     }
@@ -630,7 +641,7 @@ public class RepositoryRestController
 
       RepositoryMetadata elemRepoMeta;
       if(null == (elemRepoMeta = repositoryMetadataFor(obj.getClass()))) {
-        response.addResult(obj);
+        resources.addResource(new Resource(obj));
         continue;
       }
 
@@ -639,18 +650,21 @@ public class RepositoryRestController
       if(shouldReturnLinks(request.getServletRequest().getHeader("Accept"))) {
         String rel = elemRepoMeta.rel() + "." + elemRepoMeta.entityMetadata().type().getSimpleName();
         URI path = buildUri(baseUri, repository, id);
-        response.addLink(new SimpleLink(rel, path));
+        resources.addLink(new SimpleLink(rel, path));
       } else {
-        Map<String, Object> entityDto = extractPropertiesLinkAware(repoMeta.rel(),
-                                                                   obj,
-                                                                   repoMeta.entityMetadata(),
-                                                                   buildUri(baseUri, repository, id));
-        addSelfLink(baseUri, entityDto, repository, id);
-        response.addResult(entityDto);
+        MapResource res = createResource(repoMeta.rel(),
+                                         obj,
+                                         repoMeta.entityMetadata(),
+                                         buildUri(baseUri, repository, id));
+
+        URI selfUri = buildUri(baseUri, repository, id);
+        res.addLink(new SimpleLink(SELF, selfUri));
+
+        resources.addResource(res);
       }
     }
 
-    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), response);
+    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
 
   /**
@@ -702,15 +716,14 @@ public class RepositoryRestController
     HttpHeaders headers = new HttpHeaders();
     headers.set(LOCATION, selfUri.toString());
 
-    Object body = null;
-    if(null != request.getServletRequest().getParameter("returnBody")
-        && "true".equals(request.getServletRequest().getParameter("returnBody"))) {
-      Map<String, Object> entityDto = extractPropertiesLinkAware(repoMeta.rel(),
-                                                                 savedEntity,
-                                                                 repoMeta.entityMetadata(),
-                                                                 buildUri(baseUri, repository, sId));
-      addSelfLink(baseUri, entityDto, repository, sId);
-      body = entityDto;
+    Resource<?> body = null;
+    if(returnBody(request)) {
+      MapResource resource = createResource(repoMeta.rel(),
+                                            savedEntity,
+                                            repoMeta.entityMetadata(),
+                                            buildUri(baseUri, repository, sId));
+      resource.addLink(new SimpleLink(SELF, selfUri));
+      body = resource;
     }
 
     return negotiateResponse(request, HttpStatus.CREATED, headers, body);
@@ -767,13 +780,14 @@ public class RepositoryRestController
         headers.set("ETag", "\"" + version.toString() + "\"");
       }
     }
-    Map<String, Object> entityDto = extractPropertiesLinkAware(repoMeta.rel(),
-                                                               entity,
-                                                               repoMeta.entityMetadata(),
-                                                               buildUri(baseUri, repository, id));
-    addSelfLink(baseUri, entityDto, repository, id);
+    MapResource res = createResource(repoMeta.rel(),
+                                     entity,
+                                     repoMeta.entityMetadata(),
+                                     baseUri);
+    URI selfUri = buildUri(baseUri, repository, id);
+    res.addLink(new SimpleLink(SELF, selfUri));
 
-    return negotiateResponse(request, HttpStatus.OK, headers, entityDto);
+    return negotiateResponse(request, HttpStatus.OK, headers, res);
   }
 
   /**
@@ -794,8 +808,7 @@ public class RepositoryRestController
   @RequestMapping(
       value = "/{repository}/{id}",
       method = {
-          RequestMethod.PUT,
-          RequestMethod.POST
+          RequestMethod.PUT
       }
   )
   @ResponseBody
@@ -818,51 +831,64 @@ public class RepositoryRestController
     CrudRepository repo = repoMeta.repository();
     Class<?> domainType = repoMeta.entityMetadata().type();
 
-    boolean returnBody = true;
-    if(null != request.getServletRequest().getParameter("returnBody")) {
-      returnBody = Boolean.parseBoolean(request.getServletRequest().getParameter("returnBody"));
-    }
-
     MediaType incomingMediaType = request.getHeaders().getContentType();
     Object incoming;
     if(null == (incoming = readIncoming(request, incomingMediaType, domainType))) {
-      throw new HttpMessageNotReadableException("Could not create an instance of " + domainType.getSimpleName() + " from input.");
+      throw new HttpMessageNotReadableException("Could not create an instance of "
+                                                    + domainType.getSimpleName() + " from input.");
     }
-
+    // Set the ID specified in the URL
     repoMeta.entityMetadata().idAttribute().set(serId, incoming);
-    if(request.getMethod() == HttpMethod.POST) {
 
-      publishEvent(new BeforeSaveEvent(incoming));
-      Object savedEntity = repo.save(incoming);
-      publishEvent(new AfterSaveEvent(savedEntity));
-
-      URI selfUri = buildUri(baseUri, repository, id);
-
-      HttpHeaders headers = new HttpHeaders();
-      headers.set(LOCATION, selfUri.toString());
-
-      return negotiateResponse(request, HttpStatus.CREATED, headers, (returnBody ? savedEntity : null));
-    } else {
-      Object entity;
-      if(null == (entity = repo.findOne(serId))) {
-        return notFoundResponse(request);
-      }
-
+    boolean isUpdate = false;
+    Object entity;
+    if(null != (entity = repo.findOne(serId))) {
+      // Updating an existing resource
+      isUpdate = true;
       for(AttributeMetadata attrMeta : (Collection<AttributeMetadata>)repoMeta.entityMetadata()
                                                                               .embeddedAttributes()
                                                                               .values()) {
-        Object incomingVal = attrMeta.get(incoming);
-        if(null != incomingVal) {
+        Object incomingVal;
+        if(null != (incomingVal = attrMeta.get(incoming))) {
           attrMeta.set(incomingVal, entity);
         }
       }
-
-      publishEvent(new BeforeSaveEvent(entity));
-      Object savedEntity = repo.save(entity);
-      publishEvent(new AfterSaveEvent(savedEntity));
-
-      return negotiateResponse(request, HttpStatus.NO_CONTENT, new HttpHeaders(), (returnBody ? savedEntity : null));
+    } else {
+      entity = incoming;
     }
+
+    publishEvent(new BeforeSaveEvent(entity));
+    Object savedEntity = repo.save(entity);
+    publishEvent(new AfterSaveEvent(savedEntity));
+
+    URI selfUri = buildUri(baseUri, repository, id);
+
+    Object body = null;
+    if(returnBody(request)) {
+      MapResource res = createResource(repoMeta.rel(),
+                                       savedEntity,
+                                       repoMeta.entityMetadata(),
+                                       baseUri);
+      res.addLink(new SimpleLink(SELF, selfUri));
+
+      body = res;
+    }
+
+    if(!isUpdate) {
+      HttpHeaders headers = new HttpHeaders();
+      headers.set(LOCATION, selfUri.toString());
+
+      return negotiateResponse(request,
+                               HttpStatus.CREATED,
+                               headers,
+                               body);
+    } else {
+      return negotiateResponse(request,
+                               (null != body ? HttpStatus.OK : HttpStatus.NO_CONTENT),
+                               new HttpHeaders(),
+                               body);
+    }
+
   }
 
   /**
@@ -968,8 +994,8 @@ public class RepositoryRestController
       return notFoundResponse(request);
     }
 
+    Resources res = new Resources();
     AttributeMetadata idAttr = propRepoMeta.entityMetadata().idAttribute();
-    Links links = new Links();
     if(propVal instanceof Collection) {
       for(Object o : (Collection)propVal) {
         String propValId = idAttr.get(o).toString();
@@ -977,7 +1003,7 @@ public class RepositoryRestController
             + entity.getClass().getSimpleName() + "."
             + attrType.getSimpleName();
         URI path = buildUri(baseUri, repository, id, property, propValId);
-        links.add(new SimpleLink(rel, path));
+        res.addLink(new SimpleLink(rel, path));
       }
     } else if(propVal instanceof Map) {
       for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)propVal).entrySet()) {
@@ -990,16 +1016,16 @@ public class RepositoryRestController
         } else {
           sKey = conversionService.convert(oKey, String.class);
         }
-        links.add(new SimpleLink(sKey, path));
+        res.addLink(new SimpleLink(sKey, path));
       }
     } else {
       String propValId = idAttr.get(propVal).toString();
       String rel = repository + "." + entity.getClass().getSimpleName() + "." + property;
       URI path = buildUri(baseUri, repository, id, property, propValId);
-      links.add(new SimpleLink(rel, path));
+      res.addLink(new SimpleLink(rel, path));
     }
 
-    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), links);
+    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), res);
   }
 
   /**
@@ -1203,17 +1229,33 @@ public class RepositoryRestController
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
     }
 
+    // Check for the existence of the parent
+    CrudRepository repo = repoMeta.repository();
+    Serializable serId = stringToSerializable(id,
+                                              (Class<? extends Serializable>)repoMeta.entityMetadata()
+                                                                                     .idAttribute()
+                                                                                     .type());
+    if(!repo.exists(serId)) {
+      return notFoundResponse(request);
+    }
+
+    // Check for the existence of the property
     AttributeMetadata attrMeta;
     if(null == (attrMeta = repoMeta.entityMetadata().attribute(property))) {
       return notFoundResponse(request);
     }
 
-    // Find linked entity
+    // Check for the existence of a Repository for the linked entity
     RepositoryMetadata linkedRepoMeta;
     if(null == (linkedRepoMeta = repositoryMetadataFor(attrMeta))) {
       return notFoundResponse(request);
     }
 
+    if(!linkedRepoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+    }
+
+    // Find the linked entity
     CrudRepository linkedRepo = linkedRepoMeta.repository();
     Serializable sChildId = stringToSerializable(linkedId,
                                                  (Class<? extends Serializable>)linkedRepoMeta.entityMetadata()
@@ -1224,18 +1266,18 @@ public class RepositoryRestController
       return notFoundResponse(request);
     }
 
-    Map<String, Object> entityDto = extractPropertiesLinkAware(linkedRepoMeta.rel(),
-                                                               linkedEntity,
-                                                               linkedRepoMeta.entityMetadata(),
-                                                               buildUri(baseUri,
-                                                                        linkedRepoMeta.name(),
-                                                                        linkedId));
-    URI selfUri = addSelfLink(baseUri, entityDto, linkedRepoMeta.name(), linkedId);
+    MapResource res = createResource(linkedRepoMeta.rel(),
+                                     linkedEntity,
+                                     linkedRepoMeta.entityMetadata(),
+                                     baseUri);
+
+    URI selfUri = buildUri(baseUri, linkedRepoMeta.name(), linkedId);
+    res.addLink(new SimpleLink(SELF, selfUri));
 
     HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Location", selfUri.toString());
 
-    return negotiateResponse(request, HttpStatus.OK, headers, entityDto);
+    return negotiateResponse(request, HttpStatus.OK, headers, res);
   }
 
   /**
@@ -1564,6 +1606,30 @@ public class RepositoryRestController
     return null;
   }
 
+  private MapResource createResource(String repoRel,
+                                     Object entity,
+                                     EntityMetadata<AttributeMetadata> entityMetadata,
+                                     URI baseUri) {
+    Map<String, Object> entityDto = new HashMap<String, Object>();
+    MapResource resource = new MapResource(entityDto);
+
+    for(Map.Entry<String, AttributeMetadata> attrMeta : entityMetadata.embeddedAttributes().entrySet()) {
+      String name = attrMeta.getKey();
+      Object val;
+      if(null != (val = attrMeta.getValue().get(entity))) {
+        entityDto.put(name, val);
+      }
+    }
+
+    for(String attrName : entityMetadata.linkedAttributes().keySet()) {
+      URI uri = buildUri(baseUri, attrName);
+      resource.addLink(new SimpleLink(repoRel + "." + entity.getClass().getSimpleName() + "." + attrName, uri));
+    }
+
+    return resource;
+  }
+
+  /*
   @SuppressWarnings({"unchecked"})
   private Map<String, Object> extractPropertiesLinkAware(String repoRel,
                                                          Object entity,
@@ -1592,6 +1658,7 @@ public class RepositoryRestController
 
     return entityDto;
   }
+  */
 
   private boolean shouldReturnLinks(String acceptHeader) {
     if(null != acceptHeader) {
@@ -1607,6 +1674,15 @@ public class RepositoryRestController
       }
     }
     return false;
+  }
+
+  private boolean returnBody(ServletServerHttpRequest request) {
+    String s = request.getServletRequest().getParameter("returnBody");
+    if(null != s) {
+      return "true".equals(s);
+    } else {
+      return false;
+    }
   }
 
   private <E extends RepositoryEvent> void publishEvent(E event) {
