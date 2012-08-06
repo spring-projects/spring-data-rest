@@ -42,7 +42,7 @@ class DiscoverySpec extends BaseSpec {
 
     then:
     response.statusCode == HttpStatus.OK
-    body.resources.size() == 10
+    body.content.size() == 10
     body.page.total == 2
     body.page.current == 1
 
