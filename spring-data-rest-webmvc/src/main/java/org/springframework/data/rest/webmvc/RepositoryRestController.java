@@ -732,9 +732,9 @@ public class RepositoryRestController
                                             selfUri);
       resource.addLink(new SimpleLink(SELF, selfUri));
 
-      publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
-
       body = resource;
+
+      publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
     }
 
     return negotiateResponse(request, HttpStatus.CREATED, headers, body);
@@ -885,9 +885,9 @@ public class RepositoryRestController
                                        selfUri);
       res.addLink(new SimpleLink(SELF, selfUri));
 
-      publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
-
       body = res;
+
+      publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
     }
 
     if(!isUpdate) {
