@@ -4,12 +4,17 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.repository.annotation.ConvertWith;
 import org.springframework.data.rest.repository.annotation.RestResource;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * Example {@link org.springframework.data.repository.CrudRepository} for dealing with a {@link Person}. Also uses the
+ * {@link RestResource} annotation to turn off the delete methods.
+ *
+ * @author Jon Brisbin
  */
 @RestResource(path = "people", rel = "peeps")
 public interface PersonRepository extends PagingAndSortingRepository<Person, Long> {
@@ -24,5 +29,9 @@ public interface PersonRepository extends PagingAndSortingRepository<Person, Lon
 
   @RestResource(path = "nameStartsWith", rel = "nameStartsWith")
   Page findByNameStartsWith(@Param("name") String name, Pageable p);
+
+  @Query("select p from Person p where p.id in(:id)")
+  @RestResource(path = "id")
+  Page<Person> findById(@Param("id") @ConvertWith(StringToListOfLongsConverter.class) List<Long> ids, Pageable pageable);
 
 }

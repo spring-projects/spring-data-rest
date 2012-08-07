@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -32,6 +33,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -57,6 +59,7 @@ import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
 import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.data.rest.repository.RepositoryNotFoundException;
+import org.springframework.data.rest.repository.annotation.ConvertWith;
 import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
 import org.springframework.data.rest.repository.context.AfterLinkDeleteEvent;
@@ -538,6 +541,8 @@ public class RepositoryRestController
       return notFoundResponse(request);
     }
 
+    Annotation[][] annotations = queryMethod.method().getParameterAnnotations();
+
     Class<?>[] paramTypes = queryMethod.paramTypes();
     String[] paramNames = queryMethod.paramNames();
     Object[] paramVals = new Object[paramTypes.length];
@@ -552,18 +557,24 @@ public class RepositoryRestController
         continue;
       }
 
-      String queryVal;
-      if(null == (queryVal = request.getServletRequest().getParameter(paramNames[i]))) {
+      String[] queryVals;
+      if(null == (queryVals = request.getServletRequest().getParameterValues(paramNames[i]))) {
         continue;
       }
 
-      if(String.class.isAssignableFrom(paramTypes[i])) {
-        // Param type is a String
-        paramVals[i] = queryVal;
-      } else if(hasRepositoryMetadataFor(paramTypes[i])) {
+      Class<? extends Converter<String[], ?>> converter = null;
+      for(Annotation anno : annotations[i]) {
+        if(ConvertWith.class.isAssignableFrom(anno.getClass())) {
+          converter = ((ConvertWith)anno).value();
+          break;
+        }
+      }
+
+      String firstVal = (queryVals.length > 0 ? queryVals[0] : null);
+      if(hasRepositoryMetadataFor(paramTypes[i])) {
         RepositoryMetadata paramRepoMeta = repositoryMetadataFor(paramTypes[i]);
         // Complex parameter is a managed type
-        Serializable id = stringToSerializable(queryVal,
+        Serializable id = stringToSerializable(firstVal,
                                                (Class<Serializable>)paramRepoMeta.entityMetadata()
                                                                                  .idAttribute()
                                                                                  .type());
@@ -573,13 +584,22 @@ public class RepositoryRestController
         }
 
         paramVals[i] = o;
+      } else if(null != converter) {
+        try {
+          paramVals[i] = converter.newInstance().convert(queryVals);
+        } catch(InstantiationException e) {
+          throw new IllegalArgumentException(e);
+        }
+      } else if(String.class.isAssignableFrom(paramTypes[i])) {
+        // Param type is a String
+        paramVals[i] = firstVal;
       } else if(conversionService.canConvert(String.class, paramTypes[i])) {
         // There's a converter from String -> param type
-        paramVals[i] = conversionService.convert(queryVal, paramTypes[i]);
+        paramVals[i] = conversionService.convert(firstVal, paramTypes[i]);
       } else {
         // Param type isn't a "simple" type or no converter exists, try JSON
         try {
-          paramVals[i] = objectMapper.readValue(queryVal, paramTypes[i]);
+          paramVals[i] = objectMapper.readValue(firstVal, paramTypes[i]);
         } catch(IOException e) {
           throw new IllegalArgumentException(e);
         }
