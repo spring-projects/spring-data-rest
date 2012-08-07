@@ -7,8 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
+import org.springframework.data.rest.core.Resource;
+import org.springframework.data.rest.core.Resources;
 import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
+import org.springframework.data.rest.repository.RepositoryMetadata;
+import org.springframework.http.server.ServerHttpRequest;
 
 /**
  * Abstract class that listens for generic {@link RepositoryEvent}s and dispatches them to a specific
@@ -45,11 +49,18 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
     } else if(event instanceof BeforeLinkDeleteEvent) {
       onBeforeLinkDelete(event.getSource(), ((BeforeLinkDeleteEvent)event).getLinked());
     } else if(event instanceof AfterLinkDeleteEvent) {
-      onAfterLinkDelete(event.getSource(), ((BeforeLinkDeleteEvent)event).getLinked());
+      onAfterLinkDelete(event.getSource(), ((AfterLinkDeleteEvent)event).getLinked());
     } else if(event instanceof BeforeDeleteEvent) {
       onBeforeDelete(event.getSource());
     } else if(event instanceof AfterDeleteEvent) {
       onAfterDelete(event.getSource());
+    } else if(event instanceof RenderEvent) {
+      RenderEvent ev = (RenderEvent)event;
+      if(ev.isTopLevelResource()) {
+        onBeforeRenderResources(ev.getRequest(), ev.getRepositoryMetadata(), ev.getResources());
+      } else {
+        onBeforeRenderResource(ev.getRequest(), ev.getRepositoryMetadata(), ev.getResource());
+      }
     }
   }
 
@@ -119,6 +130,34 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
    * @param entity
    */
   protected void onAfterDelete(Object entity) {
+  }
+
+  /**
+   * Override this method if you are interested in {@literal beforeRender} for top-level events. These are events
+   * triggered by the exporter before sending out a wrapped, top-level response for queries, entity lists, and results
+   * that are pagable.
+   *
+   * @param request
+   * @param repositoryMetadata
+   * @param resources
+   */
+  protected void onBeforeRenderResources(ServerHttpRequest request,
+                                         RepositoryMetadata repositoryMetadata,
+                                         Resources resources) {
+  }
+
+  /**
+   * Override this method if you are interested in {@literal beforeRender} for entity events. These are events emitted
+   * by the exporter before sending out an entity representation to the client. These events are triggered when
+   * requesting individual entities and specific properties of an entity.
+   *
+   * @param request
+   * @param repositoryMetadata
+   * @param resource
+   */
+  protected void onBeforeRenderResource(ServerHttpRequest request,
+                                        RepositoryMetadata repositoryMetadata,
+                                        Resource resource) {
   }
 
 }

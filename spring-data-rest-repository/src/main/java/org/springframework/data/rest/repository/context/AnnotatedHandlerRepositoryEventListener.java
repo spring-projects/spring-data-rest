@@ -21,6 +21,8 @@ import org.springframework.data.rest.repository.annotation.HandleAfterLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleAfterSave;
 import org.springframework.data.rest.repository.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave;
+import org.springframework.data.rest.repository.annotation.HandleBeforeRenderResource;
+import org.springframework.data.rest.repository.annotation.HandleBeforeRenderResources;
 import org.springframework.data.rest.repository.annotation.HandleBeforeSave;
 import org.springframework.data.rest.repository.annotation.RepositoryEventHandler;
 import org.springframework.util.ClassUtils;
@@ -96,8 +98,7 @@ public class AnnotatedHandlerRepositoryEventListener implements ApplicationListe
     return this;
   }
 
-  @Override public void afterPropertiesSet()
-      throws Exception {
+  @Override public void afterPropertiesSet() throws Exception {
     ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
     scanner.addIncludeFilter(new AnnotationTypeFilter(RepositoryEventHandler.class, true, true));
     for(BeanDefinition beanDef : scanner.findCandidateComponents(basePackage)) {
@@ -121,6 +122,16 @@ public class AnnotatedHandlerRepositoryEventListener implements ApplicationListe
                   inspect(targetType, handler, method, HandleAfterLinkSave.class, AfterLinkSaveEvent.class);
                   inspect(targetType, handler, method, HandleBeforeDelete.class, BeforeDeleteEvent.class);
                   inspect(targetType, handler, method, HandleAfterDelete.class, AfterDeleteEvent.class);
+                  inspect(targetType,
+                          handler,
+                          method,
+                          HandleBeforeRenderResource.class,
+                          BeforeRenderResourceEvent.class);
+                  inspect(targetType,
+                          handler,
+                          method,
+                          HandleBeforeRenderResources.class,
+                          BeforeRenderResourcesEvent.class);
                 }
               },
               new ReflectionUtils.MethodFilter() {
@@ -139,23 +150,40 @@ public class AnnotatedHandlerRepositoryEventListener implements ApplicationListe
 
   @Override public void onApplicationEvent(RepositoryEvent event) {
     Class<? extends RepositoryEvent> eventType = event.getClass();
-    if(handlerMethods.containsKey(eventType)) {
-      for(EventHandlerMethod handlerMethod : handlerMethods.get(eventType)) {
-        try {
-          Object src = event.getSource();
-          if(ClassUtils.isAssignable(handlerMethod.targetType, src.getClass())) {
-            List<Object> params = new ArrayList<Object>();
-            params.add(src);
-            if(event instanceof BeforeLinkSaveEvent) {
-              params.add(((BeforeLinkSaveEvent)event).getLinked());
-            } else if(event instanceof AfterLinkSaveEvent) {
-              params.add(((AfterLinkSaveEvent)event).getLinked());
-            }
-            handlerMethod.method.invoke(handlerMethod.handler, params.toArray());
+    if(!handlerMethods.containsKey(eventType)) {
+      return;
+    }
+
+    for(EventHandlerMethod handlerMethod : handlerMethods.get(eventType)) {
+      try {
+        Object src = event.getSource();
+
+        if(event instanceof RenderEvent) {
+          RenderEvent ev = (RenderEvent)event;
+          if(!ClassUtils.isAssignable(handlerMethod.targetType,
+                                      ev.getRepositoryMetadata().entityMetadata().type())) {
+            continue;
           }
-        } catch(Exception e) {
-          throw new IllegalStateException(e);
+        } else if(!ClassUtils.isAssignable(handlerMethod.targetType, src.getClass())) {
+          continue;
         }
+
+        List<Object> params = new ArrayList<Object>();
+        params.add(src);
+        if(event instanceof BeforeLinkSaveEvent) {
+          params.add(((BeforeLinkSaveEvent)event).getLinked());
+        } else if(event instanceof AfterLinkSaveEvent) {
+          params.add(((AfterLinkSaveEvent)event).getLinked());
+        } else if(event instanceof RenderEvent) {
+          RenderEvent ev = (RenderEvent)event;
+          params.add(0, ev.getRequest());
+          params.add(1, ev.getRepositoryMetadata());
+        }
+
+        handlerMethod.method.invoke(handlerMethod.handler, params.toArray());
+
+      } catch(Exception e) {
+        throw new IllegalStateException(e);
       }
     }
   }

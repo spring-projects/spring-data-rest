@@ -65,6 +65,8 @@ import org.springframework.data.rest.repository.context.AfterSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
+import org.springframework.data.rest.repository.context.BeforeRenderResourceEvent;
+import org.springframework.data.rest.repository.context.BeforeRenderResourcesEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.data.rest.repository.context.RepositoryEvent;
 import org.springframework.data.rest.repository.invoke.CrudMethod;
@@ -326,6 +328,8 @@ public class RepositoryRestController
       }
     }
 
+    publishEvent(new BeforeRenderResourcesEvent(request, null, resources));
+
     return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
 
@@ -438,6 +442,8 @@ public class RepositoryRestController
                                        buildUri(baseUri, repository, "search")));
     }
 
+    publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, resources));
+
     return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
 
@@ -489,6 +495,8 @@ public class RepositoryRestController
                                          buildUri(baseSearchUri, entry.getKey())));
       }
     }
+
+    publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, resources));
 
     return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
@@ -664,6 +672,8 @@ public class RepositoryRestController
       }
     }
 
+    publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, resources));
+
     return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
 
@@ -726,6 +736,8 @@ public class RepositoryRestController
       body = resource;
     }
 
+    publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
+
     return negotiateResponse(request, HttpStatus.CREATED, headers, body);
   }
 
@@ -786,6 +798,8 @@ public class RepositoryRestController
                                      baseUri);
     URI selfUri = buildUri(baseUri, repository, id);
     res.addLink(new SimpleLink(SELF, selfUri));
+
+    publishEvent(new BeforeRenderResourceEvent(request, repoMeta, res));
 
     return negotiateResponse(request, HttpStatus.OK, headers, res);
   }
@@ -870,6 +884,8 @@ public class RepositoryRestController
                                        repoMeta.entityMetadata(),
                                        baseUri);
       res.addLink(new SimpleLink(SELF, selfUri));
+
+      publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
 
       body = res;
     }
@@ -1024,6 +1040,8 @@ public class RepositoryRestController
       URI path = buildUri(baseUri, repository, id, property, propValId);
       res.addLink(new SimpleLink(rel, path));
     }
+
+    publishEvent(new BeforeRenderResourceEvent(request, propRepoMeta, res));
 
     return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), res);
   }
@@ -1273,6 +1291,8 @@ public class RepositoryRestController
 
     URI selfUri = buildUri(baseUri, linkedRepoMeta.name(), linkedId);
     res.addLink(new SimpleLink(SELF, selfUri));
+
+    publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, res));
 
     HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Location", selfUri.toString());
@@ -1628,37 +1648,6 @@ public class RepositoryRestController
 
     return resource;
   }
-
-  /*
-  @SuppressWarnings({"unchecked"})
-  private Map<String, Object> extractPropertiesLinkAware(String repoRel,
-                                                         Object entity,
-                                                         EntityMetadata<AttributeMetadata> entityMetadata,
-                                                         URI baseUri) {
-    final Map<String, Object> entityDto = new HashMap<String, Object>();
-
-    for(Map.Entry<String, AttributeMetadata> attrMeta : entityMetadata.embeddedAttributes().entrySet()) {
-      String name = attrMeta.getKey();
-      Object val = attrMeta.getValue().get(entity);
-      if(null != val) {
-        entityDto.put(name, val);
-      }
-    }
-
-    for(String attrName : entityMetadata.linkedAttributes().keySet()) {
-      URI uri = buildUri(baseUri, attrName);
-      Link l = new SimpleLink(repoRel + "." + entity.getClass().getSimpleName() + "." + attrName, uri);
-      List<Link> links = (List<Link>)entityDto.get(LINKS);
-      if(null == links) {
-        links = new ArrayList<Link>();
-        entityDto.put(LINKS, links);
-      }
-      links.add(l);
-    }
-
-    return entityDto;
-  }
-  */
 
   private boolean shouldReturnLinks(String acceptHeader) {
     if(null != acceptHeader) {
