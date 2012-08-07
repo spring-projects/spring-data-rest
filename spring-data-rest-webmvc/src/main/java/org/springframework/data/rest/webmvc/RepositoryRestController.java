@@ -425,12 +425,11 @@ public class RepositoryRestController
         resources.addLink(new SimpleLink(repoMeta.rel() + "." + o.getClass().getSimpleName(),
                                          buildUri(baseUri, repository, id.toString())));
       } else {
+        URI selfUri = buildUri(baseUri, repository, id.toString());
         MapResource res = createResource(repoMeta.rel(),
                                          o,
                                          repoMeta.entityMetadata(),
-                                         buildUri(baseUri, repository, id.toString()));
-
-        URI selfUri = buildUri(baseUri, repository, id.toString());
+                                         selfUri);
         res.addLink(new SimpleLink(SELF, selfUri));
 
         resources.addResource(res);
@@ -660,12 +659,11 @@ public class RepositoryRestController
         URI path = buildUri(baseUri, repository, id);
         resources.addLink(new SimpleLink(rel, path));
       } else {
+        URI selfUri = buildUri(baseUri, repository, id);
         MapResource res = createResource(repoMeta.rel(),
                                          obj,
                                          repoMeta.entityMetadata(),
-                                         buildUri(baseUri, repository, id));
-
-        URI selfUri = buildUri(baseUri, repository, id);
+                                         selfUri);
         res.addLink(new SimpleLink(SELF, selfUri));
 
         resources.addResource(res);
@@ -731,12 +729,13 @@ public class RepositoryRestController
       MapResource resource = createResource(repoMeta.rel(),
                                             savedEntity,
                                             repoMeta.entityMetadata(),
-                                            buildUri(baseUri, repository, sId));
+                                            selfUri);
       resource.addLink(new SimpleLink(SELF, selfUri));
+
+      publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
+
       body = resource;
     }
-
-    publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
 
     return negotiateResponse(request, HttpStatus.CREATED, headers, body);
   }
@@ -792,11 +791,12 @@ public class RepositoryRestController
         headers.set("ETag", "\"" + version.toString() + "\"");
       }
     }
+
+    URI selfUri = buildUri(baseUri, repository, id);
     MapResource res = createResource(repoMeta.rel(),
                                      entity,
                                      repoMeta.entityMetadata(),
-                                     baseUri);
-    URI selfUri = buildUri(baseUri, repository, id);
+                                     selfUri);
     res.addLink(new SimpleLink(SELF, selfUri));
 
     publishEvent(new BeforeRenderResourceEvent(request, repoMeta, res));
@@ -882,7 +882,7 @@ public class RepositoryRestController
       MapResource res = createResource(repoMeta.rel(),
                                        savedEntity,
                                        repoMeta.entityMetadata(),
-                                       baseUri);
+                                       selfUri);
       res.addLink(new SimpleLink(SELF, selfUri));
 
       publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
@@ -1284,12 +1284,11 @@ public class RepositoryRestController
       return notFoundResponse(request);
     }
 
+    URI selfUri = buildUri(baseUri, linkedRepoMeta.name(), linkedId);
     MapResource res = createResource(linkedRepoMeta.rel(),
                                      linkedEntity,
                                      linkedRepoMeta.entityMetadata(),
-                                     baseUri);
-
-    URI selfUri = buildUri(baseUri, linkedRepoMeta.name(), linkedId);
+                                     selfUri);
     res.addLink(new SimpleLink(SELF, selfUri));
 
     publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, res));

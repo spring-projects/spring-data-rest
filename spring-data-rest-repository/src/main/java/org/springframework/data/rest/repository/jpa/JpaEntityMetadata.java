@@ -19,8 +19,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Jon Brisbin
  */
-public class JpaEntityMetadata
-    implements EntityMetadata<JpaAttributeMetadata> {
+public class JpaEntityMetadata implements EntityMetadata<JpaAttributeMetadata> {
 
   private Class<?>             type;
   private JpaAttributeMetadata idAttribute;

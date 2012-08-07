@@ -5,14 +5,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  */
 @Entity
 public class Person {
 
   @Id
   @GeneratedValue
-  private Long id;
+  private Long   id;
   private String name;
 
   public Person() {
