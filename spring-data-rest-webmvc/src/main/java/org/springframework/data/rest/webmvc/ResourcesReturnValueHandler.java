@@ -1,7 +1,7 @@
 package org.springframework.data.rest.webmvc;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.data.rest.core.Resources;
+import org.springframework.data.rest.core.ResourceSet;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
@@ -28,7 +28,7 @@ public class ResourcesReturnValueHandler
   }
 
   @Override public boolean supportsReturnType(MethodParameter returnType) {
-    return Resources.class.isAssignableFrom(returnType.getParameterType());
+    return ResourceSet.class.isAssignableFrom(returnType.getParameterType());
   }
 
   @Override
@@ -36,7 +36,7 @@ public class ResourcesReturnValueHandler
                                 MethodParameter returnType,
                                 ModelAndViewContainer mavContainer,
                                 NativeWebRequest webRequest) throws Exception {
-    Resources resources = (Resources)returnValue;
+    ResourceSet resources = (ResourceSet)returnValue;
 
   }
 

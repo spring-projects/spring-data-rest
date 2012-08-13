@@ -2,11 +2,14 @@ package org.springframework.data.rest.core;
 
 import java.net.URI;
 
+import org.codehaus.jackson.annotate.JsonTypeInfo;
+
 /**
  * A simple bean representing a URI link.
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, defaultImpl = ResourceLink.class)
 public interface Link {
 
   /**

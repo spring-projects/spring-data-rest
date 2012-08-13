@@ -10,8 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.rest.core.Link;
-import org.springframework.data.rest.core.Links;
-import org.springframework.data.rest.core.SimpleLink;
+import org.springframework.data.rest.core.LinkList;
+import org.springframework.data.rest.core.Resource;
+import org.springframework.data.rest.core.ResourceLink;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodResponse;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -36,7 +37,8 @@ public class UriListHttpMessageConverter extends AbstractHttpMessageConverter<Ob
     return (RepositoryMethodResponse.class.isAssignableFrom(clazz)
         || List.class.isAssignableFrom(clazz)
         || Map.class.isAssignableFrom(clazz)
-        || Links.class.isAssignableFrom(clazz));
+        || LinkList.class.isAssignableFrom(clazz)
+        || Resource.class.isAssignableFrom(clazz));
   }
 
   @SuppressWarnings({"unchecked"})
@@ -61,17 +63,20 @@ public class UriListHttpMessageConverter extends AbstractHttpMessageConverter<Ob
       throw new HttpMessageNotReadableException(e.getMessage(), e);
     }
     while(null != (line = reader.readLine())) {
-      if(links instanceof Links) {
-        ((Links)links).add(new SimpleLink(rel, URI.create(line.trim())));
+      Link l = new ResourceLink(rel, URI.create(line.trim()));
+      if(links instanceof LinkList) {
+        ((LinkList)links).add(l);
       } else if(links instanceof List) {
-        ((List)links).add(new SimpleLink(rel, URI.create(line.trim())));
+        ((List)links).add(l);
       } else if(links instanceof Map) {
-        List l = (List)((Map)links).get("_links");
-        if(null == l) {
-          l = new ArrayList();
-          ((Map)links).put("_links", l);
+        List linksFromMap = (List)((Map)links).get("links");
+        if(null == linksFromMap) {
+          linksFromMap = new ArrayList();
+          ((Map)links).put("links", linksFromMap);
         }
-        l.add(new SimpleLink(rel, URI.create(line.trim())));
+        linksFromMap.add(l);
+      } else if(links instanceof Resource) {
+        ((Resource)links).addLink(l);
       }
     }
     return links;
@@ -82,8 +87,8 @@ public class UriListHttpMessageConverter extends AbstractHttpMessageConverter<Ob
       throws IOException,
              HttpMessageNotWritableException {
     OutputStream body = outputMessage.getBody();
-    if(links instanceof Links) {
-      for(Link link : ((Links)links).getLinks()) {
+    if(links instanceof LinkList) {
+      for(Link link : ((LinkList)links).getLinks()) {
         body.write(link.href().toASCIIString().getBytes());
         body.write('\n');
       }
@@ -97,9 +102,11 @@ public class UriListHttpMessageConverter extends AbstractHttpMessageConverter<Ob
         body.write('\n');
       }
     } else if(links instanceof Map) {
-      writeInternal(((Map)links).get("_links"), outputMessage);
+      writeInternal(((Map)links).get("links"), outputMessage);
     } else if(links instanceof RepositoryMethodResponse) {
       writeInternal(((RepositoryMethodResponse)links).getLinks(), outputMessage);
+    } else if(links instanceof Resource) {
+      writeInternal(((Resource)links).getLinks(), outputMessage);
     }
   }
 

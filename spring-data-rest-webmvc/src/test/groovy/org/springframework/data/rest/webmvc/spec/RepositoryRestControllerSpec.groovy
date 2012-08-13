@@ -4,7 +4,7 @@ import org.codehaus.jackson.map.ObjectMapper
 import org.codehaus.jackson.map.ser.CustomSerializerFactory
 import org.springframework.context.support.ClassPathXmlApplicationContext
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.rest.core.SimpleLink
+
 import org.springframework.data.rest.core.util.FluentBeanSerializer
 import org.springframework.data.rest.test.webmvc.Address
 import org.springframework.data.rest.webmvc.PagingAndSorting
@@ -26,6 +26,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 import javax.persistence.EntityManagerFactory
+import org.springframework.data.rest.core.ResourceLink
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -74,7 +75,7 @@ class RepositoryRestControllerSpec extends Specification {
     uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:8080/data")
 
     def customSerializerFactory = new CustomSerializerFactory()
-    customSerializerFactory.addSpecificMapping(SimpleLink, new FluentBeanSerializer(SimpleLink))
+    customSerializerFactory.addSpecificMapping(ResourceLink, new FluentBeanSerializer(ResourceLink))
     mapper.setSerializerFactory(customSerializerFactory)
   }
 

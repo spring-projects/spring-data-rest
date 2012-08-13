@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.rest.core.Resource;
-import org.springframework.data.rest.core.Resources;
+import org.springframework.data.rest.core.ResourceSet;
 import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
 import org.springframework.data.rest.repository.RepositoryMetadata;
@@ -143,7 +143,7 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
    */
   protected void onBeforeRenderResources(ServerHttpRequest request,
                                          RepositoryMetadata repositoryMetadata,
-                                         Resources resources) {
+                                         ResourceSet resources) {
   }
 
   /**

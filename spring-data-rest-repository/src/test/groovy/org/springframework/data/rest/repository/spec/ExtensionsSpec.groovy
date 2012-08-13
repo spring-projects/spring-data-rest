@@ -5,8 +5,8 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.rest.core.Resource
-import org.springframework.data.rest.core.Resources
-import org.springframework.data.rest.core.SimpleLink
+import org.springframework.data.rest.core.ResourceSet
+import org.springframework.data.rest.core.ResourceLink
 import org.springframework.data.rest.repository.RepositoryExporter
 import org.springframework.data.rest.repository.RepositoryMetadata
 import org.springframework.data.rest.repository.annotation.HandleAfterDelete
@@ -76,8 +76,8 @@ class ExtensionsSpec extends Specification {
     def request = Mock(ServerHttpRequest)
 
     def p = new Person("John Doe")
-    def selfLink = new SimpleLink("self", new URI("http://localhost:8080/people/1"))
-    def resources = new Resources()
+    def selfLink = new ResourceLink("self", new URI("http://localhost:8080/people/1"))
+    def resources = new ResourceSet()
     resources.links << selfLink
     def resource = new Resource(p)
     resource.links << selfLink
@@ -154,14 +154,14 @@ class PersonRenderHandler {
 
   @HandleBeforeRenderResources void handleBeforeRenderResources(ServerHttpRequest request,
                                                                 RepositoryMetadata repoMeta,
-                                                                Resources resources) {
-    resources.links << new SimpleLink("linkAddedByHandler", new URI("http://localhost:8080/linkAddedByHandler"))
+                                                                ResourceSet resources) {
+    resources.links << new ResourceLink("linkAddedByHandler", new URI("http://localhost:8080/linkAddedByHandler"))
   }
 
   @HandleBeforeRenderResource void handleBeforeRenderResource(ServerHttpRequest request,
                                                               RepositoryMetadata repoMeta,
                                                               Resource resource) {
-    resource.links << new SimpleLink("linkAddedByHandler", new URI("http://localhost:8080/linkAddedByHandler"))
+    resource.links << new ResourceLink("linkAddedByHandler", new URI("http://localhost:8080/linkAddedByHandler"))
   }
 
 }

@@ -43,16 +43,16 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.rest.core.Handler;
 import org.springframework.data.rest.core.Link;
-import org.springframework.data.rest.core.Links;
+import org.springframework.data.rest.core.LinkList;
 import org.springframework.data.rest.core.MapResource;
 import org.springframework.data.rest.core.Resource;
-import org.springframework.data.rest.core.Resources;
-import org.springframework.data.rest.core.SimpleLink;
+import org.springframework.data.rest.core.ResourceLink;
+import org.springframework.data.rest.core.ResourceSet;
 import org.springframework.data.rest.core.convert.DelegatingConversionService;
 import org.springframework.data.rest.core.util.UriUtils;
 import org.springframework.data.rest.repository.AttributeMetadata;
 import org.springframework.data.rest.repository.EntityMetadata;
-import org.springframework.data.rest.repository.PageableResources;
+import org.springframework.data.rest.repository.PageableResourceSet;
 import org.springframework.data.rest.repository.PagingMetadata;
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
 import org.springframework.data.rest.repository.RepositoryExporter;
@@ -321,13 +321,13 @@ public class RepositoryRestController
                                             UriComponentsBuilder uriBuilder) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
 
-    Resources resources = new Resources();
+    ResourceSet resources = new ResourceSet();
     for(RepositoryExporter repoExporter : repositoryExporters) {
       for(String name : (Set<String>)repoExporter.repositoryNames()) {
         RepositoryMetadata repoMeta = repoExporter.repositoryMetadataFor(name);
         String rel = repoMeta.rel();
         URI path = buildUri(baseUri, name);
-        resources.addLink(new SimpleLink(rel, path));
+        resources.addLink(new ResourceLink(rel, path));
       }
     }
 
@@ -368,9 +368,9 @@ public class RepositoryRestController
     }
 
     Iterator allEntities = Collections.emptyList().iterator();
-    final Resources resources;
+    final ResourceSet resources;
     if(repoMeta.repository() instanceof PagingAndSortingRepository) {
-      PageableResources pr = new PageableResources();
+      PageableResourceSet pr = new PageableResourceSet();
 
       Page page = ((PagingAndSortingRepository)repoMeta.repository()).findAll(pageSort);
       if(page.hasContent()) {
@@ -418,30 +418,30 @@ public class RepositoryRestController
       if(null != it) {
         allEntities = it.iterator();
       }
-      resources = new Resources();
+      resources = new ResourceSet();
     }
 
     while(allEntities.hasNext()) {
       Object o = allEntities.next();
       Serializable id = (Serializable)repoMeta.entityMetadata().idAttribute().get(o);
       if(shouldReturnLinks(request.getServletRequest().getHeader("Accept"))) {
-        resources.addLink(new SimpleLink(repoMeta.rel() + "." + o.getClass().getSimpleName(),
-                                         buildUri(baseUri, repository, id.toString())));
+        resources.addLink(new ResourceLink(repoMeta.rel() + "." + o.getClass().getSimpleName(),
+                                           buildUri(baseUri, repository, id.toString())));
       } else {
         URI selfUri = buildUri(baseUri, repository, id.toString());
         MapResource res = createResource(repoMeta.rel(),
                                          o,
                                          repoMeta.entityMetadata(),
                                          selfUri);
-        res.addLink(new SimpleLink(SELF, selfUri));
+        res.addLink(new ResourceLink(SELF, selfUri));
 
         resources.addResource(res);
       }
     }
 
     if(!repoMeta.queryMethods().isEmpty()) {
-      resources.addLink(new SimpleLink(repoMeta.rel() + ".search",
-                                       buildUri(baseUri, repository, "search")));
+      resources.addLink(new ResourceLink(repoMeta.rel() + ".search",
+                                         buildUri(baseUri, repository, "search")));
     }
 
     publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, resources));
@@ -472,7 +472,7 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
-    Resources resources = new Resources();
+    ResourceSet resources = new ResourceSet();
 
     for(Map.Entry<String, RepositoryQueryMethod> entry : ((Map<String, RepositoryQueryMethod>)repoMeta.queryMethods())
         .entrySet()) {
@@ -482,7 +482,7 @@ public class RepositoryRestController
       Method m = entry.getValue().method();
       if(m.isAnnotationPresent(RestResource.class)) {
         RestResource resourceAnno = m.getAnnotation(RestResource.class);
-        resources.addLink(new SimpleLink(
+        resources.addLink(new ResourceLink(
             (StringUtils.hasText(resourceAnno.rel())
              ? repoMeta.rel() + "." + resourceAnno.rel()
              : repoMeta.rel() + "." + entry.getKey()),
@@ -493,8 +493,8 @@ public class RepositoryRestController
         ));
       } else {
         // No customizations, use the default
-        resources.addLink(new SimpleLink(repoMeta.rel() + "." + entry.getKey(),
-                                         buildUri(baseSearchUri, entry.getKey())));
+        resources.addLink(new ResourceLink(repoMeta.rel() + "." + entry.getKey(),
+                                           buildUri(baseSearchUri, entry.getKey())));
       }
     }
 
@@ -608,10 +608,10 @@ public class RepositoryRestController
 
     Object result;
     if(null == (result = queryMethod.method().invoke(repo, paramVals))) {
-      return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), new Resources());
+      return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), new ResourceSet());
     }
 
-    Resources resources = new Resources();
+    ResourceSet resources = new ResourceSet();
     Iterator entities = Collections.emptyList().iterator();
     if(result instanceof Collection) {
       entities = ((Collection)result).iterator();
@@ -623,7 +623,7 @@ public class RepositoryRestController
       }
 
       // Set page counts in the response
-      PageableResources pr = new PageableResources();
+      PageableResourceSet pr = new PageableResourceSet();
       pr.setResourceCount(page.getTotalElements());
       pr.setPaging(new PagingMetadata(page.getNumber() + 1, page.getTotalPages()));
 
@@ -677,14 +677,14 @@ public class RepositoryRestController
       if(shouldReturnLinks(request.getServletRequest().getHeader("Accept"))) {
         String rel = elemRepoMeta.rel() + "." + elemRepoMeta.entityMetadata().type().getSimpleName();
         URI path = buildUri(baseUri, repository, id);
-        resources.addLink(new SimpleLink(rel, path));
+        resources.addLink(new ResourceLink(rel, path));
       } else {
         URI selfUri = buildUri(baseUri, repository, id);
         MapResource res = createResource(repoMeta.rel(),
                                          obj,
                                          repoMeta.entityMetadata(),
                                          selfUri);
-        res.addLink(new SimpleLink(SELF, selfUri));
+        res.addLink(new ResourceLink(SELF, selfUri));
 
         resources.addResource(res);
       }
@@ -750,7 +750,7 @@ public class RepositoryRestController
                                             savedEntity,
                                             repoMeta.entityMetadata(),
                                             selfUri);
-      resource.addLink(new SimpleLink(SELF, selfUri));
+      resource.addLink(new ResourceLink(SELF, selfUri));
 
       body = resource;
 
@@ -817,7 +817,7 @@ public class RepositoryRestController
                                      entity,
                                      repoMeta.entityMetadata(),
                                      selfUri);
-    res.addLink(new SimpleLink(SELF, selfUri));
+    res.addLink(new ResourceLink(SELF, selfUri));
 
     publishEvent(new BeforeRenderResourceEvent(request, repoMeta, res));
 
@@ -903,7 +903,7 @@ public class RepositoryRestController
                                        savedEntity,
                                        repoMeta.entityMetadata(),
                                        selfUri);
-      res.addLink(new SimpleLink(SELF, selfUri));
+      res.addLink(new ResourceLink(SELF, selfUri));
 
       body = res;
 
@@ -993,6 +993,7 @@ public class RepositoryRestController
                                             @PathVariable String id,
                                             @PathVariable String property) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
+    String accept = request.getServletRequest().getHeader("Accept");
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
@@ -1030,18 +1031,34 @@ public class RepositoryRestController
       return notFoundResponse(request);
     }
 
-    Resources res = new Resources();
+    Object body;
     AttributeMetadata idAttr = propRepoMeta.entityMetadata().idAttribute();
+    String propertyRel = repository +
+        "." + entity.getClass().getSimpleName() +
+        "." + property +
+        "." + propRepoMeta.entityMetadata().type().getSimpleName();
     if(propVal instanceof Collection) {
+      ResourceSet resources = new ResourceSet();
       for(Object o : (Collection)propVal) {
         String propValId = idAttr.get(o).toString();
-        String rel = repository + "."
-            + entity.getClass().getSimpleName() + "."
-            + attrType.getSimpleName();
         URI path = buildUri(baseUri, repository, id, property, propValId);
-        res.addLink(new SimpleLink(rel, path));
+
+        if(shouldReturnLinks(accept)) {
+          resources.addLink(new ResourceLink(propertyRel, path));
+        } else {
+          URI selfUri = buildUri(baseUri, propRepoMeta.name(), propValId);
+          MapResource res = createResource(propRepoMeta.rel(),
+                                           o,
+                                           propRepoMeta.entityMetadata(),
+                                           selfUri);
+          res.addLink(new ResourceLink(SELF, selfUri));
+          res.addLink(new ResourceLink(propertyRel, path));
+          resources.addResource(res);
+        }
       }
+      body = resources;
     } else if(propVal instanceof Map) {
+      Map<String, Object> resource = new HashMap<String, Object>();
       for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)propVal).entrySet()) {
         String propValId = idAttr.get(entry.getValue()).toString();
         URI path = buildUri(baseUri, repository, id, property, propValId);
@@ -1052,18 +1069,43 @@ public class RepositoryRestController
         } else {
           sKey = conversionService.convert(oKey, String.class);
         }
-        res.addLink(new SimpleLink(sKey, path));
+
+        if(shouldReturnLinks(accept)) {
+          resource.put(sKey, new ResourceLink(propertyRel, path));
+        } else {
+          URI selfUri = buildUri(baseUri, propRepoMeta.name(), propValId);
+          MapResource res = createResource(propRepoMeta.rel(),
+                                           entry.getValue(),
+                                           propRepoMeta.entityMetadata(),
+                                           selfUri);
+          res.addLink(new ResourceLink(SELF, selfUri));
+          res.addLink(new ResourceLink(propertyRel, path));
+          resource.put(sKey, res);
+        }
       }
+      body = new MapResource(resource);
     } else {
       String propValId = idAttr.get(propVal).toString();
-      String rel = repository + "." + entity.getClass().getSimpleName() + "." + property;
       URI path = buildUri(baseUri, repository, id, property, propValId);
-      res.addLink(new SimpleLink(rel, path));
+      URI selfUri = buildUri(baseUri, propRepoMeta.name(), propValId);
+      if(shouldReturnLinks(accept)) {
+        Resource<?> resource = new Resource<Object>();
+        resource.addLink(new ResourceLink(propertyRel, path));
+        body = resource;
+      } else {
+        MapResource res = createResource(propRepoMeta.rel(),
+                                         propVal,
+                                         propRepoMeta.entityMetadata(),
+                                         buildUri(baseUri, propRepoMeta.name(), propValId));
+        res.addLink(new ResourceLink(propertyRel, path));
+        res.addLink(new ResourceLink(SELF, selfUri));
+        body = res;
+      }
     }
 
-    publishEvent(new BeforeRenderResourceEvent(request, propRepoMeta, res));
+    publishEvent(new BeforeRenderResourceEvent(request, propRepoMeta, body));
 
-    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), res);
+    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), body);
   }
 
   /**
@@ -1140,11 +1182,7 @@ public class RepositoryRestController
           }
           String key = rel.get();
           if(null == key) {
-            try {
-              return negotiateResponse(request, HttpStatus.BAD_REQUEST, new HttpHeaders(), null);
-            } catch(IOException e) {
-              throw new RuntimeException(e);
-            }
+            throw new IllegalArgumentException("Map key cannot be null (usually the 'rel' value of a JSON object).");
           }
           m.put(rel.get(), linkedEntity);
           attrMeta.set(m, entity);
@@ -1157,10 +1195,13 @@ public class RepositoryRestController
     };
 
     MediaType incomingMediaType = request.getHeaders().getContentType();
-    Links incomingLinks = readIncoming(request, incomingMediaType, Links.class);
+    LinkList incomingLinks = readIncoming(request,
+                                          incomingMediaType,
+                                          LinkList.class);
     for(Link l : incomingLinks.getLinks()) {
       Object o;
       if(null != (o = resolveTopLevelResource(baseUri, l.href().toString()))) {
+        rel.set(l.rel());
         ResponseEntity<?> possibleResponse = entityHandler.handle(o);
         if(null != possibleResponse) {
           return possibleResponse;
@@ -1304,12 +1345,14 @@ public class RepositoryRestController
       return notFoundResponse(request);
     }
 
+    String propertyRel = repository + "." + repoMeta.entityMetadata().type().getSimpleName() + "." + property;
+    URI propertyPath = buildUri(baseUri, repository, id, property, linkedId);
     URI selfUri = buildUri(baseUri, linkedRepoMeta.name(), linkedId);
     MapResource res = createResource(linkedRepoMeta.rel(),
                                      linkedEntity,
                                      linkedRepoMeta.entityMetadata(),
                                      selfUri);
-    res.addLink(new SimpleLink(SELF, selfUri));
+    res.addLink(new ResourceLink(propertyRel, propertyPath));
 
     publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, res));
 
@@ -1564,7 +1607,7 @@ public class RepositoryRestController
       model.put(LINKS, links);
     }
     URI selfUri = buildUri(baseUri, pathComponents);
-    links.add(new SimpleLink(SELF, selfUri));
+    links.add(new ResourceLink(SELF, selfUri));
     return selfUri;
   }
 
@@ -1576,13 +1619,13 @@ public class RepositoryRestController
                                     boolean addIf,
                                     int nextPage,
                                     String rel,
-                                    List<Link> links) {
+                                    Set<Link> links) {
     if(null != page && addIf) {
       UriComponentsBuilder urib = UriComponentsBuilder.fromUri(resourceUri);
       urib.queryParam(config.getPageParamName(), nextPage); // PageRequest is 0-based, so it's already (page - 1)
       urib.queryParam(config.getLimitParamName(), page.getSize());
       pageSort.addSortParameters(urib);
-      links.add(new SimpleLink(repoMeta.rel() + "." + rel, urib.build().toUri()));
+      links.add(new ResourceLink(repoMeta.rel() + "." + rel, urib.build().toUri()));
     }
   }
 
@@ -1662,7 +1705,7 @@ public class RepositoryRestController
 
     for(String attrName : entityMetadata.linkedAttributes().keySet()) {
       URI uri = buildUri(baseUri, attrName);
-      resource.addLink(new SimpleLink(repoRel + "." + entity.getClass().getSimpleName() + "." + attrName, uri));
+      resource.addLink(new ResourceLink(repoRel + "." + entity.getClass().getSimpleName() + "." + attrName, uri));
     }
 
     return resource;

@@ -7,7 +7,8 @@ import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.ser.CustomSerializerFactory;
-import org.springframework.data.rest.core.SimpleLink;
+import org.springframework.data.rest.core.Link;
+import org.springframework.data.rest.core.ResourceLink;
 import org.springframework.data.rest.core.util.FluentBeanSerializer;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -28,7 +29,7 @@ public abstract class JacksonUtil {
   public static MappingJacksonHttpMessageConverter createJacksonHttpMessageConverter(final ObjectMapper objectMapper) {
     // We need a custom serializer for handling beans that don't conform to the JavaBeans standard 'get' and 'set'
     CustomSerializerFactory customSerializerFactory = new CustomSerializerFactory();
-    customSerializerFactory.addSpecificMapping(SimpleLink.class, new FluentBeanSerializer(SimpleLink.class));
+    customSerializerFactory.addSpecificMapping(ResourceLink.class, new FluentBeanSerializer(ResourceLink.class));
     objectMapper.setSerializerFactory(customSerializerFactory);
     // We want to support all our custom types of JSON and also the catch-all
     MappingJacksonHttpMessageConverter jsonConverter = new MappingJacksonHttpMessageConverter() {

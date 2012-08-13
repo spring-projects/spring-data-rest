@@ -1,12 +1,12 @@
 package org.springframework.data.rest.repository;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.springframework.data.rest.core.Resources;
+import org.springframework.data.rest.core.ResourceSet;
 
 /**
  * @author Jon Brisbin
  */
-public class PageableResources extends Resources {
+public class PageableResourceSet extends ResourceSet {
 
   protected long           resourceCount = 0;
   @JsonProperty("page")
@@ -16,7 +16,7 @@ public class PageableResources extends Resources {
     return resourceCount;
   }
 
-  public PageableResources setResourceCount(long resourceCount) {
+  public PageableResourceSet setResourceCount(long resourceCount) {
     this.resourceCount = resourceCount;
     return this;
   }
@@ -25,7 +25,7 @@ public class PageableResources extends Resources {
     return paging;
   }
 
-  public PageableResources setPaging(PagingMetadata paging) {
+  public PageableResourceSet setPaging(PagingMetadata paging) {
     this.paging = paging;
     return this;
   }

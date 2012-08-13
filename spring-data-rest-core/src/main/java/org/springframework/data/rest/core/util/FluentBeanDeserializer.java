@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.JsonToken;
 import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.deser.std.StdDeserializer;
@@ -18,8 +17,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class FluentBeanDeserializer
-    extends StdDeserializer {
+public class FluentBeanDeserializer extends StdDeserializer {
 
   private ConversionService        conversionService;
   private FluentBeanUtils.Metadata beanMeta;
@@ -37,9 +35,7 @@ public class FluentBeanDeserializer
 
   @Override
   public Object deserialize(JsonParser jp,
-                            DeserializationContext ctxt)
-      throws IOException,
-             JsonProcessingException {
+                            DeserializationContext ctxt) throws IOException {
     if(jp.getCurrentToken() != JsonToken.START_OBJECT) {
       throw ctxt.mappingException(_valueClass);
     }
