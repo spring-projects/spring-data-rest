@@ -11,18 +11,15 @@ import java.util.concurrent.ExecutionException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
 
 /**
  * Helper methods for dealing with the metadata of "fluent" beans.
  *
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  */
 public abstract class FluentBeanUtils {
 
-  private static final Logger                           log      = LoggerFactory.getLogger(FluentBeanUtils.class);
   private static final LoadingCache<Class<?>, Metadata> metadata = CacheBuilder.newBuilder().build(
       new CacheLoader<Class<?>, Metadata>() {
         @Override public Metadata load(Class<?> type)
@@ -40,6 +37,7 @@ public abstract class FluentBeanUtils {
                       public void doWith(Method method)
                           throws IllegalArgumentException, IllegalAccessException {
                         if(method.getName().equals(fname)) {
+                          ReflectionUtils.makeAccessible(method);
                           if(method.getParameterTypes().length == 0) {
                             meta.getters.put(fname, method);
                           } else if(method.getParameterTypes().length == 1) {
@@ -49,6 +47,8 @@ public abstract class FluentBeanUtils {
                         }
                       }
                     });
+                    ReflectionUtils.makeAccessible(field);
+                    meta.fields.put(fname, field);
                   }
                 }
               }
@@ -97,14 +97,18 @@ public abstract class FluentBeanUtils {
       Method setter = metadata.get(type).setters.get(property);
       if(null != setter) {
         return setter.invoke(bean, value);
-      } else {
+      }
+
+      Field f = metadata.get(type).fields.get(property);
+      if(null == f) {
         return null;
       }
+
+      f.set(bean, value);
+
+      return bean;
     } catch(Throwable t) {
-      if(log.isDebugEnabled()) {
-        log.debug(t.getMessage(), t);
-      }
-      return null;
+      throw new IllegalArgumentException(t.getMessage(), t);
     }
   }
 
@@ -128,14 +132,16 @@ public abstract class FluentBeanUtils {
       Method getter = metadata.get(type).getters.get(property);
       if(null != getter) {
         return getter.invoke(bean);
-      } else {
+      }
+
+      Field f = metadata.get(type).fields.get(property);
+      if(null == f) {
         return null;
       }
+
+      return f.get(bean);
     } catch(Throwable t) {
-      if(log.isDebugEnabled()) {
-        log.debug(t.getMessage(), t);
-      }
-      return null;
+      throw new IllegalStateException(t.getMessage(), t);
     }
   }
 
@@ -159,6 +165,7 @@ public abstract class FluentBeanUtils {
 
   public static class Metadata {
     List<String>        fieldNames = new ArrayList<String>();
+    Map<String, Field>  fields     = new HashMap<String, Field>();
     Map<String, Method> getters    = new HashMap<String, Method>();
     Map<String, Method> setters    = new HashMap<String, Method>();
 
@@ -172,6 +179,10 @@ public abstract class FluentBeanUtils {
 
     public Map<String, Method> setters() {
       return setters;
+    }
+
+    public Map<String, Field> fields() {
+      return fields;
     }
   }
 
