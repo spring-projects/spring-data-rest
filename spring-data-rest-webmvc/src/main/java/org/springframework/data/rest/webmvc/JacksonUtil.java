@@ -6,10 +6,6 @@ import java.util.Arrays;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ser.CustomSerializerFactory;
-import org.springframework.data.rest.core.Link;
-import org.springframework.data.rest.core.ResourceLink;
-import org.springframework.data.rest.core.util.FluentBeanSerializer;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotWritableException;
@@ -27,25 +23,34 @@ public abstract class JacksonUtil {
   }
 
   public static MappingJacksonHttpMessageConverter createJacksonHttpMessageConverter(final ObjectMapper objectMapper) {
-    // We need a custom serializer for handling beans that don't conform to the JavaBeans standard 'get' and 'set'
-    CustomSerializerFactory customSerializerFactory = new CustomSerializerFactory();
-    customSerializerFactory.addSpecificMapping(ResourceLink.class, new FluentBeanSerializer(ResourceLink.class));
-    objectMapper.setSerializerFactory(customSerializerFactory);
     // We want to support all our custom types of JSON and also the catch-all
     MappingJacksonHttpMessageConverter jsonConverter = new MappingJacksonHttpMessageConverter() {
       {
         setSupportedMediaTypes(Arrays.asList(
             MediaType.APPLICATION_JSON,
             MediaTypes.COMPACT_JSON,
-            MediaTypes.VERBOSE_JSON,
-            MediaType.ALL
+            MediaTypes.VERBOSE_JSON
         ));
       }
 
+      @Override public boolean canRead(Class<?> clazz, MediaType mediaType) {
+        if(!canRead(mediaType)) {
+          return false;
+        }
+        return true;
+      }
+
+      @Override public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+        if(!canWrite(mediaType)) {
+          return false;
+        }
+        return true;
+      }
+
       @Override
-      protected void writeInternal(Object object, HttpOutputMessage outputMessage)
-          throws IOException,
-                 HttpMessageNotWritableException {
+      protected void writeInternal(Object object,
+                                   HttpOutputMessage outputMessage) throws IOException,
+                                                                           HttpMessageNotWritableException {
         JsonEncoding encoding = getJsonEncoding(outputMessage.getHeaders().getContentType());
         // Believe it or not, this is the only way to get pretty-printing from Jackson in this configuration
         JsonGenerator jsonGenerator = objectMapper

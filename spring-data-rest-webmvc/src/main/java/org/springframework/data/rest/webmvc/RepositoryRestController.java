@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.Stack;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -34,6 +34,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +50,6 @@ import org.springframework.data.rest.core.Resource;
 import org.springframework.data.rest.core.ResourceLink;
 import org.springframework.data.rest.core.ResourceSet;
 import org.springframework.data.rest.core.convert.DelegatingConversionService;
-import org.springframework.data.rest.core.util.UriUtils;
 import org.springframework.data.rest.repository.AttributeMetadata;
 import org.springframework.data.rest.repository.EntityMetadata;
 import org.springframework.data.rest.repository.PageableResourceSet;
@@ -59,6 +59,7 @@ import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
 import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.data.rest.repository.RepositoryNotFoundException;
+import org.springframework.data.rest.repository.UriToDomainObjectResolver;
 import org.springframework.data.rest.repository.annotation.ConvertWith;
 import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
@@ -82,12 +83,9 @@ import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
-import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -135,43 +133,36 @@ public class RepositoryRestController
     implements ApplicationContextAware,
                InitializingBean {
 
-  public static final String LOCATION = "Location";
-  public static final String SELF     = "self";
-  public static final String LINKS    = "_links";
-
-  private static final Logger LOG = LoggerFactory.getLogger(RepositoryRestController.class);
-
-  private ApplicationContext applicationContext;
+  public static final  String           LOCATION = "Location";
+  public static final  String           SELF     = "self";
+  final static         ThreadLocal<URI> BASE_URI = new ThreadLocal<URI>();
+  private static final Logger           LOG      = LoggerFactory.getLogger(RepositoryRestController.class);
 
   /**
    * We manage a list of possible {@link ConversionService}s to handle converting objects in the controller. This list
    * is prioritized as well, so one can add a ConversionService at index 0 to make sure that ConversionService takes
    * priority whenever an object of the type it can convert is needing conversion.
    */
-  @Autowired(required = false)
   private DelegatingConversionService conversionService     = new DelegatingConversionService(
       new DefaultFormattingConversionService()
   );
   /**
    * Converters for reading and writing representations of objects.
    */
-  @Autowired(required = false)
   private List<HttpMessageConverter>  httpMessageConverters = new ArrayList<HttpMessageConverter>();
   /**
    * List of {@link MediaType}s we can support, given the list of {@link HttpMessageConverter}s currently configured.
    */
   private SortedSet<String>           availableMediaTypes   = new TreeSet<String>();
-  @Autowired(required = false)
   private RepositoryRestConfiguration config                = RepositoryRestConfiguration.DEFAULT;
   private ObjectMapper                objectMapper          = new ObjectMapper();
+  private RepositoryAwareMappingHttpMessageConverter mappingHttpMessageConverter;
+  private UriToDomainObjectResolver                  domainObjectResolver;
+  private ApplicationContext                         applicationContext;
 
   {
     List<HttpMessageConverter> httpMessageConverters = new ArrayList<HttpMessageConverter>();
-    httpMessageConverters.add(0, new StringHttpMessageConverter());
-    httpMessageConverters.add(0, new ByteArrayHttpMessageConverter());
-    httpMessageConverters.add(0, new FormHttpMessageConverter());
-    httpMessageConverters.add(0, JacksonUtil.createJacksonHttpMessageConverter(objectMapper));
-    httpMessageConverters.add(0, new UriListHttpMessageConverter());
+    httpMessageConverters.add(new UriListHttpMessageConverter());
 
     setHttpMessageConverters(httpMessageConverters);
   }
@@ -195,6 +186,7 @@ public class RepositoryRestController
    *
    * @param conversionService
    */
+  @Autowired(required = false)
   public void setConversionService(ConversionService conversionService) {
     if(null != conversionService) {
       this.conversionService.addConversionServices(conversionService);
@@ -243,10 +235,14 @@ public class RepositoryRestController
     this.httpMessageConverters = httpMessageConverters;
     this.availableMediaTypes.clear();
     for(HttpMessageConverter conv : httpMessageConverters) {
-      availableMediaTypes.addAll(conv.getSupportedMediaTypes());
+      for(MediaType mt : (List<MediaType>)conv.getSupportedMediaTypes()) {
+        availableMediaTypes.add(mt.toString());
+      }
     }
     for(HttpMessageConverter conv : config.getCustomConverters()) {
-      availableMediaTypes.addAll(conv.getSupportedMediaTypes());
+      for(MediaType mt : (List<MediaType>)conv.getSupportedMediaTypes()) {
+        availableMediaTypes.add(mt.toString());
+      }
     }
   }
 
@@ -287,17 +283,40 @@ public class RepositoryRestController
    *
    * @return @this
    */
+  @Autowired(required = false)
   public RepositoryRestController setRepositoryRestConfig(RepositoryRestConfiguration config) {
     this.config = config;
     return this;
   }
 
+  public RepositoryAwareMappingHttpMessageConverter getMappingHttpMessageConverter() {
+    return mappingHttpMessageConverter;
+  }
+
+  @Autowired
+  public RepositoryRestController setMappingHttpMessageConverter(RepositoryAwareMappingHttpMessageConverter mappingHttpMessageConverter) {
+    this.mappingHttpMessageConverter = mappingHttpMessageConverter;
+    httpMessageConverters.add(mappingHttpMessageConverter);
+    this.objectMapper = mappingHttpMessageConverter.getObjectMapper();
+    return this;
+  }
+
+  public UriToDomainObjectResolver getDomainObjectResolver() {
+    return domainObjectResolver;
+  }
+
+  @Autowired
+  public RepositoryRestController setDomainObjectResolver(UriToDomainObjectResolver domainObjectResolver) {
+    this.domainObjectResolver = domainObjectResolver;
+    return this;
+  }
+
   @SuppressWarnings({"unchecked"})
   @Override public void afterPropertiesSet() throws Exception {
-    for(ConversionService convsvc : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
-                                                                                   ConversionService.class)
-                                                    .values()) {
-      conversionService.addConversionServices(convsvc);
+    for(ConversionService cs : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
+                                                                              ConversionService.class)
+                                               .values()) {
+      conversionService.addConversionServices(cs);
     }
   }
 
@@ -320,6 +339,7 @@ public class RepositoryRestController
   public ResponseEntity<?> listRepositories(ServletServerHttpRequest request,
                                             UriComponentsBuilder uriBuilder) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
+    BASE_URI.set(baseUri);
 
     ResourceSet resources = new ResourceSet();
     for(RepositoryExporter repoExporter : repositoryExporters) {
@@ -361,6 +381,7 @@ public class RepositoryRestController
                                         UriComponentsBuilder uriBuilder,
                                         @PathVariable String repository) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
+    BASE_URI.set(baseUri);
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.FIND_ALL)) {
@@ -378,8 +399,10 @@ public class RepositoryRestController
       }
 
       // Set page counts in the response
-      pr.setPaging(new PagingMetadata(page.getNumber() + 1, page.getTotalPages()));
-      pr.setResourceCount(page.getTotalElements());
+      pr.setPaging(new PagingMetadata(page.getNumber() + 1,
+                                      page.getSize(),
+                                      page.getTotalPages(),
+                                      page.getTotalElements()));
 
       // Copy over parameters
       UriComponentsBuilder selfUri = UriComponentsBuilder.fromUri(baseUri).pathSegment(repository);
@@ -470,6 +493,7 @@ public class RepositoryRestController
                                             UriComponentsBuilder uriBuilder,
                                             @PathVariable String repository) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
+    BASE_URI.set(baseUri);
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     ResourceSet resources = new ResourceSet();
@@ -533,6 +557,7 @@ public class RepositoryRestController
                                                                     IllegalAccessException,
                                                                     IOException {
     URI baseUri = uriBuilder.build().toUri();
+    BASE_URI.set(baseUri);
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Repository repo = repoMeta.repository();
@@ -624,8 +649,10 @@ public class RepositoryRestController
 
       // Set page counts in the response
       PageableResourceSet pr = new PageableResourceSet();
-      pr.setResourceCount(page.getTotalElements());
-      pr.setPaging(new PagingMetadata(page.getNumber() + 1, page.getTotalPages()));
+      pr.setPaging(new PagingMetadata(page.getNumber() + 1,
+                                      page.getSize(),
+                                      page.getTotalPages(),
+                                      page.getTotalElements()));
 
       // Copy over parameters
       UriComponentsBuilder selfUri = UriComponentsBuilder.fromUri(baseUri).pathSegment(repository, "search", query);
@@ -719,6 +746,7 @@ public class RepositoryRestController
                                   UriComponentsBuilder uriBuilder,
                                   @PathVariable String repository) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
+    BASE_URI.set(baseUri);
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.SAVE_ONE)) {
@@ -783,6 +811,7 @@ public class RepositoryRestController
                                   @PathVariable String repository,
                                   @PathVariable String id) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
+    BASE_URI.set(baseUri);
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
@@ -853,6 +882,7 @@ public class RepositoryRestController
                                                                           IllegalAccessException,
                                                                           InstantiationException {
     URI baseUri = uriBuilder.build().toUri();
+    BASE_URI.set(baseUri);
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.SAVE_ONE) || !repoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
@@ -993,6 +1023,7 @@ public class RepositoryRestController
                                             @PathVariable String id,
                                             @PathVariable String property) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
+    BASE_URI.set(baseUri);
     String accept = request.getServletRequest().getHeader("Accept");
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
@@ -1024,7 +1055,6 @@ public class RepositoryRestController
     if(!propRepoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
     }
-
 
     Object propVal;
     if(null == (propVal = attrMeta.get(entity))) {
@@ -1058,17 +1088,13 @@ public class RepositoryRestController
       }
       body = resources;
     } else if(propVal instanceof Map) {
-      Map<String, Object> resource = new HashMap<String, Object>();
+      Map resource = new HashMap();
       for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)propVal).entrySet()) {
         String propValId = idAttr.get(entry.getValue()).toString();
         URI path = buildUri(baseUri, repository, id, property, propValId);
+
         Object oKey = entry.getKey();
-        String sKey;
-        if(ClassUtils.isAssignable(oKey.getClass(), String.class)) {
-          sKey = (String)oKey;
-        } else {
-          sKey = conversionService.convert(oKey, String.class);
-        }
+        String sKey = objectToMapKey(oKey);
 
         if(shouldReturnLinks(accept)) {
           resource.put(sKey, new ResourceLink(propertyRel, path));
@@ -1136,6 +1162,7 @@ public class RepositoryRestController
                                                   @PathVariable String id,
                                                   final @PathVariable String property) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
+    BASE_URI.set(baseUri);
 
     final RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.SAVE_ONE)) {
@@ -1200,7 +1227,7 @@ public class RepositoryRestController
                                           LinkList.class);
     for(Link l : incomingLinks.getLinks()) {
       Object o;
-      if(null != (o = resolveTopLevelResource(baseUri, l.href().toString()))) {
+      if(null != (o = domainObjectResolver.resolve(baseUri, URI.create(l.href().toString())))) {
         rel.set(l.rel());
         ResponseEntity<?> possibleResponse = entityHandler.handle(o);
         if(null != possibleResponse) {
@@ -1302,6 +1329,7 @@ public class RepositoryRestController
                                         @PathVariable String property,
                                         @PathVariable String linkedId) throws IOException {
     URI baseUri = uriBuilder.build().toUri();
+    BASE_URI.set(baseUri);
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
@@ -1531,10 +1559,10 @@ public class RepositoryRestController
    * @throws IOException
    */
   @SuppressWarnings({"unchecked"})
-  @ExceptionHandler(OptimisticLockingFailureException.class)
+  @ExceptionHandler({OptimisticLockingFailureException.class, DataIntegrityViolationException.class})
   @ResponseBody
-  public ResponseEntity handleLockingFailure(OptimisticLockingFailureException ex,
-                                             ServletServerHttpRequest request) throws IOException {
+  public ResponseEntity handleConflict(Exception ex,
+                                       ServletServerHttpRequest request) throws IOException {
     LOG.error(ex.getMessage(), ex);
     return errorResponse(request, HttpStatus.CONFLICT, ex);
   }
@@ -1579,15 +1607,15 @@ public class RepositoryRestController
   @SuppressWarnings({"unchecked"})
   @ExceptionHandler({HttpMessageNotReadableException.class, HttpMessageNotWritableException.class})
   @ResponseBody
-  public ResponseEntity handleMessageConversionFailure(HttpMessageNotReadableException ex,
-                                                       ServletServerHttpRequest request) throws IOException {
+  public ResponseEntity handleMessageConversionFailure(Exception ex,
+                                                       HttpServletRequest request) throws IOException {
     LOG.error(ex.getMessage(), ex);
 
     Map m = new HashMap();
     m.put("message", ex.getMessage());
     m.put("acceptableTypes", availableMediaTypes);
 
-    return negotiateResponse(request, HttpStatus.BAD_REQUEST, new HttpHeaders(), m);
+    return negotiateResponse(new ServletServerHttpRequest(request), HttpStatus.BAD_REQUEST, new HttpHeaders(), m);
   }
 
   /*
@@ -1597,18 +1625,6 @@ public class RepositoryRestController
    */
   private static URI buildUri(URI baseUri, String... pathSegments) {
     return UriComponentsBuilder.fromUri(baseUri).pathSegment(pathSegments).build().toUri();
-  }
-
-  @SuppressWarnings({"unchecked"})
-  private URI addSelfLink(URI baseUri, Map<String, Object> model, String... pathComponents) {
-    List<Link> links = (List<Link>)model.get(LINKS);
-    if(null == links) {
-      links = new ArrayList<Link>();
-      model.put(LINKS, links);
-    }
-    URI selfUri = buildUri(baseUri, pathComponents);
-    links.add(new ResourceLink(SELF, selfUri));
-    return selfUri;
   }
 
   @SuppressWarnings({"unchecked"})
@@ -1639,38 +1655,6 @@ public class RepositoryRestController
   }
 
   @SuppressWarnings({"unchecked"})
-  private Object resolveTopLevelResource(URI baseUri, String uri) {
-    URI href = URI.create(uri);
-
-    URI relativeUri = baseUri.relativize(href);
-    Stack<URI> uris = UriUtils.explode(baseUri, relativeUri);
-
-    if(uris.size() > 1) {
-      String repoName = UriUtils.path(uris.get(0));
-      String sId = UriUtils.path(uris.get(1));
-
-      RepositoryMetadata repoMeta = repositoryMetadataFor(repoName);
-
-      CrudRepository repo;
-      if(null == (repo = repoMeta.repository())) {
-        return null;
-      }
-
-      EntityMetadata entityMeta;
-      if(null == (entityMeta = repoMeta.entityMetadata())) {
-        return null;
-      }
-
-      Class<? extends Serializable> idType = (Class<? extends Serializable>)entityMeta.idAttribute().type();
-      Serializable serId = stringToSerializable(sId, idType);
-
-      return repo.findOne(serId);
-    }
-
-    return null;
-  }
-
-  @SuppressWarnings({"unchecked"})
   private <V> V readIncoming(HttpInputMessage request, MediaType incomingMediaType, Class<V> targetType)
       throws IOException {
     // Check custom converters first
@@ -1685,7 +1669,7 @@ public class RepositoryRestController
         return (V)conv.read(targetType, request);
       }
     }
-    return null;
+    return (V)mappingHttpMessageConverter.read(targetType, request);
   }
 
   private MapResource createResource(String repoRel,
@@ -1758,6 +1742,24 @@ public class RepositoryRestController
     return m;
   }
 
+  private String objectToMapKey(Object obj) {
+    Assert.notNull(obj, "Map key cannot be null!");
+
+    RepositoryMetadata repoMeta;
+    String key;
+    if(ClassUtils.isAssignable(obj.getClass(), String.class)) {
+      key = (String)obj;
+    } else if(null != (repoMeta = repositoryMetadataFor(obj.getClass()))) {
+      AttributeMetadata attrMeta = repoMeta.entityMetadata().idAttribute();
+      String id = attrMeta.get(obj).toString();
+      key = "@" + buildUri(BASE_URI.get(), repoMeta.name(), id);
+    } else {
+      key = conversionService.convert(obj, String.class);
+    }
+
+    return key;
+  }
+
   private ResponseEntity<byte[]> notFoundResponse(ServletServerHttpRequest request) throws IOException {
     return negotiateResponse(request, HttpStatus.NOT_FOUND, new HttpHeaders(), null);
   }
@@ -1804,7 +1806,7 @@ public class RepositoryRestController
     headers.setContentType(acceptType);
 
     if(null == converter) {
-      throw new HttpMessageNotWritableException("No HttpMessageConverter found to handle " + resource.getClass());
+      converter = mappingHttpMessageConverter;
     }
 
     final ByteArrayOutputStream bout = new ByteArrayOutputStream();

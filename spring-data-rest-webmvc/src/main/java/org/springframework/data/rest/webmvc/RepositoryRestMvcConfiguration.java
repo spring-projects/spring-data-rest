@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.data.rest.repository.UriToDomainObjectResolver;
 import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.repository.jpa.JpaRepositoryExporter;
 import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
@@ -81,14 +82,33 @@ public class RepositoryRestMvcConfiguration {
   }
 
   /**
+   * Special Repository-aware {@link org.springframework.http.converter.HttpMessageConverter} that can deal with
+   * entities and links.
+   *
+   * @return
+   */
+  @Bean public RepositoryAwareMappingHttpMessageConverter mappingHttpMessageConverter() {
+    return new RepositoryAwareMappingHttpMessageConverter();
+  }
+
+  /**
+   * A {@link org.springframework.data.rest.core.Resolver} implementation that takes a {@link java.net.URI} and turns it
+   * into a top-level domain object.
+   *
+   * @return
+   */
+  @Bean public UriToDomainObjectResolver domainObjectResolver() {
+    return new UriToDomainObjectResolver();
+  }
+
+  /**
    * The main REST exporter Spring MVC controller.
    *
    * @return
    *
    * @throws Exception
    */
-  @Bean public RepositoryRestController repositoryRestController()
-      throws Exception {
+  @Bean public RepositoryRestController repositoryRestController() throws Exception {
     return new RepositoryRestController();
   }
 

@@ -5,29 +5,54 @@ package org.springframework.data.rest.repository;
  */
 public class PagingMetadata {
 
-  private int current = 0;
-  private int total   = 0;
+  private int  number        = 0;
+  private int  size          = 0;
+  private int  totalPages    = 0;
+  private long totalElements = 0;
 
-  public PagingMetadata(int current, int total) {
-    this.current = current;
-    this.total = total;
+  public PagingMetadata(int number,
+                        int size,
+                        int totalPages,
+                        long totalElements) {
+    this.number = number;
+    this.size = size;
+    this.totalPages = totalPages;
+    this.totalElements = totalElements;
   }
 
-  public int getCurrent() {
-    return current;
+  public int getNumber() {
+    return number;
   }
 
-  public PagingMetadata setCurrent(int current) {
-    this.current = current;
+  public PagingMetadata setNumber(int number) {
+    this.number = number;
     return this;
   }
 
-  public int getTotal() {
-    return total;
+  public int getSize() {
+    return size;
   }
 
-  public PagingMetadata setTotal(int total) {
-    this.total = total;
+  public PagingMetadata setSize(int size) {
+    this.size = size;
+    return this;
+  }
+
+  public int getTotalPages() {
+    return totalPages;
+  }
+
+  public PagingMetadata setTotalPages(int totalPages) {
+    this.totalPages = totalPages;
+    return this;
+  }
+
+  public long getTotalElements() {
+    return totalElements;
+  }
+
+  public PagingMetadata setTotalElements(long totalElements) {
+    this.totalElements = totalElements;
     return this;
   }
 

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.MapAttribute;
 import javax.persistence.metamodel.PluralAttribute;
 
 import org.springframework.beans.BeanUtils;
@@ -56,6 +57,12 @@ public class JpaAttributeMetadata implements AttributeMetadata {
 
   @Override public Class<?> type() {
     return type;
+  }
+
+  @Override public Class<?> keyType() {
+    return (attribute instanceof MapAttribute
+            ? ((MapAttribute)attribute).getKeyJavaType()
+            : null);
   }
 
   @Override public Class<?> elementType() {

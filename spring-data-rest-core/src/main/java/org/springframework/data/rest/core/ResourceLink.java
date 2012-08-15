@@ -2,8 +2,8 @@ package org.springframework.data.rest.core;
 
 import java.net.URI;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.springframework.util.Assert;
 
 /**
  * Implementation of {@link Link}.
@@ -31,6 +31,25 @@ public class ResourceLink implements Link, Comparable<Link> {
 
   @Override public URI href() {
     return href;
+  }
+
+  public String getRel() {
+    return rel();
+  }
+
+  public ResourceLink setRel(String rel) {
+    this.rel = rel;
+    return this;
+  }
+
+  public URI getHref() {
+    return href();
+  }
+
+  public ResourceLink setHref(URI href) {
+    Assert.notNull(href, "href URI cannot be null.");
+    this.href = href;
+    return this;
   }
 
   @Override public int compareTo(Link link) {

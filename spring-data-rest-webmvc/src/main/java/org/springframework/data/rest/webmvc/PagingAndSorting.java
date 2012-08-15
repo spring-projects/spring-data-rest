@@ -14,8 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  *
  * @author Jon Brisbin
  */
-public class PagingAndSorting
-    implements Pageable {
+public class PagingAndSorting implements Pageable {
 
   private final RepositoryRestConfiguration config;
   private final PageRequest                 pageRequest;

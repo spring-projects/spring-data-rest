@@ -26,6 +26,13 @@ public interface AttributeMetadata {
   Class<?> type();
 
   /**
+   * The type of this map's key, if it's map-like.
+   *
+   * @return
+   */
+  Class<?> keyType();
+
+  /**
    * The element type of this attribute, if this attribute is a "plural"-like attribute (a Collection, Map, etc...).
    *
    * @return Class of element type or {@literal null} if not a plural attribute.

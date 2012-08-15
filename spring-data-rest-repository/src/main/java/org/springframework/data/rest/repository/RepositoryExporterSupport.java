@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupport<? super S>> {
 
-  @Autowired(required = false)
   protected List<RepositoryExporter> repositoryExporters = Collections.emptyList();
 
   /**
@@ -31,6 +30,7 @@ public abstract class RepositoryExporterSupport<S extends RepositoryExporterSupp
    * @param repositoryExporters
    *     Export this {@link List} of {@link RepositoryExporter}s.
    */
+  @Autowired(required = false)
   public void setRepositoryExporters(List<RepositoryExporter> repositoryExporters) {
     this.repositoryExporters = repositoryExporters;
   }

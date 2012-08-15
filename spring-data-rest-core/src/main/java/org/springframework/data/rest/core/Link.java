@@ -9,7 +9,6 @@ import org.codehaus.jackson.annotate.JsonTypeInfo;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, defaultImpl = ResourceLink.class)
 public interface Link {
 
   /**

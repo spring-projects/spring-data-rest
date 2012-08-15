@@ -8,18 +8,8 @@ import org.springframework.data.rest.core.ResourceSet;
  */
 public class PageableResourceSet extends ResourceSet {
 
-  protected long           resourceCount = 0;
   @JsonProperty("page")
-  protected PagingMetadata paging        = new PagingMetadata(-1, 0);
-
-  public long getResourceCount() {
-    return resourceCount;
-  }
-
-  public PageableResourceSet setResourceCount(long resourceCount) {
-    this.resourceCount = resourceCount;
-    return this;
-  }
+  protected PagingMetadata paging = new PagingMetadata(-1, 20, 0, 0);
 
   public PagingMetadata getPaging() {
     return paging;
