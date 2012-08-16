@@ -1381,6 +1381,7 @@ public class RepositoryRestController
                                      linkedRepoMeta.entityMetadata(),
                                      selfUri);
     res.addLink(new ResourceLink(propertyRel, propertyPath));
+    res.addLink(new ResourceLink(SELF, selfUri));
 
     publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, res));
 
