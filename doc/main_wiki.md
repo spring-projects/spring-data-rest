@@ -1,12 +1,12 @@
 # Spring Data JPA Repository Web Exporter
 
-The Spring Data JPA Repository Web Exporter allows you to export your [JPA Repositories](http://static.springsource.org/spring-data/data-jpa/docs/current/reference/html/#jpa.repositories) as a RESTful web application. The exporter exposes the CRUD methods of a [CrudRepository](http://static.springsource.org/spring-data/data-commons/docs/1.1.0.RELEASE/api/org/springframework/data/repository/CrudRepository.html) for doing basic entity management. Relationships can also be managed between linked entities. The exporter is deployed as a traditional Spring MVC Controller, which means all the traditional Spring MVC tools are available to work with the Web Exporter (like Spring Security, for instance).
+The Spring Data JPA Repository Web Exporter allows you to export your [JPA Repositories](http://static.springsource.org/spring-data/data-jpa/docs/current/reference/html/#jpa.repositories) as a RESTful web application. The exporter exposes the CRUD methods of a [CrudRepository](http://static.springsource.org/spring-data/data-commons/docs/1.4.0.M1/api/org/springframework/data/repository/CrudRepository.html) for doing basic entity management. Relationships can also be managed between linked entities. The exporter is deployed as a traditional Spring MVC Controller, which means all the traditional Spring MVC tools are available to work with the Web Exporter (like Spring Security, for instance).
 
 ### Installation
 
 #### Servlet environment
 
-To use the Spring Data Web Exporter, you need to build a WAR file. Start by cloning the base web application project that contains the web.xml file you'll need to run the Web Exporter: [https://github.com/SpringSource/spring-data-rest-webmvc](https://github.com/SpringSource/spring-data-rest-webmvc).
+Deployment of the Spring Data Web Exporter is extremely flexible. You can build a WAR file for deploying in a Servlet 2.5 environment. You can drop the spring-data-rest-webmvc.jar artifact into an existing Servlet 3.0 application (the [O'Reilly Spring Data book example application](https://github.com/SpringSource/spring-data-book/blob/master/rest/src/main/java/com/oreilly/springdata/rest/RestWebApplicationInitializer.java) contains a Spring 3.1 [WebApplicationInitializer](http://static.springsource.org/spring-framework/docs/current/javadoc-api/org/springframework/web/WebApplicationInitializer.html)). Start by cloning the base web application project: [https://github.com/SpringSource/spring-data-rest-webmvc](https://github.com/SpringSource/spring-data-rest-webmvc). This application contains a web.xml file. If you want the XML-free Servlet 3.0 version, simply delete `src/main/webapp`, create a WebApplicationInitializer as mentioned above, build the WAR file, and then deploy that to your Servlet 3.0 container (Jetty 8 or similar).
 
     git clone https://github.com/SpringSource/spring-data-rest-webmvc.git
     cd spring-data-rest-webmvc
@@ -14,7 +14,7 @@ To use the Spring Data Web Exporter, you need to build a WAR file. Start by clon
 
 Deploy the built WAR file to your servlet container:
 
-    cp build/libs/spring-data-rest-webmvc-1.0.0.M1.war $TOMCAT_HOME/webapps/data.war
+    cp build/libs/spring-data-rest-webmvc-1.0.0.RC2.war $TOMCAT_HOME/webapps/data.war
     cd $TOMCAT_HOME
     bin/catalina.sh run
 
@@ -34,11 +34,8 @@ You can also deploy to a Jetty web container embedded in the build:
      > Accept: */*
      >
      < HTTP/1.1 200 OK
-     < Server: Apache-Coyote/1.1
      < Content-Type: application/json;charset=ISO-8859-1
-     < Content-Language: en-US
      < Content-Length: 257
-     < Date: Mon, 16 Apr 2012 14:32:44 GMT
      <
      {
        "_links" : [ {
@@ -55,7 +52,7 @@ You can also deploy to a Jetty web container embedded in the build:
 
 ### Export Repositories
 
-To expose your Repositories to the exporter, include a Spring XML configuration file in the classpath (e.g. in a client JAR or in `WEB-INF/classes`). The filename should end with "-export.xml" and reside under the path `META-INF/spring-data-rest/`. Your configuration should include a properly instantiated EntityManagerFactoryBean, an appropriate DataSource, and the appropriate repository configuration. It's easiest to use the special XML namespace for this purpose. An example configuration (named `WEB-INF/spring-data-rest/repositories-export.xml`) would look like something like this:
+To expose your Repositories to the exporter, you can include a Spring XML configuration file in the classpath (e.g. in a client JAR or in `WEB-INF/classes`). The filename should end with "-export.xml" and reside under the path `META-INF/spring-data-rest/`. Your configuration should include a properly instantiated EntityManagerFactoryBean, an appropriate DataSource, and the appropriate repository configuration. It's easiest to use the special XML namespace for this purpose. An example configuration (named `WEB-INF/spring-data-rest/repositories-export.xml`) would look like something like this:
 
     <?xml version="1.0" encoding="UTF-8"?>
     <beans xmlns="http://www.springframework.org/schema/beans"
@@ -73,6 +70,8 @@ To expose your Repositories to the exporter, include a Spring XML configuration 
     </beans>
 
 The file `shared.xml` contains a JDBC DataSource configuration, an EntityManagerFactoryBean, and a JpaTransactionManager.
+
+You can also use JavaConfig to configure your application. Thanks to the new `@EnableJpaRepositores` annotation on `@Configuration` beans introduced in the latest Spring Data JPA release, you can bootstrap the Spring MVC controller by simply instantiating a `RepositoryRestMvcConfiguration` bean or by an `@Import` of the same.
 
 ### Including your domain artifacts
 
@@ -108,7 +107,7 @@ You can configure under what path, or whether a resource is exported at all, by 
 
 ### Discoverability
 
-The Web Exporter implements some aspects of the [HATEOS](http://en.wikipedia.org/wiki/HATEOAS) methodology. That means all the services of the web exporter are discoverable and exposed to the client using links.
+The Web Exporter implements some aspects of the [HATEOAS](http://en.wikipedia.org/wiki/HATEOAS) methodology. That means all the services of the web exporter are discoverable and exposed to the client using links.
 
 If you issue an HTTP request to the root of the exporter:
 
@@ -117,7 +116,7 @@ If you issue an HTTP request to the root of the exporter:
 You'll get back a chunk of JSON that points your user agent to the locations of the exported repositories:
 
     {
-      "_links" : [{
+      "links" : [{
         "rel" : "person",
         "href" : "http://localhost:8080/data/person"
       }]
@@ -125,24 +124,19 @@ You'll get back a chunk of JSON that points your user agent to the locations of 
 
 The "rel" of the link will match the exported name of the repository. Your application should keep track of this rel value as the key to this repository.
 
-Similarly, if you issue a GET to `http://localhost:8080/data/person`, you should get back a list of entities exported at this resource (as returned by the CrudRepository.findAll method). At the moment, there is no paging, sorting, or querying capability.
+Similarly, if you issue a GET to `http://localhost:8080/data/person`, you should get back a list of entities exported at this resource (as returned by the CrudRepository.findAll method). See the wiki for more information about the paging and sorting options.
 
     curl -v http://localhost:8080/data/person
     
     {
-      "_links" : [ {
-        "rel" : "person.Person",
-        "href" : "http://localhost:8080/data/person/1"
-      }, {
-        "rel" : "person.Person",
-        "href" : "http://localhost:8080/data/person/2"
-      }, {
+      "content": [ ],
+      "links" : [ {
         "rel" : "person.search",
         "href" : "http://localhost:8080/data/person/search"
       } ]
     }
 
-The default "rel" of these links will be the rel of the repository plus a dot '.' plus the simple class name of the entity managed by this repository. The rel value can be configured using the `@RestResource` annotation, discussed on [Configuring the REST URL path](wiki/Configuring-the-REST-URL-path).
+The default "rel" of these links will be the rel of the repository plus a dot '.' plus the simple class name of the entity managed by this repository. The rel value can be configured using the `@RestResource` annotation, discussed on [Configuring the REST URL path](../wiki/Configuring-the-REST-URL-path).
 
 Following these links will give your user agent a chunk of JSON that represents the entity. Besides properly handling nested objects and simple values, the web exporter will show relationships between entities using links just like those presented previously.
 
@@ -150,7 +144,7 @@ Following these links will give your user agent a chunk of JSON that represents 
     
     {
       "name" : "John Doe",
-      "_links" : [ {
+      "links" : [ {
         "rel" : "profiles",
         "href" : "http://localhost:8080/data/person/1/profiles"
       }, {
@@ -188,7 +182,7 @@ Retrieving the linked entity gives us a JSON representation of the entity, as we
     curl -v http://localhost:8080/data/person/1/profiles/1
     
     {
-      "_links" : [ {
+      "links" : [ {
         "rel" : "self",
         "href" : "http://localhost:8080/data/profile/1"
       } ],
@@ -215,7 +209,7 @@ To see what query methods are exported, issue a GET request to the entity resour
     curl -v http://localhost:8080/data/person/search
 
     {
-      "_links" : [ {
+      "links" : [ {
         "rel" : "person.findByName",
         "href" : "http://localhost:8080/data/person/search/findByName"
       } ]
@@ -230,7 +224,7 @@ To query for entities using this search method, add a query parameter to the URL
       "href" : "http://localhost:8080/data/person/1"
     } ]
 
-To change the URL under which the query method is exported or set the name of the query parameter containing the search term, use the new `@RestResource` annotation.
+To change the URL under which the query method is exported or set the name of the query parameter containing the search term, use the `@RestResource` annotation.
 
     @RestResource(path = "people")
     public interface PersonRepository extends CrudRepository<Person, Long> {
@@ -243,4 +237,3 @@ To change the URL under which the query method is exported or set the name of th
 This changes the path the PersonRepository is exported under to `/people`, changes the rel of the search URL to `people.names`, changes the path under with the query method is exported to `/name`, and sets the query parameter containing the search term to `name`. To search the Repository using this method, issue a GET request.
 
     curl -v http://localhost:8080/data/people/search/name?name=John+Doe
-
