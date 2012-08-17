@@ -33,8 +33,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -176,22 +178,28 @@ public class RepositoryRestController
   /**
    * Get the {@link ConversionService} in use by the controller.
    *
-   * @return The internal {@link ConversionService}.
+   * @return The internal {@link ConversionService}s.
    */
   public ConversionService getConversionService() {
     return conversionService;
   }
 
   /**
-   * Add this {@link ConversionService} to the list of those being delegated to by the internal {@link
+   * Add these {@link ConversionService}s to the list of those being delegated to by the internal {@link
    * DelegatingConversionService}. Although this method does an 'add', it is called 'set' to make it JavaBean-friendly.
    *
-   * @param conversionService
+   * @param conversionServices
    */
   @Autowired(required = false)
-  public void setConversionService(ConversionService conversionService) {
+  public void setConversionServices(List<ConversionService> conversionServices) {
+    if(null == conversionServices) {
+      return;
+    }
+    Collections.reverse(conversionServices);
     if(null != conversionService) {
-      this.conversionService.addConversionServices(conversionService);
+      this.conversionService.addConversionServices(
+          conversionServices.toArray(new ConversionService[conversionServices.size()])
+      );
     }
   }
 
@@ -205,14 +213,14 @@ public class RepositoryRestController
   }
 
   /**
-   * @param conversionService
+   * @param conversionServices
    *
    * @return @this
    *
-   * @see RepositoryRestController#setConversionService(org.springframework.core.convert.ConversionService)
+   * @see RepositoryRestController#setConversionServices(java.util.List)
    */
-  public RepositoryRestController conversionService(ConversionService conversionService) {
-    setConversionService(conversionService);
+  public RepositoryRestController conversionServices(List<ConversionService> conversionServices) {
+    setConversionServices(conversionServices);
     return this;
   }
 
@@ -589,6 +597,10 @@ public class RepositoryRestController
         continue;
       }
 
+      TypeDescriptor stringTypeDesc = TypeDescriptor.valueOf(String[].class);
+      MethodParameter methodParam = new MethodParameter(queryMethod.method(), i);
+      TypeDescriptor targetTypeDesc = new TypeDescriptor(methodParam);
+
       Class<? extends Converter<String[], ?>> converter = null;
       for(Annotation anno : annotations[i]) {
         if(ConvertWith.class.isAssignableFrom(anno.getClass())) {
@@ -620,9 +632,9 @@ public class RepositoryRestController
       } else if(String.class.isAssignableFrom(paramTypes[i])) {
         // Param type is a String
         paramVals[i] = firstVal;
-      } else if(conversionService.canConvert(String.class, paramTypes[i])) {
+      } else if(conversionService.canConvert(stringTypeDesc, targetTypeDesc)) {
         // There's a converter from String -> param type
-        paramVals[i] = conversionService.convert(firstVal, paramTypes[i]);
+        paramVals[i] = conversionService.convert(queryVals, stringTypeDesc, targetTypeDesc);
       } else {
         // Param type isn't a "simple" type or no converter exists, try JSON
         try {

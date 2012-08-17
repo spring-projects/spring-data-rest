@@ -1,5 +1,7 @@
 package org.springframework.data.rest.test.webmvc;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -7,9 +9,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.rest.webmvc.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration;
+import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaDialect;
@@ -68,6 +73,20 @@ public class ApplicationConfig {
 
   @Bean public TestRepositoryEventListener testRepositoryEventListener() {
     return new TestRepositoryEventListener();
+  }
+
+  @Bean public ConversionService customConversionService() {
+    DefaultFormattingConversionService cs = new DefaultFormattingConversionService();
+    cs.addConverter(new Converter<String[], List<Long>>() {
+      @Override public List<Long> convert(String[] source) {
+        List<Long> longs = new ArrayList<Long>(source.length);
+        for(String s : source) {
+          longs.add(Long.parseLong(s));
+        }
+        return longs;
+      }
+    });
+    return cs;
   }
 
 }

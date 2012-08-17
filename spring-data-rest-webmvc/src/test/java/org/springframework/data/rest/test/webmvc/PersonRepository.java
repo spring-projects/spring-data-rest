@@ -30,8 +30,8 @@ public interface PersonRepository extends PagingAndSortingRepository<Person, Lon
   @RestResource(path = "nameStartsWith", rel = "nameStartsWith")
   Page findByNameStartsWith(@Param("name") String name, Pageable p);
 
-  @Query("select p from Person p where p.id in(:id)")
+  @Query("select p from Person p where p.id in(:ids)")
   @RestResource(path = "id")
-  Page<Person> findById(@Param("id") @ConvertWith(StringToListOfLongsConverter.class) List<Long> ids, Pageable pageable);
+  Page<Person> findById(@Param("ids") List<Long> ids, Pageable pageable);
 
 }

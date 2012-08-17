@@ -2,6 +2,8 @@ package org.springframework.data.rest.repository;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +22,14 @@ public class UriToDomainObjectResolver
     implements Resolver<Object> {
 
   @Autowired(required = false)
-  private ConversionService conversionService = new DefaultFormattingConversionService();
+  private List<ConversionService> conversionServices = Arrays.<ConversionService>asList(new DefaultFormattingConversionService());
 
-  public ConversionService getConversionService() {
-    return conversionService;
+  public List<ConversionService> getConversionServices() {
+    return conversionServices;
   }
 
-  public UriToDomainObjectResolver setConversionService(ConversionService conversionService) {
-    this.conversionService = conversionService;
+  public UriToDomainObjectResolver setConversionServices(List<ConversionService> conversionServices) {
+    this.conversionServices = conversionServices;
     return this;
   }
 
@@ -56,11 +58,16 @@ public class UriToDomainObjectResolver
     }
 
     Class<? extends Serializable> idType = (Class<? extends Serializable>)entityMeta.idAttribute().type();
-    Serializable serId;
+    Serializable serId = null;
     if(ClassUtils.isAssignable(idType, String.class)) {
       serId = sId;
     } else {
-      serId = conversionService.convert(sId, idType);
+      for(ConversionService cs : conversionServices) {
+        if(cs.canConvert(String.class, idType)) {
+          serId = cs.convert(sId, idType);
+          break;
+        }
+      }
     }
 
     return repo.findOne(serId);

@@ -60,7 +60,7 @@ public class RepositoryAwareMappingHttpMessageConverter
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Autowired(required = false)
-  protected ConversionService        conversionService   = new DefaultFormattingConversionService();
+  protected List<ConversionService>  conversionServices  = Arrays.<ConversionService>asList(new DefaultFormattingConversionService());
   @Autowired(required = false)
   protected List<RepositoryExporter> repositoryExporters = Collections.emptyList();
   @Autowired(required = false)
@@ -84,12 +84,12 @@ public class RepositoryAwareMappingHttpMessageConverter
     }
   }
 
-  public ConversionService getConversionService() {
-    return conversionService;
+  public List<ConversionService> getConversionServices() {
+    return conversionServices;
   }
 
-  public RepositoryAwareMappingHttpMessageConverter setConversionService(ConversionService conversionService) {
-    this.conversionService = conversionService;
+  public RepositoryAwareMappingHttpMessageConverter setConversionServices(List<ConversionService> conversionServices) {
+    this.conversionServices = conversionServices;
     return this;
   }
 
@@ -258,7 +258,13 @@ public class RepositoryAwareMappingHttpMessageConverter
       }
 
       Serializable serId = (Serializable)idAttr.get(value);
-      String sId = conversionService.convert(serId, String.class);
+      String sId = null;
+      for(ConversionService cs : conversionServices) {
+        if(cs.canConvert(idAttr.type(), String.class)) {
+          sId = cs.convert(serId, String.class);
+          break;
+        }
+      }
       if(null == sId) {
         sId = serId.toString();
       }
@@ -291,7 +297,13 @@ public class RepositoryAwareMappingHttpMessageConverter
       }
 
       Serializable serId = (Serializable)idAttr.get(value);
-      String sId = conversionService.convert(serId, String.class);
+      String sId = null;
+      for(ConversionService cs : conversionServices) {
+        if(cs.canConvert(idAttr.type(), String.class)) {
+          sId = cs.convert(serId, String.class);
+          break;
+        }
+      }
       if(null == sId) {
         sId = serId.toString();
       }
