@@ -42,6 +42,11 @@ public class Person {
     this.profiles = profiles;
   }
 
+  public Person(String name, Map<String, Profile> profiles) {
+    this.name = name;
+    this.profiles = profiles;
+  }
+
   public Long getId() {
     return id;
   }

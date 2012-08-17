@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -1065,9 +1067,9 @@ public class RepositoryRestController
     AttributeMetadata idAttr = propRepoMeta.entityMetadata().idAttribute();
     String propertyRel = repository +
         "." + entity.getClass().getSimpleName() +
-        "." + property +
-        "." + propRepoMeta.entityMetadata().type().getSimpleName();
+        "." + property;
     if(propVal instanceof Collection) {
+      propertyRel += "." + propRepoMeta.entityMetadata().type().getSimpleName();
       ResourceSet resources = new ResourceSet();
       for(Object o : (Collection)propVal) {
         String propValId = idAttr.get(o).toString();
@@ -1088,6 +1090,7 @@ public class RepositoryRestController
       }
       body = resources;
     } else if(propVal instanceof Map) {
+      propertyRel += "." + propRepoMeta.entityMetadata().type().getSimpleName();
       Map resource = new HashMap();
       for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)propVal).entrySet()) {
         String propValId = idAttr.get(entry.getValue()).toString();
@@ -1427,6 +1430,7 @@ public class RepositoryRestController
                                       @PathVariable String linkedId) throws IOException {
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     CrudRepository repo = repoMeta.repository();
+    // If I can't load the parent entity, then this method isn't allowed.
     if(!repoMeta.exportsMethod(CrudMethod.FIND_ONE) || !repoMeta.exportsMethod(CrudMethod.SAVE_ONE)) {
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
     }
@@ -1438,6 +1442,12 @@ public class RepositoryRestController
     AttributeMetadata attrMeta;
     if(null == (entity = repo.findOne(serId)) || null == (attrMeta = repoMeta.entityMetadata().attribute(property))) {
       return notFoundResponse(request);
+    }
+
+    // Check if this @*ToOne relationship is optional and if not, fail with a 405 Method Not Allowed
+    if((attrMeta.hasAnnotation(ManyToOne.class) && !attrMeta.annotation(ManyToOne.class).optional())
+        || (attrMeta.hasAnnotation(OneToOne.class) && !attrMeta.annotation(OneToOne.class).optional())) {
+      return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
     }
 
     // Find linked entity
@@ -1460,18 +1470,18 @@ public class RepositoryRestController
     // Remove linked entity from relationship based on property type
     if(attrMeta.isCollectionLike()) {
       Collection c = attrMeta.asCollection(entity);
-      if(null != c) {
+      if(null != c && c != Collections.emptyList()) {
         c.remove(linkedEntity);
       }
     } else if(attrMeta.isSetLike()) {
       Set s = attrMeta.asSet(entity);
-      if(null != s) {
+      if(null != s && s != Collections.emptySet()) {
         s.remove(linkedEntity);
       }
     } else if(attrMeta.isMapLike()) {
       Object keyToRemove = null;
       Map<Object, Object> m = attrMeta.asMap(entity);
-      if(null != m) {
+      if(null != m && m != Collections.emptyMap()) {
         for(Map.Entry<Object, Object> entry : m.entrySet()) {
           Object val = entry.getValue();
           if(null != val && val.equals(linkedEntity)) {
@@ -1484,7 +1494,7 @@ public class RepositoryRestController
         }
       }
     } else {
-      attrMeta.set(linkedEntity, entity);
+      attrMeta.set(null, entity);
     }
 
     publishEvent(new BeforeLinkDeleteEvent(entity, linkedEntity));
@@ -1698,7 +1708,8 @@ public class RepositoryRestController
 
     for(String attrName : entityMetadata.linkedAttributes().keySet()) {
       URI uri = buildUri(baseUri, attrName);
-      resource.addLink(new ResourceLink(repoRel + "." + entity.getClass().getSimpleName() + "." + attrName, uri));
+      String rel = repoRel + "." + entity.getClass().getSimpleName() + "." + attrName;
+      resource.addLink(new ResourceLink(rel, uri));
     }
 
     return resource;

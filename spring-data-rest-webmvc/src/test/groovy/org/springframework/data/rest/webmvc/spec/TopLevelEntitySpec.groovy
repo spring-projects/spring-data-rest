@@ -47,7 +47,7 @@ class TopLevelEntitySpec extends BaseSpec {
     person.name = "Johnnie Doe"
     person = people.save(person)
     def persId = person.id
-    def request = createJsonRequest("PUT", "people/$persId", null, person)
+    def request = createJsonRequest("PUT", "people/$persId", null, ["name": "Johnnie Doe"])
     def retrReq = createRequest("GET", "people/$persId", null)
 
     when:

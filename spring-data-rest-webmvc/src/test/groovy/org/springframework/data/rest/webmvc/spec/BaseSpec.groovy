@@ -39,7 +39,8 @@ abstract class BaseSpec extends Specification {
   @Autowired AddressRepository addresses
   @Autowired CustomerRepository customers
   UriComponentsBuilder baseUri
-  ObjectMapper mapper = new ObjectMapper()
+
+  def mapper = new ObjectMapper()
 
   @Transactional
   def setup() {
@@ -49,11 +50,11 @@ abstract class BaseSpec extends Specification {
       bindResource(emf, new EntityManagerHolder(emf.createEntityManager()))
     }
 
-    for (Person p : people.findAll()) {
-      people.delete(p)
-    }
     for (Address a : addresses.findAll()) {
       addresses.delete(a)
+    }
+    for (Person p : people.findAll()) {
+      people.delete(p)
     }
   }
 
@@ -93,15 +94,19 @@ abstract class BaseSpec extends Specification {
   }
 
   def newPerson() {
-    people.save(new Person(name: "John Doe", addresses: [newAddress("Univille")]))
+    def p = people.save(new Person(name: "John Doe"))
+    def a = newAddress("Univille", p)
+    p.addresses = [a]
+    people.save(p)
   }
 
-  def newAddress(city) {
+  def newAddress(city, person) {
     addresses.save(new Address(
         ["1234 W. 1st St."] as String[],
         city,
         "ST",
-        "12345"
+        "12345",
+        person
     ))
   }
 

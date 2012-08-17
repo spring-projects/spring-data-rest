@@ -1,5 +1,6 @@
 package org.springframework.data.rest.test.webmvc;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -16,17 +17,18 @@ public class Address {
   private                     String   city;
   private                     String   province;
   private                     String   postalCode;
-  @ManyToOne
+  @ManyToOne(optional = false, cascade = CascadeType.REMOVE)
   private                     Person   person;
 
   public Address() {
   }
 
-  public Address(String[] lines, String city, String province, String postalCode) {
+  public Address(String[] lines, String city, String province, String postalCode, Person person) {
     this.lines = lines;
     this.city = city;
     this.province = province;
     this.postalCode = postalCode;
+    this.person = person;
   }
 
   public Long getId() {
@@ -71,6 +73,15 @@ public class Address {
 
   public void setPerson(Person person) {
     this.person = person;
+  }
+
+  @Override public boolean equals(Object o) {
+    if(!(o instanceof Address)) {
+      return false;
+    }
+
+    Address address2 = (Address)o;
+    return (address2.id == id || (id != null && id.equals(address2.id)));
   }
 
 }

@@ -1,6 +1,7 @@
 package org.springframework.data.rest.repository.jpa;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -124,6 +125,14 @@ public class JpaAttributeMetadata implements AttributeMetadata {
 
   @Override public Map asMap(Object target) {
     return (Map)get(target);
+  }
+
+  @Override public boolean hasAnnotation(Class<? extends Annotation> annoType) {
+    return field.isAnnotationPresent(annoType);
+  }
+
+  @Override public <A extends Annotation> A annotation(Class<A> annoType) {
+    return field.getAnnotation(annoType);
   }
 
   @Override public Object get(Object target) {

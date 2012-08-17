@@ -74,13 +74,11 @@ public class RepositoryAwareMappingHttpMessageConverter
         MediaTypes.COMPACT_JSON,
         MediaTypes.VERBOSE_JSON
     ));
-
-    mapper.registerModule(new RepositoryAwareModule());
-
     setObjectMapper(mapper);
   }
 
   @Override public void afterPropertiesSet() throws Exception {
+    mapper.registerModule(new RepositoryAwareModule());
     for(Module m : modules) {
       mapper.registerModule(m);
     }
@@ -194,6 +192,12 @@ public class RepositoryAwareMappingHttpMessageConverter
   }
 
   private class RepositoryAwareModule extends SimpleModule {
+
+    SimpleSerializers      sers     = new SimpleSerializers();
+    SimpleDeserializers    dsers    = new SimpleDeserializers();
+    SimpleSerializers      keySers  = new SimpleSerializers();
+    SimpleKeyDeserializers keyDsers = new SimpleKeyDeserializers();
+
     private RepositoryAwareModule() {
       super("RepositoryAwareModule", new Version(1, 0, 0, "SNAPSHOT"));
     }
@@ -204,10 +208,6 @@ public class RepositoryAwareMappingHttpMessageConverter
           new SimpleAbstractTypeResolver()
               .addMapping(Link.class, ResourceLink.class)
       );
-      SimpleSerializers sers = new SimpleSerializers();
-      SimpleDeserializers dsers = new SimpleDeserializers();
-      SimpleSerializers keySers = new SimpleSerializers();
-      SimpleKeyDeserializers keyDsers = new SimpleKeyDeserializers();
 
       for(RepositoryExporter repoExp : repositoryExporters) {
         for(String repoName : new ArrayList<String>(repoExp.repositoryNames())) {

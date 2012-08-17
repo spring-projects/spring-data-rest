@@ -42,7 +42,6 @@ public class PersonLoader
 
   @Override public void afterPropertiesSet()
       throws Exception {
-    Address pers1addr = addressRepository.save(new Address(new String[]{"1234 W. 1st St."}, "Univille", "ST", "12345"));
 
     Map<String, Profile> pers1profiles = new HashMap<String, Profile>();
     Profile twitter = profileRepository.save(new Profile("twitter", "#!/johndoe"));
@@ -53,19 +52,32 @@ public class PersonLoader
     Person p1 = personRepository.save(
         new Person(
             "John Doe",
-            Arrays.asList(addressRepository.findOne(pers1addr.getId())),
             pers1profiles
         )
     );
 
-    Address pers2addr = addressRepository.save(new Address(new String[]{"1234 E. 2nd St."}, "Univille", "ST", "12345"));
+    Address pers1addr = addressRepository.save(new Address(new String[]{"1234 W. 1st St."},
+                                                           "Univille",
+                                                           "ST",
+                                                           "12345",
+                                                           p1));
+    p1.setAddresses(Arrays.asList(pers1addr));
+    personRepository.save(p1);
 
     Map<String, Profile> pers2profiles = new HashMap<String, Profile>();
     Profile twitter2 = profileRepository.save(new Profile("twitter", "#!/janedoe"));
     Profile fb2 = profileRepository.save(new Profile("facebook", "/janedoe"));
     pers2profiles.put("facebook", fb2);
 
-    Person p2 = personRepository.save(new Person("Jane Doe", Arrays.asList(pers2addr), pers2profiles));
+    Person p2 = personRepository.save(new Person("Jane Doe", pers2profiles));
+
+    Address pers2addr = addressRepository.save(new Address(new String[]{"1234 E. 2nd St."},
+                                                           "Univille",
+                                                           "ST",
+                                                           "12345",
+                                                           p2));
+    p2.setAddresses(Arrays.asList(pers2addr));
+    personRepository.save(p2);
 
   }
 

@@ -1,5 +1,6 @@
 package org.springframework.data.rest.repository;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -89,6 +90,27 @@ public interface AttributeMetadata {
    * @return attribute value as a {@link Map}
    */
   Map asMap(Object target);
+
+  /**
+   * Does this attribute have the given annotation on it?
+   *
+   * @param annoType
+   *     The type of annotation to search for.
+   *
+   * @return {@literal true} if this annotation exists on this attribute, {@literal false} otherwise.
+   */
+  boolean hasAnnotation(Class<? extends Annotation> annoType);
+
+  /**
+   * Get the given annotation.
+   *
+   * @param annoType
+   *     The type of annotation to get.
+   * @param <A>
+   *
+   * @return The annotation, or {@literal null} if it doesn't exist.
+   */
+  <A extends Annotation> A annotation(Class<A> annoType);
 
   /**
    * Get the path of this attribute.
