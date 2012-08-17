@@ -51,8 +51,8 @@ class RelationshipsSpec extends BaseSpec {
   def "cannot delete a required relationship"() {
 
     when:
-    def request = createRequest("DELETE", "address/$addrId/person/$persId", null)
-    def response = controller.deleteLink(request, "address", "$addrId", "person", "$persId")
+    def request = createRequest("DELETE", "address/$addrId/person", null)
+    def response = controller.clearLinks(request, "address", "$addrId", "person")
 
     then:
     response.statusCode == HttpStatus.METHOD_NOT_ALLOWED
