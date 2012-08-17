@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.data.rest.test.webmvc.Address
 import org.springframework.data.rest.test.webmvc.AddressRepository
 import org.springframework.data.rest.test.webmvc.ApplicationConfig
+import org.springframework.data.rest.test.webmvc.CustomerRepository
 import org.springframework.data.rest.test.webmvc.Person
 import org.springframework.data.rest.test.webmvc.PersonRepository
 import org.springframework.data.rest.test.webmvc.TestRepositoryEventListener
@@ -36,6 +37,7 @@ abstract class BaseSpec extends Specification {
   @Autowired EntityManagerFactory emf
   @Autowired PersonRepository people
   @Autowired AddressRepository addresses
+  @Autowired CustomerRepository customers
   UriComponentsBuilder baseUri
   ObjectMapper mapper = new ObjectMapper()
 

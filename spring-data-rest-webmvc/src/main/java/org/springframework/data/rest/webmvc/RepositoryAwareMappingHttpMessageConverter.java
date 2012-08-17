@@ -42,8 +42,10 @@ import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.data.rest.repository.UriToDomainObjectResolver;
 import org.springframework.format.support.DefaultFormattingConversionService;
+import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -101,14 +103,7 @@ public class RepositoryAwareMappingHttpMessageConverter
   @SuppressWarnings({"unchecked"})
   public RepositoryAwareMappingHttpMessageConverter setRepositoryExporters(List<RepositoryExporter> repositoryExporters) {
     this.repositoryExporters = repositoryExporters;
-
-    for(RepositoryExporter repoExp : repositoryExporters) {
-      for(String repoName : new ArrayList<String>(repoExp.repositoryNames())) {
-        RepositoryMetadata repoMeta = repoExp.repositoryMetadataFor(repoName);
-        Class domainType = repoMeta.entityMetadata().type();
-
-      }
-    }
+    this.mapper.registerModule(new RepositoryAwareModule());
     return this;
   }
 
@@ -171,6 +166,16 @@ public class RepositoryAwareMappingHttpMessageConverter
       mapper.writeValue(jsonGenerator, object);
     } catch(IOException ex) {
       throw new HttpMessageNotWritableException("Could not write JSON: " + ex.getMessage(), ex);
+    }
+  }
+
+  @Override protected Object readInternal(Class<?> clazz,
+                                          HttpInputMessage inputMessage) throws IOException,
+                                                                                HttpMessageNotReadableException {
+    try {
+      return mapper.readValue(inputMessage.getBody(), clazz);
+    } catch(IOException ex) {
+      throw new HttpMessageNotReadableException("Could not read JSON: " + ex.getMessage(), ex);
     }
   }
 
@@ -259,9 +264,9 @@ public class RepositoryAwareMappingHttpMessageConverter
       }
 
       String rel = repoMeta.rel() + "." + repoMeta.domainType().getSimpleName();
-      URI href = buildUri(RepositoryRestController.BASE_URI.get(), repoMeta.name(), sId);
+      URI selfUri = buildUri(RepositoryRestController.BASE_URI.get(), repoMeta.name(), sId);
 
-      jgen.writeObject(new ResourceLink(rel, href));
+      jgen.writeObject(new ResourceLink(rel, selfUri));
     }
 
   }
@@ -320,89 +325,120 @@ public class RepositoryAwareMappingHttpMessageConverter
         throw ctxt.instantiationException(getValueClass(), e);
       }
 
-      for(JsonToken tok = jp.getCurrentToken(); tok != JsonToken.END_OBJECT; tok = jp.nextToken()) {
+      for(JsonToken tok = jp.nextToken(); tok != JsonToken.END_OBJECT; tok = jp.nextToken()) {
         String name = jp.getCurrentName();
         switch(tok) {
           case FIELD_NAME: {
+            // Read the attribute metadata
+            AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(name);
+            Object val = null;
+
             if(name.startsWith("@http")) {
               entity = domainObjectResolver.resolve(
                   RepositoryRestController.BASE_URI.get(),
                   URI.create(name.substring(1))
               );
-            } else if("href".equals(name)) {
+              continue;
+            }
+
+            if("href".equals(name)) {
               entity = domainObjectResolver.resolve(
                   RepositoryRestController.BASE_URI.get(),
                   URI.create(jp.nextTextValue())
               );
-            } else if("rel".equals(name)) {
-              // rel is currently ignored
-            } else {
-              // Read the attribute metadata
-              AttributeMetadata attrMeta = repoMeta.entityMetadata().attribute(name);
-              if(null == attrMeta) {
-                continue;
-              }
-              // Try and read the value of this attribute.
-              // The method of doing that varies based on the type of the property.
-              Object val;
-              if(attrMeta.isCollectionLike()) {
-                Collection c = attrMeta.asCollection(entity);
-                if(null == c) {
-                  c = new ArrayList();
-                }
+              continue;
+            }
 
-                if(jp.getCurrentToken() == JsonToken.START_ARRAY) {
-                  while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
-                    Object cval = jp.readValueAs(attrMeta.elementType());
-                    c.add(cval);
-                  }
-                }
+            if("rel".equals(name)) {
+              // rel is currently ignored
+              continue;
+            }
+
+            if(null == attrMeta) {
+              // do nothing
+              continue;
+            }
+
+            // Try and read the value of this attribute.
+            // The method of doing that varies based on the type of the property.
+            if(attrMeta.isCollectionLike()) {
+              Collection c = attrMeta.asCollection(entity);
+              if(null == c || c == Collections.emptyList()) {
+                c = new ArrayList();
+              }
+
+              if((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
+                do {
+                  Object cval = jp.readValueAs(attrMeta.elementType());
+                  c.add(cval);
+                } while((tok = jp.nextToken()) != JsonToken.END_ARRAY);
 
                 val = c;
-              } else if(attrMeta.isSetLike()) {
-                Set s = attrMeta.asSet(entity);
-                if(null == s) {
-                  s = new HashSet();
-                }
 
-                if(jp.getCurrentToken() == JsonToken.START_ARRAY) {
-                  while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
-                    Object sval = jp.readValueAs(attrMeta.elementType());
-                    s.add(sval);
-                  }
-                }
+              } else if(tok == JsonToken.VALUE_NULL) {
+                val = null;
+              } else {
+                throw new HttpMessageNotReadableException("Cannot read a JSON " + tok + " as a Collection.");
+              }
+            } else if(attrMeta.isSetLike()) {
+              Set s = attrMeta.asSet(entity);
+              if(null == s || s == Collections.emptySet()) {
+                s = new HashSet();
+              }
+
+              if((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
+                do {
+                  Object sval = jp.readValueAs(attrMeta.elementType());
+                  s.add(sval);
+                } while((tok = jp.nextToken()) != JsonToken.END_ARRAY);
 
                 val = s;
-              } else if(attrMeta.isMapLike()) {
-                Map m = attrMeta.asMap(entity);
-                if(null == m) {
-                  m = new HashMap();
-                }
 
-                if(jp.getCurrentToken() == JsonToken.START_OBJECT) {
-                  while((tok = jp.nextToken()) != JsonToken.END_OBJECT) {
-                    name = jp.getCurrentName();
-                    Object mkey = (
-                        name.startsWith("@http")
-                        ? domainObjectResolver.resolve(
-                            RepositoryRestController.BASE_URI.get(),
-                            URI.create(name.substring(1))
-                        )
-                        : name
-                    );
-                    tok = jp.nextToken();
-                    Object mval = jp.readValueAs(attrMeta.elementType());
+              } else if(tok == JsonToken.VALUE_NULL) {
+                val = null;
+              } else {
+                throw new HttpMessageNotReadableException("Cannot read a JSON " + tok + " as a Set.");
+              }
+            } else if(attrMeta.isMapLike()) {
+              Map m = attrMeta.asMap(entity);
+              if(null == m || m == Collections.emptyMap()) {
+                m = new HashMap();
+              }
 
-                    m.put(mkey, mval);
-                  }
-                }
+              if((tok = jp.nextToken()) == JsonToken.START_OBJECT) {
+                do {
+                  name = jp.getCurrentName();
+                  Object mkey = (
+                      name.startsWith("@http")
+                      ? domainObjectResolver.resolve(
+                          RepositoryRestController.BASE_URI.get(),
+                          URI.create(name.substring(1))
+                      )
+                      : name
+                  );
+                  tok = jp.nextToken();
+                  Object mval = jp.readValueAs(attrMeta.elementType());
+
+                  m.put(mkey, mval);
+                } while((tok = jp.nextToken()) != JsonToken.END_OBJECT);
 
                 val = m;
+
+              } else if(tok == JsonToken.VALUE_NULL) {
+                val = null;
               } else {
+                throw new HttpMessageNotReadableException("Cannot read a JSON " + tok + " as a Map.");
+              }
+            } else {
+              if((tok = jp.nextToken()) != JsonToken.VALUE_NULL) {
                 val = jp.readValueAs(attrMeta.type());
               }
+            }
+
+            if(null != val) {
               attrMeta.set(val, entity);
             }
+
             break;
           }
         }

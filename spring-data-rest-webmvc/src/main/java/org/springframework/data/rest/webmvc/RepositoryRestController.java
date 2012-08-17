@@ -1112,7 +1112,7 @@ public class RepositoryRestController
       body = new MapResource(resource);
     } else {
       String propValId = idAttr.get(propVal).toString();
-      URI path = buildUri(baseUri, repository, id, property, propValId);
+      URI path = buildUri(baseUri, repository, id, property);
       URI selfUri = buildUri(baseUri, propRepoMeta.name(), propValId);
       if(shouldReturnLinks(accept)) {
         Resource<?> resource = new Resource<Object>();
@@ -1122,7 +1122,7 @@ public class RepositoryRestController
         MapResource res = createResource(propRepoMeta.rel(),
                                          propVal,
                                          propRepoMeta.entityMetadata(),
-                                         buildUri(baseUri, propRepoMeta.name(), propValId));
+                                         selfUri);
         res.addLink(new ResourceLink(propertyRel, path));
         res.addLink(new ResourceLink(SELF, selfUri));
         body = res;
@@ -1214,6 +1214,14 @@ public class RepositoryRestController
           m.put(rel.get(), linkedEntity);
           attrMeta.set(m, entity);
         } else {
+          // Don't support POST when it's a single value
+          if(request.getMethod() == HttpMethod.POST) {
+            try {
+              return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
+            } catch(IOException e) {
+              throw new IllegalStateException(e.getMessage(), e);
+            }
+          }
           attrMeta.set(linkedEntity, entity);
         }
 

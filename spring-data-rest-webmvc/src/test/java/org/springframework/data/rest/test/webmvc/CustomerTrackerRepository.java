@@ -5,5 +5,5 @@ import org.springframework.data.repository.CrudRepository;
 /**
  * @author Jon Brisbin
  */
-public interface WebCustomerRepository extends CrudRepository<WebCustomer, Long> {
+public interface CustomerTrackerRepository extends CrudRepository<CustomerTracker, Long> {
 }

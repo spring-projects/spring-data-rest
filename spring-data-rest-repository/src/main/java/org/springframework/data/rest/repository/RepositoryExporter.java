@@ -26,8 +26,9 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
 
   protected ApplicationContext applicationContext;
   protected Repositories       repositories;
-  protected List<String> exportOnlyTheseClasses = Collections.emptyList();
-  protected Map<String, M> repositoryMetadata;
+  protected Map<String, M>     repositoryMetadata;
+  protected List<String>            exportOnlyTheseClasses = Collections.emptyList();
+  protected Map<Class<?>, Class<?>> domainTypeMappings     = new HashMap<Class<?>, Class<?>>();
 
   /**
    * Get the list of class names of Repositories to export.
@@ -50,6 +51,16 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
   @SuppressWarnings({"unchecked"})
   public M setExportOnlyTheseClasses(List<String> exportOnlyTheseClasses) {
     this.exportOnlyTheseClasses = exportOnlyTheseClasses;
+    return (M)this;
+  }
+
+  public Map<Class<?>, Class<?>> getDomainTypeMappings() {
+    return domainTypeMappings;
+  }
+
+  @SuppressWarnings({"unchecked"})
+  public M setDomainTypeMappings(Map<Class<?>, Class<?>> domainTypeMappings) {
+    this.domainTypeMappings = domainTypeMappings;
     return (M)this;
   }
 
@@ -100,6 +111,22 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
    */
   public M repositoryMetadataFor(Class<?> domainType) {
     refresh();
+    // Look for an exact match
+    for(M repoMeta : repositoryMetadata.values()) {
+      if(repoMeta.domainType() == domainType) {
+        return repoMeta;
+      }
+    }
+    // Didn't find an exact match, look for domain type mapping
+    Class<?> repoClass = domainTypeMappings.get(domainType);
+    if(null != repoClass) {
+      for(M repoMeta : repositoryMetadata.values()) {
+        if(repoMeta.repositoryClass() == repoClass) {
+          return repoMeta;
+        }
+      }
+    }
+    // Didn't find a mapping, look for a superclass
     for(M repoMeta : repositoryMetadata.values()) {
       if(repoMeta.domainType().isAssignableFrom(domainType)) {
         return repoMeta;

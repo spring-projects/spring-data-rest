@@ -25,7 +25,7 @@ class DiscoverySpec extends BaseSpec {
     def links = readJson(response).links
 
     then:
-    links.size() == 5
+    links.size() == 6
 
   }
 
