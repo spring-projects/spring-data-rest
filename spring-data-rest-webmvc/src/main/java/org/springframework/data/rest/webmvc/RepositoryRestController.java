@@ -363,7 +363,12 @@ public class RepositoryRestController
       }
     }
 
+    // Publish an event that we're about to publish this ResourceSet
     publishEvent(new BeforeRenderResourcesEvent(request, null, resources));
+    // Run any configured post processors
+    for(ResourceSetPostProcessor pp : config.getResourceSetPostProcessors()) {
+      resources = pp.postProcess(request, resources);
+    }
 
     return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
@@ -401,7 +406,7 @@ public class RepositoryRestController
     }
 
     Iterator allEntities = Collections.emptyList().iterator();
-    final ResourceSet resources;
+    ResourceSet resources;
     if(repoMeta.repository() instanceof PagingAndSortingRepository) {
       PageableResourceSet pr = new PageableResourceSet();
 
@@ -480,6 +485,10 @@ public class RepositoryRestController
     }
 
     publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, resources));
+    // Run any configured post processors
+    for(ResourceSetPostProcessor pp : config.getResourceSetPostProcessors()) {
+      resources = pp.postProcess(request, resources);
+    }
 
     return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
@@ -535,6 +544,10 @@ public class RepositoryRestController
     }
 
     publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, resources));
+    // Run any configured post processors
+    for(ResourceSetPostProcessor pp : config.getResourceSetPostProcessors()) {
+      resources = pp.postProcess(request, resources);
+    }
 
     return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
@@ -715,6 +728,10 @@ public class RepositoryRestController
     }
 
     publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, resources));
+    // Run any configured post processors
+    for(ResourceSetPostProcessor pp : config.getResourceSetPostProcessors()) {
+      resources = pp.postProcess(request, resources);
+    }
 
     return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
   }
@@ -780,6 +797,10 @@ public class RepositoryRestController
       body = resource;
 
       publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
+      // Run any post-processors for this domain type
+      for(ResourcePostProcessor pp : config.getResourcePostProcessors(repoMeta.domainType())) {
+        body = pp.postProcess(request, body);
+      }
     }
 
     return negotiateResponse(request, HttpStatus.CREATED, headers, body);
@@ -839,13 +860,17 @@ public class RepositoryRestController
     }
 
     URI selfUri = buildUri(baseUri, repository, id);
-    MapResource res = createResource(repoMeta.rel(),
-                                     entity,
-                                     repoMeta.entityMetadata(),
-                                     selfUri);
+    Resource res = createResource(repoMeta.rel(),
+                                  entity,
+                                  repoMeta.entityMetadata(),
+                                  selfUri);
     res.addLink(new ResourceLink(SELF, selfUri));
 
     publishEvent(new BeforeRenderResourceEvent(request, repoMeta, res));
+    // Run any post-processors for this domain type
+    for(ResourcePostProcessor pp : config.getResourcePostProcessors(repoMeta.domainType())) {
+      res = pp.postProcess(request, res);
+    }
 
     return negotiateResponse(request, HttpStatus.OK, headers, res);
   }
@@ -926,15 +951,19 @@ public class RepositoryRestController
 
     Object body = null;
     if(returnBody(request)) {
-      MapResource res = createResource(repoMeta.rel(),
-                                       savedEntity,
-                                       repoMeta.entityMetadata(),
-                                       selfUri);
+      Resource res = createResource(repoMeta.rel(),
+                                    savedEntity,
+                                    repoMeta.entityMetadata(),
+                                    selfUri);
       res.addLink(new ResourceLink(SELF, selfUri));
 
       body = res;
 
       publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
+      // Run any post-processors for this domain type
+      for(ResourcePostProcessor pp : config.getResourcePostProcessors(repoMeta.domainType())) {
+        res = pp.postProcess(request, res);
+      }
     }
 
     if(!isUpdate) {
@@ -1084,6 +1113,10 @@ public class RepositoryRestController
         }
       }
       body = resources;
+      // Run any post-processors for this domain type
+      for(ResourceSetPostProcessor pp : config.getResourceSetPostProcessors()) {
+        resources = pp.postProcess(request, resources);
+      }
     } else if(propVal instanceof Map) {
       propertyRel += "." + propRepoMeta.entityMetadata().type().getSimpleName();
       Map resource = new HashMap();
@@ -1098,13 +1131,17 @@ public class RepositoryRestController
           resource.put(sKey, new ResourceLink(propertyRel, path));
         } else {
           URI selfUri = buildUri(baseUri, propRepoMeta.name(), propValId);
-          MapResource res = createResource(propRepoMeta.rel(),
-                                           entry.getValue(),
-                                           propRepoMeta.entityMetadata(),
-                                           selfUri);
+          Resource res = createResource(propRepoMeta.rel(),
+                                        entry.getValue(),
+                                        propRepoMeta.entityMetadata(),
+                                        selfUri);
           res.addLink(new ResourceLink(SELF, selfUri));
           res.addLink(new ResourceLink(propertyRel, path));
           resource.put(sKey, res);
+          // Run any post-processors for this domain type
+          for(ResourcePostProcessor pp : config.getResourcePostProcessors(propRepoMeta.domainType())) {
+            res = pp.postProcess(request, res);
+          }
         }
       }
       body = new MapResource(resource);
@@ -1124,6 +1161,10 @@ public class RepositoryRestController
         res.addLink(new ResourceLink(propertyRel, path));
         res.addLink(new ResourceLink(SELF, selfUri));
         body = res;
+      }
+      // Run any post-processors for this domain type
+      for(ResourcePostProcessor pp : config.getResourcePostProcessors(propRepoMeta.domainType())) {
+        body = pp.postProcess(request, (Resource)body);
       }
     }
 
@@ -1388,14 +1429,18 @@ public class RepositoryRestController
     String propertyRel = repository + "." + repoMeta.entityMetadata().type().getSimpleName() + "." + property;
     URI propertyPath = buildUri(baseUri, repository, id, property, linkedId);
     URI selfUri = buildUri(baseUri, linkedRepoMeta.name(), linkedId);
-    MapResource res = createResource(linkedRepoMeta.rel(),
-                                     linkedEntity,
-                                     linkedRepoMeta.entityMetadata(),
-                                     selfUri);
+    Resource res = createResource(linkedRepoMeta.rel(),
+                                  linkedEntity,
+                                  linkedRepoMeta.entityMetadata(),
+                                  selfUri);
     res.addLink(new ResourceLink(propertyRel, propertyPath));
     res.addLink(new ResourceLink(SELF, selfUri));
 
     publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, res));
+    // Run any post-processors for this domain type
+    for(ResourcePostProcessor pp : config.getResourcePostProcessors(linkedRepoMeta.domainType())) {
+      res = pp.postProcess(request, res);
+    }
 
     HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Location", selfUri.toString());

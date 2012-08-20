@@ -8,7 +8,21 @@
 
   <bean id="config" class="org.springframework.data.rest.webmvc.RepositoryRestConfiguration"
         p:jsonpParamName="callback"
-        p:jsonpOnErrParamName="errback"/>
+        p:jsonpOnErrParamName="errback">
+    <property name="domainTypeToRepositoryMappings">
+      <map key-type="java.lang.Class" value-type="java.lang.Class">
+        <entry key="org.springframework.data.rest.test.webmvc.Person"
+               value="org.springframework.data.rest.test.webmvc.PersonRepository"/>
+      </map>
+    </property>
+    <property name="resourcePostProcessors">
+      <map key-type="java.lang.Class">
+        <entry key="org.springframework.data.rest.test.webmvc.Person">
+          <bean class="org.springframework.data.rest.test.webmvc.LoggingResourcePostProcessor"/>
+        </entry>
+      </map>
+    </property>
+  </bean>
 
   <!--
     If you need to add Converters to the REST exporter to handle the property types you're using

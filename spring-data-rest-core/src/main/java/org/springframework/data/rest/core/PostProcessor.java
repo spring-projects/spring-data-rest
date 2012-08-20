@@ -1,5 +1,7 @@
 package org.springframework.data.rest.core;
 
+import org.springframework.http.server.ServerHttpRequest;
+
 /**
  * Implementations of this interface will post-process objects to mutate them in ways meaningful to the context in
  * which they are called.
@@ -13,6 +15,6 @@ public interface PostProcessor<T> {
    *
    * @param obj
    */
-  T postProcess(T obj);
+  T postProcess(ServerHttpRequest request, T obj);
 
 }

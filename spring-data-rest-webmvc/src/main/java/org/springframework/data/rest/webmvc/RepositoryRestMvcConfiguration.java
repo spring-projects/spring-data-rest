@@ -31,20 +31,20 @@ public class RepositoryRestMvcConfiguration {
    * {@link org.springframework.data.rest.repository.RepositoryExporter} implementation for exporting JPA repositories.
    */
   @Autowired(required = false)
-  JpaRepositoryExporter customJpaRepositoryExporter;
+  protected JpaRepositoryExporter customJpaRepositoryExporter;
 
   /**
    * {@link org.springframework.context.ApplicationListener} implementation for invoking {@link
    * org.springframework.validation.Validator} instances assigned to specific domain types.
    */
   @Autowired(required = false)
-  ValidatingRepositoryEventListener validatingRepositoryEventListener;
+  protected ValidatingRepositoryEventListener validatingRepositoryEventListener;
 
   /**
    * Main configuration for the REST exporter.
    */
   @Autowired(required = false)
-  RepositoryRestConfiguration repositoryRestConfig = RepositoryRestConfiguration.DEFAULT;
+  protected RepositoryRestConfiguration repositoryRestConfig;
 
   /**
    * For getting access to the {@link javax.persistence.EntityManagerFactory}.
@@ -61,11 +61,9 @@ public class RepositoryRestMvcConfiguration {
    * @return
    */
   @Bean public JpaRepositoryExporter jpaRepositoryExporter() {
-    if(null == customJpaRepositoryExporter) {
-      return new JpaRepositoryExporter();
-    } else {
-      return customJpaRepositoryExporter;
-    }
+    return (null == customJpaRepositoryExporter
+            ? new JpaRepositoryExporter().setDomainTypeMappings(repositoryRestConfiguration().getDomainTypeToRepositoryMappings())
+            : customJpaRepositoryExporter);
   }
 
   /**
@@ -74,11 +72,9 @@ public class RepositoryRestMvcConfiguration {
    * @return
    */
   @Bean public ValidatingRepositoryEventListener validatingRepositoryEventListener() {
-    if(null == validatingRepositoryEventListener) {
-      return new ValidatingRepositoryEventListener();
-    } else {
-      return validatingRepositoryEventListener;
-    }
+    return (null == validatingRepositoryEventListener
+            ? new ValidatingRepositoryEventListener()
+            : validatingRepositoryEventListener);
   }
 
   /**
@@ -92,13 +88,20 @@ public class RepositoryRestMvcConfiguration {
   }
 
   /**
-   * A {@link org.springframework.data.rest.core.Resolver} implementation that takes a {@link java.net.URI} and turns it
+   * A {@link org.springframework.data.rest.core.Resolver} implementation that takes a {@link java.net.URI} and turns
+   * it
    * into a top-level domain object.
    *
    * @return
    */
   @Bean public UriToDomainObjectResolver domainObjectResolver() {
     return new UriToDomainObjectResolver();
+  }
+
+  @Bean public RepositoryRestConfiguration repositoryRestConfiguration() {
+    return (null == repositoryRestConfig
+            ? RepositoryRestConfiguration.DEFAULT
+            : repositoryRestConfig);
   }
 
   /**
@@ -113,7 +116,7 @@ public class RepositoryRestMvcConfiguration {
   }
 
   @Bean ResourcesReturnValueHandler resourcesReturnValueHandler() {
-    return new ResourcesReturnValueHandler(repositoryRestConfig);
+    return new ResourcesReturnValueHandler(repositoryRestConfiguration());
   }
 
   /**
@@ -123,7 +126,7 @@ public class RepositoryRestMvcConfiguration {
    * @return
    */
   @Bean public RepositoryRestHandlerAdapter repositoryExporterHandlerAdapter() {
-    return new RepositoryRestHandlerAdapter(repositoryRestConfig);
+    return new RepositoryRestHandlerAdapter(repositoryRestConfiguration());
   }
 
   /**

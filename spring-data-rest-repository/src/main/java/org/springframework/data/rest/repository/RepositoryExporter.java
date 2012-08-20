@@ -20,7 +20,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E extends EntityMetadata<? extends AttributeMetadata>>
+public abstract class RepositoryExporter<R extends RepositoryExporter<? super R, M, E>, M extends RepositoryMetadata<E>, E extends EntityMetadata<? extends AttributeMetadata>>
     implements ApplicationContextAware,
                InitializingBean {
 
@@ -49,9 +49,9 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
    * @return @this
    */
   @SuppressWarnings({"unchecked"})
-  public M setExportOnlyTheseClasses(List<String> exportOnlyTheseClasses) {
+  public R setExportOnlyTheseClasses(List<String> exportOnlyTheseClasses) {
     this.exportOnlyTheseClasses = exportOnlyTheseClasses;
-    return (M)this;
+    return (R)this;
   }
 
   public Map<Class<?>, Class<?>> getDomainTypeMappings() {
@@ -59,13 +59,12 @@ public abstract class RepositoryExporter<M extends RepositoryMetadata<E>, E exte
   }
 
   @SuppressWarnings({"unchecked"})
-  public M setDomainTypeMappings(Map<Class<?>, Class<?>> domainTypeMappings) {
+  public R setDomainTypeMappings(Map<Class<?>, Class<?>> domainTypeMappings) {
     this.domainTypeMappings = domainTypeMappings;
-    return (M)this;
+    return (R)this;
   }
 
-  @Override public void setApplicationContext(ApplicationContext applicationContext)
-      throws BeansException {
+  @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
     this.applicationContext = applicationContext;
   }
 

@@ -13,7 +13,7 @@ import org.springframework.data.rest.repository.RepositoryExporter;
  * @author Jon Brisbin
  */
 public class JpaRepositoryExporter
-    extends RepositoryExporter<JpaRepositoryMetadata, JpaEntityMetadata> {
+    extends RepositoryExporter<JpaRepositoryExporter, JpaRepositoryMetadata, JpaEntityMetadata> {
 
   protected EntityManager entityManager;
 

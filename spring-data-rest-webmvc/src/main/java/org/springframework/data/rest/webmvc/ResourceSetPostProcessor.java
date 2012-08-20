@@ -9,5 +9,5 @@ import org.springframework.data.rest.core.ResourceSet;
  *
  * @author Jon Brisbin
  */
-public interface ResponsePostProcessor extends PostProcessor<ResourceSet> {
+public interface ResourceSetPostProcessor extends PostProcessor<ResourceSet> {
 }

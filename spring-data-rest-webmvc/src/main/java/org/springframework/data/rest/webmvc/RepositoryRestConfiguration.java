@@ -3,9 +3,11 @@ package org.springframework.data.rest.webmvc;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.Assert;
@@ -20,17 +22,18 @@ public class RepositoryRestConfiguration {
 
   public static final RepositoryRestConfiguration DEFAULT = new RepositoryRestConfiguration();
 
-  private int                                       defaultPageSize        = 20;
-  private String                                    pageParamName          = "page";
-  private String                                    limitParamName         = "limit";
-  private String                                    sortParamName          = "sort";
-  private String                                    jsonpParamName         = "callback";
-  private String                                    jsonpOnErrParamName    = null;
-  private List<HttpMessageConverter<?>>             customConverters       = Collections.emptyList();
-  private Multimap<Class<?>, ResourcePostProcessor> resourcePostProcessors = ArrayListMultimap.create();
-  private List<ResponsePostProcessor>               responsePostProcessors = Collections.emptyList();
-  private MediaType                                 defaultMediaType       = MediaType.APPLICATION_JSON;
-  private boolean                                   dumpErrors             = true;
+  private int                                       defaultPageSize           = 20;
+  private String                                    pageParamName             = "page";
+  private String                                    limitParamName            = "limit";
+  private String                                    sortParamName             = "sort";
+  private String                                    jsonpParamName            = "callback";
+  private String                                    jsonpOnErrParamName       = null;
+  private List<HttpMessageConverter<?>>             customConverters          = Collections.emptyList();
+  private Multimap<Class<?>, ResourcePostProcessor> resourcePostProcessors    = ArrayListMultimap.create();
+  private List<ResourceSetPostProcessor>            resourceSetPostProcessors = Collections.emptyList();
+  private Map<Class<?>, Class<?>>                   typeMappings              = Collections.emptyMap();
+  private MediaType                                 defaultMediaType          = MediaType.APPLICATION_JSON;
+  private boolean                                   dumpErrors                = true;
 
   /**
    * Get the default size of {@link org.springframework.data.domain.Pageable}s. Default is 20.
@@ -144,6 +147,29 @@ public class RepositoryRestConfiguration {
   }
 
   /**
+   * Get the list of domain type to repository implementation mappings that will help the exporters narrow down the
+   * correct {@link org.springframework.data.repository.Repository} to return for a given domain type.
+   *
+   * @return
+   */
+  public Map<Class<?>, Class<?>> getDomainTypeToRepositoryMappings() {
+    return typeMappings;
+  }
+
+  /**
+   * Set the list of domain type to repository implementation mappings that will help the exporters narrow down the
+   * correct {@link org.springframework.data.repository.Repository} to return for a given domain type.
+   *
+   * @param typeMappings
+   *
+   * @return
+   */
+  public RepositoryRestConfiguration setDomainTypeToRepositoryMappings(Map<Class<?>, Class<?>> typeMappings) {
+    this.typeMappings = typeMappings;
+    return this;
+  }
+
+  /**
    * Get the name of the URL query string parameter that indicates the name of the javascript function to use as the
    * JSONP wrapper for results.
    *
@@ -232,22 +258,25 @@ public class RepositoryRestConfiguration {
   }
 
   /**
-   * Get the list of {@link ResponsePostProcessor}s that will potentially alter the responses going back to the
+   * Get the list of {@link ResourceSetPostProcessor}s that will potentially alter the responses going back to the
    * client.
    *
    * @return
    */
-  public List<ResponsePostProcessor> getResponsePostProcessors() {
-    return responsePostProcessors;
+  public List<ResourceSetPostProcessor> getResourceSetPostProcessors() {
+    return resourceSetPostProcessors;
   }
 
   /**
-   * Set the list of {@link ResponsePostProcessor}s that will potentially alter the responses going back to the
+   * Set the list of {@link ResourceSetPostProcessor}s that will potentially alter the responses going back to the
    *
-   * @param responsePostProcessors
+   * @param resourceSetPostProcessors
    */
-  public void setResponsePostProcessors(List<ResponsePostProcessor> responsePostProcessors) {
-    this.responsePostProcessors = responsePostProcessors;
+  @Autowired(required = false)
+  public RepositoryRestConfiguration setResourceSetPostProcessors(List<ResourceSetPostProcessor> resourceSetPostProcessors) {
+    Assert.notNull(resourceSetPostProcessors, "ResourceSetPostProcessors cannot be null.");
+    this.resourceSetPostProcessors = resourceSetPostProcessors;
+    return this;
   }
 
   /**
@@ -259,7 +288,26 @@ public class RepositoryRestConfiguration {
    * @return
    */
   public RepositoryRestConfiguration addResourcePostProcessor(Class<?> type, ResourcePostProcessor postProcessor) {
+    Assert.notNull(type, "Type for ResourcePostProcessor cannot be null.");
+    Assert.notNull(postProcessor, "ResourcePostProcessor for type " + type.getName() + " cannot be null.");
     resourcePostProcessors.put(type, postProcessor);
+    return this;
+  }
+
+  /**
+   * Set tje {@link ResourcePostProcessor} map used to determine what post-processors to run for which domain type.
+   *
+   * @param postProcessors
+   *
+   * @return
+   */
+  public RepositoryRestConfiguration setResourcePostProcessors(Map<Class<?>, ResourcePostProcessor> postProcessors) {
+    if(null == postProcessors) {
+      return this;
+    }
+    for(Map.Entry<Class<?>, ResourcePostProcessor> entry : postProcessors.entrySet()) {
+      addResourcePostProcessor(entry.getKey(), entry.getValue());
+    }
     return this;
   }
 
