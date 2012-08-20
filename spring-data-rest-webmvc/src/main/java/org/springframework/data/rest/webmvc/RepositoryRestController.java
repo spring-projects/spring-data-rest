@@ -1859,20 +1859,29 @@ public class RepositoryRestController
     MediaType acceptType = config.getDefaultMediaType();
     HttpMessageConverter converter = findWriteConverter(resource.getClass(), acceptType);
     // If an Accept header is specified that isn't the catch-all, try and find a converter for it.
-    if(!MediaTypes.ACCEPT_ALL_TYPES.equals(request.getHeaders().getAccept())) {
+    if(null == converter) {
       for(MediaType mt : request.getHeaders().getAccept()) {
-        if(null != (converter = findWriteConverter(resource.getClass(), mt))) {
-          if(!"*".equals(mt.getSubtype())) {
-            acceptType = mt;
-          }
-          break;
+        if(MediaType.ALL.equals(mt)) {
+          continue;
         }
+
+        HttpMessageConverter hmc;
+        if(null == (hmc = findWriteConverter(resource.getClass(), mt))) {
+          continue;
+        }
+
+        if(!"*".equals(mt.getSubtype())) {
+          acceptType = mt;
+          headers.setContentType(acceptType);
+          converter = hmc;
+        }
+        break;
       }
     }
-    headers.setContentType(acceptType);
 
     if(null == converter) {
       converter = mappingHttpMessageConverter;
+      headers.setContentType(MediaType.APPLICATION_JSON);
     }
 
     final ByteArrayOutputStream bout = new ByteArrayOutputStream();
