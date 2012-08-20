@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -37,7 +36,6 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
@@ -64,7 +62,6 @@ import org.springframework.data.rest.repository.RepositoryExporterSupport;
 import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.data.rest.repository.RepositoryNotFoundException;
 import org.springframework.data.rest.repository.UriToDomainObjectResolver;
-import org.springframework.data.rest.repository.annotation.ConvertWith;
 import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
 import org.springframework.data.rest.repository.context.AfterLinkDeleteEvent;
@@ -78,6 +75,7 @@ import org.springframework.data.rest.repository.context.BeforeRenderResourcesEve
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.data.rest.repository.context.RepositoryEvent;
 import org.springframework.data.rest.repository.invoke.CrudMethod;
+import org.springframework.data.rest.repository.invoke.MethodParameterConversionService;
 import org.springframework.data.rest.repository.invoke.RepositoryQueryMethod;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.http.HttpHeaders;
@@ -137,29 +135,33 @@ public class RepositoryRestController
     implements ApplicationContextAware,
                InitializingBean {
 
-  public static final  String           LOCATION = "Location";
-  public static final  String           SELF     = "self";
-  final static         ThreadLocal<URI> BASE_URI = new ThreadLocal<URI>();
-  private static final Logger           LOG      = LoggerFactory.getLogger(RepositoryRestController.class);
+  public static final  String           LOCATION          = "Location";
+  public static final  String           SELF              = "self";
+  final static         ThreadLocal<URI> BASE_URI          = new ThreadLocal<URI>();
+  private static final Logger           LOG               = LoggerFactory.getLogger(RepositoryRestController.class);
+  private static final TypeDescriptor   STRING_ARRAY_TYPE = TypeDescriptor.valueOf(String[].class);
 
   /**
    * We manage a list of possible {@link ConversionService}s to handle converting objects in the controller. This list
    * is prioritized as well, so one can add a ConversionService at index 0 to make sure that ConversionService takes
    * priority whenever an object of the type it can convert is needing conversion.
    */
-  private DelegatingConversionService conversionService     = new DelegatingConversionService(
+  private DelegatingConversionService      conversionService                = new DelegatingConversionService(
       new DefaultFormattingConversionService()
+  );
+  private MethodParameterConversionService methodParameterConversionService = new MethodParameterConversionService(
+      conversionService
   );
   /**
    * Converters for reading and writing representations of objects.
    */
-  private List<HttpMessageConverter>  httpMessageConverters = new ArrayList<HttpMessageConverter>();
+  private List<HttpMessageConverter>       httpMessageConverters            = new ArrayList<HttpMessageConverter>();
   /**
    * List of {@link MediaType}s we can support, given the list of {@link HttpMessageConverter}s currently configured.
    */
-  private SortedSet<String>           availableMediaTypes   = new TreeSet<String>();
-  private RepositoryRestConfiguration config                = RepositoryRestConfiguration.DEFAULT;
-  private ObjectMapper                objectMapper          = new ObjectMapper();
+  private SortedSet<String>                availableMediaTypes              = new TreeSet<String>();
+  private RepositoryRestConfiguration      config                           = RepositoryRestConfiguration.DEFAULT;
+  private ObjectMapper                     objectMapper                     = new ObjectMapper();
   private RepositoryAwareMappingHttpMessageConverter mappingHttpMessageConverter;
   private UriToDomainObjectResolver                  domainObjectResolver;
   private ApplicationContext                         applicationContext;
@@ -576,8 +578,6 @@ public class RepositoryRestController
       return notFoundResponse(request);
     }
 
-    Annotation[][] annotations = queryMethod.method().getParameterAnnotations();
-
     Class<?>[] paramTypes = queryMethod.paramTypes();
     String[] paramNames = queryMethod.paramNames();
     Object[] paramVals = new Object[paramTypes.length];
@@ -597,18 +597,7 @@ public class RepositoryRestController
         continue;
       }
 
-      TypeDescriptor stringTypeDesc = TypeDescriptor.valueOf(String[].class);
       MethodParameter methodParam = new MethodParameter(queryMethod.method(), i);
-      TypeDescriptor targetTypeDesc = new TypeDescriptor(methodParam);
-
-      Class<? extends Converter<String[], ?>> converter = null;
-      for(Annotation anno : annotations[i]) {
-        if(ConvertWith.class.isAssignableFrom(anno.getClass())) {
-          converter = ((ConvertWith)anno).value();
-          break;
-        }
-      }
-
       String firstVal = (queryVals.length > 0 ? queryVals[0] : null);
       if(hasRepositoryMetadataFor(paramTypes[i])) {
         RepositoryMetadata paramRepoMeta = repositoryMetadataFor(paramTypes[i]);
@@ -623,18 +612,12 @@ public class RepositoryRestController
         }
 
         paramVals[i] = o;
-      } else if(null != converter) {
-        try {
-          paramVals[i] = converter.newInstance().convert(queryVals);
-        } catch(InstantiationException e) {
-          throw new IllegalArgumentException(e);
-        }
       } else if(String.class.isAssignableFrom(paramTypes[i])) {
         // Param type is a String
         paramVals[i] = firstVal;
-      } else if(conversionService.canConvert(stringTypeDesc, targetTypeDesc)) {
-        // There's a converter from String -> param type
-        paramVals[i] = conversionService.convert(queryVals, stringTypeDesc, targetTypeDesc);
+      } else if(methodParameterConversionService.canConvert(STRING_ARRAY_TYPE, methodParam)) {
+        // There's a converter from String[] -> param type
+        paramVals[i] = methodParameterConversionService.convert(queryVals, STRING_ARRAY_TYPE, methodParam);
       } else {
         // Param type isn't a "simple" type or no converter exists, try JSON
         try {

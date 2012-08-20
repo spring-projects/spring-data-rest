@@ -16,6 +16,6 @@ import org.springframework.core.convert.converter.Converter;
 @Inherited
 public @interface ConvertWith {
 
-  Class<? extends Converter<String[], ?>> value();
+  Class<? extends Converter<?, ?>> value();
 
 }
