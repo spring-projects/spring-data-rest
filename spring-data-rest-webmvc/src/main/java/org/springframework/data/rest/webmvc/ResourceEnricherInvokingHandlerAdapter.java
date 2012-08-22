@@ -19,32 +19,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.ResourcesProcessor;
+import org.springframework.hateoas.ResourceEnricher;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
 /**
  * Special {@link RequestMappingHandlerAdapter} that tweaks the {@link HandlerMethodReturnValueHandlerComposite} to be
- * proxied by a {@link ResourceProcessingHandlerMethodReturnValueHandler} which will invoke the
- * {@link ResourceProcessor}s/{@link ResourcesProcessor}s found in the application context and eventually delegate to
- * the originally configured {@link HandlerMethodReturnValueHandler}.
+ * proxied by a {@link ResourceEnricherHandlerMethodReturnValueHandler} which will invoke the {@link ResourceEnricher}s
+ * found in the application context and eventually delegate to the originally configured
+ * {@link HandlerMethodReturnValueHandler}.
  * <p>
  * This is a separate component as it might make sense to deploy it in a standalone SpringMVC application to enable post
  * processing. It would actually make most sense in Spring HATEOAS project.
  * 
  * @author Oliver Gierke
  */
-public class ResourcePostProcessorInvokingHandlerAdapter extends RequestMappingHandlerAdapter {
+public class ResourceEnricherInvokingHandlerAdapter extends RequestMappingHandlerAdapter {
 
 	@Autowired(required = false)
-	private List<ResourceProcessor<? extends Resource<?>>> resourceProcessors = new ArrayList<ResourceProcessor<? extends Resource<?>>>();
-
-	@Autowired(required = false)
-	private List<ResourcesProcessor<? extends Resources<?>>> resourcesProcessors = new ArrayList<ResourcesProcessor<? extends Resources<?>>>();
+	private List<ResourceEnricher<?>> resourcesEnrichers = new ArrayList<ResourceEnricher<?>>();
 
 	/*
 	 * (non-Javadoc)
@@ -60,8 +54,7 @@ public class ResourcePostProcessorInvokingHandlerAdapter extends RequestMappingH
 
 		// Set up ResourceProcessingHandlerMethodResolver to delegate to originally configured ones
 		List<HandlerMethodReturnValueHandler> newHandlers = new ArrayList<HandlerMethodReturnValueHandler>();
-		newHandlers.add(new ResourceProcessingHandlerMethodReturnValueHandler(oldHandlers, resourceProcessors,
-				resourcesProcessors));
+		newHandlers.add(new ResourceEnricherHandlerMethodReturnValueHandler(oldHandlers, resourcesEnrichers));
 
 		// Configure the new handler to be used
 		this.setReturnValueHandlers(newHandlers);

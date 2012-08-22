@@ -17,6 +17,7 @@ package org.springframework.data.rest.test.webmvc;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
@@ -32,11 +33,11 @@ import org.mockito.Mockito;
 import org.mockito.internal.matchers.Equals;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.MethodParameter;
-import org.springframework.data.rest.webmvc.ResourceProcessingHandlerMethodReturnValueHandler;
+import org.springframework.data.rest.webmvc.ResourceEnricherHandlerMethodReturnValueHandler;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.ResourceEnricher;
 import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.ResourcesProcessor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,10 +46,12 @@ import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
+ * Unit tests for {@link ResourceEnricherHandlerMethodReturnValueHandler}.
+ * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ResourceProcessingHandlerMethodReturnValueHandlerUnitTests {
+public class ResourceEnricherHandlerMethodReturnValueHandlerUnitTests {
 
 	@Mock
 	HandlerMethodReturnValueHandler delegate;
@@ -56,16 +59,20 @@ public class ResourceProcessingHandlerMethodReturnValueHandlerUnitTests {
 	@Mock
 	MethodParameter parameter;
 
-	List<ResourceProcessor<?>> resourceProcessors;
-	List<ResourcesProcessor<?>> resourcesProcessors;
+	List<ResourceEnricher<?>> resourceEnrichers;
 
-	Resource<String> source = new Resource<String>("foo");
-	Resource<String> result = StringResourceProcessor.RESULT;
+	Resource<String> source;
+	Resource<String> result;
 
 	@Before
 	public void setUp() {
-		resourceProcessors = new ArrayList<ResourceProcessor<?>>();
-		resourcesProcessors = new ArrayList<ResourcesProcessor<?>>();
+		resourceEnrichers = new ArrayList<ResourceEnricher<?>>();
+		resetResources();
+	}
+
+	private void resetResources() {
+		source = new Resource<String>("foo");
+		result = new Resource<String>("foo", StringResourceEnricher.LINK);
 	}
 
 	@Test
@@ -81,8 +88,8 @@ public class ResourceProcessingHandlerMethodReturnValueHandlerUnitTests {
 	private void assertSupport(boolean value) {
 
 		when(delegate.supportsReturnType(Mockito.any(MethodParameter.class))).thenReturn(value);
-		HandlerMethodReturnValueHandler handler = new ResourceProcessingHandlerMethodReturnValueHandler(delegate,
-				resourceProcessors, resourcesProcessors);
+		HandlerMethodReturnValueHandler handler = new ResourceEnricherHandlerMethodReturnValueHandler(delegate,
+				resourceEnrichers);
 
 		assertThat(handler.supportsReturnType(parameter), is(value));
 	}
@@ -90,65 +97,81 @@ public class ResourceProcessingHandlerMethodReturnValueHandlerUnitTests {
 	@Test
 	public void invokesStringPostProcessorForSimpleStringResource() throws Exception {
 
-		resourceProcessors.add(new StringResourceProcessor());
-		resourceProcessors.add(new LongResourceProcessor());
+		resourceEnrichers.add(new StringResourceEnricher());
+		resourceEnrichers.add(new LongResourceEnricher());
 
 		HttpEntity<Resource<String>> input = new HttpEntity<Resource<String>>(source);
 		HttpEntity<Resource<String>> output = new HttpEntity<Resource<String>>(result);
 
 		assertProcessorInvokedForMethod("stringResourceEntity", input, output);
+		resetResources();
+		input = new HttpEntity<Resource<String>>(source);
 		assertProcessorInvokedForMethod("resourceEntity", input, output);
 	}
 
 	@Test
 	public void invokesStringPostProcessorForSimpleStringResourceInResponseEntity() throws Exception {
 
-		resourceProcessors.add(new StringResourceProcessor());
-		resourceProcessors.add(new LongResourceProcessor());
+		resourceEnrichers.add(new StringResourceEnricher());
+		resourceEnrichers.add(new LongResourceEnricher());
 
 		ResponseEntity<Resource<String>> input = new ResponseEntity<Resource<String>>(source, HttpStatus.OK);
 		ResponseEntity<Resource<String>> output = new ResponseEntity<Resource<String>>(result, HttpStatus.OK);
 
 		assertProcessorInvokedForMethod("stringResourceEntity", input, output);
+
+		resetResources();
+		input = new ResponseEntity<Resource<String>>(source, HttpStatus.OK);
 		assertProcessorInvokedForMethod("resourceEntity", input, output);
 	}
 
 	@Test
 	public void invokesStringPostProcessorForSimpleStringResources() throws Exception {
 
-		resourceProcessors.add(new StringResourceProcessor());
-		resourceProcessors.add(new LongResourceProcessor());
-		resourcesProcessors.add(new StringResourcesProcessor());
+		resourceEnrichers.add(new StringResourceEnricher());
+		resourceEnrichers.add(new LongResourceEnricher());
+		resourceEnrichers.add(new StringResourcesEnricher());
 
 		Resources<Resource<String>> sources = new Resources<Resource<String>>(Collections.singleton(source));
+		
 
 		HttpEntity<Resources<Resource<String>>> input = new HttpEntity<Resources<Resource<String>>>(sources);
 		HttpEntity<Resources<Resource<String>>> output = new HttpEntity<Resources<Resource<String>>>(
-				StringResourcesProcessor.RESULT);
+				new Resources<Resource<String>>(Collections.singleton(result), StringResourcesEnricher.LINK));
 
 		assertProcessorInvokedForMethod("stringResourceEntity", input, output);
+
+		resetResources();
+		input = new HttpEntity<Resources<Resource<String>>>(new Resources<Resource<String>>(Collections.singleton(source)));
+		output = new HttpEntity<Resources<Resource<String>>>(
+				new Resources<Resource<String>>(Collections.singleton(result), StringResourcesEnricher.LINK));
 		assertProcessorInvokedForMethod("resourceEntity", input, output);
 	}
 
 	@Test
 	public void invokesStringPostProcessorForSpecializedStringResource() throws Exception {
 
-		resourceProcessors.add(new StringResourceProcessor());
-		resourceProcessors.add(new LongResourceProcessor());
+		resourceEnrichers.add(new StringResourceEnricher());
+		resourceEnrichers.add(new LongResourceEnricher());
 
-		HttpEntity<Resource<String>> stringOutput = new HttpEntity<Resource<String>>(result);
 		HttpEntity<StringResource> specializedInput = new HttpEntity<StringResource>(new StringResource("foo"));
+		HttpEntity<StringResource> stringOutput = new HttpEntity<StringResource>(new StringResource("foo",
+				StringResourceEnricher.LINK));
 
 		assertProcessorInvokedForMethod("stringResourceEntity", specializedInput, stringOutput);
+
+		specializedInput = new HttpEntity<StringResource>(new StringResource("foo"));
 		assertProcessorInvokedForMethod("resourceEntity", specializedInput, stringOutput);
+
+		specializedInput = new HttpEntity<StringResource>(new StringResource("foo"));
 		assertProcessorInvokedForMethod("specializedStringResourceEntity", specializedInput, stringOutput);
 	}
 
 	@Test
 	public void doesNotInvokeSpecializedStringPostProcessorForSimpleStringResource() throws Exception {
 
-		resourceProcessors.add(new SpecializedStringResourceProcessor());
-		resourceProcessors.add(new LongResourceProcessor());
+		resourceEnrichers.add(new SpecializedStringResourceEnricher());
+		resourceEnrichers.add(new LongResourceEnricher());
 
 		HttpEntity<Resource<String>> input = new HttpEntity<Resource<String>>(source);
 
@@ -158,11 +181,12 @@ public class ResourceProcessingHandlerMethodReturnValueHandlerUnitTests {
 	@Test
 	public void invokesSpecializedStringPostProcessor() throws Exception {
 
-		resourceProcessors.add(new SpecializedStringResourceProcessor());
-		resourceProcessors.add(new LongResourceProcessor());
+		resourceEnrichers.add(new SpecializedStringResourceEnricher());
+		resourceEnrichers.add(new LongResourceEnricher());
 
 		HttpEntity<StringResource> input = new HttpEntity<StringResource>(new StringResource("foo"));
-		HttpEntity<StringResource> output = new HttpEntity<StringResource>(SpecializedStringResourceProcessor.RESULT);
+		HttpEntity<StringResource> output = new HttpEntity<StringResource>(new StringResource("foo",
+				SpecializedStringResourceEnricher.LINK));
 
 		assertProcessorInvokedForMethod("specializedStringResourceEntity", input, output);
 	}
@@ -170,22 +194,23 @@ public class ResourceProcessingHandlerMethodReturnValueHandlerUnitTests {
 	@Test
 	public void invokesLongPostProcessorForLongResource() throws Exception {
 
-		resourceProcessors.add(new StringResourceProcessor());
-		resourceProcessors.add(new LongResourceProcessor());
+		resourceEnrichers.add(new StringResourceEnricher());
+		resourceEnrichers.add(new LongResourceEnricher());
 
 		HttpEntity<Resource<Long>> input = new HttpEntity<Resource<Long>>(new Resource<Long>(50L));
 		HttpEntity<LongResource> specializedInput = new HttpEntity<LongResource>(new LongResource(50L));
-		HttpEntity<Resource<Long>> output = new HttpEntity<Resource<Long>>(LongResourceProcessor.RESULT);
 
-		assertProcessorInvokedForMethod("resourceEntity", specializedInput, output);
-		assertProcessorInvokedForMethod("numberResourceEntity", input, output);
+		assertProcessorInvokedForMethod("resourceEntity", specializedInput, new HttpEntity<LongResource>(new LongResource(
+				50L, LongResourceEnricher.LINK)));
+		assertProcessorInvokedForMethod("numberResourceEntity", input, new HttpEntity<Resource<Long>>(new Resource<Long>(
+				50L, LongResourceEnricher.LINK)));
 	}
 
 	private void assertProcessorInvokedForMethod(String methodName, Object returnValue, Object processedValue)
 			throws Exception {
 
-		HandlerMethodReturnValueHandler handler = new ResourceProcessingHandlerMethodReturnValueHandler(delegate,
-				resourceProcessors, resourcesProcessors);
+		HandlerMethodReturnValueHandler handler = new ResourceEnricherHandlerMethodReturnValueHandler(delegate,
+				resourceEnrichers);
 
 		Method method = Controller.class.getMethod(methodName);
 		MethodParameter returnType = new MethodParameter(method, -1);
@@ -267,69 +292,58 @@ public class ResourceProcessingHandlerMethodReturnValueHandlerUnitTests {
 
 		ResponseEntity<Resources<?>> resourcesResponseEntity();
 	}
-
-	/**
-	 * {@link ResourceProcessor} to process {@link String}s.
-	 * 
-	 * @author Oliver Gierke
-	 */
-	static class StringResourceProcessor implements ResourceProcessor<Resource<String>> {
-
-		static final Resource<String> RESULT = new Resource<String>("bar");
-
-		@Override
-		public Resource<String> process(Resource<String> resource) {
-			return RESULT;
-		}
-	}
-
-	static class StringResourcesProcessor implements ResourcesProcessor<Resources<Resource<String>>> {
-
-		static final Resources<Resource<String>> RESULT = new Resources<Resource<String>>(
-				Collections.singleton(StringResourceProcessor.RESULT));
-
-		@Override
-		public Resources<?> process(Resources<Resource<String>> resources) {
-			return RESULT;
-		}
-	}
-
-	/**
-	 * {@link ResourceProcessor} to process {@link Long} values.
-	 * 
-	 * @author Oliver Gierke
-	 */
-	static class LongResourceProcessor implements ResourceProcessor<Resource<Long>> {
-
-		static final Resource<Long> RESULT = new Resource<Long>(10L);
-
-		@Override
-		public Resource<?> process(Resource<Long> resource) {
-			return RESULT;
-		}
-	}
-
+	
 	static class StringResource extends Resource<String> {
 
-		public StringResource(String value) {
-			super(value);
+		public StringResource(String value, Link... links) {
+			super(value, links);
 		}
 	}
 
 	static class LongResource extends Resource<Long> {
 
-		public LongResource(Long value) {
-			super(value);
+		public LongResource(Long value, Link... links) {
+			super(value, links);
 		}
 	}
 
-	static class SpecializedStringResourceProcessor implements ResourceProcessor<StringResource> {
+	static class StringResourceEnricher implements ResourceEnricher<Resource<String>> {
 
-		static final StringResource RESULT = new StringResource("foobar");
+		static final Link LINK = new Link("string-resource");
 
 		@Override
-		public Resource<?> process(StringResource resource) {
-			return RESULT;
+		public void enrich(Resource<String> resource) {
+			resource.add(LINK);
+		}
+	}
+
+	static class StringResourcesEnricher implements ResourceEnricher<Resources<Resource<String>>> {
+
+		static final Link LINK = new Link("string-resources");
+
+		@Override
+		public void enrich(Resources<Resource<String>> resource) {
+			resource.add(LINK);
+		}
+	}
+
+	static class LongResourceEnricher implements ResourceEnricher<Resource<Long>> {
+
+		static final Link LINK = new Link("long-resource");
+
+		@Override
+		public void enrich(Resource<Long> resource) {
+			resource.add(LINK);
+		}
+	}
+
+	static class SpecializedStringResourceEnricher implements ResourceEnricher<StringResource> {
+
+		static final Link LINK = new Link("specialized-string");
+
+		@Override
+		public void enrich(StringResource resource) {
+			resource.add(LINK);
 		}
 	}
 }
