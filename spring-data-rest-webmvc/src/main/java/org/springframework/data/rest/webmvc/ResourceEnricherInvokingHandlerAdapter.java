@@ -20,6 +20,10 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.ResourceEnricher;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.support.WebBindingInitializer;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
@@ -39,6 +43,29 @@ public class ResourceEnricherInvokingHandlerAdapter extends RequestMappingHandle
 
 	@Autowired(required = false)
 	private List<ResourceEnricher<?>> resourcesEnrichers = new ArrayList<ResourceEnricher<?>>();
+
+	/**
+	 * Empty constructor to setup a {@link ResourceEnricherInvokingHandlerAdapter}.
+	 */
+	public ResourceEnricherInvokingHandlerAdapter() {
+
+	}
+
+	/**
+	 * Copy constructor to copy configuration of {@link HttpMessageConverter}s, {@link WebBindingInitializer}, custom
+	 * {@link HandlerMethodArgumentResolver}s and custom {@link HandlerMethodReturnValueHandler}s.
+	 * 
+	 * @param original must not be {@literal null}.
+	 */
+	public ResourceEnricherInvokingHandlerAdapter(RequestMappingHandlerAdapter original) {
+		
+		Assert.notNull(original);
+
+		setMessageConverters(original.getMessageConverters());
+		setWebBindingInitializer(original.getWebBindingInitializer());
+		setCustomArgumentResolvers(original.getCustomArgumentResolvers());
+		setCustomReturnValueHandlers(original.getCustomReturnValueHandlers());
+	}
 
 	/*
 	 * (non-Javadoc)
