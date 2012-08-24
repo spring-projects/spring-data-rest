@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc;
 
 import static org.springframework.data.util.ClassTypeInformation.*;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,64 +29,71 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceEnricher;
+import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
  * {@link HandlerMethodReturnValueHandler} to post-process the objects returned from controller methods using the
- * configured {@link ResourceEnricher}s.
+ * configured {@link ResourceProcessor}s.
  * 
  * @author Oliver Gierke
  */
-public class ResourceEnricherHandlerMethodReturnValueHandler implements HandlerMethodReturnValueHandler {
+public class ResourceProcessorHandlerMethodReturnValueHandler implements HandlerMethodReturnValueHandler {
 
 	private static final TypeInformation<?> RESOURCE_TYPE = from(Resource.class);
 	private static final TypeInformation<?> RESOURCES_TYPE = from(Resources.class);
+	private static final Field CONTENT_FIELD = ReflectionUtils.findField(Resources.class, "content");
+
+	static {
+		ReflectionUtils.makeAccessible(CONTENT_FIELD);
+	}
 
 	private final HandlerMethodReturnValueHandler delegate;
-	private final List<EnricherWrapper> enrichers;
+	private final List<ProcessorWrapper> processors;
 
 	/**
-	 * Creates a new {@link ResourceEnricherHandlerMethodReturnValueHandler} using the given delegate to eventually
+	 * Creates a new {@link ResourceProcessorHandlerMethodReturnValueHandler} using the given delegate to eventually
 	 * delegate calls to {@link #handleReturnValue(Object, MethodParameter, ModelAndViewContainer, NativeWebRequest)} to.
-	 * Will consider the given {@link ResourceEnricher} to post-process the controller methods return value to before
+	 * Will consider the given {@link ResourceProcessor} to post-process the controller methods return value to before
 	 * invoking the delegate.
 	 * 
 	 * @param delegate the {@link HandlerMethodReturnValueHandler} to evenually delegate calls to, must not be
 	 *          {@literal null}.
-	 * @param enrichers the {@link ResourceEnricher}s to be considered, must not be {@literal null}.
+	 * @param processors the {@link ResourceProcessor}s to be considered, must not be {@literal null}.
 	 */
-	public ResourceEnricherHandlerMethodReturnValueHandler(HandlerMethodReturnValueHandler delegate,
-			List<ResourceEnricher<?>> enrichers) {
+	public ResourceProcessorHandlerMethodReturnValueHandler(HandlerMethodReturnValueHandler delegate,
+			List<ResourceProcessor<?>> processors) {
 
 		Assert.notNull(delegate, "Delegate must not be null!");
-		Assert.notNull(enrichers, "ResourceEnrichers must not be null!");
+		Assert.notNull(processors, "ResourceProcessors must not be null!");
 
 		this.delegate = delegate;
-		this.enrichers = new ArrayList<EnricherWrapper>();
+		this.processors = new ArrayList<ProcessorWrapper>();
 
-		for (ResourceEnricher<?> enricher : enrichers) {
+		for (ResourceProcessor<?> processor : processors) {
 
-			TypeInformation<?> componentType = from(enricher.getClass()).getSuperTypeInformation(ResourceEnricher.class)
+			TypeInformation<?> componentType = from(processor.getClass()).getSuperTypeInformation(ResourceProcessor.class)
 					.getComponentType();
 			Class<?> rawType = componentType.getType();
 
 			if (Resource.class.isAssignableFrom(rawType)) {
-				this.enrichers.add(new ResourceEnricherWrapper(enricher));
+				this.processors.add(new ResourceProcessorWrapper(processor));
 			} else if (Resources.class.isAssignableFrom(rawType)) {
-				this.enrichers.add(new ResourcesEnricherWrapper(enricher));
+				this.processors.add(new ResourcesProcessorWrapper(processor));
 			} else {
-				this.enrichers.add(new DefaultEnricherWrapper(enricher));
+				this.processors.add(new DefaultProcessorWrapper(processor));
 			}
 		}
 
-		Collections.sort(this.enrichers, AnnotationAwareOrderComparator.INSTANCE);
+		Collections.sort(this.processors, AnnotationAwareOrderComparator.INSTANCE);
 	}
 
 	/*
@@ -117,7 +125,7 @@ public class ResourceEnricherHandlerMethodReturnValueHandler implements HandlerM
 			return;
 		}
 
-		// We have a Resource or Resources - find suitable enrichers
+		// We have a Resource or Resources - find suitable processors
 		TypeInformation<?> targetType = ClassTypeInformation.fromReturnTypeOf(returnType.getMethod());
 
 		// Unbox HttpEntity
@@ -136,6 +144,7 @@ public class ResourceEnricherHandlerMethodReturnValueHandler implements HandlerM
 
 			Resources<?> resources = (Resources<?>) value;
 			TypeInformation<?> elementTargetType = targetType.getSuperTypeInformation(Resources.class).getComponentType();
+			List<Object> result = new ArrayList<Object>(resources.getContent().size());
 
 			for (Object element : resources) {
 
@@ -144,22 +153,59 @@ public class ResourceEnricherHandlerMethodReturnValueHandler implements HandlerM
 					elementTargetType = elementTypeInformation;
 				}
 
-				for (EnricherWrapper wrapper : this.enrichers) {
-					if (wrapper.supports(elementTargetType, element)) {
-						wrapper.invokeEnricher(element);
-					}
-				}
+				result.add(invokeProcessorsFor(element, elementTargetType));
 			}
+
+			ReflectionUtils.setField(CONTENT_FIELD, resources, result);
 		}
+
+		Object result = invokeProcessorsFor(value, targetType);
+		delegate.handleReturnValue(rewrapResult(result, returnValue), returnType, mavContainer, webRequest);
+	}
+	
+	/**
+	 * Invokes all registered {@link ResourceProcessor}s registered for the given {@link TypeInformation}.
+	 * 
+	 * @param value the object to process
+	 * @param targetType
+	 * @return
+	 */
+	private Object invokeProcessorsFor(Object value, TypeInformation<?> targetType) {
+
+		Object currentValue = value;
 
 		// Process actual value
-		for (EnricherWrapper wrapper : this.enrichers) {
-			if (wrapper.supports(targetType, value)) {
-				wrapper.invokeEnricher(value);
+		for (ProcessorWrapper wrapper : this.processors) {
+			if (wrapper.supports(targetType, currentValue)) {
+				currentValue = wrapper.invokeProcessor(currentValue);
 			}
 		}
 
-		delegate.handleReturnValue(returnValue, returnType, mavContainer, webRequest);
+		return currentValue;
+	}
+
+	/**
+	 * Re-wraps the result of the post-processing work into an {@link HttpEntity} or {@link ResponseEntity} if the
+	 * original value was one of those two types. Copies headers and status code from the original value but uses the new
+	 * body.
+	 * 
+	 * @param newBody the post-processed value.
+	 * @param originalValue the original input value.
+	 * @return
+	 */
+	static Object rewrapResult(Object newBody, Object originalValue) {
+
+		if (!(originalValue instanceof HttpEntity)) {
+			return newBody;
+		}
+
+		if (originalValue instanceof ResponseEntity) {
+			ResponseEntity<?> source = (ResponseEntity<?>) originalValue;
+			return new ResponseEntity<Object>(newBody, source.getHeaders(), source.getStatusCode());
+		} else {
+			HttpEntity<?> source = (HttpEntity<?>) originalValue;
+			return new HttpEntity<Object>(newBody, source.getHeaders());
+		}
 	}
 
 	/**
@@ -173,58 +219,58 @@ public class ResourceEnricherHandlerMethodReturnValueHandler implements HandlerM
 	}
 
 	/**
-	 * Interface to unify interaction with {@link ResourceEnricher}s. The {@link Ordered} rank should be determined by the
-	 * underlying processor.
+	 * Interface to unify interaction with {@link ResourceProcessor}s. The {@link Ordered} rank should be determined by
+	 * the underlying processor.
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private interface EnricherWrapper extends Ordered {
+	private interface ProcessorWrapper extends Ordered {
 
 		/**
 		 * Returns whether the underlying processor supports the given {@link TypeInformation}. It might also aditionally
-		 * inspect the object that would eventually be handed to the enricher.
+		 * inspect the object that would eventually be handed to the processor.
 		 * 
 		 * @param typeInformation the type of object to be post processed, will never be {@literal null}.
-		 * @param value the object that would be passed into the enricher eventually, can be {@literal null}.
+		 * @param value the object that would be passed into the processor eventually, can be {@literal null}.
 		 * @return
 		 */
 		boolean supports(TypeInformation<?> typeInformation, Object value);
 
 		/**
-		 * Performs the actual invocation of the enricher. Implementations can be sure
+		 * Performs the actual invocation of the processor. Implementations can be sure
 		 * {@link #supports(TypeInformation, Object)} has been called before and returned {@literal true}.
 		 * 
 		 * @param object
 		 */
-		void invokeEnricher(Object object);
+		Object invokeProcessor(Object object);
 	}
 
 	/**
-	 * Default implementation of {@link EnricherWrapper} to generically deal with {@link ResourceSupport} types.
+	 * Default implementation of {@link ProcessorWrapper} to generically deal with {@link ResourceSupport} types.
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static class DefaultEnricherWrapper implements EnricherWrapper {
+	private static class DefaultProcessorWrapper implements ProcessorWrapper {
 
-		private final ResourceEnricher<?> enricher;
+		private final ResourceProcessor<?> processor;
 		private final TypeInformation<?> targetType;
 
 		/**
-		 * Creates a ne {@link DefaultEnricherWrapper} with the given {@link ResourceEnricher}.
+		 * Creates a ne {@link DefaultProcessorWrapper} with the given {@link ResourceProcessor}.
 		 * 
-		 * @param enricher must not be {@literal null}.
+		 * @param processor must not be {@literal null}.
 		 */
-		public DefaultEnricherWrapper(ResourceEnricher<?> enricher) {
+		public DefaultProcessorWrapper(ResourceProcessor<?> processor) {
 
-			Assert.notNull(enricher);
+			Assert.notNull(processor);
 
-			this.enricher = enricher;
-			this.targetType = from(enricher.getClass()).getSuperTypeInformation(ResourceEnricher.class).getComponentType();
+			this.processor = processor;
+			this.targetType = from(processor.getClass()).getSuperTypeInformation(ResourceProcessor.class).getComponentType();
 		}
 
 		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.ResourceEnricherHandlerMethodReturnValueHandler.PostProcessorWrapper#supports(org.springframework.data.util.TypeInformation, java.lang.Object)
+		 * @see org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.PostProcessorWrapper#supports(org.springframework.data.util.TypeInformation, java.lang.Object)
 		 */
 		@Override
 		public boolean supports(TypeInformation<?> typeInformation, Object value) {
@@ -233,12 +279,12 @@ public class ResourceEnricherHandlerMethodReturnValueHandler implements HandlerM
 
 		/* 
 		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.ResourceEnricherHandlerMethodReturnValueHandler.PostProcessorWrapper#invokeProcessor(java.lang.Object)
+		 * @see org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.PostProcessorWrapper#invokeProcessor(java.lang.Object)
 		 */
 		@Override
 		@SuppressWarnings("unchecked")
-		public void invokeEnricher(Object object) {
-			((ResourceEnricher<ResourceSupport>) enricher).enrich((ResourceSupport) object);
+		public Object invokeProcessor(Object object) {
+			return ((ResourceProcessor<ResourceSupport>) processor).enrich((ResourceSupport) object);
 		}
 
 		/*
@@ -247,11 +293,11 @@ public class ResourceEnricherHandlerMethodReturnValueHandler implements HandlerM
 		 */
 		@Override
 		public int getOrder() {
-			return CustomOrderAwareComparator.INSTANCE.getOrder(enricher);
+			return CustomOrderAwareComparator.INSTANCE.getOrder(processor);
 		}
 
 		/**
-		 * Returns the target type the underlying {@link ResourceEnricher} wants to get invoked for.
+		 * Returns the target type the underlying {@link ResourceProcessor} wants to get invoked for.
 		 * 
 		 * @return the targetType
 		 */
@@ -261,25 +307,25 @@ public class ResourceEnricherHandlerMethodReturnValueHandler implements HandlerM
 	}
 
 	/**
-	 * {@link EnricherWrapper} to deal with {@link ResourceEnricher}s for {@link Resource}s. Will fall back to peeking
+	 * {@link ProcessorWrapper} to deal with {@link ResourceProcessor}s for {@link Resource}s. Will fall back to peeking
 	 * into the {@link Resource}'s content for type resolution.
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static class ResourceEnricherWrapper extends DefaultEnricherWrapper {
+	private static class ResourceProcessorWrapper extends DefaultProcessorWrapper {
 
 		/**
-		 * Creates a new {@link ResourceEnricherWrapper} for the given {@link ResourceEnricher}.
+		 * Creates a new {@link ResourceProcessorWrapper} for the given {@link ResourceProcessor}.
 		 * 
 		 * @param processor must not be {@literal null}.
 		 */
-		public ResourceEnricherWrapper(ResourceEnricher<?> processor) {
+		public ResourceProcessorWrapper(ResourceProcessor<?> processor) {
 			super(processor);
 		}
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.ResourceEnricherHandlerMethodReturnValueHandler.PostProcessorWrapper#supports(org.springframework.data.util.TypeInformation, java.lang.Object)
+		 * @see org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.PostProcessorWrapper#supports(org.springframework.data.util.TypeInformation, java.lang.Object)
 		 */
 		@Override
 		public boolean supports(TypeInformation<?> typeInformation, Object value) {
@@ -317,20 +363,20 @@ public class ResourceEnricherHandlerMethodReturnValueHandler implements HandlerM
 	}
 
 	/**
-	 * {@link EnricherWrapper} for {@link ResourceEnricher}s targeting {@link Resources}. Will peek into the content of
+	 * {@link ProcessorWrapper} for {@link ResourceProcessor}s targeting {@link Resources}. Will peek into the content of
 	 * the {@link Resources} for type matching decisions if needed.
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static class ResourcesEnricherWrapper extends DefaultEnricherWrapper {
+	private static class ResourcesProcessorWrapper extends DefaultProcessorWrapper {
 
 		/**
-		 * Creates a new {@link ResourcesEnricherWrapper} for the given {@link ResourceEnricher}.
+		 * Creates a new {@link ResourcesProcessorWrapper} for the given {@link ResourceProcessor}.
 		 * 
-		 * @param enricher must not be {@literal null}.
+		 * @param processor must not be {@literal null}.
 		 */
-		public ResourcesEnricherWrapper(ResourceEnricher<?> enricher) {
-			super(enricher);
+		public ResourcesProcessorWrapper(ResourceProcessor<?> processor) {
+			super(processor);
 		}
 
 		/* 
@@ -374,7 +420,7 @@ public class ResourceEnricherHandlerMethodReturnValueHandler implements HandlerM
 			}
 
 			TypeInformation<?> resourceTypeInformation = target.getSuperTypeInformation(Resources.class).getComponentType();
-			return ResourceEnricherWrapper.isValueTypeMatch((Resource<?>) element, resourceTypeInformation);
+			return ResourceProcessorWrapper.isValueTypeMatch((Resource<?>) element, resourceTypeInformation);
 		}
 	}
 

@@ -16,7 +16,7 @@ dependencies {
   // Repository Exporter support
   compile project(":spring-data-rest-repository")
   
-  compile "org.springframework.hateoas:spring-hateoas:0.2.0.BUILD-SNAPSHOT"
+  compile "org.springframework.hateoas:spring-hateoas:0.3.0.BUILD-SNAPSHOT"
   compile "org.springframework.data:spring-data-commons-core:$sdCommonsVersion"
 
   runtime "org.hibernate:hibernate-entitymanager:$hibernateVersion"

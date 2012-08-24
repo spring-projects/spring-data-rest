@@ -16,7 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  *
  * @author Jon Brisbin
  */
-public class RepositoryRestHandlerAdapter extends ResourceEnricherInvokingHandlerAdapter {
+public class RepositoryRestHandlerAdapter extends ResourceProcessorInvokingHandlerAdapter {
 
   @Autowired
   private ResourcesReturnValueHandler resourcesReturnValueHandler;

@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.ResourceEnricher;
+import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebBindingInitializer;
@@ -30,7 +30,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 /**
  * Special {@link RequestMappingHandlerAdapter} that tweaks the {@link HandlerMethodReturnValueHandlerComposite} to be
- * proxied by a {@link ResourceEnricherHandlerMethodReturnValueHandler} which will invoke the {@link ResourceEnricher}s
+ * proxied by a {@link ResourceProcessorHandlerMethodReturnValueHandler} which will invoke the {@link ResourceProcessor}s
  * found in the application context and eventually delegate to the originally configured
  * {@link HandlerMethodReturnValueHandler}.
  * <p>
@@ -39,15 +39,15 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * 
  * @author Oliver Gierke
  */
-public class ResourceEnricherInvokingHandlerAdapter extends RequestMappingHandlerAdapter {
+public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandlerAdapter {
 
 	@Autowired(required = false)
-	private List<ResourceEnricher<?>> resourcesEnrichers = new ArrayList<ResourceEnricher<?>>();
+	private List<ResourceProcessor<?>> resourcesProcessors = new ArrayList<ResourceProcessor<?>>();
 
 	/**
-	 * Empty constructor to setup a {@link ResourceEnricherInvokingHandlerAdapter}.
+	 * Empty constructor to setup a {@link ResourceProcessorInvokingHandlerAdapter}.
 	 */
-	public ResourceEnricherInvokingHandlerAdapter() {
+	public ResourceProcessorInvokingHandlerAdapter() {
 
 	}
 
@@ -57,7 +57,7 @@ public class ResourceEnricherInvokingHandlerAdapter extends RequestMappingHandle
 	 * 
 	 * @param original must not be {@literal null}.
 	 */
-	public ResourceEnricherInvokingHandlerAdapter(RequestMappingHandlerAdapter original) {
+	public ResourceProcessorInvokingHandlerAdapter(RequestMappingHandlerAdapter original) {
 		
 		Assert.notNull(original);
 
@@ -81,7 +81,7 @@ public class ResourceEnricherInvokingHandlerAdapter extends RequestMappingHandle
 
 		// Set up ResourceProcessingHandlerMethodResolver to delegate to originally configured ones
 		List<HandlerMethodReturnValueHandler> newHandlers = new ArrayList<HandlerMethodReturnValueHandler>();
-		newHandlers.add(new ResourceEnricherHandlerMethodReturnValueHandler(oldHandlers, resourcesEnrichers));
+		newHandlers.add(new ResourceProcessorHandlerMethodReturnValueHandler(oldHandlers, resourcesProcessors));
 
 		// Configure the new handler to be used
 		this.setReturnValueHandlers(newHandlers);
