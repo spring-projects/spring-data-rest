@@ -1,5 +1,7 @@
 package org.springframework.data.rest.webmvc;
 
+import static org.springframework.data.rest.core.util.UriUtils.*;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,23 +47,14 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.rest.core.Handler;
-import org.springframework.data.rest.core.Link;
-import org.springframework.data.rest.core.LinkList;
-import org.springframework.data.rest.core.MapResource;
-import org.springframework.data.rest.core.Resource;
-import org.springframework.data.rest.core.ResourceLink;
-import org.springframework.data.rest.core.ResourceSet;
 import org.springframework.data.rest.core.convert.DelegatingConversionService;
 import org.springframework.data.rest.repository.AttributeMetadata;
-import org.springframework.data.rest.repository.EntityMetadata;
-import org.springframework.data.rest.repository.PageableResourceSet;
-import org.springframework.data.rest.repository.PagingMetadata;
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
 import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
 import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.data.rest.repository.RepositoryNotFoundException;
-import org.springframework.data.rest.repository.UriToDomainObjectResolver;
+import org.springframework.data.rest.repository.UriToDomainObjectUriResolver;
 import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
 import org.springframework.data.rest.repository.context.AfterLinkDeleteEvent;
@@ -70,14 +63,16 @@ import org.springframework.data.rest.repository.context.AfterSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
-import org.springframework.data.rest.repository.context.BeforeRenderResourceEvent;
-import org.springframework.data.rest.repository.context.BeforeRenderResourcesEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.data.rest.repository.context.RepositoryEvent;
 import org.springframework.data.rest.repository.invoke.CrudMethod;
 import org.springframework.data.rest.repository.invoke.MethodParameterConversionService;
 import org.springframework.data.rest.repository.invoke.RepositoryQueryMethod;
 import org.springframework.format.support.DefaultFormattingConversionService;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpMethod;
@@ -138,7 +133,8 @@ public class RepositoryRestController
   public static final  String           LOCATION          = "Location";
   public static final  String           SELF              = "self";
   final static         ThreadLocal<URI> BASE_URI          = new ThreadLocal<URI>();
-  private static final Logger           LOG               = LoggerFactory.getLogger(RepositoryRestController.class);
+  private static final Logger           LOG               = LoggerFactory.getLogger(
+      RepositoryRestController.class);
   private static final TypeDescriptor   STRING_ARRAY_TYPE = TypeDescriptor.valueOf(String[].class);
 
   /**
@@ -163,7 +159,7 @@ public class RepositoryRestController
   private RepositoryRestConfiguration      config                           = RepositoryRestConfiguration.DEFAULT;
   private ObjectMapper                     objectMapper                     = new ObjectMapper();
   private RepositoryAwareMappingHttpMessageConverter mappingHttpMessageConverter;
-  private UriToDomainObjectResolver                  domainObjectResolver;
+  private UriToDomainObjectUriResolver               domainObjectResolver;
   private ApplicationContext                         applicationContext;
 
   {
@@ -313,12 +309,12 @@ public class RepositoryRestController
     return this;
   }
 
-  public UriToDomainObjectResolver getDomainObjectResolver() {
+  public UriToDomainObjectUriResolver getDomainObjectResolver() {
     return domainObjectResolver;
   }
 
   @Autowired
-  public RepositoryRestController setDomainObjectResolver(UriToDomainObjectResolver domainObjectResolver) {
+  public RepositoryRestController setDomainObjectResolver(UriToDomainObjectUriResolver domainObjectResolver) {
     this.domainObjectResolver = domainObjectResolver;
     return this;
   }
@@ -353,24 +349,20 @@ public class RepositoryRestController
     URI baseUri = uriBuilder.build().toUri();
     BASE_URI.set(baseUri);
 
-    ResourceSet resources = new ResourceSet();
+    List<Link> links = new ArrayList<Link>();
     for(RepositoryExporter repoExporter : repositoryExporters) {
       for(String name : (Set<String>)repoExporter.repositoryNames()) {
         RepositoryMetadata repoMeta = repoExporter.repositoryMetadataFor(name);
         String rel = repoMeta.rel();
         URI path = buildUri(baseUri, name);
-        resources.addLink(new ResourceLink(rel, path));
+        links.add(new Link(path.toString(), rel));
       }
     }
 
-    // Publish an event that we're about to publish this ResourceSet
-    publishEvent(new BeforeRenderResourcesEvent(request, null, resources));
-    // Run any configured post processors
-    for(ResourceSetPostProcessor pp : config.getResourceSetPostProcessors()) {
-      resources = pp.postProcess(request, resources);
-    }
-
-    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
+    return negotiateResponse(request,
+                             HttpStatus.OK,
+                             new HttpHeaders(),
+                             new Resources<String>(Collections.<String>emptyList(), links));
   }
 
   /**
@@ -405,21 +397,23 @@ public class RepositoryRestController
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
     }
 
-    Iterator allEntities = Collections.emptyList().iterator();
-    ResourceSet resources;
-    if(repoMeta.repository() instanceof PagingAndSortingRepository) {
-      PageableResourceSet pr = new PageableResourceSet();
+    Set<Link> links = new HashSet<Link>();
+    PagedResources.PageMetadata pageMeta = null;
 
+    Iterator allEntities = Collections.emptyList().iterator();
+    if(repoMeta.repository() instanceof PagingAndSortingRepository) {
       Page page = ((PagingAndSortingRepository)repoMeta.repository()).findAll(pageSort);
       if(page.hasContent()) {
         allEntities = page.iterator();
       }
 
       // Set page counts in the response
-      pr.setPaging(new PagingMetadata(page.getNumber() + 1,
-                                      page.getSize(),
-                                      page.getTotalPages(),
-                                      page.getTotalElements()));
+      pageMeta = new PagedResources.PageMetadata(
+          page.getSize(),
+          page.getNumber() + 1,
+          page.getTotalElements(),
+          page.getTotalPages()
+      );
 
       // Copy over parameters
       UriComponentsBuilder selfUri = UriComponentsBuilder.fromUri(baseUri).pathSegment(repository);
@@ -439,7 +433,7 @@ public class RepositoryRestController
           !page.isFirstPage() && page.hasPreviousPage(),
           page.getNumber(),
           "prev",
-          pr.getLinks()
+          links
       );
       maybeAddPrevNextLink(
           nextPrevBase,
@@ -449,48 +443,39 @@ public class RepositoryRestController
           !page.isLastPage() && page.hasNextPage(),
           page.getNumber() + 2,
           "next",
-          pr.getLinks()
+          links
       );
-
-      resources = pr;
     } else {
       Iterable it = repoMeta.repository().findAll();
       if(null != it) {
         allEntities = it.iterator();
       }
-      resources = new ResourceSet();
     }
 
+    List<Resource<Map<String, Object>>> allResources = new ArrayList<Resource<Map<String, Object>>>();
     while(allEntities.hasNext()) {
       Object o = allEntities.next();
       Serializable id = (Serializable)repoMeta.entityMetadata().idAttribute().get(o);
       if(shouldReturnLinks(request.getServletRequest().getHeader("Accept"))) {
-        resources.addLink(new ResourceLink(repoMeta.rel() + "." + o.getClass().getSimpleName(),
-                                           buildUri(baseUri, repository, id.toString())));
+        links.add(new Link(buildUri(baseUri, repository, id.toString()).toString(),
+                           repoMeta.rel() + "." + o.getClass().getSimpleName()));
       } else {
         URI selfUri = buildUri(baseUri, repository, id.toString());
-        MapResource res = createResource(repoMeta.rel(),
-                                         o,
-                                         repoMeta.entityMetadata(),
-                                         selfUri);
-        res.addLink(new ResourceLink(SELF, selfUri));
-
-        resources.addResource(res);
+        allResources.add(EntityResource.wrap(o, repoMeta, selfUri));
       }
     }
 
     if(!repoMeta.queryMethods().isEmpty()) {
-      resources.addLink(new ResourceLink(repoMeta.rel() + ".search",
-                                         buildUri(baseUri, repository, "search")));
+      links.add(new Link(buildUri(baseUri, repository, "search").toString(),
+                         repoMeta.rel() + ".search"));
     }
 
-    publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, resources));
-    // Run any configured post processors
-    for(ResourceSetPostProcessor pp : config.getResourceSetPostProcessors()) {
-      resources = pp.postProcess(request, resources);
-    }
-
-    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
+    return negotiateResponse(request,
+                             HttpStatus.OK,
+                             new HttpHeaders(),
+                             (null != pageMeta
+                              ? new PagedResources(allResources, pageMeta, links)
+                              : new Resources(allResources, links)));
   }
 
   /**
@@ -517,7 +502,7 @@ public class RepositoryRestController
     BASE_URI.set(baseUri);
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
-    ResourceSet resources = new ResourceSet();
+    Set<Link> links = new HashSet<Link>();
 
     for(Map.Entry<String, RepositoryQueryMethod> entry : ((Map<String, RepositoryQueryMethod>)repoMeta.queryMethods())
         .entrySet()) {
@@ -527,29 +512,26 @@ public class RepositoryRestController
       Method m = entry.getValue().method();
       if(m.isAnnotationPresent(RestResource.class)) {
         RestResource resourceAnno = m.getAnnotation(RestResource.class);
-        resources.addLink(new ResourceLink(
-            (StringUtils.hasText(resourceAnno.rel())
-             ? repoMeta.rel() + "." + resourceAnno.rel()
-             : repoMeta.rel() + "." + entry.getKey()),
+        links.add(new Link(
             buildUri(baseSearchUri,
                      (StringUtils.hasText(resourceAnno.path())
                       ? resourceAnno.path()
-                      : entry.getKey()))
+                      : entry.getKey())).toString(),
+            (StringUtils.hasText(resourceAnno.rel())
+             ? repoMeta.rel() + "." + resourceAnno.rel()
+             : repoMeta.rel() + "." + entry.getKey())
         ));
       } else {
         // No customizations, use the default
-        resources.addLink(new ResourceLink(repoMeta.rel() + "." + entry.getKey(),
-                                           buildUri(baseSearchUri, entry.getKey())));
+        links.add(new Link(buildUri(baseSearchUri, entry.getKey()).toString(),
+                           repoMeta.rel() + "." + entry.getKey()));
       }
     }
 
-    publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, resources));
-    // Run any configured post processors
-    for(ResourceSetPostProcessor pp : config.getResourceSetPostProcessors()) {
-      resources = pp.postProcess(request, resources);
-    }
-
-    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
+    return negotiateResponse(request,
+                             HttpStatus.OK,
+                             new HttpHeaders(),
+                             new Resources<String>(Collections.<String>emptyList(), links));
   }
 
   /**
@@ -643,10 +625,15 @@ public class RepositoryRestController
 
     Object result;
     if(null == (result = queryMethod.method().invoke(repo, paramVals))) {
-      return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), new ResourceSet());
+      return negotiateResponse(request,
+                               HttpStatus.OK,
+                               new HttpHeaders(),
+                               new Resources<String>(Collections.<String>emptyList()));
     }
 
-    ResourceSet resources = new ResourceSet();
+    Set<org.springframework.hateoas.Link> links = new HashSet<org.springframework.hateoas.Link>();
+    PagedResources.PageMetadata pageMetadata = null;
+
     Iterator entities = Collections.emptyList().iterator();
     if(result instanceof Collection) {
       entities = ((Collection)result).iterator();
@@ -658,11 +645,10 @@ public class RepositoryRestController
       }
 
       // Set page counts in the response
-      PageableResourceSet pr = new PageableResourceSet();
-      pr.setPaging(new PagingMetadata(page.getNumber() + 1,
-                                      page.getSize(),
-                                      page.getTotalPages(),
-                                      page.getTotalElements()));
+      pageMetadata = new PagedResources.PageMetadata(page.getSize(),
+                                                     page.getNumber() + 1,
+                                                     page.getTotalElements(),
+                                                     page.getTotalPages());
 
       // Copy over parameters
       UriComponentsBuilder selfUri = UriComponentsBuilder.fromUri(baseUri).pathSegment(repository, "search", query);
@@ -682,7 +668,7 @@ public class RepositoryRestController
           !page.isFirstPage() && page.hasPreviousPage(),
           page.getNumber(),
           "prev",
-          pr.getLinks()
+          links
       );
       maybeAddPrevNextLink(
           nextPrevBase,
@@ -692,48 +678,41 @@ public class RepositoryRestController
           !page.isLastPage() && page.hasNextPage(),
           page.getNumber() + 2,
           "next",
-          pr.getLinks()
+          links
       );
-
-      resources = pr;
     } else {
       entities = Collections.singletonList(result).iterator();
     }
 
+    List<Object> results = new ArrayList<Object>();
     while(entities.hasNext()) {
       Object obj = entities.next();
 
-      RepositoryMetadata elemRepoMeta;
-      if(null == (elemRepoMeta = repositoryMetadataFor(obj.getClass()))) {
-        resources.addResource(new Resource(obj));
+      if(!hasRepositoryMetadataFor(obj.getClass())) {
+        results.add(obj);
         continue;
       }
 
       // This object is managed by a repository
+      RepositoryMetadata elemRepoMeta = repositoryMetadataFor(obj.getClass());
+
       String id = elemRepoMeta.entityMetadata().idAttribute().get(obj).toString();
       if(shouldReturnLinks(request.getServletRequest().getHeader("Accept"))) {
         String rel = elemRepoMeta.rel() + "." + elemRepoMeta.entityMetadata().type().getSimpleName();
         URI path = buildUri(baseUri, repository, id);
-        resources.addLink(new ResourceLink(rel, path));
+        links.add(new org.springframework.hateoas.Link(path.toString(), rel));
       } else {
         URI selfUri = buildUri(baseUri, repository, id);
-        MapResource res = createResource(repoMeta.rel(),
-                                         obj,
-                                         repoMeta.entityMetadata(),
-                                         selfUri);
-        res.addLink(new ResourceLink(SELF, selfUri));
-
-        resources.addResource(res);
+        results.add(EntityResource.wrap(obj, repoMeta, selfUri));
       }
     }
 
-    publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, resources));
-    // Run any configured post processors
-    for(ResourceSetPostProcessor pp : config.getResourceSetPostProcessors()) {
-      resources = pp.postProcess(request, resources);
-    }
-
-    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), resources);
+    return negotiateResponse(request,
+                             HttpStatus.OK,
+                             new HttpHeaders(),
+                             (null != pageMetadata
+                              ? PagedResources.wrap(results, pageMetadata)
+                              : Resources.wrap(results)));
   }
 
   /**
@@ -788,19 +767,7 @@ public class RepositoryRestController
 
     Resource<?> body = null;
     if(returnBody(request)) {
-      MapResource resource = createResource(repoMeta.rel(),
-                                            savedEntity,
-                                            repoMeta.entityMetadata(),
-                                            selfUri);
-      resource.addLink(new ResourceLink(SELF, selfUri));
-
-      body = resource;
-
-      publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
-      // Run any post-processors for this domain type
-      for(ResourcePostProcessor pp : config.getResourcePostProcessors(repoMeta.domainType())) {
-        body = pp.postProcess(request, body);
-      }
+      body = EntityResource.wrap(savedEntity, repoMeta, selfUri);
     }
 
     return negotiateResponse(request, HttpStatus.CREATED, headers, body);
@@ -860,19 +827,10 @@ public class RepositoryRestController
     }
 
     URI selfUri = buildUri(baseUri, repository, id);
-    Resource res = createResource(repoMeta.rel(),
-                                  entity,
-                                  repoMeta.entityMetadata(),
-                                  selfUri);
-    res.addLink(new ResourceLink(SELF, selfUri));
-
-    publishEvent(new BeforeRenderResourceEvent(request, repoMeta, res));
-    // Run any post-processors for this domain type
-    for(ResourcePostProcessor pp : config.getResourcePostProcessors(repoMeta.domainType())) {
-      res = pp.postProcess(request, res);
-    }
-
-    return negotiateResponse(request, HttpStatus.OK, headers, res);
+    return negotiateResponse(request,
+                             HttpStatus.OK,
+                             headers,
+                             EntityResource.wrap(entity, repoMeta, selfUri));
   }
 
   /**
@@ -951,19 +909,7 @@ public class RepositoryRestController
 
     Object body = null;
     if(returnBody(request)) {
-      Resource res = createResource(repoMeta.rel(),
-                                    savedEntity,
-                                    repoMeta.entityMetadata(),
-                                    selfUri);
-      res.addLink(new ResourceLink(SELF, selfUri));
-
-      body = res;
-
-      publishEvent(new BeforeRenderResourceEvent(request, repoMeta, body));
-      // Run any post-processors for this domain type
-      for(ResourcePostProcessor pp : config.getResourcePostProcessors(repoMeta.domainType())) {
-        res = pp.postProcess(request, res);
-      }
+      body = EntityResource.wrap(savedEntity, repoMeta, selfUri);
     }
 
     if(!isUpdate) {
@@ -1087,39 +1033,37 @@ public class RepositoryRestController
       return notFoundResponse(request);
     }
 
-    Object body;
+    Set<Link> links = new HashSet<Link>();
     AttributeMetadata idAttr = propRepoMeta.entityMetadata().idAttribute();
     String propertyRel = repository +
         "." + entity.getClass().getSimpleName() +
         "." + property;
     if(propVal instanceof Collection) {
       propertyRel += "." + propRepoMeta.entityMetadata().type().getSimpleName();
-      ResourceSet resources = new ResourceSet();
+
+      List<Resource<?>> outgoing = new ArrayList<Resource<?>>();
       for(Object o : (Collection)propVal) {
         String propValId = idAttr.get(o).toString();
         URI path = buildUri(baseUri, repository, id, property, propValId);
 
         if(shouldReturnLinks(accept)) {
-          resources.addLink(new ResourceLink(propertyRel, path));
+          links.add(new Link(path.toString(), propertyRel));
         } else {
           URI selfUri = buildUri(baseUri, propRepoMeta.name(), propValId);
-          MapResource res = createResource(propRepoMeta.rel(),
-                                           o,
-                                           propRepoMeta.entityMetadata(),
-                                           selfUri);
-          res.addLink(new ResourceLink(SELF, selfUri));
-          res.addLink(new ResourceLink(propertyRel, path));
-          resources.addResource(res);
+          EntityResource er = EntityResource.wrap(o, propRepoMeta, selfUri);
+          er.add(new Link(path.toString(), propertyRel));
+          outgoing.add(er);
         }
       }
-      body = resources;
-      // Run any post-processors for this domain type
-      for(ResourceSetPostProcessor pp : config.getResourceSetPostProcessors()) {
-        resources = pp.postProcess(request, resources);
-      }
+
+      return negotiateResponse(request,
+                               HttpStatus.OK,
+                               new HttpHeaders(),
+                               new Resources(outgoing, links));
+
     } else if(propVal instanceof Map) {
       propertyRel += "." + propRepoMeta.entityMetadata().type().getSimpleName();
-      Map resource = new HashMap();
+      Map<String, Object> resource = new HashMap<String, Object>();
       for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)propVal).entrySet()) {
         String propValId = idAttr.get(entry.getValue()).toString();
         URI path = buildUri(baseUri, repository, id, property, propValId);
@@ -1128,49 +1072,39 @@ public class RepositoryRestController
         String sKey = objectToMapKey(oKey);
 
         if(shouldReturnLinks(accept)) {
-          resource.put(sKey, new ResourceLink(propertyRel, path));
+          resource.put(sKey, new Link(path.toString(), propertyRel));
         } else {
           URI selfUri = buildUri(baseUri, propRepoMeta.name(), propValId);
-          Resource res = createResource(propRepoMeta.rel(),
-                                        entry.getValue(),
-                                        propRepoMeta.entityMetadata(),
-                                        selfUri);
-          res.addLink(new ResourceLink(SELF, selfUri));
-          res.addLink(new ResourceLink(propertyRel, path));
-          resource.put(sKey, res);
-          // Run any post-processors for this domain type
-          for(ResourcePostProcessor pp : config.getResourcePostProcessors(propRepoMeta.domainType())) {
-            res = pp.postProcess(request, res);
-          }
+          EntityResource er = EntityResource.wrap(entry.getValue(), propRepoMeta, selfUri);
+          resource.put(sKey, er);
         }
       }
-      body = new MapResource(resource);
+
+      return negotiateResponse(request,
+                               HttpStatus.OK,
+                               new HttpHeaders(),
+                               new Resource(resource, links));
+
     } else {
       String propValId = idAttr.get(propVal).toString();
       URI path = buildUri(baseUri, repository, id, property);
       URI selfUri = buildUri(baseUri, propRepoMeta.name(), propValId);
+
+      List<Resource<?>> outgoing = new ArrayList<Resource<?>>();
       if(shouldReturnLinks(accept)) {
-        Resource<?> resource = new Resource<Object>();
-        resource.addLink(new ResourceLink(propertyRel, path));
-        body = resource;
+        links.add(new Link(path.toString(), propertyRel));
       } else {
-        MapResource res = createResource(propRepoMeta.rel(),
-                                         propVal,
-                                         propRepoMeta.entityMetadata(),
-                                         selfUri);
-        res.addLink(new ResourceLink(propertyRel, path));
-        res.addLink(new ResourceLink(SELF, selfUri));
-        body = res;
+        EntityResource er = EntityResource.wrap(propVal, propRepoMeta, selfUri);
+        outgoing.add(er);
       }
-      // Run any post-processors for this domain type
-      for(ResourcePostProcessor pp : config.getResourcePostProcessors(propRepoMeta.domainType())) {
-        body = pp.postProcess(request, (Resource)body);
-      }
+
+      return negotiateResponse(request,
+                               HttpStatus.OK,
+                               new HttpHeaders(),
+                               new Resources(outgoing, links));
+
     }
 
-    publishEvent(new BeforeRenderResourceEvent(request, propRepoMeta, body));
-
-    return negotiateResponse(request, HttpStatus.OK, new HttpHeaders(), body);
   }
 
   /**
@@ -1269,13 +1203,13 @@ public class RepositoryRestController
     };
 
     MediaType incomingMediaType = request.getHeaders().getContentType();
-    LinkList incomingLinks = readIncoming(request,
+    Resource incomingLinks = readIncoming(request,
                                           incomingMediaType,
-                                          LinkList.class);
+                                          Resource.class);
     for(Link l : incomingLinks.getLinks()) {
       Object o;
-      if(null != (o = domainObjectResolver.resolve(baseUri, URI.create(l.href().toString())))) {
-        rel.set(l.rel());
+      if(null != (o = domainObjectResolver.resolve(baseUri, URI.create(l.getHref())))) {
+        rel.set(l.getRel());
         ResponseEntity<?> possibleResponse = entityHandler.handle(o);
         if(null != possibleResponse) {
           return possibleResponse;
@@ -1429,23 +1363,14 @@ public class RepositoryRestController
     String propertyRel = repository + "." + repoMeta.entityMetadata().type().getSimpleName() + "." + property;
     URI propertyPath = buildUri(baseUri, repository, id, property, linkedId);
     URI selfUri = buildUri(baseUri, linkedRepoMeta.name(), linkedId);
-    Resource res = createResource(linkedRepoMeta.rel(),
-                                  linkedEntity,
-                                  linkedRepoMeta.entityMetadata(),
-                                  selfUri);
-    res.addLink(new ResourceLink(propertyRel, propertyPath));
-    res.addLink(new ResourceLink(SELF, selfUri));
 
-    publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, res));
-    // Run any post-processors for this domain type
-    for(ResourcePostProcessor pp : config.getResourcePostProcessors(linkedRepoMeta.domainType())) {
-      res = pp.postProcess(request, res);
-    }
+    EntityResource er = EntityResource.wrap(linkedEntity, linkedRepoMeta, selfUri);
+    er.add(new Link(propertyPath.toString(), propertyRel));
 
     HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Location", selfUri.toString());
 
-    return negotiateResponse(request, HttpStatus.OK, headers, res);
+    return negotiateResponse(request, HttpStatus.OK, headers, er);
   }
 
   /**
@@ -1688,9 +1613,6 @@ public class RepositoryRestController
     Internal helper methods
   -----------------------------------
    */
-  private static URI buildUri(URI baseUri, String... pathSegments) {
-    return UriComponentsBuilder.fromUri(baseUri).pathSegment(pathSegments).build().toUri();
-  }
 
   @SuppressWarnings({"unchecked"})
   private void maybeAddPrevNextLink(URI resourceUri,
@@ -1706,7 +1628,7 @@ public class RepositoryRestController
       urib.queryParam(config.getPageParamName(), nextPage); // PageRequest is 0-based, so it's already (page - 1)
       urib.queryParam(config.getLimitParamName(), page.getSize());
       pageSort.addSortParameters(urib);
-      links.add(new ResourceLink(repoMeta.rel() + "." + rel, urib.build().toUri()));
+      links.add(new Link(urib.build().toUri().toString(), repoMeta.rel() + "." + rel));
     }
   }
 
@@ -1737,29 +1659,33 @@ public class RepositoryRestController
     return (V)mappingHttpMessageConverter.read(targetType, request);
   }
 
-  private MapResource createResource(String repoRel,
-                                     Object entity,
-                                     EntityMetadata<AttributeMetadata> entityMetadata,
-                                     URI baseUri) {
-    Map<String, Object> entityDto = new HashMap<String, Object>();
-    MapResource resource = new MapResource(entityDto);
-
-    for(Map.Entry<String, AttributeMetadata> attrMeta : entityMetadata.embeddedAttributes().entrySet()) {
-      String name = attrMeta.getKey();
-      Object val;
-      if(null != (val = attrMeta.getValue().get(entity))) {
-        entityDto.put(name, val);
-      }
-    }
-
-    for(String attrName : entityMetadata.linkedAttributes().keySet()) {
-      URI uri = buildUri(baseUri, attrName);
-      String rel = repoRel + "." + entity.getClass().getSimpleName() + "." + attrName;
-      resource.addLink(new ResourceLink(rel, uri));
-    }
-
-    return resource;
-  }
+  //  private Set<Link> extractLinkedProperties(String repoRel,
+  //                                            Object entity,
+  //                                            EntityMetadata<AttributeMetadata> entityMetadata,
+  //                                            URI baseUri) {
+  //    Set<Link> links = new HashSet<Link>();
+  //    for(String attrName : entityMetadata.linkedAttributes().keySet()) {
+  //      URI uri = buildUri(baseUri, attrName);
+  //      String rel = repoRel + "." + entity.getClass().getSimpleName() + "." + attrName;
+  //      links.add(new Link(uri.toString(), rel));
+  //    }
+  //    return links;
+  //  }
+  //
+  //  private Map<String, Object> extractEmbeddedProperties(String repoRel,
+  //                                                        Object entity,
+  //                                                        EntityMetadata<AttributeMetadata> entityMetadata,
+  //                                                        URI baseUri) {
+  //    Map<String, Object> entityDto = new HashMap<String, Object>();
+  //    for(Map.Entry<String, AttributeMetadata> attrMeta : entityMetadata.embeddedAttributes().entrySet()) {
+  //      String name = attrMeta.getKey();
+  //      Object val;
+  //      if(null != (val = attrMeta.getValue().get(entity))) {
+  //        entityDto.put(name, val);
+  //      }
+  //    }
+  //    return entityDto;
+  //  }
 
   private boolean shouldReturnLinks(String acceptHeader) {
     if(null != acceptHeader) {

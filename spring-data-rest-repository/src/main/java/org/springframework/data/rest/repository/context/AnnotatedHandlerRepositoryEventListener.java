@@ -21,8 +21,6 @@ import org.springframework.data.rest.repository.annotation.HandleAfterLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleAfterSave;
 import org.springframework.data.rest.repository.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave;
-import org.springframework.data.rest.repository.annotation.HandleBeforeRenderResource;
-import org.springframework.data.rest.repository.annotation.HandleBeforeRenderResources;
 import org.springframework.data.rest.repository.annotation.HandleBeforeSave;
 import org.springframework.data.rest.repository.annotation.RepositoryEventHandler;
 import org.springframework.util.ClassUtils;
@@ -122,16 +120,6 @@ public class AnnotatedHandlerRepositoryEventListener implements ApplicationListe
                   inspect(targetType, handler, method, HandleAfterLinkSave.class, AfterLinkSaveEvent.class);
                   inspect(targetType, handler, method, HandleBeforeDelete.class, BeforeDeleteEvent.class);
                   inspect(targetType, handler, method, HandleAfterDelete.class, AfterDeleteEvent.class);
-                  inspect(targetType,
-                          handler,
-                          method,
-                          HandleBeforeRenderResource.class,
-                          BeforeRenderResourceEvent.class);
-                  inspect(targetType,
-                          handler,
-                          method,
-                          HandleBeforeRenderResources.class,
-                          BeforeRenderResourcesEvent.class);
                 }
               },
               new ReflectionUtils.MethodFilter() {
@@ -158,13 +146,7 @@ public class AnnotatedHandlerRepositoryEventListener implements ApplicationListe
       try {
         Object src = event.getSource();
 
-        if(event instanceof RenderEvent) {
-          RenderEvent ev = (RenderEvent)event;
-          if(!ClassUtils.isAssignable(handlerMethod.targetType,
-                                      ev.getRepositoryMetadata().entityMetadata().type())) {
-            continue;
-          }
-        } else if(!ClassUtils.isAssignable(handlerMethod.targetType, src.getClass())) {
+        if(!ClassUtils.isAssignable(handlerMethod.targetType, src.getClass())) {
           continue;
         }
 
@@ -174,10 +156,6 @@ public class AnnotatedHandlerRepositoryEventListener implements ApplicationListe
           params.add(((BeforeLinkSaveEvent)event).getLinked());
         } else if(event instanceof AfterLinkSaveEvent) {
           params.add(((AfterLinkSaveEvent)event).getLinked());
-        } else if(event instanceof RenderEvent) {
-          RenderEvent ev = (RenderEvent)event;
-          params.add(0, ev.getRequest());
-          params.add(1, ev.getRepositoryMetadata());
         }
 
         handlerMethod.method.invoke(handlerMethod.handler, params.toArray());

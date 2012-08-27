@@ -11,6 +11,9 @@ dependencies {
   //compile "org.springframework.data:spring-data-commons-core:$sdCommonsVersion"
   compile "org.springframework.data:spring-data-jpa:$sdJpaVersion"
 
+  // Spring HATEOAS
+  compile "org.springframework.hateoas:spring-hateoas:$hateoasVersion"
+
   // Exporter core
   compile project(":spring-data-rest-core")
 

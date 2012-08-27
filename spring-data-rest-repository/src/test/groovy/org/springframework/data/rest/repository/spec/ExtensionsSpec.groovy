@@ -4,18 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.data.rest.core.Resource
-import org.springframework.data.rest.core.ResourceSet
-import org.springframework.data.rest.core.ResourceLink
 import org.springframework.data.rest.repository.RepositoryExporter
-import org.springframework.data.rest.repository.RepositoryMetadata
 import org.springframework.data.rest.repository.annotation.HandleAfterDelete
 import org.springframework.data.rest.repository.annotation.HandleAfterLinkSave
 import org.springframework.data.rest.repository.annotation.HandleAfterSave
 import org.springframework.data.rest.repository.annotation.HandleBeforeDelete
 import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave
-import org.springframework.data.rest.repository.annotation.HandleBeforeRenderResource
-import org.springframework.data.rest.repository.annotation.HandleBeforeRenderResources
 import org.springframework.data.rest.repository.annotation.HandleBeforeSave
 import org.springframework.data.rest.repository.annotation.RepositoryEventHandler
 import org.springframework.data.rest.repository.context.AfterDeleteEvent
@@ -24,12 +18,9 @@ import org.springframework.data.rest.repository.context.AfterSaveEvent
 import org.springframework.data.rest.repository.context.AnnotatedHandlerRepositoryEventListener
 import org.springframework.data.rest.repository.context.BeforeDeleteEvent
 import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent
-import org.springframework.data.rest.repository.context.BeforeRenderResourceEvent
-import org.springframework.data.rest.repository.context.BeforeRenderResourcesEvent
 import org.springframework.data.rest.repository.context.BeforeSaveEvent
 import org.springframework.data.rest.repository.test.ApplicationConfig
 import org.springframework.data.rest.repository.test.Person
-import org.springframework.http.server.ServerHttpRequest
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
@@ -69,31 +60,6 @@ class ExtensionsSpec extends Specification {
 
   }
 
-  def "responds to render events"() {
-
-    given:
-    def repoMeta = exporter.repositoryMetadataFor(Person)
-    def request = Mock(ServerHttpRequest)
-
-    def p = new Person("John Doe")
-    def selfLink = new ResourceLink("self", new URI("http://localhost:8080/people/1"))
-    def resources = new ResourceSet()
-    resources.links << selfLink
-    def resource = new Resource(p)
-    resource.links << selfLink
-
-    when:
-    appCtx.publishEvent(new BeforeRenderResourcesEvent(request, repoMeta, resources))
-    appCtx.publishEvent(new BeforeRenderResourceEvent(request, repoMeta, resource))
-
-    then:
-    resources.links.size() == 2
-    null != resources.links.find { it.rel() == "linkAddedByHandler" }
-    resource.links.size() == 2
-    null != resources.links.find { it.rel() == "linkAddedByHandler" }
-
-  }
-
 }
 
 @Configuration
@@ -105,10 +71,6 @@ class EventsApplicationConfig {
 
   @Bean PersonEventHandler personEventHandler() {
     new PersonEventHandler()
-  }
-
-  @Bean PersonRenderHandler personRenderHandler() {
-    new PersonRenderHandler()
   }
 
 }
@@ -149,19 +111,3 @@ class PersonEventHandler {
 
 }
 
-@RepositoryEventHandler(Person)
-class PersonRenderHandler {
-
-  @HandleBeforeRenderResources void handleBeforeRenderResources(ServerHttpRequest request,
-                                                                RepositoryMetadata repoMeta,
-                                                                ResourceSet resources) {
-    resources.links << new ResourceLink("linkAddedByHandler", new URI("http://localhost:8080/linkAddedByHandler"))
-  }
-
-  @HandleBeforeRenderResource void handleBeforeRenderResource(ServerHttpRequest request,
-                                                              RepositoryMetadata repoMeta,
-                                                              Resource resource) {
-    resource.links << new ResourceLink("linkAddedByHandler", new URI("http://localhost:8080/linkAddedByHandler"))
-  }
-
-}

@@ -9,7 +9,7 @@ import java.util.Stack;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.rest.core.Resolver;
+import org.springframework.data.rest.core.UriResolver;
 import org.springframework.data.rest.core.util.UriUtils;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.ClassUtils;
@@ -17,9 +17,9 @@ import org.springframework.util.ClassUtils;
 /**
  * @author Jon Brisbin
  */
-public class UriToDomainObjectResolver
-    extends RepositoryExporterSupport<UriToDomainObjectResolver>
-    implements Resolver<Object> {
+public class UriToDomainObjectUriResolver
+    extends RepositoryExporterSupport<UriToDomainObjectUriResolver>
+    implements UriResolver<Object> {
 
   @Autowired(required = false)
   private List<ConversionService> conversionServices = Arrays.<ConversionService>asList(new DefaultFormattingConversionService());
@@ -28,7 +28,7 @@ public class UriToDomainObjectResolver
     return conversionServices;
   }
 
-  public UriToDomainObjectResolver setConversionServices(List<ConversionService> conversionServices) {
+  public UriToDomainObjectUriResolver setConversionServices(List<ConversionService> conversionServices) {
     this.conversionServices = conversionServices;
     return this;
   }

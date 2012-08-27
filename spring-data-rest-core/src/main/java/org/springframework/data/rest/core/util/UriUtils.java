@@ -193,4 +193,16 @@ public abstract class UriUtils {
     return uris.size() > 0 ? uris.get(Math.max(uris.size() - 1, 0)) : null;
   }
 
+  /**
+   * Create a new {@link URI} out of the components.
+   *
+   * @param baseUri
+   * @param pathSegments
+   *
+   * @return
+   */
+  public static URI buildUri(URI baseUri, String... pathSegments) {
+    return UriComponentsBuilder.fromUri(baseUri).pathSegment(pathSegments).build().toUri();
+  }
+
 }

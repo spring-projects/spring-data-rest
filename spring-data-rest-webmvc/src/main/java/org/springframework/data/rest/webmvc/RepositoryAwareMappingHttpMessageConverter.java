@@ -26,7 +26,6 @@ import org.codehaus.jackson.map.Module;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializerProvider;
 import org.codehaus.jackson.map.deser.std.StdDeserializer;
-import org.codehaus.jackson.map.module.SimpleAbstractTypeResolver;
 import org.codehaus.jackson.map.module.SimpleDeserializers;
 import org.codehaus.jackson.map.module.SimpleKeyDeserializers;
 import org.codehaus.jackson.map.module.SimpleModule;
@@ -34,14 +33,15 @@ import org.codehaus.jackson.map.module.SimpleSerializers;
 import org.codehaus.jackson.map.ser.std.SerializerBase;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.rest.core.Link;
-import org.springframework.data.rest.core.ResourceLink;
 import org.springframework.data.rest.repository.AttributeMetadata;
 import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryMetadata;
-import org.springframework.data.rest.repository.UriToDomainObjectResolver;
+import org.springframework.data.rest.repository.UriToDomainObjectUriResolver;
 import org.springframework.format.support.DefaultFormattingConversionService;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -55,18 +55,19 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 public class RepositoryAwareMappingHttpMessageConverter
     extends MappingJacksonHttpMessageConverter
-    implements InitializingBean {
+    implements ApplicationEventPublisherAware,
+               InitializingBean {
 
-  private final ObjectMapper mapper = new ObjectMapper();
-
+  private final ObjectMapper                 mapper               = new ObjectMapper();
   @Autowired(required = false)
-  protected List<ConversionService>  conversionServices  = Arrays.<ConversionService>asList(new DefaultFormattingConversionService());
+  protected     List<ConversionService>      conversionServices   = Arrays.<ConversionService>asList(new DefaultFormattingConversionService());
   @Autowired(required = false)
-  protected List<RepositoryExporter> repositoryExporters = Collections.emptyList();
+  protected     List<RepositoryExporter>     repositoryExporters  = Collections.emptyList();
   @Autowired(required = false)
-  protected List<Module>             modules             = Collections.emptyList();
+  protected     List<Module>                 modules              = Collections.emptyList();
   @Autowired
-  protected UriToDomainObjectResolver domainObjectResolver;
+  protected     UriToDomainObjectUriResolver domainObjectResolver = null;
+  protected     ApplicationEventPublisher    eventPublisher       = null;
 
   public RepositoryAwareMappingHttpMessageConverter() {
     setSupportedMediaTypes(Arrays.asList(
@@ -75,6 +76,10 @@ public class RepositoryAwareMappingHttpMessageConverter
         MediaTypes.VERBOSE_JSON
     ));
     setObjectMapper(mapper);
+  }
+
+  @Override public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+    this.eventPublisher = applicationEventPublisher;
   }
 
   @Override public void afterPropertiesSet() throws Exception {
@@ -114,11 +119,11 @@ public class RepositoryAwareMappingHttpMessageConverter
     return this;
   }
 
-  public UriToDomainObjectResolver getDomainObjectResolver() {
+  public UriToDomainObjectUriResolver getDomainObjectResolver() {
     return domainObjectResolver;
   }
 
-  public RepositoryAwareMappingHttpMessageConverter setDomainObjectResolver(UriToDomainObjectResolver domainObjectResolver) {
+  public RepositoryAwareMappingHttpMessageConverter setDomainObjectResolver(UriToDomainObjectUriResolver domainObjectResolver) {
     this.domainObjectResolver = domainObjectResolver;
     return this;
   }
@@ -199,16 +204,11 @@ public class RepositoryAwareMappingHttpMessageConverter
     SimpleKeyDeserializers keyDsers = new SimpleKeyDeserializers();
 
     private RepositoryAwareModule() {
-      super("RepositoryAwareModule", new Version(1, 0, 0, "SNAPSHOT"));
+      super("RepositoryAwareModule", Version.unknownVersion());
     }
 
     @SuppressWarnings({"unchecked"})
     @Override public void setupModule(SetupContext context) {
-      context.addAbstractTypeResolver(
-          new SimpleAbstractTypeResolver()
-              .addMapping(Link.class, ResourceLink.class)
-      );
-
       for(RepositoryExporter repoExp : repositoryExporters) {
         for(String repoName : new ArrayList<String>(repoExp.repositoryNames())) {
           RepositoryMetadata repoMeta = repoExp.repositoryMetadataFor(repoName);
@@ -272,7 +272,7 @@ public class RepositoryAwareMappingHttpMessageConverter
       String rel = repoMeta.rel() + "." + repoMeta.domainType().getSimpleName();
       URI selfUri = buildUri(RepositoryRestController.BASE_URI.get(), repoMeta.name(), sId);
 
-      jgen.writeObject(new ResourceLink(rel, selfUri));
+      jgen.writeObject(new Link(selfUri.toString(), rel));
     }
 
   }

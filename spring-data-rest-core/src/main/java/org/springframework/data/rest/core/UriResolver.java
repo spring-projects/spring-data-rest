@@ -7,7 +7,7 @@ import java.net.URI;
  *
  * @author Jon Brisbin
  */
-public interface Resolver<T> {
+public interface UriResolver<T> {
 
   /**
    * Take a {@link URI} and resolve it to an actual object.

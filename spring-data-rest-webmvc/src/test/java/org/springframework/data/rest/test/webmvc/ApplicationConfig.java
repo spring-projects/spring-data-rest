@@ -1,9 +1,7 @@
 package org.springframework.data.rest.test.webmvc;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -14,11 +12,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.rest.core.Resource;
 import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration;
-import org.springframework.data.rest.webmvc.ResourcePostProcessor;
 import org.springframework.format.support.DefaultFormattingConversionService;
-import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaDialect;
@@ -86,17 +81,6 @@ public class ApplicationConfig {
       }
     });
     return cs;
-  }
-
-  @Bean public Map<Class<?>, ResourcePostProcessor> resourcePostProcessors() {
-    Map<Class<?>, ResourcePostProcessor> resourcePostProcessors = new HashMap<Class<?>, ResourcePostProcessor>();
-    resourcePostProcessors.put(Person.class, new ResourcePostProcessor() {
-      @Override public Resource postProcess(ServerHttpRequest request, Resource r) {
-        System.out.println("    **** post-processing request: " + request + " with resource: " + r);
-        return r;
-      }
-    });
-    return resourcePostProcessors;
   }
 
 }

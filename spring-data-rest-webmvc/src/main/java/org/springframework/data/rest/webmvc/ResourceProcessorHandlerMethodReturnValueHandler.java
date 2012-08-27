@@ -425,7 +425,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	}
 
 	/**
-	 * Helper extension of {@link AnnotationAwareOrderComparator} to make {@link #getOrder()} public to allow it being
+	 * Helper extension of {@link AnnotationAwareOrderComparator} to make {@link #getOrder(Object)} public to allow it being
 	 * used in a standalone fashion.
 	 * 
 	 * @author Oliver Gierke

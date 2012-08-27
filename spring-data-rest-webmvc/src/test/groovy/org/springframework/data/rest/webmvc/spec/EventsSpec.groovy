@@ -44,8 +44,4 @@ class EventsSpec extends BaseSpec {
 
   }
 
-  def "captures resource rendering events"() {
-
-  }
-
 }

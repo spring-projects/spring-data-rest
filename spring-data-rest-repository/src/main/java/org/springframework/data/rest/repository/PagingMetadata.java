@@ -10,6 +10,9 @@ public class PagingMetadata {
   private int  totalPages    = 0;
   private long totalElements = 0;
 
+  public PagingMetadata() {
+  }
+
   public PagingMetadata(int number,
                         int size,
                         int totalPages,

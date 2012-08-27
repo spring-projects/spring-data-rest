@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.springframework.data.rest.core.Link;
+import org.springframework.hateoas.Link;
 
 /**
  * JSON-serializable response for returns that have a mix of results and links. Also used in responses that have just

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.data.rest.repository.UriToDomainObjectResolver;
+import org.springframework.data.rest.repository.UriToDomainObjectUriResolver;
 import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.repository.jpa.JpaRepositoryExporter;
 import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
@@ -44,7 +44,7 @@ public class RepositoryRestMvcConfiguration {
    * Main configuration for the REST exporter.
    */
   @Autowired(required = false)
-  protected RepositoryRestConfiguration repositoryRestConfig;
+  protected RepositoryRestConfiguration repositoryRestConfig = RepositoryRestConfiguration.DEFAULT;
 
   /**
    * For getting access to the {@link javax.persistence.EntityManagerFactory}.
@@ -62,7 +62,7 @@ public class RepositoryRestMvcConfiguration {
    */
   @Bean public JpaRepositoryExporter jpaRepositoryExporter() {
     return (null == customJpaRepositoryExporter
-            ? new JpaRepositoryExporter().setDomainTypeMappings(repositoryRestConfiguration().getDomainTypeToRepositoryMappings())
+            ? new JpaRepositoryExporter().setDomainTypeMappings(repositoryRestConfig.getDomainTypeToRepositoryMappings())
             : customJpaRepositoryExporter);
   }
 
@@ -88,20 +88,14 @@ public class RepositoryRestMvcConfiguration {
   }
 
   /**
-   * A {@link org.springframework.data.rest.core.Resolver} implementation that takes a {@link java.net.URI} and turns
+   * A {@link org.springframework.data.rest.core.UriResolver} implementation that takes a {@link java.net.URI} and turns
    * it
    * into a top-level domain object.
    *
    * @return
    */
-  @Bean public UriToDomainObjectResolver domainObjectResolver() {
-    return new UriToDomainObjectResolver();
-  }
-
-  @Bean public RepositoryRestConfiguration repositoryRestConfiguration() {
-    return (null == repositoryRestConfig
-            ? RepositoryRestConfiguration.DEFAULT
-            : repositoryRestConfig);
+  @Bean public UriToDomainObjectUriResolver domainObjectResolver() {
+    return new UriToDomainObjectUriResolver();
   }
 
   /**
@@ -115,10 +109,6 @@ public class RepositoryRestMvcConfiguration {
     return new RepositoryRestController();
   }
 
-  @Bean ResourcesReturnValueHandler resourcesReturnValueHandler() {
-    return new ResourcesReturnValueHandler(repositoryRestConfiguration());
-  }
-
   /**
    * Special {@link org.springframework.web.servlet.HandlerAdapter} that only recognizes handler methods defined in the
    * {@link RepositoryRestController} class.
@@ -126,7 +116,7 @@ public class RepositoryRestMvcConfiguration {
    * @return
    */
   @Bean public RepositoryRestHandlerAdapter repositoryExporterHandlerAdapter() {
-    return new RepositoryRestHandlerAdapter(repositoryRestConfiguration());
+    return new RepositoryRestHandlerAdapter(repositoryRestConfig);
   }
 
   /**

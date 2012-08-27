@@ -80,7 +80,7 @@ configure(subprojects) { subproject ->
     // Testing
     testCompile "org.spockframework:spock-core:$spockVersion"
     testCompile "org.spockframework:spock-spring:$spockVersion"
-    testCompile "org.hamcrest:hamcrest-library:1.2.1"
+    testCompile "org.hamcrest:hamcrest-library:1.3"
     testCompile "org.springframework:spring-test:$springVersion"
     testRuntime "org.springframework:spring-context-support:$springVersion"
     testCompile "org.mockito:mockito-core:1.8.5"
@@ -96,6 +96,8 @@ idea {
     downloadSources = true
   }
   project {
+    jdkName = "OpenJDK 1.7"
+    languageLevel = "1.6"
     ipr {
       withXml { xml ->
         xml.node.component.find { it.@name == "VcsDirectoryMappings" }.mapping.@vcs = "Git"
