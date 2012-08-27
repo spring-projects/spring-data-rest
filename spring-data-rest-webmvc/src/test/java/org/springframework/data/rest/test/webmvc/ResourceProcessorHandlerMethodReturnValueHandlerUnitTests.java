@@ -278,7 +278,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		static final Resource<String> RESULT = new Resource<String>("bar");
 
 		@Override
-		public Resource<String> enrich(Resource<String> resource) {
+		public Resource<String> process(Resource<String> resource) {
 			return RESULT;
 		}
 	}
@@ -289,7 +289,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 				Collections.singleton(StringResourceProcessor.RESULT));
 
 		@Override
-		public Resources<Resource<String>> enrich(Resources<Resource<String>> resources) {
+		public Resources<Resource<String>> process(Resources<Resource<String>> resources) {
 			return RESULT;
 		}
 	}
@@ -304,7 +304,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		static final Resource<Long> RESULT = new Resource<Long>(10L);
 
 		@Override
-		public Resource<Long> enrich(Resource<Long> resource) {
+		public Resource<Long> process(Resource<Long> resource) {
 			return RESULT;
 		}
 	}
@@ -328,7 +328,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		static final StringResource RESULT = new StringResource("foobar");
 
 		@Override
-		public StringResource enrich(StringResource resource) {
+		public StringResource process(StringResource resource) {
 			return RESULT;
 		}
 	}

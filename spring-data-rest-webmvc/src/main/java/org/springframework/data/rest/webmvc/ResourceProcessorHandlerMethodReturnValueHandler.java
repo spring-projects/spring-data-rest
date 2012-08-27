@@ -284,7 +284,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		@Override
 		@SuppressWarnings("unchecked")
 		public Object invokeProcessor(Object object) {
-			return ((ResourceProcessor<ResourceSupport>) processor).enrich((ResourceSupport) object);
+			return ((ResourceProcessor<ResourceSupport>) processor).process((ResourceSupport) object);
 		}
 
 		/*
