@@ -9,6 +9,7 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.rest.repository.UriToDomainObjectUriResolver;
 import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.repository.jpa.JpaRepositoryExporter;
+import org.springframework.data.rest.webmvc.json.RepositoryAwareJacksonModule;
 import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
@@ -78,6 +79,15 @@ public class RepositoryRestMvcConfiguration {
   }
 
   /**
+   * A special Jackson {@link org.codehaus.jackson.map.Module} implementation that configures converters for entities.
+   *
+   * @return
+   */
+  @Bean public RepositoryAwareJacksonModule jacksonModule() {
+    return new RepositoryAwareJacksonModule();
+  }
+
+  /**
    * Special Repository-aware {@link org.springframework.http.converter.HttpMessageConverter} that can deal with
    * entities and links.
    *
@@ -88,7 +98,8 @@ public class RepositoryRestMvcConfiguration {
   }
 
   /**
-   * A {@link org.springframework.data.rest.core.UriResolver} implementation that takes a {@link java.net.URI} and turns
+   * A {@link org.springframework.data.rest.core.UriResolver} implementation that takes a {@link java.net.URI} and
+   * turns
    * it
    * into a top-level domain object.
    *

@@ -14,6 +14,9 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration;
 import org.springframework.format.support.DefaultFormattingConversionService;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaDialect;
@@ -81,6 +84,16 @@ public class ApplicationConfig {
       }
     });
     return cs;
+  }
+
+  @Bean public ResourceProcessor<Resource<Person>> personProcessor() {
+    return new ResourceProcessor<Resource<Person>>() {
+      @Override public Resource<Person> process(Resource<Person> resource) {
+        System.out.println("\t***** ResourceProcessor for Person: " + resource);
+        resource.add(new Link("http://localhost:8080/people", "added-link"));
+        return resource;
+      }
+    };
   }
 
 }

@@ -1,4 +1,4 @@
-package org.springframework.data.rest.webmvc;
+package org.springframework.data.rest.webmvc.json;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -6,6 +6,7 @@ import java.util.Arrays;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.data.rest.webmvc.MediaTypes;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotWritableException;
