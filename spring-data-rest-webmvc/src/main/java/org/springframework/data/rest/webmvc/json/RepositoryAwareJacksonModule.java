@@ -221,7 +221,7 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
     @Override public Object deserialize(JsonParser jp,
                                         DeserializationContext ctxt) throws IOException,
                                                                             JsonProcessingException {
-      Object entity = BeanUtils.instantiate(getValueClass());
+      Object entity = BeanUtils.instantiateClass(getValueClass());
       for(JsonToken tok = jp.nextToken(); tok != JsonToken.END_OBJECT; tok = jp.nextToken()) {
         String name = jp.getCurrentName();
         switch(tok) {
