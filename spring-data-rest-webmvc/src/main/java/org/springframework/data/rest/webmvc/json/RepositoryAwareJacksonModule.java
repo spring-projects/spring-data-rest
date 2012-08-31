@@ -149,9 +149,17 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
         return;
       }
 
-      if(conversionService.canConvert(resource.getContent().getClass(), Resource.class)) {
+      Class<?> sourceType = resource.getContent().getClass();
+      ConversionService entityConversionSvc = conversionService;
+      for(ConversionService cs : conversionServices) {
+        if(cs.canConvert(sourceType, Resource.class)) {
+          entityConversionSvc = cs;
+          break;
+        }
+      }
+      if(entityConversionSvc.canConvert(sourceType, Resource.class)) {
         Set<Link> links = resource.getLinks();
-        resource = conversionService.convert(value, Resource.class);
+        resource = entityConversionSvc.convert(value, Resource.class);
         resource.add(links);
       }
 

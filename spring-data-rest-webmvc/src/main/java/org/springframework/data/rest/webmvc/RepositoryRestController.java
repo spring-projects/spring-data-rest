@@ -337,7 +337,7 @@ public class RepositoryRestController
         entityConverters.addConverter(domainType, Resource.class, new EntityToResourceConverter(repoMeta));
       }
     }
-    conversionService.addConversionService(0, entityConverters);
+    conversionService.addConversionServices(entityConverters);
   }
 
   /**
@@ -642,7 +642,7 @@ public class RepositoryRestController
                                new Resources<String>(Collections.<String>emptyList()));
     }
 
-    Set<org.springframework.hateoas.Link> links = new HashSet<org.springframework.hateoas.Link>();
+    Set<Link> links = new HashSet<Link>();
     PagedResources.PageMetadata pageMetadata = null;
 
     Iterator entities = Collections.emptyList().iterator();
@@ -708,7 +708,7 @@ public class RepositoryRestController
         String id = elemRepoMeta.entityMetadata().idAttribute().get(obj).toString();
         String rel = elemRepoMeta.rel() + "." + elemRepoMeta.entityMetadata().type().getSimpleName();
         URI path = buildUri(baseUri, repository, id);
-        links.add(new org.springframework.hateoas.Link(path.toString(), rel));
+        links.add(new Link(path.toString(), rel));
       } else {
         results.add(obj);
       }
@@ -718,8 +718,8 @@ public class RepositoryRestController
                              HttpStatus.OK,
                              new HttpHeaders(),
                              (null != pageMetadata
-                              ? PagedResources.wrap(results, pageMetadata)
-                              : Resources.wrap(results)));
+                              ? new PagedResources(results, pageMetadata)
+                              : new Resources(results)));
   }
 
   /**
@@ -915,7 +915,7 @@ public class RepositoryRestController
 
     Object body = null;
     if(returnBody(request)) {
-      body = EntityResource.wrap(savedEntity, repoMeta, selfUri);
+      body = savedEntity;
     }
 
     if(!isUpdate) {
@@ -1075,6 +1075,10 @@ public class RepositoryRestController
       propertyRel += "." + propRepoMeta.entityMetadata().type().getSimpleName();
       Map<String, Object> resource = new HashMap<String, Object>();
       for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)propVal).entrySet()) {
+        if(null == entry.getValue()) {
+          continue;
+        }
+
         String propValId = idAttr.get(entry.getValue()).toString();
         URI path = buildUri(baseUri, repository, id, property, propValId);
 
@@ -1102,7 +1106,6 @@ public class RepositoryRestController
 
     } else {
       URI path = buildUri(baseUri, repository, id, property);
-
       if(shouldReturnLinks(accept)) {
         links.add(new Link(path.toString(), propertyRel));
 
@@ -1389,13 +1392,18 @@ public class RepositoryRestController
     URI propertyPath = buildUri(baseUri, repository, id, property, linkedId);
     URI selfUri = buildUri(baseUri, linkedRepoMeta.name(), linkedId);
 
-    EntityResource er = EntityResource.wrap(linkedEntity, linkedRepoMeta, selfUri);
-    er.add(new Link(propertyPath.toString(), propertyRel));
+    Resource<?> r;
+    if(conversionService.canConvert(linkedEntity.getClass(), Resource.class)) {
+      r = conversionService.convert(linkedEntity, Resource.class);
+    } else {
+      r = new Resource<Object>(linkedEntity);
+    }
+    r.add(new Link(propertyPath.toString(), propertyRel));
 
     HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Location", selfUri.toString());
 
-    return negotiateResponse(request, HttpStatus.OK, headers, er);
+    return negotiateResponse(request, HttpStatus.OK, headers, r);
   }
 
   /**

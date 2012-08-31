@@ -1,7 +1,9 @@
 package org.springframework.data.rest.test.webmvc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -72,6 +74,7 @@ public class ApplicationConfig {
     return new TestRepositoryEventListener();
   }
 
+  @SuppressWarnings({"unchecked"})
   @Bean public ConversionService customConversionService() {
     DefaultFormattingConversionService cs = new DefaultFormattingConversionService();
     cs.addConverter(new Converter<String[], List<Long>>() {
@@ -83,6 +86,15 @@ public class ApplicationConfig {
         return longs;
       }
     });
+    //    cs.addConverter(new Converter<Person, Resource>() {
+    //      @Override public Resource convert(Person person) {
+    //        Map<String, Object> m = new HashMap<String, Object>();
+    //        m.put("name", person.getName());
+    //        CustomResource r = new CustomResource(m);
+    //        r.add(new Link("http://localhost:8080/people/1", "self"));
+    //        return r;
+    //      }
+    //    });
     return cs;
   }
 
