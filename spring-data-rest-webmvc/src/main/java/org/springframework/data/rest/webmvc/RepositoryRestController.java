@@ -469,7 +469,8 @@ public class RepositoryRestController
       Object o = allEntities.next();
       if(shouldReturnLinks(request.getServletRequest().getHeader("Accept"))) {
         Serializable id = (Serializable)repoMeta.entityMetadata().idAttribute().get(o);
-        links.add(new Link(buildUri(baseUri, repository, id.toString()).toString(),
+        URI selfUri = buildUri(baseUri, repository, id.toString());
+        links.add(new Link(selfUri.toString(),
                            repoMeta.rel() + "." + o.getClass().getSimpleName()));
       } else {
         allResources.add(o);

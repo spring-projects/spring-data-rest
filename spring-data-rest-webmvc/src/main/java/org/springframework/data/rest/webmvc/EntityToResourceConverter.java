@@ -2,6 +2,7 @@ package org.springframework.data.rest.webmvc;
 
 import static org.springframework.data.rest.core.util.UriUtils.*;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,13 +40,16 @@ public class EntityToResourceConverter implements Converter<Object, Resource> {
     }
 
     URI baseUri = RepositoryRestController.BASE_URI.get();
+    Serializable id = (Serializable)repositoryMetadata.entityMetadata().idAttribute().get(source);
+    URI selfUri = buildUri(baseUri, repositoryMetadata.name(), id.toString());
+
     Set<Link> links = new HashSet<Link>();
     for(Object attrName : entityMetadata.linkedAttributes().keySet()) {
-      URI uri = buildUri(baseUri, attrName.toString());
+      URI uri = buildUri(selfUri, attrName.toString());
       String rel = repositoryMetadata.rel() + "." + source.getClass().getSimpleName() + "." + attrName;
       links.add(new Link(uri.toString(), rel));
     }
-    links.add(new Link(baseUri.toString(), "self"));
+    links.add(new Link(selfUri.toString(), "self"));
 
     Map<String, Object> entityDto = new HashMap<String, Object>();
     for(Map.Entry<String, AttributeMetadata> attrMeta : ((Map<String, AttributeMetadata>)entityMetadata.embeddedAttributes())
