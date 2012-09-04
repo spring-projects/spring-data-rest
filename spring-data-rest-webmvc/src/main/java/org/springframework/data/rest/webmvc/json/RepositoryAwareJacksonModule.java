@@ -259,6 +259,13 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
               continue;
             }
 
+            if("links".equals(name)) {
+              while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
+                // Advance past the links
+              }
+              continue;
+            }
+
             if(null == attrMeta) {
               // do nothing
               continue;
