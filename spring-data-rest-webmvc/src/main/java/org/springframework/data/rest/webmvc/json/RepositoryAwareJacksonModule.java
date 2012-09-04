@@ -260,8 +260,13 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
             }
 
             if("links".equals(name)) {
-              while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
-                // Advance past the links
+              if((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
+                while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
+                  // Advance past the links
+                }
+              } else {
+                throw new HttpMessageNotReadableException(
+                    "Property 'links' is not of array type. Either eliminate this property from the document or make it an array.");
               }
               continue;
             }
