@@ -31,8 +31,12 @@ public class JpaEntityMetadata implements EntityMetadata<JpaAttributeMetadata> {
   public JpaEntityMetadata(Repositories repositories, EntityType<?> entityType) {
     type = entityType.getJavaType();
     idAttribute = new JpaAttributeMetadata(entityType, entityType.getId(entityType.getIdType().getJavaType()));
-    if(null != entityType.getVersion(Long.class)) {
-      versionAttribute = new JpaAttributeMetadata(entityType, entityType.getVersion(Long.class));
+    try {
+      if(null != entityType.getVersion(Long.class)) {
+        versionAttribute = new JpaAttributeMetadata(entityType, entityType.getVersion(Long.class));
+      }
+    } catch(IllegalArgumentException ignored) {
+      // No version exists, just ignore it
     }
 
     for(Attribute attr : entityType.getAttributes()) {
