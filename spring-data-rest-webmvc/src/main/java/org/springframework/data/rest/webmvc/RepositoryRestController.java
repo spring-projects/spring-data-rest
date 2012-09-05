@@ -1298,7 +1298,7 @@ public class RepositoryRestController
       return notFoundResponse(request);
     }
 
-    // Check if this is a @*ToOne relationship and is optional and if not, fail with a 405 Method Not Allowed
+    // Check if this is a nullable (optional) relationship and if not, fail with a 405 Method Not Allowed
     if(!attrMeta.isNullable()) {
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
     }
@@ -1446,7 +1446,7 @@ public class RepositoryRestController
       return notFoundResponse(request);
     }
 
-    // Check if this @*ToOne relationship is optional and if not, fail with a 405 Method Not Allowed
+    // Check if this is a nullable (optional) relationship and if not, fail with a 405 Method Not Allowed
     if(!attrMeta.isNullable()) {
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
     }
