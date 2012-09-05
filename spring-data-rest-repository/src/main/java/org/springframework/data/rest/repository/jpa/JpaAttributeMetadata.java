@@ -7,6 +7,8 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.MapAttribute;
@@ -70,6 +72,18 @@ public class JpaAttributeMetadata implements AttributeMetadata {
     return (attribute instanceof PluralAttribute
             ? ((PluralAttribute)attribute).getElementType().getJavaType()
             : null);
+  }
+
+  @Override public boolean isNullable() {
+    if(hasAnnotation(ManyToOne.class)) {
+      return annotation(ManyToOne.class).optional();
+    }
+
+    if(hasAnnotation(OneToOne.class)) {
+      return annotation(OneToOne.class).optional();
+    }
+
+    return true;
   }
 
   @Override public boolean isCollectionLike() {

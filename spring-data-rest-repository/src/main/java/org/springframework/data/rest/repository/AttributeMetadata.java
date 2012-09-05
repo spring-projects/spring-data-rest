@@ -41,6 +41,13 @@ public interface AttributeMetadata {
   Class<?> elementType();
 
   /**
+   * Whether this attribute can be nulled or not.
+   *
+   * @return
+   */
+  boolean isNullable();
+
+  /**
    * Can this attribute look like a {@link Collection}?
    *
    * @return {@literal true} if attribute is a Collection, {@literal false} otherwise.

@@ -21,8 +21,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -1301,8 +1299,7 @@ public class RepositoryRestController
     }
 
     // Check if this is a @*ToOne relationship and is optional and if not, fail with a 405 Method Not Allowed
-    if((attrMeta.hasAnnotation(ManyToOne.class) && !attrMeta.annotation(ManyToOne.class).optional())
-        || (attrMeta.hasAnnotation(OneToOne.class) && !attrMeta.annotation(OneToOne.class).optional())) {
+    if(!attrMeta.isNullable()) {
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
     }
 
@@ -1450,8 +1447,7 @@ public class RepositoryRestController
     }
 
     // Check if this @*ToOne relationship is optional and if not, fail with a 405 Method Not Allowed
-    if((attrMeta.hasAnnotation(ManyToOne.class) && !attrMeta.annotation(ManyToOne.class).optional())
-        || (attrMeta.hasAnnotation(OneToOne.class) && !attrMeta.annotation(OneToOne.class).optional())) {
+    if(!attrMeta.isNullable()) {
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
     }
 
