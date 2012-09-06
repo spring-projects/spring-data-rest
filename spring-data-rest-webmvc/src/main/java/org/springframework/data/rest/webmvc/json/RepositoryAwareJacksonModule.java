@@ -97,10 +97,7 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
           }
         }
 
-        if(!conversionService.canConvert(domainType, Resource.class)) {
-          // Assign only if no custom converter already assigned
-          conversionService.addConverter(domainType, Resource.class, new EntityToResourceConverter(repoMeta));
-        }
+        conversionService.addConverter(domainType, Resource.class, new EntityToResourceConverter(repoMeta));
 
         sers.addSerializer(domainType, new DomainObjectToResourceSerializer(domainType));
         keySers.addSerializer(domainType, new DomainObjectToStringKeySerializer(domainType, repoMeta));
