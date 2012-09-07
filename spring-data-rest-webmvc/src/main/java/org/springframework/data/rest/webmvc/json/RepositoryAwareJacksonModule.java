@@ -282,12 +282,10 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
               }
 
               if((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
-				// advance past the start_array token
-				jp.nextToken();
-                do {
+				while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
                   Object cval = jp.readValueAs(attrMeta.elementType());
                   c.add(cval);
-                } while((tok = jp.nextToken()) != JsonToken.END_ARRAY);
+                }
 
                 val = c;
 
@@ -303,12 +301,10 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
               }
 
               if((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
-				// advance past the start_array token
-				jp.nextToken();
-                do {
+				while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
                   Object sval = jp.readValueAs(attrMeta.elementType());
                   s.add(sval);
-                } while((tok = jp.nextToken()) != JsonToken.END_ARRAY);
+                }
 
                 val = s;
 
