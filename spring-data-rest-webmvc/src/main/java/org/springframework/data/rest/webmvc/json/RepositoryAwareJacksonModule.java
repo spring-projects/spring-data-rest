@@ -282,6 +282,8 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
               }
 
               if((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
+				// advance past the start_array token
+				jp.nextToken();
                 do {
                   Object cval = jp.readValueAs(attrMeta.elementType());
                   c.add(cval);
@@ -301,6 +303,8 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
               }
 
               if((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
+				// advance past the start_array token
+				jp.nextToken();
                 do {
                   Object sval = jp.readValueAs(attrMeta.elementType());
                   s.add(sval);
