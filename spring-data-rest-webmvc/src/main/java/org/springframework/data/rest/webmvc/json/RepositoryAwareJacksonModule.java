@@ -261,6 +261,8 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
                 while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
                   // Advance past the links
                 }
+              } else if(tok == JsonToken.VALUE_NULL) {
+                // skip null value
               } else {
                 throw new HttpMessageNotReadableException(
                     "Property 'links' is not of array type. Either eliminate this property from the document or make it an array.");
@@ -282,7 +284,7 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
               }
 
               if((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
-				while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
+                while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
                   Object cval = jp.readValueAs(attrMeta.elementType());
                   c.add(cval);
                 }
@@ -301,7 +303,7 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
               }
 
               if((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
-				while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
+                while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
                   Object sval = jp.readValueAs(attrMeta.elementType());
                   s.add(sval);
                 }
