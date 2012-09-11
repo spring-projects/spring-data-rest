@@ -11,7 +11,6 @@ allprojects {
   configurations.all {
     exclude group: "commons-logging"
     exclude module: "slf4j-log4j12"
-    exclude module: "groovy-all", version: "1.8.0-beta-3-SNAPSHOT"
   }
 
   repositories {
@@ -75,7 +74,7 @@ configure(subprojects) { subproject ->
     compile("org.springframework:spring-orm:$springVersion") { force = true }
     compile("org.springframework:spring-tx:$springVersion") { force = true }
     compile("org.springframework:spring-web:$springVersion") { force = true }
-    runtime "cglib:cglib-nodep:2.2.2"
+    runtime "cglib:cglib-nodep:$cglibVersion"
 
     // Testing
     testCompile "org.spockframework:spock-core:$spockVersion"
