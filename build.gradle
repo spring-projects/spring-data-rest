@@ -77,6 +77,7 @@ configure(subprojects) { subproject ->
     runtime "cglib:cglib-nodep:$cglibVersion"
 
     // Testing
+    testCompile("org.codehaus.groovy:groovy-all:$groovyVersion") { force = true }
     testCompile "org.spockframework:spock-core:$spockVersion"
     testCompile "org.spockframework:spock-spring:$spockVersion"
     testCompile "org.hamcrest:hamcrest-library:1.3"
