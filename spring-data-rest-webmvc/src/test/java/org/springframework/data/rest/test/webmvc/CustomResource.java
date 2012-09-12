@@ -1,7 +1,7 @@
 package org.springframework.data.rest.test.webmvc;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.codehaus.jackson.annotate.JsonAnyGetter;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -23,7 +23,7 @@ public class CustomResource extends Resource<Map<String, Object>> {
   }
 
   @JsonProperty("_links")
-  @Override public Set<Link> getLinks() {
+  @Override public List<Link> getLinks() {
     return super.getLinks();
   }
 

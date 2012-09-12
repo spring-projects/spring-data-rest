@@ -155,7 +155,7 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
         }
       }
       if(entityConversionSvc.canConvert(sourceType, Resource.class)) {
-        Set<Link> links = resource.getLinks();
+        List<Link> links = resource.getLinks();
         resource = entityConversionSvc.convert(value, Resource.class);
         resource.add(links);
       }
