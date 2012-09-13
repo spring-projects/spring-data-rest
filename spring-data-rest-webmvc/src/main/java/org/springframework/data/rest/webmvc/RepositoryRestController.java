@@ -641,7 +641,7 @@ public class RepositoryRestController
                                new Resources<String>(Collections.<String>emptyList()));
     }
 
-    Set<Link> links = new HashSet<Link>();
+    List<Link> links = new ArrayList<Link>();
     PagedResources.PageMetadata pageMetadata = null;
 
     Iterator entities = Collections.emptyList().iterator();
@@ -717,8 +717,8 @@ public class RepositoryRestController
                              HttpStatus.OK,
                              new HttpHeaders(),
                              (null != pageMetadata
-                              ? new PagedResources(results, pageMetadata)
-                              : new Resources(results)));
+                              ? new PagedResources(results, pageMetadata, links)
+                              : new Resources(results, links)));
   }
 
   /**
