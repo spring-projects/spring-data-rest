@@ -43,7 +43,7 @@ class DiscoverySpec extends BaseSpec {
     then:
     response.statusCode == HttpStatus.OK
     body.content.size() == 10
-    body.page.totalPages == 2
+    body.page.totalPages > 1
     body.page.number == 1
 
   }
