@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.data.rest.repository.RepositoryExporter;
+import org.springframework.data.rest.webmvc.json.JsonSchemaController;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -57,7 +58,8 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
   }
 
   @Override protected boolean isHandler(Class<?> beanType) {
-    return RepositoryRestController.class.isAssignableFrom(beanType);
+    return (RepositoryRestController.class.isAssignableFrom(beanType)
+        || JsonSchemaController.class.isAssignableFrom(beanType));
   }
 
   @Override protected void extendInterceptors(List<Object> interceptors) {

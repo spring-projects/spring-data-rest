@@ -9,6 +9,7 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.rest.repository.UriToDomainObjectUriResolver;
 import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.repository.jpa.JpaRepositoryExporter;
+import org.springframework.data.rest.webmvc.json.JsonSchemaController;
 import org.springframework.data.rest.webmvc.json.RepositoryAwareJacksonModule;
 import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -118,6 +119,10 @@ public class RepositoryRestMvcConfiguration {
    */
   @Bean public RepositoryRestController repositoryRestController() throws Exception {
     return new RepositoryRestController();
+  }
+
+  @Bean public JsonSchemaController jsonSchemaController() {
+    return new JsonSchemaController();
   }
 
   /**
