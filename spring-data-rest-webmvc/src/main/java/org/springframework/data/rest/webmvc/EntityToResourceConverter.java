@@ -15,6 +15,7 @@ import org.springframework.data.rest.repository.EntityMetadata;
 import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
+import org.springframework.util.Assert;
 
 /**
  * A {@link Converter} to turn domain entities into {@link Resource}s by segregating embedded entities (those entities
@@ -29,6 +30,7 @@ public class EntityToResourceConverter implements Converter<Object, Resource> {
   private final EntityMetadata     entityMetadata;
 
   public EntityToResourceConverter(RepositoryMetadata repositoryMetadata) {
+    Assert.notNull(repositoryMetadata, "RepositoryMetadata cannot be null!");
     this.repositoryMetadata = repositoryMetadata;
     this.entityMetadata = repositoryMetadata.entityMetadata();
   }
