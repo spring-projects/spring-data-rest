@@ -13,7 +13,6 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.Version;
 import org.codehaus.jackson.map.Module;
 import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.module.SimpleModule;
 import org.codehaus.jackson.map.module.SimpleSerializers;
 import org.codehaus.jackson.map.ser.std.SerializerBase;
 import org.springframework.context.annotation.Bean;
@@ -38,8 +37,6 @@ import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 
 /**
  * @author Jon Brisbin
@@ -120,16 +117,27 @@ public class ApplicationConfig {
   }
 
   @Bean public Module customModule() {
-    return new SimpleModule("custom", Version.unknownVersion()) {
+    return new Module() {
+      private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+      @Override public String getModuleName() {
+        return "custom";
+      }
+
+      @Override public Version version() {
+        return Version.unknownVersion();
+      }
+
       @Override public void setupModule(SetupContext context) {
-        super.setupModule(context);
-        context.getDeserializationConfig().withDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
+        context.getDeserializationConfig().withDateFormat(dateFormat);
 
         SimpleSerializers sers = new SimpleSerializers();
         sers.addSerializer(Timestamp.class, new SerializerBase<Timestamp>(Timestamp.class) {
           @Override public void serialize(Timestamp value, JsonGenerator jgen, SerializerProvider provider)
               throws IOException, JsonGenerationException {
-            jgen.writeString(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(value));
+            synchronized(dateFormat) {
+              jgen.writeString(dateFormat.format(value));
+            }
           }
         });
 
