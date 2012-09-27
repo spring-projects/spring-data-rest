@@ -19,7 +19,7 @@
 
   <!--
     If you need to add Converters to the REST exporter to handle the property types you're using
-    in your entities, then just configure a ConversionServiceFactoryBean here, add the Converteres
+    in your entities, then just configure a ConversionServiceFactoryBean here, add the Converters
     you need, and they will, in turn, be added to the FormattingConversionService the REST exporter
     uses internally.
 
