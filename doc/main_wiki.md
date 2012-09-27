@@ -1,6 +1,6 @@
 # Spring Data JPA Repository Web Exporter
 
-The Spring Data JPA Repository Web Exporter allows you to export your [JPA Repositories](http://static.springsource.org/spring-data/data-jpa/docs/current/reference/html/#jpa.repositories) as a RESTful web application. The exporter exposes the CRUD methods of a [CrudRepository](http://static.springsource.org/spring-data/data-commons/docs/1.4.0.M1/api/org/springframework/data/repository/CrudRepository.html) for doing basic entity management. Relationships can also be managed between linked entities. The exporter is deployed as a traditional Spring MVC Controller, which means all the traditional Spring MVC tools are available to work with the Web Exporter (like Spring Security, for instance).
+The Spring Data JPA Repository Web Exporter allows you to export your [JPA Repositories](http://static.springsource.org/spring-data/data-jpa/docs/current/reference/html/#jpa.repositories) as a RESTful web application. The exporter exposes the CRUD methods of a [CrudRepository](http://static.springsource.org/spring-data/data-commons/docs/1.4.0.RC1/api/org/springframework/data/repository/CrudRepository.html) for doing basic entity management. Relationships can also be managed between linked entities. The exporter is deployed as a traditional Spring MVC Controller, which means all the traditional Spring MVC tools are available to work with the Web Exporter (like Spring Security, for instance).
 
 ### Installation
 
@@ -14,7 +14,7 @@ Deployment of the Spring Data Web Exporter is extremely flexible. You can build 
 
 Deploy the built WAR file to your servlet container:
 
-    cp build/libs/spring-data-rest-webmvc-1.0.0.RC2.war $TOMCAT_HOME/webapps/data.war
+    cp build/libs/spring-data-rest-webmvc-1.0.0.RC3.war $TOMCAT_HOME/webapps/data.war
     cd $TOMCAT_HOME
     bin/catalina.sh run
 
@@ -38,7 +38,7 @@ You can also deploy to a Jetty web container embedded in the build:
      < Content-Length: 257
      <
      {
-       "_links" : [ {
+       "links" : [ {
          "rel" : "address",
          "href" : "http://localhost:8080/data/address"
        }, {
@@ -52,11 +52,51 @@ You can also deploy to a Jetty web container embedded in the build:
 
 ### Export Repositories
 
-To expose your Repositories to the exporter, you can include a Spring XML configuration file in the classpath (e.g. in a client JAR or in `WEB-INF/classes`). The filename should end with "-export.xml" and reside under the path `META-INF/spring-data-rest/`. Your configuration should include a properly instantiated EntityManagerFactoryBean, an appropriate DataSource, and the appropriate repository configuration. It's easiest to use the special XML namespace for this purpose. An example configuration (named `WEB-INF/spring-data-rest/repositories-export.xml`) would look like something like this:
+The preferred method to configure the Spring Data REST Exporter is to use the JavaConfig annotations. There is an example ApplicationConfig in the example application you can follow. You want to import the `RepositoryRestMvcConfiguration` to make sure the MVC controller is bootstrapped and then you provide the beans necessary to connect to your database. You also want to put the `@EnableJpaRepositores` annotation on this configuration class. An example would look something like:
+
+		@Configuration
+		@Import(RepositoryRestMvcConfiguration.class)
+		@ComponentScan(basePackageClasses = ApplicationConfig.class)
+		@EnableJpaRepositories
+		@EnableTransactionManagement
+		public class ApplicationConfig {
+
+			@Bean public DataSource dataSource() {
+				EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+				return builder.setType(EmbeddedDatabaseType.HSQL).build();
+			}
+
+			@Bean public EntityManagerFactory entityManagerFactory() {
+				HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+				vendorAdapter.setDatabase(Database.HSQL);
+				vendorAdapter.setGenerateDdl(true);
+
+				LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+				factory.setJpaVendorAdapter(vendorAdapter);
+				factory.setPackagesToScan(getClass().getPackage().getName());
+				factory.setDataSource(dataSource());
+
+				factory.afterPropertiesSet();
+
+				return factory.getObject();
+			}
+
+			@Bean public JpaDialect jpaDialect() {
+				return new HibernateJpaDialect();
+			}
+
+			@Bean public PlatformTransactionManager transactionManager() {
+				JpaTransactionManager txManager = new JpaTransactionManager();
+				txManager.setEntityManagerFactory(entityManagerFactory());
+				return txManager;
+			}
+
+		}
+
+The REST exporter will also load any XML config files it finds under the path `META-INF/spring-data-rest/*-export.xml`. If you have XML configuration (Spring Integration configuration, for example), then just put your XML files in this location and they will also be bootstrapped in the ApplicationContext.
 
     <?xml version="1.0" encoding="UTF-8"?>
     <beans xmlns="http://www.springframework.org/schema/beans"
-           xmlns:jpa="http://www.springframework.org/schema/data/jpa"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://www.springframework.org/schema/beans 
            http://www.springframework.org/schema/beans/spring-beans.xsd
@@ -65,13 +105,9 @@ To expose your Repositories to the exporter, you can include a Spring XML config
 
       <import resource="shared.xml"/>
 
-      <jpa:repositories base-package="com.mycompany.domain.repositories"/>
+		  <bean id="beforeSavePersonValidator" class="org.springframework.data.rest.example.PersonValidator"/>
 
     </beans>
-
-The file `shared.xml` contains a JDBC DataSource configuration, an EntityManagerFactoryBean, and a JpaTransactionManager.
-
-You can also use JavaConfig to configure your application. Thanks to the new `@EnableJpaRepositores` annotation on `@Configuration` beans introduced in the latest Spring Data JPA release, you can bootstrap the Spring MVC controller by simply instantiating a `RepositoryRestMvcConfiguration` bean or by an `@Import` of the same.
 
 ### Including your domain artifacts
 
@@ -85,7 +121,7 @@ If you have a JPA entity in your domain model that looks like...
 
     @Entity
     public class Person {
-      @Id 
+      @Id @GeneratedValue
       private Long id;
       private String name;
       @Version 

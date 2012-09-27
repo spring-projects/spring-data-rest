@@ -38,8 +38,3 @@ properties that are managed by a `Repository` and copying across any embedded or
 If your project needs to have output in a different format, however, it's possible to completely replace the default
 outgoing JSON representation with your own. If you register your own `ConversionService` in the ApplicationContext and
 register your own `Converter<Person, Resource>`, then you can return a `Resource` implementation of your choosing.
-
-For example, to rename the "links" property to "_links", create your own `Resource` subclass that renames the
-property using Jackson's `@JsonProperty` annotation:
-
-		public class MyResource extends Resource
