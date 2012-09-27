@@ -6,6 +6,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import org.codehaus.jackson.annotate.JsonBackReference;
+
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
@@ -17,7 +19,8 @@ public class Address {
   private                     String   city;
   private                     String   province;
   private                     String   postalCode;
-  @ManyToOne(optional = false, cascade = CascadeType.REMOVE)
+  @JsonBackReference
+  @ManyToOne(optional = false, cascade = CascadeType.REFRESH)
   private                     Person   person;
 
   public Address() {

@@ -5,6 +5,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import org.codehaus.jackson.annotate.JsonBackReference;
+
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
@@ -14,6 +16,7 @@ public class Profile {
   @Id @GeneratedValue private Long   id;
   private                     String type;
   private                     String url;
+  @JsonBackReference
   @ManyToOne
   private                     Person person;
 

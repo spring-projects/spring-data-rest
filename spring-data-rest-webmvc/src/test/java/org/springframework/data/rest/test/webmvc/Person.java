@@ -6,9 +6,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MapKey;
-import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
+
+import org.codehaus.jackson.annotate.JsonManagedReference;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -20,8 +21,10 @@ public class Person {
   private                     String               name;
   @Version
   private                     Long                 version;
+  @JsonManagedReference
   @OneToMany
   private                     List<Address>        addresses;
+  @JsonManagedReference
   @OneToMany
   @MapKey(name = "type")
   private                     Map<String, Profile> profiles;
