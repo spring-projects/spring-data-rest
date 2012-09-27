@@ -62,7 +62,7 @@ public class RepositoryAwareMappingHttpMessageConverter
   }
 
   @Override public void afterPropertiesSet() throws Exception {
-    mapper.registerModule(jacksonModule);
+    //mapper.registerModule(jacksonModule);
     for(Module m : modules) {
       mapper.registerModule(m);
     }
