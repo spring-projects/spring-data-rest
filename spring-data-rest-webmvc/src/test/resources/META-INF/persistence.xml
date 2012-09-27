@@ -6,7 +6,6 @@
     <class>org.springframework.data.rest.test.webmvc.Person</class>
     <class>org.springframework.data.rest.test.webmvc.Profile</class>
     <class>org.springframework.data.rest.test.webmvc.UuidTest</class>
-    <class>org.springframework.data.rest.test.webmvc.WebCustomer</class>
     <properties>
       <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
       <property name="hibernate.connection.url" value="jdbc:hsqldb:mem:spring"/>
