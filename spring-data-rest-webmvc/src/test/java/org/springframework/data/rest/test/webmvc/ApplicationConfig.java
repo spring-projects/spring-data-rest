@@ -1,12 +1,21 @@
 package org.springframework.data.rest.test.webmvc;
 
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.Version;
+import org.codehaus.jackson.map.Module;
+import org.codehaus.jackson.map.SerializerProvider;
+import org.codehaus.jackson.map.module.SimpleModule;
+import org.codehaus.jackson.map.module.SimpleSerializers;
+import org.codehaus.jackson.map.ser.std.SerializerBase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +38,8 @@ import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 
 /**
  * @author Jon Brisbin
@@ -104,6 +115,25 @@ public class ApplicationConfig {
         System.out.println("\t***** ResourceProcessor for Person: " + resource);
         resource.add(new Link("http://localhost:8080/people", "added-link"));
         return resource;
+      }
+    };
+  }
+
+  @Bean public Module customModule() {
+    return new SimpleModule("custom", Version.unknownVersion()) {
+      @Override public void setupModule(SetupContext context) {
+        super.setupModule(context);
+        context.getDeserializationConfig().withDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
+
+        SimpleSerializers sers = new SimpleSerializers();
+        sers.addSerializer(Timestamp.class, new SerializerBase<Timestamp>(Timestamp.class) {
+          @Override public void serialize(Timestamp value, JsonGenerator jgen, SerializerProvider provider)
+              throws IOException, JsonGenerationException {
+            jgen.writeString(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(value));
+          }
+        });
+
+        context.addSerializers(sers);
       }
     };
   }
