@@ -47,7 +47,7 @@ class QueryMethodsSpec extends BaseSpec {
 
     then:
     response.statusCode == HttpStatus.OK
-    body.content.size() == 1
+    body.content.size() > 0
 
   }
 

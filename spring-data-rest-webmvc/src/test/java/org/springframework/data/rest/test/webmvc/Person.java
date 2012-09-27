@@ -2,6 +2,7 @@ package org.springframework.data.rest.test.webmvc;
 
 import java.util.List;
 import java.util.Map;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -22,10 +23,9 @@ public class Person {
   @Version
   private                     Long                 version;
   @JsonManagedReference
-  @OneToMany
+  @OneToMany(cascade = CascadeType.REMOVE)
   private                     List<Address>        addresses;
-  @JsonManagedReference
-  @OneToMany
+  @OneToMany(cascade = CascadeType.REMOVE)
   @MapKey(name = "type")
   private                     Map<String, Profile> profiles;
 

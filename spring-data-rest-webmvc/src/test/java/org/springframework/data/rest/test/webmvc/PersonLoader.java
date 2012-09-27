@@ -59,8 +59,7 @@ public class PersonLoader
     Address pers1addr = addressRepository.save(new Address(new String[]{"1234 W. 1st St."},
                                                            "Univille",
                                                            "ST",
-                                                           "12345",
-                                                           p1));
+                                                           "12345"));
     p1.setAddresses(Arrays.asList(pers1addr));
     personRepository.save(p1);
 
@@ -74,8 +73,7 @@ public class PersonLoader
     Address pers2addr = addressRepository.save(new Address(new String[]{"1234 E. 2nd St."},
                                                            "Univille",
                                                            "ST",
-                                                           "12345",
-                                                           p2));
+                                                           "12345"));
     p2.setAddresses(Arrays.asList(pers2addr));
     personRepository.save(p2);
 

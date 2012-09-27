@@ -50,12 +50,12 @@ abstract class BaseSpec extends Specification {
       bindResource(emf, new EntityManagerHolder(emf.createEntityManager()))
     }
 
-    for (Address a : addresses.findAll()) {
-      addresses.delete(a)
-    }
-    for (Person p : people.findAll()) {
-      people.delete(p)
-    }
+//    addresses.findAll().each { a ->
+//      addresses.delete(a)
+//    }
+//    people.findAll().each { p ->
+//      people.delete(p)
+//    }
   }
 
   def readJson(ResponseEntity entity) {
@@ -95,18 +95,17 @@ abstract class BaseSpec extends Specification {
 
   def newPerson() {
     def p = people.save(new Person(name: "John Doe"))
-    def a = newAddress("Univille", p)
+    def a = newAddress("Univille")
     p.addresses = [a]
     people.save(p)
   }
 
-  def newAddress(city, person) {
+  def newAddress(city) {
     addresses.save(new Address(
         ["1234 W. 1st St."] as String[],
         city,
         "ST",
-        "12345",
-        person
+        "12345"
     ))
   }
 

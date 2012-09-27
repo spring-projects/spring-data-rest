@@ -2,6 +2,7 @@ package org.springframework.data.rest.webmvc.spec
 
 import org.springframework.http.HttpStatus
 import org.springframework.transaction.annotation.Transactional
+import spock.lang.Ignore
 import spock.lang.Shared
 
 /**
@@ -47,6 +48,7 @@ class RelationshipsSpec extends BaseSpec {
 
   }
 
+  @Ignore
   @Transactional
   def "cannot delete a required relationship"() {
 
