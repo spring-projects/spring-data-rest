@@ -9,7 +9,9 @@ import org.springframework.data.rest.test.webmvc.ApplicationConfig
 import org.springframework.data.rest.test.webmvc.CustomerRepository
 import org.springframework.data.rest.test.webmvc.Person
 import org.springframework.data.rest.test.webmvc.PersonRepository
+import org.springframework.data.rest.test.webmvc.ProfileRepository
 import org.springframework.data.rest.test.webmvc.TestRepositoryEventListener
+import org.springframework.data.rest.webmvc.RepositoryRestConfiguration
 import org.springframework.data.rest.webmvc.RepositoryRestController
 import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration
 import org.springframework.http.ResponseEntity
@@ -18,7 +20,6 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.orm.jpa.EntityManagerHolder
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.util.UriComponentsBuilder
 import spock.lang.Specification
 
 import javax.persistence.EntityManagerFactory
@@ -33,29 +34,25 @@ abstract class BaseSpec extends Specification {
 
   @Autowired ApplicationContext appCtx
   @Autowired TestRepositoryEventListener listener
+  @Autowired RepositoryRestConfiguration config
   @Autowired RepositoryRestController controller
   @Autowired EntityManagerFactory emf
   @Autowired PersonRepository people
   @Autowired AddressRepository addresses
   @Autowired CustomerRepository customers
-  UriComponentsBuilder baseUri
+  @Autowired ProfileRepository profiles
+  URI baseUri
 
   def mapper = new ObjectMapper()
 
   @Transactional
   def setup() {
-    baseUri = UriComponentsBuilder.fromUriString("http://localhost:8080/data")
+    baseUri = URI.create("http://localhost:8080/data")
+    config.baseUri = baseUri
 
     if (!hasResource(emf)) {
       bindResource(emf, new EntityManagerHolder(emf.createEntityManager()))
     }
-
-//    addresses.findAll().each { a ->
-//      addresses.delete(a)
-//    }
-//    people.findAll().each { p ->
-//      people.delete(p)
-//    }
   }
 
   def readJson(ResponseEntity entity) {

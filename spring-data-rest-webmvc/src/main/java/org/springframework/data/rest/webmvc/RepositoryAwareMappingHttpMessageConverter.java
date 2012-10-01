@@ -62,9 +62,16 @@ public class RepositoryAwareMappingHttpMessageConverter
   }
 
   @Override public void afterPropertiesSet() throws Exception {
-    //mapper.registerModule(jacksonModule);
+    boolean builtInModuleRegistered = false;
     for(Module m : modules) {
       mapper.registerModule(m);
+      if(m.getClass() == RepositoryAwareJacksonModule.class) {
+        builtInModuleRegistered = true;
+      }
+    }
+
+    if(!builtInModuleRegistered) {
+      mapper.registerModule(jacksonModule);
     }
   }
 

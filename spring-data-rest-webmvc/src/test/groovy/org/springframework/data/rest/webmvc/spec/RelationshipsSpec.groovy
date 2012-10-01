@@ -1,8 +1,10 @@
 package org.springframework.data.rest.webmvc.spec
 
+import org.springframework.data.rest.test.webmvc.Person
+import org.springframework.data.rest.test.webmvc.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.transaction.annotation.Transactional
-import spock.lang.Ignore
+import org.springframework.web.util.UriComponentsBuilder
 import spock.lang.Shared
 
 /**
@@ -14,11 +16,18 @@ class RelationshipsSpec extends BaseSpec {
   Long persId
   @Shared
   Long addrId
+  @Shared
+  Long profileId
 
   def setup() {
-    def person = newPerson()
+    def person = people.save(new Person(name: "John Doe"))
     persId = person.id
-    addrId = person.addresses[0].id
+    def addr = newAddress("Uniontown")
+    addrId = addr.id
+    def profile = profiles.save(new Profile(type: "socialmedia", url: "http://socialmedia.com", person: person))
+    person.profiles = ["socialmedia": profile]
+    people.save(person)
+    profileId = profile.id
   }
 
   @Transactional
@@ -29,7 +38,7 @@ class RelationshipsSpec extends BaseSpec {
         "POST",
         "people/$persId/addresses",
         null,
-        [baseUri.pathSegment("address", "$addrId").build().toUriString()]
+        [UriComponentsBuilder.fromUri(baseUri).pathSegment("address", "$addrId").build().toUriString()]
     )
 
     when:
@@ -44,17 +53,16 @@ class RelationshipsSpec extends BaseSpec {
 
     then:
     response.statusCode == HttpStatus.OK
-    readJson(response).city == "Univille"
+    readJson(response).city == "Uniontown"
 
   }
 
-  @Ignore
   @Transactional
   def "cannot delete a required relationship"() {
 
     when:
-    def request = createRequest("DELETE", "address/$addrId/person", null)
-    def response = controller.clearLinks(request, "address", "$addrId", "person")
+    def request = createRequest("DELETE", "profile/$profileId/person", null)
+    def response = controller.clearLinks(request, "profile", "$profileId", "person")
 
     then:
     response.statusCode == HttpStatus.METHOD_NOT_ALLOWED

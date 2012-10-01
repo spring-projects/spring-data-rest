@@ -1,8 +1,12 @@
 package org.springframework.data.rest.test.webmvc;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
+
+import org.codehaus.jackson.annotate.JsonBackReference;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -15,6 +19,9 @@ public class Address {
   private                     String   city;
   private                     String   province;
   private                     String   postalCode;
+  @JsonBackReference
+  @OneToOne(cascade = CascadeType.REMOVE)
+  private                     Person   person;
 
   public Address() {
   }
@@ -60,6 +67,14 @@ public class Address {
 
   public void setPostalCode(String postalCode) {
     this.postalCode = postalCode;
+  }
+
+  public Person getPerson() {
+    return person;
+  }
+
+  public void setPerson(Person person) {
+    this.person = person;
   }
 
   @Override public boolean equals(Object o) {

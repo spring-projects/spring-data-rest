@@ -3,7 +3,7 @@ package org.springframework.data.rest.test.webmvc;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
 import org.codehaus.jackson.annotate.JsonBackReference;
 
@@ -17,7 +17,7 @@ public class Profile {
   private                     String type;
   private                     String url;
   @JsonBackReference
-  @ManyToOne
+  @OneToOne(optional = false)
   private                     Person person;
 
   public Profile() {

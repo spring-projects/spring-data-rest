@@ -1,5 +1,6 @@
 package org.springframework.data.rest.webmvc;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ public class RepositoryRestConfiguration {
 
   public static final RepositoryRestConfiguration DEFAULT = new RepositoryRestConfiguration();
 
+  private URI                           baseUri             = null;
   private int                           defaultPageSize     = 20;
   private String                        pageParamName       = "page";
   private String                        limitParamName      = "limit";
@@ -28,6 +30,26 @@ public class RepositoryRestConfiguration {
   private Map<Class<?>, Class<?>>       typeMappings        = Collections.emptyMap();
   private MediaType                     defaultMediaType    = MediaType.APPLICATION_JSON;
   private boolean                       dumpErrors          = true;
+
+  /**
+   * The base URI against which the exporter should calculate its links.
+   *
+   * @return
+   */
+  public URI getBaseUri() {
+    return baseUri;
+  }
+
+  /**
+   * The base URI against which the exporter should calculate its links.
+   *
+   * @param baseUri
+   */
+  public RepositoryRestConfiguration setBaseUri(URI baseUri) {
+    Assert.notNull(baseUri, "The baseUri cannot be null.");
+    this.baseUri = baseUri;
+    return this;
+  }
 
   /**
    * Get the default size of {@link org.springframework.data.domain.Pageable}s. Default is 20.

@@ -26,10 +26,13 @@ import org.springframework.util.Assert;
  */
 public class EntityToResourceConverter implements Converter<Object, Resource> {
 
-  private final RepositoryMetadata repositoryMetadata;
-  private final EntityMetadata     entityMetadata;
+  private final RepositoryRestConfiguration config;
+  private final RepositoryMetadata          repositoryMetadata;
+  private final EntityMetadata              entityMetadata;
 
-  public EntityToResourceConverter(RepositoryMetadata repositoryMetadata) {
+  public EntityToResourceConverter(RepositoryRestConfiguration config,
+                                   RepositoryMetadata repositoryMetadata) {
+    this.config = config;
     Assert.notNull(repositoryMetadata, "RepositoryMetadata cannot be null!");
     this.repositoryMetadata = repositoryMetadata;
     this.entityMetadata = repositoryMetadata.entityMetadata();
@@ -41,9 +44,8 @@ public class EntityToResourceConverter implements Converter<Object, Resource> {
       return new Resource<Object>(source);
     }
 
-    URI baseUri = RepositoryRestController.BASE_URI.get();
     Serializable id = (Serializable)repositoryMetadata.entityMetadata().idAttribute().get(source);
-    URI selfUri = buildUri(baseUri, repositoryMetadata.name(), id.toString());
+    URI selfUri = buildUri(config.getBaseUri(), repositoryMetadata.name(), id.toString());
 
     Set<Link> links = new HashSet<Link>();
     for(Object attrName : entityMetadata.linkedAttributes().keySet()) {

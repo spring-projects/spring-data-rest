@@ -42,7 +42,7 @@ import org.springframework.data.rest.repository.RepositoryExporter;
 import org.springframework.data.rest.repository.RepositoryMetadata;
 import org.springframework.data.rest.repository.UriToDomainObjectUriResolver;
 import org.springframework.data.rest.webmvc.EntityToResourceConverter;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.data.rest.webmvc.RepositoryRestConfiguration;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
@@ -57,6 +57,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
  */
 public class RepositoryAwareJacksonModule extends SimpleModule implements InitializingBean {
 
+  @Autowired
+  private RepositoryRestConfiguration config;
   @Autowired(required = false)
   protected List<RepositoryExporter>                           repositoryExporters  = Collections.emptyList();
   @Autowired(required = false)
@@ -97,7 +99,7 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
           }
         }
 
-        conversionService.addConverter(domainType, Resource.class, new EntityToResourceConverter(repoMeta));
+        conversionService.addConverter(domainType, Resource.class, new EntityToResourceConverter(config, repoMeta));
 
         sers.addSerializer(domainType, new DomainObjectToResourceSerializer(domainType));
         keySers.addSerializer(domainType, new DomainObjectToStringKeySerializer(domainType, repoMeta));
@@ -206,7 +208,7 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
         sId = serId.toString();
       }
 
-      URI href = buildUri(RepositoryRestController.BASE_URI.get(), repoMeta.name(), sId);
+      URI href = buildUri(config.getBaseUri(), repoMeta.name(), sId);
 
       jgen.writeString("@" + href.toString());
     }
@@ -237,7 +239,7 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
 
             if(name.startsWith("@http")) {
               entity = domainObjectResolver.resolve(
-                  RepositoryRestController.BASE_URI.get(),
+                  config.getBaseUri(),
                   URI.create(name.substring(1))
               );
               continue;
@@ -245,7 +247,7 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
 
             if("href".equals(name)) {
               entity = domainObjectResolver.resolve(
-                  RepositoryRestController.BASE_URI.get(),
+                  config.getBaseUri(),
                   URI.create(jp.nextTextValue())
               );
               continue;
@@ -327,7 +329,7 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
                   Object mkey = (
                       name.startsWith("@http")
                       ? domainObjectResolver.resolve(
-                          RepositoryRestController.BASE_URI.get(),
+                          config.getBaseUri(),
                           URI.create(name.substring(1))
                       )
                       : name
@@ -371,7 +373,7 @@ public class RepositoryAwareJacksonModule extends SimpleModule implements Initia
                                                                                JsonProcessingException {
       if(key.startsWith("@http")) {
         return domainObjectResolver.resolve(
-            RepositoryRestController.BASE_URI.get(),
+            config.getBaseUri(),
             URI.create(key.substring(1))
         );
       } else {

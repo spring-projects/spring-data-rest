@@ -20,6 +20,7 @@ public class RepositoryRestHandlerAdapter extends ResourceProcessorInvokingHandl
   public RepositoryRestHandlerAdapter(RepositoryRestConfiguration config) {
     setCustomArgumentResolvers(Arrays.asList(
         new ServerHttpRequestMethodArgumentResolver(),
+        new BaseUriMethodArgumentResolver(config),
         new PagingAndSortingMethodArgumentResolver(config)
     ));
   }

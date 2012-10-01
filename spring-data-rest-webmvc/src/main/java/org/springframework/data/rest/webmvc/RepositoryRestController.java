@@ -129,9 +129,9 @@ public class RepositoryRestController
     implements ApplicationContextAware,
                InitializingBean {
 
-  public static final String           LOCATION = "Location";
-  public static final String           SELF     = "self";
-  public static final ThreadLocal<URI> BASE_URI = new ThreadLocal<URI>();
+  public static final String LOCATION = "Location";
+  public static final String SELF     = "self";
+  //public static final ThreadLocal<URI> BASE_URI = new ThreadLocal<URI>();
 
   private static final Logger         LOG               = LoggerFactory.getLogger(
       RepositoryRestController.class);
@@ -332,7 +332,7 @@ public class RepositoryRestController
       for(String repoName : (Set<String>)exp.repositoryNames()) {
         RepositoryMetadata repoMeta = exp.repositoryMetadataFor(repoName);
         Class<?> domainType = repoMeta.domainType();
-        entityConverters.addConverter(domainType, Resource.class, new EntityToResourceConverter(repoMeta));
+        entityConverters.addConverter(domainType, Resource.class, new EntityToResourceConverter(config, repoMeta));
       }
     }
     conversionService.addConversionServices(entityConverters);
@@ -342,7 +342,7 @@ public class RepositoryRestController
    * List available {@link CrudRepository}s that are being exported.
    *
    * @param request
-   * @param uriBuilder
+   * @param baseUri
    *
    * @return
    *
@@ -355,10 +355,7 @@ public class RepositoryRestController
   )
   @ResponseBody
   public ResponseEntity<?> listRepositories(ServletServerHttpRequest request,
-                                            UriComponentsBuilder uriBuilder) throws IOException {
-    URI baseUri = uriBuilder.build().toUri();
-    BASE_URI.set(baseUri);
-
+                                            URI baseUri) throws IOException {
     List<Link> links = new ArrayList<Link>();
     for(RepositoryExporter repoExporter : repositoryExporters) {
       for(String name : (Set<String>)repoExporter.repositoryNames()) {
@@ -382,7 +379,7 @@ public class RepositoryRestController
    *
    * @param request
    * @param pageSort
-   * @param uriBuilder
+   * @param baseUri
    * @param repository
    *
    * @return
@@ -397,11 +394,8 @@ public class RepositoryRestController
   @ResponseBody
   public ResponseEntity<?> listEntities(ServletServerHttpRequest request,
                                         PagingAndSorting pageSort,
-                                        UriComponentsBuilder uriBuilder,
+                                        URI baseUri,
                                         @PathVariable String repository) throws IOException {
-    URI baseUri = uriBuilder.build().toUri();
-    BASE_URI.set(baseUri);
-
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.FIND_ALL)) {
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
@@ -492,7 +486,7 @@ public class RepositoryRestController
    * List the URIs of query methods found on this repository interface.
    *
    * @param request
-   * @param uriBuilder
+   * @param baseUri
    * @param repository
    *
    * @return
@@ -506,11 +500,8 @@ public class RepositoryRestController
   )
   @ResponseBody
   public ResponseEntity<?> listQueryMethods(ServletServerHttpRequest request,
-                                            UriComponentsBuilder uriBuilder,
+                                            URI baseUri,
                                             @PathVariable String repository) throws IOException {
-    URI baseUri = uriBuilder.build().toUri();
-    BASE_URI.set(baseUri);
-
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Set<Link> links = new HashSet<Link>();
 
@@ -550,7 +541,7 @@ public class RepositoryRestController
    *
    * @param request
    * @param pageSort
-   * @param uriBuilder
+   * @param baseUri
    * @param repository
    * @param query
    *
@@ -568,14 +559,11 @@ public class RepositoryRestController
   @ResponseBody
   public ResponseEntity<?> query(ServletServerHttpRequest request,
                                  PagingAndSorting pageSort,
-                                 UriComponentsBuilder uriBuilder,
+                                 URI baseUri,
                                  @PathVariable String repository,
                                  @PathVariable String query) throws InvocationTargetException,
                                                                     IllegalAccessException,
                                                                     IOException {
-    URI baseUri = uriBuilder.build().toUri();
-    BASE_URI.set(baseUri);
-
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     Repository repo = repoMeta.repository();
     RepositoryQueryMethod queryMethod = repoMeta.queryMethod(query);
@@ -728,7 +716,7 @@ public class RepositoryRestController
    * To get the entity back in the body of the response, simpy add the URL parameter <pre>returnBody=true</pre>.
    *
    * @param request
-   * @param uriBuilder
+   * @param baseUri
    * @param repository
    *
    * @return
@@ -742,11 +730,8 @@ public class RepositoryRestController
   )
   @ResponseBody
   public ResponseEntity<?> create(ServletServerHttpRequest request,
-                                  UriComponentsBuilder uriBuilder,
+                                  URI baseUri,
                                   @PathVariable String repository) throws IOException {
-    URI baseUri = uriBuilder.build().toUri();
-    BASE_URI.set(baseUri);
-
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.SAVE_ONE)) {
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
@@ -783,7 +768,7 @@ public class RepositoryRestController
    * Retrieve a specific entity.
    *
    * @param request
-   * @param uriBuilder
+   * @param baseUri
    * @param repository
    * @param id
    *
@@ -798,12 +783,9 @@ public class RepositoryRestController
   )
   @ResponseBody
   public ResponseEntity<?> entity(ServletServerHttpRequest request,
-                                  UriComponentsBuilder uriBuilder,
+                                  URI baseUri,
                                   @PathVariable String repository,
                                   @PathVariable String id) throws IOException {
-    URI baseUri = uriBuilder.build().toUri();
-    BASE_URI.set(baseUri);
-
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
@@ -842,7 +824,7 @@ public class RepositoryRestController
    * Create an entity with a specific ID or update an existing entity.
    *
    * @param request
-   * @param uriBuilder
+   * @param baseUri
    * @param repository
    * @param id
    *
@@ -861,14 +843,11 @@ public class RepositoryRestController
   )
   @ResponseBody
   public ResponseEntity<?> createOrUpdate(ServletServerHttpRequest request,
-                                          UriComponentsBuilder uriBuilder,
+                                          URI baseUri,
                                           @PathVariable String repository,
                                           @PathVariable String id) throws IOException,
                                                                           IllegalAccessException,
                                                                           InstantiationException {
-    URI baseUri = uriBuilder.build().toUri();
-    BASE_URI.set(baseUri);
-
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.SAVE_ONE) || !repoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
@@ -979,7 +958,7 @@ public class RepositoryRestController
    * Retrieve the property of an entity.
    *
    * @param request
-   * @param uriBuilder
+   * @param baseUri
    * @param repository
    * @param id
    * @param property
@@ -995,12 +974,10 @@ public class RepositoryRestController
   )
   @ResponseBody
   public ResponseEntity<?> propertyOfEntity(ServletServerHttpRequest request,
-                                            UriComponentsBuilder uriBuilder,
+                                            URI baseUri,
                                             @PathVariable String repository,
                                             @PathVariable String id,
                                             @PathVariable String property) throws IOException {
-    URI baseUri = uriBuilder.build().toUri();
-    BASE_URI.set(baseUri);
     String accept = request.getServletRequest().getHeader("Accept");
 
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
@@ -1138,7 +1115,7 @@ public class RepositoryRestController
    * Update the property of an entity if that property is also managed by a {@link CrudRepository}.
    *
    * @param request
-   * @param uriBuilder
+   * @param baseUri
    * @param repository
    * @param id
    * @param property
@@ -1157,12 +1134,10 @@ public class RepositoryRestController
   )
   @ResponseBody
   public ResponseEntity<?> updatePropertyOfEntity(final ServletServerHttpRequest request,
-                                                  UriComponentsBuilder uriBuilder,
+                                                  URI baseUri,
                                                   @PathVariable String repository,
                                                   @PathVariable String id,
                                                   final @PathVariable String property) throws IOException {
-    URI baseUri = uriBuilder.build().toUri();
-    BASE_URI.set(baseUri);
 
     final RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.SAVE_ONE)) {
@@ -1317,7 +1292,7 @@ public class RepositoryRestController
    * Retrieve a linked entity from a parent entity.
    *
    * @param request
-   * @param uriBuilder
+   * @param baseUri
    * @param repository
    * @param id
    * @param property
@@ -1336,14 +1311,11 @@ public class RepositoryRestController
   )
   @ResponseBody
   public ResponseEntity<?> linkedEntity(ServletServerHttpRequest request,
-                                        UriComponentsBuilder uriBuilder,
+                                        URI baseUri,
                                         @PathVariable String repository,
                                         @PathVariable String id,
                                         @PathVariable String property,
                                         @PathVariable String linkedId) throws IOException {
-    URI baseUri = uriBuilder.build().toUri();
-    BASE_URI.set(baseUri);
-
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(!repoMeta.exportsMethod(CrudMethod.FIND_ONE)) {
       return negotiateResponse(request, HttpStatus.METHOD_NOT_ALLOWED, new HttpHeaders(), null);
@@ -1774,7 +1746,7 @@ public class RepositoryRestController
     } else if(null != (repoMeta = repositoryMetadataFor(obj.getClass()))) {
       AttributeMetadata attrMeta = repoMeta.entityMetadata().idAttribute();
       String id = attrMeta.get(obj).toString();
-      key = "@" + buildUri(BASE_URI.get(), repoMeta.name(), id);
+      key = "@" + buildUri(config.getBaseUri(), repoMeta.name(), id);
     } else {
       key = conversionService.convert(obj, String.class);
     }

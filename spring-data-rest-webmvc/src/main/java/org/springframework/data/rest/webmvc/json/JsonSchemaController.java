@@ -8,7 +8,6 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.schema.JsonSchema;
 import org.springframework.data.rest.repository.RepositoryExporterSupport;
 import org.springframework.data.rest.repository.RepositoryMetadata;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -40,11 +39,8 @@ public class JsonSchemaController extends RepositoryExporterSupport<JsonSchemaCo
   )
   @ResponseBody
   public ResponseEntity<?> schemaForRepository(ServletServerHttpRequest request,
-                                               UriComponentsBuilder uriBuilder,
+                                               URI baseUri,
                                                @PathVariable String repository) throws IOException {
-    URI baseUri = uriBuilder.build().toUri();
-    RepositoryRestController.BASE_URI.set(baseUri);
-
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(null == repoMeta) {
       throw new IllegalArgumentException("Resource /" + repository + "/schema not found.");
