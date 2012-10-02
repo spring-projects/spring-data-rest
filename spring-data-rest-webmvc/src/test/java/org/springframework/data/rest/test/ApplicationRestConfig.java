@@ -15,6 +15,7 @@ import org.codehaus.jackson.map.module.SimpleSerializers;
 import org.codehaus.jackson.map.ser.std.SerializerBase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.rest.test.webmvc.Person;
@@ -30,7 +31,8 @@ import org.springframework.hateoas.ResourceProcessor;
  * @author Jon Brisbin
  */
 @Configuration
-public class ApplicationRestConfig extends RepositoryRestMvcConfiguration {
+@Import(RepositoryRestMvcConfiguration.class)
+public class ApplicationRestConfig {
 
   @SuppressWarnings({"unchecked"})
   @Bean public ConversionService customConversionService() {
