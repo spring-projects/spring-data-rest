@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -22,18 +23,12 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  *
  * @author Jon Brisbin
  */
-public class PagingAndSortingMethodArgumentResolver
-    implements HandlerMethodArgumentResolver {
+public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
   private static final int DEFAULT_PAGE = 1; // We're 1-based, not 0-based
 
-  private RepositoryRestConfiguration config = RepositoryRestConfiguration.DEFAULT;
-
-  public PagingAndSortingMethodArgumentResolver(RepositoryRestConfiguration config) {
-    if(null != config) {
-      this.config = config;
-    }
-  }
+  @Autowired
+  private RepositoryRestConfiguration config;
 
   @Override public boolean supportsParameter(MethodParameter parameter) {
     return ClassUtils.isAssignable(parameter.getParameterType(), PagingAndSorting.class);

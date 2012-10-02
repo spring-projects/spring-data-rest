@@ -1,13 +1,17 @@
 package org.springframework.data.rest.webmvc.spec
 
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException
 import org.springframework.data.rest.test.webmvc.Person
+import org.springframework.data.rest.test.webmvc.TestRepositoryEventListener
 import org.springframework.http.HttpStatus
 
 /**
  * @author Jon Brisbin
  */
 class EventsSpec extends BaseSpec {
+
+  @Autowired TestRepositoryEventListener listener
 
   def "cannot save invalid entity"() {
 

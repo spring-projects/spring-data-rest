@@ -3,6 +3,7 @@ package org.springframework.data.rest.webmvc;
 import java.net.URI;
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.rest.webmvc.json.JsonSchemaController;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -16,11 +17,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  */
 public class BaseUriMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
+  @Autowired
   private RepositoryRestConfiguration config;
-
-  public BaseUriMethodArgumentResolver(RepositoryRestConfiguration config) {
-    this.config = config;
-  }
 
   @Override public boolean supportsParameter(MethodParameter parameter) {
     return (RepositoryRestController.class.isAssignableFrom(parameter.getDeclaringClass())

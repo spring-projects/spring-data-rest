@@ -23,8 +23,7 @@ public class ServerHttpRequestMethodArgumentResolver implements HandlerMethodArg
   public Object resolveArgument(MethodParameter parameter,
                                 ModelAndViewContainer mavContainer,
                                 NativeWebRequest webRequest,
-                                WebDataBinderFactory binderFactory)
-      throws Exception {
+                                WebDataBinderFactory binderFactory) throws Exception {
     return new ServletServerHttpRequest((HttpServletRequest)webRequest.getNativeRequest());
   }
 

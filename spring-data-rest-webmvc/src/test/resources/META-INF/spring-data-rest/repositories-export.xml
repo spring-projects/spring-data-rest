@@ -4,12 +4,14 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-  <bean class="org.springframework.data.rest.test.webmvc.ApplicationConfig"/>
+  <bean id="baseUri" class="java.net.URI">
+    <constructor-arg value="http://localhost:3000/api"/>
+  </bean>
 
   <bean id="config" class="org.springframework.data.rest.webmvc.RepositoryRestConfiguration"
         p:jsonpParamName="callback"
         p:jsonpOnErrParamName="errback"
-        p:baseUri="http://localhost:8080">
+        p:baseUri-ref="baseUri">
     <property name="domainTypeToRepositoryMappings">
       <map key-type="java.lang.Class" value-type="java.lang.Class">
         <entry key="org.springframework.data.rest.test.webmvc.Person"
@@ -34,22 +36,6 @@
       </set>
     </property>
   </bean>
-
-  <!--
-    This validator will be picked up automatically. The default configuration is to look at the bean name
-    and figure out what event you're interested in. This validator is interested in 'beforeSave' events
-    because the word 'beforeSave' appears in the first part of the bean name. It recognizes:
-
-      - beforeSave
-      - afterSave
-      - beforeDelete
-      - afterDelete
-      - beforeLinkSave
-      - afterLinkSave
-
-    What you put after that doesn't matter, you just need to make the bean name unique, of course.
-  -->
-  <bean id="beforeSavePersonValidator" class="org.springframework.data.rest.test.webmvc.PersonValidator"/>
 
   <!--
     The manual configuration (which doesn't look at the bean name) can be done by declaring the

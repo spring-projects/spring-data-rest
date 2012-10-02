@@ -1,7 +1,7 @@
 package org.springframework.data.rest.webmvc.spec
 
 import org.springframework.core.MethodParameter
-import org.springframework.data.rest.test.webmvc.ApplicationConfig
+import org.springframework.data.rest.test.ApplicationConfig
 import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration
 import org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler
 import org.springframework.hateoas.Link

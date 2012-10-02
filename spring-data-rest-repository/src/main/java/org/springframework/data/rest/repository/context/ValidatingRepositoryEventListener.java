@@ -120,7 +120,27 @@ public class ValidatingRepositoryEventListener
       errors = new ValidationErrors(domainType.getSimpleName(),
                                     o,
                                     repositoryMetadataFor(domainType).entityMetadata());
-      Collection<Validator> validators = this.validators.get(event);
+
+      String eventName = null;
+      if("beforeSave".equals(event)) {
+        eventName = "before" + domainType.getSimpleName() + "Save";
+      } else if("afterSave".equals(event)) {
+        eventName = "after" + domainType.getSimpleName() + "Save";
+      } else if("beforeLinkSave".equals(event)) {
+        eventName = "before" + domainType.getSimpleName() + "LinkSave";
+      } else if("afterLinkSave".equals(event)) {
+        eventName = "after" + domainType.getSimpleName() + "LinkSave";
+      } else if("beforeDelete".equals(event)) {
+        eventName = "before" + domainType.getSimpleName() + "Delete";
+      } else if("afterDelete".equals(event)) {
+        eventName = "after" + domainType.getSimpleName() + "Delete";
+      }
+
+      if(null == eventName) {
+        return errors;
+      }
+
+      Collection<Validator> validators = this.validators.get(eventName);
       if(null != validators) {
         for(Validator v : validators) {
           if(v.supports(o.getClass())) {
@@ -129,10 +149,12 @@ public class ValidatingRepositoryEventListener
           }
         }
       }
+
       if(errors.getErrorCount() > 0) {
         throw new RepositoryConstraintViolationException(errors);
       }
     }
+
     return errors;
   }
 

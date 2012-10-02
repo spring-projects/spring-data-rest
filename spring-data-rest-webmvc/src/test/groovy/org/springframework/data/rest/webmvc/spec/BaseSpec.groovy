@@ -3,17 +3,16 @@ package org.springframework.data.rest.webmvc.spec
 import org.codehaus.jackson.map.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
+import org.springframework.data.rest.test.ApplicationConfig
+import org.springframework.data.rest.test.ApplicationRestConfig
 import org.springframework.data.rest.test.webmvc.Address
 import org.springframework.data.rest.test.webmvc.AddressRepository
-import org.springframework.data.rest.test.webmvc.ApplicationConfig
 import org.springframework.data.rest.test.webmvc.CustomerRepository
 import org.springframework.data.rest.test.webmvc.Person
 import org.springframework.data.rest.test.webmvc.PersonRepository
 import org.springframework.data.rest.test.webmvc.ProfileRepository
-import org.springframework.data.rest.test.webmvc.TestRepositoryEventListener
 import org.springframework.data.rest.webmvc.RepositoryRestConfiguration
 import org.springframework.data.rest.webmvc.RepositoryRestController
-import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration
 import org.springframework.http.ResponseEntity
 import org.springframework.http.server.ServletServerHttpRequest
 import org.springframework.mock.web.MockHttpServletRequest
@@ -29,11 +28,10 @@ import static org.springframework.transaction.support.TransactionSynchronization
 /**
  * @author Jon Brisbin
  */
-@ContextConfiguration(classes = [ApplicationConfig, RepositoryRestMvcConfiguration])
+@ContextConfiguration(classes = [ApplicationConfig, ApplicationRestConfig])
 abstract class BaseSpec extends Specification {
 
   @Autowired ApplicationContext appCtx
-  @Autowired TestRepositoryEventListener listener
   @Autowired RepositoryRestConfiguration config
   @Autowired RepositoryRestController controller
   @Autowired EntityManagerFactory emf

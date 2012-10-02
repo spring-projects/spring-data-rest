@@ -1,10 +1,12 @@
 package org.springframework.data.rest.webmvc;
 
-import java.util.Arrays;
+import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.data.rest.webmvc.json.JsonSchemaController;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
 /**
@@ -17,12 +19,12 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 public class RepositoryRestHandlerAdapter extends ResourceProcessorInvokingHandlerAdapter {
 
-  public RepositoryRestHandlerAdapter(RepositoryRestConfiguration config) {
-    setCustomArgumentResolvers(Arrays.asList(
-        new ServerHttpRequestMethodArgumentResolver(),
-        new BaseUriMethodArgumentResolver(config),
-        new PagingAndSortingMethodArgumentResolver(config)
-    ));
+  @Autowired
+  private List<HandlerMethodArgumentResolver> argumentResolvers;
+
+  @Override public void afterPropertiesSet() {
+    setCustomArgumentResolvers(argumentResolvers);
+    super.afterPropertiesSet();
   }
 
   @Override public int getOrder() {

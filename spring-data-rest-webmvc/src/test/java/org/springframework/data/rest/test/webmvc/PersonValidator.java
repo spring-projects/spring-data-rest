@@ -21,7 +21,7 @@ public class PersonValidator
 
   @Override public void validate(Object target, Errors errors) {
     Person p = (Person)target;
-    LOG.debug("validating Person " + p);
+    LOG.debug(" ***** Validating Person " + p);
     ValidationUtils.rejectIfEmpty(errors, "name", "field.name.required", "Field 'name' cannot be blank.");
   }
 

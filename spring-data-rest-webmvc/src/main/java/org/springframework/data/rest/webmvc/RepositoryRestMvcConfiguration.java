@@ -63,9 +63,11 @@ public class RepositoryRestMvcConfiguration {
    * @return
    */
   @Bean public JpaRepositoryExporter jpaRepositoryExporter() {
-    return (null == customJpaRepositoryExporter
-            ? new JpaRepositoryExporter().setDomainTypeMappings(repositoryRestConfig.getDomainTypeToRepositoryMappings())
-            : customJpaRepositoryExporter);
+    if(null == customJpaRepositoryExporter) {
+      return new JpaRepositoryExporter();
+    }
+
+    return customJpaRepositoryExporter;
   }
 
   /**
@@ -125,6 +127,18 @@ public class RepositoryRestMvcConfiguration {
     return new JsonSchemaController();
   }
 
+  @Bean public BaseUriMethodArgumentResolver baseUriMethodArgumentResolver() {
+    return new BaseUriMethodArgumentResolver();
+  }
+
+  @Bean public PagingAndSortingMethodArgumentResolver pagingAndSortingMethodArgumentResolver() {
+    return new PagingAndSortingMethodArgumentResolver();
+  }
+
+  @Bean public ServerHttpRequestMethodArgumentResolver serverHttpRequestMethodArgumentResolver() {
+    return new ServerHttpRequestMethodArgumentResolver();
+  }
+
   /**
    * Special {@link org.springframework.web.servlet.HandlerAdapter} that only recognizes handler methods defined in the
    * {@link RepositoryRestController} class.
@@ -132,7 +146,7 @@ public class RepositoryRestMvcConfiguration {
    * @return
    */
   @Bean public RepositoryRestHandlerAdapter repositoryExporterHandlerAdapter() {
-    return new RepositoryRestHandlerAdapter(repositoryRestConfig);
+    return new RepositoryRestHandlerAdapter();
   }
 
   /**
