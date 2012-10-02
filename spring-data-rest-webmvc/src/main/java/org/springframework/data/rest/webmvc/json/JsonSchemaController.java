@@ -12,7 +12,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,19 +37,25 @@ public class JsonSchemaController extends RepositoryExporterSupport<JsonSchemaCo
       produces = "application/json"
   )
   @ResponseBody
-  public ResponseEntity<?> schemaForRepository(ServletServerHttpRequest request,
-                                               URI baseUri,
+  public ResponseEntity<?> schemaForRepository(URI baseUri,
                                                @PathVariable String repository) throws IOException {
     RepositoryMetadata repoMeta = repositoryMetadataFor(repository);
     if(null == repoMeta) {
-      throw new IllegalArgumentException("Resource /" + repository + "/schema not found.");
+      return new ResponseEntity<Object>(HttpStatus.NOT_FOUND);
     }
 
     JsonSchema schema = mapper.generateJsonSchema(repoMeta.domainType());
 
-    URI requestUri = UriComponentsBuilder.fromUri(baseUri).path(repository).build().toUri();
+    URI schemaUri = UriComponentsBuilder.fromUri(baseUri)
+                                        .pathSegment(repository, "schema")
+                                        .build()
+                                        .toUri();
+    URI requestUri = UriComponentsBuilder.fromUri(baseUri)
+                                         .pathSegment(repository)
+                                         .build()
+                                         .toUri();
     Resource<JsonSchema> resource = new Resource<JsonSchema>(schema,
-                                                             new Link(request.getURI().toString(), "self"),
+                                                             new Link(schemaUri.toString(), "self"),
                                                              new Link(requestUri.toString(), repoMeta.rel()));
 
     String output = mapper.writeValueAsString(resource);
