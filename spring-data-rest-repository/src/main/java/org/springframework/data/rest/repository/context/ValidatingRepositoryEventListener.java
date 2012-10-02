@@ -121,26 +121,7 @@ public class ValidatingRepositoryEventListener
                                     o,
                                     repositoryMetadataFor(domainType).entityMetadata());
 
-      String eventName = null;
-      if("beforeSave".equals(event)) {
-        eventName = "before" + domainType.getSimpleName() + "Save";
-      } else if("afterSave".equals(event)) {
-        eventName = "after" + domainType.getSimpleName() + "Save";
-      } else if("beforeLinkSave".equals(event)) {
-        eventName = "before" + domainType.getSimpleName() + "LinkSave";
-      } else if("afterLinkSave".equals(event)) {
-        eventName = "after" + domainType.getSimpleName() + "LinkSave";
-      } else if("beforeDelete".equals(event)) {
-        eventName = "before" + domainType.getSimpleName() + "Delete";
-      } else if("afterDelete".equals(event)) {
-        eventName = "after" + domainType.getSimpleName() + "Delete";
-      }
-
-      if(null == eventName) {
-        return errors;
-      }
-
-      Collection<Validator> validators = this.validators.get(eventName);
+      Collection<Validator> validators = this.validators.get(event);
       if(null != validators) {
         for(Validator v : validators) {
           if(v.supports(o.getClass())) {

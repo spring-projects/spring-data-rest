@@ -88,7 +88,7 @@ public class ApplicationRestConfig {
    *
    * @return
    */
-  @Bean public PersonValidator beforePersonSaveValidator() {
+  @Bean public PersonValidator beforeSavePersonValidator() {
     return new PersonValidator();
   }
 
