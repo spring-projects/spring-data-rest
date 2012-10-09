@@ -57,8 +57,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
  */
 public class RepositoryAwareJacksonModule extends SimpleModule implements InitializingBean {
 
-  @Autowired
-  private RepositoryRestConfiguration config;
+  @Autowired(required = false)
+  private   RepositoryRestConfiguration                        config               = RepositoryRestConfiguration.DEFAULT;
   @Autowired(required = false)
   protected List<RepositoryExporter>                           repositoryExporters  = Collections.emptyList();
   @Autowired(required = false)
