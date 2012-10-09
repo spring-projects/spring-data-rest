@@ -22,6 +22,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -1579,7 +1581,46 @@ public class RepositoryRestController
     Map m = new HashMap();
     List<String> errors = new ArrayList<String>();
     for(FieldError fe : ex.getErrors().getFieldErrors()) {
-      errors.add(fe.getDefaultMessage());
+      String msg = applicationContext.getMessage(fe.getCode(),
+                                                 new Object[]{fe.getObjectName(), fe.getField(), fe.getRejectedValue()},
+                                                 fe.getDefaultMessage(),
+                                                 null);
+      errors.add(msg);
+    }
+    m.put("errors", errors);
+
+    return negotiateResponse(request, HttpStatus.BAD_REQUEST, new HttpHeaders(), m);
+  }
+
+  /**
+   * Send a 400 Bad Request in case of a validation failure.
+   *
+   * @param ex
+   * @param request
+   *
+   * @return
+   *
+   * @throws IOException
+   */
+  @SuppressWarnings({"unchecked"})
+  @ExceptionHandler(ConstraintViolationException.class)
+  @ResponseBody
+  public ResponseEntity handleJsr303ValidationFailure(ConstraintViolationException ex,
+                                                      ServletServerHttpRequest request) throws IOException {
+    LOG.error(ex.getMessage(), ex);
+
+    Map m = new HashMap();
+    List<String> errors = new ArrayList<String>();
+    for(ConstraintViolation cv : ex.getConstraintViolations()) {
+      String msg = applicationContext.getMessage(cv.getMessageTemplate(),
+                                                 new Object[]{
+                                                     cv.getLeafBean().getClass().getSimpleName(),
+                                                     cv.getPropertyPath().toString(),
+                                                     cv.getInvalidValue()
+                                                 },
+                                                 cv.getMessage(),
+                                                 null);
+      errors.add(msg);
     }
     m.put("errors", errors);
 

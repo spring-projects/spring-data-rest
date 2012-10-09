@@ -2,9 +2,12 @@ package org.springframework.data.rest.webmvc.spec
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException
+import org.springframework.data.rest.test.webmvc.Customer
 import org.springframework.data.rest.test.webmvc.Person
 import org.springframework.data.rest.test.webmvc.TestRepositoryEventListener
 import org.springframework.http.HttpStatus
+
+import javax.validation.ConstraintViolationException
 
 /**
  * @author Jon Brisbin
@@ -20,10 +23,34 @@ class EventsSpec extends BaseSpec {
     def request = createJsonRequest("POST", "people", null, person)
 
     when:
-    controller.create(request, baseUri, "people")
+    try {
+      controller.create(request, baseUri, "people")
+    } catch (RepositoryConstraintViolationException e) {
+      controller.handleValidationFailure(e, request)
+      throw e
+    }
 
     then:
     thrown(RepositoryConstraintViolationException)
+
+  }
+
+  def "handles JSR-303 validation errors"() {
+
+    given:
+    def cust = new Customer()
+    def request = createJsonRequest("POST", "customer", null, cust)
+
+    when:
+    try {
+      controller.create(request, baseUri, "customer")
+    } catch (ConstraintViolationException e) {
+      controller.handleJsr303ValidationFailure(e, request)
+      throw e
+    }
+
+    then:
+    thrown(ConstraintViolationException)
 
   }
 

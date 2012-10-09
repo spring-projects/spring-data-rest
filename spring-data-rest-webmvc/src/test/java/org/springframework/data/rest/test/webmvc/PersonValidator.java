@@ -21,7 +21,7 @@ public class PersonValidator implements Validator {
   @Override public void validate(Object target, Errors errors) {
     Person p = (Person)target;
     LOG.debug(" ***** Validating Person " + p);
-    ValidationUtils.rejectIfEmpty(errors, "name", "field.name.required", "Field 'name' cannot be blank.");
+    ValidationUtils.rejectIfEmpty(errors, "name", "field.name.required");
   }
 
 }

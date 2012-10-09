@@ -1,33 +1,14 @@
 package org.springframework.data.rest.test;
 
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.Version;
-import org.codehaus.jackson.map.Module;
-import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.module.SimpleSerializers;
-import org.codehaus.jackson.map.ser.std.SerializerBase;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.converter.Converter;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.rest.test.webmvc.Person;
-import org.springframework.data.rest.test.webmvc.PersonValidator;
-import org.springframework.data.rest.test.webmvc.TestRepositoryEventListener;
-import org.springframework.format.support.DefaultFormattingConversionService;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaDialect;
@@ -47,6 +28,12 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaRepositories
 @EnableTransactionManagement
 public class ApplicationConfig {
+
+  @Bean public MessageSource messageSource() {
+    ResourceBundleMessageSource ms = new ResourceBundleMessageSource();
+    ms.setBasename("org.springframework.data.rest.test.ValidationErrors");
+    return ms;
+  }
 
   @Bean public DataSource dataSource() {
     EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();

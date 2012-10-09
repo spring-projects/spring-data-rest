@@ -3,6 +3,7 @@ package org.springframework.data.rest.test.webmvc;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Jon Brisbin
@@ -11,6 +12,7 @@ import javax.persistence.Id;
 public class Customer {
 
   @Id @GeneratedValue private Long   id;
+  @NotNull
   private                     String userid;
 
   public Long getId() {
