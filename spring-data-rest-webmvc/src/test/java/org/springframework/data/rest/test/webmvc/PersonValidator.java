@@ -10,8 +10,7 @@ import org.springframework.validation.Validator;
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class PersonValidator
-    implements Validator {
+public class PersonValidator implements Validator {
 
   private static final Logger LOG = LoggerFactory.getLogger(PersonValidator.class);
 

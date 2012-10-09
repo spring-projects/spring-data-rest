@@ -1,5 +1,7 @@
 package org.springframework.data.rest.test.webmvc;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.CascadeType;
@@ -8,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
 import javax.persistence.Version;
 
 import org.codehaus.jackson.annotate.JsonManagedReference;
@@ -28,6 +31,7 @@ public class Person {
   @OneToMany(cascade = CascadeType.REMOVE)
   @MapKey(name = "type")
   private                     Map<String, Profile> profiles;
+  private                     Date                 created;
 
   public Person() {
   }
@@ -88,6 +92,15 @@ public class Person {
 
   public void setProfiles(Map<String, Profile> profiles) {
     this.profiles = profiles;
+  }
+
+  public Date getCreated() {
+    return created;
+  }
+
+  @PrePersist
+  private void setCreated() {
+    this.created = Calendar.getInstance().getTime();
   }
 
 }
