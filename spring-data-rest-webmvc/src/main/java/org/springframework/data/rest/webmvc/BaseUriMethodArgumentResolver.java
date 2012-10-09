@@ -17,8 +17,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  */
 public class BaseUriMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-  @Autowired
-  private RepositoryRestConfiguration config;
+  @Autowired(required = false)
+  private RepositoryRestConfiguration config = RepositoryRestConfiguration.DEFAULT;
 
   @Override public boolean supportsParameter(MethodParameter parameter) {
     return (RepositoryRestController.class.isAssignableFrom(parameter.getDeclaringClass())
