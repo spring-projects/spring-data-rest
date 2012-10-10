@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 public class Customer {
 
   @Id @GeneratedValue private Long   id;
-  @NotNull
+  @NotNull(message = "no.userid")
   private                     String userid;
 
   public Long getId() {
