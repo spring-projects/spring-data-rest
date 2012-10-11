@@ -27,8 +27,8 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
 
   private static final int DEFAULT_PAGE = 1; // We're 1-based, not 0-based
 
-  @Autowired
-  private RepositoryRestConfiguration config;
+  @Autowired(required = false)
+  private RepositoryRestConfiguration config = RepositoryRestConfiguration.DEFAULT;
 
   @Override public boolean supportsParameter(MethodParameter parameter) {
     return ClassUtils.isAssignable(parameter.getParameterType(), PagingAndSorting.class);
