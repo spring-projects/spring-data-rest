@@ -1585,8 +1585,10 @@ public class RepositoryRestController
       args.add(fe.getObjectName());
       args.add(fe.getField());
       args.add(fe.getRejectedValue());
-      for(Object o : fe.getArguments()) {
-        args.add(o);
+      if(null != fe.getArguments()) {
+        for(Object o : fe.getArguments()) {
+          args.add(o);
+        }
       }
 
       String msg = applicationContext.getMessage(fe.getCode(),
