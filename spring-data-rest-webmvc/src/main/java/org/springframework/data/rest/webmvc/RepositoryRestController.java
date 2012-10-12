@@ -1581,8 +1581,16 @@ public class RepositoryRestController
     Map m = new HashMap();
     List<String> errors = new ArrayList<String>();
     for(FieldError fe : ex.getErrors().getFieldErrors()) {
+      List<Object> args = new ArrayList<Object>();
+      args.add(fe.getObjectName());
+      args.add(fe.getField());
+      args.add(fe.getRejectedValue());
+      for(Object o : fe.getArguments()) {
+        args.add(o);
+      }
+
       String msg = applicationContext.getMessage(fe.getCode(),
-                                                 new Object[]{fe.getObjectName(), fe.getField(), fe.getRejectedValue()},
+                                                 args.toArray(),
                                                  fe.getDefaultMessage(),
                                                  null);
       errors.add(msg);
