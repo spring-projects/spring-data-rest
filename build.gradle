@@ -89,6 +89,22 @@ configure(subprojects) { subproject ->
 
 }
 
+configure(rootProject) {
+
+  task javadoc(type: Javadoc) {
+    title = "Spring Data REST ${version} API"
+    source subprojects.collect { project -> project.sourceSets.main.allJava }
+    classpath = files(subprojects.collect { project -> project.sourceSets.main.compileClasspath })
+    destinationDir = new File(buildDir, "javadoc")
+
+    options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
+    options.author = true
+    options.header = "Spring Data REST ${version} API"
+    //options.overview = "${projectDir}/src/main/java/overview.html"
+  }
+
+}
+
 task wrapper(type: Wrapper) { gradleVersion = "1.1" }
 
 idea {
