@@ -61,10 +61,15 @@ public class JpaEntityMetadata implements EntityMetadata<JpaAttributeMetadata> {
         if(repositories.hasRepositoryFor(attrType)) {
           linkedAttributes.put(name, new JpaAttributeMetadata(entityType, attr));
         } else {
-          if(!(attr instanceof SingularAttribute && ((SingularAttribute)attr).isId())
-              && !(attr instanceof SingularAttribute && ((SingularAttribute)attr).isVersion())) {
-            embeddedAttributes.put(name, new JpaAttributeMetadata(entityType, attr));
+          if((attr instanceof SingularAttribute && ((SingularAttribute)attr).isId())) {
+            // Don't export the id attribute
+            continue;
+          } else if(((attr instanceof SingularAttribute) && ((SingularAttribute)attr).isVersion())
+              && (null == fieldResourceAnno || !StringUtils.hasText(fieldResourceAnno.path()))) {
+            // Don't export the version attribute
+            continue;
           }
+          embeddedAttributes.put(name, new JpaAttributeMetadata(entityType, attr));
         }
       }
     }

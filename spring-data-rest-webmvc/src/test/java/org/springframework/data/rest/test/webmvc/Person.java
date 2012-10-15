@@ -14,6 +14,7 @@ import javax.persistence.PrePersist;
 import javax.persistence.Version;
 
 import org.codehaus.jackson.annotate.JsonManagedReference;
+import org.springframework.data.rest.repository.annotation.RestResource;
 
 /**
  * @author Jon Brisbin <jbrisbin@vmware.com>
@@ -23,6 +24,7 @@ public class Person {
 
   @Id @GeneratedValue private Long                 id;
   private                     String               name;
+  @RestResource(path = "version")
   @Version
   private                     Long                 version;
   @JsonManagedReference
