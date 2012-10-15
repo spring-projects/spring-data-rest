@@ -24,6 +24,7 @@ allprojects {
 configure(subprojects) { subproject ->
   apply plugin: "java"
   apply plugin: "groovy"
+  apply from: "${rootProject.projectDir}/maven.gradle"
 
   configurations {
     compile.extendsFrom providedCompile
