@@ -37,8 +37,7 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 
   @SuppressWarnings({"unchecked"})
   @Override
-  protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request)
-      throws Exception {
+  protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
     if(repositoryNames.isEmpty() && !repositoryExporters.isEmpty()) {
       for(RepositoryExporter re : repositoryExporters) {
         repositoryNames.addAll(re.repositoryNames());
