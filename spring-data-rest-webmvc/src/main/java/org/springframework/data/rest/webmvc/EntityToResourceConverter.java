@@ -45,7 +45,7 @@ public class EntityToResourceConverter implements Converter<Object, Resource> {
     }
 
     Serializable id = (Serializable)repositoryMetadata.entityMetadata().idAttribute().get(source);
-    URI selfUri = buildUri(config.getBaseUri(), repositoryMetadata.name(), id.toString());
+    URI selfUri = buildUri(config.getBaseUri(), repositoryMetadata.name(), String.format("%s", id));
 
     Set<Link> links = new HashSet<Link>();
     for(Object attrName : entityMetadata.linkedAttributes().keySet()) {
