@@ -1360,7 +1360,7 @@ public class RepositoryRestController
       return notFoundResponse(request);
     }
 
-    String propertyRel = repository + "." + repoMeta.entityMetadata().type().getSimpleName() + "." + property;
+    String propertyRel = repoMeta.rel() + "." + repoMeta.entityMetadata().type().getSimpleName() + "." + property;
     URI propertyPath = buildUri(baseUri, repository, id, property, linkedId);
     URI selfUri = buildUri(baseUri, linkedRepoMeta.name(), linkedId);
 
