@@ -61,7 +61,8 @@ public class JpaEntityMetadata implements EntityMetadata<JpaAttributeMetadata> {
         if(repositories.hasRepositoryFor(attrType)) {
           linkedAttributes.put(name, new JpaAttributeMetadata(entityType, attr));
         } else {
-          if((attr instanceof SingularAttribute && ((SingularAttribute)attr).isId())) {
+          if(((attr instanceof SingularAttribute && ((SingularAttribute)attr).isId())
+            && (null == fieldResourceAnno || !StringUtils.hasText(fieldResourceAnno.path()))) {
             // Don't export the id attribute
             continue;
           } else if(((attr instanceof SingularAttribute) && ((SingularAttribute)attr).isVersion())
