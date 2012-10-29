@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.rest.repository.UriToDomainObjectUriResolver;
+import org.springframework.data.rest.repository.context.AnnotatedHandlerBeanPostProcessor;
 import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.repository.jpa.JpaRepositoryExporter;
 import org.springframework.data.rest.webmvc.json.JsonSchemaController;
@@ -55,6 +56,16 @@ public class RepositoryRestMvcConfiguration {
    */
   @Bean public PersistenceAnnotationBeanPostProcessor persistenceAnnotationBeanPostProcessor() {
     return new PersistenceAnnotationBeanPostProcessor();
+  }
+
+  /**
+   * {@link org.springframework.beans.factory.config.BeanPostProcessor} to turn beans annotated as {@link
+   * org.springframework.data.rest.repository.annotation.RepositoryEventHandler}s.
+   *
+   * @return
+   */
+  @Bean public AnnotatedHandlerBeanPostProcessor annotatedHandlerBeanPostProcessor() {
+    return new AnnotatedHandlerBeanPostProcessor();
   }
 
   /**

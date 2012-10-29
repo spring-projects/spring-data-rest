@@ -15,7 +15,6 @@ import org.springframework.data.rest.repository.annotation.RepositoryEventHandle
 import org.springframework.data.rest.repository.context.AfterDeleteEvent
 import org.springframework.data.rest.repository.context.AfterLinkSaveEvent
 import org.springframework.data.rest.repository.context.AfterSaveEvent
-import org.springframework.data.rest.repository.context.AnnotatedHandlerRepositoryEventListener
 import org.springframework.data.rest.repository.context.BeforeDeleteEvent
 import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent
 import org.springframework.data.rest.repository.context.BeforeSaveEvent
@@ -64,10 +63,6 @@ class ExtensionsSpec extends Specification {
 
 @Configuration
 class EventsApplicationConfig {
-
-  @Bean AnnotatedHandlerRepositoryEventListener repositoryEventListener() {
-    new AnnotatedHandlerRepositoryEventListener("org.springframework.data.rest.repository.spec");
-  }
 
   @Bean PersonEventHandler personEventHandler() {
     new PersonEventHandler()

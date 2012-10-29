@@ -94,7 +94,7 @@ public class ApplicationRestConfig {
 
   @Bean public Module customModule() {
     return new Module() {
-      private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+      private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
       @Override public String getModuleName() {
         return "custom";

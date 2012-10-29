@@ -5,7 +5,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <bean id="baseUri" class="java.net.URI">
-    <constructor-arg value="http://localhost:3000/api"/>
+    <constructor-arg value="http://localhost:8080/data"/>
   </bean>
 
   <bean id="config" class="org.springframework.data.rest.webmvc.RepositoryRestConfiguration"
