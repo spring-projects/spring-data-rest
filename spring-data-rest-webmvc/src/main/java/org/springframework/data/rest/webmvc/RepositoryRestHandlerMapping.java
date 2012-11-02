@@ -32,7 +32,7 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
   private Set<String>              repositoryNames     = new HashSet<String>();
 
   public RepositoryRestHandlerMapping() {
-    setOrder(Ordered.HIGHEST_PRECEDENCE);
+    setOrder(Ordered.LOWEST_PRECEDENCE);
   }
 
   @SuppressWarnings({"unchecked"})
