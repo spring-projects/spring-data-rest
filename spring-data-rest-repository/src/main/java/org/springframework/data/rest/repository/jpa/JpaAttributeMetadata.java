@@ -150,25 +150,18 @@ public class JpaAttributeMetadata implements AttributeMetadata {
   }
 
   @Override public Object get(Object target) {
-    try {
-      if(null != getter) {
-        return getter.invoke(target);
-      } else {
-        return field.get(target);
-      }
-    } catch(Exception e) {
-      return null;
+    if(null != getter) {
+      return ReflectionUtils.invokeMethod(getter, target);
+    } else {
+      return ReflectionUtils.getField(field, target);
     }
   }
 
   @Override public AttributeMetadata set(Object value, Object target) {
-    try {
-      if(null != setter) {
-        setter.invoke(target, value);
-      } else {
-        field.set(target, value);
-      }
-    } catch(Exception e) {
+    if(null != setter) {
+      ReflectionUtils.invokeMethod(setter, target, value);
+    } else {
+      ReflectionUtils.setField(field, target, value);
     }
     return this;
   }
