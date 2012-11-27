@@ -875,9 +875,10 @@ public class RepositoryRestController
     if(null != (entity = repo.findOne(serId))) {
       // Updating an existing resource
       isUpdate = true;
-      for(AttributeMetadata attrMeta : (Collection<AttributeMetadata>)repoMeta.entityMetadata()
-                                                                              .embeddedAttributes()
-                                                                              .values()) {
+      List<AttributeMetadata> attrs = new ArrayList<AttributeMetadata>();
+      attrs.addAll(repoMeta.entityMetadata().embeddedAttributes().values());
+      attrs.addAll(repoMeta.entityMetadata().linkedAttributes().values());
+      for(AttributeMetadata attrMeta : attrs) {
         Object incomingVal;
         if(null != (incomingVal = attrMeta.get(incoming))) {
           attrMeta.set(incomingVal, entity);
