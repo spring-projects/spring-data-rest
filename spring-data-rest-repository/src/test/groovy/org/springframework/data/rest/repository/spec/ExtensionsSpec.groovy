@@ -5,19 +5,8 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.rest.repository.RepositoryExporter
-import org.springframework.data.rest.repository.annotation.HandleAfterDelete
-import org.springframework.data.rest.repository.annotation.HandleAfterLinkSave
-import org.springframework.data.rest.repository.annotation.HandleAfterSave
-import org.springframework.data.rest.repository.annotation.HandleBeforeDelete
-import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave
-import org.springframework.data.rest.repository.annotation.HandleBeforeSave
-import org.springframework.data.rest.repository.annotation.RepositoryEventHandler
-import org.springframework.data.rest.repository.context.AfterDeleteEvent
-import org.springframework.data.rest.repository.context.AfterLinkSaveEvent
-import org.springframework.data.rest.repository.context.AfterSaveEvent
-import org.springframework.data.rest.repository.context.BeforeDeleteEvent
-import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent
-import org.springframework.data.rest.repository.context.BeforeSaveEvent
+import org.springframework.data.rest.repository.annotation.*
+import org.springframework.data.rest.repository.context.*
 import org.springframework.data.rest.repository.test.ApplicationConfig
 import org.springframework.data.rest.repository.test.Person
 import org.springframework.test.context.ContextConfiguration
@@ -63,6 +52,10 @@ class ExtensionsSpec extends Specification {
 
 @Configuration
 class EventsApplicationConfig {
+
+  @Bean AnnotatedHandlerBeanPostProcessor handlerBeanPostProcessor() {
+    return new AnnotatedHandlerBeanPostProcessor();
+  }
 
   @Bean PersonEventHandler personEventHandler() {
     new PersonEventHandler()
