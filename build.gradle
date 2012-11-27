@@ -113,8 +113,6 @@ idea {
     downloadSources = true
   }
   project {
-    jdkName = "OpenJDK 1.7"
-    languageLevel = "1.6"
     ipr {
       withXml { xml ->
         xml.node.component.find { it.@name == "VcsDirectoryMappings" }.mapping.@vcs = "Git"
