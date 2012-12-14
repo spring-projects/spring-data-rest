@@ -1,18 +1,18 @@
 package org.springframework.data.rest.repository.jpa;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.PluralAttribute;
-import javax.persistence.metamodel.SingularAttribute;
-
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.EntityMetadata;
 import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
+
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.PluralAttribute;
+import javax.persistence.metamodel.SingularAttribute;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implementation of {@link EntityMetadata} for JPA.
@@ -41,7 +41,14 @@ public class JpaEntityMetadata implements EntityMetadata<JpaAttributeMetadata> {
 
     for(Attribute attr : entityType.getAttributes()) {
       boolean exported = true;
-      Field field = ReflectionUtils.findField(type, attr.getJavaMember().getName());
+      String memberName = attr.getJavaMember().getName();
+      if(StringUtils.startsWithIgnoreCase(memberName, "get"))
+      {
+         memberName = memberName.substring(3);
+         String firstChar = memberName.substring(0,1).toLowerCase();
+         memberName = firstChar.concat(memberName.substring(1));
+      }
+      Field field = ReflectionUtils.findField(type, memberName);
       if(null == field) {
         continue;
       }
