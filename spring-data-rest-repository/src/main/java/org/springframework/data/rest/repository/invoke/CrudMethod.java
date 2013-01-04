@@ -21,12 +21,13 @@ public enum CrudMethod {
   SAVE_SOME;
 
   /**
-   * Get an enum from a {@link Method}. Narrow down overriden methods by looking for {@link Iterable} in the first
+   * Get an enum from a {@link Method}. Narrow down overridden methods by looking for {@link Iterable} in the first
    * parameter, which tells us it is a '_SOME' type.
    *
    * @param m
+   *     The CRUD method from the repository interface.
    *
-   * @return
+   * @return An enum representing which CRUD operation this method represents.
    */
   public static CrudMethod fromMethod(Method m) {
     String s = m.getName();
@@ -52,7 +53,7 @@ public enum CrudMethod {
   /**
    * Turn this enum into a method name.
    *
-   * @return
+   * @return The method name as a string.
    */
   public String toMethodName() {
     switch(this) {

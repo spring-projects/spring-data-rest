@@ -1,55 +1,51 @@
 package org.springframework.data.rest.repository.context;
 
-import java.util.List;
+import static org.springframework.core.GenericTypeResolver.*;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
-import org.springframework.data.rest.repository.RepositoryExporter;
-import org.springframework.data.rest.repository.RepositoryExporterSupport;
 
 /**
  * Abstract class that listens for generic {@link RepositoryEvent}s and dispatches them to a specific
  * method based on the event type.
  *
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
  */
-public abstract class AbstractRepositoryEventListener<T extends AbstractRepositoryEventListener<? super T>>
-    extends RepositoryExporterSupport<T>
-    implements ApplicationListener<RepositoryEvent>,
-               ApplicationContextAware {
+public abstract class AbstractRepositoryEventListener<T> implements ApplicationListener<RepositoryEvent>,
+                                                                    ApplicationContextAware {
 
+  private final Class<?> INTERESTED_TYPE = resolveTypeArgument(getClass(), AbstractRepositoryEventListener.class);
   protected ApplicationContext applicationContext;
 
-  @Override public void setApplicationContext(ApplicationContext applicationContext)
-      throws BeansException {
+  @Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
     this.applicationContext = applicationContext;
   }
 
-  @Autowired
-  public void setRepositoryExporters(List<RepositoryExporter> repositoryExporters) {
-    super.setRepositoryExporters(repositoryExporters);
-  }
-
+  @SuppressWarnings({"unchecked"})
   @Override public final void onApplicationEvent(RepositoryEvent event) {
+    Class<?> srcType = event.getSource().getClass();
+    if(null != INTERESTED_TYPE && !INTERESTED_TYPE.isAssignableFrom(srcType)) {
+      return;
+    }
+
     if(event instanceof BeforeSaveEvent) {
-      onBeforeSave(event.getSource());
+      onBeforeSave((T)event.getSource());
     } else if(event instanceof AfterSaveEvent) {
-      onAfterSave(event.getSource());
+      onAfterSave((T)event.getSource());
     } else if(event instanceof BeforeLinkSaveEvent) {
-      onBeforeLinkSave(event.getSource(), ((BeforeLinkSaveEvent)event).getLinked());
+      onBeforeLinkSave((T)event.getSource(), ((BeforeLinkSaveEvent)event).getLinked());
     } else if(event instanceof AfterLinkSaveEvent) {
-      onAfterLinkSave(event.getSource(), ((AfterLinkSaveEvent)event).getLinked());
+      onAfterLinkSave((T)event.getSource(), ((AfterLinkSaveEvent)event).getLinked());
     } else if(event instanceof BeforeLinkDeleteEvent) {
-      onBeforeLinkDelete(event.getSource(), ((BeforeLinkDeleteEvent)event).getLinked());
+      onBeforeLinkDelete((T)event.getSource(), ((BeforeLinkDeleteEvent)event).getLinked());
     } else if(event instanceof AfterLinkDeleteEvent) {
-      onAfterLinkDelete(event.getSource(), ((AfterLinkDeleteEvent)event).getLinked());
+      onAfterLinkDelete((T)event.getSource(), ((AfterLinkDeleteEvent)event).getLinked());
     } else if(event instanceof BeforeDeleteEvent) {
-      onBeforeDelete(event.getSource());
+      onBeforeDelete((T)event.getSource());
     } else if(event instanceof AfterDeleteEvent) {
-      onAfterDelete(event.getSource());
+      onAfterDelete((T)event.getSource());
     }
   }
 
@@ -57,68 +53,80 @@ public abstract class AbstractRepositoryEventListener<T extends AbstractReposito
    * Override this method if you are interested in {@literal beforeSave} events.
    *
    * @param entity
+   *     The entity being saved.
    */
-  protected void onBeforeSave(Object entity) {
+  protected void onBeforeSave(T entity) {
   }
 
   /**
    * Override this method if you are interested in {@literal afterSave} events.
    *
    * @param entity
+   *     The entity that was just saved.
    */
-  protected void onAfterSave(Object entity) {
+  protected void onAfterSave(T entity) {
   }
 
   /**
    * Override this method if you are interested in {@literal beforeLinkSave} events.
    *
    * @param parent
+   *     The parent entity to which the child object is linked.
    * @param linked
+   *     The linked, child entity.
    */
-  protected void onBeforeLinkSave(Object parent, Object linked) {
+  protected void onBeforeLinkSave(T parent, Object linked) {
   }
 
   /**
    * Override this method if you are interested in {@literal afterLinkSave} events.
    *
    * @param parent
+   *     The parent entity to which the child object is linked.
    * @param linked
+   *     The linked, child entity.
    */
-  protected void onAfterLinkSave(Object parent, Object linked) {
+  protected void onAfterLinkSave(T parent, Object linked) {
   }
 
   /**
    * Override this method if you are interested in {@literal beforeLinkDelete} events.
    *
    * @param parent
+   *     The parent entity to which the child object is linked.
    * @param linked
+   *     The linked, child entity.
    */
-  protected void onBeforeLinkDelete(Object parent, Object linked) {
+  protected void onBeforeLinkDelete(T parent, Object linked) {
   }
 
   /**
    * Override this method if you are interested in {@literal afterLinkDelete} events.
    *
    * @param parent
+   *     The parent entity to which the child object is linked.
    * @param linked
+   *     The linked, child entity.
    */
-  protected void onAfterLinkDelete(Object parent, Object linked) {
+  protected void onAfterLinkDelete(T parent, Object linked) {
   }
 
   /**
    * Override this method if you are interested in {@literal beforeDelete} events.
    *
    * @param entity
+   *     The entity that is being deleted.
    */
-  protected void onBeforeDelete(Object entity) {
+  protected void onBeforeDelete(T entity) {
   }
 
   /**
    * Override this method if you are interested in {@literal afterDelete} events.
    *
    * @param entity
+   *     The entity that was just deleted.
    */
-  protected void onAfterDelete(Object entity) {
+  protected void onAfterDelete(T entity) {
   }
 
 }

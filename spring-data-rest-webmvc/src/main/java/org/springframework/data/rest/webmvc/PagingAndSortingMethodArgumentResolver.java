@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.rest.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.webmvc.support.PagingAndSorting;
 import org.springframework.data.web.PageableDefaults;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -27,8 +29,8 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
 
   private static final int DEFAULT_PAGE = 1; // We're 1-based, not 0-based
 
-  @Autowired(required = false)
-  private RepositoryRestConfiguration config = RepositoryRestConfiguration.DEFAULT;
+  @Autowired
+  private RepositoryRestConfiguration config;
 
   @Override public boolean supportsParameter(MethodParameter parameter) {
     return ClassUtils.isAssignable(parameter.getParameterType(), PagingAndSorting.class);
