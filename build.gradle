@@ -47,7 +47,6 @@ buildscript {
 
 configure(allprojects) {
   apply plugin: "java"
-  apply plugin: "maven"
   apply plugin: "idea"
   apply plugin: "eclipse"
   apply from: "${gradleScriptDir}/ide.gradle"
@@ -89,6 +88,7 @@ configure(allprojects) {
 }
 
 configure(subprojects) { subproject ->
+  apply plugin: "maven"
   apply from: "${gradleScriptDir}/maven.gradle"
 
   javadoc {
