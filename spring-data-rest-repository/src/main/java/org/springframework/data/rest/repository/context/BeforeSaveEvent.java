@@ -5,8 +5,7 @@ package org.springframework.data.rest.repository.context;
  *
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class BeforeSaveEvent
-    extends RepositoryEvent {
+public class BeforeSaveEvent extends RepositoryEvent {
   public BeforeSaveEvent(Object source) {
     super(source);
   }

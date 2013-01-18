@@ -1,16 +1,32 @@
 package org.springframework.data.rest.repository.context;
 
+import static org.springframework.beans.factory.BeanFactoryUtils.*;
+import static org.springframework.core.annotation.AnnotationUtils.*;
+import static org.springframework.util.StringUtils.*;
+
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
 import org.springframework.data.rest.repository.ValidationErrors;
+import org.springframework.data.rest.repository.annotation.HandleAfterDelete;
+import org.springframework.data.rest.repository.annotation.HandleAfterLinkDelete;
+import org.springframework.data.rest.repository.annotation.HandleAfterLinkSave;
+import org.springframework.data.rest.repository.annotation.HandleAfterSave;
+import org.springframework.data.rest.repository.annotation.HandleBeforeDelete;
+import org.springframework.data.rest.repository.annotation.HandleBeforeLinkDelete;
+import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave;
+import org.springframework.data.rest.repository.annotation.HandleBeforeSave;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
@@ -22,19 +38,31 @@ import org.springframework.validation.Validator;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class ValidatingRepositoryEventListener
-    extends AbstractRepositoryEventListener<ValidatingRepositoryEventListener>
+    extends AbstractRepositoryEventListener<Object>
     implements InitializingBean {
 
   private static final Logger LOG = LoggerFactory.getLogger(ValidatingRepositoryEventListener.class);
 
+  @SuppressWarnings({"unchecked"})
+  private static final List<Class<? extends Annotation>> ANNOTATIONS_TO_FIND = Arrays.asList(
+      HandleBeforeSave.class,
+      HandleAfterSave.class,
+      HandleBeforeDelete.class,
+      HandleAfterDelete.class,
+      HandleBeforeLinkSave.class,
+      HandleAfterLinkSave.class,
+      HandleBeforeLinkDelete.class,
+      HandleAfterLinkDelete.class
+  );
+
+  @Autowired
+  private Repositories repositories;
   private Multimap<String, Validator> validators = ArrayListMultimap.create();
 
-  @Override public void afterPropertiesSet()
-      throws Exception {
+  @Override public void afterPropertiesSet() throws Exception {
     if(validators.size() == 0) {
-      for(Map.Entry<String, Validator> entry : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
-                                                                                              Validator.class)
-                                                               .entrySet()) {
+      for(Map.Entry<String, Validator> entry : beansOfTypeIncludingAncestors(applicationContext,
+                                                                             Validator.class).entrySet()) {
         String name = null;
         Validator v = entry.getValue();
 
@@ -42,7 +70,15 @@ public class ValidatingRepositoryEventListener
           name = entry.getKey().substring(0, entry.getKey().indexOf("Save") + 4);
         } else if(entry.getKey().contains("Delete")) {
           name = entry.getKey().substring(0, entry.getKey().indexOf("Delete") + 6);
+        } else {
+          Annotation anno;
+          for(Class<? extends Annotation> annoType : ANNOTATIONS_TO_FIND) {
+            if(null != (anno = findAnnotation(v.getClass(), annoType))) {
+              name = uncapitalize(annoType.getSimpleName().substring(6));
+            }
+          }
         }
+
         if(null != name) {
           this.validators.put(name, v);
         }
@@ -119,7 +155,7 @@ public class ValidatingRepositoryEventListener
       Class<?> domainType = o.getClass();
       errors = new ValidationErrors(domainType.getSimpleName(),
                                     o,
-                                    repositoryMetadataFor(domainType).entityMetadata());
+                                    repositories.getPersistentEntity(domainType));
 
       Collection<Validator> validators = this.validators.get(event);
       if(null != validators) {

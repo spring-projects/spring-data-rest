@@ -4,10 +4,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.validation.Errors;
 
 /**
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * Exception that is thrown when a Spring {@link org.springframework.validation.Validator} throws an error.
+ *
+ * @author Jon Brisbin
  */
-public class RepositoryConstraintViolationException
-    extends DataIntegrityViolationException {
+public class RepositoryConstraintViolationException extends DataIntegrityViolationException {
 
   private Errors errors;
 

@@ -1,52 +1,107 @@
+// spring-data-rest - Spring Data REST Exporter
 apply plugin: "base"
 
-allprojects {
+ext {
+  gradleScriptDir = "${rootProject.projectDir}/gradle"
+
+  // Logging
+  slf4jVersion = "1.7.2"
+  logbackVersion = "1.0.7"
+
+  // Spring
+  springVersion = "3.1.3.RELEASE"
+  //springVersion = "3.2.0.RELEASE"
+  hateoasVersion = "0.4.0.BUILD-SNAPSHOT"
+  springPluginVersion = "0.8.0.BUILD-SNAPSHOT"
+  springSecurityVersion = "3.1.3.RELEASE"
+  sdCommonsVersion = "1.5.0.BUILD-SNAPSHOT"
+  sdJpaVersion = "1.3.0.BUILD-SNAPSHOT"
+  sdMongoVersion = "1.2.0.BUILD-SNAPSHOT"
+  sdGemfireVersion = "1.3.0.BUILD-SNAPSHOT"
+
+  // Libraries
+  guavaVersion = "13.0.1"
+  jacksonVersion = "2.1.2"
+  jodaVersion = "2.1"
+  hibernateVersion = "4.1.7.Final"
+  hibernateValidatorVersion = "4.3.0.Final"
+
+  // Supporting libraries
+  cglibVersion = "2.2.2"
+
+  // Testing
+  junitVersion = "4.11"
+  hamcrestVersion = "1.3"
+  jmockVersion = "2.6.0-RC2"
+  jettyVersion = "8.1.8.v20121106"
+}
+
+buildscript {
+  repositories {
+    maven { url "http://repo.springsource.org/plugins-release" }
+  }
+  dependencies {
+    classpath "org.springframework.build.gradle:docbook-reference-plugin:0.2.2"
+  }
+}
+
+configure(allprojects) {
+  apply plugin: "java"
+  apply plugin: "maven"
   apply plugin: "idea"
   apply plugin: "eclipse"
-  apply plugin: "maven"
+  apply from: "${gradleScriptDir}/ide.gradle"
 
   group = "org.springframework.data"
-  version = "$sdRestVersion"
 
   configurations.all {
     exclude group: "commons-logging"
     exclude module: "slf4j-log4j12"
   }
 
+  project.sourceCompatibility = 1.6
+  project.targetCompatibility = 1.6
+
+  [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:none", "-g"]
+
+  sourceSets.test.resources.srcDirs = ["src/test/resources", "src/test/java"]
+
   repositories {
-    //maven { url "http://repo.springsource.org/libs-snapshot" }
-    //maven { url "http://repo.springsource.org/libs-milestone" }
     maven { url "http://repo.springsource.org/libs-release" }
+    //maven { url "http://repo.springsource.org/libs-milestone" }
+    maven { url "http://repo.springsource.org/libs-snapshot" }
   }
 
+  dependencies {
+    // Logging
+    compile "org.slf4j:slf4j-api:$slf4jVersion"
+    runtime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+
+    // Testing
+    testCompile "junit:junit-dep:$junitVersion"
+    testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
+    testCompile "org.jmock:jmock-junit4:$jmockVersion"
+    testCompile "org.jmock:jmock-legacy:$jmockVersion"
+    testCompile "org.springframework:spring-test:$springVersion"
+    testRuntime "org.springframework:spring-context-support:$springVersion"
+    testRuntime "ch.qos.logback:logback-classic:$logbackVersion"
+  }
 }
 
 configure(subprojects) { subproject ->
-  apply plugin: "java"
-  apply plugin: "groovy"
-  apply from: "${rootProject.projectDir}/maven.gradle"
-
-  configurations {
-    compile.extendsFrom providedCompile
-  }
-
-  [compileJava, compileTestJava]*.options*.compilerArgs = ["-Xlint:unchecked"]
-
-  project.sourceCompatibility = 1.6
-  project.targetCompatibility = 1.6
+  apply from: "${gradleScriptDir}/maven.gradle"
 
   javadoc {
     options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
     options.author = true
     options.header = subproject.name
-    //options.overview = "${projectDir}/src/main/java/overview.html"
+    //options.overview = "${projectDir}/src/api/overview.html"
   }
 
   task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = "sources"
     from sourceSets.main.allJava
   }
-
   task javadocJar(type: Jar) {
     classifier = "javadoc"
     from javadoc
@@ -56,68 +111,230 @@ configure(subprojects) { subproject ->
     archives sourcesJar
     archives javadocJar
   }
+}
+
+project("spring-data-rest-core") {
+  description = "Spring Data REST core components."
+
+  configurations {
+    compile.extendsFrom providedCompile
+  }
 
   dependencies {
-    groovy "org.codehaus.groovy:groovy:$groovyVersion"
-
-    // Logging
-    compile "org.slf4j:slf4j-api:$slf4jVersion"
-    runtime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
-    runtime "ch.qos.logback:logback-classic:$logbackVersion"
-
-    // Jackson JSON
-    compile "org.codehaus.jackson:jackson-mapper-asl:$jacksonVersion"
+    // Google Guava
+    compile "com.google.guava:guava:$guavaVersion"
 
     // Spring
-    compile("org.springframework:spring-beans:$springVersion") { force = true }
-    compile("org.springframework:spring-context:$springVersion") { force = true }
     compile("org.springframework:spring-core:$springVersion") { force = true }
-    compile("org.springframework:spring-orm:$springVersion") { force = true }
-    compile("org.springframework:spring-tx:$springVersion") { force = true }
     compile("org.springframework:spring-web:$springVersion") { force = true }
     runtime "cglib:cglib-nodep:$cglibVersion"
 
-    // Testing
-    testCompile("org.codehaus.groovy:groovy-all:$groovyVersion") { force = true }
-    testCompile "org.spockframework:spock-core:$spockVersion"
-    testCompile "org.spockframework:spock-spring:$spockVersion"
-    testCompile "org.hamcrest:hamcrest-library:1.3"
-    testCompile "org.springframework:spring-test:$springVersion"
-    testRuntime "org.springframework:spring-context-support:$springVersion"
-    testCompile "org.mockito:mockito-core:1.8.5"
-  }
+    // Spring HATEOAS
+    compile("org.springframework.hateoas:spring-hateoas:$hateoasVersion") {
+      exclude module: "spring-webmvc"
+    }
 
+    // Spring Data Commons
+    providedCompile("org.springframework.data:spring-data-commons:$sdCommonsVersion") {
+      exclude module: "slf4j-api"
+      exclude module: "jcl-over-slf4j"
+    }
+  }
+}
+
+project("spring-data-rest-repository") {
+  description = "Spring Data REST Repository integration."
+
+  dependencies {
+    // Exporter core
+    compile project(":spring-data-rest-core")
+
+    // JSR-305
+    compile "com.google.code.findbugs:jsr305:2.0.1"
+
+    // JODA
+    compile("joda-time:joda-time:$jodaVersion", optional)
+
+    // Jackson JSON
+    compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-joda:$jacksonVersion", optional)
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:$jacksonVersion", optional)
+
+    // ROME
+    //compile "rome:rome:1.0"
+
+    // Spring
+    compile("org.springframework:spring-tx:$springVersion") { force = true }
+
+    // JPA
+    compile("org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final", optional)
+
+    // Spring Plugin
+    compile "org.springframework.plugin:spring-plugin-core:$springPluginVersion"
+
+    // Spring Data
+    compile("org.springframework.data:spring-data-jpa:$sdJpaVersion", optional)
+    compile("org.springframework.data:spring-data-mongodb:$sdMongoVersion", optional)
+
+    // JSR 303 Validation
+    compile "javax.validation:validation-api:1.0.0.GA"
+
+    // Testing
+    testCompile "org.hibernate:hibernate-entitymanager:$hibernateVersion"
+    testCompile "org.hsqldb:hsqldb:2.2.8"
+    testRuntime "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
+  }
+}
+
+project("spring-data-rest-webmvc") {
+  description = "Spring Data REST MVC components."
+
+  dependencies {
+    // Repository Exporter support
+    compile project(":spring-data-rest-repository")
+
+    // Spring
+    compile("org.springframework:spring-webmvc:$springVersion") { force = true }
+
+    // APIS
+    compile("javax.servlet:javax.servlet-api:3.0.1", provided)
+
+    // Testing
+    testCompile "org.eclipse.jetty:jetty-servlet:$jettyVersion"
+    testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
+    testCompile "org.mozilla:rhino:1.7R4"
+  }
+}
+
+project("spring-data-rest-example") {
+  apply plugin: "war"
+  description = "Spring Data REST example web application."
+
+  dependencies {
+    compile project(":spring-data-rest-webmvc")
+
+    // Logging
+    runtime "ch.qos.logback:logback-classic:$logbackVersion"
+
+    // JPA
+    compile "org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final"
+
+    // Spring Data
+    compile "org.springframework.data:spring-data-jpa:$sdJpaVersion"
+    compile "org.springframework.data:spring-data-mongodb:$sdMongoVersion"
+    compile "org.springframework.data:spring-data-gemfire:$sdGemfireVersion"
+
+    // Spring Security
+    compile "org.springframework.security:spring-security-config:$springSecurityVersion"
+    compile "org.springframework.security:spring-security-web:$springSecurityVersion"
+
+    // JODA
+    compile "joda-time:joda-time:$jodaVersion"
+
+    // Jackson
+    compile "com.fasterxml.jackson.datatype:jackson-datatype-joda:$jacksonVersion"
+    compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:$jacksonVersion"
+
+    // Hibernate
+    runtime "org.hibernate:hibernate-entitymanager:$hibernateVersion"
+    runtime "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
+
+    // HSQL
+    runtime "org.hsqldb:hsqldb:2.2.8"
+  }
 }
 
 configure(rootProject) {
+  apply plugin: "docbook-reference"
 
-  task javadoc(type: Javadoc) {
-    title = "Spring Data REST ${version} API"
-    source subprojects.collect { project -> project.sourceSets.main.allJava }
-    classpath = files(subprojects.collect { project -> project.sourceSets.main.compileClasspath })
-    destinationDir = new File(buildDir, "javadoc")
+  description = "Spring Data REST Exporter"
+
+  reference {
+    sourceDir = file("src/reference/docbook")
+    pdfFilename = "spring-data-rest-reference.pdf"
+  }
+
+  // don"t publish the default jar for the root project
+  configurations.archives.artifacts.clear()
+
+  task api(type: Javadoc) {
+    group = "Documentation"
+    description = "Generates aggregated Javadoc API documentation."
+    title = "${rootProject.description} ${version} API"
 
     options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
     options.author = true
-    options.header = "Spring Data REST ${version} API"
-    //options.overview = "${projectDir}/src/main/java/overview.html"
+    options.header = rootProject.description
+    options.overview = "src/api/overview.html"
+    options.splitIndex = true
+    options.linksOffline "http://docs.oracle.com/javase/6/docs/api/", "http://docs.oracle.com/javase/6/docs/api/"
+    options.linksOffline "http://static.springsource.org/spring/docs/3.1.x/javadoc-api/", "http://static.springsource.org/spring/docs/3.1.x/javadoc-api/"
+    options.linksOffline "http://static.springsource.org/spring-data/data-commons/docs/current/api/", "http://static.springsource.org/spring-data/data-commons/docs/current/api/"
+
+    source subprojects.collect { project ->
+      project.sourceSets.main.allJava
+    }
+
+    destinationDir = new File(buildDir, "api")
+    classpath = files(subprojects.collect { project ->
+      project.sourceSets.main.compileClasspath
+    })
+    maxMemory = "1024m"
   }
 
-}
+  task docsZip(type: Zip) {
+    group = "Distribution"
+    baseName = "spring-data-rest"
+    classifier = "docs"
+    description = "Builds -${classifier} archive containing api and reference " +
+        "for deployment to http://static.springframework.org/spring-data-rest/docs."
 
-task wrapper(type: Wrapper) { gradleVersion = "1.1" }
-
-idea {
-  module {
-    downloadJavadoc = false
-    downloadSources = true
+    from("src/dist") {
+      include "changelog.txt"
+    }
+    from(api) {
+      into "api"
+    }
+    from(reference) {
+      into "reference"
+    }
   }
-  project {
-    ipr {
-      withXml { xml ->
-        xml.node.component.find { it.@name == "VcsDirectoryMappings" }.mapping.@vcs = "Git"
-        xml.node.component.find { it.@name == "ProjectRootManager" }.output.@url = "file://\$PROJECT_DIR\$/build"
+
+  dependencies {
+    // For integration testing
+    testCompile project(":spring-data-rest-core")
+    testCompile project(":spring-data-rest-repository")
+    testCompile project(":spring-data-rest-webmvc")
+  }
+
+  idea {
+    module {
+      downloadJavadoc = false
+      downloadSources = true
+    }
+    project {
+      ipr {
+        withXml { xml ->
+          xml.node.component.find { it.@name == "VcsDirectoryMappings" }.mapping.@vcs = "Git"
+          xml.node.component.find { it.@name == "ProjectRootManager" }.output.@url = "file://\$PROJECT_DIR\$/build"
+        }
       }
     }
+  }
+}
+
+task wrapper(type: Wrapper) {
+  description = "Generates gradlew[.bat] scripts"
+  gradleVersion = "1.3"
+
+  doLast() {
+    def gradleOpts = "-XX:MaxPermSize=1024m -Xmx1024m"
+    def gradleBatOpts = "$gradleOpts -XX:MaxHeapSize=256m"
+    File wrapperFile = file("gradlew")
+    wrapperFile.text = wrapperFile.text.replace("DEFAULT_JVM_OPTS=",
+                                                "GRADLE_OPTS=\"$gradleOpts \$GRADLE_OPTS\"\nDEFAULT_JVM_OPTS=")
+    File wrapperBatFile = file("gradlew.bat")
+    wrapperBatFile.text = wrapperBatFile.text.replace("set DEFAULT_JVM_OPTS=",
+                                                      "set GRADLE_OPTS=$gradleBatOpts %GRADLE_OPTS%\nset DEFAULT_JVM_OPTS=")
   }
 }

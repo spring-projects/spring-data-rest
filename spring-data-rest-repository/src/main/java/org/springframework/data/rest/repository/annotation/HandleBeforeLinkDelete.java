@@ -7,9 +7,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Denotes a component that should handle the {@literal beforeLinkDelete} event.
+ *
  * @author Jon Brisbin
  */
-@Target({ElementType.METHOD})
+@Target({
+            ElementType.TYPE,
+            ElementType.METHOD
+        })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface HandleBeforeLinkDelete {
