@@ -302,6 +302,10 @@ configure(rootProject) {
     }
   }
 
+  artifacts {
+    archives docsZip
+  }
+
   dependencies {
     // For integration testing
     testCompile project(":spring-data-rest-core")
