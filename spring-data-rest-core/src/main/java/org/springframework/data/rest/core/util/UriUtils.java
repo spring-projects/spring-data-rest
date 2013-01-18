@@ -4,7 +4,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Stack;
 
-import org.springframework.data.rest.core.Handler;
+import com.google.common.base.Function;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -37,7 +37,7 @@ public abstract class UriUtils {
   }
 
   /**
-   * Execute the given {@link Handler} for each segment in the {@link URI}.
+   * Execute the given {@link Function} for each segment in the {@link URI}.
    * <p>e.g. given a URI of {@literal http://localhost:8080/data/person/1} and a base URI of {@code
    * http://localhost:8080/data}, this method will explode the URI into it's components, as compared to the base URI.
    * The result would be: the given handler gets called twice, once passing a relative {@link URI} of "person" and a
@@ -47,19 +47,19 @@ public abstract class UriUtils {
    * @param baseUri
    *     base {@link URI}
    * @param uri
-   *     {@link URI} to explode and iteratre over.
+   *     {@link URI} to explode and iterate over.
    * @param handler
-   *     {@link Handler} to call for each segment of the URI's path.
+   *     {@link Function} to call for each segment of the URI's path.
    * @param <V>
    *     Return type of the handler.
    *
    * @return Handler return value, or possibly {@literal null}.
    */
-  public static <V> V foreach(URI baseUri, URI uri, Handler<URI, V> handler) {
+  public static <V> V foreach(URI baseUri, URI uri, Function<URI, V> handler) {
     List<URI> uris = explode(baseUri, uri);
     V v = null;
     for(URI u : uris) {
-      v = handler.handle(u);
+      v = handler.apply(u);
     }
     return v;
   }
@@ -163,8 +163,9 @@ public abstract class UriUtils {
    * Just the path portion of the {@link URI}, but with any trailing slash "/" removed.
    *
    * @param uri
+   *     path URI
    *
-   * @return
+   * @return the path portion of the URI, but with any trailing slash removed
    */
   public static String path(URI uri) {
     if(null == uri) {
@@ -197,9 +198,11 @@ public abstract class UriUtils {
    * Create a new {@link URI} out of the components.
    *
    * @param baseUri
+   *     The base URI these path segments are relative to.
    * @param pathSegments
+   *     The path segments to add to the given base URI.
    *
-   * @return
+   * @return A new URI built from the given base URI and additional path segments.
    */
   public static URI buildUri(URI baseUri, String... pathSegments) {
     return UriComponentsBuilder.fromUri(baseUri).pathSegment(pathSegments).build().toUri();

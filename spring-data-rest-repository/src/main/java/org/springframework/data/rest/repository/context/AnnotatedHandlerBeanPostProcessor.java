@@ -15,9 +15,11 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.repository.annotation.HandleAfterDelete;
+import org.springframework.data.rest.repository.annotation.HandleAfterLinkDelete;
 import org.springframework.data.rest.repository.annotation.HandleAfterLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleAfterSave;
 import org.springframework.data.rest.repository.annotation.HandleBeforeDelete;
+import org.springframework.data.rest.repository.annotation.HandleBeforeLinkDelete;
 import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleBeforeSave;
 import org.springframework.data.rest.repository.annotation.RepositoryEventHandler;
@@ -96,6 +98,8 @@ public class AnnotatedHandlerBeanPostProcessor implements ApplicationListener<Re
               inspect(targetType, bean, method, HandleAfterLinkSave.class, AfterLinkSaveEvent.class);
               inspect(targetType, bean, method, HandleBeforeDelete.class, BeforeDeleteEvent.class);
               inspect(targetType, bean, method, HandleAfterDelete.class, AfterDeleteEvent.class);
+              inspect(targetType, bean, method, HandleBeforeLinkDelete.class, BeforeLinkDeleteEvent.class);
+              inspect(targetType, bean, method, HandleAfterLinkDelete.class, AfterLinkDeleteEvent.class);
             }
           },
           new ReflectionUtils.MethodFilter() {
@@ -129,8 +133,8 @@ public class AnnotatedHandlerBeanPostProcessor implements ApplicationListener<Re
         }
         for(Class<?> type : targetTypes) {
           EventHandlerMethod m = new EventHandlerMethod(type, handler, method);
-          if(LOG.isInfoEnabled()) {
-            LOG.info("Annotated handler method found: " + m);
+          if(LOG.isDebugEnabled()) {
+            LOG.debug("Annotated handler method found: " + m);
           }
           handlerMethods.put(eventType, m);
         }

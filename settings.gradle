@@ -1,3 +1,6 @@
+rootProject.name = "spring-data-rest"
+
 include "spring-data-rest-core",
         "spring-data-rest-repository",
-        "spring-data-rest-webmvc"
+        "spring-data-rest-webmvc",
+        "spring-data-rest-example"

@@ -5,7 +5,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
-import org.springframework.data.rest.webmvc.json.JsonSchemaController;
+import org.springframework.data.rest.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.webmvc.annotation.BaseURI;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -17,13 +18,12 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  */
 public class BaseUriMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-  @Autowired(required = false)
-  private RepositoryRestConfiguration config = RepositoryRestConfiguration.DEFAULT;
+  @Autowired
+  private RepositoryRestConfiguration config;
 
   @Override public boolean supportsParameter(MethodParameter parameter) {
-    return (RepositoryRestController.class.isAssignableFrom(parameter.getDeclaringClass())
-        || JsonSchemaController.class.isAssignableFrom(parameter.getDeclaringClass()))
-        && parameter.getParameterType() == URI.class;
+    return (null != parameter.getParameterAnnotation(BaseURI.class)
+        && parameter.getParameterType() == URI.class);
   }
 
   @Override
