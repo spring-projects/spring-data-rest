@@ -88,7 +88,6 @@ configure(allprojects) {
 }
 
 configure(subprojects) { subproject ->
-  apply plugin: "maven"
   apply from: "${gradleScriptDir}/maven.gradle"
 
   javadoc {
@@ -114,6 +113,7 @@ configure(subprojects) { subproject ->
 }
 
 project("spring-data-rest-core") {
+  apply plugin: "maven"
   description = "Spring Data REST core components."
 
   configurations {
@@ -143,6 +143,7 @@ project("spring-data-rest-core") {
 }
 
 project("spring-data-rest-repository") {
+  apply plugin: "maven"
   description = "Spring Data REST Repository integration."
 
   dependencies {
@@ -187,6 +188,7 @@ project("spring-data-rest-repository") {
 }
 
 project("spring-data-rest-webmvc") {
+  apply plugin: "maven"
   description = "Spring Data REST MVC components."
 
   dependencies {
