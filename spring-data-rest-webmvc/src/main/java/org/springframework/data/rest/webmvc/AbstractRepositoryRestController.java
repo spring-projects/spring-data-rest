@@ -244,7 +244,9 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
                                                    HttpHeaders headers,
                                                    HttpStatus status) {
     String callback = repoRequest.getRequest().getParameter(config.getJsonpParamName());
-    String errback = repoRequest.getRequest().getParameter(config.getJsonpOnErrParamName());
+    String errback = (null != config.getJsonpOnErrParamName()
+                      ? repoRequest.getRequest().getParameter(config.getJsonpOnErrParamName())
+                      : null);
     ResponseEntity<T> newResponse;
     if(null != headers) {
       newResponse = new ResponseEntity<T>(response, headers, status);
