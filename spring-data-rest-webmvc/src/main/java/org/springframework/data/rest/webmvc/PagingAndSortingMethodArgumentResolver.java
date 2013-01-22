@@ -28,7 +28,6 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
   private static final int DEFAULT_PAGE = 1; // We're 1-based, not 0-based
-
   @Autowired
   private RepositoryRestConfiguration config;
 
@@ -64,7 +63,7 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
       String sLimit = request.getParameter(config.getLimitParamName());
       if(StringUtils.hasText(sLimit)) {
         try {
-          limit = Integer.parseInt(sLimit);
+          limit = Math.min(Integer.parseInt(sLimit), config.getMaxPageSize());
         } catch(NumberFormatException ignored) {
         }
       }

@@ -17,6 +17,7 @@ public class RepositoryRestConfiguration {
 
   private URI                           baseUri             = null;
   private int                           defaultPageSize     = 20;
+  private int                           maxPageSize         = 1000;
   private String                        pageParamName       = "page";
   private String                        limitParamName      = "limit";
   private String                        sortParamName       = "sort";
@@ -71,6 +72,29 @@ public class RepositoryRestConfiguration {
   public RepositoryRestConfiguration setDefaultPageSize(int defaultPageSize) {
     Assert.isTrue((defaultPageSize > 0), "Page size must be greater than 0.");
     this.defaultPageSize = defaultPageSize;
+    return this;
+  }
+
+  /**
+   * Get the maximum size of pages.
+   *
+   * @return Maximum page size.
+   */
+  public int getMaxPageSize() {
+    return maxPageSize;
+  }
+
+  /**
+   * Set the maximum size of pages.
+   *
+   * @param maxPageSize
+   *     Maximum page size.
+   *
+   * @return {@literal this}
+   */
+  public RepositoryRestConfiguration setMaxPageSize(int maxPageSize) {
+    Assert.isTrue((defaultPageSize > 0), "Maximum page size must be greater than 0.");
+    this.maxPageSize = maxPageSize;
     return this;
   }
 
