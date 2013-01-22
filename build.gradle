@@ -34,6 +34,7 @@ ext {
   hamcrestVersion = "1.3"
   jmockVersion = "2.6.0-RC2"
   jettyVersion = "8.1.8.v20121106"
+  mockitoVersion = "1.9.5"
 }
 
 buildscript {
@@ -82,6 +83,7 @@ configure(allprojects) {
     testCompile "org.jmock:jmock-junit4:$jmockVersion"
     testCompile "org.jmock:jmock-legacy:$jmockVersion"
     testCompile "org.springframework:spring-test:$springVersion"
+    testCompile "org.mockito:mockito-core:$mockitoVersion"
     testRuntime "org.springframework:spring-context-support:$springVersion"
     testRuntime "ch.qos.logback:logback-classic:$logbackVersion"
   }
