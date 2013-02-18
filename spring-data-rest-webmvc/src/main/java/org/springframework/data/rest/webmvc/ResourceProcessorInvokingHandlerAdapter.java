@@ -30,60 +30,64 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 /**
  * Special {@link RequestMappingHandlerAdapter} that tweaks the {@link HandlerMethodReturnValueHandlerComposite} to be
- * proxied by a {@link ResourceProcessorHandlerMethodReturnValueHandler} which will invoke the {@link ResourceProcessor}s
+ * proxied by a {@link ResourceProcessorHandlerMethodReturnValueHandler} which will invoke the {@link
+ * ResourceProcessor}s
  * found in the application context and eventually delegate to the originally configured
  * {@link HandlerMethodReturnValueHandler}.
- * <p>
- * This is a separate component as it might make sense to deploy it in a standalone SpringMVC application to enable post
+ * <p/>
+ * This is a separate component as it might make sense to deploy it in a standalone SpringMVC application to enable
+ * post
  * processing. It would actually make most sense in Spring HATEOAS project.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandlerAdapter {
 
-	@Autowired(required = false)
-	private List<ResourceProcessor<?>> resourcesProcessors = new ArrayList<ResourceProcessor<?>>();
+  @Autowired(required = false)
+  private List<ResourceProcessor<?>> resourcesProcessors = new ArrayList<ResourceProcessor<?>>();
 
-	/**
-	 * Empty constructor to setup a {@link ResourceProcessorInvokingHandlerAdapter}.
-	 */
-	public ResourceProcessorInvokingHandlerAdapter() {
+  /**
+   * Empty constructor to setup a {@link ResourceProcessorInvokingHandlerAdapter}.
+   */
+  public ResourceProcessorInvokingHandlerAdapter() {
 
-	}
+  }
 
-	/**
-	 * Copy constructor to copy configuration of {@link HttpMessageConverter}s, {@link WebBindingInitializer}, custom
-	 * {@link HandlerMethodArgumentResolver}s and custom {@link HandlerMethodReturnValueHandler}s.
-	 * 
-	 * @param original must not be {@literal null}.
-	 */
-	public ResourceProcessorInvokingHandlerAdapter(RequestMappingHandlerAdapter original) {
-		
-		Assert.notNull(original);
+  /**
+   * Copy constructor to copy configuration of {@link HttpMessageConverter}s, {@link WebBindingInitializer}, custom
+   * {@link HandlerMethodArgumentResolver}s and custom {@link HandlerMethodReturnValueHandler}s.
+   *
+   * @param original
+   *     must not be {@literal null}.
+   */
+  public ResourceProcessorInvokingHandlerAdapter(RequestMappingHandlerAdapter original) {
 
-		setMessageConverters(original.getMessageConverters());
-		setWebBindingInitializer(original.getWebBindingInitializer());
-		setCustomArgumentResolvers(original.getCustomArgumentResolvers());
-		setCustomReturnValueHandlers(original.getCustomReturnValueHandlers());
-	}
+    Assert.notNull(original);
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter#afterPropertiesSet()
-	 */
-	@Override
-	public void afterPropertiesSet() {
+    setMessageConverters(original.getMessageConverters());
+    setWebBindingInitializer(original.getWebBindingInitializer());
+    setCustomArgumentResolvers(original.getCustomArgumentResolvers());
+    setCustomReturnValueHandlers(original.getCustomReturnValueHandlers());
+  }
 
-		super.afterPropertiesSet();
+  /*
+   * (non-Javadoc)
+   * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter#afterPropertiesSet()
+   */
+  @Override
+  public void afterPropertiesSet() {
 
-		// Retrieve actual handlers to use as delegate
-		HandlerMethodReturnValueHandlerComposite oldHandlers = getReturnValueHandlers();
+    super.afterPropertiesSet();
 
-		// Set up ResourceProcessingHandlerMethodResolver to delegate to originally configured ones
-		List<HandlerMethodReturnValueHandler> newHandlers = new ArrayList<HandlerMethodReturnValueHandler>();
-		newHandlers.add(new ResourceProcessorHandlerMethodReturnValueHandler(oldHandlers, resourcesProcessors));
+    // Retrieve actual handlers to use as delegate
+    HandlerMethodReturnValueHandlerComposite oldHandlers = getReturnValueHandlers();
 
-		// Configure the new handler to be used
-		this.setReturnValueHandlers(newHandlers);
-	}
+    // Set up ResourceProcessingHandlerMethodResolver to delegate to originally configured ones
+    List<HandlerMethodReturnValueHandler> newHandlers = new ArrayList<HandlerMethodReturnValueHandler>();
+    newHandlers.add(new PersistentEntityResourceProcessorReturnValueHandler(oldHandlers, resourcesProcessors));
+    newHandlers.add(new ResourceProcessorHandlerMethodReturnValueHandler(oldHandlers, resourcesProcessors));
+
+    // Configure the new handler to be used
+    this.setReturnValueHandlers(newHandlers);
+  }
 }

@@ -21,6 +21,13 @@ public class BaseUriMethodArgumentResolver implements HandlerMethodArgumentResol
   @Autowired
   private RepositoryRestConfiguration config;
 
+  public BaseUriMethodArgumentResolver() {
+  }
+
+  public BaseUriMethodArgumentResolver(RepositoryRestConfiguration config) {
+    this.config = config;
+  }
+
   @Override public boolean supportsParameter(MethodParameter parameter) {
     return (null != parameter.getParameterAnnotation(BaseURI.class)
         && parameter.getParameterType() == URI.class);

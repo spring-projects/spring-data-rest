@@ -29,12 +29,12 @@ public class RestExporterWebInitializer implements WebApplicationInitializer {
     );
 
     servletContext.addListener(new ContextLoaderListener(rootCtx));
-    servletContext.addFilter("springSecurity", DelegatingFilterProxy.class);
-    servletContext.getFilterRegistration("springSecurity").addMappingForUrlPatterns(
-        EnumSet.of(DispatcherType.REQUEST),
-        false,
-        "/*"
-    );
+    //    servletContext.addFilter("springSecurity", DelegatingFilterProxy.class);
+    //    servletContext.getFilterRegistration("springSecurity").addMappingForUrlPatterns(
+    //        EnumSet.of(DispatcherType.REQUEST),
+    //        false,
+    //        "/*"
+    //    );
 
     AnnotationConfigWebApplicationContext webCtx = new AnnotationConfigWebApplicationContext();
     webCtx.register(RestExporterExampleRestConfig.class);

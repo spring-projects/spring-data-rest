@@ -31,6 +31,13 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
   @Autowired
   private RepositoryRestConfiguration config;
 
+  public PagingAndSortingMethodArgumentResolver() {
+  }
+
+  public PagingAndSortingMethodArgumentResolver(RepositoryRestConfiguration config) {
+    this.config = config;
+  }
+
   @Override public boolean supportsParameter(MethodParameter parameter) {
     return ClassUtils.isAssignable(parameter.getParameterType(), PagingAndSorting.class);
   }

@@ -42,7 +42,8 @@ public class BaseUriAwareResource<T> extends Resource<T> {
     String baseUriStr = baseUri.toString();
     List<Link> links = new ArrayList<Link>();
     for(Link l : super.getLinks()) {
-      if(!l.getHref().startsWith(baseUriStr)) {
+      if(!l.getHref().startsWith(baseUriStr)
+          && !l.getHref().startsWith("http")) {
         links.add(new Link(buildUri(baseUri, l.getHref()).toString(), l.getRel()));
       } else {
         links.add(l);
@@ -56,7 +57,8 @@ public class BaseUriAwareResource<T> extends Resource<T> {
     if(null == l) {
       return null;
     }
-    if(!l.getHref().startsWith(baseUri.toString())) {
+    if(!l.getHref().startsWith(baseUri.toString())
+        && !l.getHref().startsWith("http")) {
       return new Link(buildUri(baseUri, l.getHref()).toString(), l.getRel());
     } else {
       return l;
