@@ -21,6 +21,7 @@ import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.data.rest.repository.annotation.Description;
 import org.springframework.data.rest.repository.support.RepositoryInformationSupport;
@@ -59,8 +60,8 @@ public class PersistentEntityToJsonSchemaConverter
   @SuppressWarnings({"unchecked"})
   @Override public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
     PersistentEntity persistentEntity = repositories.getPersistentEntity((Class<?>)source);
-    final ResourceMapping repoMapping = getResourceMapping(config,
-                                                           repositories.getRepositoryInformationFor(persistentEntity.getType()));
+    final RepositoryInformation repoInfo = repositories.getRepositoryInformationFor(persistentEntity.getType());
+    final ResourceMapping repoMapping = getResourceMapping(config, repoInfo);
     final ResourceMapping entityMapping = getResourceMapping(config, persistentEntity);
     final URI baseEntityUri = buildUri(config.getBaseUri(), repoMapping.getPath(), "{id}");
     String entityDesc = persistentEntity.getType().isAnnotationPresent(Description.class)
@@ -103,6 +104,8 @@ public class PersistentEntityToJsonSchemaConverter
         maybeAddAssociationLink(repositories,
                                 config,
                                 baseEntityUri,
+                                repoInfo,
+                                entityMapping,
                                 propertyMapping,
                                 persistentProperty,
                                 links);

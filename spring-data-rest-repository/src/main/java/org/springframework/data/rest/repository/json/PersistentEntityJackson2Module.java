@@ -72,6 +72,8 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
   public static boolean maybeAddAssociationLink(Repositories repositories,
                                                 RepositoryRestConfiguration config,
                                                 URI baseEntityUri,
+                                                RepositoryInformation repoInfo,
+                                                ResourceMapping entityMapping,
                                                 ResourceMapping propertyMapping,
                                                 PersistentProperty persistentProperty,
                                                 List<Link> links) {
@@ -87,10 +89,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
     if(null == propertyPath) {
       propertyPath = persistentProperty.getName();
     }
-    // entityRel + "." +
-    String propertyRel = (null != propertyMapping
-                          ? propertyMapping.getRel()
-                          : propertyPath);
+    String propertyRel = formatRel(config, repoInfo, persistentProperty);
     if(repositories.hasRepositoryFor(propertyType)) {
       // This is a managed type, generate a Link
       RepositoryInformation linkedRepoInfo = repositories.getRepositoryInformationFor(propertyType);
@@ -319,6 +318,8 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
             if(persistentProperty.isEntity() && maybeAddAssociationLink(repositories,
                                                                         config,
                                                                         baseEntityUri,
+                                                                        repoInfo,
+                                                                        entityMapping,
                                                                         propertyMapping,
                                                                         persistentProperty,
                                                                         links)) {
@@ -347,6 +348,8 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
             if(maybeAddAssociationLink(repositories,
                                        config,
                                        baseEntityUri,
+                                       repoInfo,
+                                       entityMapping,
                                        propertyMapping,
                                        persistentProperty,
                                        links)) {

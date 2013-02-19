@@ -6,6 +6,7 @@ import static org.springframework.util.StringUtils.*;
 import java.lang.reflect.Method;
 
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
@@ -43,6 +44,23 @@ public abstract class ResourceMappingUtils {
     return method.getName();
   }
 
+  public static String formatRel(RepositoryRestConfiguration config,
+                                 RepositoryInformation repoInfo,
+                                 PersistentProperty persistentProperty) {
+    if(null == persistentProperty) {
+      return null;
+    }
+
+    ResourceMapping repoMapping = getResourceMapping(config, repoInfo);
+    ResourceMapping entityMapping = getResourceMapping(config, persistentProperty.getOwner());
+    ResourceMapping propertyMapping = entityMapping.getResourceMappingFor(persistentProperty.getName());
+
+    return String.format("%s.%s.%s",
+                         repoMapping.getRel(),
+                         entityMapping.getRel(),
+                         (null != propertyMapping ? propertyMapping.getRel() : persistentProperty.getName()));
+  }
+
   public static String findPath(Class<?> type) {
     RestResource anno;
     if(null != (anno = findAnnotation(type, RestResource.class))) {
@@ -76,16 +94,6 @@ public abstract class ResourceMappingUtils {
   }
 
   public static ResourceMapping getResourceMapping(RepositoryRestConfiguration config,
-                                                   PersistentEntity persistentEntity) {
-    if(null == persistentEntity) {
-      return null;
-    }
-    Class<?> domainType = persistentEntity.getType();
-    ResourceMapping mapping = (null != config ? config.getResourceMappingForDomainType(domainType) : null);
-    return merge(domainType, mapping);
-  }
-
-  public static ResourceMapping getResourceMapping(RepositoryRestConfiguration config,
                                                    RepositoryInformation repoInfo) {
     if(null == repoInfo) {
       return null;
@@ -93,6 +101,16 @@ public abstract class ResourceMappingUtils {
     Class<?> repoType = repoInfo.getRepositoryInterface();
     ResourceMapping mapping = (null != config ? config.getResourceMappingForRepository(repoType) : null);
     return merge(repoType, mapping);
+  }
+
+  public static ResourceMapping getResourceMapping(RepositoryRestConfiguration config,
+                                                   PersistentEntity persistentEntity) {
+    if(null == persistentEntity) {
+      return null;
+    }
+    Class<?> domainType = persistentEntity.getType();
+    ResourceMapping mapping = (null != config ? config.getResourceMappingForDomainType(domainType) : null);
+    return merge(domainType, mapping);
   }
 
   public static ResourceMapping merge(Method method, ResourceMapping mapping) {
