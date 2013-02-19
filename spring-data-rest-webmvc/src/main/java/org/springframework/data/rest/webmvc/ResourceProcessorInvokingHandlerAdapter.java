@@ -84,7 +84,6 @@ public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandl
 
     // Set up ResourceProcessingHandlerMethodResolver to delegate to originally configured ones
     List<HandlerMethodReturnValueHandler> newHandlers = new ArrayList<HandlerMethodReturnValueHandler>();
-    newHandlers.add(new PersistentEntityResourceProcessorReturnValueHandler(oldHandlers, resourcesProcessors));
     newHandlers.add(new ResourceProcessorHandlerMethodReturnValueHandler(oldHandlers, resourcesProcessors));
 
     // Configure the new handler to be used

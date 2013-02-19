@@ -347,7 +347,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		 */
 		private static boolean isValueTypeMatch(Resource<?> resource, TypeInformation<?> target) {
 
-			if (resource == null || !target.getType().equals(resource.getClass())) {
+			if (resource == null || !target.getType().isAssignableFrom(resource.getClass())) {
 				return false;
 			}
 
