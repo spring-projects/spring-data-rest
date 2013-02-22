@@ -178,12 +178,18 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
     HttpHeaders headers = new HttpHeaders();
     headers.setLocation(URI.create(selfLink.getHref()));
 
-    return resourceResponse(headers,
-                            new PersistentEntityResource<Object>(repoRequest.getPersistentEntity(),
-                                                                 obj,
-                                                                 selfLink)
-                                .setBaseUri(repoRequest.getBaseUri()),
-                            HttpStatus.CREATED);
+    if(config.isReturnBodyOnCreate()) {
+      return resourceResponse(headers,
+                              new PersistentEntityResource<Object>(repoRequest.getPersistentEntity(),
+                                                                   obj,
+                                                                   selfLink)
+                                  .setBaseUri(repoRequest.getBaseUri()),
+                              HttpStatus.CREATED);
+    } else {
+      return resourceResponse(headers,
+                              null,
+                              HttpStatus.CREATED);
+    }
   }
 
   @SuppressWarnings({"unchecked"})
@@ -207,7 +213,9 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
       value = "/{id}",
       method = RequestMethod.GET,
       produces = {
-          "application/json"
+          "application/json",
+          "application/x-spring-data-compact+json",
+          "text/uri-list"
       }
   )
   @ResponseBody
@@ -290,13 +298,19 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
     Object obj = repoMethodInvoker.save(domainObj);
     applicationContext.publishEvent(new AfterSaveEvent(obj));
 
-    PersistentEntityResource per = PersistentEntityResource.wrap(repoRequest.getPersistentEntity(),
-                                                                 obj,
-                                                                 repoRequest.getBaseUri());
-    per.add(repoRequest.buildEntitySelfLink(obj, conversionService));
-    return resourceResponse(null,
-                            per,
-                            HttpStatus.OK);
+    if(config.isReturnBodyOnUpdate()) {
+      PersistentEntityResource per = PersistentEntityResource.wrap(repoRequest.getPersistentEntity(),
+                                                                   obj,
+                                                                   repoRequest.getBaseUri());
+      per.add(repoRequest.buildEntitySelfLink(obj, conversionService));
+      return resourceResponse(null,
+                              per,
+                              HttpStatus.OK);
+    } else {
+      return resourceResponse(null,
+                              null,
+                              HttpStatus.NO_CONTENT);
+    }
   }
 
   @SuppressWarnings({"unchecked"})

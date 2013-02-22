@@ -27,6 +27,8 @@ public class RepositoryRestConfiguration {
   private Map<Class<?>, Class<?>>       typeMappings        = Collections.emptyMap();
   private MediaType                     defaultMediaType    = MediaType.APPLICATION_JSON;
   private boolean                       dumpErrors          = true;
+  private boolean                       returnBodyOnCreate  = false;
+  private boolean                       returnBodyOnUpdate  = false;
   private List<Class<?>>                exposeIdsFor        = new ArrayList<Class<?>>();
   private ResourceMappingConfiguration  domainMappings      = new ResourceMappingConfiguration();
   private ResourceMappingConfiguration  repoMappings        = new ResourceMappingConfiguration();
@@ -310,6 +312,49 @@ public class RepositoryRestConfiguration {
   }
 
   /**
+   * Whether to return a response body after creating an entity.
+   *
+   * @return {@literal true} to return a body on create, {@literal false} otherwise.
+   */
+  public boolean isReturnBodyOnCreate() {
+    return returnBodyOnCreate;
+  }
+
+  /**
+   * Set whether to return a response body after creating an entity.
+   *
+   * @param returnBodyOnCreate
+   *     {@literal true} to return a body on create, {@literal false} otherwise.
+   *
+   * @return {@literal this}
+   */
+  public RepositoryRestConfiguration setReturnBodyOnCreate(boolean returnBodyOnCreate) {
+    this.returnBodyOnCreate = returnBodyOnCreate;
+    return this;
+  }
+
+  /**
+   * Whether to return a response body after updating an entity.
+   *
+   * @return {@literal true} to return a body on update, {@literal false} otherwise.
+   */
+  public boolean isReturnBodyOnUpdate() {
+    return returnBodyOnUpdate;
+  }
+
+  /**
+   * Sets whether to return a response body after updating an entity.
+   *
+   * @param returnBodyOnUpdate
+   *
+   * @return
+   */
+  public RepositoryRestConfiguration setReturnBodyOnUpdate(boolean returnBodyOnUpdate) {
+    this.returnBodyOnUpdate = returnBodyOnUpdate;
+    return this;
+  }
+
+  /**
    * Start configuration a {@link ResourceMapping} for a specific domain type.
    *
    * @param domainType
@@ -333,10 +378,23 @@ public class RepositoryRestConfiguration {
     return domainMappings.getResourceMappingFor(domainType);
   }
 
+  /**
+   * Whether there is a {@link ResourceMapping} for the given domain type.
+   *
+   * @param domainType
+   *     The domain type to find a {@link ResourceMapping} for.
+   *
+   * @return {@literal true} if a {@link ResourceMapping} exists for this domain class, {@literal false} otherwise.
+   */
   public boolean hasResourceMappingForDomainType(Class<?> domainType) {
     return domainMappings.hasResourceMappingFor(domainType);
   }
 
+  /**
+   * Get the {@link ResourceMappingConfiguration} that is currently configured.
+   *
+   * @return
+   */
   public ResourceMappingConfiguration getDomainTypesResourceMappingConfiguration() {
     return domainMappings;
   }
@@ -365,6 +423,13 @@ public class RepositoryRestConfiguration {
     return repoMappings.getResourceMappingFor(repositoryInterface);
   }
 
+  /**
+   * Whether there is a {@link ResourceMapping} configured for this {@literal Repository} class.
+   *
+   * @param repositoryInterface
+   *
+   * @return
+   */
   public boolean hasResourceMappingForRepository(Class<?> repositoryInterface) {
     return repoMappings.hasResourceMappingFor(repositoryInterface);
   }

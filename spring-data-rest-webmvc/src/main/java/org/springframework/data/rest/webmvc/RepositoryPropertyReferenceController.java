@@ -1,6 +1,7 @@
 package org.springframework.data.rest.webmvc;
 
 import static org.springframework.data.rest.core.util.UriUtils.*;
+import static org.springframework.data.rest.repository.support.ResourceMappingUtils.*;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -119,7 +120,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
       method = RequestMethod.GET,
       produces = {
           "application/json",
-          "application/x-spring-data-verbose+json"
+          "application/x-spring-data-verbose+json",
+          "application/x-spring-data-compact+json",
+          "text/uri-list"
       }
   )
   @ResponseBody
@@ -141,7 +144,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
               Link selfLink = repoRequest.buildEntitySelfLink(obj, conversionService);
               per.add(selfLink);
               headers.set("Content-Location", selfLink.getHref());
-              return new Resource<Object>(per);
+              return per;
             }
           }
         } else if(prop.property.isMap()) {
@@ -156,7 +159,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
               Link selfLink = repoRequest.buildEntitySelfLink(entry.getValue(), conversionService);
               per.add(selfLink);
               headers.set("Content-Location", selfLink.getHref());
-              return new Resource<Object>(per, selfLink);
+              return per;
             }
           }
         } else {
@@ -192,8 +195,18 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
     ResourceMapping repoMapping = repoRequest.getRepositoryResourceMapping();
     ResourceMapping entityMapping = repoRequest.getPersistentEntityResourceMapping();
+    String propName = entityMapping.getNameForPath(property);
     ResourceMapping propMapping = entityMapping.getResourceMappingFor(entityMapping.getNameForPath(property));
-    String propRel = (null != propMapping ? propMapping.getRel() : property);
+    PersistentProperty persistentProp = repoRequest.getPersistentEntity().getPersistentProperty(propName);
+    Class<?> propType = (persistentProp.isCollectionLike() || persistentProp.isMap()
+                         ? persistentProp.getComponentType()
+                         : persistentProp.getType());
+    ResourceMapping propRepoMapping = getResourceMapping(config, repositories.getRepositoryInformationFor(propType));
+    String propRel = String.format("%s.%s.%s.%s",
+                                   repoMapping.getRel(),
+                                   entityMapping.getRel(),
+                                   (null != propMapping ? propMapping.getRel() : property),
+                                   propRepoMapping.getRel());
 
     Resource<?> resource = response.getBody();
 
@@ -330,7 +343,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
                              id,
                              property,
                              handler);
-    return resourceResponse(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
+    return resourceResponse(null, EMPTY_RESOURCE, HttpStatus.CREATED);
   }
 
   @SuppressWarnings({"unchecked"})
