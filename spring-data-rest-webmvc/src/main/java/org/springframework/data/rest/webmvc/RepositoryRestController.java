@@ -1790,18 +1790,17 @@ public class RepositoryRestController
   private String objectToMapKey(Object obj) {
     Assert.notNull(obj, "Map key cannot be null!");
 
-    RepositoryMetadata repoMeta;
     String key;
-    if(ClassUtils.isAssignable(obj.getClass(), String.class)) {
-      key = (String)obj;
-    } else if(null != (repoMeta = repositoryMetadataFor(obj.getClass()))) {
-      AttributeMetadata attrMeta = repoMeta.entityMetadata().idAttribute();
-      String id = attrMeta.get(obj).toString();
-      key = "@" + buildUri(config.getBaseUri(), repoMeta.name(), id);
+    if (ClassUtils.isAssignable(obj.getClass(), String.class)) {
+        key = (String) obj;
+    } else if(hasRepositoryMetadataFor(obj.getClass())) {
+        RepositoryMetadata repoMeta = repositoryMetadataFor(obj.getClass());
+        AttributeMetadata attrMeta = repoMeta.entityMetadata().idAttribute();
+        String id = attrMeta.get(obj).toString();
+        key = "@" + buildUri(config.getBaseUri(), repoMeta.name(), id);
     } else {
-      key = conversionService.convert(obj, String.class);
+        key = conversionService.convert(obj, String.class);
     }
-
     return key;
   }
 
