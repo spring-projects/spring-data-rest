@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xml:id="intro-chapter"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://www.oasis-open.org/docbook/xml/5.0/xsd/docbook.xsd">
+
+  <title>Domain Object Representations</title>
+
+  <section xml:id="links">
+    <title>Links as First-Class Objects</title>
+
+    <para>
+
+    </para>
+  </section>
+
+  <section xml:id="mapping">
+    <title>Object Mapping</title>
+
+    <para>Spring Data REST returns a representation of a domain object that corresponds to the requested
+      <code>Accept</code>
+      type specified in the HTTP request.
+      <footnote>
+        <para>Currently, only JSON representations are supported. Other representation types can be supported in the
+          future by adding an appropriate converter and updating the controller methods with the appropriate
+          content-type.
+        </para>
+      </footnote>
+    </para>
+  </section>
+
+</chapter>
