@@ -6,13 +6,13 @@ ext {
 
   // Logging
   slf4jVersion = "1.7.2"
-  logbackVersion = "1.0.7"
+  logbackVersion = "1.0.9"
 
   // Spring
   springVersion = "3.1.3.RELEASE"
   spring32Version = "3.2.1.RELEASE"
-  hateoasVersion = "0.4.0.BUILD-SNAPSHOT"
-  springPluginVersion = "0.8.0.BUILD-SNAPSHOT"
+  hateoasVersion = "0.4.0.RELEASE"
+  springPluginVersion = "0.8.0.RELEASE"
   springSecurityVersion = "3.1.3.RELEASE"
   sdCommonsVersion = "1.5.0.RELEASE"
   sdJpaVersion = "1.3.0.RELEASE"
@@ -23,8 +23,9 @@ ext {
   guavaVersion = "13.0.1"
   jacksonVersion = "2.1.2"
   jodaVersion = "2.1"
-  hibernateVersion = "4.1.7.Final"
-  hibernateValidatorVersion = "4.3.0.Final"
+  hibernateVersion = "4.1.9.Final"
+  hibernateValidatorVersion = "4.3.1.Final"
+  hsqldbVersion = "2.2.9"
 
   // Supporting libraries
   cglibVersion = "2.2.2"
@@ -32,8 +33,8 @@ ext {
   // Testing
   junitVersion = "4.11"
   hamcrestVersion = "1.3"
-  jmockVersion = "2.6.0-RC2"
-  jettyVersion = "8.1.8.v20121106"
+  jmockVersion = "2.6.0"
+  jettyVersion = "8.1.9.v20130131"
 }
 
 buildscript {
@@ -68,8 +69,9 @@ configure(allprojects) {
 
   repositories {
     maven { url "http://repo.springsource.org/libs-release" }
-    //maven { url "http://repo.springsource.org/libs-milestone" }
-    maven { url "http://repo.springsource.org/libs-snapshot" }
+    maven { url "http://repo.springsource.org/libs-milestone" }
+    //maven { url "http://repo.springsource.org/libs-snapshot" }
+    maven { url "http://oss.sonatype.org/content/repositories/releases" }
   }
 
   dependencies {
@@ -186,8 +188,8 @@ project("spring-data-rest-repository") {
     compile "javax.validation:validation-api:1.0.0.GA"
 
     // Testing
+    testCompile "org.hsqldb:hsqldb:$hsqldbVersion"
     testCompile "org.hibernate:hibernate-entitymanager:$hibernateVersion"
-    testCompile "org.hsqldb:hsqldb:2.2.8"
     testRuntime "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
   }
 }
@@ -213,7 +215,13 @@ project("spring-data-rest-webmvc") {
     // Spring Data
     testCompile "org.springframework.data:spring-data-jpa:$sdJpaVersion"
     testCompile "org.springframework.data:spring-data-mongodb:$sdMongoVersion"
-    testCompile "org.springframework.data:spring-data-gemfire:$sdGemfireVersion"
+    testCompile("org.springframework.data:spring-data-gemfire:$sdGemfireVersion") {
+      exclude group: "junit"
+      exclude group: "org.jmock"
+      exclude group: "org.hamcrest"
+      exclude group: "junit"
+      exclude module: "spring-test"
+    }
     // JODA
     testCompile "joda-time:joda-time:$jodaVersion"
     // Jackson
@@ -223,7 +231,7 @@ project("spring-data-rest-webmvc") {
     testRuntime "org.hibernate:hibernate-entitymanager:$hibernateVersion"
     testRuntime "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
     // HSQL
-    testRuntime "org.hsqldb:hsqldb:2.2.8"
+    testRuntime "org.hsqldb:hsqldb:$hsqldbVersion"
   }
 }
 
@@ -243,7 +251,12 @@ project("spring-data-rest-example") {
     // Spring Data
     compile "org.springframework.data:spring-data-jpa:$sdJpaVersion"
     compile "org.springframework.data:spring-data-mongodb:$sdMongoVersion"
-    compile "org.springframework.data:spring-data-gemfire:$sdGemfireVersion"
+    compile("org.springframework.data:spring-data-gemfire:$sdGemfireVersion") {
+      exclude group: "junit", module: "junit"
+      exclude group: "org.jmock"
+      exclude group: "org.hamcrest"
+      exclude module: "spring-test"
+    }
 
     // Spring Security
     //compile "org.springframework.security:spring-security-config:$springSecurityVersion"
@@ -261,7 +274,7 @@ project("spring-data-rest-example") {
     runtime "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
 
     // HSQL
-    runtime "org.hsqldb:hsqldb:2.2.8"
+    runtime "org.hsqldb:hsqldb:$hsqldbVersion"
   }
 }
 
