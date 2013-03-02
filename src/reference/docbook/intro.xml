@@ -728,77 +728,57 @@ http://api.myservice.com/v1:>]]></programlisting>
         <tr>
           <td>
             <cmdsynopsis>
-              <command></command>
+              <command>put</command>
             </cmdsynopsis>
           </td>
           <td>
-            <para></para>
+            <para>HTTP PUT to the given path, passing JSON given in the --data parameter.</para>
           </td>
         </tr>
         <tr>
           <td>
             <cmdsynopsis>
-              <command></command>
+              <command>delete</command>
             </cmdsynopsis>
           </td>
           <td>
-            <para></para>
+            <para>HTTP DELETE to the given path.</para>
           </td>
         </tr>
         <tr>
           <td>
             <cmdsynopsis>
-              <command></command>
+              <command>auth basic</command>
             </cmdsynopsis>
           </td>
           <td>
-            <para></para>
+            <para>Set an HTTP Basic authentication token for use in this session.</para>
           </td>
         </tr>
         <tr>
           <td>
             <cmdsynopsis>
-              <command></command>
+              <command>auth clear</command>
             </cmdsynopsis>
           </td>
           <td>
-            <para></para>
+            <para>Clear the Authorization header currently in use.</para>
           </td>
         </tr>
         <tr>
           <td>
             <cmdsynopsis>
-              <command></command>
+              <command>ssl validate</command>
             </cmdsynopsis>
           </td>
           <td>
-            <para></para>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <cmdsynopsis>
-              <command></command>
-            </cmdsynopsis>
-          </td>
-          <td>
-            <para></para>
+            <para>Disable certificate checking to work with self-signed certificates.</para>
           </td>
         </tr>
       </table>
 
-
-      <para>
-        get - HTTP GET from the given path.
-        post - HTTP POST to the given path, passing JSON given in the --data parameter.
-        put - HTTP PUT to the given path, passing JSON given in the --data parameter.
-        delete - HTTP DELETE to the given path.
-        auth basic - Set an HTTP Basic authentication token for use in this session.
-        auth clear - Clear the Authorization header currently in use.
-        ssl validate - Disable certificate checking to work with self-signed certificates.
-      </para>
-
     </section>
+
   </section>
 
 </chapter>

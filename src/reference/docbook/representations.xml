@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter xml:id="intro-chapter"
+<chapter xml:id="representations-chapter"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://docbook.org/ns/docbook http://www.oasis-open.org/docbook/xml/5.0/xsd/docbook.xsd">
@@ -26,6 +26,7 @@
           content-type.
         </para>
       </footnote>
+
     </para>
   </section>
 

@@ -44,5 +44,6 @@
 
   <xi:include href="intro.xml"/>
   <xi:include href="representations.xml"/>
+  <xi:include href="install.xml"/>
 
 </book>
