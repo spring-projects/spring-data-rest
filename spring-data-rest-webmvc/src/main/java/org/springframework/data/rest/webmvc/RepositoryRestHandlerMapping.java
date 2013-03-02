@@ -52,6 +52,9 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
   protected HandlerMethod lookupHandlerMethod(String lookupPath,
                                               HttpServletRequest origRequest) throws Exception {
     String acceptType = origRequest.getHeader("Accept");
+    if(null == acceptType) {
+      acceptType = config.getDefaultMediaType().toString();
+    }
     List<MediaType> acceptHeaderTypes = MediaType.parseMediaTypes(acceptType);
     List<MediaType> acceptableTypes = new ArrayList<MediaType>();
     for(MediaType mt : acceptHeaderTypes) {

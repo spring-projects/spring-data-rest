@@ -1,16 +1,21 @@
 package org.springframework.data.rest.repository;
 
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.repository.domain.jpa.ConfiguredPersonRepository;
 import org.springframework.data.rest.repository.domain.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.repository.domain.jpa.Person;
 import org.springframework.data.rest.repository.domain.jpa.PersonRepository;
+import org.springframework.data.rest.repository.json.PersistentEntityJackson2Module;
+import org.springframework.format.support.DefaultFormattingConversionService;
 
 /**
  * @author Jon Brisbin
@@ -45,6 +50,28 @@ public class RepositoryTestsConfig {
           .setPath("firstname");
 
     return config;
+  }
+
+  @Bean public DefaultFormattingConversionService defaultConversionService() {
+    return new DefaultFormattingConversionService();
+  }
+
+  @Bean public DomainClassConverter<?> domainClassConverter() {
+    return new DomainClassConverter<DefaultFormattingConversionService>(defaultConversionService());
+  }
+
+  @Bean public UriDomainClassConverter uriDomainClassConverter() {
+    return new UriDomainClassConverter();
+  }
+
+  @Bean public Module persistentEntityModule() {
+    return new PersistentEntityJackson2Module(defaultConversionService());
+  }
+
+  @Bean public ObjectMapper objectMapper() {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(persistentEntityModule());
+    return mapper;
   }
 
 }

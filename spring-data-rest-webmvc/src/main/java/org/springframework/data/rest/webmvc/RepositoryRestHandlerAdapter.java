@@ -32,8 +32,7 @@ public class RepositoryRestHandlerAdapter extends ResourceProcessorInvokingHandl
 
   @Override protected boolean supportsInternal(HandlerMethod handlerMethod) {
     Class<?> controllerType = handlerMethod.getBeanType();
-    return super.supportsInternal(handlerMethod)
-        && (RepositoryController.class.isAssignableFrom(controllerType)
+    return (RepositoryController.class.isAssignableFrom(controllerType)
         || RepositoryEntityController.class.isAssignableFrom(controllerType)
         || RepositoryPropertyReferenceController.class.isAssignableFrom(controllerType)
         || RepositorySearchController.class.isAssignableFrom(controllerType));

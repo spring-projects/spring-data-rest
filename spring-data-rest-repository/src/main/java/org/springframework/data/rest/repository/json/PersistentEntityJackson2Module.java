@@ -116,24 +116,11 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
   private class ResourceDeserializer<T extends Object> extends StdDeserializer<T> {
 
     private final PersistentEntity persistentEntity;
-    private final Object           defaultObject;
-    private final Map<String, Object> defaultValues = new HashMap<String, Object>();
 
     @SuppressWarnings({"unchecked"})
-    private ResourceDeserializer(PersistentEntity persistentEntity) {
+    private ResourceDeserializer(final PersistentEntity persistentEntity) {
       super(persistentEntity.getType());
       this.persistentEntity = persistentEntity;
-      this.defaultObject = instantiateClass(getValueClass());
-
-      final BeanWrapper wrapper = BeanWrapper.create(defaultObject, conversionService);
-      persistentEntity.doWithProperties(new PropertyHandler() {
-        @Override public void doWithPersistentProperty(PersistentProperty prop) {
-          Object defaultValue = wrapper.getProperty(prop);
-          if(null != defaultValue) {
-            defaultValues.put(prop.getName(), defaultValue);
-          }
-        }
-      });
     }
 
     @SuppressWarnings({"unchecked"})
@@ -253,12 +240,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
               }
             }
 
-            if(null != val) {
-              Object defaultValue = defaultValues.get(persistentProperty.getName());
-              if(null == defaultValue || defaultValue != val) {
-                wrapper.setProperty(persistentProperty, val, false);
-              }
-            }
+            wrapper.setProperty(persistentProperty, val, false);
 
             break;
           }
