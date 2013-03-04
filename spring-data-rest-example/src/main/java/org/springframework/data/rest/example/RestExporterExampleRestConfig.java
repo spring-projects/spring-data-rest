@@ -17,27 +17,27 @@ import org.springframework.hateoas.ResourceProcessor;
 @ImportResource("classpath:META-INF/spring/security-config.xml")
 public class RestExporterExampleRestConfig extends RepositoryRestMvcConfiguration {
 
-  @Override protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-    config.addResourceMappingForDomainType(Person.class)
-          .addResourceMappingFor("lastName")
-          .setPath("surname");
-    config.addResourceMappingForDomainType(Person.class)
-          .addResourceMappingFor("siblings")
-          .setRel("siblings")
-          .setPath("siblings");
-  }
+	@Override protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+		config.addResourceMappingForDomainType(Person.class)
+		      .addResourceMappingFor("lastName")
+		      .setPath("surname");
+		config.addResourceMappingForDomainType(Person.class)
+		      .addResourceMappingFor("siblings")
+		      .setRel("siblings")
+		      .setPath("siblings");
+	}
 
-  @Bean public ResourceProcessor<Resource<Person>> personResourceProcessor() {
-    return new ResourceProcessor<Resource<Person>>() {
-      RepositoryRestConfiguration config = config();
+	@Bean public ResourceProcessor<Resource<Person>> personResourceProcessor() {
+		return new ResourceProcessor<Resource<Person>>() {
+			RepositoryRestConfiguration config = config();
 
-      @Override public Resource<Person> process(Resource<Person> resource) {
-        System.out.println("processing " + resource);
-        System.out.println("url: " + config.getBaseUri().toString());
-        resource.add(new Link("http://host:port/path", "myrel"));
-        return resource;
-      }
-    };
-  }
+			@Override public Resource<Person> process(Resource<Person> resource) {
+				System.out.println("processing " + resource);
+				System.out.println("url: " + config.getBaseUri().toString());
+				resource.add(new Link("http://host:port/path", "myrel"));
+				return resource;
+			}
+		};
+	}
 
 }
