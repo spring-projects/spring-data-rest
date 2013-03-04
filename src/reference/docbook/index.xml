@@ -43,7 +43,10 @@
   </toc>
 
   <xi:include href="intro.xml"/>
-  <xi:include href="representations.xml"/>
   <xi:include href="install.xml"/>
+  <xi:include href="representations.xml"/>
+  <xi:include href="paging.xml"/>
+  <xi:include href="validation.xml"/>
+  <xi:include href="rest-shell.xml"/>
 
 </book>

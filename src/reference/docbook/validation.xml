@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xml:id="validation-chapter"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://www.oasis-open.org/docbook/xml/5.0/xsd/docbook.xsd">
+
+  <title>Validation</title>
+
+  <para>Integrating validation into Spring Data REST is as easy as registering your
+    <classname>Validator</classname>
+    implementation with the
+    <classname>ValidatingRepositoryEventListener</classname>, whose job it is to trigger
+    validators whenever certain events happen inside Spring Data REST.
+  </para>
+
+  <para>To add your validators, override the
+    <code>configureValidatingRepositoryEventListener</code>
+    method and call the
+    <code>addValidator</code>
+    method:
+
+    <programlisting language="java"><![CDATA[
+@Override protected void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
+  v.addValidator("beforeSave", new BeforeSaveValidator());
+}]]></programlisting>
+  </para>
+
+</chapter>
