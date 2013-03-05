@@ -23,7 +23,7 @@ import org.springframework.data.rest.repository.json.Jackson2DatatypeHelper;
 import org.springframework.data.rest.repository.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.repository.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.repository.support.DomainObjectMerger;
-import org.springframework.data.rest.repository.support.RepositoryEntityLinks;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.rest.webmvc.BaseUriMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.PagingAndSortingMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver;
