@@ -41,6 +41,9 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
   @Override public LinkBuilder linkFor(Class<?> type) {
     RepositoryInformation repoInfo = repositories.getRepositoryInformationFor(type);
+	  if(null == repoInfo) {
+     throw new IllegalArgumentException(type + " is not managed by any repository.");
+   }
     PersistentEntity persistentEntity = repositories.getPersistentEntity(type);
     if(null == persistentEntity) {
       throw new IllegalArgumentException(type + " is not managed by any repository.");
