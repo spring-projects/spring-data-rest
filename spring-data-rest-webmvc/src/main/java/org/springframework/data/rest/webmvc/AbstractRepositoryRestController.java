@@ -124,8 +124,6 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	 * @param t
 	 *
 	 * @return
-	 *
-	 * @throws java.io.IOException
 	 */
 	@ExceptionHandler({
 			                  InvocationTargetException.class,
@@ -145,7 +143,7 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	public ResponseEntity handleConstraintViolationException(ConstraintViolationException cve) {
 		return response(null,
 		                new ConstraintViolationExceptionMessage(cve, applicationContext),
-		                HttpStatus.CONFLICT);
+		                HttpStatus.BAD_REQUEST);
 	}
 
 	@ExceptionHandler({
@@ -155,7 +153,7 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	public ResponseEntity handleRepositoryConstraintViolationException(RepositoryConstraintViolationException rcve) {
 		return response(null,
 		                new RepositoryConstraintViolationExceptionMessage(rcve, applicationContext),
-		                HttpStatus.CONFLICT);
+		                HttpStatus.BAD_REQUEST);
 	}
 
 	/**

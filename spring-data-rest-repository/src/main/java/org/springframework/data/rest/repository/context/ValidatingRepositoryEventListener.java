@@ -38,141 +38,150 @@ import org.springframework.validation.Validator;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class ValidatingRepositoryEventListener
-    extends AbstractRepositoryEventListener<Object>
-    implements InitializingBean {
+		extends AbstractRepositoryEventListener<Object>
+		implements InitializingBean {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ValidatingRepositoryEventListener.class);
+	private static final Logger                            LOG                 = LoggerFactory.getLogger(
+			ValidatingRepositoryEventListener.class);
+	@SuppressWarnings({"unchecked"})
+	private static final List<Class<? extends Annotation>> ANNOTATIONS_TO_FIND = Arrays.asList(
+			HandleBeforeSave.class,
+			HandleAfterSave.class,
+			HandleBeforeDelete.class,
+			HandleAfterDelete.class,
+			HandleBeforeLinkSave.class,
+			HandleAfterLinkSave.class,
+			HandleBeforeLinkDelete.class,
+			HandleAfterLinkDelete.class
+	);
+	@Autowired
+	private Repositories repositories;
+	private Multimap<String, Validator> validators = ArrayListMultimap.create();
 
-  @SuppressWarnings({"unchecked"})
-  private static final List<Class<? extends Annotation>> ANNOTATIONS_TO_FIND = Arrays.asList(
-      HandleBeforeSave.class,
-      HandleAfterSave.class,
-      HandleBeforeDelete.class,
-      HandleAfterDelete.class,
-      HandleBeforeLinkSave.class,
-      HandleAfterLinkSave.class,
-      HandleBeforeLinkDelete.class,
-      HandleAfterLinkDelete.class
-  );
+	@Override public void afterPropertiesSet() throws Exception {
+		if(validators.size() == 0) {
+			for(Map.Entry<String, Validator> entry : beansOfTypeIncludingAncestors(applicationContext,
+			                                                                       Validator.class).entrySet()) {
+				String name = null;
+				Validator v = entry.getValue();
 
-  @Autowired
-  private Repositories repositories;
-  private Multimap<String, Validator> validators = ArrayListMultimap.create();
+				if(entry.getKey().contains("Save")) {
+					name = entry.getKey().substring(0, entry.getKey().indexOf("Save") + 4);
+				} else if(entry.getKey().contains("Create")) {
+					name = entry.getKey().substring(0, entry.getKey().indexOf("Create") + 6);
+				} else if(entry.getKey().contains("Delete")) {
+					name = entry.getKey().substring(0, entry.getKey().indexOf("Delete") + 6);
+				} else {
+					Annotation anno;
+					for(Class<? extends Annotation> annoType : ANNOTATIONS_TO_FIND) {
+						if(null != (anno = findAnnotation(v.getClass(), annoType))) {
+							name = uncapitalize(annoType.getSimpleName().substring(6));
+						}
+					}
+				}
 
-  @Override public void afterPropertiesSet() throws Exception {
-    if(validators.size() == 0) {
-      for(Map.Entry<String, Validator> entry : beansOfTypeIncludingAncestors(applicationContext,
-                                                                             Validator.class).entrySet()) {
-        String name = null;
-        Validator v = entry.getValue();
+				if(null != name) {
+					this.validators.put(name, v);
+				}
+			}
+		}
+	}
 
-        if(entry.getKey().contains("Save")) {
-          name = entry.getKey().substring(0, entry.getKey().indexOf("Save") + 4);
-        } else if(entry.getKey().contains("Delete")) {
-          name = entry.getKey().substring(0, entry.getKey().indexOf("Delete") + 6);
-        } else {
-          Annotation anno;
-          for(Class<? extends Annotation> annoType : ANNOTATIONS_TO_FIND) {
-            if(null != (anno = findAnnotation(v.getClass(), annoType))) {
-              name = uncapitalize(annoType.getSimpleName().substring(6));
-            }
-          }
-        }
+	/**
+	 * Get a Map of {@link Validator}s that are assigned to the various {@link RepositoryEvent}s.
+	 *
+	 * @return Validators assigned to events.
+	 */
+	public Map<String, Collection<Validator>> getValidators() {
+		return validators.asMap();
+	}
 
-        if(null != name) {
-          this.validators.put(name, v);
-        }
-      }
-    }
-  }
+	/**
+	 * Assign a Map of {@link Validator}s that are assigned to the various {@link RepositoryEvent}s.
+	 *
+	 * @param validators
+	 * 		A Map of Validators to wire.
+	 *
+	 * @return @this
+	 */
+	public ValidatingRepositoryEventListener setValidators(Map<String, Collection<Validator>> validators) {
+		for(Map.Entry<String, Collection<Validator>> entry : validators.entrySet()) {
+			this.validators.replaceValues(entry.getKey(), entry.getValue());
+		}
+		return this;
+	}
 
-  /**
-   * Get a Map of {@link Validator}s that are assigned to the various {@link RepositoryEvent}s.
-   *
-   * @return Validators assigned to events.
-   */
-  public Map<String, Collection<Validator>> getValidators() {
-    return validators.asMap();
-  }
+	/**
+	 * Add a {@link Validator} that will be triggered on the given event.
+	 *
+	 * @param event
+	 * 		The event to listen for.
+	 * @param validator
+	 * 		The Validator to execute when that event fires.
+	 *
+	 * @return @this
+	 */
+	public ValidatingRepositoryEventListener addValidator(String event, Validator validator) {
+		validators.put(event, validator);
+		return this;
+	}
 
-  /**
-   * Assign a Map of {@link Validator}s that are assigned to the various {@link RepositoryEvent}s.
-   *
-   * @param validators
-   *     A Map of Validators to wire.
-   *
-   * @return @this
-   */
-  public ValidatingRepositoryEventListener setValidators(Map<String, Collection<Validator>> validators) {
-    for(Map.Entry<String, Collection<Validator>> entry : validators.entrySet()) {
-      this.validators.replaceValues(entry.getKey(), entry.getValue());
-    }
-    return this;
-  }
+	@Override protected void onBeforeCreate(Object entity) {
+		validate("beforeCreate", entity);
+	}
 
-  /**
-   * Add a {@link Validator} that will be triggered on the given event.
-   *
-   * @param event
-   *     The event to listen for.
-   * @param validator
-   *     The Validator to execute when that event fires.
-   *
-   * @return @this
-   */
-  public ValidatingRepositoryEventListener addValidator(String event, Validator validator) {
-    validators.put(event, validator);
-    return this;
-  }
+	@Override protected void onAfterCreate(Object entity) {
+		validate("afterCreate", entity);
+	}
 
-  @Override protected void onBeforeSave(Object entity) {
-    validate("beforeSave", entity);
-  }
+	@Override protected void onBeforeSave(Object entity) {
+		validate("beforeSave", entity);
+	}
 
-  @Override protected void onAfterSave(Object entity) {
-    validate("afterSave", entity);
-  }
+	@Override protected void onAfterSave(Object entity) {
+		validate("afterSave", entity);
+	}
 
-  @Override protected void onBeforeLinkSave(Object parent, Object linked) {
-    validate("beforeLinkSave", parent);
-  }
+	@Override protected void onBeforeLinkSave(Object parent, Object linked) {
+		validate("beforeLinkSave", parent);
+	}
 
-  @Override protected void onAfterLinkSave(Object parent, Object linked) {
-    validate("afterLinkSave", parent);
-  }
+	@Override protected void onAfterLinkSave(Object parent, Object linked) {
+		validate("afterLinkSave", parent);
+	}
 
-  @Override protected void onBeforeDelete(Object entity) {
-    validate("beforeDelete", entity);
-  }
+	@Override protected void onBeforeDelete(Object entity) {
+		validate("beforeDelete", entity);
+	}
 
-  @Override protected void onAfterDelete(Object entity) {
-    validate("afterDelete", entity);
-  }
+	@Override protected void onAfterDelete(Object entity) {
+		validate("afterDelete", entity);
+	}
 
-  private Errors validate(String event, Object o) {
-    Errors errors = null;
-    if(null != o) {
-      Class<?> domainType = o.getClass();
-      errors = new ValidationErrors(domainType.getSimpleName(),
-                                    o,
-                                    repositories.getPersistentEntity(domainType));
+	private Errors validate(String event, Object o) {
+		Errors errors = null;
+		if(null != o) {
+			Class<?> domainType = o.getClass();
+			errors = new ValidationErrors(domainType.getSimpleName(),
+			                              o,
+			                              repositories.getPersistentEntity(domainType));
 
-      Collection<Validator> validators = this.validators.get(event);
-      if(null != validators) {
-        for(Validator v : validators) {
-          if(v.supports(o.getClass())) {
-            LOG.debug(event + ": " + o + " with " + v);
-            ValidationUtils.invokeValidator(v, o, errors);
-          }
-        }
-      }
+			Collection<Validator> validators = this.validators.get(event);
+			if(null != validators) {
+				for(Validator v : validators) {
+					if(v.supports(o.getClass())) {
+						LOG.debug(event + ": " + o + " with " + v);
+						ValidationUtils.invokeValidator(v, o, errors);
+					}
+				}
+			}
 
-      if(errors.getErrorCount() > 0) {
-        throw new RepositoryConstraintViolationException(errors);
-      }
-    }
+			if(errors.getErrorCount() > 0) {
+				throw new RepositoryConstraintViolationException(errors);
+			}
+		}
 
-    return errors;
-  }
+		return errors;
+	}
 
 }

@@ -18,8 +18,10 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.data.rest.repository.PersistentEntityResource;
+import org.springframework.data.rest.repository.context.AfterCreateEvent;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
 import org.springframework.data.rest.repository.context.AfterSaveEvent;
+import org.springframework.data.rest.repository.context.BeforeCreateEvent;
 import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
@@ -179,9 +181,9 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			throw new NoSuchMethodError();
 		}
 
-		applicationContext.publishEvent(new BeforeSaveEvent(incoming.getContent()));
+		applicationContext.publishEvent(new BeforeCreateEvent(incoming.getContent()));
 		Object obj = repoMethodInvoker.save(incoming.getContent());
-		applicationContext.publishEvent(new AfterSaveEvent(obj));
+		applicationContext.publishEvent(new AfterCreateEvent(obj));
 
 		Link selfLink = repoRequest.buildEntitySelfLink(obj, conversionService);
 		HttpHeaders headers = new HttpHeaders();
