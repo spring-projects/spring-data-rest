@@ -27,6 +27,7 @@ import org.springframework.data.rest.repository.json.JsonSchema;
 import org.springframework.data.rest.repository.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.repository.support.DomainObjectMerger;
 import org.springframework.data.rest.webmvc.support.JsonpResponse;
+import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
@@ -54,8 +55,13 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 	public RepositoryEntityController(Repositories repositories,
 	                                  RepositoryRestConfiguration config,
 	                                  DomainClassConverter domainClassConverter,
-	                                  ConversionService conversionService) {
-		super(repositories, config, domainClassConverter, conversionService);
+	                                  ConversionService conversionService,
+	                                  EntityLinks entityLinks) {
+		super(repositories,
+		      config,
+		      domainClassConverter,
+		      conversionService,
+		      entityLinks);
 	}
 
 	@RequestMapping(

@@ -22,14 +22,11 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 public class RepositoryEntityLinks extends AbstractEntityLinks {
 
-  private final URI                         baseUri;
   private final Repositories                repositories;
   private final RepositoryRestConfiguration config;
 
-  public RepositoryEntityLinks(URI baseUri,
-                               Repositories repositories,
+  public RepositoryEntityLinks(Repositories repositories,
                                RepositoryRestConfiguration config) {
-    this.baseUri = baseUri;
     this.repositories = repositories;
     this.config = config;
   }
@@ -48,7 +45,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
     if(null == persistentEntity) {
       throw new IllegalArgumentException(type + " is not managed by any repository.");
     }
-    return new PersistentEntityLinkBuilder(baseUri, repoInfo, persistentEntity);
+    return new PersistentEntityLinkBuilder(config.getBaseUri(), repoInfo, persistentEntity);
   }
 
   @Override public LinkBuilder linkFor(Class<?> type, Object... parameters) {

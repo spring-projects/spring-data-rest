@@ -23,12 +23,12 @@ import org.springframework.data.rest.repository.json.Jackson2DatatypeHelper;
 import org.springframework.data.rest.repository.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.repository.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.repository.support.DomainObjectMerger;
+import org.springframework.data.rest.repository.support.RepositoryEntityLinks;
 import org.springframework.data.rest.webmvc.BaseUriMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.PagingAndSortingMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.RepositoryController;
 import org.springframework.data.rest.webmvc.RepositoryEntityController;
-import org.springframework.data.rest.webmvc.RepositoryEntityLinksMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.RepositoryInformationHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.RepositoryPropertyReferenceController;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
@@ -39,6 +39,7 @@ import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResol
 import org.springframework.data.rest.webmvc.convert.JsonpResponseHttpMessageConverter;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.format.support.DefaultFormattingConversionService;
+import org.springframework.hateoas.EntityLinks;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -145,7 +146,8 @@ public class RepositoryRestMvcConfiguration {
 				repositories().getObject(),
 				config(),
 				domainClassConverter(),
-				defaultConversionService()
+				defaultConversionService(),
+				entityLinks()
 		);
 	}
 
@@ -161,7 +163,8 @@ public class RepositoryRestMvcConfiguration {
 				repositories().getObject(),
 				config(),
 				domainClassConverter(),
-				defaultConversionService()
+				defaultConversionService(),
+				entityLinks()
 		);
 	}
 
@@ -177,7 +180,8 @@ public class RepositoryRestMvcConfiguration {
 				repositories().getObject(),
 				config(),
 				domainClassConverter(),
-				defaultConversionService()
+				defaultConversionService(),
+				entityLinks()
 		);
 	}
 
@@ -193,7 +197,8 @@ public class RepositoryRestMvcConfiguration {
 				repositories().getObject(),
 				config(),
 				domainClassConverter(),
-				defaultConversionService()
+				defaultConversionService(),
+				entityLinks()
 		);
 	}
 
@@ -242,8 +247,16 @@ public class RepositoryRestMvcConfiguration {
 		return new RepositoryRestRequestHandlerMethodArgumentResolver();
 	}
 
-	@Bean public RepositoryEntityLinksMethodArgumentResolver entityLinksMethodArgumentResolver() {
-		return new RepositoryEntityLinksMethodArgumentResolver();
+	/**
+	 * A special {@link org.springframework.hateoas.EntityLinks} implementation that takes repository and current
+	 * configuration into account when generating links.
+	 *
+	 * @return
+	 *
+	 * @throws Exception
+	 */
+	@Bean public EntityLinks entityLinks() throws Exception {
+		return new RepositoryEntityLinks(repositories().getObject(), config());
 	}
 
 	/**
@@ -387,8 +400,7 @@ public class RepositoryRestMvcConfiguration {
 		                     serverHttpRequestMethodArgumentResolver(),
 		                     repoInfoMethodArgumentResolver(),
 		                     repoRequestArgumentResolver(),
-		                     persistentEntityArgumentResolver(),
-		                     entityLinksMethodArgumentResolver());
+		                     persistentEntityArgumentResolver());
 	}
 
 	/**
