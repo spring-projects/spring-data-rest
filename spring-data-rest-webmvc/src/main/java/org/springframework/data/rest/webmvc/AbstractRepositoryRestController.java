@@ -8,6 +8,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import javax.validation.ConstraintViolationException;
 
 import org.slf4j.Logger;
@@ -140,9 +141,10 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 			                  ConstraintViolationException.class
 	                  })
 	@ResponseBody
-	public ResponseEntity handleConstraintViolationException(ConstraintViolationException cve) {
+	public ResponseEntity handleConstraintViolationException(Locale locale,
+	                                                         ConstraintViolationException cve) {
 		return response(null,
-		                new ConstraintViolationExceptionMessage(cve, applicationContext),
+		                new ConstraintViolationExceptionMessage(cve, applicationContext, locale),
 		                HttpStatus.BAD_REQUEST);
 	}
 
@@ -150,9 +152,10 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 			                  RepositoryConstraintViolationException.class
 	                  })
 	@ResponseBody
-	public ResponseEntity handleRepositoryConstraintViolationException(RepositoryConstraintViolationException rcve) {
+	public ResponseEntity handleRepositoryConstraintViolationException(Locale locale,
+	                                                                   RepositoryConstraintViolationException rcve) {
 		return response(null,
-		                new RepositoryConstraintViolationExceptionMessage(rcve, applicationContext),
+		                new RepositoryConstraintViolationExceptionMessage(rcve, applicationContext, locale),
 		                HttpStatus.BAD_REQUEST);
 	}
 
