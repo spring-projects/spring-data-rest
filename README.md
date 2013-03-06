@@ -6,9 +6,9 @@ The first exporter implemented is a JPA Repository exporter. This takes your JPA
 
 ### Installation
 
-Installation instructions are in the wiki.
+Installation instructions are in the docs:
 
-* [https://github.com/SpringSource/spring-data-rest/wiki/JPA-Repository-REST-Exporter](https://github.com/SpringSource/spring-data-rest/wiki/JPA-Repository-REST-Exporter)
+* [http://static.springsource.org/autorepo/docs/spring-data-rest/1.1.0.BUILD-SNAPSHOT/reference/htmlsingle/](http://static.springsource.org/autorepo/docs/spring-data-rest/1.1.0.BUILD-SNAPSHOT/reference/htmlsingle/)
 
 
 ### License
