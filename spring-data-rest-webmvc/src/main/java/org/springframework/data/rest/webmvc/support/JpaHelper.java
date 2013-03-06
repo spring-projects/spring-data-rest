@@ -1,8 +1,9 @@
 package org.springframework.data.rest.webmvc.support;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.EntityManagerFactory;
 
-import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -15,26 +16,23 @@ import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
  */
 public class JpaHelper implements BeanFactoryAware {
 
-	private Object interceptor = null;
+	private List interceptor = new ArrayList<Object>();
 
+	@SuppressWarnings({"unchecked"})
 	@Override public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 				(ListableBeanFactory)beanFactory,
 				EntityManagerFactory.class
 		);
-		if(beanNames.length != 1) {
-			throw new BeanInstantiationException(JpaHelper.class,
-			                                     String.format("Only one EntityManagerFactory expected but %s found",
-			                                                   beanNames.length));
+		for(String s : beanNames) {
+			EntityManagerFactory emf = (EntityManagerFactory)beanFactory.getBean(s);
+			OpenEntityManagerInViewInterceptor omivi = new OpenEntityManagerInViewInterceptor();
+			omivi.setEntityManagerFactory(emf);
+			interceptor.add(omivi);
 		}
-		String unitName = beanNames[0];
-		EntityManagerFactory emf = (EntityManagerFactory)beanFactory.getBean(unitName);
-		OpenEntityManagerInViewInterceptor omivi = new OpenEntityManagerInViewInterceptor();
-		omivi.setEntityManagerFactory(emf);
-		this.interceptor = omivi;
 	}
 
-	public Object getInterceptor() {
+	public List getInterceptors() {
 		return interceptor;
 	}
 

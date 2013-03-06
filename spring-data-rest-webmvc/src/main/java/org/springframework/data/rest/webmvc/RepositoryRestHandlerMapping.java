@@ -111,8 +111,9 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 
 	@Override protected void extendInterceptors(List<Object> interceptors) {
 		if(null != jpaHelper) {
-			Object jpaInterceptor = jpaHelper.getInterceptor();
-			interceptors.add(jpaInterceptor);
+			for(Object o : jpaHelper.getInterceptors()) {
+				interceptors.add(o);
+			}
 		}
 	}
 
