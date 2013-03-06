@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
@@ -152,7 +153,12 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 			PersistentEntityResource per = PersistentEntityResource.wrap(repoRequest.getPersistentEntity(),
 			                                                             result,
 			                                                             repoRequest.getBaseUri());
-			per.add(repoRequest.buildEntitySelfLink(result, conversionService));
+			BeanWrapper wrapper = BeanWrapper.create(result, conversionService);
+			Link selfLink = entityLinks.linkForSingleResource(result.getClass(),
+			                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
+			                                                                                 .getIdProperty()))
+			                           .withSelfRel();
+			per.add(selfLink);
 			resources = per;
 		}
 		resources.setBaseUri(repoRequest.getBaseUri())
@@ -209,8 +215,12 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 				continue;
 			}
 
+			BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
 			PersistentEntityResource per = PersistentEntityResource.wrap(persistentEntity, obj, repoRequest.getBaseUri());
-			per.add(repoRequest.buildEntitySelfLink(obj, conversionService));
+			Link selfLink = entityLinks.linkForSingleResource(persistentEntity.getType(),
+			                                                  wrapper.getProperty(persistentEntity.getIdProperty()))
+			                           .withSelfRel();
+			per.add(selfLink);
 			resources.add(per);
 		}
 		return new BaseUriAwareResource(resources)

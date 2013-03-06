@@ -79,8 +79,11 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					List<Resource<?>> resources = new ArrayList<Resource<?>>();
 					PersistentEntity entity = repositories.getPersistentEntity(prop.propertyType);
 					for(Object obj : ((Iterable)prop.propertyValue)) {
+						BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
 						PersistentEntityResource per = PersistentEntityResource.wrap(entity, obj, repoRequest.getBaseUri());
-						Link selfLink = repoRequest.buildEntitySelfLink(obj, conversionService);
+						Link selfLink = entityLinks.linkForSingleResource(entity.getType(),
+						                                                  wrapper.getProperty(entity.getIdProperty()))
+						                           .withSelfRel();
 						per.add(selfLink);
 						resources.add(per);
 					}
@@ -93,7 +96,10 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 						PersistentEntityResource per = PersistentEntityResource.wrap(entity,
 						                                                             entry.getValue(),
 						                                                             repoRequest.getBaseUri());
-						Link selfLink = repoRequest.buildEntitySelfLink(entry.getValue(), conversionService);
+						BeanWrapper wrapper = BeanWrapper.create(entry.getValue(), conversionService);
+						Link selfLink = entityLinks.linkForSingleResource(entity.getType(),
+						                                                  wrapper.getProperty(entity.getIdProperty()))
+						                           .withSelfRel();
 						per.add(selfLink);
 						resources.put(entry.getKey(), per);
 					}
@@ -103,9 +109,11 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					PersistentEntityResource per = PersistentEntityResource.wrap(repositories.getPersistentEntity(prop.propertyType),
 					                                                             prop.propertyValue,
 					                                                             repoRequest.getBaseUri());
-					Link selfLink = repoRequest.buildEntitySelfLink(prop.propertyValue, conversionService);
+					BeanWrapper wrapper = BeanWrapper.create(prop.propertyValue, conversionService);
+					Link selfLink = entityLinks.linkForSingleResource(prop.propertyType,
+					                                                  wrapper.getProperty(prop.entity.getIdProperty()))
+					                           .withSelfRel();
 					per.add(selfLink);
-
 					headers.set("Content-Location", selfLink.getHref());
 
 					return new Resource<Object>(per);
@@ -146,7 +154,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 						String sId = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
 						if(propertyId.equals(sId)) {
 							PersistentEntityResource per = PersistentEntityResource.wrap(entity, obj, repoRequest.getBaseUri());
-							Link selfLink = repoRequest.buildEntitySelfLink(obj, conversionService);
+							Link selfLink = entityLinks.linkForSingleResource(entity.getType(), sId).withSelfRel();
 							per.add(selfLink);
 							headers.set("Content-Location", selfLink.getHref());
 							return per;
@@ -161,7 +169,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 							PersistentEntityResource per = PersistentEntityResource.wrap(entity,
 							                                                             entry.getValue(),
 							                                                             repoRequest.getBaseUri());
-							Link selfLink = repoRequest.buildEntitySelfLink(entry.getValue(), conversionService);
+							Link selfLink = entityLinks.linkForSingleResource(entity.getType(), sId).withSelfRel();
 							per.add(selfLink);
 							headers.set("Content-Location", selfLink.getHref());
 							return per;

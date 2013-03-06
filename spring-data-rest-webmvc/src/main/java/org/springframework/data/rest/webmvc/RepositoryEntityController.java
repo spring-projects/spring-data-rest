@@ -111,9 +111,14 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 		}
 
 		for(Object o : results) {
+			BeanWrapper wrapper = BeanWrapper.create(o, conversionService);
+			Link selfLink = entityLinks.linkForSingleResource(repoRequest.getPersistentEntity().getType(),
+			                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
+			                                                                                 .getIdProperty()))
+			                           .withSelfRel();
 			resources.add(new PersistentEntityResource<Object>(repoRequest.getPersistentEntity(),
 			                                                   o,
-			                                                   repoRequest.buildEntitySelfLink(o, conversionService))
+			                                                   selfLink)
 					              .setBaseUri(repoRequest.getBaseUri()));
 		}
 
@@ -172,7 +177,11 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 		Object obj = repoMethodInvoker.save(incoming.getContent());
 		applicationContext.publishEvent(new AfterCreateEvent(obj));
 
-		Link selfLink = repoRequest.buildEntitySelfLink(obj, conversionService);
+		BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
+		Link selfLink = entityLinks.linkForSingleResource(repoRequest.getPersistentEntity().getType(),
+		                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
+		                                                                                 .getIdProperty()))
+		                           .withSelfRel();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setLocation(URI.create(selfLink.getHref()));
 
@@ -220,7 +229,12 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 		PersistentEntityResource per = PersistentEntityResource.wrap(repoRequest.getPersistentEntity(),
 		                                                             domainObj,
 		                                                             repoRequest.getBaseUri());
-		per.add(repoRequest.buildEntitySelfLink(domainObj, conversionService));
+		BeanWrapper wrapper = BeanWrapper.create(domainObj, conversionService);
+		Link selfLink = entityLinks.linkForSingleResource(repoRequest.getPersistentEntity().getType(),
+		                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
+		                                                                                 .getIdProperty()))
+		                           .withSelfRel();
+		per.add(selfLink);
 		return per;
 	}
 
@@ -267,7 +281,12 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			PersistentEntityResource per = PersistentEntityResource.wrap(repoRequest.getPersistentEntity(),
 			                                                             obj,
 			                                                             repoRequest.getBaseUri());
-			per.add(repoRequest.buildEntitySelfLink(obj, conversionService));
+			BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
+			Link selfLink = entityLinks.linkForSingleResource(repoRequest.getPersistentEntity().getType(),
+			                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
+			                                                                                 .getIdProperty()))
+			                           .withSelfRel();
+			per.add(selfLink);
 			return resourceResponse(null,
 			                        per,
 			                        HttpStatus.OK);
