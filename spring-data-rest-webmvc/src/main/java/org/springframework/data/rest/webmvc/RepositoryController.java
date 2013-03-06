@@ -1,12 +1,14 @@
 package org.springframework.data.rest.webmvc;
 
 import static java.util.Collections.*;
+import static org.springframework.data.rest.repository.support.ResourceMappingUtils.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Controller;
@@ -46,7 +48,10 @@ public class RepositoryController extends AbstractRepositoryRestController {
 			throws ResourceNotFoundException {
 		Resource<?> links = new Resource<Object>(emptyList());
 		for(Class<?> domainType : repositories) {
-			links.add(entityLinks.linkToCollectionResource(domainType));
+			ResourceMapping repoMapping = getResourceMapping(config, repositories.getRepositoryInformationFor(domainType));
+			if(repoMapping.isExported()) {
+				links.add(entityLinks.linkToCollectionResource(domainType));
+			}
 		}
 		return links;
 	}

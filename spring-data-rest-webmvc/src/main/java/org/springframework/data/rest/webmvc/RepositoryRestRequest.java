@@ -48,7 +48,7 @@ class RepositoryRestRequest {
 		this.baseUri = baseUri;
 		this.repoInfo = repoInfo;
 		this.repoMapping = getResourceMapping(config, repoInfo);
-		if(null == repoMapping) {
+		if(null == repoMapping || !repoMapping.isExported()) {
 			this.repoLink = null;
 			this.repository = null;
 			this.repoMethodInvoker = null;
