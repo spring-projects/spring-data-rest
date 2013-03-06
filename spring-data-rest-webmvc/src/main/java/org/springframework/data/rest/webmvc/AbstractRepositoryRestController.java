@@ -133,7 +133,10 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 			                  ConversionFailedException.class
 	                  })
 	@ResponseBody
-	public ResponseEntity<ExceptionMessage> handleMiscFailures(Throwable t) {
+	public ResponseEntity handleMiscFailures(Throwable t) {
+		if(null != t.getCause() && t.getCause() instanceof ResourceNotFoundException) {
+			return notFound();
+		}
 		return badRequest(t);
 	}
 
@@ -143,6 +146,10 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	@ResponseBody
 	public ResponseEntity maybeHandleValidationException(Locale locale,
 	                                                     RuntimeException ex) {
+		if(ResourceNotFoundException.class.isAssignableFrom(ex.getClass())) {
+			return handleNotFound();
+		}
+
 		if(null != handler) {
 			return handler.handleValidationException(ex,
 			                                         applicationContext,
