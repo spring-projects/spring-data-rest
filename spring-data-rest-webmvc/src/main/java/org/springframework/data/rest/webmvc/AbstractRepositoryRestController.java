@@ -64,6 +64,8 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	protected final MethodParameterConversionService methodParameterConversionService;
 	protected final EntityLinks                      entityLinks;
 	protected       ApplicationContext               applicationContext;
+	@Autowired(required = false)
+	protected       ValidationExceptionHandler       handler;
 
 	@Autowired
 	public AbstractRepositoryRestController(Repositories repositories,
@@ -141,7 +143,6 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	@ResponseBody
 	public ResponseEntity maybeHandleValidationException(Locale locale,
 	                                                     RuntimeException ex) {
-		ValidationExceptionHandler handler = applicationContext.getBean(ValidationExceptionHandler.class);
 		if(null != handler) {
 			return handler.handleValidationException(ex,
 			                                         applicationContext,
