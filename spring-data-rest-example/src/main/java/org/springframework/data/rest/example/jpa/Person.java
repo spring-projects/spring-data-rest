@@ -29,6 +29,7 @@ public class Person {
 	@Description("A person's first name")
 	private String firstName;
 	@Description("A person's last name")
+	@NotNull
 	private String lastName;
 	@Description("A person's siblings")
 	private List<Person> siblings = Collections.emptyList();
@@ -65,7 +66,6 @@ public class Person {
 		return lastName;
 	}
 
-	@NotNull
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}

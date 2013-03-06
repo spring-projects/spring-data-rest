@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import javax.validation.ConstraintViolationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +30,9 @@ import org.springframework.data.rest.repository.RepositoryConstraintViolationExc
 import org.springframework.data.rest.repository.invoke.MethodParameterConversionService;
 import org.springframework.data.rest.repository.support.ResourceMappingUtils;
 import org.springframework.data.rest.webmvc.support.BaseUriLinkBuilder;
-import org.springframework.data.rest.webmvc.support.ConstraintViolationExceptionMessage;
 import org.springframework.data.rest.webmvc.support.ExceptionMessage;
 import org.springframework.data.rest.webmvc.support.RepositoryConstraintViolationExceptionMessage;
+import org.springframework.data.rest.webmvc.support.ValidationExceptionHandler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkBuilder;
@@ -137,14 +136,21 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	}
 
 	@ExceptionHandler({
-			                  ConstraintViolationException.class
+			                  RuntimeException.class
 	                  })
 	@ResponseBody
-	public ResponseEntity handleConstraintViolationException(Locale locale,
-	                                                         ConstraintViolationException cve) {
-		return response(null,
-		                new ConstraintViolationExceptionMessage(cve, applicationContext, locale),
-		                HttpStatus.BAD_REQUEST);
+	public ResponseEntity maybeHandleValidationException(Locale locale,
+	                                                     RuntimeException ex) {
+		ValidationExceptionHandler handler = applicationContext.getBean(ValidationExceptionHandler.class);
+		if(null != handler) {
+			return handler.handleValidationException(ex,
+			                                         applicationContext,
+			                                         locale);
+		} else {
+			return response(null,
+			                ex,
+			                HttpStatus.BAD_REQUEST);
+		}
 	}
 
 	@ExceptionHandler({

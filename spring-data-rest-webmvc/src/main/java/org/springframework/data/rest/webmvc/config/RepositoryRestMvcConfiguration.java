@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
@@ -37,12 +38,14 @@ import org.springframework.data.rest.webmvc.RepositorySearchController;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.data.rest.webmvc.support.ValidationExceptionHandler;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
@@ -60,6 +63,11 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 @Configuration
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 public class RepositoryRestMvcConfiguration {
+
+	private static final boolean IS_JAVAX_VALIDATION_AVAILABLE = ClassUtils.isPresent(
+			"javax.validation.ConstraintViolationException",
+			RepositoryRestMvcConfiguration.class.getClassLoader()
+	);
 
 	@Bean public RepositoriesFactoryBean repositories() {
 		return new RepositoriesFactoryBean();
@@ -89,6 +97,14 @@ public class RepositoryRestMvcConfiguration {
 		ValidatingRepositoryEventListener listener = new ValidatingRepositoryEventListener();
 		configureValidatingRepositoryEventListener(listener);
 		return listener;
+	}
+
+	@Bean @Lazy public ValidationExceptionHandler validationExceptionHandler() {
+		if(IS_JAVAX_VALIDATION_AVAILABLE) {
+			return new ValidationExceptionHandler();
+		} else {
+			return null;
+		}
 	}
 
 	/**

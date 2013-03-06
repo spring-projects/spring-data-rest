@@ -27,9 +27,9 @@ public class RestExporterExampleRestConfig extends RepositoryRestMvcConfiguratio
 		return msgsrc;
 	}
 
-	@Bean public PersonValidator beforeCreatePersonValidator() {
-		return new PersonValidator();
-	}
+//	@Bean public PersonValidator beforeCreatePersonValidator() {
+//		return new PersonValidator();
+//	}
 
 	@Override protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 		config.addResourceMappingForDomainType(Person.class)
