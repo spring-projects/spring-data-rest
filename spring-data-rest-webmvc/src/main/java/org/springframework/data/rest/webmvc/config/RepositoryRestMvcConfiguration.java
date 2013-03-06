@@ -37,6 +37,7 @@ import org.springframework.data.rest.webmvc.RepositoryRestRequestHandlerMethodAr
 import org.springframework.data.rest.webmvc.RepositorySearchController;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
+import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.rest.webmvc.support.ValidationExceptionHandler;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -44,7 +45,6 @@ import org.springframework.hateoas.EntityLinks;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
@@ -66,6 +66,10 @@ public class RepositoryRestMvcConfiguration {
 
 	private static final boolean IS_JAVAX_VALIDATION_AVAILABLE = ClassUtils.isPresent(
 			"javax.validation.ConstraintViolationException",
+			RepositoryRestMvcConfiguration.class.getClassLoader()
+	);
+	private static final boolean IS_JPA_AVAILABLE              = ClassUtils.isPresent(
+			"javax.persistence.EntityManager",
 			RepositoryRestMvcConfiguration.class.getClassLoader()
 	);
 
@@ -107,6 +111,14 @@ public class RepositoryRestMvcConfiguration {
 		}
 	}
 
+	@Bean @Lazy public JpaHelper jpaHelper() {
+		if(IS_JPA_AVAILABLE) {
+			return new JpaHelper();
+		} else {
+			return null;
+		}
+	}
+
 	/**
 	 * Main configuration for the REST exporter.
 	 */
@@ -114,15 +126,6 @@ public class RepositoryRestMvcConfiguration {
 		RepositoryRestConfiguration config = new RepositoryRestConfiguration();
 		configureRepositoryRestConfiguration(config);
 		return config;
-	}
-
-	/**
-	 * For getting access to the {@link javax.persistence.EntityManagerFactory}.
-	 *
-	 * @return
-	 */
-	@Bean public PersistenceAnnotationBeanPostProcessor persistenceAnnotationBeanPostProcessor() {
-		return new PersistenceAnnotationBeanPostProcessor();
 	}
 
 	/**
