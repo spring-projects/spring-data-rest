@@ -189,7 +189,7 @@ project("spring-data-rest-repository") {
     compile("org.springframework.data:spring-data-mongodb:$sdMongoVersion", optional)
 
     // JSR 303 Validation
-    compile "javax.validation:validation-api:1.0.0.GA"
+    compile("javax.validation:validation-api:1.0.0.GA", optional)
 
     // Testing
     testCompile "org.hsqldb:hsqldb:$hsqldbVersion"

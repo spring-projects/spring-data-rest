@@ -27,7 +27,6 @@ import org.springframework.data.rest.repository.context.AfterLinkSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
-import org.springframework.data.rest.webmvc.support.JsonpResponse;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
@@ -243,47 +242,6 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
-			method = RequestMethod.GET,
-			produces = {
-					"application/javascript"
-			}
-	)
-	@ResponseBody
-	public JsonpResponse<?> jsonpFollowPropertyReference(RepositoryRestRequest repoRequest,
-	                                                     @PathVariable String id,
-	                                                     @PathVariable String property)
-			throws ResourceNotFoundException, NoSuchMethodException {
-		return jsonpWrapResponse(repoRequest,
-		                         followPropertyReference(repoRequest,
-		                                                 id,
-		                                                 property),
-		                         HttpStatus.OK);
-	}
-
-	@SuppressWarnings({"unchecked"})
-	@RequestMapping(
-			value = "/{propertyId}",
-			method = RequestMethod.GET,
-			produces = {
-					"application/javascript"
-			}
-	)
-	@ResponseBody
-	public JsonpResponse<?> jsonpFollowPropertyReference(RepositoryRestRequest repoRequest,
-	                                                     @PathVariable String id,
-	                                                     @PathVariable String property,
-	                                                     @PathVariable String propertyId)
-			throws ResourceNotFoundException, NoSuchMethodException {
-		return jsonpWrapResponse(repoRequest,
-		                         followPropertyReference(repoRequest,
-		                                                 id,
-		                                                 property,
-		                                                 propertyId),
-		                         HttpStatus.OK);
-	}
-
-	@SuppressWarnings({"unchecked"})
-	@RequestMapping(
 			method = {
 					RequestMethod.POST,
 					RequestMethod.PUT
@@ -354,28 +312,6 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
-			method = {
-					RequestMethod.POST,
-					RequestMethod.PUT
-			},
-			consumes = {
-					"application/javascript"
-			}
-	)
-	@ResponseBody
-	public JsonpResponse<?> jsonpCreatePropertyReference(final RepositoryRestRequest repoRequest,
-	                                                     final @RequestBody Resource<Object> incoming,
-	                                                     @PathVariable String id,
-	                                                     @PathVariable String property)
-			throws ResourceNotFoundException, NoSuchMethodException {
-		return jsonpWrapResponse(repoRequest, createPropertyReference(repoRequest,
-		                                                              incoming,
-		                                                              id,
-		                                                              property));
-	}
-
-	@SuppressWarnings({"unchecked"})
-	@RequestMapping(
 			value = "/{propertyId}",
 			method = RequestMethod.DELETE
 	)
@@ -431,26 +367,6 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		                         handler);
 
 		return resourceResponse(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
-	}
-
-	@SuppressWarnings({"unchecked"})
-	@RequestMapping(
-			value = "/{propertyId}",
-			method = RequestMethod.DELETE,
-			produces = {
-					"application/javascript"
-			}
-	)
-	@ResponseBody
-	public JsonpResponse<?> jsonpDeletePropertyReference(final RepositoryRestRequest repoRequest,
-	                                                     @PathVariable String id,
-	                                                     @PathVariable String property,
-	                                                     final @PathVariable String propertyId)
-			throws ResourceNotFoundException, NoSuchMethodException {
-		return jsonpWrapResponse(repoRequest, deletePropertyReference(repoRequest,
-		                                                              id,
-		                                                              property,
-		                                                              propertyId));
 	}
 
 	private Link propertyReferenceLink(Resource<?> resource,

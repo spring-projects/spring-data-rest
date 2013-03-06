@@ -21,11 +21,9 @@ import org.springframework.data.rest.repository.BaseUriAwareResource;
 import org.springframework.data.rest.repository.PersistentEntityResource;
 import org.springframework.data.rest.repository.invoke.RepositoryMethod;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
-import org.springframework.data.rest.webmvc.support.JsonpResponse;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -64,17 +62,6 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 		links.addAll(queryMethodLinks(repoRequest.getBaseUri(),
 		                              repoRequest.getPersistentEntity().getType()));
 		return new Resource<Object>(Collections.emptyList(), links);
-	}
-
-	@RequestMapping(
-			method = RequestMethod.GET,
-			produces = {
-					"application/javascript"
-			}
-	)
-	@ResponseBody
-	public JsonpResponse<?> jsonpList(RepositoryRestRequest repoRequest) {
-		return jsonpWrapResponse(repoRequest, list(repoRequest), HttpStatus.OK);
 	}
 
 	@SuppressWarnings({"unchecked"})
@@ -204,20 +191,6 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 		}
 
 		return new Resource<Object>(EMPTY_RESOURCE_LIST, links);
-	}
-
-	@RequestMapping(
-			value = "/{method}",
-			method = RequestMethod.GET,
-			produces = {
-					"application/javascript"
-			}
-	)
-	@ResponseBody
-	public JsonpResponse<? extends Resource<?>> jsonpQuery(RepositoryRestRequest repoRequest,
-	                                                       @PathVariable String method)
-			throws ResourceNotFoundException {
-		return jsonpWrapResponse(repoRequest, query(repoRequest, method), HttpStatus.OK);
 	}
 
 	@SuppressWarnings({"unchecked"})

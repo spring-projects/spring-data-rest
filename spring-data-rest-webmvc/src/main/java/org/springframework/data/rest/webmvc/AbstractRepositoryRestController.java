@@ -33,7 +33,6 @@ import org.springframework.data.rest.repository.support.ResourceMappingUtils;
 import org.springframework.data.rest.webmvc.support.BaseUriLinkBuilder;
 import org.springframework.data.rest.webmvc.support.ConstraintViolationExceptionMessage;
 import org.springframework.data.rest.webmvc.support.ExceptionMessage;
-import org.springframework.data.rest.webmvc.support.JsonpResponse;
 import org.springframework.data.rest.webmvc.support.RepositoryConstraintViolationExceptionMessage;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
@@ -228,39 +227,6 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 			hdrs.putAll(headers);
 		}
 		return new ResponseEntity<Resource<?>>(resource, hdrs, status);
-	}
-
-	protected <T> JsonpResponse<T> jsonpWrapResponse(RepositoryRestRequest repoRequest,
-	                                                 T response,
-	                                                 HttpStatus status) {
-		return jsonpWrapResponse(repoRequest, response, null, status);
-	}
-
-	protected <T> JsonpResponse<T> jsonpWrapResponse(RepositoryRestRequest repoRequest,
-	                                                 ResponseEntity<T> response) {
-		return jsonpWrapResponse(repoRequest,
-		                         response.getBody(),
-		                         response.getHeaders(),
-		                         response.getStatusCode());
-	}
-
-	protected <T> JsonpResponse<T> jsonpWrapResponse(RepositoryRestRequest repoRequest,
-	                                                 T response,
-	                                                 HttpHeaders headers,
-	                                                 HttpStatus status) {
-		String callback = repoRequest.getRequest().getParameter(config.getJsonpParamName());
-		String errback = (null != config.getJsonpOnErrParamName()
-		                  ? repoRequest.getRequest().getParameter(config.getJsonpOnErrParamName())
-		                  : null);
-		ResponseEntity<T> newResponse;
-		if(null != headers) {
-			newResponse = new ResponseEntity<T>(response, headers, status);
-		} else {
-			newResponse = new ResponseEntity<T>(response, status);
-		}
-		return new JsonpResponse<T>(newResponse,
-		                            (null != callback ? callback : config.getJsonpParamName()),
-		                            (null != errback ? errback : config.getJsonpOnErrParamName()));
 	}
 
 	protected List<Link> queryMethodLinks(URI baseUri, Class<?> domainType) {

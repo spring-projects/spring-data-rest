@@ -23,7 +23,6 @@ import org.springframework.data.rest.repository.json.Jackson2DatatypeHelper;
 import org.springframework.data.rest.repository.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.repository.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.repository.support.DomainObjectMerger;
-import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.rest.webmvc.BaseUriMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.PagingAndSortingMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver;
@@ -36,8 +35,8 @@ import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
 import org.springframework.data.rest.webmvc.RepositoryRestRequestHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.RepositorySearchController;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
-import org.springframework.data.rest.webmvc.convert.JsonpResponseHttpMessageConverter;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.http.MediaType;
@@ -315,15 +314,6 @@ public class RepositoryRestMvcConfiguration {
 	}
 
 	/**
-	 * The {@link HttpMessageConverter} used to create JSONP responses.
-	 *
-	 * @return
-	 */
-	@Bean public JsonpResponseHttpMessageConverter jsonpHttpMessageConverter() {
-		return new JsonpResponseHttpMessageConverter(jacksonHttpMessageConverter());
-	}
-
-	/**
 	 * The {@link HttpMessageConverter} used to create {@literal text/uri-list} responses.
 	 *
 	 * @return
@@ -389,7 +379,6 @@ public class RepositoryRestMvcConfiguration {
 	private List<HttpMessageConverter<?>> defaultMessageConverters() {
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
 		messageConverters.add(jacksonHttpMessageConverter());
-		messageConverters.add(jsonpHttpMessageConverter());
 		messageConverters.add(uriListHttpMessageConverter());
 		return messageConverters;
 	}

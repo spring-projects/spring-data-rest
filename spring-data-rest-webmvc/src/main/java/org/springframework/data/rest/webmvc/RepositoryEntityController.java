@@ -28,7 +28,6 @@ import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
 import org.springframework.data.rest.repository.json.JsonSchema;
 import org.springframework.data.rest.repository.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.repository.support.DomainObjectMerger;
-import org.springframework.data.rest.webmvc.support.JsonpResponse;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
@@ -128,18 +127,6 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 		return new Resources<Resource<?>>(resources, links);
 	}
 
-	@RequestMapping(
-			method = RequestMethod.GET,
-			produces = {
-					"application/javascript"
-			}
-	)
-	@ResponseBody
-	public JsonpResponse<? extends Resources<Resource<?>>> jsonpListEntities(RepositoryRestRequest repoRequest)
-			throws ResourceNotFoundException {
-		return jsonpWrapResponse(repoRequest, listEntities(repoRequest), HttpStatus.OK);
-	}
-
 	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
 			method = RequestMethod.GET,
@@ -205,22 +192,6 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 
 	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
-			method = RequestMethod.POST,
-			consumes = {
-					"application/json"
-			},
-			produces = {
-					"application/javascript"
-			}
-	)
-	@ResponseBody
-	public JsonpResponse<? extends Resource<?>> jsonpCreateNewEntity(RepositoryRestRequest repoRequest,
-	                                                                 PersistentEntityResource<?> incoming) {
-		return jsonpWrapResponse(repoRequest, createNewEntity(repoRequest, incoming));
-	}
-
-	@SuppressWarnings({"unchecked"})
-	@RequestMapping(
 			value = "/{id}",
 			method = RequestMethod.GET,
 			produces = {
@@ -251,23 +222,6 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 		                                                             repoRequest.getBaseUri());
 		per.add(repoRequest.buildEntitySelfLink(domainObj, conversionService));
 		return per;
-	}
-
-	@SuppressWarnings({"unchecked"})
-	@RequestMapping(
-			value = "/{id}",
-			method = RequestMethod.GET,
-			produces = {
-					"application/javascript"
-			}
-	)
-	@ResponseBody
-	public JsonpResponse<? extends Resource<?>> jsonpGetSingleEntity(RepositoryRestRequest repoRequest,
-	                                                                 @PathVariable String id)
-			throws ResourceNotFoundException {
-		return jsonpWrapResponse(repoRequest,
-		                         getSingleEntity(repoRequest, id),
-		                         HttpStatus.OK);
 	}
 
 	@SuppressWarnings({"unchecked"})
@@ -327,25 +281,6 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
 			value = "/{id}",
-			method = RequestMethod.PUT,
-			consumes = {
-					"application/json"
-			},
-			produces = {
-					"application/javascript"
-			}
-	)
-	@ResponseBody
-	public JsonpResponse<? extends Resource<?>> jsonpUpdateEntity(RepositoryRestRequest repoRequest,
-	                                                              PersistentEntityResource<?> incoming,
-	                                                              @PathVariable String id)
-			throws ResourceNotFoundException {
-		return jsonpWrapResponse(repoRequest, updateEntity(repoRequest, incoming, id));
-	}
-
-	@SuppressWarnings({"unchecked"})
-	@RequestMapping(
-			value = "/{id}",
 			method = RequestMethod.DELETE
 	)
 	@ResponseBody
@@ -379,21 +314,6 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 		applicationContext.publishEvent(new AfterDeleteEvent(domainObj));
 
 		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
-	}
-
-	@SuppressWarnings({"unchecked"})
-	@RequestMapping(
-			value = "{id}",
-			method = RequestMethod.DELETE,
-			produces = {
-					"application/javascript"
-			}
-	)
-	@ResponseBody
-	public JsonpResponse<?> jsonpDeleteEntity(RepositoryRestRequest repoRequest,
-	                                          @PathVariable String id)
-			throws ResourceNotFoundException {
-		return jsonpWrapResponse(repoRequest, deleteEntity(repoRequest, id));
 	}
 
 }
