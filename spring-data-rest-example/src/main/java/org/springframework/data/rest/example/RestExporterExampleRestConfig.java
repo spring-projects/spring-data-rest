@@ -17,7 +17,7 @@ import org.springframework.hateoas.ResourceProcessor;
  * @author Jon Brisbin
  */
 @Configuration
-@ImportResource("classpath:META-INF/spring/security-config.xml")
+//@ImportResource("classpath:META-INF/spring/security-config.xml")
 public class RestExporterExampleRestConfig extends RepositoryRestMvcConfiguration {
 
 	@Bean public MessageSource messageSource() {
@@ -27,9 +27,9 @@ public class RestExporterExampleRestConfig extends RepositoryRestMvcConfiguratio
 		return msgsrc;
 	}
 
-//	@Bean public PersonValidator beforeCreatePersonValidator() {
-//		return new PersonValidator();
-//	}
+	@Bean public PersonValidator beforeCreatePersonValidator() {
+		return new PersonValidator();
+	}
 
 	@Override protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 		config.addResourceMappingForDomainType(Person.class)

@@ -6,6 +6,6 @@ import org.springframework.data.rest.repository.annotation.RestResource;
 /**
  * @author Jon Brisbin
  */
-@RestResource(exported = false)
+@RestResource(exported = true)
 public interface ProfileRepository extends CrudRepository<Profile, String> {
 }

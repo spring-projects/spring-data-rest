@@ -27,34 +27,34 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 public class JpaRepositoryConfig {
 
-  @Bean public DataSource dataSource() {
-    EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-    return builder.setType(EmbeddedDatabaseType.HSQL).build();
-  }
+	@Bean public DataSource dataSource() {
+		EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+		return builder.setType(EmbeddedDatabaseType.HSQL).build();
+	}
 
-  @Bean public EntityManagerFactory entityManagerFactory() {
-    HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-    vendorAdapter.setDatabase(Database.HSQL);
-    vendorAdapter.setGenerateDdl(true);
+	@Bean public EntityManagerFactory entityManagerFactory() {
+		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+		vendorAdapter.setDatabase(Database.HSQL);
+		vendorAdapter.setGenerateDdl(true);
 
-    LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-    factory.setJpaVendorAdapter(vendorAdapter);
-    factory.setPackagesToScan(getClass().getPackage().getName());
-    factory.setDataSource(dataSource());
+		LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+		factory.setJpaVendorAdapter(vendorAdapter);
+		factory.setPackagesToScan(getClass().getPackage().getName());
+		factory.setDataSource(dataSource());
 
-    factory.afterPropertiesSet();
+		factory.afterPropertiesSet();
 
-    return factory.getObject();
-  }
+		return factory.getObject();
+	}
 
-  @Bean public JpaDialect jpaDialect() {
-    return new HibernateJpaDialect();
-  }
+	@Bean public JpaDialect jpaDialect() {
+		return new HibernateJpaDialect();
+	}
 
-  @Bean public PlatformTransactionManager transactionManager() {
-    JpaTransactionManager txManager = new JpaTransactionManager();
-    txManager.setEntityManagerFactory(entityManagerFactory());
-    return txManager;
-  }
+	@Bean public PlatformTransactionManager transactionManager() {
+		JpaTransactionManager txManager = new JpaTransactionManager();
+		txManager.setEntityManagerFactory(entityManagerFactory());
+		return txManager;
+	}
 
 }
