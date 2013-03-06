@@ -264,8 +264,8 @@ project("spring-data-rest-example") {
     }
 
     // Spring Security
-    //compile "org.springframework.security:spring-security-config:$springSecurityVersion"
-    //compile "org.springframework.security:spring-security-web:$springSecurityVersion"
+    compile "org.springframework.security:spring-security-config:$springSecurityVersion"
+    compile "org.springframework.security:spring-security-web:$springSecurityVersion"
 
     // JODA
     compile "joda-time:joda-time:$jodaVersion"
