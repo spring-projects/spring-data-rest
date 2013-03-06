@@ -47,6 +47,7 @@
   <xi:include href="representations.xml"/>
   <xi:include href="paging.xml"/>
   <xi:include href="validation.xml"/>
+  <xi:include href="events.xml"/>
   <xi:include href="rest-shell.xml"/>
 
 </book>

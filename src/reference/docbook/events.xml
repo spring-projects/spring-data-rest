@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xml:id="events-chapter"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://www.oasis-open.org/docbook/xml/5.0/xsd/docbook.xsd">
+
+  <title>Events</title>
+
+  <para>There are six different events that the REST exporter emits throughout the process of working with an entity.
+    Those are:
+
+    <itemizedlist>
+      <listitem>
+        <para>BeforeCreateEvent</para>
+      </listitem>
+      <listitem>
+        <para>AfterCreateEvent</para>
+      </listitem>
+      <listitem>
+        <para>BeforeSaveEvent</para>
+      </listitem>
+      <listitem>
+        <para>AfterSaveEvent</para>
+      </listitem>
+      <listitem>
+        <para>BeforeLinkSaveEvent</para>
+      </listitem>
+      <listitem>
+        <para>AfterLinkSaveEvent</para>
+      </listitem>
+      <listitem>
+        <para>BeforeDeleteEvent</para>
+      </listitem>
+      <listitem>
+        <para>AfterDeleteEvent</para>
+      </listitem>
+    </itemizedlist>
+  </para>
+
+  <section>
+    <title>Writing an
+      <classname>ApplicationListener</classname>
+    </title>
+
+    <para>There is an abstract class you can subclass which listens for these kinds of events and calls
+      the appropriate method based on the event type. You just override the methods for
+      the events you're interested in.
+
+      <programlisting language="java"><![CDATA[
+public class BeforeSaveEventListener extends AbstractRepositoryEventListener {
+
+  @Override public void onBeforeSave(Object entity) {
+    ... logic to handle inspecting the entity before the Repository saves it
+  }
+
+  @Override public void onAfterDelete(Object entity) {
+    ... send a message that this entity has been deleted
+  }
+
+}]]></programlisting>
+    </para>
+
+    <para>One thing to note with this approach, however, is that it makes no distinction based on
+      the type of the entity. You'll have to inspect that yourself.
+    </para>
+
+  </section>
+
+  <section>
+    <title>Writing an annotated handler</title>
+
+    <para>Another approach is to use an annotated handler, which does filter events based on domain type.</para>
+
+    <para>To declare a handler, create a POJO and put the
+      <classname>@RepositoryEventHandler</classname>
+      annotation on it. This tells the
+      <classname>BeanPostProcessor</classname>
+      that this class needs to be inspected for handler methods.
+    </para>
+
+    <para>Once it finds a bean with this annotation, it iterates over the exposed methods and looks for
+      annotations that correspond to the event you're interested in. For example, to handle BeforeSaveEvents
+      in an annotated POJO for different kinds of domain types, you'd define your class like this:
+
+      <programlisting language="java"><![CDATA[
+@RepositoryEventHandler
+public class PersonEventHandler {
+
+  @HandleBeforeSave(Person.class) public void handlePersonSave(Person p) {
+    ... you can now deal with Person in a type-safe way
+  }
+
+  @HandleBeforeSave(Profile.class) public void handleProfileSave(Profile p) {
+    ... you can now deal with Profile in a type-safe way
+  }
+
+}]]></programlisting>
+    </para>
+
+    <para>You can also declare the domain type at the class level:
+
+      <programlisting language="java"><![CDATA[
+@RepositoryEventHandler(Person.class)
+public class PersonEventHandler {
+
+  @HandleBeforeSave public void handleBeforeSave(Person p) {
+    ...
+  }
+
+  @HandleAfterDelete public void handleAfterDelete(Person p) {
+    ...
+  }
+
+}]]></programlisting>
+    </para>
+
+    <para>Just declare an instance of your annotated bean in your
+      <classname>ApplicationContext</classname>
+      and the
+      <classname>BeanPostProcessor</classname>
+      that is by default created in
+      <classname>RepositoryRestMvcConfiguration</classname>
+      will inspect the bean for handlers and wire them to the correct events.
+
+      <programlisting language="java"><![CDATA[
+@Configuration
+public class RepositoryConfiguration {
+
+  @Bean PersonEventHandler personEventHandler() {
+    return new PersonEventHandler();
+  }
+
+}]]></programlisting>
+    </para>
+  </section>
+
+</chapter>

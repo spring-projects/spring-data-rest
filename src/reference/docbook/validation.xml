@@ -6,23 +6,44 @@
 
   <title>Validation</title>
 
-  <para>Integrating validation into Spring Data REST is as easy as registering your
+  <para>There are two ways to register a
     <classname>Validator</classname>
-    implementation with the
-    <classname>ValidatingRepositoryEventListener</classname>, whose job it is to trigger
-    validators whenever certain events happen inside Spring Data REST.
+    instance in Spring Data REST: wire it by bean name or register the validator manually. For the majority of cases,
+    the simple bean name prefix style will be sufficient.
   </para>
 
-  <para>To add your validators, override the
-    <code>configureValidatingRepositoryEventListener</code>
-    method and call the
-    <code>addValidator</code>
-    method:
+  <para>In order to tell Spring Data REST you want a particular
+    <classname>Validator</classname>
+    assigned to a particular event, you simply prefix the bean name with the event you're interested in. For example, to
+    validate instances of the
+    <classname>Person</classname>
+    class before new ones are saved into the repository, you would declare an instance of a
+    <classname>Validator&lt;Person&gt;</classname>
+    in your
+    <classname>ApplicationContext</classname>
+    with the bean name "beforeCreatePersonValidator". Since the prefix "beforeCreate" matches a known Spring Data REST
+    event, that validator will be wired to the correct event.
+  </para>
 
-    <programlisting language="java"><![CDATA[
+  <section>
+    <title>Assigning Validators manually</title>
+
+    <para>If you would rather not use the bean name prefix approach, then you simply need to register an instance of
+      your validator with the bean who's job it is to invoke validators after the correct event. In your configuration
+      that subclasses Spring Data REST's
+      <classname>RepositoryRestMvcConfiguration</classname>, override the
+      <code>configureValidatingRepositoryEventListener</code>
+      method and call the
+      <code>addValidator</code>
+      method on the
+      <classname>ValidatingRepositoryEventListener</classname>, passing the event you want this validator
+      to be triggered on, and an instance of the validator.
+
+      <programlisting language="java"><![CDATA[
 @Override protected void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
   v.addValidator("beforeSave", new BeforeSaveValidator());
 }]]></programlisting>
-  </para>
+    </para>
+  </section>
 
 </chapter>
