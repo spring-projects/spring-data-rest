@@ -11,9 +11,22 @@ import org.springframework.web.servlet.DispatcherServlet;
  * @author Jon Brisbin
  */
 public class RepositoryRestDispatcherServlet extends DispatcherServlet {
-  public RepositoryRestDispatcherServlet(WebApplicationContext webApplicationContext) {
-    super(webApplicationContext);
-    setContextClass(AnnotationConfigWebApplicationContext.class);
-    setContextConfigLocation(RepositoryRestMvcConfiguration.class.getName());
-  }
+
+
+	private static final long serialVersionUID = 5761346441984290240L;
+
+	public RepositoryRestDispatcherServlet() {
+		configure();
+	}
+
+	public RepositoryRestDispatcherServlet(WebApplicationContext webApplicationContext) {
+		super(webApplicationContext);
+		configure();
+	}
+
+	private void configure() {
+		setContextClass(AnnotationConfigWebApplicationContext.class);
+		setContextConfigLocation(RepositoryRestMvcConfiguration.class.getName());
+	}
+
 }
