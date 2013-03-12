@@ -10,7 +10,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.webmvc.support.PagingAndSorting;
+import org.springframework.data.rest.repository.PagingAndSorting;
 import org.springframework.data.web.PageableDefaults;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;

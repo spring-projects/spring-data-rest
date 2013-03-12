@@ -17,6 +17,7 @@ import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
+import org.springframework.data.rest.repository.PageableResources;
 import org.springframework.data.rest.repository.PersistentEntityResource;
 import org.springframework.data.rest.repository.context.AfterCreateEvent;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
@@ -36,6 +37,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -86,7 +88,7 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			}
 	)
 	@ResponseBody
-	public Resources<Resource<?>> listEntities(RepositoryRestRequest repoRequest)
+	public Resources<Resource<?>> listEntities(final RepositoryRestRequest repoRequest)
 			throws ResourceNotFoundException {
 		List<Resource<?>> resources = new ArrayList<Resource<?>>();
 		List<Link> links = new ArrayList<Link>();
@@ -129,7 +131,18 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			                   repoMapping.getRel() + ".search"));
 		}
 
-		return new Resources<Resource<?>>(resources, links);
+		if(hasPagingParams || hasSortParams) {
+			PageRequest pr = new PageRequest(repoRequest.getPagingAndSorting().getPageNumber() + 1,
+			                                 repoRequest.getPagingAndSorting().getPageSize(),
+			                                 repoRequest.getPagingAndSorting().getSort()) {
+				@Override public int getOffset() {
+					return super.getOffset() - repoRequest.getPagingAndSorting().getPageSize();
+				}
+			};
+			return new PageableResources<Resource<?>>(resources, pr, links);
+		} else {
+			return new Resources<Resource<?>>(resources, links);
+		}
 	}
 
 	@SuppressWarnings({"unchecked"})
@@ -151,7 +164,13 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			links.add(resourceLink(repoRequest, persistentEntityResource));
 		}
 
-		return new Resources<Resource<?>>(EMPTY_RESOURCE_LIST, links);
+		boolean hasPagingParams = (null != repoRequest.getRequest().getParameter(config.getPageParamName()));
+		boolean hasSortParams = (null != repoRequest.getRequest().getParameter(config.getSortParamName()));
+		if(hasPagingParams || hasSortParams) {
+			return new PageableResources<Resource<?>>(EMPTY_RESOURCE_LIST, repoRequest.getPagingAndSorting(), links);
+		} else {
+			return new Resources<Resource<?>>(EMPTY_RESOURCE_LIST, links);
+		}
 	}
 
 	@SuppressWarnings({"unchecked"})
@@ -166,6 +185,7 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			}
 	)
 	@ResponseBody
+	@Transactional
 	public ResponseEntity<Resource<?>> createNewEntity(RepositoryRestRequest repoRequest,
 	                                                   PersistentEntityResource<?> incoming) {
 		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
@@ -251,6 +271,7 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			}
 	)
 	@ResponseBody
+	@Transactional
 	public ResponseEntity<Resource<?>> updateEntity(RepositoryRestRequest repoRequest,
 	                                                PersistentEntityResource<?> incoming,
 	                                                @PathVariable String id)
@@ -303,6 +324,7 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			method = RequestMethod.DELETE
 	)
 	@ResponseBody
+	@Transactional
 	public ResponseEntity<?> deleteEntity(RepositoryRestRequest repoRequest,
 	                                      @PathVariable String id)
 			throws ResourceNotFoundException {

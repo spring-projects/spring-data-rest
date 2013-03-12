@@ -8,7 +8,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.webmvc.support.PagingAndSorting;
+import org.springframework.data.rest.repository.PagingAndSorting;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

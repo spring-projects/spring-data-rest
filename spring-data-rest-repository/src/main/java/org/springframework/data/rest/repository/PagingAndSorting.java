@@ -1,4 +1,4 @@
-package org.springframework.data.rest.webmvc.support;
+package org.springframework.data.rest.repository;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

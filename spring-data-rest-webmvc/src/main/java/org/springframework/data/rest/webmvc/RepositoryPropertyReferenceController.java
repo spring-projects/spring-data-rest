@@ -34,6 +34,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -261,6 +262,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			}
 	)
 	@ResponseBody
+	@Transactional
 	public ResponseEntity<Resource<?>> createPropertyReference(final RepositoryRestRequest repoRequest,
 	                                                           final @RequestBody Resource<Object> incoming,
 	                                                           @PathVariable String id,
@@ -324,6 +326,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			method = RequestMethod.DELETE
 	)
 	@ResponseBody
+	@Transactional
 	public ResponseEntity<Resource<?>> deletePropertyReference(final RepositoryRestRequest repoRequest,
 	                                                           @PathVariable String id,
 	                                                           @PathVariable String property,

@@ -15,7 +15,7 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
-import org.springframework.data.rest.webmvc.support.PagingAndSorting;
+import org.springframework.data.rest.repository.PagingAndSorting;
 import org.springframework.hateoas.Link;
 import org.springframework.web.util.UriComponentsBuilder;
 
