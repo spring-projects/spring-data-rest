@@ -109,7 +109,14 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 	@SuppressWarnings({"unchecked"})
 	@Override public void afterPropertiesSet() throws Exception {
 		for(Class<?> domainType : repositories) {
-			addDeserializer(domainType, new ResourceDeserializer(repositories.getPersistentEntity(domainType)));
+			PersistentEntity pe = repositories.getPersistentEntity(domainType);
+			if(null == pe) {
+				if(LOG.isWarnEnabled()) {
+					LOG.warn("The domain class {} does not have PersistentEntity metadata.", domainType.getName());
+				}
+			} else {
+				addDeserializer(domainType, new ResourceDeserializer(pe));
+			}
 		}
 	}
 
@@ -141,6 +148,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 							if(uriDomainClassConverter.matches(URI_TYPE, entityType)) {
 								entity = uriDomainClassConverter.convert(uri, URI_TYPE, entityType);
 							}
+
 							continue;
 						}
 
