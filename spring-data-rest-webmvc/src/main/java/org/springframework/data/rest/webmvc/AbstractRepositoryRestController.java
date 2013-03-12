@@ -7,8 +7,10 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +23,17 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
+import org.springframework.data.rest.repository.BaseUriAwareResource;
+import org.springframework.data.rest.repository.PagingAndSorting;
+import org.springframework.data.rest.repository.PersistentEntityResource;
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
 import org.springframework.data.rest.repository.invoke.MethodParameterConversionService;
 import org.springframework.data.rest.repository.support.ResourceMappingUtils;
@@ -36,7 +44,9 @@ import org.springframework.data.rest.webmvc.support.ValidationExceptionHandler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkBuilder;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -46,6 +56,7 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Jon Brisbin
@@ -243,6 +254,56 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 		return new ResponseEntity<Resource<?>>(resource, hdrs, status);
 	}
 
+	protected void addQueryParameters(HttpServletRequest request,
+	                                  UriComponentsBuilder builder) {
+		for(Enumeration<String> names = request.getParameterNames(); names.hasMoreElements(); ) {
+			String name = names.nextElement();
+			String value = request.getParameter(name);
+			if(name.equals(config.getPageParamName()) || name.equals(config.getLimitParamName())) {
+				continue;
+			}
+
+			builder.queryParam(name, value);
+		}
+	}
+
+	protected Link searchLink(RepositoryRestRequest repoRequest,
+	                          int pageIncrement,
+	                          String method,
+	                          String rel) {
+		PagingAndSorting pageSort = repoRequest.getPagingAndSorting();
+		UriComponentsBuilder ucb = UriComponentsBuilder.fromUri(
+				entityLinks.linkFor(repoRequest.getPersistentEntity().getType())
+				           .slash("search")
+				           .slash(method)
+				           .toUri()
+		);
+		ucb.queryParam(config.getPageParamName(), Math.max(pageSort.getPageNumber() + pageIncrement, 1))
+		   .queryParam(config.getLimitParamName(), pageSort.getPageSize());
+
+		addQueryParameters(repoRequest.getRequest(), ucb);
+
+		return new Link(ucb.build().toString(), rel);
+	}
+
+	protected Link entitiesPageLink(RepositoryRestRequest repoRequest,
+	                                int pageIncrement,
+	                                String rel) {
+		PagingAndSorting pageSort = repoRequest.getPagingAndSorting();
+		UriComponentsBuilder ucb = UriComponentsBuilder.fromUri(
+				entityLinks.linkFor(repoRequest.getPersistentEntity().getType())
+				           .toUri()
+		);
+		if(null != repoRequest.getRequest().getParameter(config.getPageParamName())) {
+			ucb.queryParam(config.getPageParamName(), Math.max(pageSort.getPageNumber() + pageIncrement, 1))
+			   .queryParam(config.getLimitParamName(), pageSort.getPageSize());
+		}
+
+		addQueryParameters(repoRequest.getRequest(), ucb);
+
+		return new Link(ucb.build().toString(), rel);
+	}
+
 	protected List<Link> queryMethodLinks(URI baseUri, Class<?> domainType) {
 		List<Link> links = new ArrayList<Link>();
 		RepositoryInformation repoInfo = repositories.getRepositoryInformationFor(domainType);
@@ -267,6 +328,91 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 		Link selfLink = resource.getLink("self");
 		String rel = repoMapping.getRel() + "." + entityMapping.getRel();
 		return new Link(selfLink.getHref(), rel);
+	}
+
+	@SuppressWarnings({"unchecked"})
+	protected ResourceSupport resultToResourceSupport(RepositoryRestRequest repoRequest,
+	                                                  Object result,
+	                                                  List<Link> links,
+	                                                  Link prevLink,
+	                                                  Link nextLink) {
+		ResourceSupport resources;
+		if(result instanceof Page) {
+			Page page = (Page)result;
+			PagedResources.PageMetadata pageMeta = pageMetadata(page);
+			if(page.hasPreviousPage() && null != prevLink) {
+				links.add(prevLink);
+			}
+			if(page.hasNextPage() && null != nextLink) {
+				links.add(nextLink);
+			}
+			if(page.hasContent()) {
+				resources = entitiesToResource(repoRequest, page);
+			} else {
+				resources = new PagedResources(Collections.emptyList(), pageMeta);
+			}
+		} else if(result instanceof Iterable) {
+			resources = entitiesToResource(repoRequest, (Iterable)result);
+		} else if(null == result) {
+			resources = new Resources(EMPTY_RESOURCE_LIST);
+		} else {
+			PersistentEntityResource per = PersistentEntityResource.wrap(repoRequest.getPersistentEntity(),
+			                                                             result,
+			                                                             repoRequest.getBaseUri());
+			BeanWrapper wrapper = BeanWrapper.create(result, conversionService);
+			Link selfLink = entityLinks.linkForSingleResource(result.getClass(),
+			                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
+			                                                                                 .getIdProperty()))
+			                           .withSelfRel();
+			per.add(selfLink);
+			resources = per;
+		}
+		resources.add(links);
+		return resources;
+	}
+
+	@SuppressWarnings({"unchecked"})
+	protected ResourceSupport entitiesToResource(RepositoryRestRequest repoRequest, Page page) {
+		PagedResources.PageMetadata pageMeta = pageMetadata(page);
+		Resources<Object> resource = (Resources<Object>)entitiesToResource(repoRequest, page.getContent());
+		return new PagedResources<Object>(resource.getContent(), pageMeta, resource.getLinks());
+	}
+
+	@SuppressWarnings({"unchecked"})
+	protected ResourceSupport entitiesToResource(RepositoryRestRequest repoRequest, Iterable entities) {
+		List<Resource<?>> resources = new ArrayList<Resource<?>>();
+		for(Object obj : entities) {
+			if(null == obj) {
+				resources.add(null);
+				continue;
+			}
+
+			PersistentEntity persistentEntity = repositories.getPersistentEntity(obj.getClass());
+			if(null == persistentEntity) {
+				resources.add(new BaseUriAwareResource<Object>(obj)
+						              .setBaseUri(repoRequest.getBaseUri()));
+				continue;
+			}
+
+			BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
+			PersistentEntityResource per = PersistentEntityResource.wrap(persistentEntity, obj, repoRequest.getBaseUri());
+			Link selfLink = entityLinks.linkForSingleResource(persistentEntity.getType(),
+			                                                  wrapper.getProperty(persistentEntity.getIdProperty()))
+			                           .withSelfRel();
+			per.add(selfLink);
+			resources.add(per);
+		}
+
+		return new Resources(resources);
+	}
+
+	protected PagedResources.PageMetadata pageMetadata(Page page) {
+		return new PagedResources.PageMetadata(
+				page.getNumberOfElements(),
+				page.getNumber() + 1,
+				page.getTotalElements(),
+				page.getTotalPages()
+		);
 	}
 
 }

@@ -18,24 +18,24 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 public class RepositoryRestHandlerAdapter extends ResourceProcessorInvokingHandlerAdapter {
 
-  @Autowired
-  private List<HandlerMethodArgumentResolver> argumentResolvers;
+	@Autowired
+	private List<HandlerMethodArgumentResolver> argumentResolvers;
 
-  @Override public void afterPropertiesSet() {
-    setCustomArgumentResolvers(argumentResolvers);
-    super.afterPropertiesSet();
-  }
+	@Override public void afterPropertiesSet() {
+		setCustomArgumentResolvers(argumentResolvers);
+		super.afterPropertiesSet();
+	}
 
-  @Override public int getOrder() {
-    return Ordered.HIGHEST_PRECEDENCE;
-  }
+	@Override public int getOrder() {
+		return Ordered.HIGHEST_PRECEDENCE;
+	}
 
-  @Override protected boolean supportsInternal(HandlerMethod handlerMethod) {
-    Class<?> controllerType = handlerMethod.getBeanType();
-    return (RepositoryController.class.isAssignableFrom(controllerType)
-        || RepositoryEntityController.class.isAssignableFrom(controllerType)
-        || RepositoryPropertyReferenceController.class.isAssignableFrom(controllerType)
-        || RepositorySearchController.class.isAssignableFrom(controllerType));
-  }
+	@Override protected boolean supportsInternal(HandlerMethod handlerMethod) {
+		Class<?> controllerType = handlerMethod.getBeanType();
+		return (RepositoryController.class.isAssignableFrom(controllerType)
+				|| RepositoryEntityController.class.isAssignableFrom(controllerType)
+				|| RepositoryPropertyReferenceController.class.isAssignableFrom(controllerType)
+				|| RepositorySearchController.class.isAssignableFrom(controllerType));
+	}
 
 }

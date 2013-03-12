@@ -1,15 +1,15 @@
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.rest.core.util.UriUtils.*;
-
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BeanWrapper;
@@ -17,7 +17,7 @@ import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
-import org.springframework.data.rest.repository.PageableResources;
+import org.springframework.data.rest.repository.PagingAndSorting;
 import org.springframework.data.rest.repository.PersistentEntityResource;
 import org.springframework.data.rest.repository.context.AfterCreateEvent;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
@@ -31,7 +31,9 @@ import org.springframework.data.rest.repository.json.PersistentEntityToJsonSchem
 import org.springframework.data.rest.repository.support.DomainObjectMerger;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -87,9 +89,8 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			}
 	)
 	@ResponseBody
-	public Resources<Resource<?>> listEntities(final RepositoryRestRequest repoRequest)
+	public ResourceSupport listEntities(final RepositoryRestRequest repoRequest)
 			throws ResourceNotFoundException {
-		List<Resource<?>> resources = new ArrayList<Resource<?>>();
 		List<Link> links = new ArrayList<Link>();
 
 		Iterable<?> results;
@@ -100,9 +101,10 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 		boolean hasPagingParams = (null != repoRequest.getRequest().getParameter(config.getPageParamName()));
 		boolean hasSortParams = (null != repoRequest.getRequest().getParameter(config.getSortParamName()));
 		if(repoMethodInvoker.hasFindAllPageable() && hasPagingParams) {
-			results = repoMethodInvoker.findAll(new PageRequest(repoRequest.getPagingAndSorting().getPageNumber(),
-			                                                    repoRequest.getPagingAndSorting().getPageSize(),
-			                                                    repoRequest.getPagingAndSorting().getSort()));
+			PagingAndSorting pageSort = repoRequest.getPagingAndSorting();
+			results = repoMethodInvoker.findAll(new PageRequest(pageSort.getPageNumber(),
+			                                                    pageSort.getPageSize(),
+			                                                    pageSort.getSort()));
 		} else if(repoMethodInvoker.hasFindAllSorted() && hasSortParams) {
 			results = repoMethodInvoker.findAll(repoRequest.getPagingAndSorting().getSort());
 		} else if(repoMethodInvoker.hasFindAll()) {
@@ -111,37 +113,25 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			throw new ResourceNotFoundException();
 		}
 
-		for(Object o : results) {
-			BeanWrapper wrapper = BeanWrapper.create(o, conversionService);
-			Link selfLink = entityLinks.linkForSingleResource(repoRequest.getPersistentEntity().getType(),
-			                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
-			                                                                                 .getIdProperty()))
-			                           .withSelfRel();
-			resources.add(new PersistentEntityResource<Object>(repoRequest.getPersistentEntity(),
-			                                                   o,
-			                                                   selfLink)
-					              .setBaseUri(repoRequest.getBaseUri()));
-		}
-
-
+		ResourceMapping repoMapping = repoRequest.getRepositoryResourceMapping();
 		if(!repoMethodInvoker.getQueryMethods().isEmpty()) {
-			ResourceMapping repoMapping = repoRequest.getRepositoryResourceMapping();
-			links.add(new Link(buildUri(repoRequest.getBaseUri(), repoMapping.getPath(), "search").toString(),
-			                   repoMapping.getRel() + ".search"));
+			links.add(entityLinks.linkForSingleResource(repoRequest.getPersistentEntity().getType(), "search")
+			                     .withRel(repoMapping.getRel() + ".search"));
 		}
 
-		if(hasPagingParams || hasSortParams) {
-			PageRequest pr = new PageRequest(repoRequest.getPagingAndSorting().getPageNumber() + 1,
-			                                 repoRequest.getPagingAndSorting().getPageSize(),
-			                                 repoRequest.getPagingAndSorting().getSort()) {
-				@Override public int getOffset() {
-					return super.getOffset() - repoRequest.getPagingAndSorting().getPageSize();
-				}
-			};
-			return new PageableResources<Resource<?>>(resources, pr, links);
-		} else {
-			return new Resources<Resource<?>>(resources, links);
+		PagingAndSorting pageSort = repoRequest.getPagingAndSorting();
+		Link prevLink = null;
+		Link nextLink = null;
+		if(results instanceof Page) {
+			if(((Page)results).hasPreviousPage() && pageSort.getPageNumber() > 0) {
+				prevLink = entitiesPageLink(repoRequest, 0, "page.previous");
+			}
+			if(((Page)results).hasNextPage()) {
+				nextLink = entitiesPageLink(repoRequest, 1, "page.next");
+			}
 		}
+
+		return resultToResourceSupport(repoRequest, results, links, prevLink, nextLink);
 	}
 
 	@SuppressWarnings({"unchecked"})
@@ -153,22 +143,22 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			}
 	)
 	@ResponseBody
-	public Resources<Resource<?>> listEntitiesCompact(RepositoryRestRequest repoRequest)
+	public ResourceSupport listEntitiesCompact(final RepositoryRestRequest repoRequest)
 			throws ResourceNotFoundException {
-		Resources<Resource<?>> resources = listEntities(repoRequest);
+		ResourceSupport resources = listEntities(repoRequest);
 		List<Link> links = new ArrayList<Link>(resources.getLinks());
 
-		for(Resource<?> resource : resources.getContent()) {
-			PersistentEntityResource<?> persistentEntityResource = (PersistentEntityResource<?>)resource;
-			links.add(resourceLink(repoRequest, persistentEntityResource));
+		if(resources instanceof Resources) {
+			for(Resource<?> resource : ((Resources<Resource<?>>)resources).getContent()) {
+				PersistentEntityResource<?> persistentEntityResource = (PersistentEntityResource<?>)resource;
+				links.add(resourceLink(repoRequest, persistentEntityResource));
+			}
 		}
 
-		boolean hasPagingParams = (null != repoRequest.getRequest().getParameter(config.getPageParamName()));
-		boolean hasSortParams = (null != repoRequest.getRequest().getParameter(config.getSortParamName()));
-		if(hasPagingParams || hasSortParams) {
-			return new PageableResources<Resource<?>>(EMPTY_RESOURCE_LIST, repoRequest.getPagingAndSorting(), links);
+		if(resources instanceof PagedResources) {
+			return new PagedResources(Collections.emptyList(), ((PagedResources)resources).getMetadata(), links);
 		} else {
-			return new Resources<Resource<?>>(EMPTY_RESOURCE_LIST, links);
+			return new Resources(Collections.emptyList(), links);
 		}
 	}
 

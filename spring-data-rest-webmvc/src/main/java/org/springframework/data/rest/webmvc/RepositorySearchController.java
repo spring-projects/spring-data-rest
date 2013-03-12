@@ -12,19 +12,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
-import org.springframework.data.rest.repository.BaseUriAwareResource;
-import org.springframework.data.rest.repository.PersistentEntityResource;
+import org.springframework.data.rest.repository.PagingAndSorting;
 import org.springframework.data.rest.repository.invoke.RepositoryMethod;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.Resources;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -75,8 +74,9 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 			}
 	)
 	@ResponseBody
-	public Resource<?> query(RepositoryRestRequest repoRequest,
-	                         @PathVariable String method)
+	public ResourceSupport query(final RepositoryRestRequest repoRequest,
+	                             @PathVariable String repository,
+	                             @PathVariable String method)
 			throws ResourceNotFoundException {
 		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
 		if(repoMethodInvoker.getQueryMethods().isEmpty()) {
@@ -99,17 +99,18 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 			}
 		}
 
+		PagingAndSorting pageSort = repoRequest.getPagingAndSorting();
 		List<MethodParameter> methodParams = repoMethod.getParameters();
 		Object[] paramValues = new Object[methodParams.size()];
 		if(!methodParams.isEmpty()) {
 			for(int i = 0; i < paramValues.length; i++) {
 				MethodParameter param = methodParams.get(i);
 				if(Pageable.class.isAssignableFrom(param.getParameterType())) {
-					paramValues[i] = new PageRequest(repoRequest.getPagingAndSorting().getPageNumber(),
-					                                 repoRequest.getPagingAndSorting().getPageSize(),
-					                                 repoRequest.getPagingAndSorting().getSort());
+					paramValues[i] = new PageRequest(pageSort.getPageNumber(),
+					                                 pageSort.getPageSize(),
+					                                 pageSort.getSort());
 				} else if(Sort.class.isAssignableFrom(param.getParameterType())) {
-					paramValues[i] = repoRequest.getPagingAndSorting().getSort();
+					paramValues[i] = pageSort.getSort();
 				} else {
 					String paramName = repoMethod.getParameterNames().get(i);
 					String[] queryParamVals = repoRequest.getRequest().getParameterValues(paramName);
@@ -129,42 +130,18 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 			}
 		}
 
-		BaseUriAwareResource resources;
-		List<Link> links = new ArrayList<Link>();
 		Object result = repoMethodInvoker.invokeQueryMethod(repoMethod, paramValues);
+		Link prevLink = null;
+		Link nextLink = null;
 		if(result instanceof Page) {
-			Page page = (Page)result;
-			if(page.hasPreviousPage()) {
-				repoRequest.addPrevLink(page, links);
+			if(((Page)result).hasPreviousPage() && pageSort.getPageNumber() > 0) {
+				prevLink = searchLink(repoRequest, 0, method, "page.previous");
 			}
-			if(page.hasNextPage()) {
-				repoRequest.addNextLink(page, links);
+			if(((Page)result).hasNextPage()) {
+				nextLink = searchLink(repoRequest, 1, method, "page.next");
 			}
-			if(page.hasContent()) {
-				resources = entitiesToResource(repoRequest, page.getContent());
-			} else {
-				resources = new BaseUriAwareResource(EMPTY_RESOURCE_LIST);
-			}
-		} else if(result instanceof Iterable) {
-			resources = entitiesToResource(repoRequest, (Iterable)result);
-		} else if(null == result) {
-			resources = new BaseUriAwareResource(EMPTY_RESOURCE_LIST);
-		} else {
-			PersistentEntityResource per = PersistentEntityResource.wrap(repoRequest.getPersistentEntity(),
-			                                                             result,
-			                                                             repoRequest.getBaseUri());
-			BeanWrapper wrapper = BeanWrapper.create(result, conversionService);
-			Link selfLink = entityLinks.linkForSingleResource(result.getClass(),
-			                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
-			                                                                                 .getIdProperty()))
-			                           .withSelfRel();
-			per.add(selfLink);
-			resources = per;
 		}
-		resources.setBaseUri(repoRequest.getBaseUri())
-		         .add(links);
-
-		return resources;
+		return resultToResourceSupport(repoRequest, result, new ArrayList<Link>(), prevLink, nextLink);
 	}
 
 	@RequestMapping(
@@ -175,56 +152,29 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 			}
 	)
 	@ResponseBody
-	public Resource<?> queryCompact(RepositoryRestRequest repoRequest,
-	                                @PathVariable String method)
+	public ResourceSupport queryCompact(RepositoryRestRequest repoRequest,
+	                                    @PathVariable String repository,
+	                                    @PathVariable String method)
 			throws ResourceNotFoundException {
 		List<Link> links = new ArrayList<Link>();
 
-		Resource<?> resource = query(repoRequest, method);
+		ResourceSupport resource = query(repoRequest, repository, method);
 		links.addAll(resource.getLinks());
 
-		if(resource.getContent() instanceof Iterable) {
-			Iterable iter = (Iterable)resource.getContent();
-			for(Object obj : iter) {
+		if(resource instanceof Resources && ((Resources)resource).getContent() != null) {
+			for(Object obj : ((Resources)resource).getContent()) {
 				if(null != obj && obj instanceof Resource) {
 					Resource res = (Resource)obj;
 					links.add(resourceLink(repoRequest, res));
 				}
 			}
-		} else if(resource.getContent() instanceof Resource) {
-			Resource res = (Resource)resource.getContent();
+		} else if(resource instanceof Resource) {
+			Resource res = (Resource)resource;
 			links.add(resourceLink(repoRequest, res));
 		}
 
+
 		return new Resource<Object>(EMPTY_RESOURCE_LIST, links);
-	}
-
-	@SuppressWarnings({"unchecked"})
-	private BaseUriAwareResource entitiesToResource(RepositoryRestRequest repoRequest, Iterable entities) {
-		List<Resource<?>> resources = new ArrayList<Resource<?>>();
-		for(Object obj : entities) {
-			if(null == obj) {
-				resources.add(null);
-				break;
-			}
-
-			PersistentEntity persistentEntity = repositories.getPersistentEntity(obj.getClass());
-			if(null == persistentEntity) {
-				resources.add(new BaseUriAwareResource<Object>(obj)
-						              .setBaseUri(repoRequest.getBaseUri()));
-				continue;
-			}
-
-			BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
-			PersistentEntityResource per = PersistentEntityResource.wrap(persistentEntity, obj, repoRequest.getBaseUri());
-			Link selfLink = entityLinks.linkForSingleResource(persistentEntity.getType(),
-			                                                  wrapper.getProperty(persistentEntity.getIdProperty()))
-			                           .withSelfRel();
-			per.add(selfLink);
-			resources.add(per);
-		}
-		return new BaseUriAwareResource(resources)
-				.setBaseUri(repoRequest.getBaseUri());
 	}
 
 }
