@@ -3,7 +3,6 @@ package org.springframework.data.rest.example;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.example.jpa.Person;
@@ -38,7 +37,8 @@ public class RestExporterExampleRestConfig extends RepositoryRestMvcConfiguratio
 		config.addResourceMappingForDomainType(Person.class)
 		      .addResourceMappingFor("siblings")
 		      .setRel("siblings")
-		      .setPath("siblings");
+		      .setPath("siblings")
+		      .setExported(false);
 	}
 
 	@Bean public ResourceProcessor<Resource<Person>> personResourceProcessor() {

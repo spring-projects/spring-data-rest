@@ -16,6 +16,7 @@ import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.rest.repository.annotation.Description;
+import org.springframework.data.rest.repository.annotation.RestResource;
 
 /**
  * An entity that represents a person.
@@ -32,6 +33,7 @@ public class Person {
 	@NotNull
 	private String lastName;
 	@Description("A person's siblings")
+	@RestResource(exported = false)
 	private List<Person> siblings = Collections.emptyList();
 	private Person father;
 	@Description("Timestamp this person object was created")
