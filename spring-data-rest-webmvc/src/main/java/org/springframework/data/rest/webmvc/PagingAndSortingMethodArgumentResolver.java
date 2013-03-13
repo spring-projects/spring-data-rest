@@ -42,6 +42,19 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
 		this.config = config;
 	}
 
+	public RepositoryRestConfiguration getConfig() {
+		return config;
+	}
+
+	public RepositoryInformationHandlerMethodArgumentResolver getRepoInfoResolver() {
+		return repoInfoResolver;
+	}
+
+	public PagingAndSortingMethodArgumentResolver setRepoInfoResolver(RepositoryInformationHandlerMethodArgumentResolver repoInfoResolver) {
+		this.repoInfoResolver = repoInfoResolver;
+		return this;
+	}
+
 	@Override public boolean supportsParameter(MethodParameter parameter) {
 		return ClassUtils.isAssignable(parameter.getParameterType(), PagingAndSorting.class);
 	}
@@ -51,11 +64,6 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
 	                              ModelAndViewContainer mavContainer,
 	                              NativeWebRequest webRequest,
 	                              WebDataBinderFactory binderFactory) throws Exception {
-		RepositoryInformation repoInfo = (RepositoryInformation)repoInfoResolver.resolveArgument(parameter,
-		                                                                                         mavContainer,
-		                                                                                         webRequest,
-		                                                                                         binderFactory);
-		ResourceMapping repoMapping = config.getResourceMappingForDomainType(repoInfo.getDomainType());
 		HttpServletRequest request = (HttpServletRequest)webRequest.getNativeRequest();
 
 		PageRequest pr = null;
@@ -89,7 +97,11 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
 			String[] orderValues = request.getParameterValues(config.getSortParamName());
 			if(null != orderValues) {
 				for(String orderParam : orderValues) {
-					String name = repoMapping.getNameForPath(orderParam);
+					String name = nameForParam(parameter,
+					                           mavContainer,
+					                           webRequest,
+					                           binderFactory,
+					                           orderParam);
 					String sortDir = request.getParameter(orderParam + ".dir");
 					Sort.Direction dir = (null != sortDir ? Sort.Direction.valueOf(sortDir.toUpperCase()) : Sort.Direction.ASC);
 					orders.add(new Sort.Order(dir, name));
@@ -107,6 +119,25 @@ public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgu
 		}
 
 		return new PagingAndSorting(config, pr);
+	}
+
+	private String nameForParam(MethodParameter parameter,
+	                            ModelAndViewContainer mavContainer,
+	                            NativeWebRequest webRequest,
+	                            WebDataBinderFactory binderFactory,
+	                            String orderParam) throws Exception {
+		if(null == repoInfoResolver) {
+			return orderParam;
+		}
+		RepositoryInformation repoInfo = (RepositoryInformation)repoInfoResolver.resolveArgument(parameter,
+		                                                                                         mavContainer,
+		                                                                                         webRequest,
+		                                                                                         binderFactory);
+		ResourceMapping repoMapping = config.getResourceMappingForDomainType(repoInfo.getDomainType());
+		if(null != repoMapping) {
+			return repoMapping.getNameForPath(orderParam);
+		}
+		return orderParam;
 	}
 
 }

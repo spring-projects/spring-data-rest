@@ -230,6 +230,15 @@ public class RepositoryRestMvcConfiguration {
 	}
 
 	/**
+	 * Resolves the {@link org.springframework.data.repository.core.RepositoryInformation} for this request.
+	 *
+	 * @return
+	 */
+	@Bean public RepositoryInformationHandlerMethodArgumentResolver repoInfoMethodArgumentResolver() {
+		return new RepositoryInformationHandlerMethodArgumentResolver();
+	}
+
+	/**
 	 * Resolves the paging and sorting information from the query parameters based on the current configuration settings.
 	 *
 	 * @return
@@ -245,15 +254,6 @@ public class RepositoryRestMvcConfiguration {
 	 */
 	@Bean public ServerHttpRequestMethodArgumentResolver serverHttpRequestMethodArgumentResolver() {
 		return new ServerHttpRequestMethodArgumentResolver();
-	}
-
-	/**
-	 * Resolves the {@link org.springframework.data.repository.core.RepositoryInformation} for this request.
-	 *
-	 * @return
-	 */
-	@Bean public RepositoryInformationHandlerMethodArgumentResolver repoInfoMethodArgumentResolver() {
-		return new RepositoryInformationHandlerMethodArgumentResolver();
 	}
 
 	/**
