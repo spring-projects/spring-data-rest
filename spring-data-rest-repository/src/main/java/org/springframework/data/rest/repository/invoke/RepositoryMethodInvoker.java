@@ -40,8 +40,7 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 
   @SuppressWarnings({"unchecked"})
   public RepositoryMethodInvoker(Object repository,
-                                 RepositoryInformation repoInfo,
-                                 RepositoryRestConfiguration config) {
+                                 RepositoryInformation repoInfo) {
     this.repository = repository;
     Class<?> repoType = repoInfo.getRepositoryInterface();
 

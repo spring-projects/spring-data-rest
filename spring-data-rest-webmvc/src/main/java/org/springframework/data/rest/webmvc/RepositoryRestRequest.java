@@ -14,8 +14,8 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
-import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
 import org.springframework.data.rest.repository.PagingAndSorting;
+import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
 import org.springframework.hateoas.Link;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -58,7 +58,7 @@ class RepositoryRestRequest {
 			this.repoLink = new Link(buildUri(baseUri, repoMapping.getPath()).toString(), repoMapping.getRel());
 			this.repository = repositories.getRepositoryFor(repoInfo.getDomainType());
 			this.persistentEntity = repositories.getPersistentEntity(repoInfo.getDomainType());
-			this.repoMethodInvoker = new RepositoryMethodInvoker(repository, repoInfo, persistentEntity);
+			this.repoMethodInvoker = new RepositoryMethodInvoker(repository, repoInfo);
 			this.entityMapping = getResourceMapping(config, persistentEntity);
 		}
 	}

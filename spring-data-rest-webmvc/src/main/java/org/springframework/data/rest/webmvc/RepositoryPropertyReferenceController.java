@@ -454,7 +454,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			this.propertyRepoInfo = repositories.getRepositoryInformationFor(propertyType);
 			this.entity = repositories.getPersistentEntity(propertyType);
 			this.propertyRepo = repositories.getRepositoryFor(entity.getType());
-			this.repoMethodInvoker = new RepositoryMethodInvoker(propertyRepo, propertyRepoInfo, entity);
+			this.repoMethodInvoker = new RepositoryMethodInvoker(propertyRepo, propertyRepoInfo);
 		}
 	}
 
