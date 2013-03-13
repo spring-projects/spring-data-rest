@@ -1,5 +1,6 @@
 package org.springframework.data.rest.repository.invoke;
 
+import static org.springframework.data.rest.repository.support.ResourceMappingUtils.getResourceMapping;
 import static org.springframework.util.ReflectionUtils.*;
 
 import java.io.Serializable;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.rest.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.config.ResourceMapping;
 
 /**
  * @author Jon Brisbin
@@ -38,14 +41,14 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
   @SuppressWarnings({"unchecked"})
   public RepositoryMethodInvoker(Object repository,
                                  RepositoryInformation repoInfo,
-                                 final PersistentEntity persistentEntity) {
+                                 RepositoryRestConfiguration config) {
     this.repository = repository;
     Class<?> repoType = repoInfo.getRepositoryInterface();
 
     doWithMethods(repoType, new MethodCallback() {
       @Override public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
         String name = method.getName();
-        int cardinality = method.getParameterTypes().length;
+	      int cardinality = method.getParameterTypes().length;
         Class<?> paramType = (cardinality == 1 ? method.getParameterTypes()[0] : null);
         boolean someMethod = (null != paramType && Iterable.class.isAssignableFrom(paramType));
         boolean byIdMethod = (null != paramType && paramType == Serializable.class);

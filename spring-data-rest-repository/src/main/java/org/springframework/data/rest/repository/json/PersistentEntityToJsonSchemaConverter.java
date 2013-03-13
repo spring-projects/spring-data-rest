@@ -49,6 +49,7 @@ public class PersistentEntityToJsonSchemaConverter
     return (Class.class.isAssignableFrom(sourceType.getType()) && JsonSchema.class.isAssignableFrom(targetType.getType()));
   }
 
+
   @Override public Set<ConvertiblePair> getConvertibleTypes() {
     return convertiblePairs;
   }

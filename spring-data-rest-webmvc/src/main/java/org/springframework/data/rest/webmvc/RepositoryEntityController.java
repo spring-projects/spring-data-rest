@@ -39,6 +39,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -311,32 +313,41 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			method = RequestMethod.DELETE
 	)
 	@ResponseBody
-	public ResponseEntity<?> deleteEntity(RepositoryRestRequest repoRequest,
-	                                      @PathVariable String id)
+	public ResponseEntity<?> deleteEntity(final RepositoryRestRequest repoRequest,
+	                                      @PathVariable final String id)
 			throws ResourceNotFoundException {
-		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
+		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
 		if(null == repoMethodInvoker || (!repoMethodInvoker.hasFindOne()
 				&& !(repoMethodInvoker.hasDeleteOne() || repoMethodInvoker.hasDeleteOneById()))) {
 			throw new NoSuchMethodError();
 		}
 
-		Object domainObj = domainClassConverter.convert(id,
-		                                                STRING_TYPE,
-		                                                TypeDescriptor.valueOf(repoRequest.getPersistentEntity()
-		                                                                                  .getType()));
+		final Object domainObj = domainClassConverter.convert(id,
+		                                                      STRING_TYPE,
+		                                                      TypeDescriptor.valueOf(repoRequest.getPersistentEntity()
+		                                                                                        .getType()));
 		if(null == domainObj) {
 			throw new ResourceNotFoundException();
 		}
 
 		applicationContext.publishEvent(new BeforeDeleteEvent(domainObj));
-		if(repoMethodInvoker.hasDeleteOneById()) {
-			Class<? extends Serializable> idType = (Class<? extends Serializable>)repoRequest.getPersistentEntity()
-			                                                                                 .getIdProperty()
-			                                                                                 .getType();
-			Object idVal = conversionService.convert(id, idType);
-			repoMethodInvoker.delete((Serializable)idVal);
-		} else if(repoMethodInvoker.hasDeleteOne()) {
-			repoMethodInvoker.delete(domainObj);
+		TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
+			@Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+				if(repoMethodInvoker.hasDeleteOneById()) {
+					Class<? extends Serializable> idType = (Class<? extends Serializable>)repoRequest.getPersistentEntity()
+					                                                                                 .getIdProperty()
+					                                                                                 .getType();
+					final Serializable idVal = conversionService.convert(id, idType);
+					repoMethodInvoker.delete(idVal);
+				} else if(repoMethodInvoker.hasDeleteOne()) {
+					repoMethodInvoker.delete(domainObj);
+				}
+			}
+		};
+		if(null != txTmpl) {
+			txTmpl.execute(callback);
+		} else {
+			callback.doInTransaction(null);
 		}
 		applicationContext.publishEvent(new AfterDeleteEvent(domainObj));
 

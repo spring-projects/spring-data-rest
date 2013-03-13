@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -53,6 +54,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -61,7 +64,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * @author Jon Brisbin
  */
-public class AbstractRepositoryRestController implements ApplicationContextAware {
+public class AbstractRepositoryRestController implements ApplicationContextAware,
+                                                         InitializingBean {
 
 	static final    Resource<?>            EMPTY_RESOURCE      = new Resource<Object>(Collections.emptyList());
 	static final    Resources<Resource<?>> EMPTY_RESOURCES     = new Resources<Resource<?>>(Collections.<Resource<?>>emptyList());
@@ -77,6 +81,9 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	protected       ApplicationContext               applicationContext;
 	@Autowired(required = false)
 	protected       ValidationExceptionHandler       handler;
+	@Autowired(required = false)
+	protected       PlatformTransactionManager       txMgr;
+	protected       TransactionTemplate              txTmpl;
 
 	@Autowired
 	public AbstractRepositoryRestController(Repositories repositories,
@@ -94,6 +101,13 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 
 	@Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
+	}
+
+	@Override public void afterPropertiesSet() throws Exception {
+		if(null != txMgr) {
+			txTmpl = new TransactionTemplate(txMgr);
+			txTmpl.afterPropertiesSet();
+		}
 	}
 
 	@ExceptionHandler({
