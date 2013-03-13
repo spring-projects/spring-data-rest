@@ -208,6 +208,8 @@ project("spring-data-rest-webmvc") {
     // APIS
     compile("javax.servlet:javax.servlet-api:3.0.1", provided)
 
+    compile("org.codehaus.jackson:jackson-core-asl:1.9.12", optional)
+
     // Testing
     testCompile "org.eclipse.jetty:jetty-servlet:$jettyVersion"
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
