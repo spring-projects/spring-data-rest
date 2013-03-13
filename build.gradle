@@ -241,6 +241,20 @@ project("spring-data-rest-example") {
   description = "Spring Data REST example web application."
 
   dependencies {
+    // Spring
+    compile("org.springframework:spring-aop:$spring32Version") { force = true }
+    compile("org.springframework:spring-aspects:$spring32Version") { force = true }
+    compile("org.springframework:spring-beans:$spring32Version") { force = true }
+    compile("org.springframework:spring-context:$spring32Version") { force = true }
+    compile("org.springframework:spring-context-support:$spring32Version") { force = true }
+    compile("org.springframework:spring-core:$spring32Version") { force = true }
+    compile("org.springframework:spring-expression:$spring32Version") { force = true }
+    compile("org.springframework:spring-jdbc:$spring32Version") { force = true }
+    compile("org.springframework:spring-orm:$spring32Version") { force = true }
+    compile("org.springframework:spring-tx:$spring32Version") { force = true }
+    compile("org.springframework:spring-web:$spring32Version") { force = true }
+    compile("org.springframework:spring-webmvc:$spring32Version") { force = true }
+
     compile project(":spring-data-rest-webmvc")
 
     // Logging
