@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 
 import com.google.common.base.Function;
 import org.springframework.core.convert.ConversionService;
@@ -273,15 +274,22 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
 			@Override public Resource<?> apply(ReferencedProperty prop) {
 				if(prop.property.isCollectionLike()) {
-					Collection coll = new ArrayList();
 					if("POST".equals(repoRequest.getRequest().getMethod())) {
-						coll.addAll((Collection)prop.propertyValue);
+						Collection coll = (Collection)prop.propertyValue;
+						for(Link l : incoming.getLinks()) {
+							Object propVal = loadPropertyValue(prop.propertyType, l.getHref());
+							coll.add(propVal);
+						}
 					}
+					else {
+						Collection coll = new ArrayList();
 					for(Link l : incoming.getLinks()) {
 						Object propVal = loadPropertyValue(prop.propertyType, l.getHref());
 						coll.add(propVal);
 					}
+						
 					prop.wrapper.setProperty(prop.property, coll);
+					}
 				} else if(prop.property.isMap()) {
 					Map m = new HashMap();
 					if("POST".equals(repoRequest.getRequest().getMethod())) {
@@ -340,15 +348,16 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					return null;
 				}
 				if(prop.property.isCollectionLike()) {
-					Collection coll = new ArrayList();
-					for(Object obj : (Collection)prop.propertyValue) {
+					Collection coll = (Collection)prop.propertyValue;
+					Iterator itr = coll.iterator();
+					while(itr.hasNext()) {
+						Object obj = itr.next();
 						BeanWrapper propValWrapper = BeanWrapper.create(obj, conversionService);
 						String s = (String)propValWrapper.getProperty(prop.entity.getIdProperty(), String.class, false);
-						if(!propertyId.equals(s)) {
-							coll.add(obj);
+						if(propertyId.equals(s)) {
+							itr.remove();
 						}
 					}
-					prop.wrapper.setProperty(prop.property, coll);
 				} else if(prop.property.isMap()) {
 					Map m = new HashMap();
 					for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)prop.propertyValue).entrySet()) {
