@@ -20,8 +20,8 @@ public class RestExporterWebInitializer implements WebApplicationInitializer {
 	@Override public void onStartup(ServletContext servletContext) throws ServletException {
 		AnnotationConfigWebApplicationContext rootCtx = new AnnotationConfigWebApplicationContext();
 		rootCtx.register(
-				JpaRepositoryConfig.class,
-				MongoDbRepositoryConfig.class,
+				//JpaRepositoryConfig.class,
+				//MongoDbRepositoryConfig.class,
 				//GemfireRepositoryConfig.class,
 				Neo4jRepositoryConfig.class
 		);

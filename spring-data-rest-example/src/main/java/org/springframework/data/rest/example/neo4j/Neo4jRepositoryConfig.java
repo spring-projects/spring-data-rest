@@ -9,10 +9,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.JtaTransactionManagerFactoryBean;
+import org.springframework.data.neo4j.support.Neo4jExceptionTranslator;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.data.neo4j.support.mapping.Neo4jMappingContext;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * @author Jon Brisbin
@@ -41,8 +41,12 @@ public class Neo4jRepositoryConfig {
 		return new JtaTransactionManagerFactoryBean(graphDatabaseService());
 	}
 
-	@Bean(initMethod = "loadFriends") public FriendLoader friendLoader() {
-		return new FriendLoader();
+	@Bean public Neo4jExceptionTranslator exceptionTranslator() {
+		return new Neo4jExceptionTranslator();
+	}
+
+	@Bean(initMethod = "loadData") public Neo4jLoader neo4jLoader() {
+		return new Neo4jLoader();
 	}
 
 }

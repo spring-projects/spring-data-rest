@@ -57,4 +57,8 @@ public class JpaRepositoryConfig {
 		return txManager;
 	}
 
+	@Bean(initMethod = "loadData") public JpaLoader jpaLoader() {
+		return new JpaLoader();
+	}
+
 }

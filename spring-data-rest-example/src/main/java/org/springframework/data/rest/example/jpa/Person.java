@@ -109,4 +109,15 @@ public class Person {
 		this.created = Calendar.getInstance().getTime();
 	}
 
+	@Override public String toString() {
+		return "Person{" +
+				"id=" + id +
+				", firstName='" + firstName + '\'' +
+				", lastName='" + lastName + '\'' +
+				", siblings=[" + siblings.size() + "]" +
+				", father=" + father +
+				", created=" + created +
+				'}';
+	}
+
 }
