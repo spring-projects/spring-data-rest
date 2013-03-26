@@ -10,14 +10,14 @@ ext {
 
   // Spring
   springVersion = "3.1.4.RELEASE"
-  spring32Version = "3.2.1.RELEASE"
+  spring32Version = "3.2.2.RELEASE"
   hateoasVersion = "0.4.0.RELEASE"
   springPluginVersion = "0.8.0.RELEASE"
   springSecurityVersion = "3.1.3.RELEASE"
   sdCommonsVersion = "1.5.0.RELEASE"
   sdJpaVersion = "1.3.0.RELEASE"
   sdMongoVersion = "1.2.0.RELEASE"
-  sdGemfireVersion = "1.3.0.M1"
+  sdGemfireVersion = "1.3.0.RELEASE"
   sdNeo4jVersion = "2.3.0.BUILD-SNAPSHOT"
 
   // Libraries
