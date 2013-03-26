@@ -329,6 +329,9 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 			LinkBuilder linkBuilder = BaseUriLinkBuilder.create(buildUri(baseUri, repoMapping.getPath(), "search"));
 			ResourceMapping methodMapping = ResourceMappingUtils.merge(method,
 			                                                           repoMapping.getResourceMappingFor(method.getName()));
+			if(!methodMapping.isExported()) {
+				continue;
+			}
 			links.add(linkBuilder.slash(methodMapping.getPath())
 			                     .withRel(repoMapping.getRel() + "." + methodMapping.getRel()));
 		}

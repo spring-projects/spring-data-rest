@@ -57,10 +57,13 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 			}
 	)
 	@ResponseBody
-	public Resource<?> list(RepositoryRestRequest repoRequest) {
+	public Resource<?> list(RepositoryRestRequest repoRequest) throws ResourceNotFoundException {
 		List<Link> links = new ArrayList<Link>();
 		links.addAll(queryMethodLinks(repoRequest.getBaseUri(),
 		                              repoRequest.getPersistentEntity().getType()));
+		if(links.isEmpty()) {
+			throw new ResourceNotFoundException();
+		}
 		return new Resource<Object>(Collections.emptyList(), links);
 	}
 
