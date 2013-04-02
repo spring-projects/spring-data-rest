@@ -34,7 +34,7 @@ public class RepositoryTestsConfig {
   @Bean public RepositoryRestConfiguration config() {
     RepositoryRestConfiguration config = new RepositoryRestConfiguration();
 
-    config.addResourceMappingForDomainType(Person.class)
+    config.setResourceMappingForDomainType(Person.class)
           .setRel("person");
 
     config.setResourceMappingForRepository(ConfiguredPersonRepository.class)

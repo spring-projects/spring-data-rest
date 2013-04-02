@@ -13,7 +13,7 @@ public class ResourceMappingConfiguration {
 
   private final Map<Class<?>, ResourceMapping> resourceMappings = new HashMap<Class<?>, ResourceMapping>();
 
-  public ResourceMapping addResourceMappingFor(Class<?> type) {
+  public ResourceMapping setResourceMappingFor(Class<?> type) {
     ResourceMapping rm = resourceMappings.get(type);
     if(null == rm) {
       rm = new ResourceMapping(type);
