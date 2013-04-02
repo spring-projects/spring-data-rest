@@ -6,7 +6,6 @@ import javax.servlet.ServletRegistration;
 
 import org.springframework.data.rest.example.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.example.mongodb.MongoDbRepositoryConfig;
-import org.springframework.data.rest.example.neo4j.Neo4jRepositoryConfig;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -20,10 +19,10 @@ public class RestExporterWebInitializer implements WebApplicationInitializer {
 	@Override public void onStartup(ServletContext servletContext) throws ServletException {
 		AnnotationConfigWebApplicationContext rootCtx = new AnnotationConfigWebApplicationContext();
 		rootCtx.register(
-				//JpaRepositoryConfig.class,
-				//MongoDbRepositoryConfig.class,
+				JpaRepositoryConfig.class,
+				MongoDbRepositoryConfig.class
 				//GemfireRepositoryConfig.class,
-				Neo4jRepositoryConfig.class
+				//Neo4jRepositoryConfig.class
 		);
 
 		servletContext.addListener(new ContextLoaderListener(rootCtx));

@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.example.jpa.Person;
+import org.springframework.data.rest.example.jpa.PersonRepository;
 import org.springframework.data.rest.example.jpa.PersonValidator;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.Link;
@@ -31,14 +32,9 @@ public class RestExporterExampleRestConfig extends RepositoryRestMvcConfiguratio
 	}
 
 	@Override protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-		config.addResourceMappingForDomainType(Person.class)
+		config.setResourceMappingForDomainType(Person.class)
 		      .addResourceMappingFor("lastName")
 		      .setPath("surname");
-		config.addResourceMappingForDomainType(Person.class)
-		      .addResourceMappingFor("siblings")
-		      .setRel("siblings")
-		      .setPath("siblings")
-		      .setExported(false);
 	}
 
 	@Bean public ResourceProcessor<Resource<Person>> personResourceProcessor() {
