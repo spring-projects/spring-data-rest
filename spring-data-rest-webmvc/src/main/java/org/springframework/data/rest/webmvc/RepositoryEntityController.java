@@ -41,6 +41,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -315,11 +316,15 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 	@ResponseBody
 	public ResponseEntity<?> deleteEntity(final RepositoryRestRequest repoRequest,
 	                                      @PathVariable final String id)
-			throws ResourceNotFoundException {
+			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
 		if(null == repoMethodInvoker || (!repoMethodInvoker.hasFindOne()
 				&& !(repoMethodInvoker.hasDeleteOne() || repoMethodInvoker.hasDeleteOneById()))) {
-			throw new NoSuchMethodError();
+			throw new HttpRequestMethodNotSupportedException("DELETE");
+		}
+		ResourceMapping methodMapping = repoRequest.getRepositoryResourceMapping().getResourceMappingFor("delete");
+		if(null != methodMapping && !methodMapping.isExported()) {
+			throw new HttpRequestMethodNotSupportedException("DELETE");
 		}
 
 		final Object domainObj = domainClassConverter.convert(id,

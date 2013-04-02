@@ -5,7 +5,7 @@ package org.springframework.data.rest.webmvc;
  *
  * @author Jon Brisbin
  */
-public class ResourceNotFoundException extends Exception {
+public class ResourceNotFoundException extends RuntimeException {
   public ResourceNotFoundException() {
     super("Resource not found");
   }

@@ -165,26 +165,26 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 		return badRequest(t);
 	}
 
-	@ExceptionHandler({
-			                  RuntimeException.class
-	                  })
-	@ResponseBody
-	public ResponseEntity maybeHandleValidationException(Locale locale,
-	                                                     RuntimeException ex) {
-		if(ResourceNotFoundException.class.isAssignableFrom(ex.getClass())) {
-			return handleNotFound();
-		}
-
-		if(null != handler) {
-			return handler.handleValidationException(ex,
-			                                         applicationContext,
-			                                         locale);
-		} else {
-			return response(null,
-			                ex,
-			                HttpStatus.BAD_REQUEST);
-		}
-	}
+	//	@ExceptionHandler({
+	//			                  RuntimeException.class
+	//	                  })
+	//	@ResponseBody
+	//	public ResponseEntity maybeHandleValidationException(Locale locale,
+	//	                                                     RuntimeException ex) {
+	//		if(ResourceNotFoundException.class.isAssignableFrom(ex.getClass())) {
+	//			return handleNotFound();
+	//		}
+	//
+	//		if(null != handler) {
+	//			return handler.handleValidationException(ex,
+	//			                                         applicationContext,
+	//			                                         locale);
+	//		} else {
+	//			return response(null,
+	//			                ex,
+	//			                HttpStatus.BAD_REQUEST);
+	//		}
+	//	}
 
 	@ExceptionHandler({
 			                  RepositoryConstraintViolationException.class
@@ -230,14 +230,6 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 		return errorResponse(headers, throwable, HttpStatus.BAD_REQUEST);
 	}
 
-	public <T extends Throwable> ResponseEntity<ExceptionMessage> internalServerError(T throwable) {
-		return internalServerError(null, throwable);
-	}
-
-	public <T extends Throwable> ResponseEntity<ExceptionMessage> internalServerError(HttpHeaders headers, T throwable) {
-		return errorResponse(headers, throwable, HttpStatus.INTERNAL_SERVER_ERROR);
-	}
-
 	public <T extends Throwable> ResponseEntity<ExceptionMessage> errorResponse(T throwable,
 	                                                                            HttpStatus status) {
 		return errorResponse(null, throwable, status);
@@ -246,8 +238,12 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	public <T extends Throwable> ResponseEntity<ExceptionMessage> errorResponse(HttpHeaders headers,
 	                                                                            T throwable,
 	                                                                            HttpStatus status) {
-		LOG.error(throwable.getMessage(), throwable);
-		return response(headers, new ExceptionMessage(throwable), status);
+		if(null != throwable && null != throwable.getMessage()) {
+			LOG.error(throwable.getMessage(), throwable);
+			return response(headers, new ExceptionMessage(throwable), status);
+		} else {
+			return response(headers, null, status);
+		}
 	}
 
 	public <T> ResponseEntity<T> response(HttpHeaders headers, T body, HttpStatus status) {

@@ -34,6 +34,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -75,6 +76,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		final HttpHeaders headers = new HttpHeaders();
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
 			@Override public Resource<?> apply(ReferencedProperty prop) {
+				if(null == prop.propertyValue) {
+					throw new ResourceNotFoundException();
+				}
 				if(prop.property.isCollectionLike()) {
 					List<Resource<?>> resources = new ArrayList<Resource<?>>();
 					PersistentEntity entity = repositories.getPersistentEntity(prop.propertyType);
@@ -129,6 +133,53 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
+			method = RequestMethod.DELETE
+	)
+	@ResponseBody
+	public ResponseEntity<Resource<?>> deletePropertyReference(final RepositoryRestRequest repoRequest,
+	                                                           @PathVariable String id,
+	                                                           @PathVariable String property)
+			throws ResourceNotFoundException, NoSuchMethodException, HttpRequestMethodNotSupportedException {
+		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
+		if(!repoMethodInvoker.hasDeleteOne()) {
+			throw new NoSuchMethodException();
+		}
+
+		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
+			@Override public Resource<?> apply(ReferencedProperty prop) {
+				if(null == prop.propertyValue) {
+					return null;
+				}
+				if(prop.property.isCollectionLike()) {
+					throw new IllegalArgumentException(new HttpRequestMethodNotSupportedException("DELETE"));
+				} else if(prop.property.isMap()) {
+					throw new IllegalArgumentException(new HttpRequestMethodNotSupportedException("DELETE"));
+				} else {
+					prop.wrapper.setProperty(prop.property, null);
+				}
+
+				applicationContext.publishEvent(new BeforeLinkDeleteEvent(prop.wrapper.getBean(), prop.propertyValue));
+				Object result = repoMethodInvoker.save(prop.wrapper.getBean());
+				applicationContext.publishEvent(new AfterLinkDeleteEvent(result, prop.propertyValue));
+				return null;
+			}
+		};
+		try {
+			doWithReferencedProperty(repoRequest,
+			                         id,
+			                         property,
+			                         handler);
+		} catch(IllegalArgumentException iae) {
+			if(iae.getCause() instanceof HttpRequestMethodNotSupportedException) {
+				throw (HttpRequestMethodNotSupportedException)iae.getCause();
+			}
+		}
+
+		return resourceResponse(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
+	}
+
+	@SuppressWarnings({"unchecked"})
+	@RequestMapping(
 			value = "/{propertyId}",
 			method = RequestMethod.GET,
 			produces = {
@@ -147,6 +198,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		final HttpHeaders headers = new HttpHeaders();
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
 			@Override public Resource<?> apply(ReferencedProperty prop) {
+				if(null == prop.propertyValue) {
+					throw new ResourceNotFoundException();
+				}
 				if(prop.property.isCollectionLike()) {
 					PersistentEntity entity = repositories.getPersistentEntity(prop.propertyType);
 					for(Object obj : ((Iterable)prop.propertyValue)) {
@@ -324,10 +378,10 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			method = RequestMethod.DELETE
 	)
 	@ResponseBody
-	public ResponseEntity<Resource<?>> deletePropertyReference(final RepositoryRestRequest repoRequest,
-	                                                           @PathVariable String id,
-	                                                           @PathVariable String property,
-	                                                           final @PathVariable String propertyId)
+	public ResponseEntity<Resource<?>> deletePropertyReferenceId(final RepositoryRestRequest repoRequest,
+	                                                             @PathVariable String id,
+	                                                             @PathVariable String property,
+	                                                             final @PathVariable String propertyId)
 			throws ResourceNotFoundException, NoSuchMethodException {
 		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
 		if(!repoMethodInvoker.hasDeleteOne()) {
@@ -419,9 +473,6 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 		BeanWrapper wrapper = BeanWrapper.create(domainObj, conversionService);
 		Object propVal = wrapper.getProperty(prop);
-		if(null == propVal) {
-			throw new ResourceNotFoundException();
-		}
 
 		return handler.apply(new ReferencedProperty(prop,
 		                                            propVal,

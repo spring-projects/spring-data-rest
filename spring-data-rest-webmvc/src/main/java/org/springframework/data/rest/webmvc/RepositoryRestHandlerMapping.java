@@ -70,14 +70,6 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 
 		HttpServletRequest request = new DefaultAcceptTypeHttpServletRequest(origRequest, acceptType);
 
-		if(acceptType.contains("javascript")) {
-			if(null != request.getParameter(config.getJsonpParamName())
-					|| null != request.getParameter(config.getJsonpOnErrParamName())) {
-				return super.lookupHandlerMethod(lookupPath, request);
-			} else {
-				return null;
-			}
-		}
 		String requestUri = lookupPath;
 		if(requestUri.startsWith("/")) {
 			requestUri = requestUri.substring(1);
