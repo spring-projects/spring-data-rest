@@ -1,6 +1,7 @@
 package org.springframework.data.rest.repository.invoke;
 
-import static org.springframework.util.ReflectionUtils.*;
+import static org.springframework.util.ReflectionUtils.doWithMethods;
+import static org.springframework.util.ReflectionUtils.invokeMethod;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.rest.repository.support.ResourceMappingUtils;
+import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
  * @author Jon Brisbin
@@ -64,10 +66,10 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 					findOne = repoMethod;
 				} else if("exists".equals(name)) {
 					exists = repoMethod;
-				} else if("findAll".equals(name) && someMethod) {
-					findSome = repoMethod;
 				} else if("findAll".equals(name) && sortable) {
 					findAllSorted = repoMethod;
+				} else if("findAll".equals(name) && someMethod) {
+					findSome = repoMethod;
 				} else if("findAll".equals(name) && pageable) {
 					findAllPaged = repoMethod;
 				} else if("findAll".equals(name)) {
