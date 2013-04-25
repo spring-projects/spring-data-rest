@@ -1,11 +1,5 @@
 package org.springframework.data.rest.webmvc;
 
-import java.io.Serializable;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
@@ -19,22 +13,12 @@ import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.data.rest.repository.PagingAndSorting;
 import org.springframework.data.rest.repository.PersistentEntityResource;
-import org.springframework.data.rest.repository.context.AfterCreateEvent;
-import org.springframework.data.rest.repository.context.AfterDeleteEvent;
-import org.springframework.data.rest.repository.context.AfterSaveEvent;
-import org.springframework.data.rest.repository.context.BeforeCreateEvent;
-import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
-import org.springframework.data.rest.repository.context.BeforeSaveEvent;
+import org.springframework.data.rest.repository.context.*;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
 import org.springframework.data.rest.repository.json.JsonSchema;
 import org.springframework.data.rest.repository.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.repository.support.DomainObjectMerger;
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,11 +31,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.Serializable;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Jon Brisbin
  */
 @Controller
 @RequestMapping("/{repository}")
+@SuppressWarnings({"rawtypes"})
 public class RepositoryEntityController extends AbstractRepositoryRestController {
 
 	@Autowired
@@ -60,15 +51,15 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 	private PersistentEntityToJsonSchemaConverter jsonSchemaConverter;
 
 	public RepositoryEntityController(Repositories repositories,
-	                                  RepositoryRestConfiguration config,
-	                                  DomainClassConverter domainClassConverter,
-	                                  ConversionService conversionService,
-	                                  EntityLinks entityLinks) {
+																		RepositoryRestConfiguration config,
+																		DomainClassConverter domainClassConverter,
+																		ConversionService conversionService,
+																		EntityLinks entityLinks) {
 		super(repositories,
-		      config,
-		      domainClassConverter,
-		      conversionService,
-		      entityLinks);
+					config,
+					domainClassConverter,
+					conversionService,
+					entityLinks);
 	}
 
 	@RequestMapping(
@@ -92,49 +83,48 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			}
 	)
 	@ResponseBody
-	public ResourceSupport listEntities(final RepositoryRestRequest repoRequest)
+	public Resources listEntities(final RepositoryRestRequest repoRequest)
 			throws ResourceNotFoundException {
 		List<Link> links = new ArrayList<Link>();
 
 		Iterable<?> results;
 		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if(null == repoMethodInvoker) {
+		if (null == repoMethodInvoker) {
 			throw new ResourceNotFoundException();
 		}
-		boolean hasPagingParams = (null != repoRequest.getRequest().getParameter(config.getPageParamName()));
 		boolean hasSortParams = (null != repoRequest.getRequest().getParameter(config.getSortParamName()));
-		if(repoMethodInvoker.hasFindAllPageable() && hasPagingParams) {
+		if (repoMethodInvoker.hasFindAllPageable()) {
 			PagingAndSorting pageSort = repoRequest.getPagingAndSorting();
 			results = repoMethodInvoker.findAll(new PageRequest(pageSort.getPageNumber(),
-			                                                    pageSort.getPageSize(),
-			                                                    pageSort.getSort()));
-		} else if(repoMethodInvoker.hasFindAllSorted() && hasSortParams) {
+																													pageSort.getPageSize(),
+																													pageSort.getSort()));
+		} else if (repoMethodInvoker.hasFindAllSorted() && hasSortParams) {
 			results = repoMethodInvoker.findAll(repoRequest.getPagingAndSorting().getSort());
-		} else if(repoMethodInvoker.hasFindAll()) {
+		} else if (repoMethodInvoker.hasFindAll()) {
 			results = repoMethodInvoker.findAll();
 		} else {
 			throw new ResourceNotFoundException();
 		}
 
 		ResourceMapping repoMapping = repoRequest.getRepositoryResourceMapping();
-		if(!repoMethodInvoker.getQueryMethods().isEmpty()) {
+		if (!repoMethodInvoker.getQueryMethods().isEmpty()) {
 			links.add(entityLinks.linkForSingleResource(repoRequest.getPersistentEntity().getType(), "search")
-			                     .withRel(repoMapping.getRel() + ".search"));
+													 .withRel(repoMapping.getRel() + ".search"));
 		}
 
 		PagingAndSorting pageSort = repoRequest.getPagingAndSorting();
 		Link prevLink = null;
 		Link nextLink = null;
-		if(results instanceof Page) {
-			if(((Page)results).hasPreviousPage() && pageSort.getPageNumber() > 0) {
+		if (results instanceof Page) {
+			if (((Page) results).hasPreviousPage() && pageSort.getPageNumber() > 0) {
 				prevLink = entitiesPageLink(repoRequest, 0, "page.previous");
 			}
-			if(((Page)results).hasNextPage()) {
+			if (((Page) results).hasNextPage()) {
 				nextLink = entitiesPageLink(repoRequest, 1, "page.next");
 			}
 		}
 
-		return resultToResourceSupport(repoRequest, results, links, prevLink, nextLink);
+		return resultToResources(repoRequest, results, links, prevLink, nextLink);
 	}
 
 	@SuppressWarnings({"unchecked"})
@@ -146,20 +136,17 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 			}
 	)
 	@ResponseBody
-	public ResourceSupport listEntitiesCompact(final RepositoryRestRequest repoRequest)
+	public Resources listEntitiesCompact(final RepositoryRestRequest repoRequest)
 			throws ResourceNotFoundException {
-		ResourceSupport resources = listEntities(repoRequest);
+		Resources resources = listEntities(repoRequest);
 		List<Link> links = new ArrayList<Link>(resources.getLinks());
 
-		if(resources instanceof Resources) {
-			for(Resource<?> resource : ((Resources<Resource<?>>)resources).getContent()) {
-				PersistentEntityResource<?> persistentEntityResource = (PersistentEntityResource<?>)resource;
-				links.add(resourceLink(repoRequest, persistentEntityResource));
-			}
+		for (Resource<?> resource : ((Resources<Resource<?>>) resources).getContent()) {
+			PersistentEntityResource<?> persistentEntityResource = (PersistentEntityResource<?>) resource;
+			links.add(resourceLink(repoRequest, persistentEntityResource));
 		}
-
-		if(resources instanceof PagedResources) {
-			return new PagedResources(Collections.emptyList(), ((PagedResources)resources).getMetadata(), links);
+		if (resources instanceof PagedResources) {
+			return new PagedResources(Collections.emptyList(), ((PagedResources) resources).getMetadata(), links);
 		} else {
 			return new Resources(Collections.emptyList(), links);
 		}
@@ -178,9 +165,9 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 	)
 	@ResponseBody
 	public ResponseEntity<Resource<?>> createNewEntity(RepositoryRestRequest repoRequest,
-	                                                   PersistentEntityResource<?> incoming) {
+																										 PersistentEntityResource<?> incoming) {
 		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if(null == repoMethodInvoker || !repoMethodInvoker.hasSaveOne()) {
+		if (null == repoMethodInvoker || !repoMethodInvoker.hasSaveOne()) {
 			throw new NoSuchMethodError();
 		}
 
@@ -189,24 +176,25 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 		applicationContext.publishEvent(new AfterCreateEvent(obj));
 
 		BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
-		Link selfLink = entityLinks.linkForSingleResource(repoRequest.getPersistentEntity().getType(),
-		                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
-		                                                                                 .getIdProperty()))
-		                           .withSelfRel();
+		Link selfLink = entityLinks.linkForSingleResource(
+				repoRequest.getPersistentEntity().getType(),
+				wrapper.getProperty(repoRequest.getPersistentEntity().getIdProperty())
+		).withSelfRel();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setLocation(URI.create(selfLink.getHref()));
 
-		if(config.isReturnBodyOnCreate()) {
-			return resourceResponse(headers,
-			                        new PersistentEntityResource<Object>(repoRequest.getPersistentEntity(),
-			                                                             obj,
-			                                                             selfLink)
-					                        .setBaseUri(repoRequest.getBaseUri()),
-			                        HttpStatus.CREATED);
+		if (config.isReturnBodyOnCreate()) {
+			return resourceResponse(
+					headers,
+					new PersistentEntityResource<Object>(
+							repoRequest.getPersistentEntity(),
+							obj,
+							selfLink
+					).setBaseUri(repoRequest.getBaseUri()),
+					HttpStatus.CREATED
+			);
 		} else {
-			return resourceResponse(headers,
-			                        null,
-			                        HttpStatus.CREATED);
+			return resourceResponse(headers, null, HttpStatus.CREATED);
 		}
 	}
 
@@ -222,29 +210,29 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 	)
 	@ResponseBody
 	public Resource<?> getSingleEntity(RepositoryRestRequest repoRequest,
-	                                   @PathVariable String id)
-			throws ResourceNotFoundException {
+																		 @PathVariable String id) throws ResourceNotFoundException {
 		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if(null == repoMethodInvoker || !repoMethodInvoker.hasFindOne()) {
+		if (null == repoMethodInvoker || !repoMethodInvoker.hasFindOne()) {
 			throw new ResourceNotFoundException();
 		}
 
-		Object domainObj = domainClassConverter.convert(id,
-		                                                STRING_TYPE,
-		                                                TypeDescriptor.valueOf(repoRequest.getPersistentEntity()
-		                                                                                  .getType()));
-		if(null == domainObj) {
+		Object domainObj = domainClassConverter.convert(
+				id,
+				STRING_TYPE,
+				TypeDescriptor.valueOf(repoRequest.getPersistentEntity().getType())
+		);
+		if (null == domainObj) {
 			throw new ResourceNotFoundException();
 		}
 
 		PersistentEntityResource per = PersistentEntityResource.wrap(repoRequest.getPersistentEntity(),
-		                                                             domainObj,
-		                                                             repoRequest.getBaseUri());
+																																 domainObj,
+																																 repoRequest.getBaseUri());
 		BeanWrapper wrapper = BeanWrapper.create(domainObj, conversionService);
-		Link selfLink = entityLinks.linkForSingleResource(repoRequest.getPersistentEntity().getType(),
-		                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
-		                                                                                 .getIdProperty()))
-		                           .withSelfRel();
+		Link selfLink = entityLinks.linkForSingleResource(
+				repoRequest.getPersistentEntity().getType(),
+				wrapper.getProperty(repoRequest.getPersistentEntity().getIdProperty())
+		).withSelfRel();
 		per.add(selfLink);
 		return per;
 	}
@@ -263,19 +251,19 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 	)
 	@ResponseBody
 	public ResponseEntity<Resource<?>> updateEntity(RepositoryRestRequest repoRequest,
-	                                                PersistentEntityResource<?> incoming,
-	                                                @PathVariable String id)
-			throws ResourceNotFoundException {
+																									PersistentEntityResource<?> incoming,
+																									@PathVariable String id) throws ResourceNotFoundException {
 		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if(null == repoMethodInvoker || !repoMethodInvoker.hasSaveOne() || !repoMethodInvoker.hasFindOne()) {
+		if (null == repoMethodInvoker || !repoMethodInvoker.hasSaveOne() || !repoMethodInvoker.hasFindOne()) {
 			throw new NoSuchMethodError();
 		}
 
-		Object domainObj = domainClassConverter.convert(id,
-		                                                STRING_TYPE,
-		                                                TypeDescriptor.valueOf(repoRequest.getPersistentEntity()
-		                                                                                  .getType()));
-		if(null == domainObj) {
+		Object domainObj = domainClassConverter.convert(
+				id,
+				STRING_TYPE,
+				TypeDescriptor.valueOf(repoRequest.getPersistentEntity().getType())
+		);
+		if (null == domainObj) {
 			BeanWrapper incomingWrapper = BeanWrapper.create(incoming.getContent(), conversionService);
 			PersistentProperty idProp = incoming.getPersistentEntity().getIdProperty();
 			incomingWrapper.setProperty(idProp, conversionService.convert(id, idProp.getType()));
@@ -288,23 +276,23 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 		Object obj = repoMethodInvoker.save(domainObj);
 		applicationContext.publishEvent(new AfterSaveEvent(obj));
 
-		if(config.isReturnBodyOnUpdate()) {
+		if (config.isReturnBodyOnUpdate()) {
 			PersistentEntityResource per = PersistentEntityResource.wrap(repoRequest.getPersistentEntity(),
-			                                                             obj,
-			                                                             repoRequest.getBaseUri());
+																																	 obj,
+																																	 repoRequest.getBaseUri());
 			BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
 			Link selfLink = entityLinks.linkForSingleResource(repoRequest.getPersistentEntity().getType(),
-			                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
-			                                                                                 .getIdProperty()))
-			                           .withSelfRel();
+																												wrapper.getProperty(repoRequest.getPersistentEntity()
+																																											 .getIdProperty()))
+																 .withSelfRel();
 			per.add(selfLink);
 			return resourceResponse(null,
-			                        per,
-			                        HttpStatus.OK);
+															per,
+															HttpStatus.OK);
 		} else {
 			return resourceResponse(null,
-			                        null,
-			                        HttpStatus.NO_CONTENT);
+															null,
+															HttpStatus.NO_CONTENT);
 		}
 	}
 
@@ -315,41 +303,42 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 	)
 	@ResponseBody
 	public ResponseEntity<?> deleteEntity(final RepositoryRestRequest repoRequest,
-	                                      @PathVariable final String id)
+																				@PathVariable final String id)
 			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if(null == repoMethodInvoker || (!repoMethodInvoker.hasFindOne()
+		if (null == repoMethodInvoker || (!repoMethodInvoker.hasFindOne()
 				&& !(repoMethodInvoker.hasDeleteOne() || repoMethodInvoker.hasDeleteOneById()))) {
 			throw new HttpRequestMethodNotSupportedException("DELETE");
 		}
 		ResourceMapping methodMapping = repoRequest.getRepositoryResourceMapping().getResourceMappingFor("delete");
-		if(null != methodMapping && !methodMapping.isExported()) {
+		if (null != methodMapping && !methodMapping.isExported()) {
 			throw new HttpRequestMethodNotSupportedException("DELETE");
 		}
 
 		final Object domainObj = domainClassConverter.convert(id,
-		                                                      STRING_TYPE,
-		                                                      TypeDescriptor.valueOf(repoRequest.getPersistentEntity()
-		                                                                                        .getType()));
-		if(null == domainObj) {
+																													STRING_TYPE,
+																													TypeDescriptor.valueOf(repoRequest.getPersistentEntity()
+																																														.getType()));
+		if (null == domainObj) {
 			throw new ResourceNotFoundException();
 		}
 
 		applicationContext.publishEvent(new BeforeDeleteEvent(domainObj));
 		TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
-			@Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-				if(repoMethodInvoker.hasDeleteOneById()) {
-					Class<? extends Serializable> idType = (Class<? extends Serializable>)repoRequest.getPersistentEntity()
-					                                                                                 .getIdProperty()
-					                                                                                 .getType();
+			@Override
+			protected void doInTransactionWithoutResult(TransactionStatus status) {
+				if (repoMethodInvoker.hasDeleteOneById()) {
+					Class<? extends Serializable> idType = (Class<? extends Serializable>) repoRequest.getPersistentEntity()
+																																														.getIdProperty()
+																																														.getType();
 					final Serializable idVal = conversionService.convert(id, idType);
 					repoMethodInvoker.delete(idVal);
-				} else if(repoMethodInvoker.hasDeleteOne()) {
+				} else if (repoMethodInvoker.hasDeleteOne()) {
 					repoMethodInvoker.delete(domainObj);
 				}
 			}
 		};
-		if(null != txTmpl) {
+		if (null != txTmpl) {
 			txTmpl.execute(callback);
 		} else {
 			callback.doInTransaction(null);
