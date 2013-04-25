@@ -15,14 +15,6 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.util.ClassTypeInformation.*;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
@@ -40,37 +32,45 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static org.springframework.data.util.ClassTypeInformation.from;
+
 /**
  * {@link HandlerMethodReturnValueHandler} to post-process the objects returned from controller methods using the
  * configured {@link ResourceProcessor}s.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ResourceProcessorHandlerMethodReturnValueHandler implements HandlerMethodReturnValueHandler {
 
-	private static final TypeInformation<?> RESOURCE_TYPE = from(Resource.class);
+	private static final TypeInformation<?> RESOURCE_TYPE  = from(Resource.class);
 	private static final TypeInformation<?> RESOURCES_TYPE = from(Resources.class);
-	private static final Field CONTENT_FIELD = ReflectionUtils.findField(Resources.class, "content");
+	private static final Field              CONTENT_FIELD  = ReflectionUtils.findField(Resources.class, "content");
 
 	static {
 		ReflectionUtils.makeAccessible(CONTENT_FIELD);
 	}
 
 	private final HandlerMethodReturnValueHandler delegate;
-	private final List<ProcessorWrapper> processors;
+	private final List<ProcessorWrapper>          processors;
 
 	/**
 	 * Creates a new {@link ResourceProcessorHandlerMethodReturnValueHandler} using the given delegate to eventually
 	 * delegate calls to {@link #handleReturnValue(Object, MethodParameter, ModelAndViewContainer, NativeWebRequest)} to.
 	 * Will consider the given {@link ResourceProcessor} to post-process the controller methods return value to before
 	 * invoking the delegate.
-	 * 
-	 * @param delegate the {@link HandlerMethodReturnValueHandler} to evenually delegate calls to, must not be
-	 *          {@literal null}.
+	 *
+	 * @param delegate   the {@link HandlerMethodReturnValueHandler} to evenually delegate calls to, must not be {@literal
+	 *                   null}.
 	 * @param processors the {@link ResourceProcessor}s to be considered, must not be {@literal null}.
 	 */
 	public ResourceProcessorHandlerMethodReturnValueHandler(HandlerMethodReturnValueHandler delegate,
-			List<ResourceProcessor<?>> processors) {
+																													List<ResourceProcessor<?>> processors) {
 
 		Assert.notNull(delegate, "Delegate must not be null!");
 		Assert.notNull(processors, "ResourceProcessors must not be null!");
@@ -111,7 +111,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	 */
 	@Override
 	public void handleReturnValue(Object returnValue, MethodParameter returnType, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest) throws Exception {
+																NativeWebRequest webRequest) throws Exception {
 
 		Object value = returnValue;
 
@@ -162,11 +162,11 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		Object result = invokeProcessorsFor(value, targetType);
 		delegate.handleReturnValue(rewrapResult(result, returnValue), returnType, mavContainer, webRequest);
 	}
-	
+
 	/**
 	 * Invokes all registered {@link ResourceProcessor}s registered for the given {@link TypeInformation}.
-	 * 
-	 * @param value the object to process
+	 *
+	 * @param value      the object to process
 	 * @param targetType
 	 * @return
 	 */
@@ -185,11 +185,10 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	}
 
 	/**
-	 * Re-wraps the result of the post-processing work into an {@link HttpEntity} or {@link ResponseEntity} if the
-	 * original value was one of those two types. Copies headers and status code from the original value but uses the new
-	 * body.
-	 * 
-	 * @param newBody the post-processed value.
+	 * Re-wraps the result of the post-processing work into an {@link HttpEntity} or {@link ResponseEntity} if the original
+	 * value was one of those two types. Copies headers and status code from the original value but uses the new body.
+	 *
+	 * @param newBody       the post-processed value.
 	 * @param originalValue the original input value.
 	 * @return
 	 */
@@ -210,7 +209,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 
 	/**
 	 * Returns whether the given value is a resource (i.e. implements {@link Resource) or {@link Resources}).
-	 * 
+	 *
 	 * @param value
 	 * @return
 	 */
@@ -219,9 +218,9 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	}
 
 	/**
-	 * Interface to unify interaction with {@link ResourceProcessor}s. The {@link Ordered} rank should be determined by
-	 * the underlying processor.
-	 * 
+	 * Interface to unify interaction with {@link ResourceProcessor}s. The {@link Ordered} rank should be determined by the
+	 * underlying processor.
+	 *
 	 * @author Oliver Gierke
 	 */
 	private interface ProcessorWrapper extends Ordered {
@@ -229,17 +228,17 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		/**
 		 * Returns whether the underlying processor supports the given {@link TypeInformation}. It might also aditionally
 		 * inspect the object that would eventually be handed to the processor.
-		 * 
+		 *
 		 * @param typeInformation the type of object to be post processed, will never be {@literal null}.
-		 * @param value the object that would be passed into the processor eventually, can be {@literal null}.
+		 * @param value           the object that would be passed into the processor eventually, can be {@literal null}.
 		 * @return
 		 */
 		boolean supports(TypeInformation<?> typeInformation, Object value);
 
 		/**
-		 * Performs the actual invocation of the processor. Implementations can be sure
-		 * {@link #supports(TypeInformation, Object)} has been called before and returned {@literal true}.
-		 * 
+		 * Performs the actual invocation of the processor. Implementations can be sure {@link #supports(TypeInformation,
+		 * Object)} has been called before and returned {@literal true}.
+		 *
 		 * @param object
 		 */
 		Object invokeProcessor(Object object);
@@ -247,17 +246,17 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 
 	/**
 	 * Default implementation of {@link ProcessorWrapper} to generically deal with {@link ResourceSupport} types.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class DefaultProcessorWrapper implements ProcessorWrapper {
 
 		private final ResourceProcessor<?> processor;
-		private final TypeInformation<?> targetType;
+		private final TypeInformation<?>   targetType;
 
 		/**
 		 * Creates a ne {@link DefaultProcessorWrapper} with the given {@link ResourceProcessor}.
-		 * 
+		 *
 		 * @param processor must not be {@literal null}.
 		 */
 		public DefaultProcessorWrapper(ResourceProcessor<?> processor) {
@@ -298,7 +297,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 
 		/**
 		 * Returns the target type the underlying {@link ResourceProcessor} wants to get invoked for.
-		 * 
+		 *
 		 * @return the targetType
 		 */
 		public TypeInformation<?> getTargetType() {
@@ -309,14 +308,14 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	/**
 	 * {@link ProcessorWrapper} to deal with {@link ResourceProcessor}s for {@link Resource}s. Will fall back to peeking
 	 * into the {@link Resource}'s content for type resolution.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class ResourceProcessorWrapper extends DefaultProcessorWrapper {
 
 		/**
 		 * Creates a new {@link ResourceProcessorWrapper} for the given {@link ResourceProcessor}.
-		 * 
+		 *
 		 * @param processor must not be {@literal null}.
 		 */
 		public ResourceProcessorWrapper(ResourceProcessor<?> processor) {
@@ -338,11 +337,11 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		}
 
 		/**
-		 * Returns whether the given {@link Resource} matches the given target {@link TypeInformation}. We inspect the
-		 * {@link Resource}'s value to determine the match.
-		 * 
+		 * Returns whether the given {@link Resource} matches the given target {@link TypeInformation}. We inspect the {@link
+		 * Resource}'s value to determine the match.
+		 *
 		 * @param resource
-		 * @param target must not be {@literal null}.
+		 * @param target   must not be {@literal null}.
 		 * @return whether the given {@link Resource} can be assigned to the given target {@link TypeInformation}
 		 */
 		private static boolean isValueTypeMatch(Resource<?> resource, TypeInformation<?> target) {
@@ -357,22 +356,22 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 				return false;
 			}
 
-			return target.getSuperTypeInformation(Resource.class).getComponentType().getType()
-					.isAssignableFrom(content.getClass());
+			TypeInformation<?> typeInfo = target.getSuperTypeInformation(Resource.class);
+			return null != typeInfo && typeInfo.getComponentType().getType().isAssignableFrom(content.getClass());
 		}
 	}
 
 	/**
 	 * {@link ProcessorWrapper} for {@link ResourceProcessor}s targeting {@link Resources}. Will peek into the content of
 	 * the {@link Resources} for type matching decisions if needed.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class ResourcesProcessorWrapper extends DefaultProcessorWrapper {
 
 		/**
 		 * Creates a new {@link ResourcesProcessorWrapper} for the given {@link ResourceProcessor}.
-		 * 
+		 *
 		 * @param processor must not be {@literal null}.
 		 */
 		public ResourcesProcessorWrapper(ResourceProcessor<?> processor) {
@@ -394,11 +393,11 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		}
 
 		/**
-		 * Returns whether the given {@link Resources} instance matches the given {@link TypeInformation}. We predict this
-		 * by inspecting the first element of the content of the {@link Resources}.
-		 * 
+		 * Returns whether the given {@link Resources} instance matches the given {@link TypeInformation}. We predict this by
+		 * inspecting the first element of the content of the {@link Resources}.
+		 *
 		 * @param resources the {@link Resources} to inspect.
-		 * @param target that target {@link TypeInformation}.
+		 * @param target    that target {@link TypeInformation}.
 		 * @return
 		 */
 		private static boolean isValueTypeMatch(Resources<?> resources, TypeInformation<?> target) {
@@ -425,9 +424,9 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	}
 
 	/**
-	 * Helper extension of {@link AnnotationAwareOrderComparator} to make {@link #getOrder(Object)} public to allow it being
-	 * used in a standalone fashion.
-	 * 
+	 * Helper extension of {@link AnnotationAwareOrderComparator} to make {@link #getOrder(Object)} public to allow it
+	 * being used in a standalone fashion.
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class CustomOrderAwareComparator extends AnnotationAwareOrderComparator {
