@@ -5,8 +5,8 @@ ext {
   gradleScriptDir = "${rootProject.projectDir}/gradle"
 
   // Logging
-  slf4jVersion = "1.7.2"
-  logbackVersion = "1.0.9"
+  slf4jVersion = "1.7.5"
+  logbackVersion = "1.0.11"
 
   // Spring
   springVersion = "3.1.4.RELEASE"
@@ -14,17 +14,17 @@ ext {
   hateoasVersion = "0.4.0.RELEASE"
   springPluginVersion = "0.8.0.RELEASE"
   springSecurityVersion = "3.1.3.RELEASE"
-  sdCommonsVersion = "1.5.0.RELEASE"
-  sdJpaVersion = "1.3.0.RELEASE"
-  sdMongoVersion = "1.2.0.RELEASE"
-  sdGemfireVersion = "1.3.0.RELEASE"
+  sdCommonsVersion = "1.5.1.RELEASE"
+  sdJpaVersion = "1.3.1.RELEASE"
+  sdMongoVersion = "1.2.1.RELEASE"
+  sdGemfireVersion = "1.3.1.RELEASE"
   sdNeo4jVersion = "2.3.0.BUILD-SNAPSHOT"
 
   // Libraries
-  guavaVersion = "13.0.1"
+  guavaVersion = "14.0.1"
   jacksonVersion = "2.1.2"
   jodaVersion = "2.1"
-  hibernateVersion = "4.1.9.Final"
+  hibernateVersion = "4.2.0.Final"
   hibernateValidatorVersion = "4.3.1.Final"
   hsqldbVersion = "2.2.9"
 
@@ -76,6 +76,7 @@ configure(allprojects) {
     maven { url "http://oss.sonatype.org/content/repositories/releases" }
     maven { url "http://m2.neo4j.org/releases" }
     mavenLocal()
+    mavenCentral()
   }
 
   dependencies {
