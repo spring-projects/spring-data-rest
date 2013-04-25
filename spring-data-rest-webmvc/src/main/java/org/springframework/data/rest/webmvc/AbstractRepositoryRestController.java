@@ -1,17 +1,5 @@
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.rest.core.util.UriUtils.*;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Locale;
-import javax.servlet.http.HttpServletRequest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -42,13 +30,7 @@ import org.springframework.data.rest.webmvc.support.BaseUriLinkBuilder;
 import org.springframework.data.rest.webmvc.support.ExceptionMessage;
 import org.springframework.data.rest.webmvc.support.RepositoryConstraintViolationExceptionMessage;
 import org.springframework.data.rest.webmvc.support.ValidationExceptionHandler;
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkBuilder;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,11 +43,20 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.*;
+
+import static org.springframework.data.rest.core.util.UriUtils.buildUri;
+
 /**
  * @author Jon Brisbin
  */
+@SuppressWarnings({"rawtypes"})
 public class AbstractRepositoryRestController implements ApplicationContextAware,
-                                                         InitializingBean {
+																												 InitializingBean {
 
 	static final    Resource<?>            EMPTY_RESOURCE      = new Resource<Object>(Collections.emptyList());
 	static final    Resources<Resource<?>> EMPTY_RESOURCES     = new Resources<Resource<?>>(Collections.<Resource<?>>emptyList());
@@ -87,10 +78,10 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 
 	@Autowired
 	public AbstractRepositoryRestController(Repositories repositories,
-	                                        RepositoryRestConfiguration config,
-	                                        DomainClassConverter domainClassConverter,
-	                                        ConversionService conversionService,
-	                                        EntityLinks entityLinks) {
+																					RepositoryRestConfiguration config,
+																					DomainClassConverter domainClassConverter,
+																					ConversionService conversionService,
+																					EntityLinks entityLinks) {
 		this.repositories = repositories;
 		this.config = config;
 		this.domainClassConverter = domainClassConverter;
@@ -99,46 +90,48 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 		this.methodParameterConversionService = new MethodParameterConversionService(conversionService);
 	}
 
-	@Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 
-	@Override public void afterPropertiesSet() throws Exception {
-		if(null != txMgr) {
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if (null != txMgr) {
 			txTmpl = new TransactionTemplate(txMgr);
 			txTmpl.afterPropertiesSet();
 		}
 	}
 
 	@ExceptionHandler({
-			                  NullPointerException.class
-	                  })
+												NullPointerException.class
+										})
 	@ResponseBody
 	public ResponseEntity<?> handleNPE(NullPointerException npe) {
 		return errorResponse(npe, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	@ExceptionHandler({
-			                  ResourceNotFoundException.class
-	                  })
+												ResourceNotFoundException.class
+										})
 	@ResponseBody
 	public ResponseEntity<?> handleNotFound() {
 		return notFound();
 	}
 
 	@ExceptionHandler({
-			                  NoSuchMethodError.class,
-			                  HttpRequestMethodNotSupportedException.class
-	                  })
+												NoSuchMethodError.class,
+												HttpRequestMethodNotSupportedException.class
+										})
 	@ResponseBody
 	public ResponseEntity<?> handleNoSuchMethod() {
 		return errorResponse(null, HttpStatus.METHOD_NOT_ALLOWED);
 	}
 
 	@ExceptionHandler({
-			                  HttpMessageNotReadableException.class,
-			                  HttpMessageNotWritableException.class
-	                  })
+												HttpMessageNotReadableException.class,
+												HttpMessageNotWritableException.class
+										})
 	@ResponseBody
 	public ResponseEntity<ExceptionMessage> handleNotReadable(HttpMessageNotReadableException e) {
 		return badRequest(e);
@@ -148,18 +141,17 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	 * Handle failures commonly thrown from code tries to read incoming data and convert or cast it to the right type.
 	 *
 	 * @param t
-	 *
 	 * @return
 	 */
 	@ExceptionHandler({
-			                  InvocationTargetException.class,
-			                  IllegalArgumentException.class,
-			                  ClassCastException.class,
-			                  ConversionFailedException.class
-	                  })
+												InvocationTargetException.class,
+												IllegalArgumentException.class,
+												ClassCastException.class,
+												ConversionFailedException.class
+										})
 	@ResponseBody
 	public ResponseEntity handleMiscFailures(Throwable t) {
-		if(null != t.getCause() && t.getCause() instanceof ResourceNotFoundException) {
+		if (null != t.getCause() && t.getCause() instanceof ResourceNotFoundException) {
 			return notFound();
 		}
 		return badRequest(t);
@@ -187,28 +179,27 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	//	}
 
 	@ExceptionHandler({
-			                  RepositoryConstraintViolationException.class
-	                  })
+												RepositoryConstraintViolationException.class
+										})
 	@ResponseBody
 	public ResponseEntity handleRepositoryConstraintViolationException(Locale locale,
-	                                                                   RepositoryConstraintViolationException rcve) {
+																																		 RepositoryConstraintViolationException rcve) {
 		return response(null,
-		                new RepositoryConstraintViolationExceptionMessage(rcve, applicationContext, locale),
-		                HttpStatus.BAD_REQUEST);
+										new RepositoryConstraintViolationExceptionMessage(rcve, applicationContext, locale),
+										HttpStatus.BAD_REQUEST);
 	}
 
 	/**
 	 * Send a 409 Conflict in case of concurrent modification.
 	 *
 	 * @param ex
-	 *
 	 * @return
 	 */
 	@SuppressWarnings({"unchecked"})
 	@ExceptionHandler({
-			                  OptimisticLockingFailureException.class,
-			                  DataIntegrityViolationException.class
-	                  })
+												OptimisticLockingFailureException.class,
+												DataIntegrityViolationException.class
+										})
 	@ResponseBody
 	public ResponseEntity handleConflict(Exception ex) {
 		return errorResponse(null, ex, HttpStatus.CONFLICT);
@@ -231,14 +222,14 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	}
 
 	public <T extends Throwable> ResponseEntity<ExceptionMessage> errorResponse(T throwable,
-	                                                                            HttpStatus status) {
+																																							HttpStatus status) {
 		return errorResponse(null, throwable, status);
 	}
 
 	public <T extends Throwable> ResponseEntity<ExceptionMessage> errorResponse(HttpHeaders headers,
-	                                                                            T throwable,
-	                                                                            HttpStatus status) {
-		if(null != throwable && null != throwable.getMessage()) {
+																																							T throwable,
+																																							HttpStatus status) {
+		if (null != throwable && null != throwable.getMessage()) {
 			LOG.error(throwable.getMessage(), throwable);
 			return response(headers, new ExceptionMessage(throwable), status);
 		} else {
@@ -248,28 +239,28 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 
 	public <T> ResponseEntity<T> response(HttpHeaders headers, T body, HttpStatus status) {
 		HttpHeaders hdrs = new HttpHeaders();
-		if(null != headers) {
+		if (null != headers) {
 			hdrs.putAll(headers);
 		}
 		return new ResponseEntity<T>(body, hdrs, status);
 	}
 
 	public <R extends Resource<?>> ResponseEntity<Resource<?>> resourceResponse(HttpHeaders headers,
-	                                                                            R resource,
-	                                                                            HttpStatus status) {
+																																							R resource,
+																																							HttpStatus status) {
 		HttpHeaders hdrs = new HttpHeaders();
-		if(null != headers) {
+		if (null != headers) {
 			hdrs.putAll(headers);
 		}
 		return new ResponseEntity<Resource<?>>(resource, hdrs, status);
 	}
 
 	protected void addQueryParameters(HttpServletRequest request,
-	                                  UriComponentsBuilder builder) {
-		for(Enumeration<String> names = request.getParameterNames(); names.hasMoreElements(); ) {
+																		UriComponentsBuilder builder) {
+		for (Enumeration<String> names = request.getParameterNames(); names.hasMoreElements(); ) {
 			String name = names.nextElement();
 			String value = request.getParameter(name);
-			if(name.equals(config.getPageParamName()) || name.equals(config.getLimitParamName())) {
+			if (name.equals(config.getPageParamName()) || name.equals(config.getLimitParamName())) {
 				continue;
 			}
 
@@ -278,18 +269,18 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	}
 
 	protected Link searchLink(RepositoryRestRequest repoRequest,
-	                          int pageIncrement,
-	                          String method,
-	                          String rel) {
+														int pageIncrement,
+														String method,
+														String rel) {
 		PagingAndSorting pageSort = repoRequest.getPagingAndSorting();
 		UriComponentsBuilder ucb = UriComponentsBuilder.fromUri(
 				entityLinks.linkFor(repoRequest.getPersistentEntity().getType())
-				           .slash("search")
-				           .slash(method)
-				           .toUri()
+									 .slash("search")
+									 .slash(method)
+									 .toUri()
 		);
 		ucb.queryParam(config.getPageParamName(), Math.max(pageSort.getPageNumber() + pageIncrement, 1))
-		   .queryParam(config.getLimitParamName(), pageSort.getPageSize());
+			 .queryParam(config.getLimitParamName(), pageSort.getPageSize());
 
 		addQueryParameters(repoRequest.getRequest(), ucb);
 
@@ -297,16 +288,16 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	}
 
 	protected Link entitiesPageLink(RepositoryRestRequest repoRequest,
-	                                int pageIncrement,
-	                                String rel) {
+																	int pageIncrement,
+																	String rel) {
 		PagingAndSorting pageSort = repoRequest.getPagingAndSorting();
 		UriComponentsBuilder ucb = UriComponentsBuilder.fromUri(
 				entityLinks.linkFor(repoRequest.getPersistentEntity().getType())
-				           .toUri()
+									 .toUri()
 		);
-		if(null != repoRequest.getRequest().getParameter(config.getPageParamName())) {
+		if (null != repoRequest.getRequest().getParameter(config.getPageParamName())) {
 			ucb.queryParam(config.getPageParamName(), Math.max(pageSort.getPageNumber() + pageIncrement, 1))
-			   .queryParam(config.getLimitParamName(), pageSort.getPageSize());
+				 .queryParam(config.getLimitParamName(), pageSort.getPageSize());
 		}
 
 		addQueryParameters(repoRequest.getRequest(), ucb);
@@ -321,15 +312,15 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 				repoInfo.getRepositoryInterface(),
 				config.getResourceMappingForRepository(repoInfo.getRepositoryInterface())
 		);
-		for(Method method : repoInfo.getQueryMethods()) {
+		for (Method method : repoInfo.getQueryMethods()) {
 			LinkBuilder linkBuilder = BaseUriLinkBuilder.create(buildUri(baseUri, repoMapping.getPath(), "search"));
 			ResourceMapping methodMapping = ResourceMappingUtils.merge(method,
-			                                                           repoMapping.getResourceMappingFor(method.getName()));
-			if(!methodMapping.isExported()) {
+																																 repoMapping.getResourceMappingFor(method.getName()));
+			if (!methodMapping.isExported()) {
 				continue;
 			}
 			links.add(linkBuilder.slash(methodMapping.getPath())
-			                     .withRel(repoMapping.getRel() + "." + methodMapping.getRel()));
+													 .withRel(repoMapping.getRel() + "." + methodMapping.getRel()));
 		}
 		return links;
 	}
@@ -344,79 +335,79 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	}
 
 	@SuppressWarnings({"unchecked"})
-	protected ResourceSupport resultToResourceSupport(RepositoryRestRequest repoRequest,
-	                                                  Object result,
-	                                                  List<Link> links,
-	                                                  Link prevLink,
-	                                                  Link nextLink) {
-		ResourceSupport resources;
-		if(result instanceof Page) {
-			Page page = (Page)result;
+	protected Resources resultToResources(RepositoryRestRequest repoRequest,
+																				Object result,
+																				List<Link> links,
+																				Link prevLink,
+																				Link nextLink) {
+		if (result instanceof Page) {
+			Page page = (Page) result;
 			PagedResources.PageMetadata pageMeta = pageMetadata(page);
-			if(page.hasPreviousPage() && null != prevLink) {
+			if (page.hasPreviousPage() && null != prevLink) {
 				links.add(prevLink);
 			}
-			if(page.hasNextPage() && null != nextLink) {
+			if (page.hasNextPage() && null != nextLink) {
 				links.add(nextLink);
 			}
-			if(page.hasContent()) {
-				resources = entitiesToResource(repoRequest, page);
+			if (page.hasContent()) {
+				return entitiesToResources(repoRequest, links, page);
 			} else {
-				resources = new PagedResources(Collections.emptyList(), pageMeta);
+				return new PagedResources(Collections.emptyList(), pageMeta, links);
 			}
-		} else if(result instanceof Iterable) {
-			resources = entitiesToResource(repoRequest, (Iterable)result);
-		} else if(null == result) {
-			resources = new Resources(EMPTY_RESOURCE_LIST);
+		} else if (result instanceof Iterable) {
+			return entitiesToResources(repoRequest, links, (Iterable) result);
+		} else if (null == result) {
+			return new Resources(EMPTY_RESOURCE_LIST);
 		} else {
-			PersistentEntityResource per = PersistentEntityResource.wrap(repoRequest.getPersistentEntity(),
-			                                                             result,
-			                                                             repoRequest.getBaseUri());
+			PersistentEntityResource per = PersistentEntityResource.wrap(
+					repoRequest.getPersistentEntity(),
+					result,
+					repoRequest.getBaseUri()
+			);
 			BeanWrapper wrapper = BeanWrapper.create(result, conversionService);
-			Link selfLink = entityLinks.linkForSingleResource(result.getClass(),
-			                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
-			                                                                                 .getIdProperty()))
-			                           .withSelfRel();
+			Link selfLink = entityLinks.linkForSingleResource(
+					result.getClass(),
+					wrapper.getProperty(repoRequest.getPersistentEntity().getIdProperty())
+			)
+																 .withSelfRel();
 			per.add(selfLink);
-			resources = per;
+			return new Resources(Collections.singletonList(per), links);
 		}
-		resources.add(links);
-		return resources;
 	}
 
 	@SuppressWarnings({"unchecked"})
-	protected ResourceSupport entitiesToResource(RepositoryRestRequest repoRequest, Page page) {
+	protected Resources entitiesToResources(RepositoryRestRequest repoRequest, List<Link> links, Page page) {
 		PagedResources.PageMetadata pageMeta = pageMetadata(page);
-		Resources<Object> resource = (Resources<Object>)entitiesToResource(repoRequest, page.getContent());
+		Resources<Object> resource = (Resources<Object>) entitiesToResources(repoRequest, links, page.getContent());
 		return new PagedResources<Object>(resource.getContent(), pageMeta, resource.getLinks());
 	}
 
 	@SuppressWarnings({"unchecked"})
-	protected ResourceSupport entitiesToResource(RepositoryRestRequest repoRequest, Iterable entities) {
+	protected Resources entitiesToResources(RepositoryRestRequest repoRequest, List<Link> links, Iterable entities) {
 		List<Resource<?>> resources = new ArrayList<Resource<?>>();
-		for(Object obj : entities) {
-			if(null == obj) {
+		for (Object obj : entities) {
+			if (null == obj) {
 				resources.add(null);
 				continue;
 			}
 
 			PersistentEntity persistentEntity = repositories.getPersistentEntity(obj.getClass());
-			if(null == persistentEntity) {
+			if (null == persistentEntity) {
 				resources.add(new BaseUriAwareResource<Object>(obj)
-						              .setBaseUri(repoRequest.getBaseUri()));
+													.setBaseUri(repoRequest.getBaseUri()));
 				continue;
 			}
 
 			BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
 			PersistentEntityResource per = PersistentEntityResource.wrap(persistentEntity, obj, repoRequest.getBaseUri());
 			Link selfLink = entityLinks.linkForSingleResource(persistentEntity.getType(),
-			                                                  wrapper.getProperty(persistentEntity.getIdProperty()))
-			                           .withSelfRel();
+																												wrapper.getProperty(persistentEntity.getIdProperty()))
+																 .withSelfRel();
 			per.add(selfLink);
 			resources.add(per);
 		}
 
-		return new Resources(resources);
+		return new Resources(resources, links);
 	}
 
 	protected PagedResources.PageMetadata pageMetadata(Page page) {
