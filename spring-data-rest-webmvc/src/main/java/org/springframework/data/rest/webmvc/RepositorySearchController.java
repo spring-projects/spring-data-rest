@@ -144,7 +144,7 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 				nextLink = searchLink(repoRequest, 1, method, "page.next");
 			}
 		}
-		return resultToResourceSupport(repoRequest, result, new ArrayList<Link>(), prevLink, nextLink);
+		return resultToResources(repoRequest, result, new ArrayList<Link>(), prevLink, nextLink);
 	}
 
 	@RequestMapping(
