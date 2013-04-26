@@ -1,5 +1,6 @@
 package org.springframework.data.rest.webmvc;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
@@ -43,9 +44,14 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Jon Brisbin
@@ -285,6 +291,68 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 		domainObjectMerger.merge(incoming.getContent(), domainObj);
 
 		applicationContext.publishEvent(new BeforeSaveEvent(incoming.getContent()));
+		Object obj = repoMethodInvoker.save(domainObj);
+		applicationContext.publishEvent(new AfterSaveEvent(obj));
+
+		if(config.isReturnBodyOnUpdate()) {
+			PersistentEntityResource per = PersistentEntityResource.wrap(repoRequest.getPersistentEntity(),
+			                                                             obj,
+			                                                             repoRequest.getBaseUri());
+			BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
+			Link selfLink = entityLinks.linkForSingleResource(repoRequest.getPersistentEntity().getType(),
+			                                                  wrapper.getProperty(repoRequest.getPersistentEntity()
+			                                                                                 .getIdProperty()))
+			                           .withSelfRel();
+			per.add(selfLink);
+			return resourceResponse(null,
+			                        per,
+			                        HttpStatus.OK);
+		} else {
+			return resourceResponse(null,
+			                        null,
+			                        HttpStatus.NO_CONTENT);
+		}
+	}
+
+	@SuppressWarnings({"unchecked"})
+	@RequestMapping(
+			value = "/{id}",
+			method = RequestMethod.PATCH,
+			consumes = {
+					"application/json"
+			},
+			produces = {
+					"application/json",
+					"text/uri-list"
+			}
+	)
+	@ResponseBody
+	public ResponseEntity<Resource<?>> patchEntity(RepositoryRestRequest repoRequest,
+	                                               @RequestBody JsonNode node,
+	                                               @PathVariable String id)
+			throws ResourceNotFoundException {
+		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
+		if(null == repoMethodInvoker || !repoMethodInvoker.hasSaveOne() || !repoMethodInvoker.hasFindOne()) {
+			throw new NoSuchMethodError();
+		}
+
+		Object domainObj = domainClassConverter.convert(id,
+		                                                STRING_TYPE,
+		                                                TypeDescriptor.valueOf(repoRequest.getPersistentEntity()
+		                                                                                  .getType()));
+		if(null == domainObj) {
+			throw new ResourceNotFoundException();
+		}
+
+		try {
+			new ObjectMapper().readerForUpdating(domainObj).readValue(node);
+		} catch (JsonProcessingException e) {
+			throw new IllegalArgumentException();
+		} catch (IOException e) {
+			throw new IllegalArgumentException();
+		}
+
+		applicationContext.publishEvent(new BeforeSaveEvent(domainObj));
 		Object obj = repoMethodInvoker.save(domainObj);
 		applicationContext.publishEvent(new AfterSaveEvent(obj));
 
