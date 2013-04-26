@@ -9,7 +9,7 @@ ext {
   logbackVersion = "1.0.9"
 
   // Spring
-  springVersion = "3.1.4.RELEASE"
+  springVersion = "3.2.2.RELEASE"
   spring32Version = "3.2.2.RELEASE"
   hateoasVersion = "0.4.0.RELEASE"
   springPluginVersion = "0.8.0.RELEASE"
