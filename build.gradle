@@ -14,9 +14,9 @@ ext {
   hateoasVersion = "0.4.0.RELEASE"
   springPluginVersion = "0.8.0.RELEASE"
   springSecurityVersion = "3.1.3.RELEASE"
-  sdCommonsVersion = "1.5.1.RELEASE"
-  sdJpaVersion = "1.3.1.RELEASE"
-  sdMongoVersion = "1.2.1.RELEASE"
+  sdCommonsVersion = "1.6.0.M1"
+  sdJpaVersion = "1.4.0.M1"
+  sdMongoVersion = "1.3.0.M1"
   sdGemfireVersion = "1.3.1.RELEASE"
   sdNeo4jVersion = "2.3.0.BUILD-SNAPSHOT"
 
@@ -70,9 +70,7 @@ configure(allprojects) {
   sourceSets.test.resources.srcDirs = ["src/test/resources", "src/test/java"]
 
   repositories {
-    maven { url "http://repo.springsource.org/libs-release" }
     maven { url "http://repo.springsource.org/libs-milestone" }
-    //maven { url "http://repo.springsource.org/libs-snapshot" }
     maven { url "http://oss.sonatype.org/content/repositories/releases" }
     maven { url "http://m2.neo4j.org/releases" }
     mavenLocal()

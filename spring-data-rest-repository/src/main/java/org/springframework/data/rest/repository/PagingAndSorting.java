@@ -67,4 +67,19 @@ public class PagingAndSorting implements Pageable {
     return pageRequest.getSort();
   }
 
+  @Override public Pageable first() {
+  	return pageRequest.first();
+  }
+  
+  @Override public Pageable next() {
+  	return pageRequest.next();
+  }
+  
+  @Override public boolean hasPrevious() {
+  	return pageRequest.hasPrevious();
+  }
+  
+  @Override public Pageable previousOrFirst() {
+  	return pageRequest.previousOrFirst();
+  }
 }
