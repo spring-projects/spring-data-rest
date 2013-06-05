@@ -21,13 +21,15 @@ import org.springframework.validation.ObjectError;
  */
 public class ValidationErrors extends AbstractErrors {
 
-  private String           name;
+	private static final long serialVersionUID = 8141826537389141361L;
+	
+	private String           name;
   private Object           entity;
-  private PersistentEntity persistentEntity;
+  private PersistentEntity<?, ?> persistentEntity;
   private List<ObjectError> globalErrors = new ArrayList<ObjectError>();
   private List<FieldError>  fieldErrors  = new ArrayList<FieldError>();
 
-  public ValidationErrors(String name, Object entity, PersistentEntity persistentEntity) {
+  public ValidationErrors(String name, Object entity, PersistentEntity<?, ?> persistentEntity) {
     this.name = name;
     this.entity = entity;
     this.persistentEntity = persistentEntity;
@@ -64,7 +66,7 @@ public class ValidationErrors extends AbstractErrors {
   }
 
   @Override public Object getFieldValue(String field) {
-    PersistentProperty prop = (null != persistentEntity ? persistentEntity.getPersistentProperty(field) : null);
+    PersistentProperty<?> prop = persistentEntity != null ? persistentEntity.getPersistentProperty(field) : null;
     if(null == prop) {
       return null;
     }

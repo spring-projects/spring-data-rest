@@ -14,7 +14,8 @@ import org.springframework.hateoas.Resource;
 public class JsonSchema extends Resource<Map<String, JsonSchema.Property>> {
 
   private final String name;
-  private final String description;
+  @SuppressWarnings("unused")
+	private final String description;
 
   public JsonSchema(String name, String description) {
     super(new HashMap<String, Property>());

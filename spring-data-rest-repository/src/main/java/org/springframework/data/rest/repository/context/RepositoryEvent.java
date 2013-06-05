@@ -8,7 +8,10 @@ import org.springframework.context.ApplicationEvent;
  * @author Jon Brisbin
  */
 public abstract class RepositoryEvent extends ApplicationEvent {
-  protected RepositoryEvent(Object source) {
+  
+	private static final long serialVersionUID = -966689410815418259L;
+
+	protected RepositoryEvent(Object source) {
     super(source);
   }
 }

@@ -2,14 +2,17 @@ package org.springframework.data.rest.convert;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.UUID;
 
-import org.jmock.Expectations;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.rest.AbstractJMockTests;
 import org.springframework.format.support.DefaultFormattingConversionService;
 
 /**
@@ -17,48 +20,44 @@ import org.springframework.format.support.DefaultFormattingConversionService;
  * org.springframework.core.convert.ConversionService} that is appropriate for the given source and return types.
  *
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
-public class DelegatingConversionServiceUnitTests extends AbstractJMockTests {
+@RunWith(MockitoJUnitRunner.class)
+public class DelegatingConversionServiceUnitTests {
 
   private static final UUID RANDOM_UUID = UUID.fromString("9deccfd7-f892-4e26-a4d5-c92893392e78");
 
-  private ConversionService           conversionService;
-  private DelegatingConversionService delegatingConversionService;
+  @Mock ConversionService conversionService;
+  DelegatingConversionService delegatingConversionService;
 
   @Before
   public void setup() {
-    conversionService = context.mock(ConversionService.class);
 
     DefaultFormattingConversionService cs = new DefaultFormattingConversionService(false);
     cs.addConverter(UUIDConverter.INSTANCE);
 
-    delegatingConversionService = new DelegatingConversionService(
-        conversionService,
-        cs
-    );
-
-    context.checking(new Expectations() {{
-      allowing(conversionService).canConvert(String.class, UUID.class);
-      will(returnValue(false));
-      allowing(conversionService).canConvert(UUID.class, String.class);
-      will(returnValue(false));
-
-      // Ensure the first ConversionService is never asked to convert this String into a UUID
-      never(conversionService).convert(with(any(String.class)), with(UUID.class));
-      never(conversionService).convert(with(any(UUID.class)), with(String.class));
-    }});
+    delegatingConversionService = new DelegatingConversionService(conversionService, cs);
+    
+    when(conversionService.canConvert(String.class, UUID.class)).thenReturn(false);
+    when(conversionService.canConvert(UUID.class, String.class)).thenReturn(false);
   }
 
   @Test
   public void shouldDelegateToProperConversionService() throws Exception {
     assertThat(delegatingConversionService.canConvert(String.class, UUID.class), is(true));
     assertThat(delegatingConversionService.convert(RANDOM_UUID.toString(), UUID.class), is(RANDOM_UUID));
+    verifyConversionService();
   }
 
   @Test
   public void shouldConvertUUIDToString() throws Exception {
     assertThat(delegatingConversionService.canConvert(UUID.class, String.class), is(true));
     assertThat(delegatingConversionService.convert(RANDOM_UUID, String.class), is(RANDOM_UUID.toString()));
+    verifyConversionService();
   }
 
+  private void verifyConversionService() {
+  	verify(conversionService, times(0)).convert(Matchers.any(String.class), eq(UUID.class));
+  	verify(conversionService, times(0)).convert(Matchers.any(UUID.class), eq(String.class));
+  }
 }

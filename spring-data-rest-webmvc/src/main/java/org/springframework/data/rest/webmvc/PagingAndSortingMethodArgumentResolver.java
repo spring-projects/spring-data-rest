@@ -27,6 +27,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  *
  * @author Jon Brisbin
  */
+@SuppressWarnings("deprecation")
 public class PagingAndSortingMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private static final int DEFAULT_PAGE = 1; // We're 1-based, not 0-based

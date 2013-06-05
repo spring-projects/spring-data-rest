@@ -6,7 +6,10 @@ package org.springframework.data.rest.repository.context;
  * @author Jon Brisbin
  */
 public class AfterSaveEvent extends RepositoryEvent {
-  public AfterSaveEvent(Object source) {
+  
+	private static final long serialVersionUID = 8568843338617401903L;
+
+	public AfterSaveEvent(Object source) {
     super(source);
   }
 }

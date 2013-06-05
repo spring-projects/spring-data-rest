@@ -25,15 +25,15 @@ public class DomainObjectMerger {
     this.conversionService = conversionService;
   }
 
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public void merge(Object from, Object target) {
     if(null == from || null == target) {
       return;
     }
-    final BeanWrapper fromWrapper = BeanWrapper.create(from, conversionService);
-    final BeanWrapper targetWrapper = BeanWrapper.create(target, conversionService);
+    final BeanWrapper<?, Object> fromWrapper = BeanWrapper.create(from, conversionService);
+    final BeanWrapper<?, Object> targetWrapper = BeanWrapper.create(target, conversionService);
 
-    PersistentEntity entity = repositories.getPersistentEntity(target.getClass());
+    PersistentEntity<?, ?> entity = repositories.getPersistentEntity(target.getClass());
     entity.doWithProperties(new PropertyHandler() {
       @Override public void doWithPersistentProperty(PersistentProperty persistentProperty) {
         Object fromVal = fromWrapper.getProperty(persistentProperty);

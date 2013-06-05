@@ -74,9 +74,9 @@ public class ValidatingRepositoryEventListener
 				} else if(entry.getKey().contains("Delete")) {
 					name = entry.getKey().substring(0, entry.getKey().indexOf("Delete") + 6);
 				} else {
-					Annotation anno;
+
 					for(Class<? extends Annotation> annoType : ANNOTATIONS_TO_FIND) {
-						if(null != (anno = findAnnotation(v.getClass(), annoType))) {
+						if(findAnnotation(v.getClass(), annoType) != null) {
 							name = uncapitalize(annoType.getSimpleName().substring(6));
 						}
 					}

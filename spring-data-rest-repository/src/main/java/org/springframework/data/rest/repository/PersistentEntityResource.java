@@ -15,10 +15,9 @@ import org.springframework.hateoas.Resource;
 public class PersistentEntityResource<T> extends BaseUriAwareResource<T> {
 
   @JsonIgnore
-  private final PersistentEntity<T, ?> persistentEntity;
+  private final PersistentEntity<?, ?> persistentEntity;
 
-  @SuppressWarnings({"unchecked"})
-  public static <T> PersistentEntityResource<T> wrap(PersistentEntity persistentEntity,
+  public static <T> PersistentEntityResource<T> wrap(PersistentEntity<?, ?> persistentEntity,
                                                      T obj,
                                                      URI baseUri) {
     PersistentEntityResource<T> resource = new PersistentEntityResource<T>(persistentEntity, obj);
@@ -26,25 +25,25 @@ public class PersistentEntityResource<T> extends BaseUriAwareResource<T> {
     return resource;
   }
 
-  public PersistentEntityResource(PersistentEntity<T, ?> persistentEntity) {
+  public PersistentEntityResource(PersistentEntity<?, ?> persistentEntity) {
     this.persistentEntity = persistentEntity;
   }
 
-  public PersistentEntityResource(PersistentEntity<T, ?> persistentEntity,
+  public PersistentEntityResource(PersistentEntity<?, ?> persistentEntity,
                                   T content,
                                   Link... links) {
     super(content, links);
     this.persistentEntity = persistentEntity;
   }
 
-  public PersistentEntityResource(PersistentEntity<T, ?> persistentEntity,
+  public PersistentEntityResource(PersistentEntity<?, ?> persistentEntity,
                                   T content,
                                   Iterable<Link> links) {
     super(content, links);
     this.persistentEntity = persistentEntity;
   }
 
-  public PersistentEntity<T, ?> getPersistentEntity() {
+  public PersistentEntity<?, ?> getPersistentEntity() {
     return persistentEntity;
   }
 

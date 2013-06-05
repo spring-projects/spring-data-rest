@@ -58,9 +58,9 @@ public class PersistentEntityToJsonSchemaConverter
     return (JsonSchema)convert(domainType, STRING_TYPE, SCHEMA_TYPE);
   }
 
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings({"unchecked", "rawtypes"})
   @Override public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
-    PersistentEntity persistentEntity = repositories.getPersistentEntity((Class<?>)source);
+    PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity((Class<?>)source);
     final RepositoryInformation repoInfo = repositories.getRepositoryInformationFor(persistentEntity.getType());
     final ResourceMapping repoMapping = getResourceMapping(config, repoInfo);
     final ResourceMapping entityMapping = getResourceMapping(config, persistentEntity);

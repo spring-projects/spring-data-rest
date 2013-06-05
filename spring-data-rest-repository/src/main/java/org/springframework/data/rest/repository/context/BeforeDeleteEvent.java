@@ -6,7 +6,10 @@ package org.springframework.data.rest.repository.context;
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
 public class BeforeDeleteEvent extends RepositoryEvent {
-  public BeforeDeleteEvent(Object source) {
+
+	private static final long serialVersionUID = 9150212393209433211L;
+
+	public BeforeDeleteEvent(Object source) {
     super(source);
   }
 }

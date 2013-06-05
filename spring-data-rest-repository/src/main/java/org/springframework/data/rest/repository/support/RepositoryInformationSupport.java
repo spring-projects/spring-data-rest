@@ -66,7 +66,7 @@ public abstract class RepositoryInformationSupport {
   }
 
   protected RepositoryInformation findRepositoryInfoFor(Class<?> domainType) {
-    PersistentEntity entity = repositories.getPersistentEntity(domainType);
+    PersistentEntity<?, ?> entity = repositories.getPersistentEntity(domainType);
     if(null != entity) {
       return repositories.getRepositoryInformationFor(domainType);
     }

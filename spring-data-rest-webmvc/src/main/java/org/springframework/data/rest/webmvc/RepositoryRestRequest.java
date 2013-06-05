@@ -33,7 +33,7 @@ class RepositoryRestRequest {
 	private final Link                        repoLink;
 	private final Object                      repository;
 	private final RepositoryMethodInvoker     repoMethodInvoker;
-	private final PersistentEntity            persistentEntity;
+	private final PersistentEntity<?, ?>      persistentEntity;
 	private final ResourceMapping             entityMapping;
 
 	public RepositoryRestRequest(RepositoryRestConfiguration config,
@@ -95,7 +95,7 @@ class RepositoryRestRequest {
 		return repoMethodInvoker;
 	}
 
-	PersistentEntity getPersistentEntity() {
+	PersistentEntity<?, ?> getPersistentEntity() {
 		return persistentEntity;
 	}
 
@@ -103,7 +103,7 @@ class RepositoryRestRequest {
 		return entityMapping;
 	}
 
-	void addNextLink(Page page, List<Link> links) {
+	void addNextLink(Page<?> page, List<Link> links) {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUri(baseUri);
 		// Add existing query parameters
 		addQueryParameters(request, builder);
@@ -114,7 +114,7 @@ class RepositoryRestRequest {
 		links.add(new Link(builder.build().toString(), "page.next"));
 	}
 
-	void addPrevLink(Page page, List<Link> links) {
+	void addPrevLink(Page<?> page, List<Link> links) {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUri(baseUri);
 		// Add existing query parameters
 		addQueryParameters(request, builder);

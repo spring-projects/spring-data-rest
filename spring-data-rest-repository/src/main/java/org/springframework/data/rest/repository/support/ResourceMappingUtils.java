@@ -46,7 +46,7 @@ public abstract class ResourceMappingUtils {
 
   public static String formatRel(RepositoryRestConfiguration config,
                                  RepositoryInformation repoInfo,
-                                 PersistentProperty persistentProperty) {
+                                 PersistentProperty<?> persistentProperty) {
     if(null == persistentProperty) {
       return null;
     }
@@ -104,7 +104,7 @@ public abstract class ResourceMappingUtils {
   }
 
   public static ResourceMapping getResourceMapping(RepositoryRestConfiguration config,
-                                                   PersistentEntity persistentEntity) {
+                                                   PersistentEntity<?, ?> persistentEntity) {
     if(null == persistentEntity) {
       return null;
     }

@@ -36,7 +36,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	}
 
 	@Override public boolean supports(Class<?> delimiter) {
-		PersistentEntity persistentEntity = repositories.getPersistentEntity(delimiter);
+		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(delimiter);
 		return (null != persistentEntity);
 	}
 
@@ -45,7 +45,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		if(null == repoInfo) {
 			throw new IllegalArgumentException(type + " is not managed by any repository.");
 		}
-		PersistentEntity persistentEntity = repositories.getPersistentEntity(type);
+		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(type);
 		if(null == persistentEntity) {
 			throw new IllegalArgumentException(type + " is not managed by any repository.");
 		}
@@ -71,19 +71,20 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 			throw new IllegalArgumentException(type + " is not managed by any repository.");
 		}
 		ResourceMapping repoMapping = getResourceMapping(config, repoInfo);
-		PersistentEntity persistentEntity = repositories.getPersistentEntity(type);
+		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(type);
 		ResourceMapping entityMapping = getResourceMapping(config, persistentEntity);
 		return linkFor(type).slash(id).withRel(repoMapping.getRel() + "." + entityMapping.getRel());
 	}
 
 	private class PersistentEntityLinkBuilder implements LinkBuilder {
+		
 		private final UriComponentsBuilder builder;
 		private final ResourceMapping      repoMapping;
 		private final ResourceMapping      entityMapping;
 
 		private PersistentEntityLinkBuilder(URI baseUri,
 		                                    RepositoryInformation repoInfo,
-		                                    PersistentEntity persistentEntity) {
+		                                    PersistentEntity<?, ?> persistentEntity) {
 			this.repoMapping = getResourceMapping(config, repoInfo);
 			this.entityMapping = getResourceMapping(config, persistentEntity);
 			if(null == baseUri) {
@@ -101,7 +102,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		@Override public LinkBuilder slash(Object object) {
 			String path = String.format("%s", object);
 			if(object instanceof PersistentProperty) {
-				String propName = ((PersistentProperty)object).getName();
+				String propName = ((PersistentProperty<?>) object).getName();
 				if(entityMapping.hasResourceMappingFor(propName)) {
 					path = entityMapping.getResourceMappingFor(propName).getPath();
 				}

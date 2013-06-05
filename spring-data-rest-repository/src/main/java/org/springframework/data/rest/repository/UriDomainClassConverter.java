@@ -26,7 +26,7 @@ public class UriDomainClassConverter
   private static TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
 
   @Autowired
-  private DomainClassConverter domainClassConverter;
+  private DomainClassConverter<?> domainClassConverter;
   private Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
 
   @Override public void afterPropertiesSet() throws Exception {
@@ -45,7 +45,7 @@ public class UriDomainClassConverter
   }
 
   @Override public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
-    PersistentEntity entity = repositories.getPersistentEntity(targetType.getType());
+    PersistentEntity<?, ?> entity = repositories.getPersistentEntity(targetType.getType());
     if(null == entity || !domainClassConverter.matches(STRING_TYPE, targetType)) {
       throw new ConversionFailedException(
           sourceType,

@@ -52,6 +52,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
  */
 public class PersistentEntityJackson2Module extends SimpleModule implements InitializingBean {
 
+	private static final long serialVersionUID = -7289265674870906323L;
 	private static final Logger         LOG      = LoggerFactory.getLogger(PersistentEntityJackson2Module.class);
 	private static final TypeDescriptor URI_TYPE = TypeDescriptor.valueOf(URI.class);
 	private final ConversionService           conversionService;
@@ -75,7 +76,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 	                                              RepositoryInformation repoInfo,
 	                                              ResourceMapping entityMapping,
 	                                              ResourceMapping propertyMapping,
-	                                              PersistentProperty persistentProperty,
+	                                              PersistentProperty<?> persistentProperty,
 	                                              List<Link> links) {
 		Class<?> propertyType = persistentProperty.getType();
 		if(persistentProperty.isCollectionLike() || persistentProperty.isArray()) {
@@ -106,10 +107,10 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 		return false;
 	}
 
-	@SuppressWarnings({"unchecked"})
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override public void afterPropertiesSet() throws Exception {
 		for(Class<?> domainType : repositories) {
-			PersistentEntity pe = repositories.getPersistentEntity(domainType);
+			PersistentEntity<?, ?> pe = repositories.getPersistentEntity(domainType);
 			if(null == pe) {
 				if(LOG.isWarnEnabled()) {
 					LOG.warn("The domain class {} does not have PersistentEntity metadata.", domainType.getName());
@@ -122,20 +123,20 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 
 	private class ResourceDeserializer<T extends Object> extends StdDeserializer<T> {
 
-		private final PersistentEntity persistentEntity;
+		private static final long serialVersionUID = 8195592798684027681L;
+		private final PersistentEntity<?, ?> persistentEntity;
 
-		@SuppressWarnings({"unchecked"})
-		private ResourceDeserializer(final PersistentEntity persistentEntity) {
+		private ResourceDeserializer(final PersistentEntity<?, ?> persistentEntity) {
 			super(persistentEntity.getType());
 			this.persistentEntity = persistentEntity;
 		}
 
-		@SuppressWarnings({"unchecked"})
+		@SuppressWarnings({"unchecked", "incomplete-switch", "null", "unused"})
 		@Override public T deserialize(JsonParser jp,
 		                               DeserializationContext ctxt) throws IOException,
 		                                                                   JsonProcessingException {
 			Object entity = instantiateClass(getValueClass());
-			BeanWrapper wrapper = BeanWrapper.create(entity, conversionService);
+			BeanWrapper<?, Object> wrapper = BeanWrapper.create(entity, conversionService);
 			ResourceMapping domainMapping = config.getResourceMappingForDomainType(getValueClass());
 
 			for(JsonToken tok = jp.nextToken(); tok != JsonToken.END_OBJECT; tok = jp.nextToken()) {
@@ -157,7 +158,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 							continue;
 						}
 
-						PersistentProperty persistentProperty = persistentEntity.getPersistentProperty(name);
+						PersistentProperty<?> persistentProperty = persistentEntity.getPersistentProperty(name);
 						if(null == persistentProperty) {
 							String errMsg = "Property '" + name + "' not found for entity " + getValueClass().getName();
 							if(null == domainMapping) {
@@ -197,13 +198,13 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 						// Try and read the value of this attribute.
 						// The method of doing that varies based on the type of the property.
 						if(persistentProperty.isCollectionLike()) {
-							Class<? extends Collection> ctype = (Class<? extends Collection>)persistentProperty.getType();
-							Collection c = (Collection)wrapper.getProperty(persistentProperty, ctype, false);
+							Class<? extends Collection<?>> ctype = (Class<? extends Collection<?>>) persistentProperty.getType();
+							Collection<Object> c = (Collection<Object>) wrapper.getProperty(persistentProperty, ctype, false);
 							if(null == c || c == Collections.EMPTY_LIST || c == Collections.EMPTY_SET) {
 								if(Collection.class.isAssignableFrom(ctype)) {
-									c = new ArrayList();
+									c = new ArrayList<Object>();
 								} else if(Set.class.isAssignableFrom(ctype)) {
-									c = new HashSet();
+									c = new HashSet<Object>();
 								}
 							}
 
@@ -220,10 +221,10 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 								throw new HttpMessageNotReadableException("Cannot read a JSON " + tok + " as a Collection.");
 							}
 						} else if(persistentProperty.isMap()) {
-							Class<? extends Map> mtype = (Class<? extends Map>)persistentProperty.getType();
-							Map m = (Map)wrapper.getProperty(persistentProperty, mtype, false);
+							Class<? extends Map<?, ?>> mtype = (Class<? extends Map<?, ?>>)persistentProperty.getType();
+							Map<Object, Object> m = (Map<Object, Object>) wrapper.getProperty(persistentProperty, mtype, false);
 							if(null == m || m == Collections.EMPTY_MAP) {
-								m = new HashMap();
+								m = new HashMap<Object, Object>();
 							}
 
 							if((tok = jp.nextToken()) == JsonToken.START_OBJECT) {
@@ -259,6 +260,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	private class ResourceSerializer extends StdSerializer<PersistentEntityResource> {
 
 		private ResourceSerializer() {

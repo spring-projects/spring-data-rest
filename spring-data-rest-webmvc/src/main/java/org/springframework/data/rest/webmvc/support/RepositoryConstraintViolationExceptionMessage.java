@@ -14,13 +14,11 @@ import org.springframework.validation.FieldError;
  */
 public class RepositoryConstraintViolationExceptionMessage {
 
-	private final RepositoryConstraintViolationException violationException;
 	private final List<ValidationError> errors = new ArrayList<ValidationError>();
 
 	public RepositoryConstraintViolationExceptionMessage(RepositoryConstraintViolationException violationException,
 	                                                     MessageSource msgSrc,
 	                                                     Locale locale) {
-		this.violationException = violationException;
 
 		for(FieldError fe : violationException.getErrors().getFieldErrors()) {
 			List<Object> args = new ArrayList<Object>();

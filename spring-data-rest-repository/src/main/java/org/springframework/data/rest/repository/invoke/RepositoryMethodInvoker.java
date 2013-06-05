@@ -37,7 +37,6 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 	private RepositoryMethod deleteSome;
 	private RepositoryMethod deleteAll;
 
-	@SuppressWarnings({"unchecked"})
 	public RepositoryMethodInvoker(Object repository,
 	                               RepositoryInformation repoInfo) {
 		this.repository = repository;

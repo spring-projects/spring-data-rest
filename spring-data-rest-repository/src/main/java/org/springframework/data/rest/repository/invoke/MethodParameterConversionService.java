@@ -32,7 +32,6 @@ public class MethodParameterConversionService {
         || param.hasParameterAnnotation(ConvertWith.class));
   }
 
-  @SuppressWarnings({"unchecked"})
   public <T> T convert(Object source, MethodParameter param) {
     return convert(source, TypeDescriptor.forObject(source), param);
   }

@@ -34,7 +34,7 @@ public class RepositoryMethodResponse {
     return this;
   }
 
-  public RepositoryMethodResponse addAllResults(Iterator results) {
+  public RepositoryMethodResponse addAllResults(Iterator<?> results) {
     if(null == results) {
       return this;
     }

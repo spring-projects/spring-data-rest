@@ -45,7 +45,7 @@ public class BaseUriAwareResources extends Resources<Resource<?>> {
     List<Resource<?>> resources = new ArrayList<Resource<?>>();
     for(Resource<?> resource : super.getContent()) {
       if(resource instanceof BaseUriAwareResource) {
-        resources.add(((BaseUriAwareResource)resource).setBaseUri(baseUri));
+        resources.add(((BaseUriAwareResource<?>) resource).setBaseUri(baseUri));
       } else {
         resources.add(new BaseUriAwareResource<Object>(resource.getContent(), resource.getLinks()).setBaseUri(baseUri));
       }

@@ -21,7 +21,7 @@ public class ConstraintViolationExceptionMessage {
                                              MessageSource msgSrc,
                                              Locale locale) {
     this.cve = cve;
-    for(ConstraintViolation cv : cve.getConstraintViolations()) {
+    for(ConstraintViolation<?> cv : cve.getConstraintViolations()) {
       messages.add(new ConstraintViolationMessage(cv, msgSrc, locale));
     }
   }

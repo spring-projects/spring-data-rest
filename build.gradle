@@ -34,14 +34,13 @@ ext {
   junitVersion = "4.11"
   hamcrestVersion = "1.3"
   jsonpathVersion = "0.8.1"
-  jmockVersion = "2.6.0"
+  mockitoVersion = "1.9.5"
   jettyVersion = "8.1.9.v20130131"
 }
 
 buildscript {
   repositories {
     maven { url "http://repo.springsource.org/plugins-release" }
-    //maven { url "http://repo.springsource.org/plugins-snapshot" }
   }
   dependencies {
     classpath "org.springframework.build.gradle:docbook-reference-plugin:0.2.6"
@@ -85,8 +84,7 @@ configure(allprojects) {
     testCompile "junit:junit-dep:$junitVersion"
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
     testCompile "com.jayway.jsonpath:json-path:$jsonpathVersion"
-    testCompile "org.jmock:jmock-junit4:$jmockVersion"
-    testCompile "org.jmock:jmock-legacy:$jmockVersion"
+    testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile("org.springframework:spring-test:$springVersion") { force = true }
     testRuntime("org.springframework:spring-context-support:$springVersion") { force = true }
     testRuntime "ch.qos.logback:logback-classic:$logbackVersion"

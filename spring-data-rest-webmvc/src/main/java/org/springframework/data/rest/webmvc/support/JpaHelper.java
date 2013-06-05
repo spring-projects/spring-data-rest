@@ -10,15 +10,15 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
+import org.springframework.web.context.request.WebRequestInterceptor;
 
 /**
  * @author Jon Brisbin
  */
 public class JpaHelper implements BeanFactoryAware {
 
-	private List interceptor = new ArrayList<Object>();
+	private List<WebRequestInterceptor> interceptor = new ArrayList<WebRequestInterceptor>();
 
-	@SuppressWarnings({"unchecked"})
 	@Override public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 				(ListableBeanFactory)beanFactory,
@@ -32,7 +32,7 @@ public class JpaHelper implements BeanFactoryAware {
 		}
 	}
 
-	public List getInterceptors() {
+	public List<WebRequestInterceptor> getInterceptors() {
 		return interceptor;
 	}
 

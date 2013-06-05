@@ -6,7 +6,10 @@ package org.springframework.data.rest.repository.context;
  * @author Jon Brisbin
  */
 public class ExceptionEvent extends RepositoryEvent {
-  public ExceptionEvent(Throwable t) {
+
+	private static final long serialVersionUID = 6614805546974091704L;
+
+	public ExceptionEvent(Throwable t) {
     super(t);
   }
 

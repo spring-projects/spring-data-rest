@@ -41,7 +41,6 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 		setOrder(Ordered.LOWEST_PRECEDENCE);
 	}
 
-	@SuppressWarnings({"unchecked"})
 	@Override
 	protected HandlerMethod lookupHandlerMethod(String lookupPath,
 	                                            HttpServletRequest origRequest) throws Exception {

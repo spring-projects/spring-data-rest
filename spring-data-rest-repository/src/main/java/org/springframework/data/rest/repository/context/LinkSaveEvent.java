@@ -5,10 +5,10 @@ package org.springframework.data.rest.repository.context;
  *
  * @author Jon Brisbin
  */
-public abstract class LinkSaveEvent
-    extends RepositoryEvent {
+public abstract class LinkSaveEvent extends RepositoryEvent {
 
-  private final Object linked;
+	private static final long serialVersionUID = -9071648572128698903L;
+	private final Object linked;
 
   public LinkSaveEvent(Object source, Object linked) {
     super(source);

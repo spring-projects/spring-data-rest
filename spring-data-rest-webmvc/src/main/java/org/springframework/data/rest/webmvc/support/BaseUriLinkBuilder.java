@@ -8,7 +8,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * @author Jon Brisbin
  */
-public class BaseUriLinkBuilder extends LinkBuilderSupport {
+public class BaseUriLinkBuilder extends LinkBuilderSupport<BaseUriLinkBuilder> {
 
   public BaseUriLinkBuilder(UriComponentsBuilder builder) {
     super(builder);

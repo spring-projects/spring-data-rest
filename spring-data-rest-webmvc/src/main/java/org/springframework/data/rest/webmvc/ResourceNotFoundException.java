@@ -6,7 +6,10 @@ package org.springframework.data.rest.webmvc;
  * @author Jon Brisbin
  */
 public class ResourceNotFoundException extends RuntimeException {
-  public ResourceNotFoundException() {
+
+	private static final long serialVersionUID = 7992904489502842099L;
+
+	public ResourceNotFoundException() {
     super("Resource not found");
   }
 

@@ -6,7 +6,10 @@ package org.springframework.data.rest.repository.context;
  * @author Jon Brisbin
  */
 public class BeforeLinkDeleteEvent extends LinkSaveEvent {
-  public BeforeLinkDeleteEvent(Object source, Object linked) {
+
+	private static final long serialVersionUID = -973540913790564962L;
+
+	public BeforeLinkDeleteEvent(Object source, Object linked) {
     super(source, linked);
   }
 }

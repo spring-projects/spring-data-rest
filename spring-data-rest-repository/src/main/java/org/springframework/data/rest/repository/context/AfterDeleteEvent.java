@@ -5,9 +5,11 @@ package org.springframework.data.rest.repository.context;
  *
  * @author Jon Brisbin
  */
-public class AfterDeleteEvent
-    extends RepositoryEvent {
-  public AfterDeleteEvent(Object source) {
+public class AfterDeleteEvent extends RepositoryEvent {
+  
+	private static final long serialVersionUID = -6090615345948638970L;
+
+	public AfterDeleteEvent(Object source) {
     super(source);
   }
 }

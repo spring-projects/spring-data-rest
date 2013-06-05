@@ -30,8 +30,8 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
     return PersistentEntityResource.class.isAssignableFrom(parameter.getParameterType());
   }
 
-  @SuppressWarnings({"unchecked"})
   @Override
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public Object resolveArgument(MethodParameter parameter,
                                 ModelAndViewContainer mavContainer,
                                 NativeWebRequest webRequest,
@@ -49,7 +49,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
       }
 
       Object obj = converter.read(domainType, request);
-      return new PersistentEntityResource(repoRequest.getPersistentEntity(),
+      return new PersistentEntityResource<Object>(repoRequest.getPersistentEntity(),
                                           obj);
     }
 
