@@ -6,8 +6,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -26,6 +24,8 @@ import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleBeforeSave;
 import org.springframework.data.rest.repository.annotation.RepositoryEventHandler;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -36,8 +36,7 @@ public class AnnotatedHandlerBeanPostProcessor implements ApplicationListener<Re
 
 	private static final Logger                                                         LOG            = LoggerFactory.getLogger(
 			AnnotatedHandlerBeanPostProcessor.class);
-	private              Multimap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = ArrayListMultimap
-			.create();
+	private final MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = new LinkedMultiValueMap<Class<? extends RepositoryEvent>, AnnotatedHandlerBeanPostProcessor.EventHandlerMethod>();
 
 	@Override public void onApplicationEvent(RepositoryEvent event) {
 		Class<? extends RepositoryEvent> eventType = event.getClass();
@@ -140,7 +139,7 @@ public class AnnotatedHandlerBeanPostProcessor implements ApplicationListener<Re
 					if(LOG.isDebugEnabled()) {
 						LOG.debug("Annotated handler method found: " + m);
 					}
-					handlerMethods.put(eventType, m);
+					handlerMethods.add(eventType, m);
 				}
 			} catch(NoSuchMethodException e) {
 				if(LOG.isDebugEnabled()) {

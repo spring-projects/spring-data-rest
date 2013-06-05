@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Function;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentEntity;
@@ -20,6 +19,7 @@ import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
+import org.springframework.data.rest.core.util.Function;
 import org.springframework.data.rest.repository.PersistentEntityResource;
 import org.springframework.data.rest.repository.context.AfterLinkDeleteEvent;
 import org.springframework.data.rest.repository.context.AfterLinkSaveEvent;

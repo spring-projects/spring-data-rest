@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Stack;
 
-import com.google.common.base.Function;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 

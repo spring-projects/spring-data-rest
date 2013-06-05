@@ -21,7 +21,6 @@ ext {
   sdNeo4jVersion = "2.3.0.BUILD-SNAPSHOT"
 
   // Libraries
-  guavaVersion = "14.0.1"
   jacksonVersion = "2.1.2"
   jodaVersion = "2.1"
   hibernateVersion = "4.2.0.Final"
@@ -128,8 +127,6 @@ project("spring-data-rest-core") {
   }
 
   dependencies {
-    // Google Guava
-    compile "com.google.guava:guava:$guavaVersion"
 
     // Spring
     compile("org.springframework:spring-aop:$springVersion") { force = true }

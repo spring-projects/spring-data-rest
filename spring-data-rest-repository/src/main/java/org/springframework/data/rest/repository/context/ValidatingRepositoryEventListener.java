@@ -5,18 +5,18 @@ import static org.springframework.core.annotation.AnnotationUtils.*;
 import static org.springframework.util.StringUtils.*;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.util.MapUtils;
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
 import org.springframework.data.rest.repository.ValidationErrors;
 import org.springframework.data.rest.repository.annotation.HandleAfterDelete;
@@ -27,6 +27,8 @@ import org.springframework.data.rest.repository.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.repository.annotation.HandleBeforeLinkDelete;
 import org.springframework.data.rest.repository.annotation.HandleBeforeLinkSave;
 import org.springframework.data.rest.repository.annotation.HandleBeforeSave;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
@@ -56,7 +58,7 @@ public class ValidatingRepositoryEventListener
 	);
 	@Autowired
 	private Repositories repositories;
-	private Multimap<String, Validator> validators = ArrayListMultimap.create();
+	private MultiValueMap<String, Validator> validators = new LinkedMultiValueMap<String, Validator>();
 
 	@Override public void afterPropertiesSet() throws Exception {
 		if(validators.size() == 0) {
@@ -81,7 +83,7 @@ public class ValidatingRepositoryEventListener
 				}
 
 				if(null != name) {
-					this.validators.put(name, v);
+					this.validators.add(name, v);
 				}
 			}
 		}
@@ -93,7 +95,7 @@ public class ValidatingRepositoryEventListener
 	 * @return Validators assigned to events.
 	 */
 	public Map<String, Collection<Validator>> getValidators() {
-		return validators.asMap();
+		return MapUtils.toMap(validators);
 	}
 
 	/**
@@ -106,7 +108,7 @@ public class ValidatingRepositoryEventListener
 	 */
 	public ValidatingRepositoryEventListener setValidators(Map<String, Collection<Validator>> validators) {
 		for(Map.Entry<String, Collection<Validator>> entry : validators.entrySet()) {
-			this.validators.replaceValues(entry.getKey(), entry.getValue());
+			this.validators.put(entry.getKey(), new ArrayList<Validator>(entry.getValue()));
 		}
 		return this;
 	}
@@ -122,7 +124,7 @@ public class ValidatingRepositoryEventListener
 	 * @return @this
 	 */
 	public ValidatingRepositoryEventListener addValidator(String event, Validator validator) {
-		validators.put(event, validator);
+		validators.add(event, validator);
 		return this;
 	}
 

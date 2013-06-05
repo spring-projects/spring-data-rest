@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import com.google.common.base.Function;
 import org.junit.Test;
 
 /**
