@@ -39,10 +39,11 @@ import java.util.List;
 /**
  * @author Jon Brisbin
  */
-@RequestMapping("/{repository}")
 @SuppressWarnings({"rawtypes"})
 public class RepositoryEntityController extends AbstractRepositoryRestController {
 
+	private static final String BASE_MAPPING = "/{repository}";
+	
 	@Autowired
 	private DomainObjectMerger                    domainObjectMerger;
 	@Autowired
@@ -61,7 +62,7 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 	}
 
 	@RequestMapping(
-			value = "/schema",
+			value = BASE_MAPPING + "/schema",
 			method = RequestMethod.GET,
 			produces = {
 					"application/schema+json"
@@ -73,6 +74,7 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 	}
 
 	@RequestMapping(
+			value = BASE_MAPPING,
 			method = RequestMethod.GET,
 			produces = {
 					"application/json",
@@ -126,6 +128,7 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 
 	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
+			value = BASE_MAPPING,
 			method = RequestMethod.GET,
 			produces = {
 					"application/x-spring-data-compact+json",
@@ -151,6 +154,7 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 
 	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
+			value = BASE_MAPPING,
 			method = RequestMethod.POST,
 			consumes = {
 					"application/json"
@@ -197,7 +201,7 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 
 	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
-			value = "/{id}",
+			value = BASE_MAPPING + "/{id}",
 			method = RequestMethod.GET,
 			produces = {
 					"application/json",
@@ -236,7 +240,7 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 
 	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
-			value = "/{id}",
+			value = BASE_MAPPING + "/{id}",
 			method = RequestMethod.PUT,
 			consumes = {
 					"application/json"
@@ -295,7 +299,7 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 
 	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
-			value = "/{id}",
+			value = BASE_MAPPING + "/{id}",
 			method = RequestMethod.DELETE
 	)
 	@ResponseBody

@@ -16,7 +16,6 @@ import static org.springframework.data.rest.repository.support.ResourceMappingUt
 /**
  * @author Jon Brisbin
  */
-@RequestMapping("/")
 public class RepositoryController extends AbstractRepositoryRestController {
 
 	@Autowired
@@ -33,6 +32,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	}
 
 	@RequestMapping(
+			value = "/",
 			method = RequestMethod.GET,
 			produces = {
 					"application/json",

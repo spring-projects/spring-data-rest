@@ -32,9 +32,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * @author Jon Brisbin
  */
-@RequestMapping("/{repository}/search")
 public class RepositorySearchController extends AbstractRepositoryRestController {
 
+	private static final String BASE_MAPPING = "/{repository}/search";
+	
 	public RepositorySearchController(Repositories repositories,
 	                                  RepositoryRestConfiguration config,
 	                                  DomainClassConverter<?> domainClassConverter,
@@ -48,6 +49,7 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 	}
 
 	@RequestMapping(
+			value = BASE_MAPPING,
 			method = RequestMethod.GET,
 			produces = {
 					"application/json",
@@ -66,7 +68,7 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 	}
 
 	@RequestMapping(
-			value = "/{method}",
+			value = BASE_MAPPING + "/{method}",
 			method = RequestMethod.GET,
 			produces = {
 					"application/json",
@@ -145,7 +147,7 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 	}
 
 	@RequestMapping(
-			value = "/{method}",
+			value = BASE_MAPPING +"/{method}",
 			method = RequestMethod.GET,
 			produces = {
 					"application/x-spring-data-compact+json"

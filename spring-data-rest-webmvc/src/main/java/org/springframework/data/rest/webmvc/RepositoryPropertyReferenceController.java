@@ -16,7 +16,6 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BeanWrapper;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
@@ -33,7 +32,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,14 +41,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
-@Controller
-@RequestMapping("/{repository}/{id}/{property}")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class RepositoryPropertyReferenceController extends AbstractRepositoryRestController {
+	
+	private static final String BASE_MAPPING = "/{repository}/{id}/{property}";
 
 	public RepositoryPropertyReferenceController(Repositories repositories,
 	                                             RepositoryRestConfiguration config,
-	                                             DomainClassConverter domainClassConverter,
+	                                             DomainClassConverter<?> domainClassConverter,
 	                                             ConversionService conversionService,
 	                                             EntityLinks entityLinks) {
 		super(repositories,
@@ -60,8 +60,8 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		      entityLinks);
 	}
 
-	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
+			value = BASE_MAPPING,
 			method = RequestMethod.GET,
 			produces = {
 					"application/json",
@@ -131,8 +131,8 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		return resourceResponse(headers, responseResource, HttpStatus.OK);
 	}
 
-	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
+			value = BASE_MAPPING,
 			method = RequestMethod.DELETE
 	)
 	@ResponseBody
@@ -178,9 +178,8 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		return resourceResponse(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
 	}
 
-	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
-			value = "/{propertyId}",
+			value = BASE_MAPPING + "/{propertyId}",
 			method = RequestMethod.GET,
 			produces = {
 					"application/json",
@@ -242,8 +241,8 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		return resourceResponse(headers, responseResource, HttpStatus.OK);
 	}
 
-	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
+			value = BASE_MAPPING,
 			method = RequestMethod.GET,
 			produces = {
 					"application/x-spring-data-compact+json",
@@ -302,8 +301,8 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		return resourceResponse(null, new Resource<Object>(EMPTY_RESOURCE_LIST, links), HttpStatus.OK);
 	}
 
-	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
+			value = BASE_MAPPING,
 			method = {
 					RequestMethod.POST,
 					RequestMethod.PUT
@@ -372,9 +371,8 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		return resourceResponse(null, EMPTY_RESOURCE, HttpStatus.CREATED);
 	}
 
-	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
-			value = "/{propertyId}",
+			value = BASE_MAPPING + "/{propertyId}",
 			method = RequestMethod.DELETE
 	)
 	@ResponseBody
@@ -446,7 +444,6 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		                                    TypeDescriptor.valueOf(type));
 	}
 
-	@SuppressWarnings({"unchecked"})
 	private Resource<?> doWithReferencedProperty(RepositoryRestRequest repoRequest,
 	                                             String id,
 	                                             String propertyPath,
@@ -485,9 +482,6 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		final Class<?>                propertyType;
 		final Object                  propertyValue;
 		final BeanWrapper             wrapper;
-		final RepositoryInformation   propertyRepoInfo;
-		final Object                  propertyRepo;
-		final RepositoryMethodInvoker repoMethodInvoker;
 
 		private ReferencedProperty(PersistentProperty property,
 		                           Object propertyValue,
@@ -502,11 +496,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			} else {
 				this.propertyType = property.getType();
 			}
-			this.propertyRepoInfo = repositories.getRepositoryInformationFor(propertyType);
 			this.entity = repositories.getPersistentEntity(propertyType);
-			this.propertyRepo = repositories.getRepositoryFor(entity.getType());
-			this.repoMethodInvoker = new RepositoryMethodInvoker(propertyRepo, propertyRepoInfo);
 		}
 	}
-
 }
