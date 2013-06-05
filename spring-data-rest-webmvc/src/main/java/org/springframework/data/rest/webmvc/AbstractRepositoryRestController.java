@@ -195,7 +195,6 @@ public class AbstractRepositoryRestController implements ApplicationContextAware
 	 * @param ex
 	 * @return
 	 */
-	@SuppressWarnings({"unchecked"})
 	@ExceptionHandler({
 												OptimisticLockingFailureException.class,
 												DataIntegrityViolationException.class

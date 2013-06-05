@@ -22,7 +22,6 @@ import org.springframework.hateoas.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -40,7 +39,6 @@ import java.util.List;
 /**
  * @author Jon Brisbin
  */
-@Controller
 @RequestMapping("/{repository}")
 @SuppressWarnings({"rawtypes"})
 public class RepositoryEntityController extends AbstractRepositoryRestController {
@@ -74,7 +72,6 @@ public class RepositoryEntityController extends AbstractRepositoryRestController
 		return jsonSchemaConverter.convert(repoRequest.getPersistentEntity().getType());
 	}
 
-	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
 			method = RequestMethod.GET,
 			produces = {

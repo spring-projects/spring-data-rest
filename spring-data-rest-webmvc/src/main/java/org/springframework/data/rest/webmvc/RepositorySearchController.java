@@ -24,7 +24,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,13 +32,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * @author Jon Brisbin
  */
-@Controller
 @RequestMapping("/{repository}/search")
 public class RepositorySearchController extends AbstractRepositoryRestController {
 
 	public RepositorySearchController(Repositories repositories,
 	                                  RepositoryRestConfiguration config,
-	                                  DomainClassConverter domainClassConverter,
+	                                  DomainClassConverter<?> domainClassConverter,
 	                                  ConversionService conversionService,
 	                                  EntityLinks entityLinks) {
 		super(repositories,
@@ -67,7 +65,6 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 		return new Resource<Object>(Collections.emptyList(), links);
 	}
 
-	@SuppressWarnings({"unchecked"})
 	@RequestMapping(
 			value = "/{method}",
 			method = RequestMethod.GET,
@@ -137,10 +134,10 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 		Link prevLink = null;
 		Link nextLink = null;
 		if(result instanceof Page) {
-			if(((Page)result).hasPreviousPage() && pageSort.getPageNumber() > 0) {
+			if(((Page<?>)result).hasPreviousPage() && pageSort.getPageNumber() > 0) {
 				prevLink = searchLink(repoRequest, 0, method, "page.previous");
 			}
-			if(((Page)result).hasNextPage()) {
+			if(((Page<?>)result).hasNextPage()) {
 				nextLink = searchLink(repoRequest, 1, method, "page.next");
 			}
 		}
@@ -164,15 +161,15 @@ public class RepositorySearchController extends AbstractRepositoryRestController
 		ResourceSupport resource = query(repoRequest, repository, method);
 		links.addAll(resource.getLinks());
 
-		if(resource instanceof Resources && ((Resources)resource).getContent() != null) {
-			for(Object obj : ((Resources)resource).getContent()) {
+		if(resource instanceof Resources && ((Resources<?>) resource).getContent() != null) {
+			for(Object obj : ((Resources<?>) resource).getContent()) {
 				if(null != obj && obj instanceof Resource) {
-					Resource res = (Resource)obj;
+					Resource<?> res = (Resource<?>)obj;
 					links.add(resourceLink(repoRequest, res));
 				}
 			}
 		} else if(resource instanceof Resource) {
-			Resource res = (Resource)resource;
+			Resource<?> res = (Resource<?>) resource;
 			links.add(resourceLink(repoRequest, res));
 		}
 

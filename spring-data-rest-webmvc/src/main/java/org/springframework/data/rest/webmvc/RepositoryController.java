@@ -7,7 +7,6 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.hateoas.EntityLinks;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -17,14 +16,13 @@ import static org.springframework.data.rest.repository.support.ResourceMappingUt
 /**
  * @author Jon Brisbin
  */
-@Controller
 @RequestMapping("/")
 public class RepositoryController extends AbstractRepositoryRestController {
 
 	@Autowired
 	public RepositoryController(Repositories repositories,
 															RepositoryRestConfiguration config,
-															DomainClassConverter domainClassConverter,
+															DomainClassConverter<?> domainClassConverter,
 															ConversionService conversionService,
 															EntityLinks entityLinks) {
 		super(repositories,
