@@ -41,11 +41,11 @@ ext {
 
 buildscript {
   repositories {
-    //maven { url "http://repo.springsource.org/plugins-release" }
-    maven { url "http://repo.springsource.org/plugins-snapshot" }
+    maven { url "http://repo.springsource.org/plugins-release" }
+    //maven { url "http://repo.springsource.org/plugins-snapshot" }
   }
   dependencies {
-    classpath "org.springframework.build.gradle:docbook-reference-plugin:0.2.7-SNAPSHOT"
+    classpath "org.springframework.build.gradle:docbook-reference-plugin:0.2.6"
   }
 }
 
