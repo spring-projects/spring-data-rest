@@ -9,14 +9,13 @@ ext {
   logbackVersion = "1.0.11"
 
   // Spring
-  springVersion = "3.1.4.RELEASE"
-  spring32Version = "3.2.2.RELEASE"
-  hateoasVersion = "0.4.0.RELEASE"
+  springVersion = "3.2.3.RELEASE"
+  hateoasVersion = "0.6.0.RELEASE"
   springPluginVersion = "0.8.0.RELEASE"
   springSecurityVersion = "3.1.3.RELEASE"
-  sdCommonsVersion = "1.6.0.M1"
-  sdJpaVersion = "1.4.0.M1"
-  sdMongoVersion = "1.3.0.M1"
+  sdCommonsVersion = "1.6.0.BUILD-SNAPSHOT"
+  sdJpaVersion = "1.4.0.BUILD-SNAPSHOT"
+  sdMongoVersion = "1.3.0.BUILD-SNAPSHOT"
   sdGemfireVersion = "1.3.1.RELEASE"
   sdNeo4jVersion = "2.3.0.BUILD-SNAPSHOT"
 
@@ -68,10 +67,10 @@ configure(allprojects) {
   sourceSets.test.resources.srcDirs = ["src/test/resources", "src/test/java"]
 
   repositories {
-    maven { url "http://repo.springsource.org/libs-milestone" }
     maven { url "http://oss.sonatype.org/content/repositories/releases" }
     maven { url "http://m2.neo4j.org/releases" }
     mavenLocal()
+    maven { url "http://repo.springsource.org/libs-snapshot" }
     mavenCentral()
   }
 
@@ -81,7 +80,7 @@ configure(allprojects) {
     runtime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
     // Testing
-    testCompile "junit:junit-dep:$junitVersion"
+    testCompile "junit:junit:$junitVersion"
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
     testCompile "com.jayway.jsonpath:json-path:$jsonpathVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
@@ -171,6 +170,8 @@ project("spring-data-rest-repository") {
     // JPA
     compile("org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final", optional)
 
+    compile("org.springframework:spring-orm:$springVersion", optional)
+
     // Spring Plugin
     compile "org.springframework.plugin:spring-plugin-core:$springPluginVersion"
 
@@ -215,7 +216,6 @@ project("spring-data-rest-webmvc") {
     testCompile "org.springframework.data:spring-data-mongodb:$sdMongoVersion"
     testCompile("org.springframework.data:spring-data-gemfire:$sdGemfireVersion") {
       exclude group: "junit"
-      exclude group: "org.jmock"
       exclude group: "org.hamcrest"
       exclude module: "spring-test"
     }
@@ -238,18 +238,18 @@ project("spring-data-rest-example") {
 
   dependencies {
     // Spring
-    compile("org.springframework:spring-aop:$spring32Version") { force = true }
-    compile("org.springframework:spring-aspects:$spring32Version") { force = true }
-    compile("org.springframework:spring-beans:$spring32Version") { force = true }
-    compile("org.springframework:spring-context:$spring32Version") { force = true }
-    compile("org.springframework:spring-context-support:$spring32Version") { force = true }
-    compile("org.springframework:spring-core:$spring32Version") { force = true }
-    compile("org.springframework:spring-expression:$spring32Version") { force = true }
-    compile("org.springframework:spring-jdbc:$spring32Version") { force = true }
-    compile("org.springframework:spring-orm:$spring32Version") { force = true }
-    compile("org.springframework:spring-tx:$spring32Version") { force = true }
-    compile("org.springframework:spring-web:$spring32Version") { force = true }
-    compile("org.springframework:spring-webmvc:$spring32Version") { force = true }
+    compile("org.springframework:spring-aop:$springVersion") { force = true }
+    compile("org.springframework:spring-aspects:$springVersion") { force = true }
+    compile("org.springframework:spring-beans:$springVersion") { force = true }
+    compile("org.springframework:spring-context:$springVersion") { force = true }
+    compile("org.springframework:spring-context-support:$springVersion") { force = true }
+    compile("org.springframework:spring-core:$springVersion") { force = true }
+    compile("org.springframework:spring-expression:$springVersion") { force = true }
+    compile("org.springframework:spring-jdbc:$springVersion") { force = true }
+    compile("org.springframework:spring-orm:$springVersion") { force = true }
+    compile("org.springframework:spring-tx:$springVersion") { force = true }
+    compile("org.springframework:spring-web:$springVersion") { force = true }
+    compile("org.springframework:spring-webmvc:$springVersion") { force = true }
 
     compile project(":spring-data-rest-webmvc")
 
@@ -265,7 +265,6 @@ project("spring-data-rest-example") {
     compile "org.springframework.data:spring-data-neo4j:$sdNeo4jVersion"
     compile("org.springframework.data:spring-data-gemfire:$sdGemfireVersion") {
       exclude group: "junit", module: "junit"
-      exclude group: "org.jmock"
       exclude group: "org.hamcrest"
       exclude module: "spring-test"
     }
