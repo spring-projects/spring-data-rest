@@ -1,8 +1,5 @@
 package org.springframework.data.rest.repository.support;
 
-import static org.springframework.core.annotation.AnnotationUtils.*;
-import static org.springframework.util.StringUtils.*;
-
 import java.lang.reflect.Method;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -11,6 +8,11 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.data.rest.repository.annotation.RestResource;
+
+import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
+import static org.springframework.data.rest.repository.support.ResourceStringUtils.hasText;
+import static org.springframework.data.rest.repository.support.ResourceStringUtils.removeLeadingSlash;
+import static org.springframework.util.StringUtils.uncapitalize;
 
 /**
  * Helper methods to get the default rel and path values or to use values supplied by annotations.
@@ -56,16 +58,16 @@ public abstract class ResourceMappingUtils {
     ResourceMapping propertyMapping = entityMapping.getResourceMappingFor(persistentProperty.getName());
 
     return String.format("%s.%s.%s",
-                         repoMapping.getRel(),
-                         entityMapping.getRel(),
-                         (null != propertyMapping ? propertyMapping.getRel() : persistentProperty.getName()));
+            repoMapping.getRel(),
+            entityMapping.getRel(),
+            (null != propertyMapping ? propertyMapping.getRel() : persistentProperty.getName()));
   }
 
   public static String findPath(Class<?> type) {
     RestResource anno;
     if(null != (anno = findAnnotation(type, RestResource.class))) {
       if(hasText(anno.path())) {
-        return anno.path();
+        return removeLeadingSlash(anno.path());
       }
     }
 
@@ -76,7 +78,7 @@ public abstract class ResourceMappingUtils {
     RestResource anno;
     if(null != (anno = findAnnotation(method, RestResource.class))) {
       if(hasText(anno.path())) {
-        return anno.path();
+        return removeLeadingSlash(anno.path());
       }
     }
 
