@@ -13,6 +13,7 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.repository.support.DomainClassConverter;
+import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.convert.ISO8601DateConverter;
 import org.springframework.data.rest.convert.UUIDConverter;
@@ -145,9 +146,9 @@ public class RepositoryRestMvcConfiguration {
 	 *
 	 * @throws Exception
 	 */
-	@Bean public DomainObjectMerger domainObjectMerger() throws Exception {
+	@Bean public DomainObjectMerger domainObjectMerger(Repositories repositories) throws Exception {
 		return new DomainObjectMerger(
-				repositories().getObject(),
+				repositories,
 				defaultConversionService()
 		);
 	}
@@ -159,13 +160,13 @@ public class RepositoryRestMvcConfiguration {
 	 *
 	 * @throws Exception
 	 */
-	@Bean public RepositoryController repositoryController() throws Exception {
+	@Bean public RepositoryController repositoryController(Repositories repositories, EntityLinks entityLinks) throws Exception {
 		return new RepositoryController(
-				repositories().getObject(),
+				repositories,
 				config(),
 				domainClassConverter(),
 				defaultConversionService(),
-				entityLinks()
+				entityLinks
 		);
 	}
 
@@ -176,13 +177,13 @@ public class RepositoryRestMvcConfiguration {
 	 *
 	 * @throws Exception
 	 */
-	@Bean public RepositoryEntityController repositoryEntityController() throws Exception {
+	@Bean public RepositoryEntityController repositoryEntityController(Repositories repositories, EntityLinks entityLinks) throws Exception {
 		return new RepositoryEntityController(
-				repositories().getObject(),
+				repositories,
 				config(),
 				domainClassConverter(),
 				defaultConversionService(),
-				entityLinks()
+				entityLinks
 		);
 	}
 
@@ -193,13 +194,13 @@ public class RepositoryRestMvcConfiguration {
 	 *
 	 * @throws Exception
 	 */
-	@Bean public RepositoryPropertyReferenceController propertyReferenceController() throws Exception {
+	@Bean public RepositoryPropertyReferenceController propertyReferenceController(Repositories repositories, EntityLinks entityLinks) throws Exception {
 		return new RepositoryPropertyReferenceController(
-				repositories().getObject(),
+				repositories,
 				config(),
 				domainClassConverter(),
 				defaultConversionService(),
-				entityLinks()
+				entityLinks
 		);
 	}
 
@@ -210,13 +211,13 @@ public class RepositoryRestMvcConfiguration {
 	 *
 	 * @throws Exception
 	 */
-	@Bean public RepositorySearchController repositorySearchController() throws Exception {
+	@Bean public RepositorySearchController repositorySearchController(Repositories repositories, EntityLinks entityLinks) throws Exception {
 		return new RepositorySearchController(
-				repositories().getObject(),
+				repositories,
 				config(),
 				domainClassConverter(),
 				defaultConversionService(),
-				entityLinks()
+				entityLinks
 		);
 	}
 
@@ -273,8 +274,8 @@ public class RepositoryRestMvcConfiguration {
 	 *
 	 * @throws Exception
 	 */
-	@Bean public EntityLinks entityLinks() throws Exception {
-		return new RepositoryEntityLinks(repositories().getObject(), config());
+	@Bean public EntityLinks entityLinks(Repositories repositories) throws Exception {
+		return new RepositoryEntityLinks(repositories, config());
 	}
 
 	/**
