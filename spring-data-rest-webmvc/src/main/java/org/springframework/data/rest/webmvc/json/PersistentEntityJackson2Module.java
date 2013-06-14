@@ -1,8 +1,6 @@
-package org.springframework.data.rest.repository.json;
+package org.springframework.data.rest.webmvc.json;
 
 import static org.springframework.beans.BeanUtils.*;
-import static org.springframework.data.rest.core.util.UriUtils.*;
-import static org.springframework.data.rest.repository.support.ResourceMappingUtils.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,6 +13,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.AssociationHandler;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.model.BeanWrapper;
+import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.repository.PersistentEntityResource;
+import org.springframework.data.rest.repository.UriDomainClassConverter;
+import org.springframework.data.rest.repository.mapping.ResourceMappings;
+import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.support.RepositoryLinkBuilder;
+import org.springframework.hateoas.Link;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.util.Assert;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -26,26 +46,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.data.mapping.Association;
-import org.springframework.data.mapping.AssociationHandler;
-import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.data.mapping.model.BeanWrapper;
-import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.config.ResourceMapping;
-import org.springframework.data.rest.repository.PersistentEntityResource;
-import org.springframework.data.rest.repository.UriDomainClassConverter;
-import org.springframework.hateoas.Link;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 
 /**
  * @author Jon Brisbin
@@ -55,54 +55,45 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 	private static final long serialVersionUID = -7289265674870906323L;
 	private static final Logger         LOG      = LoggerFactory.getLogger(PersistentEntityJackson2Module.class);
 	private static final TypeDescriptor URI_TYPE = TypeDescriptor.valueOf(URI.class);
-	private final ConversionService           conversionService;
 	@Autowired
 	private       Repositories                repositories;
 	@Autowired
 	private       RepositoryRestConfiguration config;
 	@Autowired
 	private       UriDomainClassConverter     uriDomainClassConverter;
+	private final ResourceMappings mappings;
 
-	public PersistentEntityJackson2Module(ConversionService conversionService) {
+	public PersistentEntityJackson2Module(ResourceMappings resourceMappings) {
+		
 		super(new Version(1, 1, 0, "BUILD-SNAPSHOT", "org.springframework.data.rest", "jackson-module"));
-		this.conversionService = conversionService;
-
+		
+		this.mappings = resourceMappings;
 		addSerializer(new ResourceSerializer());
 	}
 
-	public static boolean maybeAddAssociationLink(Repositories repositories,
-	                                              RepositoryRestConfiguration config,
-	                                              URI baseEntityUri,
-	                                              RepositoryInformation repoInfo,
-	                                              ResourceMapping entityMapping,
-	                                              ResourceMapping propertyMapping,
+	public static boolean maybeAddAssociationLink(RepositoryLinkBuilder builder,
+	                                              ResourceMappings mappings,
 	                                              PersistentProperty<?> persistentProperty,
 	                                              List<Link> links) {
-		Class<?> propertyType = persistentProperty.getType();
-		if(persistentProperty.isCollectionLike() || persistentProperty.isArray()) {
-			propertyType = persistentProperty.getComponentType();
+		
+		Assert.isTrue(persistentProperty.isAssociation(), "PersistentProperty must be an association!");
+		ResourceMetadata metadata = mappings.getMappingFor(persistentProperty.getOwner().getType());
+		
+		if (!metadata.isManaged(persistentProperty)) {
+			return false;
 		}
-
-		String propertyPath = (null != propertyMapping
-		                       ? propertyMapping.getPath()
-		                       : persistentProperty.getName());
-		// In case a property mapping is specified but no path is set
-		if(null == propertyPath) {
-			propertyPath = persistentProperty.getName();
-		}
-		String propertyRel = formatRel(config, repoInfo, persistentProperty);
-		if(repositories.hasRepositoryFor(propertyType)) {
-			// This is a managed type, generate a Link
-			RepositoryInformation linkedRepoInfo = repositories.getRepositoryInformationFor(propertyType);
-			ResourceMapping linkedRepoMapping = getResourceMapping(config, linkedRepoInfo);
-			if(linkedRepoMapping.isExported()) {
-				URI uri = buildUri(baseEntityUri, propertyPath);
-				Link l = new Link(uri.toString(), propertyRel);
-				links.add(l);
-				// This is an association. We added a Link.
-				return true;
-			}
-		}
+		
+		metadata = mappings.getMappingFor(persistentProperty.getActualType());
+		
+		if(metadata.isExported()) {
+			
+			String propertyRel = String.format("%s.%s", metadata.getSingleResourceRel(), persistentProperty.getName());
+			links.add(builder.slash(persistentProperty.getName()).withRel(propertyRel));
+			
+			// This is an association. We added a Link.
+			return true;
+		} 
+		
 		// This is not an association. No Link was added.
 		return false;
 	}
@@ -136,8 +127,9 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 		                               DeserializationContext ctxt) throws IOException,
 		                                                                   JsonProcessingException {
 			Object entity = instantiateClass(getValueClass());
-			BeanWrapper<?, Object> wrapper = BeanWrapper.create(entity, conversionService);
-			ResourceMapping domainMapping = config.getResourceMappingForDomainType(getValueClass());
+			 BeanWrapper<?, Object> wrapper = BeanWrapper.create(entity, null);
+			
+			ResourceMetadata metadata = mappings.getMappingFor(getValueClass());
 
 			for(JsonToken tok = jp.nextToken(); tok != JsonToken.END_OBJECT; tok = jp.nextToken()) {
 				String name = jp.getCurrentName();
@@ -160,18 +152,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 
 						PersistentProperty<?> persistentProperty = persistentEntity.getPersistentProperty(name);
 						if(null == persistentProperty) {
-							String errMsg = "Property '" + name + "' not found for entity " + getValueClass().getName();
-							if(null == domainMapping) {
-								throw new HttpMessageNotReadableException(errMsg);
-							}
-							String propertyName = domainMapping.getNameForPath(name);
-							if(null == propertyName) {
-								throw new HttpMessageNotReadableException(errMsg);
-							}
-							persistentProperty = persistentEntity.getPersistentProperty(propertyName);
-							if(null == persistentProperty) {
-								throw new HttpMessageNotReadableException(errMsg);
-							}
+							continue;
 						}
 
 						Object val = null;
@@ -199,7 +180,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 						// The method of doing that varies based on the type of the property.
 						if(persistentProperty.isCollectionLike()) {
 							Class<? extends Collection<?>> ctype = (Class<? extends Collection<?>>) persistentProperty.getType();
-							Collection<Object> c = (Collection<Object>) wrapper.getProperty(persistentProperty, ctype, false);
+							Collection<Object> c = (Collection<Object>) wrapper.getProperty(persistentProperty);
 							if(null == c || c == Collections.EMPTY_LIST || c == Collections.EMPTY_SET) {
 								if(Collection.class.isAssignableFrom(ctype)) {
 									c = new ArrayList<Object>();
@@ -222,7 +203,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 							}
 						} else if(persistentProperty.isMap()) {
 							Class<? extends Map<?, ?>> mtype = (Class<? extends Map<?, ?>>)persistentProperty.getType();
-							Map<Object, Object> m = (Map<Object, Object>) wrapper.getProperty(persistentProperty, mtype, false);
+							Map<Object, Object> m = (Map<Object, Object>) wrapper.getProperty(persistentProperty);
 							if(null == m || m == Collections.EMPTY_MAP) {
 								m = new HashMap<Object, Object>();
 							}
@@ -278,18 +259,13 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 
 			Object obj = resource.getContent();
 
-			final PersistentEntity persistentEntity = resource.getPersistentEntity();
-			final ResourceMapping entityMapping = getResourceMapping(config, persistentEntity);
+			final PersistentEntity entity = resource.getPersistentEntity();
 
-			final RepositoryInformation repoInfo = repositories.getRepositoryInformationFor(persistentEntity.getType());
-			final ResourceMapping repoMapping = getResourceMapping(config, repoInfo);
-
-			final BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
-			final Object entityId = wrapper.getProperty(persistentEntity.getIdProperty());
-
-			final URI baseEntityUri = buildUri(resource.getBaseUri(),
-			                                   repoMapping.getPath(),
-			                                   entityId.toString());
+			final BeanWrapper wrapper = BeanWrapper.create(obj, null);
+			final Object entityId = wrapper.getProperty(entity.getIdProperty());
+			final ResourceMappings mappings = new ResourceMappings(config, repositories);
+			final ResourceMetadata metadata = mappings.getMappingFor(entity.getType());
+			final RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, config.getBaseUri()).slash(entityId);
 
 			final List<Link> links = new ArrayList<Link>();
 			// Start with ResourceProcessor-added links
@@ -297,32 +273,23 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 
 			jgen.writeStartObject();
 			try {
-				persistentEntity.doWithProperties(new PropertyHandler() {
-					@Override public void doWithPersistentProperty(PersistentProperty persistentProperty) {
-						if(persistentProperty.isIdProperty() && !config.isIdExposedFor(persistentEntity.getType())) {
+				entity.doWithProperties(new PropertyHandler() {
+					@Override public void doWithPersistentProperty(PersistentProperty property) {
+						
+						boolean idAvailableAndShallNotBeExposed = property.isIdProperty() && !config.isIdExposedFor(entity.getType());
+						
+						if(idAvailableAndShallNotBeExposed) {
 							return;
 						}
-						ResourceMapping propertyMapping = entityMapping.getResourceMappingFor(persistentProperty.getName());
-						if(null != propertyMapping && !propertyMapping.isExported()) {
-							return;
-						}
-
-						if(persistentProperty.isEntity() && maybeAddAssociationLink(repositories,
-						                                                            config,
-						                                                            baseEntityUri,
-						                                                            repoInfo,
-						                                                            entityMapping,
-						                                                            propertyMapping,
-						                                                            persistentProperty,
-						                                                            links)) {
+						
+						if (property.isEntity() && maybeAddAssociationLink(builder, mappings, property, links)) {
 							return;
 						}
 
 						// Property is a normal or non-managed property.
-						String propertyName = (null != propertyMapping ? propertyMapping.getPath() : persistentProperty.getName());
-						Object propertyValue = wrapper.getProperty(persistentProperty);
+						Object propertyValue = wrapper.getProperty(property);
 						try {
-							jgen.writeObjectField(propertyName, propertyValue);
+							jgen.writeObjectField(property.getName(), propertyValue);
 						} catch(IOException e) {
 							throw new IllegalStateException(e);
 						}
@@ -330,27 +297,22 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 				});
 
 				// Add associations as links
-				persistentEntity.doWithAssociations(new AssociationHandler() {
+				entity.doWithAssociations(new AssociationHandler() {
 					@Override public void doWithAssociation(Association association) {
-						PersistentProperty persistentProperty = association.getInverse();
-						ResourceMapping propertyMapping = entityMapping.getResourceMappingFor(persistentProperty.getName());
-						if(null != propertyMapping && !propertyMapping.isExported()) {
+						
+						PersistentProperty property = association.getInverse();
+						
+						if(!mappings.isMapped(property)) {
 							return;
 						}
-						if(maybeAddAssociationLink(repositories,
-						                           config,
-						                           baseEntityUri,
-						                           repoInfo,
-						                           entityMapping,
-						                           propertyMapping,
-						                           persistentProperty,
-						                           links)) {
+						
+						if (maybeAddAssociationLink(builder, mappings, property, links)) {
 							return;
 						}
 						// Association Link was not added, probably because this isn't a managed type. Add value of property inline.
-						Object propertyValue = wrapper.getProperty(persistentProperty);
+						Object propertyValue = wrapper.getProperty(property);
 						try {
-							jgen.writeObjectField(persistentProperty.getName(), propertyValue);
+							jgen.writeObjectField(property.getName(), propertyValue);
 						} catch(IOException e) {
 							throw new IllegalStateException(e);
 						}

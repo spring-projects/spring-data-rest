@@ -19,6 +19,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RepositoryTestsConfig.class)
+@SuppressWarnings("deprecation")
 public class RepositoryRestConfigurationIntegrationTests {
 
   @Autowired
@@ -26,7 +27,7 @@ public class RepositoryRestConfigurationIntegrationTests {
 
   @Test
   public void shouldProvideResourceMappingForConfiguredRepository() throws Exception {
-    ResourceMapping mapping = config.getResourceMappingForRepository(ConfiguredPersonRepository.class);
+		ResourceMapping mapping = config.getResourceMappingForRepository(ConfiguredPersonRepository.class);
 
     assertThat(mapping, notNullValue());
     assertThat(mapping.getRel(), is("people"));

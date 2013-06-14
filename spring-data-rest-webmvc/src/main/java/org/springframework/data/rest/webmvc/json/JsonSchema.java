@@ -1,4 +1,4 @@
-package org.springframework.data.rest.repository.json;
+package org.springframework.data.rest.webmvc.json;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,15 +1,13 @@
-package org.springframework.data.rest.repository.json;
+package org.springframework.data.rest.webmvc.json;
 
-import static org.springframework.data.rest.core.util.UriUtils.*;
-import static org.springframework.data.rest.repository.json.PersistentEntityJackson2Module.*;
-import static org.springframework.data.rest.repository.support.ResourceMappingUtils.*;
+import static org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.*;
 import static org.springframework.util.StringUtils.*;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 
@@ -21,10 +19,11 @@ import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.data.rest.repository.annotation.Description;
+import org.springframework.data.rest.repository.mapping.ResourceMappings;
+import org.springframework.data.rest.repository.mapping.ResourceMetadata;
 import org.springframework.data.rest.repository.support.RepositoryInformationSupport;
+import org.springframework.data.rest.webmvc.support.RepositoryLinkBuilder;
 import org.springframework.hateoas.Link;
 
 /**
@@ -38,11 +37,15 @@ public class PersistentEntityToJsonSchemaConverter
   private static final TypeDescriptor       STRING_TYPE      = TypeDescriptor.valueOf(String.class);
   private static final TypeDescriptor       SCHEMA_TYPE      = TypeDescriptor.valueOf(JsonSchema.class);
   private              Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
+  private ResourceMappings mappings;
 
   @Override public void afterPropertiesSet() throws Exception {
-    for(Class<?> domainType : repositories) {
+    
+  	for(Class<?> domainType : repositories) {
       convertiblePairs.add(new ConvertiblePair(domainType, JsonSchema.class));
     }
+    
+    this.mappings = new ResourceMappings(config, repositories);
   }
 
   @Override public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
@@ -60,15 +63,13 @@ public class PersistentEntityToJsonSchemaConverter
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Override public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+  	
     PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity((Class<?>)source);
-    final RepositoryInformation repoInfo = repositories.getRepositoryInformationFor(persistentEntity.getType());
-    final ResourceMapping repoMapping = getResourceMapping(config, repoInfo);
-    final ResourceMapping entityMapping = getResourceMapping(config, persistentEntity);
-    final URI baseEntityUri = buildUri(config.getBaseUri(), repoMapping.getPath(), "{id}");
+    final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getClass());
     String entityDesc = persistentEntity.getType().isAnnotationPresent(Description.class)
                         ? ((Description)persistentEntity.getType().getAnnotation(Description.class)).value()
                         : null;
-
+                        
     final JsonSchema jsonSchema = new JsonSchema(persistentEntity.getName(), entityDesc);
     persistentEntity.doWithProperties(new PropertyHandler() {
       @Override public void doWithPersistentProperty(PersistentProperty persistentProperty) {
@@ -95,23 +96,19 @@ public class PersistentEntityToJsonSchemaConverter
     });
 
     final List<Link> links = new ArrayList<Link>();
+    
     persistentEntity.doWithAssociations(new AssociationHandler() {
       @Override public void doWithAssociation(Association association) {
         PersistentProperty persistentProperty = association.getInverse();
-        ResourceMapping propertyMapping = entityMapping.getResourceMappingFor(persistentProperty.getName());
-        if(null != propertyMapping && !propertyMapping.isExported()) {
+        if(!metadata.isMapped(persistentProperty)) {
           return;
         }
-        maybeAddAssociationLink(repositories,
-                                config,
-                                baseEntityUri,
-                                repoInfo,
-                                entityMapping,
-                                propertyMapping,
-                                persistentProperty,
-                                links);
+        
+        RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, config.getBaseUri()).slash("{id}");
+				maybeAddAssociationLink(builder, mappings, persistentProperty, links);
       }
     });
+    
     jsonSchema.add(links);
 
     return jsonSchema;

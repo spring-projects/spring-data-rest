@@ -1,36 +1,37 @@
-package org.springframework.data.rest.repository.json;
+package org.springframework.data.rest.webmvc.json;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URI;
+import java.io.StringWriter;
 import java.util.Collections;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.repository.PersistentEntityResource;
-import org.springframework.data.rest.repository.RepositoryTestsConfig;
-import org.springframework.data.rest.repository.domain.jpa.Person;
-import org.springframework.data.rest.repository.domain.jpa.PersonRepository;
+import org.springframework.data.rest.webmvc.jpa.Person;
+import org.springframework.data.rest.webmvc.jpa.PersonRepository;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkDiscoverer;
+import org.springframework.hateoas.core.DefaultLinkDiscoverer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Jon Brisbin
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RepositoryTestsConfig.class)
+@Transactional
 public class PersistentEntitySerializationTests {
 
 	private static final String  PERSON_JSON_IN  = "{\"firstName\": \"John\",\"lastName\": \"Doe\"}";
@@ -38,22 +39,19 @@ public class PersistentEntitySerializationTests {
 	@Autowired ObjectMapper mapper;
 	@Autowired Repositories repositories;
 	@Autowired PersonRepository people;
-
-	public static Matcher<Link> isLinkWithHref(final String href) {
-		return new BaseMatcher<Link>() {
-			@Override public boolean matches(Object item) {
-				return (item instanceof Link && href.equals(((Link)item).getHref()));
-			}
-
-			@Override public void describeTo(Description description) {
-				description.appendText(href);
-			}
-		};
+	
+	LinkDiscoverer linkDiscoverer;
+	
+	@Before
+	public void setUp() {
+		linkDiscoverer = new DefaultLinkDiscoverer();
 	}
 
 	@Test
 	public void deserializesPersonEntity() throws IOException {
+		
 		Person p = mapper.readValue(PERSON_JSON_IN, Person.class);
+		
 		assertThat(p.getFirstName(), is("John"));
 		assertThat(p.getLastName(), is("Doe"));
 		assertThat(p.getSiblings(), is(Collections.EMPTY_LIST));
@@ -62,13 +60,18 @@ public class PersistentEntitySerializationTests {
 	@Test
 	public void serializesPersonEntity() throws IOException, InterruptedException {
 		
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(Person.class);
 		Person person = people.save(new Person("John", "Doe"));
-		mapper.writeValue(out, PersistentEntityResource.wrap(persistentEntity, person, URI.create("http://localhost")));
-		out.flush();
-		String s = new String(out.toByteArray());
-
-		assertThat("Siblings Link looks correct", JsonPath.read(s, "$links[0].href").toString(), endsWith("/2/siblings"));
+		
+		StringWriter writer = new StringWriter();
+		mapper.writeValue(writer, PersistentEntityResource.wrap(persistentEntity, person));
+		
+		String s = writer.toString();
+		
+		Link fatherLink = linkDiscoverer.findLinkWithRel("father", s);
+		assertThat(fatherLink.getHref(), endsWith(new UriTemplate("/{id}/father").expand(person.getId()).toString()));
+		
+		Link siblingLink = linkDiscoverer.findLinkWithRel("siblings", s);
+		assertThat(siblingLink.getHref(), endsWith(new UriTemplate("/{id}/siblings").expand(person.getId()).toString()));
 	}
 }

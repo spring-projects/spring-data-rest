@@ -1,7 +1,5 @@
 package org.springframework.data.rest.repository;
 
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +12,6 @@ import org.springframework.data.rest.repository.domain.jpa.ConfiguredPersonRepos
 import org.springframework.data.rest.repository.domain.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.repository.domain.jpa.Person;
 import org.springframework.data.rest.repository.domain.jpa.PersonRepository;
-import org.springframework.data.rest.repository.json.PersistentEntityJackson2Module;
 import org.springframework.format.support.DefaultFormattingConversionService;
 
 /**
@@ -31,7 +28,8 @@ public class RepositoryTestsConfig {
     return new Repositories(appCtx);
   }
 
-  @Bean public RepositoryRestConfiguration config() {
+  @SuppressWarnings("deprecation")
+	@Bean public RepositoryRestConfiguration config() {
     RepositoryRestConfiguration config = new RepositoryRestConfiguration();
 
     config.setResourceMappingForDomainType(Person.class)
@@ -63,15 +61,4 @@ public class RepositoryTestsConfig {
   @Bean public UriDomainClassConverter uriDomainClassConverter() {
     return new UriDomainClassConverter();
   }
-
-  @Bean public Module persistentEntityModule() {
-    return new PersistentEntityJackson2Module(defaultConversionService());
-  }
-
-  @Bean public ObjectMapper objectMapper() {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.registerModule(persistentEntityModule());
-    return mapper;
-  }
-
 }

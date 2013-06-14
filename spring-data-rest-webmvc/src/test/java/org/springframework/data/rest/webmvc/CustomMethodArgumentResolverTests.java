@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.MatcherAssert.*;
@@ -7,18 +22,25 @@ import java.net.URI;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.MethodParameter;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.repository.PagingAndSorting;
 import org.springframework.data.rest.webmvc.annotation.BaseURI;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
-public class CustomMethodArgumentResolverTests extends AbstractJMockTests {
+@RunWith(MockitoJUnitRunner.class)
+public class CustomMethodArgumentResolverTests {
 
 	static final MethodParameter BASE_URI;
 	static final MethodParameter PAGE_SORT;
@@ -30,7 +52,7 @@ public class CustomMethodArgumentResolverTests extends AbstractJMockTests {
 					0
 			);
 			PAGE_SORT = MethodParameter.forMethodOrConstructor(
-					Methods.class.getDeclaredMethod("pagingAndSorting", PagingAndSorting.class),
+					Methods.class.getDeclaredMethod("pagingAndSorting", Pageable.class),
 					0
 			);
 		} catch(NoSuchMethodException e) {
@@ -43,15 +65,17 @@ public class CustomMethodArgumentResolverTests extends AbstractJMockTests {
 					.setBaseUri(URI.create("http://localhost:8080"));
 	private final BaseUriMethodArgumentResolver          baseUriResolver  =
 			new BaseUriMethodArgumentResolver(config);
-	private final PagingAndSortingMethodArgumentResolver pageSortResolver =
-			new PagingAndSortingMethodArgumentResolver(config);
+	private final PageableHandlerMethodArgumentResolver pageSortResolver =
+			new PageableHandlerMethodArgumentResolver();
 	private ModelAndViewContainer mavContainer;
-	private WebDataBinderFactory  webDataBinderFactory;
+	@Mock WebDataBinderFactory  webDataBinderFactory;
 
 	@Before
 	public void setup() {
 		mavContainer = new ModelAndViewContainer();
-		webDataBinderFactory = context.mock(WebDataBinderFactory.class);
+		
+		pageSortResolver.setOneIndexedParameters(true);
+		pageSortResolver.setFallbackPageable(new PageRequest(1, 5));
 	}
 
 	@Test
@@ -80,7 +104,7 @@ public class CustomMethodArgumentResolverTests extends AbstractJMockTests {
 		           is(true));
 
 		// Resolve Page and Sort information
-		PagingAndSorting pageSort = (PagingAndSorting)pageSortResolver.resolveArgument(
+		Pageable pageSort = pageSortResolver.resolveArgument(
 				PAGE_SORT,
 				mavContainer,
 				new ServletWebRequest(Requests.PAGE_REQUEST),
@@ -92,15 +116,14 @@ public class CustomMethodArgumentResolverTests extends AbstractJMockTests {
 		           is(1));
 		assertThat("Finds limit parameter value",
 		           pageSort.getPageSize(),
-		           is(5));
+		           is(10));
 	}
 
 	static class Methods {
 		void baseUri(@BaseURI URI baseUri) {
 		}
 
-		void pagingAndSorting(PagingAndSorting pageSort) {
+		void pagingAndSorting(Pageable pageSort) {
 		}
 	}
-
 }

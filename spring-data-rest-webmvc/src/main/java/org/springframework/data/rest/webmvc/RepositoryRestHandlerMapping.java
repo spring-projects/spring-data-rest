@@ -1,19 +1,19 @@
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.rest.repository.support.ResourceMappingUtils.*;
 import static org.springframework.util.StringUtils.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
-import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.config.ResourceMapping;
+import org.springframework.data.rest.repository.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
@@ -36,9 +36,12 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 	private RepositoryRestConfiguration config;
 	@Autowired(required = false)
 	private JpaHelper                   jpaHelper;
+	
+	private final ResourceMappings mappings;
 
-	public RepositoryRestHandlerMapping() {
+	public RepositoryRestHandlerMapping(ResourceMappings mappings) {
 		setOrder(Ordered.LOWEST_PRECEDENCE);
+		this.mappings = mappings;
 	}
 
 	@Override
@@ -81,11 +84,9 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 			// Root request
 			return super.lookupHandlerMethod(lookupPath, request);
 		}
-
+		
 		for(Class<?> domainType : repositories) {
-			RepositoryInformation repoInfo = repositories.getRepositoryInformationFor(domainType);
-			ResourceMapping mapping = getResourceMapping(config, repoInfo);
-			if(mapping.getPath().equals(parts[0]) && mapping.isExported()) {
+			if (mappings.exportsMappingFor(domainType)) {
 				return super.lookupHandlerMethod(lookupPath, request);
 			}
 		}
@@ -94,10 +95,7 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 	}
 
 	@Override protected boolean isHandler(Class<?> beanType) {
-		return (RepositoryController.class.isAssignableFrom(beanType)
-				|| RepositoryEntityController.class.isAssignableFrom(beanType)
-				|| RepositoryPropertyReferenceController.class.isAssignableFrom(beanType)
-				|| RepositorySearchController.class.isAssignableFrom(beanType));
+		return AnnotationUtils.findAnnotation(beanType, RestController.class) != null;
 	}
 
 	@Override protected void extendInterceptors(List<Object> interceptors) {

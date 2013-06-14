@@ -1,7 +1,23 @@
+/*
+ * Copyright 2012-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.rest.webmvc;
 
 import static org.springframework.data.rest.core.util.UriUtils.*;
 import static org.springframework.data.rest.repository.support.ResourceMappingUtils.*;
+import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -10,7 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.core.convert.ConversionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -26,7 +44,7 @@ import org.springframework.data.rest.repository.context.AfterLinkSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
-import org.springframework.hateoas.EntityLinks;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
@@ -43,21 +61,39 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@SuppressWarnings({"unchecked", "rawtypes"})
-public class RepositoryPropertyReferenceController extends AbstractRepositoryRestController {
+@RestController
+@SuppressWarnings({"unchecked", "deprecation"})
+public class RepositoryPropertyReferenceController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
 	
 	private static final String BASE_MAPPING = "/{repository}/{id}/{property}";
+	
+	private final Repositories repositories;
+	private final RepositoryRestConfiguration config;
+	private final PersistentEntityResourceAssembler<Object> perAssembler;
+	private final DomainClassConverter<?> converter;
 
-	public RepositoryPropertyReferenceController(Repositories repositories,
-	                                             RepositoryRestConfiguration config,
-	                                             DomainClassConverter<?> domainClassConverter,
-	                                             ConversionService conversionService,
-	                                             EntityLinks entityLinks) {
-		super(repositories,
-		      config,
-		      domainClassConverter,
-		      conversionService,
-		      entityLinks);
+	private ApplicationEventPublisher publisher;
+
+	@Autowired
+	public RepositoryPropertyReferenceController(Repositories repositories, RepositoryRestConfiguration config,
+			DomainClassConverter<?> domainClassConverter, PagedResourcesAssembler<Object> assembler,
+			PersistentEntityResourceAssembler<Object> perAssembler) {
+		
+		super(assembler, perAssembler);
+		
+		this.repositories = repositories;
+		this.perAssembler = perAssembler;
+		this.config = config;
+		this.converter = domainClassConverter;
+	}
+	
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
+	 */
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		this.publisher = applicationEventPublisher;
 	}
 
 	@RequestMapping(
@@ -76,51 +112,36 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		final HttpHeaders headers = new HttpHeaders();
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
 			@Override public Resource<?> apply(ReferencedProperty prop) {
+				
 				if(null == prop.propertyValue) {
 					throw new ResourceNotFoundException();
 				}
+				
 				if(prop.property.isCollectionLike()) {
+					
 					List<Resource<?>> resources = new ArrayList<Resource<?>>();
-					PersistentEntity entity = repositories.getPersistentEntity(prop.propertyType);
-					for(Object obj : ((Iterable)prop.propertyValue)) {
-						BeanWrapper wrapper = BeanWrapper.create(obj, conversionService);
-						PersistentEntityResource per = PersistentEntityResource.wrap(entity, obj, repoRequest.getBaseUri());
-						Link selfLink = entityLinks.linkForSingleResource(entity.getType(),
-						                                                  wrapper.getProperty(entity.getIdProperty()))
-						                           .withSelfRel();
-						per.add(selfLink);
-						resources.add(per);
+					
+					for(Object obj : ((Iterable<Object>) prop.propertyValue)) {
+						resources.add(perAssembler.toResource(obj));
 					}
 
 					return new Resource<Object>(resources);
+					
 				} else if(prop.property.isMap()) {
+					
 					Map<Object, Resource<?>> resources = new HashMap<Object, Resource<?>>();
-					PersistentEntity entity = repositories.getPersistentEntity(prop.propertyType);
-					for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)prop.propertyValue).entrySet()) {
-						PersistentEntityResource per = PersistentEntityResource.wrap(entity,
-						                                                             entry.getValue(),
-						                                                             repoRequest.getBaseUri());
-						BeanWrapper wrapper = BeanWrapper.create(entry.getValue(), conversionService);
-						Link selfLink = entityLinks.linkForSingleResource(entity.getType(),
-						                                                  wrapper.getProperty(entity.getIdProperty()))
-						                           .withSelfRel();
-						per.add(selfLink);
-						resources.put(entry.getKey(), per);
+					
+					for(Map.Entry<Object, Object> entry : ((Map<Object, Object>) prop.propertyValue).entrySet()) {
+						resources.put(entry.getKey(), perAssembler.toResource(entry.getValue()));
 					}
 
 					return new Resource<Object>(resources);
+					
 				} else {
-					PersistentEntityResource per = PersistentEntityResource.wrap(repositories.getPersistentEntity(prop.propertyType),
-					                                                             prop.propertyValue,
-					                                                             repoRequest.getBaseUri());
-					BeanWrapper wrapper = BeanWrapper.create(prop.propertyValue, conversionService);
-					Link selfLink = entityLinks.linkForSingleResource(prop.propertyType,
-					                                                  wrapper.getProperty(prop.entity.getIdProperty()))
-					                           .withSelfRel();
-					per.add(selfLink);
-					headers.set("Content-Location", selfLink.getHref());
-
-					return new Resource<Object>(per);
+					
+					PersistentEntityResource<Object> resource = perAssembler.toResource(prop.propertyValue);
+					headers.set("Content-Location", resource.getId().getHref());
+					return resource;
 				}
 			}
 		};
@@ -128,7 +149,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		                                                        id,
 		                                                        property,
 		                                                        handler);
-		return resourceResponse(headers, responseResource, HttpStatus.OK);
+		return ControllerUtils.toResponseEntity(headers, responseResource, HttpStatus.OK);
 	}
 
 	@RequestMapping(
@@ -158,9 +179,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					prop.wrapper.setProperty(prop.property, null);
 				}
 
-				applicationContext.publishEvent(new BeforeLinkDeleteEvent(prop.wrapper.getBean(), prop.propertyValue));
+				publisher.publishEvent(new BeforeLinkDeleteEvent(prop.wrapper.getBean(), prop.propertyValue));
 				Object result = repoMethodInvoker.save(prop.wrapper.getBean());
-				applicationContext.publishEvent(new AfterLinkDeleteEvent(result, prop.propertyValue));
+				publisher.publishEvent(new AfterLinkDeleteEvent(result, prop.propertyValue));
 				return null;
 			}
 		};
@@ -175,7 +196,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			}
 		}
 
-		return resourceResponse(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
+		return ControllerUtils.toResponseEntity(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
 	}
 
 	@RequestMapping(
@@ -201,31 +222,29 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					throw new ResourceNotFoundException();
 				}
 				if(prop.property.isCollectionLike()) {
-					PersistentEntity entity = repositories.getPersistentEntity(prop.propertyType);
-					for(Object obj : ((Iterable)prop.propertyValue)) {
-						BeanWrapper propValWrapper = BeanWrapper.create(obj, conversionService);
+					for(Object obj : ((Iterable<?>)prop.propertyValue)) {
+						
+						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(obj, null);
 						String sId = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
+						
 						if(propertyId.equals(sId)) {
-							PersistentEntityResource per = PersistentEntityResource.wrap(entity, obj, repoRequest.getBaseUri());
-							Link selfLink = entityLinks.linkForSingleResource(entity.getType(), sId).withSelfRel();
-							per.add(selfLink);
-							headers.set("Content-Location", selfLink.getHref());
-							return per;
+							
+							PersistentEntityResource<Object> resource = perAssembler.toResource(obj);
+							headers.set("Content-Location", resource.getId().getHref());
+							return resource;
 						}
 					}
 				} else if(prop.property.isMap()) {
-					PersistentEntity entity = repositories.getPersistentEntity(prop.propertyType);
 					for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)prop.propertyValue).entrySet()) {
-						BeanWrapper propValWrapper = BeanWrapper.create(entry.getValue(), conversionService);
+						
+						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(entry.getValue(), null);
 						String sId = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
+						
 						if(propertyId.equals(sId)) {
-							PersistentEntityResource per = PersistentEntityResource.wrap(entity,
-							                                                             entry.getValue(),
-							                                                             repoRequest.getBaseUri());
-							Link selfLink = entityLinks.linkForSingleResource(entity.getType(), sId).withSelfRel();
-							per.add(selfLink);
-							headers.set("Content-Location", selfLink.getHref());
-							return per;
+							
+							PersistentEntityResource<Object> resource = perAssembler.toResource(entry.getValue());
+							headers.set("Content-Location", resource.getId().getHref());
+							return resource;
 						}
 					}
 				} else {
@@ -234,11 +253,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 				throw new IllegalArgumentException(new ResourceNotFoundException());
 			}
 		};
-		Resource<?> responseResource = doWithReferencedProperty(repoRequest,
-		                                                        id,
-		                                                        property,
-		                                                        handler);
-		return resourceResponse(headers, responseResource, HttpStatus.OK);
+		
+		Resource<?> responseResource = doWithReferencedProperty(repoRequest, id, property, handler);
+		return ControllerUtils.toResponseEntity(headers, responseResource, HttpStatus.OK);
 	}
 
 	@RequestMapping(
@@ -263,7 +280,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		ResourceMapping entityMapping = repoRequest.getPersistentEntityResourceMapping();
 		String propName = entityMapping.getNameForPath(property);
 		ResourceMapping propMapping = entityMapping.getResourceMappingFor(entityMapping.getNameForPath(property));
-		PersistentProperty persistentProp = repoRequest.getPersistentEntity().getPersistentProperty(propName);
+		PersistentProperty<?> persistentProp = repoRequest.getPersistentEntity().getPersistentProperty(propName);
 		Class<?> propType = (persistentProp.isCollectionLike() || persistentProp.isMap()
 		                     ? persistentProp.getComponentType()
 		                     : persistentProp.getType());
@@ -290,15 +307,14 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			}
 		} else if(resource.getContent() instanceof Map) {
 			for(Map.Entry<Object, Resource<?>> entry : ((Map<Object, Resource<?>>)resource.getContent()).entrySet()) {
-				Link l = new Link(entry.getValue().getLink("self").getHref(), conversionService.convert(entry.getKey(),
-				                                                                                        String.class));
+				Link l = new Link(entry.getValue().getLink("self").getHref(), entry.getKey().toString());
 				links.add(l);
 			}
 		} else {
 			links.add(new Link(entityBaseUri.toString(), propRel));
 		}
 
-		return resourceResponse(null, new Resource<Object>(EMPTY_RESOURCE_LIST, links), HttpStatus.OK);
+		return ControllerUtils.toResponseEntity(null, new Resource<Object>(EMPTY_RESOURCE_LIST, links), HttpStatus.OK);
 	}
 
 	@RequestMapping(
@@ -326,9 +342,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
 			@Override public Resource<?> apply(ReferencedProperty prop) {
 				if(prop.property.isCollectionLike()) {
-					Collection coll = new ArrayList();
+					Collection<Object> coll = new ArrayList<Object>();
 					if("POST".equals(repoRequest.getRequest().getMethod())) {
-						coll.addAll((Collection)prop.propertyValue);
+						coll.addAll((Collection<Object>)prop.propertyValue);
 					}
 					for(Link l : incoming.getLinks()) {
 						Object propVal = loadPropertyValue(prop.propertyType, l.getHref());
@@ -336,9 +352,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					}
 					prop.wrapper.setProperty(prop.property, coll);
 				} else if(prop.property.isMap()) {
-					Map m = new HashMap();
+					Map<String, Object> m = new HashMap<String, Object>();
 					if("POST".equals(repoRequest.getRequest().getMethod())) {
-						m.putAll((Map)prop.propertyValue);
+						m.putAll((Map<String, Object>)prop.propertyValue);
 					}
 					for(Link l : incoming.getLinks()) {
 						Object propVal = loadPropertyValue(prop.propertyType, l.getHref());
@@ -358,9 +374,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					prop.wrapper.setProperty(prop.property, propVal);
 				}
 
-				applicationContext.publishEvent(new BeforeLinkSaveEvent(prop.wrapper.getBean(), prop.propertyValue));
+				publisher.publishEvent(new BeforeLinkSaveEvent(prop.wrapper.getBean(), prop.propertyValue));
 				Object result = repoMethodInvoker.save(prop.wrapper.getBean());
-				applicationContext.publishEvent(new AfterLinkSaveEvent(result, prop.propertyValue));
+				publisher.publishEvent(new AfterLinkSaveEvent(result, prop.propertyValue));
 				return null;
 			}
 		};
@@ -368,7 +384,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		                         id,
 		                         property,
 		                         handler);
-		return resourceResponse(null, EMPTY_RESOURCE, HttpStatus.CREATED);
+		return ControllerUtils.toResponseEntity(null, EMPTY_RESOURCE, HttpStatus.CREATED);
 	}
 
 	@RequestMapping(
@@ -392,20 +408,20 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					return null;
 				}
 				if(prop.property.isCollectionLike()) {
-					Collection coll = new ArrayList();
-					for(Object obj : (Collection)prop.propertyValue) {
-						BeanWrapper propValWrapper = BeanWrapper.create(obj, conversionService);
-						String s = (String)propValWrapper.getProperty(prop.entity.getIdProperty(), String.class, false);
+					Collection<Object> coll = new ArrayList<Object>();
+					for(Object obj : (Collection<Object>) prop.propertyValue) {
+						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(obj, null);
+						String s = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
 						if(!propertyId.equals(s)) {
 							coll.add(obj);
 						}
 					}
 					prop.wrapper.setProperty(prop.property, coll);
 				} else if(prop.property.isMap()) {
-					Map m = new HashMap();
+					Map<Object, Object> m = new HashMap<Object, Object>();
 					for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)prop.propertyValue).entrySet()) {
-						BeanWrapper propValWrapper = BeanWrapper.create(entry.getValue(), conversionService);
-						String s = (String)propValWrapper.getProperty(prop.entity.getIdProperty(), String.class, false);
+						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(entry.getValue(), null);
+						String s = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
 						if(!propertyId.equals(s)) {
 							m.put(entry.getKey(), entry.getValue());
 						}
@@ -415,9 +431,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					prop.wrapper.setProperty(prop.property, null);
 				}
 
-				applicationContext.publishEvent(new BeforeLinkDeleteEvent(prop.wrapper.getBean(), prop.propertyValue));
+				publisher.publishEvent(new BeforeLinkDeleteEvent(prop.wrapper.getBean(), prop.propertyValue));
 				Object result = repoMethodInvoker.save(prop.wrapper.getBean());
-				applicationContext.publishEvent(new AfterLinkDeleteEvent(result, prop.propertyValue));
+				publisher.publishEvent(new AfterLinkDeleteEvent(result, prop.propertyValue));
 				return null;
 			}
 		};
@@ -426,7 +442,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		                         property,
 		                         handler);
 
-		return resourceResponse(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
+		return ControllerUtils.toResponseEntity(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
 	}
 
 	private Link propertyReferenceLink(Resource<?> resource,
@@ -439,7 +455,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 	private Object loadPropertyValue(Class<?> type, String href) {
 		String id = href.substring(href.lastIndexOf('/') + 1);
-		return domainClassConverter.convert(id,
+		return converter.convert(id,
 		                                    STRING_TYPE,
 		                                    TypeDescriptor.valueOf(type));
 	}
@@ -454,21 +470,20 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			throw new NoSuchMethodException();
 		}
 
-		Object domainObj = domainClassConverter.convert(id,
-		                                                STRING_TYPE,
-		                                                TypeDescriptor.valueOf(repoRequest.getPersistentEntity()
-		                                                                                  .getType()));
+		Object domainObj = converter.convert(id, STRING_TYPE,
+				TypeDescriptor.valueOf(repoRequest.getPersistentEntity().getType()));
+		
 		if(null == domainObj) {
 			throw new ResourceNotFoundException();
 		}
 
 		String propertyName = repoRequest.getPersistentEntityResourceMapping().getNameForPath(propertyPath);
-		PersistentProperty prop = repoRequest.getPersistentEntity().getPersistentProperty(propertyName);
+		PersistentProperty<?> prop = repoRequest.getPersistentEntity().getPersistentProperty(propertyName);
 		if(null == prop) {
 			throw new ResourceNotFoundException();
 		}
 
-		BeanWrapper wrapper = BeanWrapper.create(domainObj, conversionService);
+		BeanWrapper<?, Object> wrapper = BeanWrapper.create(domainObj, null);
 		Object propVal = wrapper.getProperty(prop);
 
 		return handler.apply(new ReferencedProperty(prop,
@@ -477,15 +492,17 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	}
 
 	private class ReferencedProperty {
-		final PersistentEntity        entity;
-		final PersistentProperty      property;
-		final Class<?>                propertyType;
-		final Object                  propertyValue;
-		final BeanWrapper             wrapper;
+		
+		final PersistentEntity<?, ?> entity;
+		final PersistentProperty<?> property;
+		final Class<?> propertyType;
+		final Object propertyValue;
+		final BeanWrapper<?, ?>wrapper;
 
-		private ReferencedProperty(PersistentProperty property,
+		private ReferencedProperty(PersistentProperty<?> property,
 		                           Object propertyValue,
-		                           BeanWrapper wrapper) {
+		                           BeanWrapper<?, ?> wrapper) {
+			
 			this.property = property;
 			this.propertyValue = propertyValue;
 			this.wrapper = wrapper;

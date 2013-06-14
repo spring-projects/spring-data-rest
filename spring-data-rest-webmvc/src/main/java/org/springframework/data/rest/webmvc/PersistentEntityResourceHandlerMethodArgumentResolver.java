@@ -49,8 +49,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
       }
 
       Object obj = converter.read(domainType, request);
-      return new PersistentEntityResource<Object>(repoRequest.getPersistentEntity(),
-                                          obj);
+			return new PersistentEntityResource<Object>(repoRequest.getPersistentEntity(), obj);
     }
 
     return null;

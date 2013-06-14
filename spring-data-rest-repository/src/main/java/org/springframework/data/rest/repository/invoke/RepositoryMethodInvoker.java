@@ -1,13 +1,15 @@
 package org.springframework.data.rest.repository.invoke;
 
-import static org.springframework.util.ReflectionUtils.doWithMethods;
-import static org.springframework.util.ReflectionUtils.invokeMethod;
+import static org.springframework.util.ReflectionUtils.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.core.MethodParameter;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,10 +21,13 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
 /**
  * @author Jon Brisbin
  */
+@SuppressWarnings("deprecation")
 public class RepositoryMethodInvoker implements PagingAndSortingRepository<Object, Serializable> {
 
 	private final Object repository;
 	private final Map<String, RepositoryMethod> queryMethods = new HashMap<String, RepositoryMethod>();
+	private final ConversionService conversionService;
+	
 	private RepositoryMethod saveOne;
 	private RepositoryMethod saveSome;
 	private RepositoryMethod findOne;
@@ -38,8 +43,11 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 	private RepositoryMethod deleteAll;
 
 	public RepositoryMethodInvoker(Object repository,
-	                               RepositoryInformation repoInfo) {
+	                               RepositoryInformation repoInfo,
+	                               ConversionService conversionService) {
+		
 		this.repository = repository;
+		this.conversionService = conversionService;
 		Class<?> repoType = repoInfo.getRepositoryInterface();
 
 		doWithMethods(repoType, new MethodCallback() {
@@ -218,6 +226,50 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 
 	public Object invokeQueryMethod(RepositoryMethod method, Object... params) {
 		return invokeMethod(method.getMethod(), repository, params);
+	}
+	
+	public Object invokeQueryMethod(RepositoryMethod method, Pageable pageable, Map<String, String[]> rawParameters) {
+		return invokeQueryMethod(method, foo(method, pageable, rawParameters));
+	}
+	
+	private Object[] foo(RepositoryMethod repoMethod, Pageable pageable, Map<String, String[]> rawParameters) {
+		
+		List<MethodParameter> methodParams = repoMethod.getParameters();
+		
+		if (methodParams.isEmpty()) {
+			return new Object[0];
+		}
+		
+		Object[] paramValues = new Object[methodParams.size()];
+		
+		
+		for(int i = 0; i < paramValues.length; i++) {
+			MethodParameter param = methodParams.get(i);
+			Class<?> targetType = param.getParameterType();
+			if(Pageable.class.isAssignableFrom(targetType)) {
+				paramValues[i] = pageable;
+			} else if(Sort.class.isAssignableFrom(targetType)) {
+				paramValues[i] = pageable.getSort();
+			} else {
+				String paramName = repoMethod.getParameterNames().get(i);
+				String[] queryParamVals = rawParameters.get(paramName);
+				if(null == queryParamVals) {
+					if(paramName.startsWith("arg")) {
+						throw new IllegalArgumentException("No @Param annotation found on query method "
+								                                   + repoMethod.getMethod().getName()
+								                                   + " for parameter " + param.getParameterName());
+					} else {
+						throw new IllegalArgumentException("No query parameter specified for "
+								                                   + repoMethod.getMethod().getName() + " param '"
+								                                   + paramName + "'");
+					}
+				}
+				paramValues[i] = conversionService.convert(queryParamVals, targetType);
+			}
+		}
+		
+		
+		return paramValues;
 	}
 
 }

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class PersonLoader implements InitializingBean {
 
   @Autowired
-  private PlainPersonRepository people;
+  private AnnotatedPersonRepository people;
 
   @Override public void afterPropertiesSet() throws Exception {
     people.save(new Person("John", "Doe"));

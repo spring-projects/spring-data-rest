@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.webmvc.HttpEntityMatcher.*;
 import static org.springframework.util.ReflectionUtils.*;
 
@@ -28,13 +29,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.Matcher;
-import org.jmock.Expectations;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.MethodParameter;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.mvc.HeaderLinksResponseEntity;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +54,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Oliver Gierke
  * @author Jon Brisbin
  */
-public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests extends AbstractJMockTests {
+@RunWith(MockitoJUnitRunner.class)
+public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
   static final Resource<String>                 FOO                = new Resource<String>("foo");
   static final Resources<Resource<String>>      FOOS               = new Resources<Resource<String>>(
@@ -90,12 +97,11 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests extends A
     });
   }
 
-  HandlerMethodReturnValueHandler delegate;
+  @Mock HandlerMethodReturnValueHandler delegate;
   List<ResourceProcessor<?>>      resourceProcessors;
 
   @Before
   public void setUp() {
-    delegate = context.mock(HandlerMethodReturnValueHandler.class);
     resourceProcessors = new ArrayList<ResourceProcessor<?>>();
   }
 
@@ -188,6 +194,20 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests extends A
 
     invokeReturnValueHandler("resourceEntity", is(LONG_20), LONG_10_RES);
   }
+  
+  @Test
+  public void usesHeaderLinksResponseEntityIfConfigured() throws Exception {
+  	
+  	Resource<String> resource = new Resource<String>("foo", new Link("href", "rel"));
+  	MethodParameter parameter = METHOD_PARAMS.get("resource");
+  	
+  	ResourceProcessorHandlerMethodReturnValueHandler handler = new ResourceProcessorHandlerMethodReturnValueHandler(delegate, resourceProcessors);
+  	handler.setRootLinksAsHeaders(true);
+  	handler.handleReturnValue(resource, parameter, null, null);
+  	
+		verify(delegate, times(1)).handleReturnValue(Mockito.any(HeaderLinksResponseEntity.class), eq(parameter),
+				Mockito.any(ModelAndViewContainer.class), Mockito.any(NativeWebRequest.class));
+  }
 
   // Helpers ---------------------------------------------------------//
   private void invokeReturnValueHandler(String method,
@@ -195,12 +215,9 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests extends A
                                         Object returnValue) throws Exception {
     final MethodParameter methodParam = METHOD_PARAMS.get(method);
 
-    context.checking(new Expectations() {{
-      oneOf(delegate).handleReturnValue(with(matcher),
-                                        with(methodParam),
-                                        with(aNull(ModelAndViewContainer.class)),
-                                        with(aNull(NativeWebRequest.class)));
-    }});
+    if (methodParam == null) {
+    	throw new IllegalArgumentException("Invalid method!");
+    }
 
     HandlerMethodReturnValueHandler handler = new ResourceProcessorHandlerMethodReturnValueHandler(
         delegate,
@@ -209,13 +226,10 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests extends A
     handler.handleReturnValue(returnValue, methodParam, null, null);
   }
 
-  private void assertSupport(final boolean value) {
-    final MethodParameter parameter = context.mock(MethodParameter.class);
+  private void assertSupport(boolean value) {
 
-    context.checking(new Expectations() {{
-      oneOf(delegate).supportsReturnType(parameter);
-      will(returnValue(value));
-    }});
+  	final MethodParameter parameter = Mockito.mock(MethodParameter.class);
+    when(delegate.supportsReturnType(Mockito.any(MethodParameter.class))).thenReturn(value);
 
     HandlerMethodReturnValueHandler handler = new ResourceProcessorHandlerMethodReturnValueHandler(
         delegate,

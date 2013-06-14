@@ -19,6 +19,7 @@ import org.springframework.util.MultiValueMap;
 /**
  * @author Jon Brisbin
  */
+@SuppressWarnings("deprecation")
 public abstract class RepositoryInformationSupport {
 
   protected Repositories                repositories;
@@ -57,7 +58,7 @@ public abstract class RepositoryInformationSupport {
     }
     for(Class<?> domainType : repositories) {
       RepositoryInformation repoInfo = findRepositoryInfoFor(domainType);
-      ResourceMapping mapping = getResourceMapping(config, repoInfo);
+			ResourceMapping mapping = getResourceMapping(config, repoInfo);
       if(pathSegment.equals(mapping.getPath()) && mapping.isExported()) {
         return repoInfo;
       }

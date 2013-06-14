@@ -17,6 +17,7 @@ import org.springframework.data.rest.repository.annotation.RestResource;
  *
  * @author Jon Brisbin
  */
+@Deprecated
 public abstract class ResourceMappingUtils {
 
   protected ResourceMappingUtils() {

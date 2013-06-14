@@ -12,7 +12,7 @@ public abstract class Requests {
 
   static {
     PAGE_REQUEST.setParameter("page", "2");
-    PAGE_REQUEST.setParameter("limit", "5");
+    PAGE_REQUEST.setParameter("size", "10");
   }
 
   private Requests() {

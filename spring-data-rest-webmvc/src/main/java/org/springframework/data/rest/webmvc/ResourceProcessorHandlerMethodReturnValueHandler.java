@@ -24,6 +24,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.mvc.HeaderLinksResponseEntity;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -58,6 +59,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 
 	private final HandlerMethodReturnValueHandler delegate;
 	private final List<ProcessorWrapper>          processors;
+	private boolean rootLinksAsHeaders = false;
 
 	/**
 	 * Creates a new {@link ResourceProcessorHandlerMethodReturnValueHandler} using the given delegate to eventually
@@ -94,6 +96,13 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		}
 
 		Collections.sort(this.processors, AnnotationAwareOrderComparator.INSTANCE);
+	}
+	
+	/**
+	 * @param rootLinksAsHeaders the rootLinksAsHeaders to set
+	 */
+	public void setRootLinksAsHeaders(boolean rootLinksAsHeaders) {
+		this.rootLinksAsHeaders = rootLinksAsHeaders;
 	}
 
 	/*
@@ -159,14 +168,14 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 			ReflectionUtils.setField(CONTENT_FIELD, resources, result);
 		}
 
-		Object result = invokeProcessorsFor(value, targetType);
+		ResourceSupport result = (ResourceSupport) invokeProcessorsFor(value, targetType);
 		delegate.handleReturnValue(rewrapResult(result, returnValue), returnType, mavContainer, webRequest);
 	}
 
 	/**
 	 * Invokes all registered {@link ResourceProcessor}s registered for the given {@link TypeInformation}.
 	 *
-	 * @param value      the object to process
+	 * @param value the object to process
 	 * @param targetType
 	 * @return
 	 */
@@ -192,19 +201,28 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	 * @param originalValue the original input value.
 	 * @return
 	 */
-	static Object rewrapResult(Object newBody, Object originalValue) {
+	Object rewrapResult(ResourceSupport newBody, Object originalValue) {
 
 		if (!(originalValue instanceof HttpEntity)) {
 			return newBody;
 		}
+		
+		HttpEntity<ResourceSupport> entity = null;
 
 		if (originalValue instanceof ResponseEntity) {
 			ResponseEntity<?> source = (ResponseEntity<?>) originalValue;
-			return new ResponseEntity<Object>(newBody, source.getHeaders(), source.getStatusCode());
+			entity = new ResponseEntity<ResourceSupport>(newBody, source.getHeaders(), source.getStatusCode());
 		} else {
 			HttpEntity<?> source = (HttpEntity<?>) originalValue;
-			return new HttpEntity<Object>(newBody, source.getHeaders());
+			entity = new HttpEntity<ResourceSupport>(newBody, source.getHeaders());
 		}
+		
+		return addLinksToHeaderWrapper(entity);
+	}
+	
+	private HttpEntity<?> addLinksToHeaderWrapper(HttpEntity<ResourceSupport> entity) {
+		
+		return rootLinksAsHeaders ? HeaderLinksResponseEntity.wrap(entity) : entity;
 	}
 
 	/**
