@@ -1,22 +1,26 @@
 package org.springframework.data.rest.config;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-import static org.springframework.data.rest.repository.support.ResourceMappingUtils.*;
-
-import java.lang.reflect.Method;
-
 import org.junit.Test;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.rest.repository.domain.jpa.AnnotatedPersonRepository;
-import org.springframework.data.rest.repository.domain.jpa.AnnotatedWithLeadingSlashPersonRepository;
 import org.springframework.data.rest.repository.domain.jpa.PersonRepository;
 import org.springframework.data.rest.repository.domain.jpa.PlainPersonRepository;
+import org.springframework.data.rest.repository.domain.jpa.YetAnotherPersonRepository;
+import org.springframework.data.rest.repository.support.ResourceMappingUtils;
+
+import java.lang.reflect.Method;
+import java.util.Date;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.data.rest.repository.support.ResourceMappingUtils.*;
 
 /**
  * Ensure the {@link ResourceMapping} components convey the correct information.
  *
  * @author Jon Brisbin
+ * @author Florent Biville
  */
 public class ResourceMappingUnitTests {
 
@@ -64,13 +68,13 @@ public class ResourceMappingUnitTests {
   @Test
   public void shouldDetectPathAndRemoveLeadingSlashIfAny() {
     ResourceMapping mapping = new ResourceMapping(
-        findRel(AnnotatedWithLeadingSlashPersonRepository.class),
-        findPath(AnnotatedWithLeadingSlashPersonRepository.class),
-        findExported(AnnotatedWithLeadingSlashPersonRepository.class)
+        findRel(YetAnotherPersonRepository.class),
+        findPath(YetAnotherPersonRepository.class),
+        findExported(YetAnotherPersonRepository.class)
     );
 
     // The rel attribute defaults to class name
-    assertThat(mapping.getRel(), is("annotatedWithLeadingSlashPerson"));
+    assertThat(mapping.getRel(), is("yetAnotherPerson"));
     assertThat(mapping.getPath(), is("people"));
     // The exported defaults to true
     assertThat(mapping.isExported(), is(true));
@@ -78,7 +82,7 @@ public class ResourceMappingUnitTests {
 
   @Test
   public void shouldDetectPathAndRemoveLeadingSlashIfAnyOnMethod() throws Exception {
-    Method method = AnnotatedWithLeadingSlashPersonRepository.class.getMethod("findByFirstName", String.class, Pageable.class);
+    Method method = YetAnotherPersonRepository.class.getMethod("findByFirstName", String.class, Pageable.class);
     ResourceMapping mapping = new ResourceMapping(
         findRel(method),
         findPath(method),
@@ -94,7 +98,7 @@ public class ResourceMappingUnitTests {
 
   @Test
   public void shouldReturnDefaultIfPathContainsOnlySlashTextOnMethod() throws Exception {
-    Method method = AnnotatedWithLeadingSlashPersonRepository.class.getMethod("findByLastName", String.class, Pageable.class);
+    Method method = YetAnotherPersonRepository.class.getMethod("findByLastName", String.class, Pageable.class);
     ResourceMapping mapping = new ResourceMapping(
         findRel(method),
         findPath(method),
@@ -107,6 +111,54 @@ public class ResourceMappingUnitTests {
     assertThat(mapping.getPath(), is("findByLastName"));
     // The exported defaults to true
     assertThat(mapping.isExported(), is(true));
+  }
+
+  @Test
+  public void shouldNotExportMethodMarkedAsNonExportable() throws Exception {
+    Method method = YetAnotherPersonRepository.class.getMethod("findByFirstNameLike", String.class);
+    assertThat(ResourceMappingUtils.findExported(method), is(false));
+  }
+
+  @Test
+  public void shouldExportMethodWithAnnotatedSingleEntityArgument() throws Exception {
+    Method method = YetAnotherPersonRepository.class.getMethod("findByCreatedAfter", Date.class);
+    assertThat(ResourceMappingUtils.findExported(method), is(true));
+  }
+
+  @Test
+  public void shouldNotExportMethodWithNotAnnotatedSingleEntityArgument() throws Exception {
+    Method method = YetAnotherPersonRepository.class.getMethod("findByCreatedBefore", Date.class);
+    assertThat(ResourceMappingUtils.findExported(method), is(false));
+  }
+
+  @Test
+  public void shouldExportMethodWithOnlyPagingArgument() throws Exception {
+    Method method = YetAnotherPersonRepository.class.getMethod("findAll", Pageable.class);
+    assertThat(ResourceMappingUtils.findExported(method), is(true));
+  }
+
+  @Test
+  public void shouldExportMethodWithOnlySortingArgument() throws Exception {
+    Method method = YetAnotherPersonRepository.class.getMethod("findAll", Sort.class);
+    assertThat(ResourceMappingUtils.findExported(method), is(true));
+  }
+
+  @Test
+  public void shouldNotExportMethodWithAtLeastOneNonAnnotatedEntityParameter() throws Exception {
+    Method method = YetAnotherPersonRepository.class.getMethod(
+        "findByCreatedAfterAndLastName",
+        Date.class, String.class, Sort.class
+    );
+    assertThat(ResourceMappingUtils.findExported(method), is(false));
+  }
+
+  @Test
+  public void shouldExportMethodWithAllAnnotatedEntityParameter() throws Exception {
+    Method method = YetAnotherPersonRepository.class.getMethod(
+        "findByCreatedAfterAndFirstName",
+        Date.class, String.class, Pageable.class
+    );
+    assertThat(ResourceMappingUtils.findExported(method), is(true));
   }
 
 }

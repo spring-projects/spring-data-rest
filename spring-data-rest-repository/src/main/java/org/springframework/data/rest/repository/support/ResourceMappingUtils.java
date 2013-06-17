@@ -1,14 +1,22 @@
 package org.springframework.data.rest.repository.support;
 
+import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.data.rest.repository.annotation.RestResource;
 
+import static java.util.Arrays.asList;
 import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
 import static org.springframework.data.rest.repository.support.ResourceStringUtils.hasText;
 import static org.springframework.data.rest.repository.support.ResourceStringUtils.removeLeadingSlash;
@@ -20,6 +28,8 @@ import static org.springframework.util.StringUtils.uncapitalize;
  * @author Jon Brisbin
  */
 public abstract class ResourceMappingUtils {
+
+  private final static Logger LOG = LoggerFactory.getLogger(ResourceMappingUtils.class);
 
   protected ResourceMappingUtils() {
   }
@@ -90,9 +100,21 @@ public abstract class ResourceMappingUtils {
     return null == (anno = findAnnotation(type, RestResource.class)) || anno.exported();
   }
 
+  /**
+   * The provided method is marked as exported if not explicitly mentioned otherwise
+   * and if all its relevant parameters are annotated with {@link Param}.
+   */
   public static boolean findExported(Method method) {
     RestResource anno;
-    return null == (anno = findAnnotation(method, RestResource.class)) || anno.exported();
+    anno = findAnnotation(method, RestResource.class);
+    if (anno != null && !anno.exported()) {
+      return false;
+    }
+    boolean result = allEntityParametersAnnotated(method, Param.class);
+    if (!result) {
+      LOG.warn("Method {} will not be exposed. One of its parameters is not annotated with @Param.", method);
+    }
+    return result;
   }
 
   public static ResourceMapping getResourceMapping(RepositoryRestConfiguration config,
@@ -146,5 +168,48 @@ public abstract class ResourceMappingUtils {
     }
     return defaultMapping;
   }
+
+  private static boolean allEntityParametersAnnotated(Method method, Class<? extends Annotation> annotationClass) {
+    Class<?>[][] actualAnnotationTypes = annotationTypes(method.getParameterAnnotations());
+    Class<?>[] actualParameterTypes = method.getParameterTypes();
+    for (int i = 0; i < actualParameterTypes.length; i++) {
+      Class<?> parameterType = actualParameterTypes[i];
+      Class<?>[] parameterAnnotationTypes = actualAnnotationTypes[i];
+      if (isEntityParameter(parameterType)
+          && !isExpectedAnnotationSet(annotationClass, parameterAnnotationTypes)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static Class<?>[][] annotationTypes(Annotation[][] annotations) {
+    final int length = annotations.length;
+    Class<?>[][] result = new Class<?>[length][];
+    for (int i = 0; i < length; i++) {
+      Annotation[] parameterAnnotations = annotations[i];
+      final int paramAnnotationCount = parameterAnnotations.length;
+      result[i] = new Class<?>[paramAnnotationCount];
+      for (int j = 0; j < paramAnnotationCount; j++) {
+        result[i][j] = parameterAnnotations[j].annotationType();
+      }
+    }
+    return result;
+  }
+
+  private static boolean isEntityParameter(Class<?> parameterType) {
+    return /* paging and sorting */
+           !Pageable.class.isAssignableFrom(parameterType)
+           && !Sort.class.isAssignableFrom(parameterType)
+           /* base repositories arguments */
+           && parameterType != Object.class
+           && parameterType != Iterable.class
+           && parameterType != Serializable.class;
+  }
+
+  private static boolean isExpectedAnnotationSet(Class<? extends Annotation> annotationClass, Class<?>[] parameterAnnotationTypes) {
+    return asList(parameterAnnotationTypes).contains(annotationClass);
+  }
+
 
 }
