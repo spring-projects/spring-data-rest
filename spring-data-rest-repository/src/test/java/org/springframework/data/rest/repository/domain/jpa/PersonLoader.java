@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class PersonLoader implements InitializingBean {
 
-  @Autowired
-  PersonRepository people;
+	@Autowired PersonRepository people;
 
-  @Override public void afterPropertiesSet() throws Exception {
-    people.save(new Person("John", "Doe"));
-  }
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		people.save(new Person("John", "Doe"));
+	}
 }

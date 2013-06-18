@@ -67,7 +67,7 @@ public abstract class ResourceMappingUtils {
 
 	public static String formatRel(RepositoryRestConfiguration config, RepositoryInformation repoInfo,
 			PersistentProperty<?> persistentProperty) {
-		
+
 		if (persistentProperty == null) {
 			return null;
 		}
@@ -81,9 +81,9 @@ public abstract class ResourceMappingUtils {
 	}
 
 	public static String findPath(Class<?> type) {
-		
+
 		RestResource anno = findAnnotation(type, RestResource.class);
-		
+
 		if (anno != null) {
 			if (hasTextExceptSlash(anno.path())) {
 				return removeLeadingSlash(anno.path());
@@ -94,9 +94,9 @@ public abstract class ResourceMappingUtils {
 	}
 
 	public static String findPath(Method method) {
-		
+
 		RestResource anno = findAnnotation(method, RestResource.class);
-		
+
 		if (anno != null) {
 			if (hasTextExceptSlash(anno.path())) {
 				return removeLeadingSlash(anno.path());

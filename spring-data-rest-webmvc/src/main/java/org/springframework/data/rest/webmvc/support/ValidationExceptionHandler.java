@@ -13,15 +13,10 @@ import org.springframework.util.Assert;
  */
 public class ValidationExceptionHandler {
 
-	public ResponseEntity<?> handleValidationException(RuntimeException ex,
-	                                                   MessageSource msgsrc,
-	                                                   Locale locale) {
+	public ResponseEntity<?> handleValidationException(RuntimeException ex, MessageSource msgsrc, Locale locale) {
 		Assert.isAssignable(ConstraintViolationException.class, ex.getClass());
-		return new ResponseEntity<ConstraintViolationExceptionMessage>(
-				new ConstraintViolationExceptionMessage((ConstraintViolationException)ex,
-				                                        msgsrc,
-				                                        locale),
-				HttpStatus.BAD_REQUEST
+		return new ResponseEntity<ConstraintViolationExceptionMessage>(new ConstraintViolationExceptionMessage(
+				(ConstraintViolationException) ex, msgsrc, locale), HttpStatus.BAD_REQUEST
 
 		);
 	}

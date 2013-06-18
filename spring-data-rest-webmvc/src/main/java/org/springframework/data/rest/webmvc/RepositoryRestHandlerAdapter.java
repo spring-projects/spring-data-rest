@@ -10,32 +10,34 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 /**
  * {@link RequestMappingHandlerAdapter} implementation that adds a couple argument resolvers for controller method
- * parameters used in the REST exporter controller. Also only looks for handler methods in the Spring Data REST
- * provided controller classes to help isolate this handler adapter from other handler adapters the user might have
- * configured in their Spring MVC context.
- *
+ * parameters used in the REST exporter controller. Also only looks for handler methods in the Spring Data REST provided
+ * controller classes to help isolate this handler adapter from other handler adapters the user might have configured in
+ * their Spring MVC context.
+ * 
  * @author Jon Brisbin
  */
 public class RepositoryRestHandlerAdapter extends ResourceProcessorInvokingHandlerAdapter {
 
-	@Autowired
-	private List<HandlerMethodArgumentResolver> argumentResolvers;
+	@Autowired private List<HandlerMethodArgumentResolver> argumentResolvers;
 
-	@Override public void afterPropertiesSet() {
+	@Override
+	public void afterPropertiesSet() {
 		setCustomArgumentResolvers(argumentResolvers);
 		super.afterPropertiesSet();
 	}
 
-	@Override public int getOrder() {
+	@Override
+	public int getOrder() {
 		return Ordered.HIGHEST_PRECEDENCE;
 	}
 
-	@Override protected boolean supportsInternal(HandlerMethod handlerMethod) {
+	@Override
+	protected boolean supportsInternal(HandlerMethod handlerMethod) {
 		Class<?> controllerType = handlerMethod.getBeanType();
 		return (RepositoryController.class.isAssignableFrom(controllerType)
 				|| RepositoryEntityController.class.isAssignableFrom(controllerType)
-				|| RepositoryPropertyReferenceController.class.isAssignableFrom(controllerType)
-				|| RepositorySearchController.class.isAssignableFrom(controllerType));
+				|| RepositoryPropertyReferenceController.class.isAssignableFrom(controllerType) || RepositorySearchController.class
+					.isAssignableFrom(controllerType));
 	}
 
 }

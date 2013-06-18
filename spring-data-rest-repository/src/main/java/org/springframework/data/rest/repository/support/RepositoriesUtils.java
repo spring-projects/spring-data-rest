@@ -23,20 +23,19 @@ import org.springframework.data.repository.core.support.AnnotationRepositoryMeta
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 
 /**
- *
  * @author Oliver Gierke
  */
 public class RepositoriesUtils {
 
 	public static Class<?> getDomainType(Class<?> repositoryType) {
-		
+
 		if (!isRepositoryInterface(repositoryType)) {
 			return null;
 		}
-		
+
 		return getMetadataFor(repositoryType).getDomainType();
 	}
-	
+
 	public static boolean isRepositoryInterface(Class<?> type) {
 		return Repository.class.isAssignableFrom(type)
 				|| AnnotationUtils.findAnnotation(type, RepositoryDefinition.class) != null;

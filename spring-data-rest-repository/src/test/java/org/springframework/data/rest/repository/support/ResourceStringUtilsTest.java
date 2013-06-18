@@ -39,7 +39,7 @@ public class ResourceStringUtilsTest {
 	final boolean hasText;
 
 	public ResourceStringUtilsTest(String testDescription, String actual, String expected, boolean hasText) {
-		
+
 		this.actual = actual;
 		this.expected = expected;
 		this.hasText = hasText;

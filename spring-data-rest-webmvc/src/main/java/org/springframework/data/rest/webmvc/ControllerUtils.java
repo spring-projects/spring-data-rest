@@ -25,11 +25,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 /**
- *
  * @author Oliver Gierke
  */
 public class ControllerUtils {
-	
+
 	public static final Resource<?> EMPTY_RESOURCE = new Resource<Object>(Collections.emptyList());
 	public static final Resources<Resource<?>> EMPTY_RESOURCES = new Resources<Resource<?>>(
 			Collections.<Resource<?>> emptyList());
@@ -38,12 +37,12 @@ public class ControllerUtils {
 
 	public static <R extends Resource<?>> ResponseEntity<Resource<?>> toResponseEntity(HttpHeaders headers, R resource,
 			HttpStatus status) {
-		
+
 		HttpHeaders hdrs = new HttpHeaders();
 		if (null != headers) {
 			hdrs.putAll(headers);
 		}
-		
+
 		return new ResponseEntity<Resource<?>>(resource, hdrs, status);
 	}
 }

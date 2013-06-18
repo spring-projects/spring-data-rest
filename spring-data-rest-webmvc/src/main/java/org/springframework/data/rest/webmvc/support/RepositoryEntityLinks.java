@@ -22,9 +22,9 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	@Autowired
 	public RepositoryEntityLinks(Repositories repositories, ResourceMappings mappings, RepositoryRestConfiguration config) {
-		
+
 		Assert.notNull(repositories, "Repositories must not be null!");
-		
+
 		this.repositories = repositories;
 		this.mappings = mappings;
 		this.config = config;
@@ -45,7 +45,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 */
 	@Override
 	public LinkBuilder linkFor(Class<?> type) {
-		
+
 		ResourceMetadata metadata = mappings.getMappingFor(type);
 		return new RepositoryLinkBuilder(metadata, config.getBaseUri());
 	}
@@ -65,7 +65,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 */
 	@Override
 	public Link linkToCollectionResource(Class<?> type) {
-		
+
 		ResourceMetadata metadata = mappings.getMappingFor(type);
 		return linkFor(type).withRel(metadata.getRel());
 	}
@@ -76,7 +76,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 */
 	@Override
 	public Link linkToSingleResource(Class<?> type, Object id) {
-				
+
 		ResourceMetadata metadata = mappings.getMappingFor(type);
 		return linkFor(type).slash(id).withRel(metadata.getSingleResourceRel());
 	}

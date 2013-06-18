@@ -57,41 +57,32 @@ import org.springframework.web.bind.annotation.ResponseBody;
 class RepositorySearchController extends AbstractRepositoryRestController {
 
 	private static final String BASE_MAPPING = "/{repository}/search";
-	
+
 	private final Repositories repositories;
 	private final RepositoryRestConfiguration config;
-	
+
 	@Autowired
-	public RepositorySearchController(Repositories repositories,
-	                                  RepositoryRestConfiguration config,
-	                                  PagedResourcesAssembler<Object> assembler,
-	                                  PersistentEntityResourceAssembler<Object> perAssembler) {
-		
+	public RepositorySearchController(Repositories repositories, RepositoryRestConfiguration config,
+			PagedResourcesAssembler<Object> assembler, PersistentEntityResourceAssembler<Object> perAssembler) {
+
 		super(assembler, perAssembler);
 
 		this.repositories = repositories;
 		this.config = config;
 	}
 
-	@RequestMapping(
-			value = BASE_MAPPING,
-			method = RequestMethod.GET,
-			produces = {
-					"application/json",
-					"application/x-spring-data-compact+json"
-			}
-	)
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = { "application/json",
+			"application/x-spring-data-compact+json" })
 	@ResponseBody
 	public Resource<?> list(RepositoryRestRequest repoRequest) throws ResourceNotFoundException {
 		List<Link> links = new ArrayList<Link>();
-		links.addAll(queryMethodLinks(repoRequest.getBaseUri(),
-		                              repoRequest.getPersistentEntity().getType()));
-		if(links.isEmpty()) {
+		links.addAll(queryMethodLinks(repoRequest.getBaseUri(), repoRequest.getPersistentEntity().getType()));
+		if (links.isEmpty()) {
 			throw new ResourceNotFoundException();
 		}
 		return new Resource<Object>(Collections.emptyList(), links);
 	}
-	
+
 	protected List<Link> queryMethodLinks(URI baseUri, Class<?> domainType) {
 		List<Link> links = new ArrayList<Link>();
 		RepositoryInformation repoInfo = repositories.getRepositoryInformationFor(domainType);
@@ -110,80 +101,62 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		return links;
 	}
 
-	@RequestMapping(
-			value = BASE_MAPPING + "/{method}",
-			method = RequestMethod.GET,
-			produces = {
-					"application/json",
-					"application/x-spring-data-verbose+json"
-			}
-	)
+	@RequestMapping(value = BASE_MAPPING + "/{method}", method = RequestMethod.GET, produces = { "application/json",
+			"application/x-spring-data-verbose+json" })
 	@ResponseBody
-	public ResourceSupport query(final RepositoryRestRequest repoRequest,
-	                             @PathVariable String repository,
-	                             @PathVariable String method, Pageable pageable)
-			throws ResourceNotFoundException {
+	public ResourceSupport query(final RepositoryRestRequest repoRequest, @PathVariable String repository,
+			@PathVariable String method, Pageable pageable) throws ResourceNotFoundException {
 		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if(repoMethodInvoker.getQueryMethods().isEmpty()) {
+		if (repoMethodInvoker.getQueryMethods().isEmpty()) {
 			throw new ResourceNotFoundException();
 		}
 
 		ResourceMapping repoMapping = repoRequest.getRepositoryResourceMapping();
 		String methodName = repoMapping.getNameForPath(method);
 		RepositoryMethod repoMethod = repoMethodInvoker.getQueryMethods().get(methodName);
-		if(null == repoMethod) {
-			for(RepositoryMethod queryMethod : repoMethodInvoker.getQueryMethods().values()) {
+		if (null == repoMethod) {
+			for (RepositoryMethod queryMethod : repoMethodInvoker.getQueryMethods().values()) {
 				String path = findPath(queryMethod.getMethod());
-				if(path.equals(method)) {
+				if (path.equals(method)) {
 					repoMethod = queryMethod;
 					break;
 				}
 			}
-			if(null == repoMethod) {
+			if (null == repoMethod) {
 				throw new ResourceNotFoundException();
 			}
 		}
-		
-		
+
 		Map<String, String[]> rawParameters = repoRequest.getRequest().getParameterMap();
 		Object result = repoMethodInvoker.invokeQueryMethod(repoMethod, pageable, rawParameters);
-		
+
 		Link baseLink = linkTo(methodOn(RepositorySearchController.class). //
 				queryCompact(repoRequest, repository, methodName, pageable)).withSelfRel();
 
 		return resultToResources(result, baseLink);
 	}
 
-	@RequestMapping(
-			value = BASE_MAPPING +"/{method}",
-			method = RequestMethod.GET,
-			produces = {
-					"application/x-spring-data-compact+json"
-			}
-	)
+	@RequestMapping(value = BASE_MAPPING + "/{method}", method = RequestMethod.GET,
+			produces = { "application/x-spring-data-compact+json" })
 	@ResponseBody
-	public ResourceSupport queryCompact(RepositoryRestRequest repoRequest,
-	                                    @PathVariable String repository,
-	                                    @PathVariable String method,
-	                                    Pageable pageable)
-			throws ResourceNotFoundException {
+	public ResourceSupport queryCompact(RepositoryRestRequest repoRequest, @PathVariable String repository,
+			@PathVariable String method, Pageable pageable) throws ResourceNotFoundException {
 		List<Link> links = new ArrayList<Link>();
 
 		ResourceSupport resource = query(repoRequest, repository, method, pageable);
 		links.addAll(resource.getLinks());
 
-		if(resource instanceof Resources && ((Resources<?>) resource).getContent() != null) {
-			for(Object obj : ((Resources<?>) resource).getContent()) {
-				if(null != obj && obj instanceof Resource) {
-					Resource<?> res = (Resource<?>)obj;
+		if (resource instanceof Resources && ((Resources<?>) resource).getContent() != null) {
+			for (Object obj : ((Resources<?>) resource).getContent()) {
+				if (null != obj && obj instanceof Resource) {
+					Resource<?> res = (Resource<?>) obj;
 					links.add(resourceLink(repoRequest, res));
 				}
 			}
-		} else if(resource instanceof Resource) {
+		} else if (resource instanceof Resource) {
 			Resource<?> res = (Resource<?>) resource;
 			links.add(resourceLink(repoRequest, res));
 		}
-
 
 		return new Resource<Object>(EMPTY_RESOURCE_LIST, links);
 	}

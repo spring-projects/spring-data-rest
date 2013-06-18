@@ -35,31 +35,29 @@ import org.springframework.web.util.UrlPathHelper;
 public class RepositoryInformationHandlerMethodArgumentResolver extends RepositoryInformationSupport implements
 		HandlerMethodArgumentResolver {
 
-  @Override 
-  public boolean supportsParameter(MethodParameter parameter) {
-    return isAssignable(parameter.getParameterType(), RepositoryInformation.class);
-  }
+	@Override
+	public boolean supportsParameter(MethodParameter parameter) {
+		return isAssignable(parameter.getParameterType(), RepositoryInformation.class);
+	}
 
-  @Override
-  public RepositoryInformation resolveArgument(MethodParameter parameter,
-                                ModelAndViewContainer mavContainer,
-                                NativeWebRequest webRequest,
-                                WebDataBinderFactory binderFactory) throws Exception {
-  	
-    HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
-    String requestUri = new UrlPathHelper().getLookupPathForRequest(request);
-    
-    if(requestUri.startsWith("/")) {
-      requestUri = requestUri.substring(1);
-    }
+	@Override
+	public RepositoryInformation resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-    String[] parts = requestUri.split("/");
-    
-    if(parts.length == 0) {
-      // Root request
-      return null;
-    }
+		HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
+		String requestUri = new UrlPathHelper().getLookupPathForRequest(request);
 
-    return findRepositoryInfoFor(parts[0]);
-  }
+		if (requestUri.startsWith("/")) {
+			requestUri = requestUri.substring(1);
+		}
+
+		String[] parts = requestUri.split("/");
+
+		if (parts.length == 0) {
+			// Root request
+			return null;
+		}
+
+		return findRepositoryInfoFor(parts[0]);
+	}
 }

@@ -8,17 +8,14 @@ import java.lang.annotation.Target;
 
 /**
  * Denotes a component that should handle the {@literal beforeDelete} event.
- *
+ * 
  * @author Jon Brisbin
  */
-@Target({
-            ElementType.TYPE,
-            ElementType.METHOD
-        })
+@Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface HandleBeforeDelete {
 
-  Class<?>[] value() default {};
+	Class<?>[] value() default {};
 
 }

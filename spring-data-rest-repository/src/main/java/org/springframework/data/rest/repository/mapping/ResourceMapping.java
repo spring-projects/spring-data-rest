@@ -21,19 +21,19 @@ package org.springframework.data.rest.repository.mapping;
  * @author Oliver Gierke
  */
 public interface ResourceMapping {
-	
+
 	public static ResourceMapping NO_MAPPING = new ResourceMapping() {
-		
+
 		@Override
 		public Boolean isExported() {
 			return false;
 		}
-		
+
 		@Override
 		public String getRel() {
 			return null;
 		}
-		
+
 		@Override
 		public String getPath() {
 			return null;

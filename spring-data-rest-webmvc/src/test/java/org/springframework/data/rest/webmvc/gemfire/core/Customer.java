@@ -22,117 +22,110 @@ import java.util.Set;
 import org.springframework.data.gemfire.mapping.Region;
 import org.springframework.util.Assert;
 
-
 /**
  * A customer.
- *
+ * 
  * @author Oliver Gierke
  * @author David Turanski
  */
 @Region
 public class Customer extends AbstractPersistentEntity {
-  private EmailAddress emailAddress;
-  private String       firstname, lastname;
-  private Set<Address> addresses = new HashSet<Address>();
+	private EmailAddress emailAddress;
+	private String firstname, lastname;
+	private Set<Address> addresses = new HashSet<Address>();
 
-  /**
-   * Creates a new {@link Customer} from the given parameters.
-   *
-   * @param id
-   *     the unique id;
-   * @param emailAddress
-   *     must not be {@literal null} or empty.
-   * @param firstname
-   *     must not be {@literal null} or empty.
-   * @param lastname
-   *     must not be {@literal null} or empty.
-   */
-  public Customer(Long id, EmailAddress emailAddress, String firstname, String lastname) {
-    super(id);
-    Assert.hasText(firstname);
-    Assert.hasText(lastname);
-    Assert.notNull(emailAddress);
+	/**
+	 * Creates a new {@link Customer} from the given parameters.
+	 * 
+	 * @param id the unique id;
+	 * @param emailAddress must not be {@literal null} or empty.
+	 * @param firstname must not be {@literal null} or empty.
+	 * @param lastname must not be {@literal null} or empty.
+	 */
+	public Customer(Long id, EmailAddress emailAddress, String firstname, String lastname) {
+		super(id);
+		Assert.hasText(firstname);
+		Assert.hasText(lastname);
+		Assert.notNull(emailAddress);
 
-    this.firstname = firstname;
-    this.lastname = lastname;
-    this.emailAddress = emailAddress;
-  }
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.emailAddress = emailAddress;
+	}
 
-  protected Customer() {
-  }
+	protected Customer() {}
 
-  /**
-   * Adds the given {@link Address} to the {@link Customer}.
-   *
-   * @param address
-   *     must not be {@literal null}.
-   */
-  public void add(Address address) {
+	/**
+	 * Adds the given {@link Address} to the {@link Customer}.
+	 * 
+	 * @param address must not be {@literal null}.
+	 */
+	public void add(Address address) {
 
-    Assert.notNull(address);
-    this.addresses.add(address);
-  }
+		Assert.notNull(address);
+		this.addresses.add(address);
+	}
 
-  /**
-   * Returns the firstname of the {@link Customer}.
-   *
-   * @return
-   */
-  public String getFirstname() {
-    return firstname;
-  }
+	/**
+	 * Returns the firstname of the {@link Customer}.
+	 * 
+	 * @return
+	 */
+	public String getFirstname() {
+		return firstname;
+	}
 
-  /**
-   * Sets the firstname of the {@link Customer}.
-   *
-   * @param firstname
-   */
-  public void setFirstname(String firstname) {
-    this.firstname = firstname;
-  }
+	/**
+	 * Sets the firstname of the {@link Customer}.
+	 * 
+	 * @param firstname
+	 */
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
 
-  /**
-   * Returns the lastname of the {@link Customer}.
-   *
-   * @return
-   */
-  public String getLastname() {
-    return lastname;
-  }
+	/**
+	 * Returns the lastname of the {@link Customer}.
+	 * 
+	 * @return
+	 */
+	public String getLastname() {
+		return lastname;
+	}
 
-  /**
-   * Sets the lastname of the {@link Customer}.
-   *
-   * @param lastname
-   */
-  public void setLastname(String lastname) {
-    this.lastname = lastname;
-  }
+	/**
+	 * Sets the lastname of the {@link Customer}.
+	 * 
+	 * @param lastname
+	 */
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
 
-  /**
-   * Returns the {@link EmailAddress} of the {@link Customer}.
-   *
-   * @return
-   */
-  public EmailAddress getEmailAddress() {
-    return emailAddress;
-  }
+	/**
+	 * Returns the {@link EmailAddress} of the {@link Customer}.
+	 * 
+	 * @return
+	 */
+	public EmailAddress getEmailAddress() {
+		return emailAddress;
+	}
 
-  /**
-   * Sets the emailAddress of the {@link Customer}.
-   *
-   * @param emailAddress
-   */
-  public void setEmailAddress(EmailAddress emailAddress) {
-    this.emailAddress = emailAddress;
-  }
+	/**
+	 * Sets the emailAddress of the {@link Customer}.
+	 * 
+	 * @param emailAddress
+	 */
+	public void setEmailAddress(EmailAddress emailAddress) {
+		this.emailAddress = emailAddress;
+	}
 
-  /**
-   * Return the {@link Customer}'s addresses.
-   *
-   * @return
-   */
-  public Set<Address> getAddresses() {
-    return Collections.unmodifiableSet(addresses);
-  }
+	/**
+	 * Return the {@link Customer}'s addresses.
+	 * 
+	 * @return
+	 */
+	public Set<Address> getAddresses() {
+		return Collections.unmodifiableSet(addresses);
+	}
 }

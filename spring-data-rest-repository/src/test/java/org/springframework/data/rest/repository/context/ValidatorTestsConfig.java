@@ -9,11 +9,12 @@ import org.springframework.data.rest.repository.RepositoryTestsConfig;
  * @author Jon Brisbin
  */
 @Configuration
-@Import({RepositoryTestsConfig.class})
+@Import({ RepositoryTestsConfig.class })
 public class ValidatorTestsConfig {
 
-  @Bean public ValidatingRepositoryEventListener validatingListener() {
-    return new ValidatingRepositoryEventListener();
-  }
+	@Bean
+	public ValidatingRepositoryEventListener validatingListener() {
+		return new ValidatingRepositoryEventListener();
+	}
 
 }

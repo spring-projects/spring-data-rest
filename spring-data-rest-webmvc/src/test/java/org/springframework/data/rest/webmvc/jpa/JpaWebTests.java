@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
 public class JpaWebTests extends AbstractWebIntegrationTests {
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
@@ -44,16 +44,16 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 	@Test
 	public void accessPersons() throws Exception {
-		
+
 		MockHttpServletResponse response = request("/people?page=0&size=1");
-		
+
 		Link nextLink = assertHasLinkWithRel(Link.REL_NEXT, response);
 		assertDoesNotHaveLinkWithRel(Link.REL_PREVIOUS, response);
-		
+
 		response = request(nextLink);
 		assertHasLinkWithRel(Link.REL_PREVIOUS, response);
 		nextLink = assertHasLinkWithRel(Link.REL_NEXT, response);
-		
+
 		response = request(nextLink);
 		assertHasLinkWithRel(Link.REL_PREVIOUS, response);
 		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);

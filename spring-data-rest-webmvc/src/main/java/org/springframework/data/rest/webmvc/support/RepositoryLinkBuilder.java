@@ -40,8 +40,9 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 	}
 
 	private static UriComponentsBuilder prepareBuilder(URI baseUri, ResourceMetadata metadata) {
-		
-		UriComponentsBuilder builder = baseUri != null ? UriComponentsBuilder.fromUri(baseUri) : ControllerLinkBuilder.linkTo(RepositoryController.class).toUriComponentsBuilder();
+
+		UriComponentsBuilder builder = baseUri != null ? UriComponentsBuilder.fromUri(baseUri) : ControllerLinkBuilder
+				.linkTo(RepositoryController.class).toUriComponentsBuilder();
 		return builder.path(metadata.getPath());
 	}
 
@@ -54,18 +55,18 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 
 		return super.slash(object);
 	}
-	
+
 	public RepositoryLinkBuilder slash(PersistentProperty<?> property) {
-		
+
 		String propName = property.getName();
-		
+
 		if (metadata.isManaged(property)) {
 			return slash(metadata.getMappingFor(property).getPath());
 		} else {
 			return slash(propName);
 		}
 	}
-	
+
 	public Link withResourceRel() {
 		return withRel(metadata.getRel());
 	}
@@ -78,7 +79,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 	protected RepositoryLinkBuilder createNewInstance(UriComponentsBuilder builder) {
 		return new RepositoryLinkBuilder(this.metadata, builder);
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.hateoas.core.LinkBuilderSupport#getThis()

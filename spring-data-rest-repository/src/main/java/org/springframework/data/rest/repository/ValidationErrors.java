@@ -16,71 +16,73 @@ import org.springframework.validation.ObjectError;
 
 /**
  * An {@link Errors} implementation for use in the events mechanism of Spring Data REST.
- *
+ * 
  * @author Jon Brisbin
  */
 public class ValidationErrors extends AbstractErrors {
 
 	private static final long serialVersionUID = 8141826537389141361L;
-	
-	private String           name;
-  private Object           entity;
-  private PersistentEntity<?, ?> persistentEntity;
-  private List<ObjectError> globalErrors = new ArrayList<ObjectError>();
-  private List<FieldError>  fieldErrors  = new ArrayList<FieldError>();
 
-  public ValidationErrors(String name, Object entity, PersistentEntity<?, ?> persistentEntity) {
-    this.name = name;
-    this.entity = entity;
-    this.persistentEntity = persistentEntity;
-  }
+	private String name;
+	private Object entity;
+	private PersistentEntity<?, ?> persistentEntity;
+	private List<ObjectError> globalErrors = new ArrayList<ObjectError>();
+	private List<FieldError> fieldErrors = new ArrayList<FieldError>();
 
-  @Override public String getObjectName() {
-    return name;
-  }
+	public ValidationErrors(String name, Object entity, PersistentEntity<?, ?> persistentEntity) {
+		this.name = name;
+		this.entity = entity;
+		this.persistentEntity = persistentEntity;
+	}
 
-  @Override public void reject(String errorCode, Object[] errorArgs, String defaultMessage) {
-    globalErrors.add(new ObjectError(name, new String[]{errorCode}, errorArgs, defaultMessage));
-  }
+	@Override
+	public String getObjectName() {
+		return name;
+	}
 
-  @Override public void rejectValue(String field, String errorCode, Object[] errorArgs, String defaultMessage) {
-    fieldErrors.add(new FieldError(name,
-                                   field,
-                                   getFieldValue(field),
-                                   true,
-                                   new String[]{errorCode},
-                                   errorArgs,
-                                   defaultMessage));
-  }
+	@Override
+	public void reject(String errorCode, Object[] errorArgs, String defaultMessage) {
+		globalErrors.add(new ObjectError(name, new String[] { errorCode }, errorArgs, defaultMessage));
+	}
 
-  @Override public void addAllErrors(Errors errors) {
-    globalErrors.addAll(errors.getAllErrors());
-  }
+	@Override
+	public void rejectValue(String field, String errorCode, Object[] errorArgs, String defaultMessage) {
+		fieldErrors.add(new FieldError(name, field, getFieldValue(field), true, new String[] { errorCode }, errorArgs,
+				defaultMessage));
+	}
 
-  @Override public List<ObjectError> getGlobalErrors() {
-    return globalErrors;
-  }
+	@Override
+	public void addAllErrors(Errors errors) {
+		globalErrors.addAll(errors.getAllErrors());
+	}
 
-  @Override public List<FieldError> getFieldErrors() {
-    return fieldErrors;
-  }
+	@Override
+	public List<ObjectError> getGlobalErrors() {
+		return globalErrors;
+	}
 
-  @Override public Object getFieldValue(String field) {
-    PersistentProperty<?> prop = persistentEntity != null ? persistentEntity.getPersistentProperty(field) : null;
-    if(null == prop) {
-      return null;
-    }
+	@Override
+	public List<FieldError> getFieldErrors() {
+		return fieldErrors;
+	}
 
-    Method getter = prop.getGetter();
-    if(null != getter) {
-      return invokeMethod(getter, entity);
-    }
-    Field fld = prop.getField();
-    if(null != fld) {
-      return getField(fld, entity);
-    }
+	@Override
+	public Object getFieldValue(String field) {
+		PersistentProperty<?> prop = persistentEntity != null ? persistentEntity.getPersistentProperty(field) : null;
+		if (null == prop) {
+			return null;
+		}
 
-    return null;
-  }
+		Method getter = prop.getGetter();
+		if (null != getter) {
+			return invokeMethod(getter, entity);
+		}
+		Field fld = prop.getField();
+		if (null != fld) {
+			return getField(fld, entity);
+		}
+
+		return null;
+	}
 
 }

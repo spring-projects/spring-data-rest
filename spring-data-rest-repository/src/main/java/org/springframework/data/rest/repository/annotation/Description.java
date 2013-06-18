@@ -8,12 +8,8 @@ import java.lang.annotation.Target;
 /**
  * @author Jon Brisbin
  */
-@Target({
-            ElementType.TYPE,
-            ElementType.FIELD,
-            ElementType.METHOD
-        })
+@Target({ ElementType.TYPE, ElementType.FIELD, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Description {
-  String value();
+	String value();
 }

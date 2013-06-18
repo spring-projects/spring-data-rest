@@ -22,29 +22,27 @@ import org.springframework.data.repository.query.Param;
 
 /**
  * Repository interface to access {@link Customer}s.
- *
+ * 
  * @author Oliver Gierke
  * @author David Turanski
  */
 
 public interface CustomerRepository extends CrudRepository<Customer, Long> {
 
-  /**
-   * Finds all {@link Customer}s with the given lastname.
-   *
-   * @param lastname
-   *
-   * @return
-   */
-  List<Customer> findByLastname(@Param("lastname") String lastname);
+	/**
+	 * Finds all {@link Customer}s with the given lastname.
+	 * 
+	 * @param lastname
+	 * @return
+	 */
+	List<Customer> findByLastname(@Param("lastname") String lastname);
 
-  /**
-   * Finds the Customer with the given {@link EmailAddress}.
-   *
-   * @param emailAddress
-   *
-   * @return
-   */
-  Customer findByEmailAddress(@Param("email") EmailAddress emailAddress);
+	/**
+	 * Finds the Customer with the given {@link EmailAddress}.
+	 * 
+	 * @param emailAddress
+	 * @return
+	 */
+	Customer findByEmailAddress(@Param("email") EmailAddress emailAddress);
 
 }

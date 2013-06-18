@@ -36,7 +36,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	public static void setUp() {
 		context = new AnnotationConfigApplicationContext(ExtendingConfiguration.class);
 	}
-	
+
 	@AfterClass
 	public static void tearDown() {
 		if (context != null) {

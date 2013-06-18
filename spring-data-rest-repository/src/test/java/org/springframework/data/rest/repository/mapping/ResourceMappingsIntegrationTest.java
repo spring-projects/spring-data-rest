@@ -46,14 +46,14 @@ public class ResourceMappingsIntegrationTest {
 
 	@Before
 	public void setUp() {
-		
+
 		Repositories repositories = new Repositories(factory);
 		this.mappings = new ResourceMappings(new RepositoryRestConfiguration(), repositories);
 	}
 
 	@Test
 	public void foo() {
-		
+
 		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(2)));
 		assertThat(mappings.getMappingFor(Person.class).isExported(), is(true));
 	}

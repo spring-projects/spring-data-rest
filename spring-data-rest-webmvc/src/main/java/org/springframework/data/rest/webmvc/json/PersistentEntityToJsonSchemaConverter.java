@@ -29,89 +29,90 @@ import org.springframework.hateoas.Link;
 /**
  * @author Jon Brisbin
  */
-public class PersistentEntityToJsonSchemaConverter
-    extends RepositoryInformationSupport
-    implements ConditionalGenericConverter,
-               InitializingBean {
+public class PersistentEntityToJsonSchemaConverter extends RepositoryInformationSupport implements
+		ConditionalGenericConverter, InitializingBean {
 
-  private static final TypeDescriptor       STRING_TYPE      = TypeDescriptor.valueOf(String.class);
-  private static final TypeDescriptor       SCHEMA_TYPE      = TypeDescriptor.valueOf(JsonSchema.class);
-  private              Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
-  private ResourceMappings mappings;
+	private static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
+	private static final TypeDescriptor SCHEMA_TYPE = TypeDescriptor.valueOf(JsonSchema.class);
+	private Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
+	private ResourceMappings mappings;
 
-  @Override public void afterPropertiesSet() throws Exception {
-    
-  	for(Class<?> domainType : repositories) {
-      convertiblePairs.add(new ConvertiblePair(domainType, JsonSchema.class));
-    }
-    
-    this.mappings = new ResourceMappings(config, repositories);
-  }
+	@Override
+	public void afterPropertiesSet() throws Exception {
 
-  @Override public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
-    return (Class.class.isAssignableFrom(sourceType.getType()) && JsonSchema.class.isAssignableFrom(targetType.getType()));
-  }
+		for (Class<?> domainType : repositories) {
+			convertiblePairs.add(new ConvertiblePair(domainType, JsonSchema.class));
+		}
 
+		this.mappings = new ResourceMappings(config, repositories);
+	}
 
-  @Override public Set<ConvertiblePair> getConvertibleTypes() {
-    return convertiblePairs;
-  }
+	@Override
+	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+		return (Class.class.isAssignableFrom(sourceType.getType()) && JsonSchema.class.isAssignableFrom(targetType
+				.getType()));
+	}
 
-  public JsonSchema convert(Class<?> domainType) {
-    return (JsonSchema)convert(domainType, STRING_TYPE, SCHEMA_TYPE);
-  }
+	@Override
+	public Set<ConvertiblePair> getConvertibleTypes() {
+		return convertiblePairs;
+	}
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  @Override public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
-  	
-    PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity((Class<?>)source);
-    final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getClass());
-    String entityDesc = persistentEntity.getType().isAnnotationPresent(Description.class)
-                        ? ((Description)persistentEntity.getType().getAnnotation(Description.class)).value()
-                        : null;
-                        
-    final JsonSchema jsonSchema = new JsonSchema(persistentEntity.getName(), entityDesc);
-    persistentEntity.doWithProperties(new PropertyHandler() {
-      @Override public void doWithPersistentProperty(PersistentProperty persistentProperty) {
-        Class<?> propertyType = persistentProperty.getType();
-        String type = uncapitalize(propertyType.getSimpleName());
-        boolean notNull = (persistentProperty.getField().isAnnotationPresent(Nonnull.class)
-            || persistentProperty.getGetter().isAnnotationPresent(Nonnull.class))
-            || (persistentProperty.getField().isAnnotationPresent(NotNull.class)
-            || persistentProperty.getGetter().isAnnotationPresent(NotNull.class));
-        String desc = persistentProperty.getField().isAnnotationPresent(Description.class)
-                      ? persistentProperty.getField().getAnnotation(Description.class).value()
-                      : persistentProperty.getGetter().isAnnotationPresent(Description.class)
-                        ? persistentProperty.getGetter().getAnnotation(Description.class).value()
-                        : null;
+	public JsonSchema convert(Class<?> domainType) {
+		return (JsonSchema) convert(domainType, STRING_TYPE, SCHEMA_TYPE);
+	}
 
-        JsonSchema.Property property;
-        if(persistentProperty.isCollectionLike()) {
-          property = new JsonSchema.ArrayProperty("array", desc, notNull);
-        } else {
-          property = new JsonSchema.Property(type, desc, notNull);
-        }
-        jsonSchema.addProperty(persistentProperty.getName(), property);
-      }
-    });
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-    final List<Link> links = new ArrayList<Link>();
-    
-    persistentEntity.doWithAssociations(new AssociationHandler() {
-      @Override public void doWithAssociation(Association association) {
-        PersistentProperty persistentProperty = association.getInverse();
-        if(!metadata.isMapped(persistentProperty)) {
-          return;
-        }
-        
-        RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, config.getBaseUri()).slash("{id}");
+		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity((Class<?>) source);
+		final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getClass());
+		String entityDesc = persistentEntity.getType().isAnnotationPresent(Description.class) ? ((Description) persistentEntity
+				.getType().getAnnotation(Description.class)).value() : null;
+
+		final JsonSchema jsonSchema = new JsonSchema(persistentEntity.getName(), entityDesc);
+		persistentEntity.doWithProperties(new PropertyHandler() {
+			@Override
+			public void doWithPersistentProperty(PersistentProperty persistentProperty) {
+				Class<?> propertyType = persistentProperty.getType();
+				String type = uncapitalize(propertyType.getSimpleName());
+				boolean notNull = (persistentProperty.getField().isAnnotationPresent(Nonnull.class) || persistentProperty
+						.getGetter().isAnnotationPresent(Nonnull.class))
+						|| (persistentProperty.getField().isAnnotationPresent(NotNull.class) || persistentProperty.getGetter()
+								.isAnnotationPresent(NotNull.class));
+				String desc = persistentProperty.getField().isAnnotationPresent(Description.class) ? persistentProperty
+						.getField().getAnnotation(Description.class).value() : persistentProperty.getGetter().isAnnotationPresent(
+						Description.class) ? persistentProperty.getGetter().getAnnotation(Description.class).value() : null;
+
+				JsonSchema.Property property;
+				if (persistentProperty.isCollectionLike()) {
+					property = new JsonSchema.ArrayProperty("array", desc, notNull);
+				} else {
+					property = new JsonSchema.Property(type, desc, notNull);
+				}
+				jsonSchema.addProperty(persistentProperty.getName(), property);
+			}
+		});
+
+		final List<Link> links = new ArrayList<Link>();
+
+		persistentEntity.doWithAssociations(new AssociationHandler() {
+			@Override
+			public void doWithAssociation(Association association) {
+				PersistentProperty persistentProperty = association.getInverse();
+				if (!metadata.isMapped(persistentProperty)) {
+					return;
+				}
+
+				RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, config.getBaseUri()).slash("{id}");
 				maybeAddAssociationLink(builder, mappings, persistentProperty, links);
-      }
-    });
-    
-    jsonSchema.add(links);
+			}
+		});
 
-    return jsonSchema;
-  }
+		jsonSchema.add(links);
+
+		return jsonSchema;
+	}
 
 }

@@ -35,89 +35,84 @@ import org.springframework.data.rest.repository.support.SimpleRelProvider;
 
 /**
  * Ensure the {@link ResourceMapping} components convey the correct information.
- *
+ * 
  * @author Jon Brisbin
  */
 @SuppressWarnings("deprecation")
 public class ResourceMappingUnitTests {
-	
+
 	ResourceMappingFactory factory = new ResourceMappingFactory(new SimpleRelProvider());
 
-  @Test
-  public void shouldDetectDefaultRelAndPath() throws Exception {
-  	
-  	ResourceMapping newMapping = factory.getMappingForType(PlainPersonRepository.class);
-  	
-  	assertThat(newMapping.getRel(), is("person"));
-    assertThat(newMapping.getPath(), is("person"));
-    assertThat(newMapping.isExported(), is(true));
-  }
+	@Test
+	public void shouldDetectDefaultRelAndPath() throws Exception {
 
-  @Test
-  public void shouldDetectAnnotatedRelAndPath() throws Exception {
-  	
-  	ResourceMapping newMapping = factory.getMappingForType(AnnotatedPersonRepository.class);
-  	
-  	assertThat(newMapping.getRel(), is("people"));
-  	assertThat(newMapping.getPath(), is("person"));
-  	assertThat(newMapping.isExported(), is(false));
-  }
-  
-  @Test
-  public void shouldDetectPathAndRemoveLeadingSlashIfAny() {
+		ResourceMapping newMapping = factory.getMappingForType(PlainPersonRepository.class);
+
+		assertThat(newMapping.getRel(), is("person"));
+		assertThat(newMapping.getPath(), is("person"));
+		assertThat(newMapping.isExported(), is(true));
+	}
+
+	@Test
+	public void shouldDetectAnnotatedRelAndPath() throws Exception {
+
+		ResourceMapping newMapping = factory.getMappingForType(AnnotatedPersonRepository.class);
+
+		assertThat(newMapping.getRel(), is("people"));
+		assertThat(newMapping.getPath(), is("person"));
+		assertThat(newMapping.isExported(), is(false));
+	}
+
+	@Test
+	public void shouldDetectPathAndRemoveLeadingSlashIfAny() {
 		org.springframework.data.rest.config.ResourceMapping mapping = new org.springframework.data.rest.config.ResourceMapping(
-        findRel(AnnotatedWithLeadingSlashPersonRepository.class),
-        findPath(AnnotatedWithLeadingSlashPersonRepository.class),
-        findExported(AnnotatedWithLeadingSlashPersonRepository.class)
-    );
+				findRel(AnnotatedWithLeadingSlashPersonRepository.class),
+				findPath(AnnotatedWithLeadingSlashPersonRepository.class),
+				findExported(AnnotatedWithLeadingSlashPersonRepository.class));
 
-    // The rel attribute defaults to class name
-    assertThat(mapping.getRel(), is("annotatedWithLeadingSlashPerson"));
-    assertThat(mapping.getPath(), is("people"));
-    // The exported defaults to true
-    assertThat(mapping.isExported(), is(true));
-  }
+		// The rel attribute defaults to class name
+		assertThat(mapping.getRel(), is("annotatedWithLeadingSlashPerson"));
+		assertThat(mapping.getPath(), is("people"));
+		// The exported defaults to true
+		assertThat(mapping.isExported(), is(true));
+	}
 
-  @Test
-  public void shouldDetectPathAndRemoveLeadingSlashIfAnyOnMethod() throws Exception {
-    Method method = AnnotatedWithLeadingSlashPersonRepository.class.getMethod("findByFirstName", String.class, Pageable.class);
-    org.springframework.data.rest.config.ResourceMapping mapping = new org.springframework.data.rest.config.ResourceMapping(
-        findRel(method),
-        findPath(method),
-        findExported(method)
-    );
+	@Test
+	public void shouldDetectPathAndRemoveLeadingSlashIfAnyOnMethod() throws Exception {
+		Method method = AnnotatedWithLeadingSlashPersonRepository.class.getMethod("findByFirstName", String.class,
+				Pageable.class);
+		org.springframework.data.rest.config.ResourceMapping mapping = new org.springframework.data.rest.config.ResourceMapping(
+				findRel(method), findPath(method), findExported(method));
 
-    // The rel attribute defaults to class name
-    assertThat(mapping.getRel(), is("findByFirstName"));
-    assertThat(mapping.getPath(), is("firstname"));
-    // The exported defaults to true
-    assertThat(mapping.isExported(), is(true));
-  }
+		// The rel attribute defaults to class name
+		assertThat(mapping.getRel(), is("findByFirstName"));
+		assertThat(mapping.getPath(), is("firstname"));
+		// The exported defaults to true
+		assertThat(mapping.isExported(), is(true));
+	}
 
-  @Test
-  public void shouldReturnDefaultIfPathContainsOnlySlashTextOnMethod() throws Exception {
-    Method method = AnnotatedWithLeadingSlashPersonRepository.class.getMethod("findByLastName", String.class, Pageable.class);
-    org.springframework.data.rest.config.ResourceMapping mapping = new org.springframework.data.rest.config.ResourceMapping(
-        findRel(method),
-        findPath(method),
-        findExported(method)
-    );
+	@Test
+	public void shouldReturnDefaultIfPathContainsOnlySlashTextOnMethod() throws Exception {
+		Method method = AnnotatedWithLeadingSlashPersonRepository.class.getMethod("findByLastName", String.class,
+				Pageable.class);
+		org.springframework.data.rest.config.ResourceMapping mapping = new org.springframework.data.rest.config.ResourceMapping(
+				findRel(method), findPath(method), findExported(method));
 
-    // The rel defaults to method name
-    assertThat(mapping.getRel(), is("findByLastName"));
-    // The path contains only a leading slash therefore defaults to method name
-    assertThat(mapping.getPath(), is("findByLastName"));
-    // The exported defaults to true
-    assertThat(mapping.isExported(), is(true));
-  }
-  
-  @RestResource(path = "/people")
-  interface AnnotatedWithLeadingSlashPersonRepository {
+		// The rel defaults to method name
+		assertThat(mapping.getRel(), is("findByLastName"));
+		// The path contains only a leading slash therefore defaults to method name
+		assertThat(mapping.getPath(), is("findByLastName"));
+		// The exported defaults to true
+		assertThat(mapping.isExported(), is(true));
+	}
 
-  	@RestResource(path = "/firstname")
-  	Page<Person> findByFirstName(@Param("firstName") String firstName, Pageable pageable);
+	@RestResource(path = "/people")
+	interface AnnotatedWithLeadingSlashPersonRepository {
 
-  	@RestResource(path = " / ")
-  	Page<Person> findByLastName(@Param("lastName") String firstName, Pageable pageable);
-  }
+		@RestResource(path = "/firstname")
+		Page<Person> findByFirstName(@Param("firstName") String firstName, Pageable pageable);
+
+		@RestResource(path = " / ")
+		Page<Person> findByLastName(@Param("lastName") String firstName, Pageable pageable);
+	}
 }

@@ -17,90 +17,88 @@ import org.springframework.data.rest.repository.annotation.Description;
 
 /**
  * An entity that represents a person.
- *
+ * 
  * @author Jon Brisbin
  */
 @Entity
 public class Person {
 
-  private Long   id;
-  @Description("A person's first name")
-  private String firstName;
-  @Description("A person's last name")
-  private String lastName;
-  @Description("A person's siblings")
-  private List<Person> siblings = Collections.emptyList();
-  private Person father;
-  @Description("Timestamp this person object was created")
-  private Date   created;
+	private Long id;
+	@Description("A person's first name") private String firstName;
+	@Description("A person's last name") private String lastName;
+	@Description("A person's siblings") private List<Person> siblings = Collections.emptyList();
+	private Person father;
+	@Description("Timestamp this person object was created") private Date created;
 
-  public Person() {
-  }
+	public Person() {}
 
-  public Person(String firstName, String lastName) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-  }
+	public Person(String firstName, String lastName) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+	}
 
-  @Id @GeneratedValue public Long getId() {
-    return id;
-  }
+	@Id
+	@GeneratedValue
+	public Long getId() {
+		return id;
+	}
 
-  public void setId(Long id) {
-    this.id = id;
-  }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-  public String getFirstName() {
-    return firstName;
-  }
+	public String getFirstName() {
+		return firstName;
+	}
 
-  public void setFirstName(String firstName) {
-    this.firstName = firstName;
-  }
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
 
-  public String getLastName() {
-    return lastName;
-  }
+	public String getLastName() {
+		return lastName;
+	}
 
-  @NotNull
-  public void setLastName(String lastName) {
-    this.lastName = lastName;
-  }
+	@NotNull
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
 
-  public Person addSibling(Person p) {
-    if(siblings == Collections.EMPTY_LIST) {
-      siblings = new ArrayList<Person>();
-    }
-    siblings.add(p);
-    return this;
-  }
+	public Person addSibling(Person p) {
+		if (siblings == Collections.EMPTY_LIST) {
+			siblings = new ArrayList<Person>();
+		}
+		siblings.add(p);
+		return this;
+	}
 
-  @ManyToMany public List<Person> getSiblings() {
-    return siblings;
-  }
+	@ManyToMany
+	public List<Person> getSiblings() {
+		return siblings;
+	}
 
-  public void setSiblings(List<Person> siblings) {
-    this.siblings = siblings;
-  }
+	public void setSiblings(List<Person> siblings) {
+		this.siblings = siblings;
+	}
 
-  @ManyToOne public Person getFather() {
-    return father;
-  }
+	@ManyToOne
+	public Person getFather() {
+		return father;
+	}
 
-  public void setFather(Person father) {
-    this.father = father;
-  }
+	public void setFather(Person father) {
+		this.father = father;
+	}
 
-  public Date getCreated() {
-    return created;
-  }
+	public Date getCreated() {
+		return created;
+	}
 
-  public void setCreated(Date created) {
-  }
+	public void setCreated(Date created) {}
 
-  @PrePersist
-  private void prePersist() {
-    this.created = Calendar.getInstance().getTime();
-  }
+	@PrePersist
+	private void prePersist() {
+		this.created = Calendar.getInstance().getTime();
+	}
 
 }

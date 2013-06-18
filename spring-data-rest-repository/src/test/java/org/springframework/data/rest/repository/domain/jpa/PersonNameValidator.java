@@ -10,22 +10,24 @@ import org.springframework.validation.Validator;
 
 /**
  * A test {@link Validator} that checks for non-blank names.
- *
+ * 
  * @author Jon Brisbin
  */
 @Component
 @HandleBeforeSave
 public class PersonNameValidator implements Validator {
 
-  @Override public boolean supports(Class<?> clazz) {
-    return isAssignable(clazz, Person.class);
-  }
+	@Override
+	public boolean supports(Class<?> clazz) {
+		return isAssignable(clazz, Person.class);
+	}
 
-  @Override public void validate(Object target, Errors errors) {
-    Person p = (Person)target;
-    if(!hasText(p.getLastName())) {
-      errors.rejectValue("lastName", "blank", "Last name cannot be blank");
-    }
-  }
+	@Override
+	public void validate(Object target, Errors errors) {
+		Person p = (Person) target;
+		if (!hasText(p.getLastName())) {
+			errors.rejectValue("lastName", "blank", "Last name cannot be blank");
+		}
+	}
 
 }

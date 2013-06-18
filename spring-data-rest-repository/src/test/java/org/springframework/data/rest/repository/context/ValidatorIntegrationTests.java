@@ -11,19 +11,18 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Tests to check the {@link org.springframework.validation.Validator} integration.
- *
+ * 
  * @author Jon Brisbin
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = ValidatorTestsConfig.class)
 public class ValidatorIntegrationTests {
 
-  @Autowired
-  ApplicationContext appCtx;
+	@Autowired ApplicationContext appCtx;
 
-  @Test(expected = RepositoryConstraintViolationException.class)
-  public void shouldValidateLastName() throws Exception {
-    appCtx.publishEvent(new BeforeSaveEvent(new Person()));
-  }
+	@Test(expected = RepositoryConstraintViolationException.class)
+	public void shouldValidateLastName() throws Exception {
+		appCtx.publishEvent(new BeforeSaveEvent(new Person()));
+	}
 
 }

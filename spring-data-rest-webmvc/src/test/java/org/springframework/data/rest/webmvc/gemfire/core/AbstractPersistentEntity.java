@@ -25,8 +25,7 @@ import org.springframework.data.annotation.Id;
  */
 public class AbstractPersistentEntity {
 
-	@Id
-	private final Long id;
+	@Id private final Long id;
 
 	/**
 	 * Returns the identifier of the entity.
@@ -36,15 +35,14 @@ public class AbstractPersistentEntity {
 	public Long getId() {
 		return id;
 	}
-	
+
 	protected AbstractPersistentEntity(Long id) {
 		this.id = id;
 	}
-	
+
 	protected AbstractPersistentEntity() {
 		this.id = null;
 	}
-	
 
 	/* 
 	 * (non-Javadoc)

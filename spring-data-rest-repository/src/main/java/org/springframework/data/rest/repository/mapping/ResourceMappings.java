@@ -25,8 +25,8 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.repository.support.RepositoriesUtils;
-import org.springframework.data.rest.repository.support.SimpleRelProvider;
 import org.springframework.hateoas.RelProvider;
+import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
 
 /**
@@ -53,7 +53,7 @@ public class ResourceMappings implements ResourceMetadataProvider, Iterable<Reso
 	 * @param repositories
 	 */
 	public ResourceMappings(RepositoryRestConfiguration config, Repositories repositories) {
-		this(config, repositories, new SimpleRelProvider());
+		this(config, repositories, new EvoInflectorRelProvider());
 	}
 
 	/**

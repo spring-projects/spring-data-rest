@@ -17,57 +17,55 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Tests to verify the integrity of the {@link RepositoryMethod} abstraction.
- *
+ * 
  * @author Jon Brisbin
  */
 public class RepositoryMethodUnitTests {
 
-  Map<String, RepositoryMethod> methods = new HashMap<String, RepositoryMethod>();
-  RepositoryMethod method;
+	Map<String, RepositoryMethod> methods = new HashMap<String, RepositoryMethod>();
+	RepositoryMethod method;
 
-  @Before
-  public void setup() {
-    doWithMethods(PersonRepository.class,
-                  new ReflectionUtils.MethodCallback() {
-                    @Override public void doWith(Method method) throws IllegalArgumentException,
-                                                                       IllegalAccessException {
-                      String name = method.getName();
-                      RepositoryMethod repoMethod = new RepositoryMethod(method);
-                      methods.put(name, repoMethod);
-                    }
-                  },
-                  Methods.USER_METHODS);
-    method = methods.get("findByFirstName");
-  }
+	@Before
+	public void setup() {
+		doWithMethods(PersonRepository.class, new ReflectionUtils.MethodCallback() {
+			@Override
+			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+				String name = method.getName();
+				RepositoryMethod repoMethod = new RepositoryMethod(method);
+				methods.put(name, repoMethod);
+			}
+		}, Methods.USER_METHODS);
+		method = methods.get("findByFirstName");
+	}
 
-  @Test
-  public void shouldFindSimpleQueryMethods() throws Exception {
-    assertThat(method, notNullValue());
-  }
+	@Test
+	public void shouldFindSimpleQueryMethods() throws Exception {
+		assertThat(method, notNullValue());
+	}
 
-  @Test
-  public void shouldFindPageableInformationOnMethod() throws Exception {
-    assertThat(method, notNullValue());
-    assertThat(method.isPageable(), is(true));
-  }
+	@Test
+	public void shouldFindPageableInformationOnMethod() throws Exception {
+		assertThat(method, notNullValue());
+		assertThat(method.isPageable(), is(true));
+	}
 
-  @Test
-  public void shouldNotFindSortInformationOnMethod() throws Exception {
-    assertThat(method, notNullValue());
-    assertThat(method.isSortable(), is(false));
-  }
+	@Test
+	public void shouldNotFindSortInformationOnMethod() throws Exception {
+		assertThat(method, notNullValue());
+		assertThat(method.isSortable(), is(false));
+	}
 
-  @Test
-  public void shouldProvideParameterClassTypes() throws Exception {
-    assertThat(method, notNullValue());
-    assertThat(method.getParameters().get(0).getParameterType(), is(typeCompatibleWith(String.class)));
-    assertThat(method.getParameters().get(1).getParameterType(), is(typeCompatibleWith(Pageable.class)));
-  }
+	@Test
+	public void shouldProvideParameterClassTypes() throws Exception {
+		assertThat(method, notNullValue());
+		assertThat(method.getParameters().get(0).getParameterType(), is(typeCompatibleWith(String.class)));
+		assertThat(method.getParameters().get(1).getParameterType(), is(typeCompatibleWith(Pageable.class)));
+	}
 
-  @Test
-  public void shouldProvideParameterNames() throws Exception {
-    assertThat(method, notNullValue());
-    assertThat(method.getParameterNames(), contains("firstName", "arg1"));
-  }
+	@Test
+	public void shouldProvideParameterNames() throws Exception {
+		assertThat(method, notNullValue());
+		assertThat(method.getParameterNames(), contains("firstName", "arg1"));
+	}
 
 }

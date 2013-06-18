@@ -17,28 +17,22 @@ public class RepositoryConstraintViolationExceptionMessage {
 	private final List<ValidationError> errors = new ArrayList<ValidationError>();
 
 	public RepositoryConstraintViolationExceptionMessage(RepositoryConstraintViolationException violationException,
-	                                                     MessageSource msgSrc,
-	                                                     Locale locale) {
+			MessageSource msgSrc, Locale locale) {
 
-		for(FieldError fe : violationException.getErrors().getFieldErrors()) {
+		for (FieldError fe : violationException.getErrors().getFieldErrors()) {
 			List<Object> args = new ArrayList<Object>();
 			args.add(fe.getObjectName());
 			args.add(fe.getField());
 			args.add(fe.getRejectedValue());
-			if(null != fe.getArguments()) {
-				for(Object o : fe.getArguments()) {
+			if (null != fe.getArguments()) {
+				for (Object o : fe.getArguments()) {
 					args.add(o);
 				}
 			}
 
-			String msg = msgSrc.getMessage(fe.getCode(),
-			                               args.toArray(),
-			                               fe.getDefaultMessage(),
-			                               locale);
-			this.errors.add(new ValidationError(fe.getObjectName(),
-			                                    msg,
-			                                    String.format("%s", fe.getRejectedValue()),
-			                                    fe.getField()));
+			String msg = msgSrc.getMessage(fe.getCode(), args.toArray(), fe.getDefaultMessage(), locale);
+			this.errors.add(new ValidationError(fe.getObjectName(), msg, String.format("%s", fe.getRejectedValue()), fe
+					.getField()));
 		}
 	}
 

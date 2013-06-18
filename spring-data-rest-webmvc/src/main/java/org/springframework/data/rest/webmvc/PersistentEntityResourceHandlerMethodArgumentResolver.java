@@ -18,41 +18,38 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  */
 public class PersistentEntityResourceHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-  @Autowired
-  private       RepositoryRestRequestHandlerMethodArgumentResolver repoRequestResolver;
-  private final List<HttpMessageConverter<?>>                      messageConverters;
+	@Autowired private RepositoryRestRequestHandlerMethodArgumentResolver repoRequestResolver;
+	private final List<HttpMessageConverter<?>> messageConverters;
 
-  public PersistentEntityResourceHandlerMethodArgumentResolver(List<HttpMessageConverter<?>> messageConverters) {
-    this.messageConverters = messageConverters;
-  }
+	public PersistentEntityResourceHandlerMethodArgumentResolver(List<HttpMessageConverter<?>> messageConverters) {
+		this.messageConverters = messageConverters;
+	}
 
-  @Override public boolean supportsParameter(MethodParameter parameter) {
-    return PersistentEntityResource.class.isAssignableFrom(parameter.getParameterType());
-  }
+	@Override
+	public boolean supportsParameter(MethodParameter parameter) {
+		return PersistentEntityResource.class.isAssignableFrom(parameter.getParameterType());
+	}
 
-  @Override
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  public Object resolveArgument(MethodParameter parameter,
-                                ModelAndViewContainer mavContainer,
-                                NativeWebRequest webRequest,
-                                WebDataBinderFactory binderFactory) throws Exception {
-    RepositoryRestRequest repoRequest = (RepositoryRestRequest)repoRequestResolver.resolveArgument(parameter,
-                                                                                                   mavContainer,
-                                                                                                   webRequest,
-                                                                                                   binderFactory);
+	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+		RepositoryRestRequest repoRequest = (RepositoryRestRequest) repoRequestResolver.resolveArgument(parameter,
+				mavContainer, webRequest, binderFactory);
 
-    final ServletServerHttpRequest request = new ServletServerHttpRequest(webRequest.getNativeRequest(HttpServletRequest.class));
-    for(HttpMessageConverter converter : messageConverters) {
-      Class<?> domainType = repoRequest.getPersistentEntity().getType();
-      if(!converter.canRead(domainType, request.getHeaders().getContentType())) {
-        continue;
-      }
+		final ServletServerHttpRequest request = new ServletServerHttpRequest(
+				webRequest.getNativeRequest(HttpServletRequest.class));
+		for (HttpMessageConverter converter : messageConverters) {
+			Class<?> domainType = repoRequest.getPersistentEntity().getType();
+			if (!converter.canRead(domainType, request.getHeaders().getContentType())) {
+				continue;
+			}
 
-      Object obj = converter.read(domainType, request);
+			Object obj = converter.read(domainType, request);
 			return new PersistentEntityResource<Object>(repoRequest.getPersistentEntity(), obj);
-    }
+		}
 
-    return null;
-  }
+		return null;
+	}
 
 }

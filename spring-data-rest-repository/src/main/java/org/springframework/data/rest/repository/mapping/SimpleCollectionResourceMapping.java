@@ -15,9 +15,8 @@
  */
 package org.springframework.data.rest.repository.mapping;
 
-
 public class SimpleCollectionResourceMapping implements CollectionResourceMapping {
-	
+
 	private final String collectionRel;
 	private final String singleRel;
 	private final String path;
@@ -26,9 +25,9 @@ public class SimpleCollectionResourceMapping implements CollectionResourceMappin
 	public SimpleCollectionResourceMapping(String relsAndPath) {
 		this(relsAndPath, relsAndPath, relsAndPath, true);
 	}
-	
+
 	public SimpleCollectionResourceMapping(String collectionRel, String singleRel, String path, Boolean exported) {
-		
+
 		this.collectionRel = collectionRel;
 		this.singleRel = singleRel;
 		this.path = path;
@@ -50,7 +49,7 @@ public class SimpleCollectionResourceMapping implements CollectionResourceMappin
 	public String getSingleResourceRel() {
 		return singleRel;
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.repository.mapping.CollectionResourceMapping#getPath()

@@ -15,16 +15,15 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  */
 public class ServerHttpRequestMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-  @Override public boolean supportsParameter(MethodParameter parameter) {
-    return ClassUtils.isAssignable(parameter.getParameterType(), ServletServerHttpRequest.class);
-  }
+	@Override
+	public boolean supportsParameter(MethodParameter parameter) {
+		return ClassUtils.isAssignable(parameter.getParameterType(), ServletServerHttpRequest.class);
+	}
 
-  @Override
-  public Object resolveArgument(MethodParameter parameter,
-                                ModelAndViewContainer mavContainer,
-                                NativeWebRequest webRequest,
-                                WebDataBinderFactory binderFactory) throws Exception {
-    return new ServletServerHttpRequest((HttpServletRequest)webRequest.getNativeRequest());
-  }
+	@Override
+	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+		return new ServletServerHttpRequest((HttpServletRequest) webRequest.getNativeRequest());
+	}
 
 }

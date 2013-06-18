@@ -21,6 +21,6 @@ package org.springframework.data.rest.repository.mapping;
 interface InternalMappingBuilder extends MappingBuilder {
 
 	InternalMappingBuilder merge(CollectionResourceMapping mapping);
-	
+
 	CollectionResourceMapping getMapping();
 }

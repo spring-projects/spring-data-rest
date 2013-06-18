@@ -15,43 +15,43 @@ import org.springframework.data.repository.support.Repositories;
  */
 public class DomainObjectMerger {
 
-  private final Repositories      repositories;
-  private final ConversionService conversionService;
+	private final Repositories repositories;
+	private final ConversionService conversionService;
 
-  @Autowired
-  public DomainObjectMerger(Repositories repositories,
-                            ConversionService conversionService) {
-    this.repositories = repositories;
-    this.conversionService = conversionService;
-  }
+	@Autowired
+	public DomainObjectMerger(Repositories repositories, ConversionService conversionService) {
+		this.repositories = repositories;
+		this.conversionService = conversionService;
+	}
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  public void merge(Object from, Object target) {
-    if(null == from || null == target) {
-      return;
-    }
-    final BeanWrapper<?, Object> fromWrapper = BeanWrapper.create(from, conversionService);
-    final BeanWrapper<?, Object> targetWrapper = BeanWrapper.create(target, conversionService);
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void merge(Object from, Object target) {
+		if (null == from || null == target) {
+			return;
+		}
+		final BeanWrapper<?, Object> fromWrapper = BeanWrapper.create(from, conversionService);
+		final BeanWrapper<?, Object> targetWrapper = BeanWrapper.create(target, conversionService);
 
-    PersistentEntity<?, ?> entity = repositories.getPersistentEntity(target.getClass());
-    entity.doWithProperties(new PropertyHandler() {
-      @Override public void doWithPersistentProperty(PersistentProperty persistentProperty) {
-        Object fromVal = fromWrapper.getProperty(persistentProperty);
-        if(null != fromVal && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
-          targetWrapper.setProperty(persistentProperty, fromVal);
-        }
-      }
-    });
-    entity.doWithAssociations(new AssociationHandler() {
-      @Override public void doWithAssociation(Association association) {
-        PersistentProperty persistentProperty = association.getInverse();
-        Object fromVal = fromWrapper.getProperty(persistentProperty);
-        if(null != fromVal && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
-          targetWrapper.setProperty(persistentProperty, fromVal);
-        }
-      }
-    });
-  }
-
+		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(target.getClass());
+		entity.doWithProperties(new PropertyHandler() {
+			@Override
+			public void doWithPersistentProperty(PersistentProperty persistentProperty) {
+				Object fromVal = fromWrapper.getProperty(persistentProperty);
+				if (null != fromVal && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
+					targetWrapper.setProperty(persistentProperty, fromVal);
+				}
+			}
+		});
+		entity.doWithAssociations(new AssociationHandler() {
+			@Override
+			public void doWithAssociation(Association association) {
+				PersistentProperty persistentProperty = association.getInverse();
+				Object fromVal = fromWrapper.getProperty(persistentProperty);
+				if (null != fromVal && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
+					targetWrapper.setProperty(persistentProperty, fromVal);
+				}
+			}
+		});
+	}
 
 }

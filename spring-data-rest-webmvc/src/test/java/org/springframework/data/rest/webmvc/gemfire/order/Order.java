@@ -32,92 +32,88 @@ import org.springframework.util.Assert;
 @Region
 public class Order extends AbstractPersistentEntity {
 
-  private Long    customerId;
-  private Address billingAddress;
-  private Address shippingAddress;
-  private Set<LineItem> lineItems = new HashSet<LineItem>();
+	private Long customerId;
+	private Address billingAddress;
+	private Address shippingAddress;
+	private Set<LineItem> lineItems = new HashSet<LineItem>();
 
-  /**
-   * Creates a new {@link Order} for the given {@link org.springframework.data.rest.webmvc.gemfire.core.Customer}.
-   *
-   * @param id
-   *     order ID
-   * @param customerId
-   *     must not be {@literal null}.
-   * @param shippingAddress
-   *     must not be {@literal null}.
-   */
-  public Order(Long id, Long customerId, Address shippingAddress) {
-    super(id);
-    Assert.notNull(customerId);
-    Assert.notNull(shippingAddress);
+	/**
+	 * Creates a new {@link Order} for the given {@link org.springframework.data.rest.webmvc.gemfire.core.Customer}.
+	 * 
+	 * @param id order ID
+	 * @param customerId must not be {@literal null}.
+	 * @param shippingAddress must not be {@literal null}.
+	 */
+	public Order(Long id, Long customerId, Address shippingAddress) {
+		super(id);
+		Assert.notNull(customerId);
+		Assert.notNull(shippingAddress);
 
-    this.customerId = customerId;
-    this.shippingAddress = shippingAddress;
-  }
+		this.customerId = customerId;
+		this.shippingAddress = shippingAddress;
+	}
 
-  protected Order() {
-  }
+	protected Order() {}
 
-  /**
-   * Adds the given {@link LineItem} to the {@link Order}.
-   *
-   * @param lineItem
-   */
-  public void add(LineItem lineItem) {
-    this.lineItems.add(lineItem);
-  }
+	/**
+	 * Adds the given {@link LineItem} to the {@link Order}.
+	 * 
+	 * @param lineItem
+	 */
+	public void add(LineItem lineItem) {
+		this.lineItems.add(lineItem);
+	}
 
-  /**
-   * Returns the id of the {@link org.springframework.data.rest.webmvc.gemfire.core.Customer} who placed the {@link
-   * Order}.
-   *
-   * @return
-   */
-  public Long getCustomerId() {
-    return customerId;
-  }
+	/**
+	 * Returns the id of the {@link org.springframework.data.rest.webmvc.gemfire.core.Customer} who placed the
+	 * {@link Order}.
+	 * 
+	 * @return
+	 */
+	public Long getCustomerId() {
+		return customerId;
+	}
 
-  /**
-   * Returns the billing {@link Address} for this order.
-   *
-   * @return
-   */
-  public Address getBillingAddress() {
-    return billingAddress != null ? billingAddress : shippingAddress;
-  }
+	/**
+	 * Returns the billing {@link Address} for this order.
+	 * 
+	 * @return
+	 */
+	public Address getBillingAddress() {
+		return billingAddress != null ? billingAddress : shippingAddress;
+	}
 
-  /**
-   * Returns the shipping {@link Address} for this order;
-   *
-   * @return
-   */
-  public Address getShippingAddress() {
-    return shippingAddress;
-  }
+	/**
+	 * Returns the shipping {@link Address} for this order;
+	 * 
+	 * @return
+	 */
+	public Address getShippingAddress() {
+		return shippingAddress;
+	}
 
-  /**
-   * Returns all {@link LineItem}s currently belonging to the {@link Order}.
-   *
-   * @return
-   */
-  public Set<LineItem> getLineItems() {
-    return Collections.unmodifiableSet(lineItems);
-  }
+	/**
+	 * Returns all {@link LineItem}s currently belonging to the {@link Order}.
+	 * 
+	 * @return
+	 */
+	public Set<LineItem> getLineItems() {
+		return Collections.unmodifiableSet(lineItems);
+	}
 
-  /**
-   * Returns the total of the {@link Order}.
-   *
-   * @return
-   */
-  public BigDecimal getTotal() {
+	/**
+	 * Returns the total of the {@link Order}.
+	 * 
+	 * @return
+	 */
+	public BigDecimal getTotal() {
 
-    BigDecimal total = BigDecimal.ZERO;
+		BigDecimal total = BigDecimal.ZERO;
 
-    for(LineItem item : lineItems) {
-      total = total.add(item.getTotal());
-    }
+		for (LineItem item : lineItems) {
+			total = total.add(item.getTotal());
+		}
 
-    return total;
-  }
+		return total;
+	}
 }

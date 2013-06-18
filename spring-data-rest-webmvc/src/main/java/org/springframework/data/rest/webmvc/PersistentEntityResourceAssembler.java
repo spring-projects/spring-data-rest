@@ -25,14 +25,13 @@ import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.util.Assert;
 
 /**
- *
  * @author Oliver Gierke
  */
 public class PersistentEntityResourceAssembler<T> implements ResourceAssembler<T, PersistentEntityResource<T>> {
 
 	private final Repositories repositories;
 	private final EntityLinks entityLinks;
-	
+
 	/**
 	 * Creates a new {@link PersistentEntityResourceAssembler}.
 	 * 
@@ -40,10 +39,10 @@ public class PersistentEntityResourceAssembler<T> implements ResourceAssembler<T
 	 * @param entityLinks must not be {@literal null}.
 	 */
 	public PersistentEntityResourceAssembler(Repositories repositories, EntityLinks entityLinks) {
-		
+
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
-		
+
 		this.repositories = repositories;
 		this.entityLinks = entityLinks;
 	}
@@ -56,19 +55,19 @@ public class PersistentEntityResourceAssembler<T> implements ResourceAssembler<T
 	public PersistentEntityResource<T> toResource(T instance) {
 
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(instance.getClass());
-		
+
 		PersistentEntityResource<T> resource = PersistentEntityResource.wrap(entity, instance);
 		resource.add(getSelfLinkFor(instance));
 		return resource;
 	}
-	
+
 	public Link getSelfLinkFor(Object instance) {
-		
+
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(instance.getClass());
-		
+
 		BeanWrapper<?, Object> wrapper = BeanWrapper.create(instance, null);
 		Object id = wrapper.getProperty(entity.getIdProperty());
-		
+
 		return entityLinks.linkForSingleResource(entity.getType(), id).withSelfRel();
 	}
 }

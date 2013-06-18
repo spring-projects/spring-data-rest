@@ -18,12 +18,11 @@ package org.springframework.data.rest.repository.mapping;
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
- *
  * @author Oliver Gierke
  */
 public interface ResourceMetadataProvider {
 
 	boolean isMapped(PersistentProperty<?> property);
-	
+
 	ResourceMapping getMappingFor(PersistentProperty<?> property);
 }

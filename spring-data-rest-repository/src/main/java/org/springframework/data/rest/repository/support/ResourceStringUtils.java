@@ -53,11 +53,11 @@ public class ResourceStringUtils {
 		}
 
 		boolean hasLeadingSlash = startsWithSlash(path);
-		
+
 		if (path.length() == 1) {
 			return hasLeadingSlash ? "" : path;
 		}
-		
+
 		return hasLeadingSlash ? path.substring(1) : path;
 	}
 

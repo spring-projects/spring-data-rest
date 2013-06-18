@@ -9,10 +9,7 @@ import java.lang.annotation.Target;
 /**
  * @author Jon Brisbin
  */
-@Target({
-		        ElementType.TYPE,
-		        ElementType.METHOD
-        })
+@Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface HandleAfterCreate {

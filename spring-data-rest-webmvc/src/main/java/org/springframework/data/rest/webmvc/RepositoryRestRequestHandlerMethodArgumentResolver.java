@@ -34,37 +34,32 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Oliver Gierke
  */
 public class RepositoryRestRequestHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
-	
+
 	private final ConversionService conversionService;
-	
-  @Autowired
-  private RepositoryRestConfiguration                        config;
-  @Autowired
-  private Repositories                                       repositories;
-  @Autowired
-  private RepositoryInformationHandlerMethodArgumentResolver repoInfoResolver;
-  @Autowired
-  private BaseUriMethodArgumentResolver                      baseUriResolver;
-  
-  public RepositoryRestRequestHandlerMethodArgumentResolver(ConversionService conversionService) {
+
+	@Autowired private RepositoryRestConfiguration config;
+	@Autowired private Repositories repositories;
+	@Autowired private RepositoryInformationHandlerMethodArgumentResolver repoInfoResolver;
+	@Autowired private BaseUriMethodArgumentResolver baseUriResolver;
+
+	public RepositoryRestRequestHandlerMethodArgumentResolver(ConversionService conversionService) {
 		this.conversionService = conversionService;
-  }
+	}
 
-  @Override 
-  public boolean supportsParameter(MethodParameter parameter) {
-    return RepositoryRestRequest.class.isAssignableFrom(parameter.getParameterType());
-  }
+	@Override
+	public boolean supportsParameter(MethodParameter parameter) {
+		return RepositoryRestRequest.class.isAssignableFrom(parameter.getParameterType());
+	}
 
-  @Override
-  public Object resolveArgument(MethodParameter parameter,
-                                ModelAndViewContainer mavContainer,
-                                NativeWebRequest webRequest,
-                                WebDataBinderFactory binderFactory) throws Exception {
-  	
+	@Override
+	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+
 		URI baseUri = (URI) baseUriResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 		RepositoryInformation repoInfo = repoInfoResolver.resolveArgument(parameter, mavContainer, webRequest,
 				binderFactory);
 
-		return new RepositoryRestRequest(config, repositories, webRequest.getNativeRequest(HttpServletRequest.class), baseUri, repoInfo, conversionService);
-  }
+		return new RepositoryRestRequest(config, repositories, webRequest.getNativeRequest(HttpServletRequest.class),
+				baseUri, repoInfo, conversionService);
+	}
 }

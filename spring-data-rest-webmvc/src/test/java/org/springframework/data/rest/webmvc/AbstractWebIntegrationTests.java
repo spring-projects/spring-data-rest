@@ -74,39 +74,33 @@ public abstract class AbstractWebIntegrationTests {
 	protected MockHttpServletResponse request(String href) throws Exception {
 		return request(href, MediaType.APPLICATION_JSON);
 	}
-	
+
 	protected ResultActions follow(Link link) throws Exception {
-  	return  mvc.perform(get(link.getHref()));
-  }
-	
+		return mvc.perform(get(link.getHref()));
+	}
+
 	protected List<Link> discover(String rel) throws Exception {
-    return discover(new Link("/"), rel);
-  }
-	
+		return discover(new Link("/"), rel);
+	}
+
 	protected Link discoverUnique(String rel) throws Exception {
-		
+
 		List<Link> discover = discover(rel);
 		assertThat(discover, hasSize(1));
 		return discover.get(0);
 	}
 
-  protected List<Link> discover(Link root, String rel) throws Exception {
-    String s = mvc
-        .perform(get(root.getHref()))
-        .andExpect(status().isOk())
-        .andExpect(hasLinkWithRel(rel))
-        .andReturn().getResponse().getContentAsString();
-    return links.findLinksWithRel(rel, s);
-  }
-  
-  protected Link discoverUnique(Link root, String rel) throws Exception {
-    String s = mvc
-        .perform(get(root.getHref()))
-        .andExpect(status().isOk())
-        .andExpect(hasLinkWithRel(rel))
-        .andReturn().getResponse().getContentAsString();
-    return links.findLinkWithRel(rel, s);
-  }
+	protected List<Link> discover(Link root, String rel) throws Exception {
+		String s = mvc.perform(get(root.getHref())).andExpect(status().isOk()).andExpect(hasLinkWithRel(rel)).andReturn()
+				.getResponse().getContentAsString();
+		return links.findLinksWithRel(rel, s);
+	}
+
+	protected Link discoverUnique(Link root, String rel) throws Exception {
+		String s = mvc.perform(get(root.getHref())).andExpect(status().isOk()).andExpect(hasLinkWithRel(rel)).andReturn()
+				.getResponse().getContentAsString();
+		return links.findLinkWithRel(rel, s);
+	}
 
 	protected Link assertHasLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
 
@@ -140,13 +134,13 @@ public abstract class AbstractWebIntegrationTests {
 
 	@Test
 	public void exposesRootResource() throws Exception {
-		
+
 		ResultActions actions = mvc.perform(get("/")).andExpect(status().isOk());
-		
+
 		for (String rel : expectedRootLinkRels()) {
 			actions.andExpect(hasLinkWithRel(rel));
 		}
 	}
-	
+
 	protected abstract Iterable<String> expectedRootLinkRels();
 }

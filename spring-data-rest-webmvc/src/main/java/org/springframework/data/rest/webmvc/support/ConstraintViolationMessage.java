@@ -10,26 +10,19 @@ import org.springframework.context.MessageSource;
 
 /**
  * A helper class to encapsulate {@link ConstraintViolation} errors.
- *
+ * 
  * @author Jon Brisbin
  */
 public class ConstraintViolationMessage {
 
 	private final ConstraintViolation<?> violation;
-	private final String                 message;
+	private final String message;
 
-	public ConstraintViolationMessage(ConstraintViolation<?> violation,
-	                                  MessageSource msgSrc,
-	                                  Locale locale) {
+	public ConstraintViolationMessage(ConstraintViolation<?> violation, MessageSource msgSrc, Locale locale) {
 		this.violation = violation;
 		this.message = msgSrc.getMessage(violation.getMessageTemplate(),
-		                                 new Object[]{
-				                                 violation.getLeafBean().getClass().getSimpleName(),
-				                                 violation.getPropertyPath().toString(),
-				                                 violation.getInvalidValue()
-		                                 },
-		                                 violation.getMessage(),
-		                                 locale);
+				new Object[] { violation.getLeafBean().getClass().getSimpleName(), violation.getPropertyPath().toString(),
+						violation.getInvalidValue() }, violation.getMessage(), locale);
 	}
 
 	@JsonProperty("entity")

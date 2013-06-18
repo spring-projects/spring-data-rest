@@ -28,7 +28,7 @@ public class Address {
 
 	/**
 	 * Creates a new {@link Address} from the given street, city and country.
-	 *
+	 * 
 	 * @param street must not be {@literal null} or empty.
 	 * @param city must not be {@literal null} or empty.
 	 * @param country must not be {@literal null} or empty.

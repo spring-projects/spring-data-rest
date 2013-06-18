@@ -11,10 +11,5 @@ import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
  * @author Jon Brisbin
  */
 @Configuration
-@Import({
-            JpaRepositoryConfig.class,
-            MongoDbRepositoryConfig.class,
-            GemfireRepositoryConfig.class
-        })
-public class RepositoryRestMvcTestConfig extends RepositoryRestMvcConfiguration {
-}
+@Import({ JpaRepositoryConfig.class, MongoDbRepositoryConfig.class, GemfireRepositoryConfig.class })
+public class RepositoryRestMvcTestConfig extends RepositoryRestMvcConfiguration {}

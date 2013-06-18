@@ -42,7 +42,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	@Autowired
 	public RepositoryController(Repositories repositories, RepositoryRestConfiguration config, EntityLinks entityLinks,
 			PagedResourcesAssembler<Object> assembler, PersistentEntityResourceAssembler<Object> perAssembler) {
-		
+
 		super(assembler, perAssembler);
 
 		this.repositories = repositories;

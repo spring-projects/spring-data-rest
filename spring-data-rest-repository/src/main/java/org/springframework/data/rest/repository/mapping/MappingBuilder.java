@@ -17,7 +17,7 @@ package org.springframework.data.rest.repository.mapping;
 
 /**
  * SPI to allow users to register
- *
+ * 
  * @author Oliver Gierke
  */
 public interface MappingBuilder {

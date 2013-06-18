@@ -19,7 +19,6 @@ import org.springframework.hateoas.RelProvider;
 import org.springframework.util.StringUtils;
 
 /**
- *
  * @author Oliver Gierke
  */
 public class SimpleRelProvider implements RelProvider {

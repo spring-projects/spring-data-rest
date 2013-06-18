@@ -5,9 +5,8 @@ import org.springframework.data.repository.NoRepositoryBean;
 
 /**
  * A repository to manage {@link Person}s.
- *
+ * 
  * @author Jon Brisbin
  */
 @NoRepositoryBean
-public interface ConfiguredPersonRepository extends CrudRepository<Person, Long> {
-}
+public interface ConfiguredPersonRepository extends CrudRepository<Person, Long> {}

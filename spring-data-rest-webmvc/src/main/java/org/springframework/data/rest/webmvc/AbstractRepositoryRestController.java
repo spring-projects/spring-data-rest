@@ -58,7 +58,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @SuppressWarnings({ "rawtypes", "deprecation" })
 class AbstractRepositoryRestController implements MessageSourceAware, InitializingBean {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractRepositoryRestController.class);
 
 	private final PersistentEntityResourceAssembler<Object> perAssembler;
@@ -69,8 +69,9 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 	private MessageSource messageSource;
 	private PagedResourcesAssembler<Object> assembler;
 
-	public AbstractRepositoryRestController(PagedResourcesAssembler<Object> assembler, PersistentEntityResourceAssembler<Object> entityResourceAssembler) {
-		
+	public AbstractRepositoryRestController(PagedResourcesAssembler<Object> assembler,
+			PersistentEntityResourceAssembler<Object> entityResourceAssembler) {
+
 		this.assembler = assembler;
 		this.perAssembler = entityResourceAssembler;
 	}
@@ -86,13 +87,13 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		
-		// FIXME: 
-		
-//		if (null != txMgr) {
-//			txTmpl = new TransactionTemplate(txMgr);
-//			txTmpl.afterPropertiesSet();
-//		}
+
+		// FIXME:
+
+		// if (null != txMgr) {
+		// txTmpl = new TransactionTemplate(txMgr);
+		// txTmpl.afterPropertiesSet();
+		// }
 	}
 
 	@ExceptionHandler({ NullPointerException.class })
@@ -139,7 +140,7 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 	@ResponseBody
 	public ResponseEntity handleRepositoryConstraintViolationException(Locale locale,
 			RepositoryConstraintViolationException rcve) {
-		
+
 		return response(null, new RepositoryConstraintViolationExceptionMessage(rcve, messageSource, locale),
 				HttpStatus.BAD_REQUEST);
 	}
@@ -205,7 +206,7 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 
 	@SuppressWarnings({ "unchecked" })
 	protected Resources resultToResources(Object result, Link baseLink) {
-		
+
 		if (result instanceof Page) {
 			Page<Object> page = (Page<Object>) result;
 			return entitiesToResources(page, baseLink, assembler);
@@ -225,7 +226,6 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 		return assembler.toResource(page, perAssembler, baseLink);
 	}
 
-	
 	protected Resources<Resource<Object>> entitiesToResources(Iterable<Object> entities) {
 
 		List<Resource<Object>> resources = new ArrayList<Resource<Object>>();

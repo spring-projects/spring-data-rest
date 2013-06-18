@@ -8,147 +8,125 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 
 /**
- * Abstract class that listens for generic {@link RepositoryEvent}s and dispatches them to a specific
- * method based on the event type.
- *
+ * Abstract class that listens for generic {@link RepositoryEvent}s and dispatches them to a specific method based on
+ * the event type.
+ * 
  * @author Jon Brisbin
  */
 public abstract class AbstractRepositoryEventListener<T> implements ApplicationListener<RepositoryEvent>,
-                                                                    ApplicationContextAware {
+		ApplicationContextAware {
 
 	private final Class<?> INTERESTED_TYPE = resolveTypeArgument(getClass(), AbstractRepositoryEventListener.class);
 	protected ApplicationContext applicationContext;
 
-	@Override public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 
-	@SuppressWarnings({"unchecked"})
-	@Override public final void onApplicationEvent(RepositoryEvent event) {
+	@SuppressWarnings({ "unchecked" })
+	@Override
+	public final void onApplicationEvent(RepositoryEvent event) {
 		Class<?> srcType = event.getSource().getClass();
-		if(null != INTERESTED_TYPE && !INTERESTED_TYPE.isAssignableFrom(srcType)) {
+		if (null != INTERESTED_TYPE && !INTERESTED_TYPE.isAssignableFrom(srcType)) {
 			return;
 		}
 
-		if(event instanceof BeforeSaveEvent) {
-			onBeforeSave((T)event.getSource());
-		} else if(event instanceof BeforeCreateEvent) {
-			onBeforeCreate((T)event.getSource());
-		} else if(event instanceof AfterCreateEvent) {
-			onAfterCreate((T)event.getSource());
-		} else if(event instanceof AfterSaveEvent) {
-			onAfterSave((T)event.getSource());
-		} else if(event instanceof BeforeLinkSaveEvent) {
-			onBeforeLinkSave((T)event.getSource(), ((BeforeLinkSaveEvent)event).getLinked());
-		} else if(event instanceof AfterLinkSaveEvent) {
-			onAfterLinkSave((T)event.getSource(), ((AfterLinkSaveEvent)event).getLinked());
-		} else if(event instanceof BeforeLinkDeleteEvent) {
-			onBeforeLinkDelete((T)event.getSource(), ((BeforeLinkDeleteEvent)event).getLinked());
-		} else if(event instanceof AfterLinkDeleteEvent) {
-			onAfterLinkDelete((T)event.getSource(), ((AfterLinkDeleteEvent)event).getLinked());
-		} else if(event instanceof BeforeDeleteEvent) {
-			onBeforeDelete((T)event.getSource());
-		} else if(event instanceof AfterDeleteEvent) {
-			onAfterDelete((T)event.getSource());
+		if (event instanceof BeforeSaveEvent) {
+			onBeforeSave((T) event.getSource());
+		} else if (event instanceof BeforeCreateEvent) {
+			onBeforeCreate((T) event.getSource());
+		} else if (event instanceof AfterCreateEvent) {
+			onAfterCreate((T) event.getSource());
+		} else if (event instanceof AfterSaveEvent) {
+			onAfterSave((T) event.getSource());
+		} else if (event instanceof BeforeLinkSaveEvent) {
+			onBeforeLinkSave((T) event.getSource(), ((BeforeLinkSaveEvent) event).getLinked());
+		} else if (event instanceof AfterLinkSaveEvent) {
+			onAfterLinkSave((T) event.getSource(), ((AfterLinkSaveEvent) event).getLinked());
+		} else if (event instanceof BeforeLinkDeleteEvent) {
+			onBeforeLinkDelete((T) event.getSource(), ((BeforeLinkDeleteEvent) event).getLinked());
+		} else if (event instanceof AfterLinkDeleteEvent) {
+			onAfterLinkDelete((T) event.getSource(), ((AfterLinkDeleteEvent) event).getLinked());
+		} else if (event instanceof BeforeDeleteEvent) {
+			onBeforeDelete((T) event.getSource());
+		} else if (event instanceof AfterDeleteEvent) {
+			onAfterDelete((T) event.getSource());
 		}
 	}
 
 	/**
 	 * Override this method if you are interested in {@literal beforeCreate} events.
-	 *
-	 * @param entity
-	 * 		The entity being created.
+	 * 
+	 * @param entity The entity being created.
 	 */
-	protected void onBeforeCreate(T entity) {
-	}
+	protected void onBeforeCreate(T entity) {}
 
 	/**
 	 * Override this method if you are interested in {@literal afterCreate} events.
-	 *
-	 * @param entity
-	 * 		The entity that was created.
+	 * 
+	 * @param entity The entity that was created.
 	 */
-	protected void onAfterCreate(T entity) {
-	}
+	protected void onAfterCreate(T entity) {}
 
 	/**
 	 * Override this method if you are interested in {@literal beforeSave} events.
-	 *
-	 * @param entity
-	 * 		The entity being saved.
+	 * 
+	 * @param entity The entity being saved.
 	 */
-	protected void onBeforeSave(T entity) {
-	}
+	protected void onBeforeSave(T entity) {}
 
 	/**
 	 * Override this method if you are interested in {@literal afterSave} events.
-	 *
-	 * @param entity
-	 * 		The entity that was just saved.
+	 * 
+	 * @param entity The entity that was just saved.
 	 */
-	protected void onAfterSave(T entity) {
-	}
+	protected void onAfterSave(T entity) {}
 
 	/**
 	 * Override this method if you are interested in {@literal beforeLinkSave} events.
-	 *
-	 * @param parent
-	 * 		The parent entity to which the child object is linked.
-	 * @param linked
-	 * 		The linked, child entity.
+	 * 
+	 * @param parent The parent entity to which the child object is linked.
+	 * @param linked The linked, child entity.
 	 */
-	protected void onBeforeLinkSave(T parent, Object linked) {
-	}
+	protected void onBeforeLinkSave(T parent, Object linked) {}
 
 	/**
 	 * Override this method if you are interested in {@literal afterLinkSave} events.
-	 *
-	 * @param parent
-	 * 		The parent entity to which the child object is linked.
-	 * @param linked
-	 * 		The linked, child entity.
+	 * 
+	 * @param parent The parent entity to which the child object is linked.
+	 * @param linked The linked, child entity.
 	 */
-	protected void onAfterLinkSave(T parent, Object linked) {
-	}
+	protected void onAfterLinkSave(T parent, Object linked) {}
 
 	/**
 	 * Override this method if you are interested in {@literal beforeLinkDelete} events.
-	 *
-	 * @param parent
-	 * 		The parent entity to which the child object is linked.
-	 * @param linked
-	 * 		The linked, child entity.
+	 * 
+	 * @param parent The parent entity to which the child object is linked.
+	 * @param linked The linked, child entity.
 	 */
-	protected void onBeforeLinkDelete(T parent, Object linked) {
-	}
+	protected void onBeforeLinkDelete(T parent, Object linked) {}
 
 	/**
 	 * Override this method if you are interested in {@literal afterLinkDelete} events.
-	 *
-	 * @param parent
-	 * 		The parent entity to which the child object is linked.
-	 * @param linked
-	 * 		The linked, child entity.
+	 * 
+	 * @param parent The parent entity to which the child object is linked.
+	 * @param linked The linked, child entity.
 	 */
-	protected void onAfterLinkDelete(T parent, Object linked) {
-	}
+	protected void onAfterLinkDelete(T parent, Object linked) {}
 
 	/**
 	 * Override this method if you are interested in {@literal beforeDelete} events.
-	 *
-	 * @param entity
-	 * 		The entity that is being deleted.
+	 * 
+	 * @param entity The entity that is being deleted.
 	 */
-	protected void onBeforeDelete(T entity) {
-	}
+	protected void onBeforeDelete(T entity) {}
 
 	/**
 	 * Override this method if you are interested in {@literal afterDelete} events.
-	 *
-	 * @param entity
-	 * 		The entity that was just deleted.
+	 * 
+	 * @param entity The entity that was just deleted.
 	 */
-	protected void onAfterDelete(T entity) {
-	}
+	protected void onAfterDelete(T entity) {}
 
 }

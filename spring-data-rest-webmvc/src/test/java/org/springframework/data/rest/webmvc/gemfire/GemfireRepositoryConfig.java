@@ -21,7 +21,7 @@ import org.springframework.data.gemfire.repository.config.EnableGemfireRepositor
 
 /**
  * Spring JavaConfig configuration class to setup a Spring container and infrastructure components.
- *
+ * 
  * @author Oliver Gierke
  * @author David Turanski
  */

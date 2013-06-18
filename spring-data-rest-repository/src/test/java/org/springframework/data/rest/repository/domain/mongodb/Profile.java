@@ -9,39 +9,38 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class Profile {
 
-  @Id private String id;
-  private     String name;
-  private     String type;
+	@Id private String id;
+	private String name;
+	private String type;
 
-  public Profile() {
-  }
+	public Profile() {}
 
-  public Profile(String id, String name, String type) {
-    this.id = id;
-    this.name = name;
-    this.type = type;
-  }
+	public Profile(String id, String name, String type) {
+		this.id = id;
+		this.name = name;
+		this.type = type;
+	}
 
-  public String getId() {
-    return id;
-  }
+	public String getId() {
+		return id;
+	}
 
-  public String getName() {
-    return name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public Profile setName(String name) {
-    this.name = name;
-    return this;
-  }
+	public Profile setName(String name) {
+		this.name = name;
+		return this;
+	}
 
-  public String getType() {
-    return type;
-  }
+	public String getType() {
+		return type;
+	}
 
-  public Profile setType(String type) {
-    this.type = type;
-    return this;
-  }
+	public Profile setType(String type) {
+		this.type = type;
+		return this;
+	}
 
 }

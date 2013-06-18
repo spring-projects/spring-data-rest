@@ -33,30 +33,28 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  */
 public class BaseUriMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-  private final RepositoryRestConfiguration config;
+	private final RepositoryRestConfiguration config;
 
-  public BaseUriMethodArgumentResolver(RepositoryRestConfiguration config) {
-    this.config = config;
-  }
+	public BaseUriMethodArgumentResolver(RepositoryRestConfiguration config) {
+		this.config = config;
+	}
 
-  @Override public boolean supportsParameter(MethodParameter parameter) {
-    return (null != parameter.getParameterAnnotation(BaseURI.class)
-        && parameter.getParameterType() == URI.class);
-  }
+	@Override
+	public boolean supportsParameter(MethodParameter parameter) {
+		return (null != parameter.getParameterAnnotation(BaseURI.class) && parameter.getParameterType() == URI.class);
+	}
 
-  @Override
-  public URI resolveArgument(MethodParameter parameter,
-                                ModelAndViewContainer mavContainer,
-                                NativeWebRequest webRequest,
-                                WebDataBinderFactory binderFactory) throws Exception {
-    HttpServletRequest servletRequest = webRequest.getNativeRequest(HttpServletRequest.class);
+	@Override
+	public URI resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+		HttpServletRequest servletRequest = webRequest.getNativeRequest(HttpServletRequest.class);
 
-    // Use configured URI if there is one or set the current one as the default if not.
-    if(null == config.getBaseUri()) {
-      URI baseUri = ServletUriComponentsBuilder.fromServletMapping(servletRequest).build().toUri();
-      config.setBaseUri(baseUri);
-    }
+		// Use configured URI if there is one or set the current one as the default if not.
+		if (null == config.getBaseUri()) {
+			URI baseUri = ServletUriComponentsBuilder.fromServletMapping(servletRequest).build().toUri();
+			config.setBaseUri(baseUri);
+		}
 
-    return config.getBaseUri();
-  }
+		return config.getBaseUri();
+	}
 }

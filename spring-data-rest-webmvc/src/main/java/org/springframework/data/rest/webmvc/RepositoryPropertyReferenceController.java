@@ -62,11 +62,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Oliver Gierke
  */
 @RestController
-@SuppressWarnings({"unchecked", "deprecation"})
-public class RepositoryPropertyReferenceController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
-	
+@SuppressWarnings({ "unchecked", "deprecation" })
+public class RepositoryPropertyReferenceController extends AbstractRepositoryRestController implements
+		ApplicationEventPublisherAware {
+
 	private static final String BASE_MAPPING = "/{repository}/{id}/{property}";
-	
+
 	private final Repositories repositories;
 	private final RepositoryRestConfiguration config;
 	private final PersistentEntityResourceAssembler<Object> perAssembler;
@@ -78,15 +79,15 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	public RepositoryPropertyReferenceController(Repositories repositories, RepositoryRestConfiguration config,
 			DomainClassConverter<?> domainClassConverter, PagedResourcesAssembler<Object> assembler,
 			PersistentEntityResourceAssembler<Object> perAssembler) {
-		
+
 		super(assembler, perAssembler);
-		
+
 		this.repositories = repositories;
 		this.perAssembler = perAssembler;
 		this.config = config;
 		this.converter = domainClassConverter;
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
@@ -96,84 +97,71 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		this.publisher = applicationEventPublisher;
 	}
 
-	@RequestMapping(
-			value = BASE_MAPPING,
-			method = RequestMethod.GET,
-			produces = {
-					"application/json",
-					"application/x-spring-data-verbose+json"
-			}
-	)
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = { "application/json",
+			"application/x-spring-data-verbose+json" })
 	@ResponseBody
 	public ResponseEntity<Resource<?>> followPropertyReference(final RepositoryRestRequest repoRequest,
-	                                                           @PathVariable String id,
-	                                                           @PathVariable String property)
-			throws ResourceNotFoundException, NoSuchMethodException {
+			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException, NoSuchMethodException {
 		final HttpHeaders headers = new HttpHeaders();
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
-			@Override public Resource<?> apply(ReferencedProperty prop) {
-				
-				if(null == prop.propertyValue) {
+			@Override
+			public Resource<?> apply(ReferencedProperty prop) {
+
+				if (null == prop.propertyValue) {
 					throw new ResourceNotFoundException();
 				}
-				
-				if(prop.property.isCollectionLike()) {
-					
+
+				if (prop.property.isCollectionLike()) {
+
 					List<Resource<?>> resources = new ArrayList<Resource<?>>();
-					
-					for(Object obj : ((Iterable<Object>) prop.propertyValue)) {
+
+					for (Object obj : ((Iterable<Object>) prop.propertyValue)) {
 						resources.add(perAssembler.toResource(obj));
 					}
 
 					return new Resource<Object>(resources);
-					
-				} else if(prop.property.isMap()) {
-					
+
+				} else if (prop.property.isMap()) {
+
 					Map<Object, Resource<?>> resources = new HashMap<Object, Resource<?>>();
-					
-					for(Map.Entry<Object, Object> entry : ((Map<Object, Object>) prop.propertyValue).entrySet()) {
+
+					for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) prop.propertyValue).entrySet()) {
 						resources.put(entry.getKey(), perAssembler.toResource(entry.getValue()));
 					}
 
 					return new Resource<Object>(resources);
-					
+
 				} else {
-					
+
 					PersistentEntityResource<Object> resource = perAssembler.toResource(prop.propertyValue);
 					headers.set("Content-Location", resource.getId().getHref());
 					return resource;
 				}
 			}
 		};
-		Resource<?> responseResource = doWithReferencedProperty(repoRequest,
-		                                                        id,
-		                                                        property,
-		                                                        handler);
+		Resource<?> responseResource = doWithReferencedProperty(repoRequest, id, property, handler);
 		return ControllerUtils.toResponseEntity(headers, responseResource, HttpStatus.OK);
 	}
 
-	@RequestMapping(
-			value = BASE_MAPPING,
-			method = RequestMethod.DELETE
-	)
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.DELETE)
 	@ResponseBody
 	public ResponseEntity<Resource<?>> deletePropertyReference(final RepositoryRestRequest repoRequest,
-	                                                           @PathVariable String id,
-	                                                           @PathVariable String property)
-			throws ResourceNotFoundException, NoSuchMethodException, HttpRequestMethodNotSupportedException {
+			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException, NoSuchMethodException,
+			HttpRequestMethodNotSupportedException {
 		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if(!repoMethodInvoker.hasDeleteOne()) {
+		if (!repoMethodInvoker.hasDeleteOne()) {
 			throw new NoSuchMethodException();
 		}
 
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
-			@Override public Resource<?> apply(ReferencedProperty prop) {
-				if(null == prop.propertyValue) {
+			@Override
+			public Resource<?> apply(ReferencedProperty prop) {
+				if (null == prop.propertyValue) {
 					return null;
 				}
-				if(prop.property.isCollectionLike()) {
+				if (prop.property.isCollectionLike()) {
 					throw new IllegalArgumentException(new HttpRequestMethodNotSupportedException("DELETE"));
-				} else if(prop.property.isMap()) {
+				} else if (prop.property.isMap()) {
 					throw new IllegalArgumentException(new HttpRequestMethodNotSupportedException("DELETE"));
 				} else {
 					prop.wrapper.setProperty(prop.property, null);
@@ -186,62 +174,50 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			}
 		};
 		try {
-			doWithReferencedProperty(repoRequest,
-			                         id,
-			                         property,
-			                         handler);
-		} catch(IllegalArgumentException iae) {
-			if(iae.getCause() instanceof HttpRequestMethodNotSupportedException) {
-				throw (HttpRequestMethodNotSupportedException)iae.getCause();
+			doWithReferencedProperty(repoRequest, id, property, handler);
+		} catch (IllegalArgumentException iae) {
+			if (iae.getCause() instanceof HttpRequestMethodNotSupportedException) {
+				throw (HttpRequestMethodNotSupportedException) iae.getCause();
 			}
 		}
 
 		return ControllerUtils.toResponseEntity(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
 	}
 
-	@RequestMapping(
-			value = BASE_MAPPING + "/{propertyId}",
-			method = RequestMethod.GET,
-			produces = {
-					"application/json",
-					"application/x-spring-data-verbose+json",
-					"application/x-spring-data-compact+json",
-					"text/uri-list"
-			}
-	)
+	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.GET, produces = { "application/json",
+			"application/x-spring-data-verbose+json", "application/x-spring-data-compact+json", "text/uri-list" })
 	@ResponseBody
 	public ResponseEntity<Resource<?>> followPropertyReference(final RepositoryRestRequest repoRequest,
-	                                                           @PathVariable String id,
-	                                                           @PathVariable String property,
-	                                                           final @PathVariable String propertyId)
+			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId)
 			throws ResourceNotFoundException, NoSuchMethodException {
 		final HttpHeaders headers = new HttpHeaders();
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
-			@Override public Resource<?> apply(ReferencedProperty prop) {
-				if(null == prop.propertyValue) {
+			@Override
+			public Resource<?> apply(ReferencedProperty prop) {
+				if (null == prop.propertyValue) {
 					throw new ResourceNotFoundException();
 				}
-				if(prop.property.isCollectionLike()) {
-					for(Object obj : ((Iterable<?>)prop.propertyValue)) {
-						
+				if (prop.property.isCollectionLike()) {
+					for (Object obj : ((Iterable<?>) prop.propertyValue)) {
+
 						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(obj, null);
 						String sId = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
-						
-						if(propertyId.equals(sId)) {
-							
+
+						if (propertyId.equals(sId)) {
+
 							PersistentEntityResource<Object> resource = perAssembler.toResource(obj);
 							headers.set("Content-Location", resource.getId().getHref());
 							return resource;
 						}
 					}
-				} else if(prop.property.isMap()) {
-					for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)prop.propertyValue).entrySet()) {
-						
+				} else if (prop.property.isMap()) {
+					for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) prop.propertyValue).entrySet()) {
+
 						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(entry.getValue(), null);
 						String sId = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
-						
-						if(propertyId.equals(sId)) {
-							
+
+						if (propertyId.equals(sId)) {
+
 							PersistentEntityResource<Object> resource = perAssembler.toResource(entry.getValue());
 							headers.set("Content-Location", resource.getId().getHref());
 							return resource;
@@ -253,26 +229,18 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 				throw new IllegalArgumentException(new ResourceNotFoundException());
 			}
 		};
-		
+
 		Resource<?> responseResource = doWithReferencedProperty(repoRequest, id, property, handler);
 		return ControllerUtils.toResponseEntity(headers, responseResource, HttpStatus.OK);
 	}
 
-	@RequestMapping(
-			value = BASE_MAPPING,
-			method = RequestMethod.GET,
-			produces = {
-					"application/x-spring-data-compact+json",
-					"text/uri-list"
-			}
-	)
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = {
+			"application/x-spring-data-compact+json", "text/uri-list" })
 	@ResponseBody
 	public ResponseEntity<Resource<?>> followPropertyReferenceCompact(RepositoryRestRequest repoRequest,
-	                                                                  @PathVariable String id,
-	                                                                  @PathVariable String property)
-			throws ResourceNotFoundException, NoSuchMethodException {
+			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException, NoSuchMethodException {
 		ResponseEntity<Resource<?>> response = followPropertyReference(repoRequest, id, property);
-		if(response.getStatusCode() != HttpStatus.OK) {
+		if (response.getStatusCode() != HttpStatus.OK) {
 			return response;
 		}
 
@@ -281,32 +249,25 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		String propName = entityMapping.getNameForPath(property);
 		ResourceMapping propMapping = entityMapping.getResourceMappingFor(entityMapping.getNameForPath(property));
 		PersistentProperty<?> persistentProp = repoRequest.getPersistentEntity().getPersistentProperty(propName);
-		Class<?> propType = (persistentProp.isCollectionLike() || persistentProp.isMap()
-		                     ? persistentProp.getComponentType()
-		                     : persistentProp.getType());
+		Class<?> propType = (persistentProp.isCollectionLike() || persistentProp.isMap() ? persistentProp
+				.getComponentType() : persistentProp.getType());
 		ResourceMapping propRepoMapping = getResourceMapping(config, repositories.getRepositoryInformationFor(propType));
-		String propRel = String.format("%s.%s.%s.%s",
-		                               repoMapping.getRel(),
-		                               entityMapping.getRel(),
-		                               (null != propMapping ? propMapping.getRel() : property),
-		                               propRepoMapping.getRel());
+		String propRel = String.format("%s.%s.%s.%s", repoMapping.getRel(), entityMapping.getRel(),
+				(null != propMapping ? propMapping.getRel() : property), propRepoMapping.getRel());
 
 		Resource<?> resource = response.getBody();
 
 		List<Link> links = new ArrayList<Link>();
 
-		URI entityBaseUri = buildUri(repoRequest.getBaseUri(),
-		                             repoMapping.getPath(),
-		                             id,
-		                             property);
+		URI entityBaseUri = buildUri(repoRequest.getBaseUri(), repoMapping.getPath(), id, property);
 
-		if(resource.getContent() instanceof Iterable) {
-			for(Resource<?> res : (Iterable<Resource<?>>)resource.getContent()) {
+		if (resource.getContent() instanceof Iterable) {
+			for (Resource<?> res : (Iterable<Resource<?>>) resource.getContent()) {
 				Link propLink = propertyReferenceLink(res, entityBaseUri, propRel);
 				links.add(propLink);
 			}
-		} else if(resource.getContent() instanceof Map) {
-			for(Map.Entry<Object, Resource<?>> entry : ((Map<Object, Resource<?>>)resource.getContent()).entrySet()) {
+		} else if (resource.getContent() instanceof Map) {
+			for (Map.Entry<Object, Resource<?>> entry : ((Map<Object, Resource<?>>) resource.getContent()).entrySet()) {
 				Link l = new Link(entry.getValue().getLink("self").getHref(), entry.getKey().toString());
 				links.add(l);
 			}
@@ -317,56 +278,45 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		return ControllerUtils.toResponseEntity(null, new Resource<Object>(EMPTY_RESOURCE_LIST, links), HttpStatus.OK);
 	}
 
-	@RequestMapping(
-			value = BASE_MAPPING,
-			method = {
-					RequestMethod.POST,
-					RequestMethod.PUT
-			},
-			consumes = {
-					"application/json",
-					"application/x-spring-data-compact+json",
-					"text/uri-list"
-			}
-	)
+	@RequestMapping(value = BASE_MAPPING, method = { RequestMethod.POST, RequestMethod.PUT }, consumes = {
+			"application/json", "application/x-spring-data-compact+json", "text/uri-list" })
 	@ResponseBody
 	public ResponseEntity<Resource<?>> createPropertyReference(final RepositoryRestRequest repoRequest,
-	                                                           final @RequestBody Resource<Object> incoming,
-	                                                           @PathVariable String id,
-	                                                           @PathVariable String property)
+			final @RequestBody Resource<Object> incoming, @PathVariable String id, @PathVariable String property)
 			throws ResourceNotFoundException, NoSuchMethodException {
 		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if(!repoMethodInvoker.hasSaveOne()) {
+		if (!repoMethodInvoker.hasSaveOne()) {
 			throw new NoSuchMethodException();
 		}
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
-			@Override public Resource<?> apply(ReferencedProperty prop) {
-				if(prop.property.isCollectionLike()) {
+			@Override
+			public Resource<?> apply(ReferencedProperty prop) {
+				if (prop.property.isCollectionLike()) {
 					Collection<Object> coll = new ArrayList<Object>();
-					if("POST".equals(repoRequest.getRequest().getMethod())) {
-						coll.addAll((Collection<Object>)prop.propertyValue);
+					if ("POST".equals(repoRequest.getRequest().getMethod())) {
+						coll.addAll((Collection<Object>) prop.propertyValue);
 					}
-					for(Link l : incoming.getLinks()) {
+					for (Link l : incoming.getLinks()) {
 						Object propVal = loadPropertyValue(prop.propertyType, l.getHref());
 						coll.add(propVal);
 					}
 					prop.wrapper.setProperty(prop.property, coll);
-				} else if(prop.property.isMap()) {
+				} else if (prop.property.isMap()) {
 					Map<String, Object> m = new HashMap<String, Object>();
-					if("POST".equals(repoRequest.getRequest().getMethod())) {
-						m.putAll((Map<String, Object>)prop.propertyValue);
+					if ("POST".equals(repoRequest.getRequest().getMethod())) {
+						m.putAll((Map<String, Object>) prop.propertyValue);
 					}
-					for(Link l : incoming.getLinks()) {
+					for (Link l : incoming.getLinks()) {
 						Object propVal = loadPropertyValue(prop.propertyType, l.getHref());
 						m.put(l.getRel(), propVal);
 					}
 					prop.wrapper.setProperty(prop.property, m);
 				} else {
-					if("POST".equals(repoRequest.getRequest().getMethod())) {
+					if ("POST".equals(repoRequest.getRequest().getMethod())) {
 						throw new IllegalStateException(
 								"Cannot POST a reference to this singular property since the property type is not a List or a Map.");
 					}
-					if(incoming.getLinks().size() != 1) {
+					if (incoming.getLinks().size() != 1) {
 						throw new IllegalArgumentException(
 								"Must send only 1 link to update a property reference that isn't a List or a Map.");
 					}
@@ -380,49 +330,42 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 				return null;
 			}
 		};
-		doWithReferencedProperty(repoRequest,
-		                         id,
-		                         property,
-		                         handler);
+		doWithReferencedProperty(repoRequest, id, property, handler);
 		return ControllerUtils.toResponseEntity(null, EMPTY_RESOURCE, HttpStatus.CREATED);
 	}
 
-	@RequestMapping(
-			value = BASE_MAPPING + "/{propertyId}",
-			method = RequestMethod.DELETE
-	)
+	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.DELETE)
 	@ResponseBody
 	public ResponseEntity<Resource<?>> deletePropertyReferenceId(final RepositoryRestRequest repoRequest,
-	                                                             @PathVariable String id,
-	                                                             @PathVariable String property,
-	                                                             final @PathVariable String propertyId)
+			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId)
 			throws ResourceNotFoundException, NoSuchMethodException {
 		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if(!repoMethodInvoker.hasDeleteOne()) {
+		if (!repoMethodInvoker.hasDeleteOne()) {
 			throw new NoSuchMethodException();
 		}
 
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
-			@Override public Resource<?> apply(ReferencedProperty prop) {
-				if(null == prop.propertyValue) {
+			@Override
+			public Resource<?> apply(ReferencedProperty prop) {
+				if (null == prop.propertyValue) {
 					return null;
 				}
-				if(prop.property.isCollectionLike()) {
+				if (prop.property.isCollectionLike()) {
 					Collection<Object> coll = new ArrayList<Object>();
-					for(Object obj : (Collection<Object>) prop.propertyValue) {
+					for (Object obj : (Collection<Object>) prop.propertyValue) {
 						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(obj, null);
 						String s = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
-						if(!propertyId.equals(s)) {
+						if (!propertyId.equals(s)) {
 							coll.add(obj);
 						}
 					}
 					prop.wrapper.setProperty(prop.property, coll);
-				} else if(prop.property.isMap()) {
+				} else if (prop.property.isMap()) {
 					Map<Object, Object> m = new HashMap<Object, Object>();
-					for(Map.Entry<Object, Object> entry : ((Map<Object, Object>)prop.propertyValue).entrySet()) {
+					for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) prop.propertyValue).entrySet()) {
 						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(entry.getValue(), null);
 						String s = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
-						if(!propertyId.equals(s)) {
+						if (!propertyId.equals(s)) {
 							m.put(entry.getKey(), entry.getValue());
 						}
 					}
@@ -437,17 +380,12 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 				return null;
 			}
 		};
-		doWithReferencedProperty(repoRequest,
-		                         id,
-		                         property,
-		                         handler);
+		doWithReferencedProperty(repoRequest, id, property, handler);
 
 		return ControllerUtils.toResponseEntity(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
 	}
 
-	private Link propertyReferenceLink(Resource<?> resource,
-	                                   URI baseUri,
-	                                   String rel) {
+	private Link propertyReferenceLink(Resource<?> resource, URI baseUri, String rel) {
 		Link selfLink = resource.getLink("self");
 		String objId = selfLink.getHref().substring(selfLink.getHref().lastIndexOf('/') + 1);
 		return new Link(buildUri(baseUri, objId).toString(), rel);
@@ -455,60 +393,51 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 	private Object loadPropertyValue(Class<?> type, String href) {
 		String id = href.substring(href.lastIndexOf('/') + 1);
-		return converter.convert(id,
-		                                    STRING_TYPE,
-		                                    TypeDescriptor.valueOf(type));
+		return converter.convert(id, STRING_TYPE, TypeDescriptor.valueOf(type));
 	}
 
-	private Resource<?> doWithReferencedProperty(RepositoryRestRequest repoRequest,
-	                                             String id,
-	                                             String propertyPath,
-	                                             Function<ReferencedProperty, Resource<?>> handler)
-			throws ResourceNotFoundException, NoSuchMethodException {
+	private Resource<?> doWithReferencedProperty(RepositoryRestRequest repoRequest, String id, String propertyPath,
+			Function<ReferencedProperty, Resource<?>> handler) throws ResourceNotFoundException, NoSuchMethodException {
 		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if(!repoMethodInvoker.hasFindOne()) {
+		if (!repoMethodInvoker.hasFindOne()) {
 			throw new NoSuchMethodException();
 		}
 
 		Object domainObj = converter.convert(id, STRING_TYPE,
 				TypeDescriptor.valueOf(repoRequest.getPersistentEntity().getType()));
-		
-		if(null == domainObj) {
+
+		if (null == domainObj) {
 			throw new ResourceNotFoundException();
 		}
 
 		String propertyName = repoRequest.getPersistentEntityResourceMapping().getNameForPath(propertyPath);
 		PersistentProperty<?> prop = repoRequest.getPersistentEntity().getPersistentProperty(propertyName);
-		if(null == prop) {
+		if (null == prop) {
 			throw new ResourceNotFoundException();
 		}
 
 		BeanWrapper<?, Object> wrapper = BeanWrapper.create(domainObj, null);
 		Object propVal = wrapper.getProperty(prop);
 
-		return handler.apply(new ReferencedProperty(prop,
-		                                            propVal,
-		                                            wrapper));
+		return handler.apply(new ReferencedProperty(prop, propVal, wrapper));
 	}
 
 	private class ReferencedProperty {
-		
+
 		final PersistentEntity<?, ?> entity;
 		final PersistentProperty<?> property;
 		final Class<?> propertyType;
 		final Object propertyValue;
-		final BeanWrapper<?, ?>wrapper;
+		final BeanWrapper<?, ?> wrapper;
 
-		private ReferencedProperty(PersistentProperty<?> property,
-		                           Object propertyValue,
-		                           BeanWrapper<?, ?> wrapper) {
-			
+		private ReferencedProperty(PersistentProperty<?> property, Object propertyValue, BeanWrapper<?, ?> wrapper) {
+
 			this.property = property;
 			this.propertyValue = propertyValue;
 			this.wrapper = wrapper;
-			if(property.isCollectionLike()) {
+			if (property.isCollectionLike()) {
 				this.propertyType = property.getComponentType();
-			} else if(property.isMap()) {
+			} else if (property.isMap()) {
 				this.propertyType = property.getMapValueType();
 			} else {
 				this.propertyType = property.getType();

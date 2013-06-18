@@ -30,22 +30,22 @@ import org.springframework.util.Assert;
 @SuppressWarnings("deprecation")
 public class RepositoryRestConfiguration {
 
-	private URI                          baseUri            = null;
-	private int                          defaultPageSize    = 20;
-	private int                          maxPageSize        = 1000;
-	private String                       pageParamName      = "page";
-	private String                       limitParamName     = "limit";
-	private String                       sortParamName      = "sort";
-	private MediaType                    defaultMediaType   = MediaType.APPLICATION_JSON;
-	private boolean                      returnBodyOnCreate = false;
-	private boolean                      returnBodyOnUpdate = false;
-	private List<Class<?>>               exposeIdsFor       = new ArrayList<Class<?>>();
-	private ResourceMappingConfiguration domainMappings     = new ResourceMappingConfiguration();
-	private ResourceMappingConfiguration repoMappings       = new ResourceMappingConfiguration();
+	private URI baseUri = null;
+	private int defaultPageSize = 20;
+	private int maxPageSize = 1000;
+	private String pageParamName = "page";
+	private String limitParamName = "limit";
+	private String sortParamName = "sort";
+	private MediaType defaultMediaType = MediaType.APPLICATION_JSON;
+	private boolean returnBodyOnCreate = false;
+	private boolean returnBodyOnUpdate = false;
+	private List<Class<?>> exposeIdsFor = new ArrayList<Class<?>>();
+	private ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
+	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
 
 	/**
 	 * The base URI against which the exporter should calculate its links.
-	 *
+	 * 
 	 * @return The base URI.
 	 */
 	public URI getBaseUri() {
@@ -54,9 +54,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * The base URI against which the exporter should calculate its links.
-	 *
-	 * @param baseUri
-	 * 		The base URI.
+	 * 
+	 * @param baseUri The base URI.
 	 */
 	public RepositoryRestConfiguration setBaseUri(URI baseUri) {
 		Assert.notNull(baseUri, "The baseUri cannot be null.");
@@ -66,7 +65,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the default size of {@link org.springframework.data.domain.Pageable}s. Default is 20.
-	 *
+	 * 
 	 * @return The default page size.
 	 */
 	public int getDefaultPageSize() {
@@ -75,10 +74,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the default size of {@link org.springframework.data.domain.Pageable}s.
-	 *
-	 * @param defaultPageSize
-	 * 		The default page size.
-	 *
+	 * 
+	 * @param defaultPageSize The default page size.
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setDefaultPageSize(int defaultPageSize) {
@@ -89,7 +86,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the maximum size of pages.
-	 *
+	 * 
 	 * @return Maximum page size.
 	 */
 	public int getMaxPageSize() {
@@ -98,10 +95,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the maximum size of pages.
-	 *
-	 * @param maxPageSize
-	 * 		Maximum page size.
-	 *
+	 * 
+	 * @param maxPageSize Maximum page size.
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setMaxPageSize(int maxPageSize) {
@@ -112,7 +107,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the name of the URL query string parameter that indicates what page to return. Default is 'page'.
-	 *
+	 * 
 	 * @return Name of the query parameter used to indicate the page number to return.
 	 */
 	public String getPageParamName() {
@@ -121,10 +116,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the name of the URL query string parameter that indicates what page to return.
-	 *
-	 * @param pageParamName
-	 * 		Name of the query parameter used to indicate the page number to return.
-	 *
+	 * 
+	 * @param pageParamName Name of the query parameter used to indicate the page number to return.
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setPageParamName(String pageParamName) {
@@ -136,7 +129,7 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Get the name of the URL query string parameter that indicates how many results to return at once. Default is
 	 * 'limit'.
-	 *
+	 * 
 	 * @return Name of the query parameter used to indicate the maximum number of entries to return at a time.
 	 */
 	public String getLimitParamName() {
@@ -145,10 +138,9 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the name of the URL query string parameter that indicates how many results to return at once.
-	 *
-	 * @param limitParamName
-	 * 		Name of the query parameter used to indicate the maximum number of entries to return at a time.
-	 *
+	 * 
+	 * @param limitParamName Name of the query parameter used to indicate the maximum number of entries to return at a
+	 *          time.
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setLimitParamName(String limitParamName) {
@@ -159,7 +151,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the name of the URL query string parameter that indicates what direction to sort results. Default is 'sort'.
-	 *
+	 * 
 	 * @return Name of the query string parameter used to indicate what field to sort on.
 	 */
 	public String getSortParamName() {
@@ -168,10 +160,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the name of the URL query string parameter that indicates what direction to sort results.
-	 *
-	 * @param sortParamName
-	 * 		Name of the query string parameter used to indicate what field to sort on.
-	 *
+	 * 
+	 * @param sortParamName Name of the query string parameter used to indicate what field to sort on.
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setSortParamName(String sortParamName) {
@@ -182,7 +172,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the {@link MediaType} to use as a default when none is specified.
-	 *
+	 * 
 	 * @return Default content type if none has been specified.
 	 */
 	public MediaType getDefaultMediaType() {
@@ -191,10 +181,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the {@link MediaType} to use as a default when none is specified.
-	 *
-	 * @param defaultMediaType
-	 * 		Default content type if none has been specified.
-	 *
+	 * 
+	 * @param defaultMediaType Default content type if none has been specified.
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setDefaultMediaType(MediaType defaultMediaType) {
@@ -204,7 +192,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Whether to return a response body after creating an entity.
-	 *
+	 * 
 	 * @return {@literal true} to return a body on create, {@literal false} otherwise.
 	 */
 	public boolean isReturnBodyOnCreate() {
@@ -213,10 +201,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set whether to return a response body after creating an entity.
-	 *
-	 * @param returnBodyOnCreate
-	 * 		{@literal true} to return a body on create, {@literal false} otherwise.
-	 *
+	 * 
+	 * @param returnBodyOnCreate {@literal true} to return a body on create, {@literal false} otherwise.
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setReturnBodyOnCreate(boolean returnBodyOnCreate) {
@@ -226,7 +212,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Whether to return a response body after updating an entity.
-	 *
+	 * 
 	 * @return {@literal true} to return a body on update, {@literal false} otherwise.
 	 */
 	public boolean isReturnBodyOnUpdate() {
@@ -235,9 +221,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Sets whether to return a response body after updating an entity.
-	 *
+	 * 
 	 * @param returnBodyOnUpdate
-	 *
 	 * @return
 	 */
 	public RepositoryRestConfiguration setReturnBodyOnUpdate(boolean returnBodyOnUpdate) {
@@ -247,10 +232,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Start configuration a {@link ResourceMapping} for a specific domain type.
-	 *
-	 * @param domainType
-	 * 		The {@link Class} of the domain type to configure a mapping for.
-	 *
+	 * 
+	 * @param domainType The {@link Class} of the domain type to configure a mapping for.
 	 * @return A new {@link ResourceMapping} for configuring how a domain type is mapped.
 	 */
 	public ResourceMapping setResourceMappingForDomainType(Class<?> domainType) {
@@ -259,10 +242,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the {@link ResourceMapping} for a specific domain type.
-	 *
-	 * @param domainType
-	 * 		The {@link Class} of the domain type.
-	 *
+	 * 
+	 * @param domainType The {@link Class} of the domain type.
 	 * @return A {@link ResourceMapping} for that domain type or {@literal null} if none exists.
 	 */
 	public ResourceMapping getResourceMappingForDomainType(Class<?> domainType) {
@@ -271,10 +252,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Whether there is a {@link ResourceMapping} for the given domain type.
-	 *
-	 * @param domainType
-	 * 		The domain type to find a {@link ResourceMapping} for.
-	 *
+	 * 
+	 * @param domainType The domain type to find a {@link ResourceMapping} for.
 	 * @return {@literal true} if a {@link ResourceMapping} exists for this domain class, {@literal false} otherwise.
 	 */
 	public boolean hasResourceMappingForDomainType(Class<?> domainType) {
@@ -283,7 +262,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the {@link ResourceMappingConfiguration} that is currently configured.
-	 *
+	 * 
 	 * @return
 	 */
 	public ResourceMappingConfiguration getDomainTypesResourceMappingConfiguration() {
@@ -292,10 +271,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Start configuration a {@link ResourceMapping} for a specific repository interface.
-	 *
-	 * @param repositoryInterface
-	 * 		The {@link Class} of the repository interface to configure a mapping for.
-	 *
+	 * 
+	 * @param repositoryInterface The {@link Class} of the repository interface to configure a mapping for.
 	 * @return A new {@link ResourceMapping} for configuring how a repository interface is mapped.
 	 */
 	public ResourceMapping setResourceMappingForRepository(Class<?> repositoryInterface) {
@@ -304,10 +281,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the {@link ResourceMapping} for a specific repository interface.
-	 *
-	 * @param repositoryInterface
-	 * 		The {@link Class} of the repository interface.
-	 *
+	 * 
+	 * @param repositoryInterface The {@link Class} of the repository interface.
 	 * @return A {@link ResourceMapping} for that repository interface or {@literal null} if none exists.
 	 */
 	public ResourceMapping getResourceMappingForRepository(Class<?> repositoryInterface) {
@@ -316,9 +291,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Whether there is a {@link ResourceMapping} configured for this {@literal Repository} class.
-	 *
+	 * 
 	 * @param repositoryInterface
-	 *
 	 * @return
 	 */
 	public boolean hasResourceMappingForRepository(Class<?> repositoryInterface) {
@@ -327,7 +301,7 @@ public class RepositoryRestConfiguration {
 
 	public ResourceMapping findRepositoryMappingForPath(String path) {
 		Class<?> type = repoMappings.findTypeForPath(path);
-		if(null == type) {
+		if (null == type) {
 			return null;
 		}
 		return repoMappings.getResourceMappingFor(type);
@@ -335,10 +309,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Should we expose the ID property for this domain type?
-	 *
-	 * @param domainType
-	 * 		The domain type we may need to expose the ID for.
-	 *
+	 * 
+	 * @param domainType The domain type we may need to expose the ID for.
 	 * @return {@literal true} is the ID is to be exposed, {@literal false} otherwise.
 	 */
 	public boolean isIdExposedFor(Class<?> domainType) {
@@ -347,10 +319,8 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the list of domain types for which we will expose the ID value as a normal property.
-	 *
-	 * @param domainTypes
-	 * 		Array of types to expose IDs for.
-	 *
+	 * 
+	 * @param domainTypes Array of types to expose IDs for.
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration exposeIdsFor(Class<?>... domainTypes) {

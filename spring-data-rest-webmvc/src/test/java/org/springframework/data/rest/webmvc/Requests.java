@@ -7,15 +7,14 @@ import org.springframework.mock.web.MockHttpServletRequest;
  */
 public abstract class Requests {
 
-  public static MockHttpServletRequest ROOT_REQUEST = new MockHttpServletRequest("GET", "http://localhost:8080/");
-  public static MockHttpServletRequest PAGE_REQUEST = new MockHttpServletRequest("GET", "http://localhost:8080/");
+	public static MockHttpServletRequest ROOT_REQUEST = new MockHttpServletRequest("GET", "http://localhost:8080/");
+	public static MockHttpServletRequest PAGE_REQUEST = new MockHttpServletRequest("GET", "http://localhost:8080/");
 
-  static {
-    PAGE_REQUEST.setParameter("page", "2");
-    PAGE_REQUEST.setParameter("size", "10");
-  }
+	static {
+		PAGE_REQUEST.setParameter("page", "2");
+		PAGE_REQUEST.setParameter("size", "10");
+	}
 
-  private Requests() {
-  }
+	private Requests() {}
 
 }

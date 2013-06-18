@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProfileLoader implements InitializingBean {
 
-  @Autowired
-  private ProfileRepository profiles;
+	@Autowired private ProfileRepository profiles;
 
-  @Override public void afterPropertiesSet() throws Exception {
-    profiles.save(new Profile("jdoe", "jdoe", "account"));
-  }
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		profiles.save(new Profile("jdoe", "jdoe", "account"));
+	}
 
 }

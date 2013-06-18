@@ -18,47 +18,44 @@ import org.springframework.format.support.DefaultFormattingConversionService;
  * @author Jon Brisbin
  */
 @Configuration
-@Import({JpaRepositoryConfig.class})
+@Import({ JpaRepositoryConfig.class })
 public class RepositoryTestsConfig {
 
-  @Autowired
-  private ApplicationContext appCtx;
+	@Autowired private ApplicationContext appCtx;
 
-  @Bean public Repositories repositories() {
-    return new Repositories(appCtx);
-  }
+	@Bean
+	public Repositories repositories() {
+		return new Repositories(appCtx);
+	}
 
-  @SuppressWarnings("deprecation")
-	@Bean public RepositoryRestConfiguration config() {
-    RepositoryRestConfiguration config = new RepositoryRestConfiguration();
+	@SuppressWarnings("deprecation")
+	@Bean
+	public RepositoryRestConfiguration config() {
+		RepositoryRestConfiguration config = new RepositoryRestConfiguration();
 
-    config.setResourceMappingForDomainType(Person.class)
-          .setRel("person");
+		config.setResourceMappingForDomainType(Person.class).setRel("person");
 
-    config.setResourceMappingForRepository(ConfiguredPersonRepository.class)
-          .setRel("people")
-          .setPath("people")
-          .setExported(false);
+		config.setResourceMappingForRepository(ConfiguredPersonRepository.class).setRel("people").setPath("people")
+				.setExported(false);
 
-    config.setResourceMappingForRepository(PersonRepository.class)
-          .setRel("people")
-          .setPath("people")
-          .addResourceMappingFor("findByFirstName")
-          .setRel("firstname")
-          .setPath("firstname");
+		config.setResourceMappingForRepository(PersonRepository.class).setRel("people").setPath("people")
+				.addResourceMappingFor("findByFirstName").setRel("firstname").setPath("firstname");
 
-    return config;
-  }
+		return config;
+	}
 
-  @Bean public DefaultFormattingConversionService defaultConversionService() {
-    return new DefaultFormattingConversionService();
-  }
+	@Bean
+	public DefaultFormattingConversionService defaultConversionService() {
+		return new DefaultFormattingConversionService();
+	}
 
-  @Bean public DomainClassConverter<?> domainClassConverter() {
-    return new DomainClassConverter<DefaultFormattingConversionService>(defaultConversionService());
-  }
+	@Bean
+	public DomainClassConverter<?> domainClassConverter() {
+		return new DomainClassConverter<DefaultFormattingConversionService>(defaultConversionService());
+	}
 
-  @Bean public UriDomainClassConverter uriDomainClassConverter() {
-    return new UriDomainClassConverter();
-  }
+	@Bean
+	public UriDomainClassConverter uriDomainClassConverter() {
+		return new UriDomainClassConverter();
+	}
 }

@@ -11,40 +11,41 @@ import org.springframework.util.Assert;
  */
 class HttpEntityMatcher<T> extends BaseMatcher<HttpEntity<T>> {
 
-  private final HttpEntity<T> expected;
+	private final HttpEntity<T> expected;
 
-  public HttpEntityMatcher(HttpEntity<T> expected) {
-    Assert.notNull(expected, "HttpEntity cannot be null");
-    this.expected = expected;
-  }
+	public HttpEntityMatcher(HttpEntity<T> expected) {
+		Assert.notNull(expected, "HttpEntity cannot be null");
+		this.expected = expected;
+	}
 
-  public static <T> HttpEntityMatcher<T> httpEntity(HttpEntity<T> httpEntity) {
-    return new HttpEntityMatcher<T>(httpEntity);
-  }
+	public static <T> HttpEntityMatcher<T> httpEntity(HttpEntity<T> httpEntity) {
+		return new HttpEntityMatcher<T>(httpEntity);
+	}
 
-  @Override public boolean matches(Object item) {
-    if(!(item instanceof HttpEntity)) {
-      return false;
-    }
+	@Override
+	public boolean matches(Object item) {
+		if (!(item instanceof HttpEntity)) {
+			return false;
+		}
 
-    if(item instanceof ResponseEntity && expected instanceof ResponseEntity) {
-      ResponseEntity<?> left = (ResponseEntity<?>)expected;
-      ResponseEntity<?> right = (ResponseEntity<?>)item;
+		if (item instanceof ResponseEntity && expected instanceof ResponseEntity) {
+			ResponseEntity<?> left = (ResponseEntity<?>) expected;
+			ResponseEntity<?> right = (ResponseEntity<?>) item;
 
-      if(!left.getStatusCode().equals(right.getStatusCode())) {
-        return false;
-      }
-    }
+			if (!left.getStatusCode().equals(right.getStatusCode())) {
+				return false;
+			}
+		}
 
-    HttpEntity<?> left = expected;
-    HttpEntity<?> right = (HttpEntity<?>)item;
+		HttpEntity<?> left = expected;
+		HttpEntity<?> right = (HttpEntity<?>) item;
 
-    return left.getBody().equals(right.getBody())
-        && left.getHeaders().equals(right.getHeaders());
-  }
+		return left.getBody().equals(right.getBody()) && left.getHeaders().equals(right.getHeaders());
+	}
 
-  @Override public void describeTo(Description description) {
-    description.appendText(expected.toString());
-  }
+	@Override
+	public void describeTo(Description description) {
+		description.appendText(expected.toString());
+	}
 
 }

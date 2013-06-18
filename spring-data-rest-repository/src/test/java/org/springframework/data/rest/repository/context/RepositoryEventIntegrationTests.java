@@ -12,17 +12,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Tests around the {@link org.springframework.context.ApplicationEvent} handling abstractions.
- *
+ * 
  * @author Jon Brisbin
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RepositoryEventTestsConfig.class)
 public class RepositoryEventIntegrationTests {
 
-	@Autowired
-	ApplicationContext appCtx;
-	@Autowired
-	PersonRepository   people;
+	@Autowired ApplicationContext appCtx;
+	@Autowired PersonRepository people;
 	Person person;
 
 	@Before

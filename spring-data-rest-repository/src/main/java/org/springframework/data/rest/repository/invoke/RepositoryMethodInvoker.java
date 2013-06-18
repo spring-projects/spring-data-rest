@@ -27,7 +27,7 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 	private final Object repository;
 	private final Map<String, RepositoryMethod> queryMethods = new HashMap<String, RepositoryMethod>();
 	private final ConversionService conversionService;
-	
+
 	private RepositoryMethod saveOne;
 	private RepositoryMethod saveSome;
 	private RepositoryMethod findOne;
@@ -42,18 +42,17 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 	private RepositoryMethod deleteSome;
 	private RepositoryMethod deleteAll;
 
-	public RepositoryMethodInvoker(Object repository,
-	                               RepositoryInformation repoInfo,
-	                               ConversionService conversionService) {
-		
+	public RepositoryMethodInvoker(Object repository, RepositoryInformation repoInfo, ConversionService conversionService) {
+
 		this.repository = repository;
 		this.conversionService = conversionService;
 		Class<?> repoType = repoInfo.getRepositoryInterface();
 
 		doWithMethods(repoType, new MethodCallback() {
-			@Override public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+			@Override
+			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
 				boolean exported = ResourceMappingUtils.findExported(method);
-				if(!exported) {
+				if (!exported) {
 					return;
 				}
 				String name = method.getName();
@@ -65,31 +64,31 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 				boolean pageable = (null != paramType && Pageable.class.isAssignableFrom(paramType));
 				RepositoryMethod repoMethod = new RepositoryMethod(method);
 
-				if("save".equals(name) && someMethod) {
+				if ("save".equals(name) && someMethod) {
 					saveSome = repoMethod;
-				} else if("save".equals(name)) {
+				} else if ("save".equals(name)) {
 					saveOne = repoMethod;
-				} else if("findOne".equals(name)) {
+				} else if ("findOne".equals(name)) {
 					findOne = repoMethod;
-				} else if("exists".equals(name)) {
+				} else if ("exists".equals(name)) {
 					exists = repoMethod;
-				} else if("findAll".equals(name) && sortable) {
+				} else if ("findAll".equals(name) && sortable) {
 					findAllSorted = repoMethod;
-				} else if("findAll".equals(name) && someMethod) {
+				} else if ("findAll".equals(name) && someMethod) {
 					findSome = repoMethod;
-				} else if("findAll".equals(name) && pageable) {
+				} else if ("findAll".equals(name) && pageable) {
 					findAllPaged = repoMethod;
-				} else if("findAll".equals(name)) {
+				} else if ("findAll".equals(name)) {
 					findAll = repoMethod;
-				} else if("count".equals(name)) {
+				} else if ("count".equals(name)) {
 					count = repoMethod;
-				} else if("delete".equals(name) && byIdMethod) {
+				} else if ("delete".equals(name) && byIdMethod) {
 					deleteOneById = repoMethod;
-				} else if("delete".equals(name) && someMethod) {
+				} else if ("delete".equals(name) && someMethod) {
 					deleteSome = repoMethod;
-				} else if("delete".equals(name)) {
+				} else if ("delete".equals(name)) {
 					deleteOne = repoMethod;
-				} else if("deleteAll".equals(name)) {
+				} else if ("deleteAll".equals(name)) {
 					deleteAll = repoMethod;
 				} else {
 					queryMethods.put(name, repoMethod);
@@ -98,25 +97,28 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 		});
 	}
 
-	@SuppressWarnings({"unchecked"})
-	@Override public <S extends Object> S save(S entity) {
-		return (S)invokeMethod(saveOne.getMethod(), repository, entity);
+	@SuppressWarnings({ "unchecked" })
+	@Override
+	public <S extends Object> S save(S entity) {
+		return (S) invokeMethod(saveOne.getMethod(), repository, entity);
 	}
 
 	public boolean hasSaveOne() {
 		return null != saveOne;
 	}
 
-	@SuppressWarnings({"unchecked"})
-	@Override public <S extends Object> Iterable<S> save(Iterable<S> entities) {
-		return (Iterable<S>)invokeMethod(saveSome.getMethod(), repository, entities);
+	@SuppressWarnings({ "unchecked" })
+	@Override
+	public <S extends Object> Iterable<S> save(Iterable<S> entities) {
+		return (Iterable<S>) invokeMethod(saveSome.getMethod(), repository, entities);
 	}
 
 	public boolean hasSaveSome() {
 		return null != saveSome;
 	}
 
-	@Override public Object findOne(Serializable serializable) {
+	@Override
+	public Object findOne(Serializable serializable) {
 		return invokeMethod(findOne.getMethod(), repository, serializable);
 	}
 
@@ -124,51 +126,57 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 		return null != findOne;
 	}
 
-	@Override public boolean exists(Serializable serializable) {
-		return (Boolean)invokeMethod(exists.getMethod(), repository, serializable);
+	@Override
+	public boolean exists(Serializable serializable) {
+		return (Boolean) invokeMethod(exists.getMethod(), repository, serializable);
 	}
 
 	public boolean hasExists() {
 		return null != exists;
 	}
 
-	@SuppressWarnings({"unchecked"})
-	@Override public Iterable<Object> findAll() {
-		return (Iterable<Object>)invokeMethod(findAll.getMethod(), repository);
+	@SuppressWarnings({ "unchecked" })
+	@Override
+	public Iterable<Object> findAll() {
+		return (Iterable<Object>) invokeMethod(findAll.getMethod(), repository);
 	}
 
 	public boolean hasFindAll() {
 		return null != findAll;
 	}
 
-	@SuppressWarnings({"unchecked"})
-	@Override public Iterable<Object> findAll(Iterable<Serializable> serializables) {
-		return (Iterable<Object>)invokeMethod(findSome.getMethod(), repository, serializables);
+	@SuppressWarnings({ "unchecked" })
+	@Override
+	public Iterable<Object> findAll(Iterable<Serializable> serializables) {
+		return (Iterable<Object>) invokeMethod(findSome.getMethod(), repository, serializables);
 	}
 
 	public boolean hasFindSome() {
 		return null != findSome;
 	}
 
-	@SuppressWarnings({"unchecked"})
-	@Override public Iterable<Object> findAll(Sort sort) {
-		return (Iterable<Object>)invokeMethod(findAllSorted.getMethod(), repository, sort);
+	@SuppressWarnings({ "unchecked" })
+	@Override
+	public Iterable<Object> findAll(Sort sort) {
+		return (Iterable<Object>) invokeMethod(findAllSorted.getMethod(), repository, sort);
 	}
 
 	public boolean hasFindAllSorted() {
 		return null != findAllSorted;
 	}
 
-	@SuppressWarnings({"unchecked"})
-	@Override public Page<Object> findAll(Pageable pageable) {
-		return (Page<Object>)invokeMethod(findAllPaged.getMethod(), repository, pageable);
+	@SuppressWarnings({ "unchecked" })
+	@Override
+	public Page<Object> findAll(Pageable pageable) {
+		return (Page<Object>) invokeMethod(findAllPaged.getMethod(), repository, pageable);
 	}
 
 	public boolean hasFindAllPageable() {
 		return null != findAllPaged;
 	}
 
-	@Override public void delete(Serializable serializable) {
+	@Override
+	public void delete(Serializable serializable) {
 		invokeMethod(deleteOneById.getMethod(), repository, serializable);
 	}
 
@@ -176,15 +184,17 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 		return null != deleteOneById;
 	}
 
-	@Override public long count() {
-		return (Long)invokeMethod(count.getMethod(), repository);
+	@Override
+	public long count() {
+		return (Long) invokeMethod(count.getMethod(), repository);
 	}
 
 	public boolean hasCount() {
 		return null != count;
 	}
 
-	@Override public void delete(Object entity) {
+	@Override
+	public void delete(Object entity) {
 		invokeMethod(deleteOne.getMethod(), repository, entity);
 	}
 
@@ -192,7 +202,8 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 		return null != deleteOne;
 	}
 
-	@Override public void delete(Iterable<?> entities) {
+	@Override
+	public void delete(Iterable<?> entities) {
 		invokeMethod(deleteSome.getMethod(), repository, entities);
 	}
 
@@ -200,7 +211,8 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 		return null != deleteSome;
 	}
 
-	@Override public void deleteAll() {
+	@Override
+	public void deleteAll() {
 		invokeMethod(deleteAll.getMethod(), repository);
 	}
 
@@ -218,7 +230,7 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 
 	public Object invokeQueryMethod(String name, Object... params) {
 		RepositoryMethod repoMethod = queryMethods.get(name);
-		if(null == repoMethod) {
+		if (null == repoMethod) {
 			throw new NoSuchMethodError(name);
 		}
 		return invokeMethod(repoMethod.getMethod(), repository, params);
@@ -227,48 +239,44 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 	public Object invokeQueryMethod(RepositoryMethod method, Object... params) {
 		return invokeMethod(method.getMethod(), repository, params);
 	}
-	
+
 	public Object invokeQueryMethod(RepositoryMethod method, Pageable pageable, Map<String, String[]> rawParameters) {
 		return invokeQueryMethod(method, foo(method, pageable, rawParameters));
 	}
-	
+
 	private Object[] foo(RepositoryMethod repoMethod, Pageable pageable, Map<String, String[]> rawParameters) {
-		
+
 		List<MethodParameter> methodParams = repoMethod.getParameters();
-		
+
 		if (methodParams.isEmpty()) {
 			return new Object[0];
 		}
-		
+
 		Object[] paramValues = new Object[methodParams.size()];
-		
-		
-		for(int i = 0; i < paramValues.length; i++) {
+
+		for (int i = 0; i < paramValues.length; i++) {
 			MethodParameter param = methodParams.get(i);
 			Class<?> targetType = param.getParameterType();
-			if(Pageable.class.isAssignableFrom(targetType)) {
+			if (Pageable.class.isAssignableFrom(targetType)) {
 				paramValues[i] = pageable;
-			} else if(Sort.class.isAssignableFrom(targetType)) {
+			} else if (Sort.class.isAssignableFrom(targetType)) {
 				paramValues[i] = pageable.getSort();
 			} else {
 				String paramName = repoMethod.getParameterNames().get(i);
 				String[] queryParamVals = rawParameters.get(paramName);
-				if(null == queryParamVals) {
-					if(paramName.startsWith("arg")) {
+				if (null == queryParamVals) {
+					if (paramName.startsWith("arg")) {
 						throw new IllegalArgumentException("No @Param annotation found on query method "
-								                                   + repoMethod.getMethod().getName()
-								                                   + " for parameter " + param.getParameterName());
+								+ repoMethod.getMethod().getName() + " for parameter " + param.getParameterName());
 					} else {
-						throw new IllegalArgumentException("No query parameter specified for "
-								                                   + repoMethod.getMethod().getName() + " param '"
-								                                   + paramName + "'");
+						throw new IllegalArgumentException("No query parameter specified for " + repoMethod.getMethod().getName()
+								+ " param '" + paramName + "'");
 					}
 				}
 				paramValues[i] = conversionService.convert(queryParamVals, targetType);
 			}
 		}
-		
-		
+
 		return paramValues;
 	}
 

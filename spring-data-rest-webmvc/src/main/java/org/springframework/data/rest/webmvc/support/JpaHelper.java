@@ -19,13 +19,12 @@ public class JpaHelper implements BeanFactoryAware {
 
 	private List<WebRequestInterceptor> interceptor = new ArrayList<WebRequestInterceptor>();
 
-	@Override public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
-				(ListableBeanFactory)beanFactory,
-				EntityManagerFactory.class
-		);
-		for(String s : beanNames) {
-			EntityManagerFactory emf = (EntityManagerFactory)beanFactory.getBean(s);
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors((ListableBeanFactory) beanFactory,
+				EntityManagerFactory.class);
+		for (String s : beanNames) {
+			EntityManagerFactory emf = (EntityManagerFactory) beanFactory.getBean(s);
 			OpenEntityManagerInViewInterceptor omivi = new OpenEntityManagerInViewInterceptor();
 			omivi.setEntityManagerFactory(emf);
 			interceptor.add(omivi);

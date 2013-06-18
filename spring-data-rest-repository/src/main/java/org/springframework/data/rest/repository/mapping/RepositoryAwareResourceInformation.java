@@ -49,7 +49,7 @@ public class RepositoryAwareResourceInformation implements ResourceMetadata {
 		this.provider = provider;
 		this.repositoryInterface = repositoryInterface;
 	}
-	
+
 	public boolean isPrimary() {
 		return AnnotationUtils.findAnnotation(repositoryInterface.getRepositoryInterface(), Primary.class) != null;
 	}
@@ -71,7 +71,7 @@ public class RepositoryAwareResourceInformation implements ResourceMetadata {
 	public ResourceMapping getMappingFor(PersistentProperty<?> property) {
 		return provider.getMappingFor(property);
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.repository.mapping.ResourceMetadataProvider#hasMappingFor(org.springframework.data.mapping.PersistentProperty)

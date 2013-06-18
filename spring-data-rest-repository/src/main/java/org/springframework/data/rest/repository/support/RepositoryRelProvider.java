@@ -19,22 +19,21 @@ import org.springframework.data.rest.repository.mapping.ResourceMappings;
 import org.springframework.hateoas.RelProvider;
 
 /**
- *
  * @author Oliver Gierke
  */
 public class RepositoryRelProvider implements RelProvider {
 
 	private final ResourceMappings mappings;
-	
+
 	/**
 	 * @param repositories
 	 * @param config
 	 */
 	public RepositoryRelProvider(ResourceMappings mappings) {
-		
+
 		this.mappings = mappings;
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.hateoas.RelProvider#getCollectionResourceRelFor(java.lang.Class)
@@ -43,7 +42,7 @@ public class RepositoryRelProvider implements RelProvider {
 	public String getCollectionResourceRelFor(Class<?> type) {
 		return mappings.getMappingFor(type).getRel();
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.hateoas.RelProvider#getSingleResourceRelFor(java.lang.Class)
@@ -52,7 +51,7 @@ public class RepositoryRelProvider implements RelProvider {
 	public String getSingleResourceRelFor(Class<?> type) {
 		return mappings.getMappingFor(type).getSingleResourceRel();
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)

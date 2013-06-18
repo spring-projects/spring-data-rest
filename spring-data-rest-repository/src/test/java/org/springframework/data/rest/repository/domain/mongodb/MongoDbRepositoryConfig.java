@@ -15,16 +15,18 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
  * @author Jon Brisbin
  */
 @Configuration
-@ComponentScan(basePackageClasses = {MongoDbRepositoryConfig.class})
+@ComponentScan(basePackageClasses = { MongoDbRepositoryConfig.class })
 @EnableMongoRepositories
 public class MongoDbRepositoryConfig {
 
-  @Bean public MongoDbFactory mongoDbFactory() throws UnknownHostException {
-    return new SimpleMongoDbFactory(new Mongo("localhost"), "spring-data-rest");
-  }
+	@Bean
+	public MongoDbFactory mongoDbFactory() throws UnknownHostException {
+		return new SimpleMongoDbFactory(new Mongo("localhost"), "spring-data-rest");
+	}
 
-  @Bean public MongoTemplate mongoTemplate() throws UnknownHostException {
-    return new MongoTemplate(mongoDbFactory());
-  }
+	@Bean
+	public MongoTemplate mongoTemplate() throws UnknownHostException {
+		return new MongoTemplate(mongoDbFactory());
+	}
 
 }

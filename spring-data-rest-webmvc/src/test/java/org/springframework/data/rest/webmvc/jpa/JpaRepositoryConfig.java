@@ -40,26 +40,29 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 public class JpaRepositoryConfig {
 
-  @Bean public DataSource dataSource() {
-    EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-    return builder.setType(EmbeddedDatabaseType.HSQL).build();
-  }
+	@Bean
+	public DataSource dataSource() {
+		EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+		return builder.setType(EmbeddedDatabaseType.HSQL).build();
+	}
 
-  @Bean public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-    HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-    vendorAdapter.setDatabase(Database.HSQL);
-    vendorAdapter.setGenerateDdl(true);
+	@Bean
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+		vendorAdapter.setDatabase(Database.HSQL);
+		vendorAdapter.setGenerateDdl(true);
 
-    LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-    factory.setJpaVendorAdapter(vendorAdapter);
-    factory.setPackagesToScan(getClass().getPackage().getName());
-    factory.setDataSource(dataSource());
-    factory.afterPropertiesSet();
-    
-    return factory;
-  }
+		LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+		factory.setJpaVendorAdapter(vendorAdapter);
+		factory.setPackagesToScan(getClass().getPackage().getName());
+		factory.setDataSource(dataSource());
+		factory.afterPropertiesSet();
 
-  @Bean public PlatformTransactionManager transactionManager() {
-    return new JpaTransactionManager();
-  }
+		return factory;
+	}
+
+	@Bean
+	public PlatformTransactionManager transactionManager() {
+		return new JpaTransactionManager();
+	}
 }

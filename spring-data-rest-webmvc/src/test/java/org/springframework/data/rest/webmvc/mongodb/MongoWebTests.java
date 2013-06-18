@@ -29,33 +29,32 @@ import org.springframework.hateoas.Link;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
- *
  * @author Oliver Gierke
  */
 @ContextConfiguration(classes = MongoDbRepositoryConfig.class)
 public class MongoWebTests extends AbstractWebIntegrationTests {
 
 	@Autowired ProfileRepository repository;
-	
+
 	@Before
 	public void populateProfiles() {
-		
+
 		Profile twitter = new Profile();
 		twitter.setPerson(1L);
 		twitter.setType("Twitter");
-		
+
 		Profile linkedIn = new Profile();
 		linkedIn.setPerson(1L);
 		linkedIn.setType("LinkedIn");
-		
+
 		repository.save(Arrays.asList(twitter, linkedIn));
 	}
-	
+
 	@After
 	public void cleanUp() {
 		repository.deleteAll();
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
@@ -64,11 +63,11 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 	protected Iterable<String> expectedRootLinkRels() {
 		return Arrays.asList("profile");
 	}
-	
+
 	@Test
 	public void foo() throws Exception {
-		
+
 		Link profileLink = discoverUnique("profile");
-		follow(profileLink).andExpect(jsonPath("$.content").value(hasSize(2)));	
+		follow(profileLink).andExpect(jsonPath("$.content").value(hasSize(2)));
 	}
 }

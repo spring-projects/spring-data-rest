@@ -47,83 +47,55 @@ public class CustomMethodArgumentResolverTests {
 
 	static {
 		try {
-			BASE_URI = MethodParameter.forMethodOrConstructor(
-					Methods.class.getDeclaredMethod("baseUri", URI.class),
-					0
-			);
+			BASE_URI = MethodParameter.forMethodOrConstructor(Methods.class.getDeclaredMethod("baseUri", URI.class), 0);
 			PAGE_SORT = MethodParameter.forMethodOrConstructor(
-					Methods.class.getDeclaredMethod("pagingAndSorting", Pageable.class),
-					0
-			);
-		} catch(NoSuchMethodException e) {
+					Methods.class.getDeclaredMethod("pagingAndSorting", Pageable.class), 0);
+		} catch (NoSuchMethodException e) {
 			throw new IllegalStateException(e);
 		}
 	}
 
-	private final RepositoryRestConfiguration            config           =
-			new RepositoryRestConfiguration()
-					.setBaseUri(URI.create("http://localhost:8080"));
-	private final BaseUriMethodArgumentResolver          baseUriResolver  =
-			new BaseUriMethodArgumentResolver(config);
-	private final PageableHandlerMethodArgumentResolver pageSortResolver =
-			new PageableHandlerMethodArgumentResolver();
+	private final RepositoryRestConfiguration config = new RepositoryRestConfiguration().setBaseUri(URI
+			.create("http://localhost:8080"));
+	private final BaseUriMethodArgumentResolver baseUriResolver = new BaseUriMethodArgumentResolver(config);
+	private final PageableHandlerMethodArgumentResolver pageSortResolver = new PageableHandlerMethodArgumentResolver();
 	private ModelAndViewContainer mavContainer;
-	@Mock WebDataBinderFactory  webDataBinderFactory;
+	@Mock WebDataBinderFactory webDataBinderFactory;
 
 	@Before
 	public void setup() {
 		mavContainer = new ModelAndViewContainer();
-		
+
 		pageSortResolver.setOneIndexedParameters(true);
 		pageSortResolver.setFallbackPageable(new PageRequest(1, 5));
 	}
 
 	@Test
 	public void baseUriMethodArgumentResolver() throws Exception {
-		assertThat("Finds @BaseURI-annotated java.net.URI parameter",
-		           baseUriResolver.supportsParameter(BASE_URI),
-		           is(true));
+		assertThat("Finds @BaseURI-annotated java.net.URI parameter", baseUriResolver.supportsParameter(BASE_URI), is(true));
 
 		// Resolve the base URI
-		URI baseUri = (URI)baseUriResolver.resolveArgument(
-				BASE_URI,
-				mavContainer,
-				new ServletWebRequest(Requests.ROOT_REQUEST),
-				webDataBinderFactory
-		);
+		URI baseUri = (URI) baseUriResolver.resolveArgument(BASE_URI, mavContainer, new ServletWebRequest(
+				Requests.ROOT_REQUEST), webDataBinderFactory);
 
-		assertThat("Base URI should be 'http://localhost:8080'",
-		           baseUri.toString(),
-		           is("http://localhost:8080"));
+		assertThat("Base URI should be 'http://localhost:8080'", baseUri.toString(), is("http://localhost:8080"));
 	}
 
 	@Test
 	public void pagingAndSortingMethodArgumentResolver() throws Exception {
-		assertThat("Finds PagingAndSorting parameter",
-		           pageSortResolver.supportsParameter(PAGE_SORT),
-		           is(true));
+		assertThat("Finds PagingAndSorting parameter", pageSortResolver.supportsParameter(PAGE_SORT), is(true));
 
 		// Resolve Page and Sort information
-		Pageable pageSort = pageSortResolver.resolveArgument(
-				PAGE_SORT,
-				mavContainer,
-				new ServletWebRequest(Requests.PAGE_REQUEST),
-				webDataBinderFactory
-		);
+		Pageable pageSort = pageSortResolver.resolveArgument(PAGE_SORT, mavContainer, new ServletWebRequest(
+				Requests.PAGE_REQUEST), webDataBinderFactory);
 
-		assertThat("Finds page parameter value",
-		           pageSort.getPageNumber(),
-		           is(1));
-		assertThat("Finds limit parameter value",
-		           pageSort.getPageSize(),
-		           is(10));
+		assertThat("Finds page parameter value", pageSort.getPageNumber(), is(1));
+		assertThat("Finds limit parameter value", pageSort.getPageSize(), is(10));
 	}
 
 	static class Methods {
-		void baseUri(@BaseURI URI baseUri) {
-		}
+		void baseUri(@BaseURI URI baseUri) {}
 
-		void pagingAndSorting(Pageable pageSort) {
-		}
+		void pagingAndSorting(Pageable pageSort) {}
 	}
 }

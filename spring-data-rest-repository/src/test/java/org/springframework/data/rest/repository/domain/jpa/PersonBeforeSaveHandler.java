@@ -6,7 +6,8 @@ import org.springframework.data.rest.repository.context.AbstractRepositoryEventL
  * @author Jon Brisbin
  */
 public class PersonBeforeSaveHandler extends AbstractRepositoryEventListener<Person> {
-  @Override protected void onBeforeSave(Person person) {
-    throw new RuntimeException();
-  }
+	@Override
+	protected void onBeforeSave(Person person) {
+		throw new RuntimeException();
+	}
 }

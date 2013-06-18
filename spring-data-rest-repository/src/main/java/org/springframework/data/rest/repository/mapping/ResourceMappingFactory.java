@@ -47,7 +47,7 @@ public class ResourceMappingFactory {
 		if (type != typeToInspect) {
 			mapping = mapping.merge(discoverConfig(type));
 		}
-		
+
 		for (CollectionResourceMapping externalMapping : manualMapping) {
 			mapping = mapping.merge(externalMapping);
 		}
@@ -56,7 +56,7 @@ public class ResourceMappingFactory {
 	}
 
 	private static Class<?> getTypeToInspect(Class<?> type) {
-		
+
 		if (!RepositoriesUtils.isRepositoryInterface(type)) {
 			return type;
 		}
@@ -69,8 +69,9 @@ public class ResourceMappingFactory {
 		String path = StringUtils.uncapitalize(domainType.getSimpleName());
 		String defaultCollectionRel = relProvider.getCollectionResourceRelFor(domainType);
 		String defaultSingleRel = relProvider.getSingleResourceRelFor(domainType);
-		
-		CollectionResourceMapping mapping = new SimpleCollectionResourceMapping(defaultCollectionRel, defaultSingleRel, path, true);
+
+		CollectionResourceMapping mapping = new SimpleCollectionResourceMapping(defaultCollectionRel, defaultSingleRel,
+				path, true);
 
 		return new CollectionResourceMappingBuilder(mapping);
 	}
@@ -82,19 +83,19 @@ public class ResourceMappingFactory {
 		if (resource == null) {
 			return null;
 		}
-		
+
 		return new AnnotationResourceMapping(resource);
 	}
-	
+
 	/**
 	 * {@link CollectionResourceMapping} based on an {@link RestResource} annotation.
-	 *
+	 * 
 	 * @author Oliver Gierke
 	 */
 	private static class AnnotationResourceMapping implements CollectionResourceMapping {
-		
+
 		private final RestResource annotation;
-		
+
 		/**
 		 * Creates a new {@link AnnotationResourceMapping} for the given {@link RestResource}.
 		 * 
@@ -129,7 +130,7 @@ public class ResourceMappingFactory {
 		 */
 		@Override
 		public String getSingleResourceRel() {
-			
+
 			String rel = getRel();
 			return rel == null ? null : String.format("%s.%s", rel, rel);
 		}

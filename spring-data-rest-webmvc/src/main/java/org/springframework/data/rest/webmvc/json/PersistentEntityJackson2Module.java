@@ -53,57 +53,53 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 public class PersistentEntityJackson2Module extends SimpleModule implements InitializingBean {
 
 	private static final long serialVersionUID = -7289265674870906323L;
-	private static final Logger         LOG      = LoggerFactory.getLogger(PersistentEntityJackson2Module.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PersistentEntityJackson2Module.class);
 	private static final TypeDescriptor URI_TYPE = TypeDescriptor.valueOf(URI.class);
-	@Autowired
-	private       Repositories                repositories;
-	@Autowired
-	private       RepositoryRestConfiguration config;
-	@Autowired
-	private       UriDomainClassConverter     uriDomainClassConverter;
+	@Autowired private Repositories repositories;
+	@Autowired private RepositoryRestConfiguration config;
+	@Autowired private UriDomainClassConverter uriDomainClassConverter;
 	private final ResourceMappings mappings;
 
 	public PersistentEntityJackson2Module(ResourceMappings resourceMappings) {
-		
+
 		super(new Version(1, 1, 0, "BUILD-SNAPSHOT", "org.springframework.data.rest", "jackson-module"));
-		
+
 		this.mappings = resourceMappings;
 		addSerializer(new ResourceSerializer());
 	}
 
-	public static boolean maybeAddAssociationLink(RepositoryLinkBuilder builder,
-	                                              ResourceMappings mappings,
-	                                              PersistentProperty<?> persistentProperty,
-	                                              List<Link> links) {
-		
+	public static boolean maybeAddAssociationLink(RepositoryLinkBuilder builder, ResourceMappings mappings,
+			PersistentProperty<?> persistentProperty, List<Link> links) {
+
 		Assert.isTrue(persistentProperty.isAssociation(), "PersistentProperty must be an association!");
 		ResourceMetadata metadata = mappings.getMappingFor(persistentProperty.getOwner().getType());
-		
+
 		if (!metadata.isManaged(persistentProperty)) {
 			return false;
 		}
-		
+
 		metadata = mappings.getMappingFor(persistentProperty.getActualType());
-		
-		if(metadata.isExported()) {
-			
+
+		if (metadata.isExported()) {
+
 			String propertyRel = String.format("%s.%s", metadata.getSingleResourceRel(), persistentProperty.getName());
 			links.add(builder.slash(persistentProperty.getName()).withRel(propertyRel));
-			
+
 			// This is an association. We added a Link.
 			return true;
-		} 
-		
+		}
+
 		// This is not an association. No Link was added.
 		return false;
 	}
 
-	@SuppressWarnings({"unchecked", "rawtypes"})
-	@Override public void afterPropertiesSet() throws Exception {
-		for(Class<?> domainType : repositories) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		for (Class<?> domainType : repositories) {
 			PersistentEntity<?, ?> pe = repositories.getPersistentEntity(domainType);
-			if(null == pe) {
-				if(LOG.isWarnEnabled()) {
+			if (null == pe) {
+				if (LOG.isWarnEnabled()) {
 					LOG.warn("The domain class {} does not have PersistentEntity metadata.", domainType.getName());
 				}
 			} else {
@@ -122,47 +118,46 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 			this.persistentEntity = persistentEntity;
 		}
 
-		@SuppressWarnings({"unchecked", "incomplete-switch", "null", "unused"})
-		@Override public T deserialize(JsonParser jp,
-		                               DeserializationContext ctxt) throws IOException,
-		                                                                   JsonProcessingException {
+		@SuppressWarnings({ "unchecked", "incomplete-switch", "null", "unused" })
+		@Override
+		public T deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 			Object entity = instantiateClass(getValueClass());
-			 BeanWrapper<?, Object> wrapper = BeanWrapper.create(entity, null);
-			
+			BeanWrapper<?, Object> wrapper = BeanWrapper.create(entity, null);
+
 			ResourceMetadata metadata = mappings.getMappingFor(getValueClass());
 
-			for(JsonToken tok = jp.nextToken(); tok != JsonToken.END_OBJECT; tok = jp.nextToken()) {
+			for (JsonToken tok = jp.nextToken(); tok != JsonToken.END_OBJECT; tok = jp.nextToken()) {
 				String name = jp.getCurrentName();
-				switch(tok) {
+				switch (tok) {
 					case FIELD_NAME: {
-						if("href".equals(name)) {
+						if ("href".equals(name)) {
 							URI uri = URI.create(jp.nextTextValue());
 							TypeDescriptor entityType = TypeDescriptor.forObject(entity);
-							if(uriDomainClassConverter.matches(URI_TYPE, entityType)) {
+							if (uriDomainClassConverter.matches(URI_TYPE, entityType)) {
 								entity = uriDomainClassConverter.convert(uri, URI_TYPE, entityType);
 							}
 
 							continue;
 						}
 
-						if("rel".equals(name)) {
+						if ("rel".equals(name)) {
 							// rel is currently ignored
 							continue;
 						}
 
 						PersistentProperty<?> persistentProperty = persistentEntity.getPersistentProperty(name);
-						if(null == persistentProperty) {
+						if (null == persistentProperty) {
 							continue;
 						}
 
 						Object val = null;
 
-						if("links".equals(name)) {
-							if((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
-								while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
+						if ("links".equals(name)) {
+							if ((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
+								while ((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
 									// Advance past the links
 								}
-							} else if(tok == JsonToken.VALUE_NULL) {
+							} else if (tok == JsonToken.VALUE_NULL) {
 								// skip null value
 							} else {
 								throw new HttpMessageNotReadableException(
@@ -171,44 +166,44 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 							continue;
 						}
 
-						if(null == persistentProperty) {
+						if (null == persistentProperty) {
 							// do nothing
 							continue;
 						}
 
 						// Try and read the value of this attribute.
 						// The method of doing that varies based on the type of the property.
-						if(persistentProperty.isCollectionLike()) {
+						if (persistentProperty.isCollectionLike()) {
 							Class<? extends Collection<?>> ctype = (Class<? extends Collection<?>>) persistentProperty.getType();
 							Collection<Object> c = (Collection<Object>) wrapper.getProperty(persistentProperty);
-							if(null == c || c == Collections.EMPTY_LIST || c == Collections.EMPTY_SET) {
-								if(Collection.class.isAssignableFrom(ctype)) {
+							if (null == c || c == Collections.EMPTY_LIST || c == Collections.EMPTY_SET) {
+								if (Collection.class.isAssignableFrom(ctype)) {
 									c = new ArrayList<Object>();
-								} else if(Set.class.isAssignableFrom(ctype)) {
+								} else if (Set.class.isAssignableFrom(ctype)) {
 									c = new HashSet<Object>();
 								}
 							}
 
-							if((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
-								while((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
+							if ((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
+								while ((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
 									Object cval = jp.readValueAs(persistentProperty.getComponentType());
 									c.add(cval);
 								}
 
 								val = c;
-							} else if(tok == JsonToken.VALUE_NULL) {
+							} else if (tok == JsonToken.VALUE_NULL) {
 								val = null;
 							} else {
 								throw new HttpMessageNotReadableException("Cannot read a JSON " + tok + " as a Collection.");
 							}
-						} else if(persistentProperty.isMap()) {
-							Class<? extends Map<?, ?>> mtype = (Class<? extends Map<?, ?>>)persistentProperty.getType();
+						} else if (persistentProperty.isMap()) {
+							Class<? extends Map<?, ?>> mtype = (Class<? extends Map<?, ?>>) persistentProperty.getType();
 							Map<Object, Object> m = (Map<Object, Object>) wrapper.getProperty(persistentProperty);
-							if(null == m || m == Collections.EMPTY_MAP) {
+							if (null == m || m == Collections.EMPTY_MAP) {
 								m = new HashMap<Object, Object>();
 							}
 
-							if((tok = jp.nextToken()) == JsonToken.START_OBJECT) {
+							if ((tok = jp.nextToken()) == JsonToken.START_OBJECT) {
 								do {
 									name = jp.getCurrentName();
 									// TODO resolve domain object from URI
@@ -216,16 +211,16 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 									Object mval = jp.readValueAs(persistentProperty.getMapValueType());
 
 									m.put(name, mval);
-								} while((tok = jp.nextToken()) != JsonToken.END_OBJECT);
+								} while ((tok = jp.nextToken()) != JsonToken.END_OBJECT);
 
 								val = m;
-							} else if(tok == JsonToken.VALUE_NULL) {
+							} else if (tok == JsonToken.VALUE_NULL) {
 								val = null;
 							} else {
 								throw new HttpMessageNotReadableException("Cannot read a JSON " + tok + " as a Map.");
 							}
 						} else {
-							if((tok = jp.nextToken()) != JsonToken.VALUE_NULL) {
+							if ((tok = jp.nextToken()) != JsonToken.VALUE_NULL) {
 								val = jp.readValueAs(persistentProperty.getType());
 							}
 						}
@@ -237,7 +232,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 				}
 			}
 
-			return (T)entity;
+			return (T) entity;
 		}
 	}
 
@@ -248,12 +243,11 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 			super(PersistentEntityResource.class);
 		}
 
-		@SuppressWarnings({"unchecked"})
-		@Override public void serialize(final PersistentEntityResource resource,
-		                                final JsonGenerator jgen,
-		                                final SerializerProvider provider) throws IOException,
-		                                                                          JsonGenerationException {
-			if(LOG.isDebugEnabled()) {
+		@SuppressWarnings({ "unchecked" })
+		@Override
+		public void serialize(final PersistentEntityResource resource, final JsonGenerator jgen,
+				final SerializerProvider provider) throws IOException, JsonGenerationException {
+			if (LOG.isDebugEnabled()) {
 				LOG.debug("Serializing PersistentEntity " + resource.getPersistentEntity());
 			}
 
@@ -274,14 +268,16 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 			jgen.writeStartObject();
 			try {
 				entity.doWithProperties(new PropertyHandler() {
-					@Override public void doWithPersistentProperty(PersistentProperty property) {
-						
-						boolean idAvailableAndShallNotBeExposed = property.isIdProperty() && !config.isIdExposedFor(entity.getType());
-						
-						if(idAvailableAndShallNotBeExposed) {
+					@Override
+					public void doWithPersistentProperty(PersistentProperty property) {
+
+						boolean idAvailableAndShallNotBeExposed = property.isIdProperty()
+								&& !config.isIdExposedFor(entity.getType());
+
+						if (idAvailableAndShallNotBeExposed) {
 							return;
 						}
-						
+
 						if (property.isEntity() && maybeAddAssociationLink(builder, mappings, property, links)) {
 							return;
 						}
@@ -290,7 +286,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 						Object propertyValue = wrapper.getProperty(property);
 						try {
 							jgen.writeObjectField(property.getName(), propertyValue);
-						} catch(IOException e) {
+						} catch (IOException e) {
 							throw new IllegalStateException(e);
 						}
 					}
@@ -298,14 +294,15 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 
 				// Add associations as links
 				entity.doWithAssociations(new AssociationHandler() {
-					@Override public void doWithAssociation(Association association) {
-						
+					@Override
+					public void doWithAssociation(Association association) {
+
 						PersistentProperty property = association.getInverse();
-						
-						if(!mappings.isMapped(property)) {
+
+						if (!mappings.isMapped(property)) {
 							return;
 						}
-						
+
 						if (maybeAddAssociationLink(builder, mappings, property, links)) {
 							return;
 						}
@@ -313,20 +310,20 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 						Object propertyValue = wrapper.getProperty(property);
 						try {
 							jgen.writeObjectField(property.getName(), propertyValue);
-						} catch(IOException e) {
+						} catch (IOException e) {
 							throw new IllegalStateException(e);
 						}
 					}
 				});
 
 				jgen.writeArrayFieldStart("links");
-				for(Link l : links) {
+				for (Link l : links) {
 					jgen.writeObject(l);
 				}
 				jgen.writeEndArray();
 
-			} catch(IllegalStateException e) {
-				throw (IOException)e.getCause();
+			} catch (IllegalStateException e) {
+				throw (IOException) e.getCause();
 			} finally {
 				jgen.writeEndObject();
 			}

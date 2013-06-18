@@ -37,25 +37,21 @@ import org.springframework.hateoas.Link;
 @SuppressWarnings("deprecation")
 class RepositoryRestRequest {
 
-	private final HttpServletRequest          request;
-	private final URI                         baseUri;
-	private final ResourceMapping             repoMapping;
-	private final Link                        repoLink;
-	private final Object                      repository;
-	private final RepositoryMethodInvoker     repoMethodInvoker;
-	private final PersistentEntity<?, ?>      persistentEntity;
-	private final ResourceMapping             entityMapping;
+	private final HttpServletRequest request;
+	private final URI baseUri;
+	private final ResourceMapping repoMapping;
+	private final Link repoLink;
+	private final Object repository;
+	private final RepositoryMethodInvoker repoMethodInvoker;
+	private final PersistentEntity<?, ?> persistentEntity;
+	private final ResourceMapping entityMapping;
 
-	public RepositoryRestRequest(RepositoryRestConfiguration config,
-	                             Repositories repositories,
-	                             HttpServletRequest request,
-	                             URI baseUri,
-	                             RepositoryInformation repoInfo,
-	                             ConversionService conversionService) {
+	public RepositoryRestRequest(RepositoryRestConfiguration config, Repositories repositories,
+			HttpServletRequest request, URI baseUri, RepositoryInformation repoInfo, ConversionService conversionService) {
 		this.request = request;
 		this.baseUri = baseUri;
 		this.repoMapping = getResourceMapping(config, repoInfo);
-		if(null == repoMapping || !repoMapping.isExported()) {
+		if (null == repoMapping || !repoMapping.isExported()) {
 			this.repoLink = null;
 			this.repository = null;
 			this.repoMethodInvoker = null;

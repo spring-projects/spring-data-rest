@@ -71,8 +71,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @RestController
 @SuppressWarnings("deprecation")
-class RepositoryEntityController extends AbstractRepositoryRestController implements
-		ApplicationEventPublisherAware {
+class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
 
 	private static final String BASE_MAPPING = "/{repository}";
 
@@ -81,7 +80,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	private final RepositoryRestConfiguration config;
 	private final DomainClassConverter<?> converter;
 	private final ConversionService conversionService;
-	
+
 	private final TransactionOperations txOperations;
 
 	private ApplicationEventPublisher publisher;
@@ -91,7 +90,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@Autowired
 	public RepositoryEntityController(Repositories repositories, RepositoryRestConfiguration config,
 			EntityLinks entityLinks, PagedResourcesAssembler<Object> assembler,
-			PersistentEntityResourceAssembler<Object> perAssembler, DomainClassConverter<?> converter, 
+			PersistentEntityResourceAssembler<Object> perAssembler, DomainClassConverter<?> converter,
 			@Qualifier("defaultConversionService") ConversionService conversionService) {
 
 		super(assembler, perAssembler);
@@ -101,7 +100,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		this.config = config;
 		this.converter = converter;
 		this.conversionService = conversionService;
-		
+
 		this.txOperations = null;
 	}
 
@@ -203,7 +202,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	/**
-	 * {@code GET /{repository}/{id}}
+	 * {@code GET / repository}/{id}}
 	 * 
 	 * @param repoRequest
 	 * @param id
@@ -231,7 +230,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	/**
-	 * {@code PUT /{repository}/{id}} - Updates an existing entity or creates one at exactly that place.
+	 * {@code PUT / repository}/{id}} - Updates an existing entity or creates one at exactly that place.
 	 * 
 	 * @param repoRequest
 	 * @param incoming
@@ -244,7 +243,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@ResponseBody
 	public ResponseEntity<Resource<?>> updateEntity(RepositoryRestRequest repoRequest,
 			PersistentEntityResource<Object> incoming, @PathVariable String id) throws ResourceNotFoundException {
-		
+
 		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
 		if (null == repoMethodInvoker || !repoMethodInvoker.hasSaveOne() || !repoMethodInvoker.hasFindOne()) {
 			throw new NoSuchMethodError();
@@ -308,15 +307,15 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 				}
 			}
 		};
-		
+
 		// FIXME
-		
+
 		if (txOperations != null) {
 			txOperations.execute(callback);
 		} else {
 			callback.doInTransaction(null);
 		}
-		
+
 		publisher.publishEvent(new AfterDeleteEvent(domainObj));
 
 		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);

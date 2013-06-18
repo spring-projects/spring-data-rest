@@ -84,7 +84,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * @author Oliver Gierke
  */
 @Configuration
-@ComponentScan(basePackageClasses = RestController.class, includeFilters = @Filter(RestController.class), useDefaultFilters = false)
+@ComponentScan(basePackageClasses = RestController.class, includeFilters = @Filter(RestController.class),
+		useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration {
 
@@ -103,7 +104,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	@Qualifier
 	public DefaultFormattingConversionService defaultConversionService() {
-		
+
 		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
 		conversionService.addConverter(UUIDConverter.INSTANCE);
 		conversionService.addConverter(ISO8601DateConverter.INSTANCE);

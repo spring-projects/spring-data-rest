@@ -7,11 +7,10 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 /**
  * Special {@link DispatcherServlet} subclass that certain exporter components can recognize.
- *
+ * 
  * @author Jon Brisbin
  */
 public class RepositoryRestDispatcherServlet extends DispatcherServlet {
-
 
 	private static final long serialVersionUID = 5761346441984290240L;
 

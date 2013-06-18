@@ -34,14 +34,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Transactional
 public class PersistentEntitySerializationTests {
 
-	private static final String  PERSON_JSON_IN  = "{\"firstName\": \"John\",\"lastName\": \"Doe\"}";
+	private static final String PERSON_JSON_IN = "{\"firstName\": \"John\",\"lastName\": \"Doe\"}";
 
 	@Autowired ObjectMapper mapper;
 	@Autowired Repositories repositories;
 	@Autowired PersonRepository people;
-	
+
 	LinkDiscoverer linkDiscoverer;
-	
+
 	@Before
 	public void setUp() {
 		linkDiscoverer = new DefaultLinkDiscoverer();
@@ -49,9 +49,9 @@ public class PersistentEntitySerializationTests {
 
 	@Test
 	public void deserializesPersonEntity() throws IOException {
-		
+
 		Person p = mapper.readValue(PERSON_JSON_IN, Person.class);
-		
+
 		assertThat(p.getFirstName(), is("John"));
 		assertThat(p.getLastName(), is("Doe"));
 		assertThat(p.getSiblings(), is(Collections.EMPTY_LIST));
@@ -59,18 +59,18 @@ public class PersistentEntitySerializationTests {
 
 	@Test
 	public void serializesPersonEntity() throws IOException, InterruptedException {
-		
+
 		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(Person.class);
 		Person person = people.save(new Person("John", "Doe"));
-		
+
 		StringWriter writer = new StringWriter();
 		mapper.writeValue(writer, PersistentEntityResource.wrap(persistentEntity, person));
-		
+
 		String s = writer.toString();
-		
+
 		Link fatherLink = linkDiscoverer.findLinkWithRel("people.people.father", s);
 		assertThat(fatherLink.getHref(), endsWith(new UriTemplate("/{id}/father").expand(person.getId()).toString()));
-		
+
 		Link siblingLink = linkDiscoverer.findLinkWithRel("people.people.siblings", s);
 		assertThat(siblingLink.getHref(), endsWith(new UriTemplate("/{id}/siblings").expand(person.getId()).toString()));
 	}

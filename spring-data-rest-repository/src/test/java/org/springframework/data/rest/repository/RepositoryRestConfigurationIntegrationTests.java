@@ -14,7 +14,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Tests to check that {@link ResourceMapping}s are handled correctly.
- *
+ * 
  * @author Jon Brisbin
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -22,17 +22,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @SuppressWarnings("deprecation")
 public class RepositoryRestConfigurationIntegrationTests {
 
-  @Autowired
-  RepositoryRestConfiguration config;
+	@Autowired RepositoryRestConfiguration config;
 
-  @Test
-  public void shouldProvideResourceMappingForConfiguredRepository() throws Exception {
+	@Test
+	public void shouldProvideResourceMappingForConfiguredRepository() throws Exception {
 		ResourceMapping mapping = config.getResourceMappingForRepository(ConfiguredPersonRepository.class);
 
-    assertThat(mapping, notNullValue());
-    assertThat(mapping.getRel(), is("people"));
-    assertThat(mapping.getPath(), is("people"));
-    assertThat(mapping.isExported(), is(false));
-  }
+		assertThat(mapping, notNullValue());
+		assertThat(mapping.getRel(), is("people"));
+		assertThat(mapping.getPath(), is("people"));
+		assertThat(mapping.isExported(), is(false));
+	}
 
 }

@@ -24,67 +24,66 @@ import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.data.rest.repository.support.SimpleRelProvider;
 
 /**
- *
  * @author Oliver Gierke
  */
 public class ResourceMappingFactoryUnitTests {
 
 	ResourceMappingFactory factory = new ResourceMappingFactory(new SimpleRelProvider());
-	
+
 	@Test
 	public void foo() {
-		
+
 		CollectionResourceMapping mapping = factory.getMappingForType(Person.class);
 		assertThat(mapping.getPath(), is("person"));
 		assertThat(mapping.getRel(), is("person"));
 		assertThat(mapping.getSingleResourceRel(), is("person.person"));
 	}
-	
+
 	@Test
 	public void honorsAnnotatedMapping() {
-		
+
 		CollectionResourceMapping mapping = factory.getMappingForType(AnnotatedPerson.class);
 		assertThat(mapping.getPath(), is("bar"));
 		assertThat(mapping.getRel(), is("foo"));
 		assertThat(mapping.getSingleResourceRel(), is("foo.foo"));
 		assertThat(mapping.isExported(), is(false));
 	}
-	
+
 	@Test
 	public void honorsAnnotatedsMapping() {
-		
+
 		CollectionResourceMapping mapping = factory.getMappingForType(PersonRepository.class);
 		assertThat(mapping.getPath(), is("bar"));
 		assertThat(mapping.getRel(), is("foo"));
 		assertThat(mapping.getSingleResourceRel(), is("foo.foo"));
 		assertThat(mapping.isExported(), is(false));
 	}
-	
+
 	@Test
 	public void repositoryAnnotationTrumpsDomainTypeMapping() {
-		
+
 		CollectionResourceMapping mapping = factory.getMappingForType(AnnotatedAnnotatedPersonRepository.class);
 		assertThat(mapping.getPath(), is("trumpsAll"));
 		assertThat(mapping.getRel(), is("foo"));
 		assertThat(mapping.getSingleResourceRel(), is("foo.foo"));
 		assertThat(mapping.isExported(), is(true));
 	}
-	
+
 	static class Person {
-		
+
 	}
-	
+
 	@RestResource(path = "bar", rel = "foo", exported = false)
 	static class AnnotatedPerson {
-		
+
 	}
-	
+
 	interface PersonRepository extends Repository<AnnotatedPerson, Long> {
-		
+
 	}
-	
+
 	@RestResource(path = "trumpsAll")
 	interface AnnotatedAnnotatedPersonRepository extends Repository<AnnotatedPerson, Long> {
-		
+
 	}
 }

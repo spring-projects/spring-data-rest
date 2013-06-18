@@ -7,10 +7,10 @@ import java.lang.annotation.Target;
 
 /**
  * Marker annotation to denote which {@link java.net.URI} parameter should be resolved to the request base URI.
- *
+ * 
  * @author Jon Brisbin
  */
-@Target({ElementType.PARAMETER})
+@Target({ ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BaseURI {
 }

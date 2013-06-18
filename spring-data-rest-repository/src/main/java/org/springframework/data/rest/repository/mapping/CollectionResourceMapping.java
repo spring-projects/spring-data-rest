@@ -17,7 +17,7 @@ package org.springframework.data.rest.repository.mapping;
 
 /**
  * A custom resource mapping for collection resources.
- *
+ * 
  * @author Oliver Gierke
  */
 public interface CollectionResourceMapping extends ResourceMapping {

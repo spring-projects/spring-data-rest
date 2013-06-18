@@ -11,19 +11,22 @@ import org.springframework.data.rest.repository.domain.jpa.PersonBeforeSaveHandl
  * @author Jon Brisbin
  */
 @Configuration
-@Import({RepositoryTestsConfig.class})
+@Import({ RepositoryTestsConfig.class })
 public class RepositoryEventTestsConfig {
 
-  @Bean public PersonBeforeSaveHandler personBeforeSaveHandler() {
-    return new PersonBeforeSaveHandler();
-  }
+	@Bean
+	public PersonBeforeSaveHandler personBeforeSaveHandler() {
+		return new PersonBeforeSaveHandler();
+	}
 
-  @Bean public AnnotatedPersonEventHandler beforeSaveHandler() {
-    return new AnnotatedPersonEventHandler();
-  }
+	@Bean
+	public AnnotatedPersonEventHandler beforeSaveHandler() {
+		return new AnnotatedPersonEventHandler();
+	}
 
-  @Bean public AnnotatedHandlerBeanPostProcessor annotatedHandlerBeanPostProcessor() {
-    return new AnnotatedHandlerBeanPostProcessor();
-  }
+	@Bean
+	public AnnotatedHandlerBeanPostProcessor annotatedHandlerBeanPostProcessor() {
+		return new AnnotatedHandlerBeanPostProcessor();
+	}
 
 }

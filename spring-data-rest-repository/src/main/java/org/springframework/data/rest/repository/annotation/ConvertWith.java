@@ -11,11 +11,11 @@ import org.springframework.core.convert.converter.Converter;
 /**
  * @author Jon Brisbin
  */
-@Target({ElementType.PARAMETER})
+@Target({ ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface ConvertWith {
 
-  Class<? extends Converter<?, ?>> value();
+	Class<? extends Converter<?, ?>> value();
 
 }
