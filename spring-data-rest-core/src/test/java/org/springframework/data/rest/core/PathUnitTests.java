@@ -13,35 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.repository.mapping;
+package org.springframework.data.rest.core;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 import org.springframework.data.rest.core.Path;
 
 /**
- * Mapping information for components to be exported as REST resources.
- * 
  * @author Oliver Gierke
  */
-public interface ResourceMapping {
+public class PathUnitTests {
 
-	/**
-	 * Returns whether the component shall be exported at all.
-	 * 
-	 * @return will never be {@literal null}.
-	 */
-	Boolean isExported();
+	@Test
+	public void combinesSimplePaths() {
 
-	/**
-	 * Returns the relation for the resource exported.
-	 * 
-	 * @return will never be {@literal null}.
-	 */
-	String getRel();
+		Path builder = new Path("foo").slash("bar");
+		assertThat(builder.toString(), is("/foo/bar"));
+	}
 
-	/**
-	 * Returns the path the resource is exposed under.
-	 * 
-	 * @return will never be {@literal null}.
-	 */
-	Path getPath();
+	@Test
+	public void removesLeadingAndTrailingSlashes() {
+
+		Path builder = new Path("foo/").slash("/bar").slash("//foobar///");
+		assertThat(builder.toString(), is("/foo/bar/foobar"));
+	}
+
+	@Test
+	public void removesWhitespace() {
+
+		Path builder = new Path("foo/ ").slash("/ b a r").slash("  //foobar///   ");
+		assertThat(builder.toString(), is("/foo/bar/foobar"));
+	}
 }

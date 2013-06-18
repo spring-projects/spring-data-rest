@@ -15,12 +15,20 @@
  */
 package org.springframework.data.rest.repository.mapping;
 
+import java.util.Map;
+
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
  * @author Oliver Gierke
  */
-public interface ResourceMetadata extends CollectionResourceMapping, ResourceMetadataProvider {
+public interface ResourceMetadata extends CollectionResourceMapping {
 
 	boolean isManaged(PersistentProperty<?> property);
+	
+	boolean isMapped(PersistentProperty<?> property);
+
+	ResourceMapping getMappingFor(PersistentProperty<?> property);
+	
+	Map<String, ResourceMapping> getSearchResourceMappings(); 
 }

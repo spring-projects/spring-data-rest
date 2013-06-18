@@ -15,11 +15,14 @@
  */
 package org.springframework.data.rest.repository.mapping;
 
+import java.util.Map;
+
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.Path;
 import org.springframework.util.Assert;
 
 /**
@@ -29,7 +32,7 @@ public class RepositoryAwareResourceInformation implements ResourceMetadata {
 
 	private final Repositories repositories;
 	private final CollectionResourceMapping mapping;
-	private final ResourceMetadataProvider provider;
+	private final ResourceMappings provider;
 	private final RepositoryInformation repositoryInterface;
 
 	/**
@@ -38,7 +41,7 @@ public class RepositoryAwareResourceInformation implements ResourceMetadata {
 	 * @param provider must not be {@literal null}.
 	 */
 	public RepositoryAwareResourceInformation(Repositories repositories, CollectionResourceMapping mapping,
-			ResourceMetadataProvider provider, RepositoryInformation repositoryInterface) {
+			ResourceMappings provider, RepositoryInformation repositoryInterface) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(mapping, "ResourceMapping must not be null!");
@@ -113,7 +116,17 @@ public class RepositoryAwareResourceInformation implements ResourceMetadata {
 	 * @see org.springframework.data.rest.repository.mapping.CollectionResourceMapping#getPath()
 	 */
 	@Override
-	public String getPath() {
+	public Path getPath() {
 		return mapping.getPath();
 	}
+	
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.repository.mapping.ResourceMetadata#getSearchResourceMappings()
+	 */
+	@Override
+	public Map<String, ResourceMapping> getSearchResourceMappings() {
+		return provider.getSearchResourceMappings(repositoryInterface.getRepositoryInterface());
+	}
+	
 }

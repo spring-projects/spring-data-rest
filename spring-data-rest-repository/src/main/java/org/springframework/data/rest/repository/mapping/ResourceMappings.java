@@ -35,12 +35,11 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-@SuppressWarnings("deprecation")
-public class ResourceMappings implements ResourceMetadataProvider, Iterable<ResourceMetadata> {
+public class ResourceMappings implements Iterable<ResourceMetadata> {
 
-	private final RepositoryRestConfiguration config;
-	private final ResourceMappingFactory factory;
+
 	private final Repositories repositories;
+	private final RelProvider relProvider;
 
 	private final Map<Class<?>, ResourceMetadata> cache = new HashMap<Class<?>, ResourceMetadata>();
 	private final Map<Class<?>, Map<String, ResourceMapping>> searchCache = new HashMap<Class<?>, Map<String, ResourceMapping>>();
@@ -66,13 +65,11 @@ public class ResourceMappings implements ResourceMetadataProvider, Iterable<Reso
 	 */
 	public ResourceMappings(RepositoryRestConfiguration config, Repositories repositories, RelProvider relProvider) {
 
-		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(relProvider, "RelProvider must not be null!");
 
-		this.config = config;
 		this.repositories = repositories;
-		this.factory = new ResourceMappingFactory(relProvider);
+		this.relProvider = relProvider;
 
 		this.populateCache(repositories);
 	}
@@ -96,8 +93,7 @@ public class ResourceMappings implements ResourceMetadataProvider, Iterable<Reso
 			RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(type);
 			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
 
-			CollectionResourceMapping mapping = factory.getMappingForType(repositoryInterface, fromConfig(type),
-					fromConfig(repositoryInterface));
+			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInterface, relProvider);
 
 			RepositoryAwareResourceInformation information = new RepositoryAwareResourceInformation(repositories, mapping,
 					this, repositoryInformation);
@@ -125,9 +121,11 @@ public class ResourceMappings implements ResourceMetadataProvider, Iterable<Reso
 		Class<?> domainType = RepositoriesUtils.getDomainType(type);
 		RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(domainType);
 		Map<String, ResourceMapping> mappings = new HashMap<String, ResourceMapping>();
+		ResourceMetadata repositoryMapping = getMappingFor(repositoryInformation.getRepositoryInterface());
 
 		for (Method queryMethod : repositoryInformation.getQueryMethods()) {
-			mappings.put(queryMethod.getName(), new RepositoryMethodResourceMapping(queryMethod));
+			mappings.put(queryMethod.getName(), new RepositoryMethodResourceMapping(queryMethod,
+					repositoryMapping));
 		}
 
 		searchCache.put(type, mappings);
@@ -177,8 +175,7 @@ public class ResourceMappings implements ResourceMetadataProvider, Iterable<Reso
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.repository.mapping.ResourceMetadataProvider#getMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
-	@Override
-	public ResourceMapping getMappingFor(PersistentProperty<?> property) {
+	ResourceMapping getMappingFor(PersistentProperty<?> property) {
 		return getMappingFor(property.getActualType());
 	}
 
@@ -186,7 +183,6 @@ public class ResourceMappings implements ResourceMetadataProvider, Iterable<Reso
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.repository.mapping.ResourceMetadataProvider#hasMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
-	@Override
 	public boolean isMapped(PersistentProperty<?> property) {
 
 		ResourceMapping metadata = getMappingFor(property);
@@ -200,16 +196,5 @@ public class ResourceMappings implements ResourceMetadataProvider, Iterable<Reso
 	@Override
 	public Iterator<ResourceMetadata> iterator() {
 		return cache.values().iterator();
-	}
-
-	private CollectionResourceMapping fromConfig(Class<?> domainType) {
-
-		org.springframework.data.rest.config.ResourceMapping mapping = config.getResourceMappingForDomainType(domainType);
-
-		if (mapping == null) {
-			return null;
-		}
-
-		return new SimpleCollectionResourceMapping(mapping.getRel(), null, mapping.getPath(), mapping.isExported());
 	}
 }

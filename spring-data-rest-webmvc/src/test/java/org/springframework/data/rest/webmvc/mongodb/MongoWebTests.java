@@ -61,13 +61,13 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 	 */
 	@Override
 	protected Iterable<String> expectedRootLinkRels() {
-		return Arrays.asList("profile");
+		return Arrays.asList("profiles");
 	}
 
 	@Test
 	public void foo() throws Exception {
 
-		Link profileLink = discoverUnique("profile");
+		Link profileLink = discoverUnique("profiles");
 		follow(profileLink).andExpect(jsonPath("$.content").value(hasSize(2)));
 	}
 }

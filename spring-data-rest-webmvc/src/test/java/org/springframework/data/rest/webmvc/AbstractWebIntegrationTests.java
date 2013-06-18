@@ -127,7 +127,8 @@ public abstract class AbstractWebIntegrationTests {
 			@Override
 			public void match(MvcResult result) throws Exception {
 				String s = result.getResponse().getContentAsString();
-				assertThat(links.findLinkWithRel(rel, s), notNullValue());
+				assertThat("Expected to find link with rel " + rel + " but found none in " + s, links.findLinkWithRel(rel, s),
+						notNullValue());
 			}
 		};
 	}

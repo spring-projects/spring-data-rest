@@ -18,7 +18,9 @@ package org.springframework.data.rest.repository.mapping;
 import java.lang.reflect.Method;
 
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.repository.annotation.RestResource;
+import org.springframework.util.StringUtils;
 
 /**
  * A {@link RepositoryMethodResourceMapping} created from a {@link Method}.
@@ -29,20 +31,24 @@ public class RepositoryMethodResourceMapping implements ResourceMapping {
 
 	private final boolean isExported;
 	private final String rel;
-	private final String path;
+	private final Path path;
 
 	/**
 	 * Creates a new {@link RepositoryMethodResourceMapping} for the given {@link Method}.
 	 * 
 	 * @param method must not be {@literal null}.
 	 */
-	public RepositoryMethodResourceMapping(Method method) {
+	public RepositoryMethodResourceMapping(Method method, ResourceMapping resourceMapping) {
 
 		RestResource annotation = AnnotationUtils.findAnnotation(method, RestResource.class);
 
 		this.isExported = annotation != null ? annotation.exported() : true;
 		this.rel = annotation != null ? annotation.rel() : method.getName();
-		this.path = annotation != null ? annotation.path() : method.getName();
+
+		Path resourcePath = resourceMapping.getPath();
+		String toAppend = annotation == null || !StringUtils.hasText(annotation.path()) ? method.getName() : annotation
+				.path();
+		this.path = resourcePath.slash(toAppend);
 	}
 
 	/* 
@@ -68,7 +74,7 @@ public class RepositoryMethodResourceMapping implements ResourceMapping {
 	 * @see org.springframework.data.rest.repository.mapping.ResourceMapping#getPath()
 	 */
 	@Override
-	public String getPath() {
+	public Path getPath() {
 		return path;
 	}
 }

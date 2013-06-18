@@ -43,7 +43,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 
 		UriComponentsBuilder builder = baseUri != null ? UriComponentsBuilder.fromUri(baseUri) : ControllerLinkBuilder
 				.linkTo(RepositoryController.class).toUriComponentsBuilder();
-		return builder.path(metadata.getPath());
+		return builder.path(metadata.getPath().toString());
 	}
 
 	@Override

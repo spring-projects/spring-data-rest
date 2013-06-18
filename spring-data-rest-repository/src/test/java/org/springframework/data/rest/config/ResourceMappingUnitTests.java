@@ -25,13 +25,15 @@ import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.repository.annotation.RestResource;
 import org.springframework.data.rest.repository.domain.jpa.AnnotatedPersonRepository;
 import org.springframework.data.rest.repository.domain.jpa.Person;
 import org.springframework.data.rest.repository.domain.jpa.PlainPersonRepository;
+import org.springframework.data.rest.repository.mapping.RepositoryCollectionResourceMapping;
 import org.springframework.data.rest.repository.mapping.ResourceMapping;
-import org.springframework.data.rest.repository.mapping.ResourceMappingFactory;
-import org.springframework.data.rest.repository.support.SimpleRelProvider;
+import org.springframework.hateoas.RelProvider;
+import org.springframework.hateoas.core.EvoInflectorRelProvider;
 
 /**
  * Ensure the {@link ResourceMapping} components convey the correct information.
@@ -41,25 +43,26 @@ import org.springframework.data.rest.repository.support.SimpleRelProvider;
 @SuppressWarnings("deprecation")
 public class ResourceMappingUnitTests {
 
-	ResourceMappingFactory factory = new ResourceMappingFactory(new SimpleRelProvider());
+	RelProvider relProvider = new EvoInflectorRelProvider();
+	
 
 	@Test
 	public void shouldDetectDefaultRelAndPath() throws Exception {
 
-		ResourceMapping newMapping = factory.getMappingForType(PlainPersonRepository.class);
+		ResourceMapping newMapping = new RepositoryCollectionResourceMapping(PlainPersonRepository.class, relProvider);
 
-		assertThat(newMapping.getRel(), is("person"));
-		assertThat(newMapping.getPath(), is("person"));
+		assertThat(newMapping.getRel(), is("persons"));
+		assertThat(newMapping.getPath(), is(new Path("person")));
 		assertThat(newMapping.isExported(), is(true));
 	}
 
 	@Test
 	public void shouldDetectAnnotatedRelAndPath() throws Exception {
 
-		ResourceMapping newMapping = factory.getMappingForType(AnnotatedPersonRepository.class);
+		ResourceMapping newMapping = new RepositoryCollectionResourceMapping(AnnotatedPersonRepository.class, relProvider);
 
 		assertThat(newMapping.getRel(), is("people"));
-		assertThat(newMapping.getPath(), is("person"));
+		assertThat(newMapping.getPath(), is(new Path("person")));
 		assertThat(newMapping.isExported(), is(false));
 	}
 

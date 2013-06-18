@@ -25,6 +25,7 @@ ext {
   hibernateVersion = "4.2.0.Final"
   hibernateValidatorVersion = "4.3.1.Final"
   hsqldbVersion = "2.2.9"
+  evoVersion="1.0.1"
 
   // Supporting libraries
   cglibVersion = "2.2.2"
@@ -181,6 +182,9 @@ project("spring-data-rest-repository") {
 
     // JSR 303 Validation
     compile("javax.validation:validation-api:1.0.0.GA", optional)
+
+    // Evo Inflector
+    runtime "org.atteo:evo-inflector:${evoVersion}"
 
     // Testing
     testCompile "org.hsqldb:hsqldb:$hsqldbVersion"
