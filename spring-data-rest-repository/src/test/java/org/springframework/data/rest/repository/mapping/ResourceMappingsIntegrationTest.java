@@ -55,6 +55,6 @@ public class ResourceMappingsIntegrationTest {
 	public void foo() {
 		
 		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(2)));
-		assertThat(mappings.getMappingFor(Person.class).isExported(), is(false));
+		assertThat(mappings.getMappingFor(Person.class).isExported(), is(true));
 	}
 }

@@ -1,6 +1,7 @@
 package org.springframework.data.rest.repository.domain.jpa;
 
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.rest.repository.annotation.RestResource;
 
 /**
@@ -9,5 +10,6 @@ import org.springframework.data.rest.repository.annotation.RestResource;
  * @author Jon Brisbin
  */
 @RestResource(rel = "people", exported = false)
+@NoRepositoryBean
 public interface AnnotatedPersonRepository extends CrudRepository<Person, Long> {
 }

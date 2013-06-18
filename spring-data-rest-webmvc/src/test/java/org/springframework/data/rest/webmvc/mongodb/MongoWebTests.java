@@ -13,25 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc.jpa;
+package org.springframework.data.rest.webmvc.mongodb;
+
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Arrays;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Web integration tests specific to JPA.
- * 
+ *
  * @author Oliver Gierke
  */
-@ContextConfiguration(classes = JpaRepositoryConfig.class)
-@Transactional
-public class JpaWebTests extends AbstractWebIntegrationTests {
+@ContextConfiguration(classes = MongoDbRepositoryConfig.class)
+public class MongoWebTests extends AbstractWebIntegrationTests {
+
+	@Autowired ProfileRepository repository;
+	
+	@Before
+	public void populateProfiles() {
+		
+		Profile twitter = new Profile();
+		twitter.setPerson(1L);
+		twitter.setType("Twitter");
+		
+		Profile linkedIn = new Profile();
+		linkedIn.setPerson(1L);
+		linkedIn.setType("LinkedIn");
+		
+		repository.save(Arrays.asList(twitter, linkedIn));
+	}
+	
+	@After
+	public void cleanUp() {
+		repository.deleteAll();
+	}
 	
 	/* 
 	 * (non-Javadoc)
@@ -39,23 +62,13 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	 */
 	@Override
 	protected Iterable<String> expectedRootLinkRels() {
-		return Arrays.asList("people");
+		return Arrays.asList("profile");
 	}
-
+	
 	@Test
-	public void accessPersons() throws Exception {
+	public void foo() throws Exception {
 		
-		MockHttpServletResponse response = request("/people?page=0&size=1");
-		
-		Link nextLink = assertHasLinkWithRel(Link.REL_NEXT, response);
-		assertDoesNotHaveLinkWithRel(Link.REL_PREVIOUS, response);
-		
-		response = request(nextLink);
-		assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		nextLink = assertHasLinkWithRel(Link.REL_NEXT, response);
-		
-		response = request(nextLink);
-		assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);
+		Link profileLink = discoverUnique("profile");
+		follow(profileLink).andExpect(jsonPath("$.content").value(hasSize(2)));	
 	}
 }

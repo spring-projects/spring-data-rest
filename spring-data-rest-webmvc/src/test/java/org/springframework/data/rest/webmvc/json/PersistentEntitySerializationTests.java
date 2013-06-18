@@ -68,10 +68,10 @@ public class PersistentEntitySerializationTests {
 		
 		String s = writer.toString();
 		
-		Link fatherLink = linkDiscoverer.findLinkWithRel("father", s);
+		Link fatherLink = linkDiscoverer.findLinkWithRel("people.people.father", s);
 		assertThat(fatherLink.getHref(), endsWith(new UriTemplate("/{id}/father").expand(person.getId()).toString()));
 		
-		Link siblingLink = linkDiscoverer.findLinkWithRel("siblings", s);
+		Link siblingLink = linkDiscoverer.findLinkWithRel("people.people.siblings", s);
 		assertThat(siblingLink.getHref(), endsWith(new UriTemplate("/{id}/siblings").expand(person.getId()).toString()));
 	}
 }

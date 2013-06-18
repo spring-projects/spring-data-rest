@@ -129,7 +129,9 @@ public class ResourceMappingFactory {
 		 */
 		@Override
 		public String getSingleResourceRel() {
-			return null;
+			
+			String rel = getRel();
+			return rel == null ? null : String.format("%s.%s", rel, rel);
 		}
 
 		/* 

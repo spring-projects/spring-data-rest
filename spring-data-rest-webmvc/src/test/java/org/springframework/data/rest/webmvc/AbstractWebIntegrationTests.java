@@ -20,7 +20,10 @@ import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.List;
+
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
@@ -33,8 +36,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
@@ -42,7 +47,6 @@ import org.springframework.web.context.WebApplicationContext;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@Transactional
 @ContextConfiguration(classes = RepositoryRestMvcConfiguration.class)
 public abstract class AbstractWebIntegrationTests {
 
@@ -70,6 +74,39 @@ public abstract class AbstractWebIntegrationTests {
 	protected MockHttpServletResponse request(String href) throws Exception {
 		return request(href, MediaType.APPLICATION_JSON);
 	}
+	
+	protected ResultActions follow(Link link) throws Exception {
+  	return  mvc.perform(get(link.getHref()));
+  }
+	
+	protected List<Link> discover(String rel) throws Exception {
+    return discover(new Link("/"), rel);
+  }
+	
+	protected Link discoverUnique(String rel) throws Exception {
+		
+		List<Link> discover = discover(rel);
+		assertThat(discover, hasSize(1));
+		return discover.get(0);
+	}
+
+  protected List<Link> discover(Link root, String rel) throws Exception {
+    String s = mvc
+        .perform(get(root.getHref()))
+        .andExpect(status().isOk())
+        .andExpect(hasLinkWithRel(rel))
+        .andReturn().getResponse().getContentAsString();
+    return links.findLinksWithRel(rel, s);
+  }
+  
+  protected Link discoverUnique(Link root, String rel) throws Exception {
+    String s = mvc
+        .perform(get(root.getHref()))
+        .andExpect(status().isOk())
+        .andExpect(hasLinkWithRel(rel))
+        .andReturn().getResponse().getContentAsString();
+    return links.findLinkWithRel(rel, s);
+  }
 
 	protected Link assertHasLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
 
@@ -89,4 +126,27 @@ public abstract class AbstractWebIntegrationTests {
 
 		assertThat("Expected not to find link with rel " + rel + " but found " + link + "!", link, is(nullValue()));
 	}
+
+	protected ResultMatcher hasLinkWithRel(final String rel) {
+
+		return new ResultMatcher() {
+			@Override
+			public void match(MvcResult result) throws Exception {
+				String s = result.getResponse().getContentAsString();
+				assertThat(links.findLinkWithRel(rel, s), notNullValue());
+			}
+		};
+	}
+
+	@Test
+	public void exposesRootResource() throws Exception {
+		
+		ResultActions actions = mvc.perform(get("/")).andExpect(status().isOk());
+		
+		for (String rel : expectedRootLinkRels()) {
+			actions.andExpect(hasLinkWithRel(rel));
+		}
+	}
+	
+	protected abstract Iterable<String> expectedRootLinkRels();
 }
