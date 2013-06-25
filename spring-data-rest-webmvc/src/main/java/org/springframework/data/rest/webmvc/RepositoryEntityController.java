@@ -45,8 +45,6 @@ import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
 import org.springframework.data.rest.repository.support.DomainObjectMerger;
-import org.springframework.data.rest.webmvc.json.JsonSchema;
-import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
@@ -80,18 +78,17 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	private final RepositoryRestConfiguration config;
 	private final DomainClassConverter<?> converter;
 	private final ConversionService conversionService;
+	private final DomainObjectMerger domainObjectMerger;
 
 	private final TransactionOperations txOperations;
 
 	private ApplicationEventPublisher publisher;
-	@Autowired private DomainObjectMerger domainObjectMerger;
-	@Autowired private PersistentEntityToJsonSchemaConverter jsonSchemaConverter;
 
 	@Autowired
 	public RepositoryEntityController(Repositories repositories, RepositoryRestConfiguration config,
 			EntityLinks entityLinks, PagedResourcesAssembler<Object> assembler,
 			PersistentEntityResourceAssembler<Object> perAssembler, DomainClassConverter<?> converter,
-			@Qualifier("defaultConversionService") ConversionService conversionService) {
+			@Qualifier("defaultConversionService") ConversionService conversionService, DomainObjectMerger domainObjectMerger) {
 
 		super(assembler, perAssembler);
 
@@ -100,6 +97,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		this.config = config;
 		this.converter = converter;
 		this.conversionService = conversionService;
+		this.domainObjectMerger = domainObjectMerger;
 
 		this.txOperations = null;
 	}
@@ -109,16 +107,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
 	 */
 	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-		this.publisher = applicationEventPublisher;
-
-	}
-
-	@RequestMapping(value = BASE_MAPPING + "/schema", method = RequestMethod.GET,
-			produces = { "application/schema+json" })
-	@ResponseBody
-	public JsonSchema schema(RepositoryRestRequest repoRequest) {
-		return jsonSchemaConverter.convert(repoRequest.getPersistentEntity().getType());
+	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+		this.publisher = publisher;
 	}
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = { "application/json",
@@ -276,9 +266,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	public ResponseEntity<?> deleteEntity(final RepositoryRestRequest repoRequest, @PathVariable final String id)
 			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if (null == repoMethodInvoker
-				|| (!repoMethodInvoker.hasFindOne() && !(repoMethodInvoker.hasDeleteOne() || repoMethodInvoker
-						.hasDeleteOneById()))) {
+		if (null == repoMethodInvoker || !repoMethodInvoker.hasFindOne()
+				&& !(repoMethodInvoker.hasDeleteOne() || repoMethodInvoker.hasDeleteOneById())) {
 			throw new HttpRequestMethodNotSupportedException("DELETE");
 		}
 		ResourceMapping methodMapping = repoRequest.getRepositoryResourceMapping().getResourceMappingFor("delete");
