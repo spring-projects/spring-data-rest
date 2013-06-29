@@ -56,6 +56,17 @@ configure(allprojects) {
   group = "org.springframework.data"
 
   configurations.all {
+
+    // Hack to let Gradle pickup latest SNAPSHOTS
+    resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds'
+
+    // Force all core Spring Framework libraries into the same version
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+      if (details.requested.group == 'org.springframework') {
+          details.useVersion "$springVersion"
+      }
+    }
+
     exclude group: "commons-logging"
     exclude module: "slf4j-log4j12"
   }
@@ -68,6 +79,7 @@ configure(allprojects) {
   sourceSets.test.resources.srcDirs = ["src/test/resources", "src/test/java"]
 
   repositories {
+
     mavenLocal()
     mavenCentral()
     maven { url "http://oss.sonatype.org/content/repositories/releases" }
@@ -76,6 +88,7 @@ configure(allprojects) {
   }
 
   dependencies {
+
     // Logging
     compile "org.slf4j:slf4j-api:$slf4jVersion"
     runtime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
@@ -85,8 +98,8 @@ configure(allprojects) {
     testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
     testCompile "com.jayway.jsonpath:json-path:$jsonpathVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
-    testCompile("org.springframework:spring-test:$springVersion") { force = true }
-    testRuntime("org.springframework:spring-context-support:$springVersion") { force = true }
+    testCompile "org.springframework:spring-test:$springVersion"
+    testRuntime "org.springframework:spring-context-support:$springVersion"
     testRuntime "ch.qos.logback:logback-classic:$logbackVersion"
   }
 }
@@ -127,10 +140,10 @@ project("spring-data-rest-core") {
   dependencies {
 
     // Spring
-    compile("org.springframework:spring-aop:$springVersion") { force = true }
-    compile("org.springframework:spring-core:$springVersion") { force = true }
-    compile("org.springframework:spring-beans:$springVersion") { force = true }
-    compile("org.springframework:spring-web:$springVersion") { force = true }
+    compile "org.springframework:spring-aop:$springVersion"
+    compile "org.springframework:spring-core:$springVersion"
+    compile "org.springframework:spring-beans:$springVersion"
+    compile "org.springframework:spring-web:$springVersion"
     runtime "cglib:cglib-nodep:$cglibVersion"
 
     // Spring HATEOAS
@@ -203,7 +216,7 @@ project("spring-data-rest-webmvc") {
     compile project(":spring-data-rest-repository")
 
     // Spring
-    compile("org.springframework:spring-webmvc:$springVersion") { force = true }
+    compile "org.springframework:spring-webmvc:$springVersion"
 
     // APIs
     compile("javax.servlet:javax.servlet-api:3.0.1", provided)
@@ -213,8 +226,8 @@ project("spring-data-rest-webmvc") {
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
     testCompile "org.mozilla:rhino:1.7R4"
     // Spring Data
-    testCompile("org.springframework:spring-core:$springVersion") { force = true }
-    testCompile("org.springframework:spring-tx:$springVersion") { force = true }
+    testCompile "org.springframework:spring-core:$springVersion"
+    testCompile "org.springframework:spring-tx:$springVersion"
     testCompile "org.springframework.data:spring-data-jpa:$sdJpaVersion"
     testCompile "org.springframework.data:spring-data-mongodb:$sdMongoVersion"
     testCompile("org.springframework.data:spring-data-gemfire:$sdGemfireVersion") {
@@ -241,18 +254,18 @@ project("spring-data-rest-example") {
 
   dependencies {
     // Spring
-    compile("org.springframework:spring-aop:$springVersion") { force = true }
-    compile("org.springframework:spring-aspects:$springVersion") { force = true }
-    compile("org.springframework:spring-beans:$springVersion") { force = true }
-    compile("org.springframework:spring-context:$springVersion") { force = true }
-    compile("org.springframework:spring-context-support:$springVersion") { force = true }
-    compile("org.springframework:spring-core:$springVersion") { force = true }
-    compile("org.springframework:spring-expression:$springVersion") { force = true }
-    compile("org.springframework:spring-jdbc:$springVersion") { force = true }
-    compile("org.springframework:spring-orm:$springVersion") { force = true }
-    compile("org.springframework:spring-tx:$springVersion") { force = true }
-    compile("org.springframework:spring-web:$springVersion") { force = true }
-    compile("org.springframework:spring-webmvc:$springVersion") { force = true }
+    compile "org.springframework:spring-aop:$springVersion"
+    compile "org.springframework:spring-aspects:$springVersion"
+    compile "org.springframework:spring-beans:$springVersion"
+    compile "org.springframework:spring-context:$springVersion"
+    compile "org.springframework:spring-context-support:$springVersion"
+    compile "org.springframework:spring-core:$springVersion"
+    compile "org.springframework:spring-expression:$springVersion"
+    compile "org.springframework:spring-jdbc:$springVersion"
+    compile "org.springframework:spring-orm:$springVersion"
+    compile "org.springframework:spring-tx:$springVersion"
+    compile "org.springframework:spring-web:$springVersion"
+    compile "org.springframework:spring-webmvc:$springVersion"
 
     compile project(":spring-data-rest-webmvc")
 
