@@ -20,7 +20,7 @@ ext {
   sdNeo4jVersion = "2.3.0.BUILD-SNAPSHOT"
 
   // Libraries
-  jacksonVersion = "2.1.2"
+  jacksonVersion = "2.2.2"
   jodaVersion = "2.1"
   hibernateVersion = "4.2.0.Final"
   hibernateValidatorVersion = "4.3.1.Final"
@@ -205,10 +205,8 @@ project("spring-data-rest-webmvc") {
     // Spring
     compile("org.springframework:spring-webmvc:$springVersion") { force = true }
 
-    // APIS
+    // APIs
     compile("javax.servlet:javax.servlet-api:3.0.1", provided)
-
-    compile("org.codehaus.jackson:jackson-core-asl:1.9.12", optional)
 
     // Testing
     testCompile "org.eclipse.jetty:jetty-servlet:$jettyVersion"
