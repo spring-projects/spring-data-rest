@@ -15,9 +15,14 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import java.util.Arrays;
 
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.repository.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -33,6 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class JpaWebTests extends AbstractWebIntegrationTests {
 
+	@Autowired ResourceMappings mappings;
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
@@ -40,6 +47,17 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Override
 	protected Iterable<String> expectedRootLinkRels() {
 		return Arrays.asList("people");
+	}
+
+	/**
+	 * @see DATAREST-99
+	 */
+	@Test
+	public void doesNotExposeCreditCardRepository() throws Exception {
+
+		mvc.perform(get("/")). //
+				andExpect(status().isOk()). //
+				andExpect(doesNotHaveLinkWithRel(mappings.getMappingFor(CreditCard.class).getRel()));
 	}
 
 	@Test

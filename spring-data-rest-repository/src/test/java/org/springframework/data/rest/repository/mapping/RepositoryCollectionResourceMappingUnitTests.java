@@ -64,6 +64,13 @@ public class RepositoryCollectionResourceMappingUnitTests {
 		assertThat(mapping.isExported(), is(true));
 	}
 
+	@Test
+	public void doesNotExposeRepositoryForPublicDomainTypeIfRepoIsPackageProtected() {
+
+		ResourceMapping mapping = new RepositoryCollectionResourceMapping(PackageProtectedRepository.class);
+		assertThat(mapping.isExported(), is(false));
+	}
+
 	public static class Person {}
 
 	@RestResource(path = "bar", rel = "foo", exported = false)
@@ -75,4 +82,8 @@ public class RepositoryCollectionResourceMappingUnitTests {
 
 	@RestResource(path = "trumpsAll")
 	interface AnnotatedAnnotatedPersonRepository extends Repository<AnnotatedPerson, Long> {}
+
+	public static class PublicClass {}
+
+	static interface PackageProtectedRepository extends Repository<PublicClass, Long> {}
 }

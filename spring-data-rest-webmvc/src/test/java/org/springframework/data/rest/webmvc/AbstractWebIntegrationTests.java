@@ -133,6 +133,19 @@ public abstract class AbstractWebIntegrationTests {
 		};
 	}
 
+	protected ResultMatcher doesNotHaveLinkWithRel(final String rel) {
+
+		return new ResultMatcher() {
+
+			@Override
+			public void match(MvcResult result) throws Exception {
+				String s = result.getResponse().getContentAsString();
+				assertThat("Expected not to find link with rel " + rel + " but found one in " + s,
+						links.findLinkWithRel(rel, s), nullValue());
+			}
+		};
+	}
+
 	@Test
 	public void exposesRootResource() throws Exception {
 

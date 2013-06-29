@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.repository.mapping;
 
+import java.lang.reflect.Modifier;
+
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.repository.annotation.RestResource;
@@ -35,6 +37,7 @@ public class RepositoryCollectionResourceMapping implements CollectionResourceMa
 
 	private final RestResource annotation;
 	private final CollectionResourceMapping domainTypeMapping;
+	private final boolean repositoryIsExportCandidate;
 
 	public RepositoryCollectionResourceMapping(Class<?> repositoryType) {
 		this(repositoryType, new EvoInflectorRelProvider());
@@ -55,6 +58,7 @@ public class RepositoryCollectionResourceMapping implements CollectionResourceMa
 		this.annotation = AnnotationUtils.findAnnotation(repositoryType, RestResource.class);
 		this.domainTypeMapping = new TypeBasedCollectionResourceMapping(RepositoriesUtils.getDomainType(repositoryType),
 				relProvider);
+		this.repositoryIsExportCandidate = Modifier.isPublic(repositoryType.getModifiers());
 	}
 
 	/* 
@@ -63,9 +67,9 @@ public class RepositoryCollectionResourceMapping implements CollectionResourceMa
 	 */
 	@Override
 	public Path getPath() {
-		
-		return annotation == null || !StringUtils.hasText(annotation.path()) ? domainTypeMapping.getPath()
-				: new Path(annotation.path());
+
+		return annotation == null || !StringUtils.hasText(annotation.path()) ? domainTypeMapping.getPath() : new Path(
+				annotation.path());
 	}
 
 	/* 
@@ -92,6 +96,6 @@ public class RepositoryCollectionResourceMapping implements CollectionResourceMa
 	 */
 	@Override
 	public Boolean isExported() {
-		return annotation == null ? domainTypeMapping.isExported() : annotation.exported();
+		return annotation == null ? repositoryIsExportCandidate && domainTypeMapping.isExported() : annotation.exported();
 	}
 }
