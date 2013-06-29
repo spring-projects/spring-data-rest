@@ -51,12 +51,23 @@ public class TypeBasedCollectionResourceMappingUnitTest {
 		assertThat(mapping.isExported(), is(true));
 	}
 
-	class Sample {
+	/**
+	 * @see DATAREST-99
+	 */
+	@Test
+	public void doesNotExportNonPublicTypesByDefault() {
 
+		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(HiddenSample.class);
+
+		assertThat(mapping.isExported(), is(false));
 	}
 
+	public interface Sample {}
+
+	interface HiddenSample {}
+
 	@RestResource(rel = "myRel")
-	class CustomizedSample {
+	interface CustomizedSample {
 
 	}
 }

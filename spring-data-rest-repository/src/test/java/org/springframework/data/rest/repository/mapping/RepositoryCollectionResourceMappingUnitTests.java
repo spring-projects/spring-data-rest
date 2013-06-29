@@ -64,12 +64,12 @@ public class RepositoryCollectionResourceMappingUnitTests {
 		assertThat(mapping.isExported(), is(true));
 	}
 
-	static class Person {}
+	public static class Person {}
 
 	@RestResource(path = "bar", rel = "foo", exported = false)
 	static class AnnotatedPerson {}
 
-	interface PersonRepository extends Repository<Person, Long> {}
+	public interface PersonRepository extends Repository<Person, Long> {}
 
 	interface AnnotatedPersonRepository extends Repository<AnnotatedPerson, Long> {}
 

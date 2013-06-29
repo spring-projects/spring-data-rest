@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.repository.mapping;
 
+import java.lang.reflect.Modifier;
+
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.repository.annotation.RestResource;
@@ -78,7 +80,7 @@ public class TypeBasedCollectionResourceMapping implements CollectionResourceMap
 	 */
 	@Override
 	public Boolean isExported() {
-		return annotation == null ? true : annotation.exported();
+		return annotation == null ? Modifier.isPublic(type.getModifiers()) : annotation.exported();
 	}
 
 	/* 
