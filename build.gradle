@@ -58,7 +58,7 @@ configure(allprojects) {
   configurations.all {
 
     // Hack to let Gradle pickup latest SNAPSHOTS
-    resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds'
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 
     // Force all core Spring Framework libraries into the same version
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
