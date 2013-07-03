@@ -79,12 +79,8 @@ configure(allprojects) {
   sourceSets.test.resources.srcDirs = ["src/test/resources", "src/test/java"]
 
   repositories {
-
-    mavenLocal()
-    mavenCentral()
-    maven { url "http://oss.sonatype.org/content/repositories/releases" }
-    maven { url "http://m2.neo4j.org/releases" }
     maven { url "http://repo.springsource.org/libs-snapshot" }
+    maven { url "http://m2.neo4j.org/releases" }
   }
 
   dependencies {
