@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  */
-public class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
+class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 
 	private final RestResource annotation;
 	private final CollectionResourceMapping domainTypeMapping;

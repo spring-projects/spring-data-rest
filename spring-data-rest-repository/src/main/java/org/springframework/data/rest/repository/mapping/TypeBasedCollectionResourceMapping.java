@@ -31,7 +31,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  */
-public class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
+class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 
 	private final Class<?> type;
 	private final RestResource annotation;

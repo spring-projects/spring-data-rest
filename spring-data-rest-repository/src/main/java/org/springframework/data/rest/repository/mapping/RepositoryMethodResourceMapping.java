@@ -27,7 +27,7 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  */
-public class RepositoryMethodResourceMapping implements ResourceMapping {
+class RepositoryMethodResourceMapping implements ResourceMapping {
 
 	private final boolean isExported;
 	private final String rel;

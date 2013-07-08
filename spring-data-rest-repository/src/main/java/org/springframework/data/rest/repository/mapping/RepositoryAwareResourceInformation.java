@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
 /**
  * @author Oliver Gierke
  */
-public class RepositoryAwareResourceInformation implements ResourceMetadata {
+class RepositoryAwareResourceInformation implements ResourceMetadata {
 
 	private final Repositories repositories;
 	private final CollectionResourceMapping mapping;
@@ -119,7 +119,7 @@ public class RepositoryAwareResourceInformation implements ResourceMetadata {
 	public Path getPath() {
 		return mapping.getPath();
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.repository.mapping.ResourceMetadata#getSearchResourceMappings()
@@ -128,5 +128,5 @@ public class RepositoryAwareResourceInformation implements ResourceMetadata {
 	public Map<String, ResourceMapping> getSearchResourceMappings() {
 		return provider.getSearchResourceMappings(repositoryInterface.getRepositoryInterface());
 	}
-	
+
 }
