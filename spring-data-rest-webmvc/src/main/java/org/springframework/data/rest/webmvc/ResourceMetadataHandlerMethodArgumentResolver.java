@@ -16,12 +16,16 @@
 package org.springframework.data.rest.webmvc;
 
 import static org.springframework.util.ClassUtils.*;
+import static org.springframework.util.StringUtils.*;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.rest.repository.support.RepositoryInformationSupport;
+import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.repository.mapping.ResourceMappings;
+import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -32,16 +36,39 @@ import org.springframework.web.util.UrlPathHelper;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public class RepositoryInformationHandlerMethodArgumentResolver extends RepositoryInformationSupport implements
-		HandlerMethodArgumentResolver {
+public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
+	private final Repositories repositories;
+	private final ResourceMappings mappings;
+
+	/**
+	 * @param repositories must not be {@literal null}.
+	 * @param mappings must not be {@literal null}.
+	 */
+	public ResourceMetadataHandlerMethodArgumentResolver(Repositories repositories, ResourceMappings mappings) {
+
+		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(mappings, "ResourceMappings must not be null!");
+
+		this.repositories = repositories;
+		this.mappings = mappings;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
+	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		return isAssignable(parameter.getParameterType(), RepositoryInformation.class);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
+	 */
 	@Override
-	public RepositoryInformation resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+	public ResourceMetadata resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
 		HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
@@ -59,5 +86,21 @@ public class RepositoryInformationHandlerMethodArgumentResolver extends Reposito
 		}
 
 		return findRepositoryInfoFor(parts[0]);
+	}
+
+	private ResourceMetadata findRepositoryInfoFor(String pathSegment) {
+
+		if (!hasText(pathSegment)) {
+			return null;
+		}
+
+		for (Class<?> domainType : repositories) {
+			ResourceMetadata mapping = mappings.getMappingFor(domainType);
+			if (pathSegment.equals(mapping.getPath()) && mapping.isExported()) {
+				return mapping;
+			}
+		}
+
+		return null;
 	}
 }

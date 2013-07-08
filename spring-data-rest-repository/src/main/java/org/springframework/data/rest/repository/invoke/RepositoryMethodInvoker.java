@@ -13,7 +13,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.rest.repository.support.ResourceMappingUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
@@ -22,7 +21,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  * @author Jon Brisbin
  */
 @SuppressWarnings("deprecation")
-public class RepositoryMethodInvoker implements PagingAndSortingRepository<Object, Serializable> {
+public class RepositoryMethodInvoker implements RepositoryInvoker {
 
 	private final Object repository;
 	private final Map<String, RepositoryMethod> queryMethods = new HashMap<String, RepositoryMethod>();
@@ -57,11 +56,11 @@ public class RepositoryMethodInvoker implements PagingAndSortingRepository<Objec
 				}
 				String name = method.getName();
 				int cardinality = method.getParameterTypes().length;
-				Class<?> paramType = (cardinality == 1 ? method.getParameterTypes()[0] : null);
-				boolean someMethod = (null != paramType && Iterable.class.isAssignableFrom(paramType));
-				boolean byIdMethod = (null != paramType && paramType == Serializable.class);
-				boolean sortable = (null != paramType && Sort.class.isAssignableFrom(paramType));
-				boolean pageable = (null != paramType && Pageable.class.isAssignableFrom(paramType));
+				Class<?> paramType = cardinality == 1 ? method.getParameterTypes()[0] : null;
+				boolean someMethod = null != paramType && Iterable.class.isAssignableFrom(paramType);
+				boolean byIdMethod = null != paramType && paramType == Serializable.class;
+				boolean sortable = null != paramType && Sort.class.isAssignableFrom(paramType);
+				boolean pageable = null != paramType && Pageable.class.isAssignableFrom(paramType);
 				RepositoryMethod repoMethod = new RepositoryMethod(method);
 
 				if ("save".equals(name) && someMethod) {

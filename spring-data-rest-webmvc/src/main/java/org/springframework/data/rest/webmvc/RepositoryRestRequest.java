@@ -15,19 +15,16 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.rest.core.util.UriUtils.*;
-import static org.springframework.data.rest.repository.support.ResourceMappingUtils.*;
-
 import java.net.URI;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
+import org.springframework.data.rest.repository.mapping.ResourceMetadata;
 import org.springframework.hateoas.Link;
 
 /**
@@ -39,30 +36,22 @@ class RepositoryRestRequest {
 
 	private final HttpServletRequest request;
 	private final URI baseUri;
-	private final ResourceMapping repoMapping;
+	private final ResourceMetadata resourceMetadata;
 	private final Link repoLink;
-	private final Object repository;
 	private final RepositoryMethodInvoker repoMethodInvoker;
 	private final PersistentEntity<?, ?> persistentEntity;
-	private final ResourceMapping entityMapping;
 
 	public RepositoryRestRequest(RepositoryRestConfiguration config, Repositories repositories,
-			HttpServletRequest request, URI baseUri, RepositoryInformation repoInfo, ConversionService conversionService) {
+			HttpServletRequest request, URI baseUri, ResourceMetadata repoInfo, ConversionService conversionService) {
 		this.request = request;
 		this.baseUri = baseUri;
-		this.repoMapping = getResourceMapping(config, repoInfo);
-		if (null == repoMapping || !repoMapping.isExported()) {
+		this.resourceMetadata = repoInfo;
+		if (resourceMetadata == null || !resourceMetadata.isExported()) {
 			this.repoLink = null;
-			this.repository = null;
 			this.repoMethodInvoker = null;
 			this.persistentEntity = null;
-			this.entityMapping = null;
 		} else {
-			this.repoLink = new Link(buildUri(baseUri, repoMapping.getPath()).toString(), repoMapping.getRel());
-			this.repository = repositories.getRepositoryFor(repoInfo.getDomainType());
 			this.persistentEntity = repositories.getPersistentEntity(repoInfo.getDomainType());
-			this.repoMethodInvoker = new RepositoryMethodInvoker(repository, repoInfo, conversionService);
-			this.entityMapping = getResourceMapping(config, persistentEntity);
 		}
 	}
 
@@ -74,12 +63,8 @@ class RepositoryRestRequest {
 		return baseUri;
 	}
 
-	ResourceMapping getRepositoryResourceMapping() {
-		return repoMapping;
-	}
-
-	Link getRepositoryLink() {
-		return repoLink;
+	ResourceMetadata getRepositoryResourceMapping() {
+		return resourceMetadata;
 	}
 
 	RepositoryMethodInvoker getRepositoryMethodInvoker() {
@@ -88,9 +73,5 @@ class RepositoryRestRequest {
 
 	PersistentEntity<?, ?> getPersistentEntity() {
 		return persistentEntity;
-	}
-
-	ResourceMapping getPersistentEntityResourceMapping() {
-		return entityMapping;
 	}
 }

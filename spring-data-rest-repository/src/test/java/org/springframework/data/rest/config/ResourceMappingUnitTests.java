@@ -25,12 +25,8 @@ import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.repository.annotation.RestResource;
-import org.springframework.data.rest.repository.domain.jpa.AnnotatedPersonRepository;
 import org.springframework.data.rest.repository.domain.jpa.Person;
-import org.springframework.data.rest.repository.domain.jpa.PlainPersonRepository;
-import org.springframework.data.rest.repository.mapping.RepositoryCollectionResourceMapping;
 import org.springframework.data.rest.repository.mapping.ResourceMapping;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
@@ -44,27 +40,6 @@ import org.springframework.hateoas.core.EvoInflectorRelProvider;
 public class ResourceMappingUnitTests {
 
 	RelProvider relProvider = new EvoInflectorRelProvider();
-	
-
-	@Test
-	public void shouldDetectDefaultRelAndPath() throws Exception {
-
-		ResourceMapping newMapping = new RepositoryCollectionResourceMapping(PlainPersonRepository.class, relProvider);
-
-		assertThat(newMapping.getRel(), is("persons"));
-		assertThat(newMapping.getPath(), is(new Path("person")));
-		assertThat(newMapping.isExported(), is(true));
-	}
-
-	@Test
-	public void shouldDetectAnnotatedRelAndPath() throws Exception {
-
-		ResourceMapping newMapping = new RepositoryCollectionResourceMapping(AnnotatedPersonRepository.class, relProvider);
-
-		assertThat(newMapping.getRel(), is("people"));
-		assertThat(newMapping.getPath(), is(new Path("person")));
-		assertThat(newMapping.isExported(), is(false));
-	}
 
 	@Test
 	public void shouldDetectPathAndRemoveLeadingSlashIfAny() {

@@ -33,8 +33,8 @@ import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
+import org.springframework.data.rest.repository.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.ExceptionMessage;
 import org.springframework.data.rest.webmvc.support.RepositoryConstraintViolationExceptionMessage;
 import org.springframework.data.rest.webmvc.support.ValidationExceptionHandler;
@@ -196,8 +196,8 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 	}
 
 	protected Link resourceLink(RepositoryRestRequest repoRequest, Resource resource) {
-		ResourceMapping repoMapping = repoRequest.getRepositoryResourceMapping();
-		ResourceMapping entityMapping = repoRequest.getPersistentEntityResourceMapping();
+		ResourceMetadata repoMapping = repoRequest.getRepositoryResourceMapping();
+		ResourceMetadata entityMapping = repoRequest.getPersistentEntityResourceMapping();
 
 		Link selfLink = resource.getLink("self");
 		String rel = repoMapping.getRel() + "." + entityMapping.getRel();
@@ -205,11 +205,11 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	protected Resources resultToResources(Object result, Link baseLink) {
+	protected Resources resultToResources(Object result) {
 
 		if (result instanceof Page) {
 			Page<Object> page = (Page<Object>) result;
-			return entitiesToResources(page, baseLink, assembler);
+			return entitiesToResources(page, assembler);
 		} else if (result instanceof Iterable) {
 			return entitiesToResources((Iterable<Object>) result);
 		} else if (null == result) {
@@ -220,10 +220,10 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 		}
 	}
 
-	protected Resources<? extends Resource<Object>> entitiesToResources(Page<Object> page, Link baseLink,
-			final PagedResourcesAssembler<Object> assembler) {
+	protected Resources<? extends Resource<Object>> entitiesToResources(Page<Object> page,
+			PagedResourcesAssembler<Object> assembler) {
 
-		return assembler.toResource(page, perAssembler, baseLink);
+		return assembler.toResource(page, perAssembler);
 	}
 
 	protected Resources<Resource<Object>> entitiesToResources(Iterable<Object> entities) {

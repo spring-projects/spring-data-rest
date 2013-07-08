@@ -56,6 +56,6 @@ public class RepositoryTestsConfig {
 
 	@Bean
 	public UriDomainClassConverter uriDomainClassConverter() {
-		return new UriDomainClassConverter();
+		return new UriDomainClassConverter(repositories(), domainClassConverter());
 	}
 }

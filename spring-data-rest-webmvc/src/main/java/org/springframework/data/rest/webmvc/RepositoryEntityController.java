@@ -44,6 +44,7 @@ import org.springframework.data.rest.repository.context.BeforeCreateEvent;
 import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
+import org.springframework.data.rest.repository.mapping.ResourceMetadata;
 import org.springframework.data.rest.repository.support.DomainObjectMerger;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
@@ -134,14 +135,13 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throw new ResourceNotFoundException();
 		}
 
-		ResourceMapping repoMapping = request.getRepositoryResourceMapping();
+		ResourceMetadata repoMapping = request.getRepositoryResourceMapping();
 		if (!repoMethodInvoker.getQueryMethods().isEmpty()) {
 			links.add(entityLinks.linkForSingleResource(request.getPersistentEntity().getType(), "search").withRel(
 					repoMapping.getRel() + ".search"));
 		}
 
-		Link baseLink = request.getRepositoryLink();
-		Resources<?> resources = resultToResources(results, baseLink);
+		Resources<?> resources = resultToResources(results);
 		resources.add(links);
 		return resources;
 	}

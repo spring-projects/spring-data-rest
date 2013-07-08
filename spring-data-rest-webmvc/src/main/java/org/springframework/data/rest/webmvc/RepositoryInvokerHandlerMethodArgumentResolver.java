@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,59 +15,49 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import java.net.URI;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.data.rest.repository.invoke.RepositoryInvoker;
+import org.springframework.data.rest.repository.invoke.RepositoryInvokerFactory;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
- * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public class RepositoryRestRequestHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
+public class RepositoryInvokerHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private final ConversionService conversionService;
+	private final RepositoryRestRequestHandlerMethodArgumentResolver requestResolver;
+	private final RepositoryInvokerFactory invokerFactory;
 
-	@Autowired private RepositoryRestConfiguration config;
-	@Autowired private Repositories repositories;
-	@Autowired private ResourceMetadataHandlerMethodArgumentResolver repoInfoResolver;
-	@Autowired private BaseUriMethodArgumentResolver baseUriResolver;
-
-	public RepositoryRestRequestHandlerMethodArgumentResolver(ConversionService conversionService) {
-		this.conversionService = conversionService;
+	/**
+	 * @param requestResolver
+	 * @param invokerFactory
+	 */
+	private RepositoryInvokerHandlerMethodArgumentResolver(
+			RepositoryRestRequestHandlerMethodArgumentResolver requestResolver, RepositoryInvokerFactory invokerFactory) {
+		this.requestResolver = requestResolver;
+		this.invokerFactory = invokerFactory;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
 	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return RepositoryRestRequest.class.isAssignableFrom(parameter.getParameterType());
+		return RepositoryInvoker.class.isAssignableFrom(parameter.getParameterType());
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	public RepositoryRestRequest resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-		URI baseUri = baseUriResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
-		ResourceMetadata repoInfo = repoInfoResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
-
-		return new RepositoryRestRequest(config, repositories, webRequest.getNativeRequest(HttpServletRequest.class),
-				baseUri, repoInfo, conversionService);
+		RepositoryRestRequest request = requestResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
+		return invokerFactory.getInvokerFor(request.getPersistentEntity().getType());
 	}
 }
