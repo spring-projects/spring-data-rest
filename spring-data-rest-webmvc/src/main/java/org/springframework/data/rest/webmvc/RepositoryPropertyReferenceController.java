@@ -44,6 +44,7 @@ import org.springframework.data.rest.repository.context.AfterLinkSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
+import org.springframework.data.rest.repository.mapping.ResourceMetadata;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
@@ -115,7 +116,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 					List<Resource<?>> resources = new ArrayList<Resource<?>>();
 
-					for (Object obj : ((Iterable<Object>) prop.propertyValue)) {
+					for (Object obj : (Iterable<Object>) prop.propertyValue) {
 						resources.add(perAssembler.toResource(obj));
 					}
 
@@ -198,7 +199,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					throw new ResourceNotFoundException();
 				}
 				if (prop.property.isCollectionLike()) {
-					for (Object obj : ((Iterable<?>) prop.propertyValue)) {
+					for (Object obj : (Iterable<?>) prop.propertyValue) {
 
 						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(obj, null);
 						String sId = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
@@ -244,22 +245,19 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			return response;
 		}
 
-		ResourceMapping repoMapping = repoRequest.getRepositoryResourceMapping();
-		ResourceMapping entityMapping = repoRequest.getPersistentEntityResourceMapping();
-		String propName = entityMapping.getNameForPath(property);
-		ResourceMapping propMapping = entityMapping.getResourceMappingFor(entityMapping.getNameForPath(property));
-		PersistentProperty<?> persistentProp = repoRequest.getPersistentEntity().getPersistentProperty(propName);
-		Class<?> propType = (persistentProp.isCollectionLike() || persistentProp.isMap() ? persistentProp
-				.getComponentType() : persistentProp.getType());
+		ResourceMetadata repoMapping = repoRequest.getRepositoryResourceMapping();
+		PersistentProperty<?> persistentProp = repoRequest.getPersistentEntity().getPersistentProperty(property);
+
+		Class<?> propType = persistentProp.isCollectionLike() || persistentProp.isMap() ? persistentProp.getComponentType()
+				: persistentProp.getType();
 		ResourceMapping propRepoMapping = getResourceMapping(config, repositories.getRepositoryInformationFor(propType));
-		String propRel = String.format("%s.%s.%s.%s", repoMapping.getRel(), entityMapping.getRel(),
-				(null != propMapping ? propMapping.getRel() : property), propRepoMapping.getRel());
+		String propRel = String.format("%s.%s.%s", repoMapping.getSingleResourceRel(), property, propRepoMapping.getRel());
 
 		Resource<?> resource = response.getBody();
 
 		List<Link> links = new ArrayList<Link>();
 
-		URI entityBaseUri = buildUri(repoRequest.getBaseUri(), repoMapping.getPath(), id, property);
+		URI entityBaseUri = buildUri(repoRequest.getBaseUri(), repoMapping.getPath().toString(), id, property);
 
 		if (resource.getContent() instanceof Iterable) {
 			for (Resource<?> res : (Iterable<Resource<?>>) resource.getContent()) {
@@ -410,8 +408,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			throw new ResourceNotFoundException();
 		}
 
-		String propertyName = repoRequest.getPersistentEntityResourceMapping().getNameForPath(propertyPath);
-		PersistentProperty<?> prop = repoRequest.getPersistentEntity().getPersistentProperty(propertyName);
+		PersistentProperty<?> prop = repoRequest.getPersistentEntity().getPersistentProperty(propertyPath);
 		if (null == prop) {
 			throw new ResourceNotFoundException();
 		}

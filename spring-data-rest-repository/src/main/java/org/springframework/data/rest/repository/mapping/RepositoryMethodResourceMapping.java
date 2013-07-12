@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.repository.annotation.RestResource;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -27,18 +28,23 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  */
-class RepositoryMethodResourceMapping implements ResourceMapping {
+class RepositoryMethodResourceMapping implements MethodResourceMapping {
 
 	private final boolean isExported;
 	private final String rel;
 	private final Path path;
+	private final Method method;
 
 	/**
 	 * Creates a new {@link RepositoryMethodResourceMapping} for the given {@link Method}.
 	 * 
 	 * @param method must not be {@literal null}.
+	 * @param resourceMapping must not be {@literal null}.
 	 */
 	public RepositoryMethodResourceMapping(Method method, ResourceMapping resourceMapping) {
+
+		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(resourceMapping, "ResourceMapping must not be null!");
 
 		RestResource annotation = AnnotationUtils.findAnnotation(method, RestResource.class);
 
@@ -49,6 +55,7 @@ class RepositoryMethodResourceMapping implements ResourceMapping {
 		String toAppend = annotation == null || !StringUtils.hasText(annotation.path()) ? method.getName() : annotation
 				.path();
 		this.path = resourcePath.slash(toAppend);
+		this.method = method;
 	}
 
 	/* 
@@ -76,5 +83,14 @@ class RepositoryMethodResourceMapping implements ResourceMapping {
 	@Override
 	public Path getPath() {
 		return path;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.repository.mapping.MethodResourceMapping#getMethod()
+	 */
+	@Override
+	public Method getMethod() {
+		return method;
 	}
 }

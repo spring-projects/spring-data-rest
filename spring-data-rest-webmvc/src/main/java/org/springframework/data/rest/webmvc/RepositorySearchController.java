@@ -15,10 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.rest.core.util.UriUtils.*;
-import static org.springframework.data.rest.repository.support.ResourceMappingUtils.*;
 import static org.springframework.data.rest.webmvc.ControllerUtils.*;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -29,15 +26,14 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.data.rest.repository.invoke.RepositoryMethod;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
-import org.springframework.data.rest.repository.support.ResourceMappingUtils;
-import org.springframework.data.rest.webmvc.support.BaseUriLinkBuilder;
+import org.springframework.data.rest.repository.mapping.ResourceMapping;
+import org.springframework.data.rest.repository.mapping.ResourceMappings;
+import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.data.rest.repository.mapping.SearchResourceMappings;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkBuilder;
 import org.springframework.hateoas.Resource;
@@ -53,22 +49,21 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Oliver Gierke
  */
 @RestController
-@SuppressWarnings("deprecation")
 class RepositorySearchController extends AbstractRepositoryRestController {
 
 	private static final String BASE_MAPPING = "/{repository}/search";
 
-	private final Repositories repositories;
-	private final RepositoryRestConfiguration config;
+	private final EntityLinks entityLinks;
+	private final ResourceMappings mappings;
 
 	@Autowired
-	public RepositorySearchController(Repositories repositories, RepositoryRestConfiguration config,
-			PagedResourcesAssembler<Object> assembler, PersistentEntityResourceAssembler<Object> perAssembler) {
+	public RepositorySearchController(PagedResourcesAssembler<Object> assembler,
+			PersistentEntityResourceAssembler<Object> perAssembler, EntityLinks entityLinks, ResourceMappings mappings) {
 
 		super(assembler, perAssembler);
 
-		this.repositories = repositories;
-		this.config = config;
+		this.entityLinks = entityLinks;
+		this.mappings = mappings;
 	}
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = { "application/json",
@@ -84,20 +79,19 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	}
 
 	protected List<Link> queryMethodLinks(URI baseUri, Class<?> domainType) {
+
 		List<Link> links = new ArrayList<Link>();
-		RepositoryInformation repoInfo = repositories.getRepositoryInformationFor(domainType);
-		ResourceMapping repoMapping = ResourceMappingUtils.merge(repoInfo.getRepositoryInterface(),
-				config.getResourceMappingForRepository(repoInfo.getRepositoryInterface()));
-		for (Method method : repoInfo.getQueryMethods()) {
-			LinkBuilder linkBuilder = BaseUriLinkBuilder.create(buildUri(baseUri, repoMapping.getPath(), "search"));
-			ResourceMapping methodMapping = ResourceMappingUtils.merge(method,
-					repoMapping.getResourceMappingFor(method.getName()));
-			if (!methodMapping.isExported()) {
+		LinkBuilder builder = entityLinks.linkFor(domainType).slash("search");
+
+		for (ResourceMapping mapping : mappings.getSearchResourceMappings(domainType)) {
+
+			if (!mapping.isExported()) {
 				continue;
 			}
-			links
-					.add(linkBuilder.slash(methodMapping.getPath()).withRel(repoMapping.getRel() + "." + methodMapping.getRel()));
+
+			links.add(builder.slash(mapping.getPath().toString()).withRel(mapping.getRel()));
 		}
+
 		return links;
 	}
 
@@ -106,34 +100,28 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	@ResponseBody
 	public ResourceSupport query(final RepositoryRestRequest repoRequest, @PathVariable String repository,
 			@PathVariable String method, Pageable pageable) throws ResourceNotFoundException {
+
 		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
+
 		if (repoMethodInvoker.getQueryMethods().isEmpty()) {
 			throw new ResourceNotFoundException();
 		}
 
-		ResourceMapping repoMapping = repoRequest.getRepositoryResourceMapping();
-		String methodName = repoMapping.getNameForPath(method);
-		RepositoryMethod repoMethod = repoMethodInvoker.getQueryMethods().get(methodName);
-		if (null == repoMethod) {
-			for (RepositoryMethod queryMethod : repoMethodInvoker.getQueryMethods().values()) {
-				String path = findPath(queryMethod.getMethod());
-				if (path.equals(method)) {
-					repoMethod = queryMethod;
-					break;
-				}
-			}
-			if (null == repoMethod) {
-				throw new ResourceNotFoundException();
-			}
+		ResourceMetadata repoMapping = repoRequest.getRepositoryResourceMapping();
+
+		SearchResourceMappings searchResourceMappings = repoMapping.getSearchResourceMappings();
+		Method mappedMethod = searchResourceMappings.getMappedMethod(method);
+
+		if (mappedMethod == null) {
+			throw new ResourceNotFoundException();
 		}
 
+		RepositoryMethod repositoryMethod = new RepositoryMethod(mappedMethod);
+
 		Map<String, String[]> rawParameters = repoRequest.getRequest().getParameterMap();
-		Object result = repoMethodInvoker.invokeQueryMethod(repoMethod, pageable, rawParameters);
+		Object result = repoMethodInvoker.invokeQueryMethod(repositoryMethod, pageable, rawParameters);
 
-		Link baseLink = linkTo(methodOn(RepositorySearchController.class). //
-				queryCompact(repoRequest, repository, methodName, pageable)).withSelfRel();
-
-		return resultToResources(result, baseLink);
+		return resultToResources(result);
 	}
 
 	@RequestMapping(value = BASE_MAPPING + "/{method}", method = RequestMethod.GET,

@@ -74,7 +74,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 		Assert.isTrue(persistentProperty.isAssociation(), "PersistentProperty must be an association!");
 		ResourceMetadata metadata = mappings.getMappingFor(persistentProperty.getOwner().getType());
 
-		if (!metadata.isManaged(persistentProperty)) {
+		if (!metadata.isManagedResource(persistentProperty)) {
 			return false;
 		}
 

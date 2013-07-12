@@ -121,7 +121,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 				PersistentProperty persistentProperty = association.getInverse();
 
-				if (!metadata.isMapped(persistentProperty)) {
+				if (!metadata.isExported(persistentProperty)) {
 					return;
 				}
 

@@ -15,43 +15,51 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import java.io.Serializable;
 import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
 import org.springframework.data.rest.repository.mapping.ResourceMetadata;
-import org.springframework.hateoas.Link;
 
 /**
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@SuppressWarnings("deprecation")
 class RepositoryRestRequest {
 
 	private final HttpServletRequest request;
 	private final URI baseUri;
 	private final ResourceMetadata resourceMetadata;
-	private final Link repoLink;
 	private final RepositoryMethodInvoker repoMethodInvoker;
 	private final PersistentEntity<?, ?> persistentEntity;
 
 	public RepositoryRestRequest(RepositoryRestConfiguration config, Repositories repositories,
 			HttpServletRequest request, URI baseUri, ResourceMetadata repoInfo, ConversionService conversionService) {
+
 		this.request = request;
 		this.baseUri = baseUri;
 		this.resourceMetadata = repoInfo;
 		if (resourceMetadata == null || !resourceMetadata.isExported()) {
-			this.repoLink = null;
+
 			this.repoMethodInvoker = null;
 			this.persistentEntity = null;
+
 		} else {
-			this.persistentEntity = repositories.getPersistentEntity(repoInfo.getDomainType());
+
+			Class<?> domainType = repoInfo.getDomainType();
+			CrudRepository<Object, Serializable> repositoryFor = repositories.getRepositoryFor(domainType);
+			RepositoryInformation information = repositories.getRepositoryInformationFor(domainType);
+
+			this.repoMethodInvoker = new RepositoryMethodInvoker(repositoryFor, information, conversionService);
+			this.persistentEntity = repositories.getPersistentEntity(domainType);
 		}
 	}
 

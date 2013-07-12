@@ -35,7 +35,6 @@ import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.config.ResourceMapping;
 import org.springframework.data.rest.repository.PersistentEntityResource;
 import org.springframework.data.rest.repository.context.AfterCreateEvent;
 import org.springframework.data.rest.repository.context.AfterDeleteEvent;
@@ -45,6 +44,7 @@ import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
 import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
 import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.data.rest.repository.mapping.SearchResourceMappings;
 import org.springframework.data.rest.repository.support.DomainObjectMerger;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
@@ -69,7 +69,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Oliver Gierke
  */
 @RestController
-@SuppressWarnings("deprecation")
 class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
 
 	private static final String BASE_MAPPING = "/{repository}";
@@ -112,15 +111,16 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		this.publisher = publisher;
 	}
 
+	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = { "application/json",
 			"application/x-spring-data-verbose+json" })
-	@ResponseBody
 	public Resources<?> listEntities(final RepositoryRestRequest request, Pageable pageable)
 			throws ResourceNotFoundException {
-		List<Link> links = new ArrayList<Link>();
 
+		List<Link> links = new ArrayList<Link>();
 		Iterable<?> results;
 		RepositoryMethodInvoker repoMethodInvoker = request.getRepositoryMethodInvoker();
+
 		if (null == repoMethodInvoker) {
 			throw new ResourceNotFoundException();
 		}
@@ -136,9 +136,12 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		}
 
 		ResourceMetadata repoMapping = request.getRepositoryResourceMapping();
-		if (!repoMethodInvoker.getQueryMethods().isEmpty()) {
-			links.add(entityLinks.linkForSingleResource(request.getPersistentEntity().getType(), "search").withRel(
-					repoMapping.getRel() + ".search"));
+
+		SearchResourceMappings searchMappings = repoMapping.getSearchResourceMappings();
+
+		if (searchMappings.isExported()) {
+			links.add(entityLinks.linkFor(repoMapping.getDomainType()).slash(searchMappings.getPath())
+					.withRel(searchMappings.getRel()));
 		}
 
 		Resources<?> resources = resultToResources(results);
@@ -270,10 +273,13 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 				&& !(repoMethodInvoker.hasDeleteOne() || repoMethodInvoker.hasDeleteOneById())) {
 			throw new HttpRequestMethodNotSupportedException("DELETE");
 		}
-		ResourceMapping methodMapping = repoRequest.getRepositoryResourceMapping().getResourceMappingFor("delete");
-		if (null != methodMapping && !methodMapping.isExported()) {
-			throw new HttpRequestMethodNotSupportedException("DELETE");
-		}
+
+		// TODO: re-enable not exposing delete method if hidden
+
+		// ResourceMapping methodMapping = repoRequest.getRepositoryResourceMapping().getResourceMappingFor("delete");
+		// if (null != methodMapping && !methodMapping.isExported()) {
+		// throw new HttpRequestMethodNotSupportedException("DELETE");
+		// }
 
 		final Object domainObj = converter.convert(id, STRING_TYPE,
 				TypeDescriptor.valueOf(repoRequest.getPersistentEntity().getType()));

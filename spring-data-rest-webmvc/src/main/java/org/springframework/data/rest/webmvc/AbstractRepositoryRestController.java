@@ -56,7 +56,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@SuppressWarnings({ "rawtypes", "deprecation" })
+@SuppressWarnings({ "rawtypes" })
 class AbstractRepositoryRestController implements MessageSourceAware, InitializingBean {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractRepositoryRestController.class);
@@ -196,11 +196,12 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 	}
 
 	protected Link resourceLink(RepositoryRestRequest repoRequest, Resource resource) {
+
 		ResourceMetadata repoMapping = repoRequest.getRepositoryResourceMapping();
-		ResourceMetadata entityMapping = repoRequest.getPersistentEntityResourceMapping();
 
 		Link selfLink = resource.getLink("self");
-		String rel = repoMapping.getRel() + "." + entityMapping.getRel();
+		String rel = repoMapping.getSingleResourceRel();
+
 		return new Link(selfLink.getHref(), rel);
 	}
 

@@ -16,8 +16,10 @@
 package org.springframework.data.rest.repository.mapping;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.mapping.PersistentProperty;
@@ -37,12 +39,11 @@ import org.springframework.util.Assert;
  */
 public class ResourceMappings implements Iterable<ResourceMetadata> {
 
-
 	private final Repositories repositories;
 	private final RelProvider relProvider;
 
 	private final Map<Class<?>, ResourceMetadata> cache = new HashMap<Class<?>, ResourceMetadata>();
-	private final Map<Class<?>, Map<String, ResourceMapping>> searchCache = new HashMap<Class<?>, Map<String, ResourceMapping>>();
+	private final Map<Class<?>, SearchResourceMappings> searchCache = new HashMap<Class<?>, SearchResourceMappings>();
 
 	/**
 	 * Creates a new {@link ResourceMappings} using the given {@link RepositoryRestConfiguration} and {@link Repositories}
@@ -109,10 +110,12 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 	/**
 	 * Returns the {@link ResourceMapping}s for the search resources of the given type.
 	 * 
-	 * @param type
+	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	public Map<String, ResourceMapping> getSearchResourceMappings(Class<?> type) {
+	public SearchResourceMappings getSearchResourceMappings(Class<?> type) {
+
+		Assert.notNull(type, "Type must not be null!");
 
 		if (searchCache.containsKey(type)) {
 			return searchCache.get(type);
@@ -120,16 +123,16 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 
 		Class<?> domainType = RepositoriesUtils.getDomainType(type);
 		RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(domainType);
-		Map<String, ResourceMapping> mappings = new HashMap<String, ResourceMapping>();
+		List<MethodResourceMapping> mappings = new ArrayList<MethodResourceMapping>();
 		ResourceMetadata repositoryMapping = getMappingFor(repositoryInformation.getRepositoryInterface());
 
 		for (Method queryMethod : repositoryInformation.getQueryMethods()) {
-			mappings.put(queryMethod.getName(), new RepositoryMethodResourceMapping(queryMethod,
-					repositoryMapping));
+			mappings.add(new RepositoryMethodResourceMapping(queryMethod, repositoryMapping));
 		}
 
-		searchCache.put(type, mappings);
-		return mappings;
+		SearchResourceMappings searchMappings = new SearchResourceMappings(mappings);
+		searchCache.put(type, searchMappings);
+		return searchMappings;
 	}
 
 	/**

@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 public class Path {
 
 	private static final String SLASH = "/";
+	private static final String MATCH_PATTERN = "/?%s";
 
 	private final String path;
 
@@ -46,6 +47,10 @@ public class Path {
 	 */
 	private Path(String path, boolean cleanUp) {
 		this.path = cleanUp ? cleanUp(path) : path;
+	}
+
+	public boolean matches(String reference) {
+		return this.path.matches(String.format(MATCH_PATTERN, reference));
 	}
 
 	/**

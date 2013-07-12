@@ -19,9 +19,10 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.springframework.data.rest.core.Path;
 
 /**
+ * Unit tests for {@link Path}.
+ * 
  * @author Oliver Gierke
  */
 public class PathUnitTests {
@@ -45,5 +46,20 @@ public class PathUnitTests {
 
 		Path builder = new Path("foo/ ").slash("/ b a r").slash("  //foobar///   ");
 		assertThat(builder.toString(), is("/foo/bar/foobar"));
+	}
+
+	@Test
+	public void matchesWithLeadingSlash() {
+		assertThat(new Path("/foobar").matches("/foobar"), is(true));
+	}
+
+	@Test
+	public void matchesWithoutLeadingSlash() {
+		assertThat(new Path("/foobar").matches("foobar"), is(true));
+	}
+
+	@Test
+	public void doesNotMatchIfDifferent() {
+		assertThat(new Path("/foobar").matches("barfoo"), is(false));
 	}
 }

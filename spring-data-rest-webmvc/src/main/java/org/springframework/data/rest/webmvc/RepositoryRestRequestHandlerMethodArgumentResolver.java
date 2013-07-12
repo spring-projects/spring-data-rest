@@ -67,6 +67,8 @@ public class RepositoryRestRequestHandlerMethodArgumentResolver implements Handl
 		URI baseUri = baseUriResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 		ResourceMetadata repoInfo = repoInfoResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 
+		// TODO reject if ResourceMetadata cannot be resolved
+
 		return new RepositoryRestRequest(config, repositories, webRequest.getNativeRequest(HttpServletRequest.class),
 				baseUri, repoInfo, conversionService);
 	}

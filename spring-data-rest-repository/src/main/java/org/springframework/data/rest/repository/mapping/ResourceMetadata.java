@@ -15,20 +15,51 @@
  */
 package org.springframework.data.rest.repository.mapping;
 
-import java.util.Map;
-
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
+ * Interface for metadata of resources exposed throught the system.
+ * 
  * @author Oliver Gierke
  */
 public interface ResourceMetadata extends CollectionResourceMapping {
 
-	boolean isManaged(PersistentProperty<?> property);
-	
-	boolean isMapped(PersistentProperty<?> property);
+	/**
+	 * Returns the domain type that is exposed through the resource.
+	 * 
+	 * @return
+	 */
+	Class<?> getDomainType();
 
+	/**
+	 * Returns whether the type of the given {@link PersistentProperty} is exposed as resource itself.
+	 * 
+	 * @param property must not be {@literal null}.
+	 * @return
+	 */
+	boolean isManagedResource(PersistentProperty<?> property);
+
+	/**
+	 * Returns whether the given {@link PersistentProperty} is a managed resource and in fact exported.
+	 * 
+	 * @param property must not be {@literal null}.
+	 * @return
+	 */
+	boolean isExported(PersistentProperty<?> property);
+
+	/**
+	 * Returns the {@link ResourceMapping} for the given {@link PersistentProperty} or {@literal null} if not managed.
+	 * 
+	 * @param property must not be {@literal null}.
+	 * @return
+	 */
 	ResourceMapping getMappingFor(PersistentProperty<?> property);
-	
-	Map<String, ResourceMapping> getSearchResourceMappings(); 
+
+	/**
+	 * Returns the {@link SearchResourceMappings}, i.e. the mappings for the search resource exposed for the current
+	 * resource.
+	 * 
+	 * @return
+	 */
+	SearchResourceMappings getSearchResourceMappings();
 }

@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.repository.mapping;
 
-import java.util.Map;
-
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.PersistentProperty;
@@ -59,10 +57,21 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 
 	/* 
 	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.repository.mapping.ResourceMetadata#getDomainType()
+	 */
+	@Override
+	public Class<?> getDomainType() {
+		return repositoryInterface.getDomainType();
+	}
+
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.repository.mapping.DelegatingResourceInformation#isManaged(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@Override
-	public boolean isManaged(PersistentProperty<?> property) {
+	public boolean isManagedResource(PersistentProperty<?> property) {
+
+		Assert.notNull(property, "PersistentProperty must not be null!");
 		return repositories.hasRepositoryFor(property.getActualType());
 	}
 
@@ -80,7 +89,7 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	 * @see org.springframework.data.rest.repository.mapping.ResourceMetadataProvider#hasMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@Override
-	public boolean isMapped(PersistentProperty<?> property) {
+	public boolean isExported(PersistentProperty<?> property) {
 		return provider.isMapped(property);
 	}
 
@@ -125,8 +134,7 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	 * @see org.springframework.data.rest.repository.mapping.ResourceMetadata#getSearchResourceMappings()
 	 */
 	@Override
-	public Map<String, ResourceMapping> getSearchResourceMappings() {
+	public SearchResourceMappings getSearchResourceMappings() {
 		return provider.getSearchResourceMappings(repositoryInterface.getRepositoryInterface());
 	}
-
 }

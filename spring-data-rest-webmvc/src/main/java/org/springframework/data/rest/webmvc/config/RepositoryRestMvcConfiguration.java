@@ -43,10 +43,10 @@ import org.springframework.data.rest.repository.support.DomainObjectMerger;
 import org.springframework.data.rest.webmvc.BaseUriMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver;
-import org.springframework.data.rest.webmvc.RepositoryInformationHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
 import org.springframework.data.rest.webmvc.RepositoryRestRequestHandlerMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.ResourceMetadataHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.RestController;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
@@ -119,7 +119,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public UriDomainClassConverter uriDomainClassConverter() {
-		return new UriDomainClassConverter();
+		return new UriDomainClassConverter(repositories(), domainClassConverter());
 	}
 
 	/**
@@ -196,16 +196,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	/**
-	 * Resolves the {@link org.springframework.data.repository.core.RepositoryInformation} for this request.
-	 * 
-	 * @return
-	 */
-	@Bean
-	public RepositoryInformationHandlerMethodArgumentResolver repoInfoMethodArgumentResolver() {
-		return new RepositoryInformationHandlerMethodArgumentResolver();
-	}
-
-	/**
 	 * Turns an {@link javax.servlet.http.HttpServletRequest} into a
 	 * {@link org.springframework.http.server.ServerHttpRequest}.
 	 * 
@@ -224,6 +214,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public RepositoryRestRequestHandlerMethodArgumentResolver repoRequestArgumentResolver() {
 		return new RepositoryRestRequestHandlerMethodArgumentResolver(defaultConversionService());
+	}
+
+	@Bean
+	public ResourceMetadataHandlerMethodArgumentResolver resourceMetadataHandlerMethodArgumentResolver() {
+		return new ResourceMetadataHandlerMethodArgumentResolver(repositories(), resourceMappings());
 	}
 
 	/**
@@ -258,7 +253,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public PersistentEntityToJsonSchemaConverter jsonSchemaConverter() {
-		return new PersistentEntityToJsonSchemaConverter();
+		return new PersistentEntityToJsonSchemaConverter(repositories(), resourceMappings());
 	}
 
 	/**
@@ -391,8 +386,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 		return Arrays.asList(baseUriMethodArgumentResolver(), pageableResolver(), sortResolver(),
-				serverHttpRequestMethodArgumentResolver(), repoInfoMethodArgumentResolver(), repoRequestArgumentResolver(),
-				persistentEntityArgumentResolver());
+				serverHttpRequestMethodArgumentResolver(), repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
+				resourceMetadataHandlerMethodArgumentResolver());
 	}
 
 	/**

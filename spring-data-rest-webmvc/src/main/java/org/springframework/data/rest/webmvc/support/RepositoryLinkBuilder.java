@@ -60,7 +60,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 
 		String propName = property.getName();
 
-		if (metadata.isManaged(property)) {
+		if (metadata.isManagedResource(property)) {
 			return slash(metadata.getMappingFor(property).getPath());
 		} else {
 			return slash(propName);
