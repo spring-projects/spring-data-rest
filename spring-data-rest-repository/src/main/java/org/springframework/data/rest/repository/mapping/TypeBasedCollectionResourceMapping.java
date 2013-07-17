@@ -70,7 +70,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	public Path getPath() {
 
 		String path = annotation == null ? null : annotation.path().trim();
-		path = StringUtils.hasText(path) ? path : StringUtils.uncapitalize(type.getSimpleName());
+		path = StringUtils.hasText(path) ? path : getDefaultPathFor(type);
 		return new Path(path);
 	}
 
@@ -104,5 +104,15 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	@Override
 	public String getSingleResourceRel() {
 		return relProvider.getSingleResourceRelFor(type);
+	}
+
+	/**
+	 * Returns the default path to be used if the path is not configured manually.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	protected String getDefaultPathFor(Class<?> type) {
+		return StringUtils.uncapitalize(type.getSimpleName());
 	}
 }

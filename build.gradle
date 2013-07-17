@@ -193,7 +193,7 @@ project("spring-data-rest-repository") {
     compile("javax.validation:validation-api:1.0.0.GA", optional)
 
     // Evo Inflector
-    runtime "org.atteo:evo-inflector:${evoVersion}"
+    compile "org.atteo:evo-inflector:${evoVersion}"
 
     // Testing
     testCompile "org.hsqldb:hsqldb:$hsqldbVersion"

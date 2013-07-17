@@ -24,6 +24,7 @@ import org.springframework.data.rest.repository.support.RepositoriesUtils;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -34,6 +35,8 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  */
 class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
+
+	private final boolean EVO_INFLECTOR_IS_PRESENT = ClassUtils.isPresent("org.atteo.evo.inflector.English", null);
 
 	private final RestResource annotation;
 	private final CollectionResourceMapping domainTypeMapping;
@@ -56,9 +59,11 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		Assert.notNull(relProvider, "RelProvider must not be null!");
 
 		this.annotation = AnnotationUtils.findAnnotation(repositoryType, RestResource.class);
-		this.domainTypeMapping = new TypeBasedCollectionResourceMapping(RepositoriesUtils.getDomainType(repositoryType),
-				relProvider);
 		this.repositoryIsExportCandidate = Modifier.isPublic(repositoryType.getModifiers());
+
+		Class<?> domainType = RepositoriesUtils.getDomainType(repositoryType);
+		this.domainTypeMapping = EVO_INFLECTOR_IS_PRESENT ? new EvoInflectorTypeBasedCollectionResourceMapping(domainType,
+				relProvider) : new TypeBasedCollectionResourceMapping(domainType, relProvider);
 	}
 
 	/* 
