@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc.gemfire.core;
+package org.springframework.data.rest.webmvc.gemfire;
 
 import java.util.Collections;
 import java.util.HashSet;

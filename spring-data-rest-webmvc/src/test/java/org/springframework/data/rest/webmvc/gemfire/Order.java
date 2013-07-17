@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc.gemfire.order;
+package org.springframework.data.rest.webmvc.gemfire;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -21,8 +21,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.data.gemfire.mapping.Region;
-import org.springframework.data.rest.webmvc.gemfire.core.AbstractPersistentEntity;
-import org.springframework.data.rest.webmvc.gemfire.core.Address;
 import org.springframework.util.Assert;
 
 /**
@@ -38,7 +36,7 @@ public class Order extends AbstractPersistentEntity {
 	private Set<LineItem> lineItems = new HashSet<LineItem>();
 
 	/**
-	 * Creates a new {@link Order} for the given {@link org.springframework.data.rest.webmvc.gemfire.core.Customer}.
+	 * Creates a new {@link Order} for the given {@link org.springframework.data.rest.webmvc.gemfire.Customer}.
 	 * 
 	 * @param id order ID
 	 * @param customerId must not be {@literal null}.
@@ -65,7 +63,7 @@ public class Order extends AbstractPersistentEntity {
 	}
 
 	/**
-	 * Returns the id of the {@link org.springframework.data.rest.webmvc.gemfire.core.Customer} who placed the
+	 * Returns the id of the {@link org.springframework.data.rest.webmvc.gemfire.Customer} who placed the
 	 * {@link Order}.
 	 * 
 	 * @return

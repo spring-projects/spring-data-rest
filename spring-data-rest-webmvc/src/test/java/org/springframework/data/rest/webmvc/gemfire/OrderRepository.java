@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc.gemfire.order;
+package org.springframework.data.rest.webmvc.gemfire;
 
 import java.util.List;
 
@@ -24,5 +24,6 @@ import org.springframework.data.repository.CrudRepository;
  * @author David Turanski
  */
 public interface OrderRepository extends CrudRepository<Order, Long> {
+
 	List<Order> findByCustomerId(Long customerId);
 }

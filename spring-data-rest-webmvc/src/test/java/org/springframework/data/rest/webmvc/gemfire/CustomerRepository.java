@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc.gemfire.core;
+package org.springframework.data.rest.webmvc.gemfire;
 
 import java.util.List;
 
@@ -26,7 +26,6 @@ import org.springframework.data.repository.query.Param;
  * @author Oliver Gierke
  * @author David Turanski
  */
-
 public interface CustomerRepository extends CrudRepository<Customer, Long> {
 
 	/**
@@ -44,5 +43,4 @@ public interface CustomerRepository extends CrudRepository<Customer, Long> {
 	 * @return
 	 */
 	Customer findByEmailAddress(@Param("email") EmailAddress emailAddress);
-
 }

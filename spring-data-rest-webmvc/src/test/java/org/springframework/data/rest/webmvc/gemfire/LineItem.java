@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc.gemfire.order;
+package org.springframework.data.rest.webmvc.gemfire;
 
 import java.math.BigDecimal;
 
-import org.springframework.data.rest.webmvc.gemfire.core.Product;
 import org.springframework.util.Assert;
 
 /**
