@@ -17,7 +17,6 @@ package org.springframework.data.rest.webmvc;
 
 import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,6 +29,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.DomainClassConverter;
@@ -42,7 +42,7 @@ import org.springframework.data.rest.repository.context.AfterSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeCreateEvent;
 import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeSaveEvent;
-import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
+import org.springframework.data.rest.repository.invoke.RepositoryInvoker;
 import org.springframework.data.rest.repository.mapping.ResourceMetadata;
 import org.springframework.data.rest.repository.mapping.SearchResourceMappings;
 import org.springframework.data.rest.repository.support.DomainObjectMerger;
@@ -55,9 +55,6 @@ import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionOperations;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -80,8 +77,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	private final ConversionService conversionService;
 	private final DomainObjectMerger domainObjectMerger;
 
-	private final TransactionOperations txOperations;
-
 	private ApplicationEventPublisher publisher;
 
 	@Autowired
@@ -98,8 +93,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		this.converter = converter;
 		this.conversionService = conversionService;
 		this.domainObjectMerger = domainObjectMerger;
-
-		this.txOperations = null;
 	}
 
 	/*
@@ -114,33 +107,28 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = { "application/json",
 			"application/x-spring-data-verbose+json" })
-	public Resources<?> listEntities(final RepositoryRestRequest request, Pageable pageable)
+	public Resources<?> listEntities(final RepositoryRestRequest request, Pageable pageable, Sort sort)
 			throws ResourceNotFoundException {
 
 		List<Link> links = new ArrayList<Link>();
 		Iterable<?> results;
-		RepositoryMethodInvoker repoMethodInvoker = request.getRepositoryMethodInvoker();
+		RepositoryInvoker repoMethodInvoker = request.getRepositoryInvoker();
 
 		if (null == repoMethodInvoker) {
 			throw new ResourceNotFoundException();
 		}
 
-		if (repoMethodInvoker.hasFindAllPageable()) {
-			results = repoMethodInvoker.findAll(pageable);
-		} else if (repoMethodInvoker.hasFindAllSorted()) {
-			results = repoMethodInvoker.findAll(pageable.getSort());
-		} else if (repoMethodInvoker.hasFindAll()) {
-			results = repoMethodInvoker.findAll();
+		if (pageable != null) {
+			results = repoMethodInvoker.invokeFindAll(pageable);
 		} else {
-			throw new ResourceNotFoundException();
+			results = repoMethodInvoker.invokeFindAll(sort);
 		}
 
-		ResourceMetadata repoMapping = request.getRepositoryResourceMapping();
-
-		SearchResourceMappings searchMappings = repoMapping.getSearchResourceMappings();
+		ResourceMetadata metadata = request.getResourceMetadata();
+		SearchResourceMappings searchMappings = metadata.getSearchResourceMappings();
 
 		if (searchMappings.isExported()) {
-			links.add(entityLinks.linkFor(repoMapping.getDomainType()).slash(searchMappings.getPath())
+			links.add(entityLinks.linkFor(metadata.getDomainType()).slash(searchMappings.getPath())
 					.withRel(searchMappings.getRel()));
 		}
 
@@ -149,13 +137,13 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		return resources;
 	}
 
+	@ResponseBody
 	@SuppressWarnings({ "unchecked" })
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = {
 			"application/x-spring-data-compact+json", "text/uri-list" })
-	@ResponseBody
-	public Resources<?> listEntitiesCompact(final RepositoryRestRequest repoRequest, Pageable pageable)
-			throws ResourceNotFoundException {
-		Resources<?> resources = listEntities(repoRequest, pageable);
+	public Resources<?> listEntitiesCompact(final RepositoryRestRequest repoRequest, Pageable pageable, Sort sort) {
+
+		Resources<?> resources = listEntities(repoRequest, pageable, sort);
 		List<Link> links = new ArrayList<Link>(resources.getLinks());
 
 		for (Resource<?> resource : ((Resources<Resource<?>>) resources).getContent()) {
@@ -169,18 +157,19 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		}
 	}
 
+	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.POST, consumes = { "application/json" }, produces = {
 			"application/json", "text/uri-list" })
-	@ResponseBody
 	public ResponseEntity<Resource<?>> createNewEntity(RepositoryRestRequest repoRequest,
 			PersistentEntityResource<?> incoming) {
-		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if (null == repoMethodInvoker || !repoMethodInvoker.hasSaveOne()) {
+
+		RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
+		if (!invoker.exposesSave()) {
 			throw new NoSuchMethodError();
 		}
 
 		publisher.publishEvent(new BeforeCreateEvent(incoming.getContent()));
-		Object obj = repoMethodInvoker.save(incoming.getContent());
+		Object obj = invoker.invokeSave(incoming.getContent());
 		publisher.publishEvent(new AfterCreateEvent(obj));
 
 		Link selfLink = perAssembler.getSelfLinkFor(obj);
@@ -202,59 +191,58 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @return
 	 * @throws ResourceNotFoundException
 	 */
+	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.GET, produces = { "application/json",
 			"application/x-spring-data-compact+json", "text/uri-list" })
-	@ResponseBody
-	public Resource<?> getSingleEntity(RepositoryRestRequest repoRequest, @PathVariable String id)
-			throws ResourceNotFoundException {
-		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if (null == repoMethodInvoker || !repoMethodInvoker.hasFindOne()) {
-			throw new ResourceNotFoundException();
+	public ResponseEntity<Resource<?>> getSingleEntity(RepositoryRestRequest repoRequest, @PathVariable String id) {
+
+		RepositoryInvoker repoMethodInvoker = repoRequest.getRepositoryInvoker();
+
+		if (!repoMethodInvoker.exposesFindOne()) {
+			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND);
 		}
 
-		Object domainObj = converter.convert(id, STRING_TYPE,
-				TypeDescriptor.valueOf(repoRequest.getPersistentEntity().getType()));
+		Object domainObj = repoMethodInvoker.invokeFindOne(id);
 
-		if (null == domainObj) {
-			throw new ResourceNotFoundException();
+		if (domainObj == null) {
+			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND);
 		}
 
-		return perAssembler.toResource(domainObj);
+		return new ResponseEntity<Resource<?>>(perAssembler.toResource(domainObj), HttpStatus.OK);
 	}
 
 	/**
 	 * {@code PUT / repository}/{id}} - Updates an existing entity or creates one at exactly that place.
 	 * 
-	 * @param repoRequest
+	 * @param request
 	 * @param incoming
 	 * @param id
 	 * @return
-	 * @throws ResourceNotFoundException
 	 */
+	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PUT, consumes = { "application/json" },
 			produces = { "application/json", "text/uri-list" })
-	@ResponseBody
-	public ResponseEntity<Resource<?>> updateEntity(RepositoryRestRequest repoRequest,
-			PersistentEntityResource<Object> incoming, @PathVariable String id) throws ResourceNotFoundException {
+	public ResponseEntity<Resource<?>> updateEntity(RepositoryRestRequest request,
+			PersistentEntityResource<Object> incoming, @PathVariable String id) {
 
-		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if (null == repoMethodInvoker || !repoMethodInvoker.hasSaveOne() || !repoMethodInvoker.hasFindOne()) {
-			throw new NoSuchMethodError();
+		RepositoryInvoker invoker = request.getRepositoryInvoker();
+		if (!invoker.exposesSave() || !invoker.exposesFindOne()) {
+			return new ResponseEntity<Resource<?>>(HttpStatus.METHOD_NOT_ALLOWED);
 		}
 
 		Object domainObj = converter.convert(id, STRING_TYPE,
-				TypeDescriptor.valueOf(repoRequest.getPersistentEntity().getType()));
+				TypeDescriptor.valueOf(request.getPersistentEntity().getType()));
 		if (null == domainObj) {
 			BeanWrapper<?, Object> incomingWrapper = BeanWrapper.create(incoming.getContent(), conversionService);
 			PersistentProperty<?> idProp = incoming.getPersistentEntity().getIdProperty();
 			incomingWrapper.setProperty(idProp, conversionService.convert(id, idProp.getType()));
-			return createNewEntity(repoRequest, incoming);
+			return createNewEntity(request, incoming);
 		}
 
 		domainObjectMerger.merge(incoming.getContent(), domainObj);
 
 		publisher.publishEvent(new BeforeSaveEvent(incoming.getContent()));
-		Object obj = repoMethodInvoker.save(domainObj);
+		Object obj = invoker.invokeSave(domainObj);
 		publisher.publishEvent(new AfterSaveEvent(obj));
 
 		if (config.isReturnBodyOnUpdate()) {
@@ -268,10 +256,11 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@ResponseBody
 	public ResponseEntity<?> deleteEntity(final RepositoryRestRequest repoRequest, @PathVariable final String id)
 			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
-		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if (null == repoMethodInvoker || !repoMethodInvoker.hasFindOne()
-				&& !(repoMethodInvoker.hasDeleteOne() || repoMethodInvoker.hasDeleteOneById())) {
-			throw new HttpRequestMethodNotSupportedException("DELETE");
+
+		RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
+
+		if (!invoker.exposesDelete() || !invoker.exposesFindOne()) {
+			throw new HttpRequestMethodNotSupportedException(RequestMethod.DELETE.toString());
 		}
 
 		// TODO: re-enable not exposing delete method if hidden
@@ -281,36 +270,10 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		// throw new HttpRequestMethodNotSupportedException("DELETE");
 		// }
 
-		final Object domainObj = converter.convert(id, STRING_TYPE,
-				TypeDescriptor.valueOf(repoRequest.getPersistentEntity().getType()));
-		if (null == domainObj) {
-			throw new ResourceNotFoundException();
-		}
+		Object domainObj = invoker.invokeFindOne(id);
 
 		publisher.publishEvent(new BeforeDeleteEvent(domainObj));
-		TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
-			@Override
-			@SuppressWarnings({ "unchecked" })
-			protected void doInTransactionWithoutResult(TransactionStatus status) {
-				if (repoMethodInvoker.hasDeleteOneById()) {
-					Class<? extends Serializable> idType = (Class<? extends Serializable>) repoRequest.getPersistentEntity()
-							.getIdProperty().getType();
-					final Serializable idVal = conversionService.convert(id, idType);
-					repoMethodInvoker.delete(idVal);
-				} else if (repoMethodInvoker.hasDeleteOne()) {
-					repoMethodInvoker.delete(domainObj);
-				}
-			}
-		};
-
-		// FIXME
-
-		if (txOperations != null) {
-			txOperations.execute(callback);
-		} else {
-			callback.doInTransaction(null);
-		}
-
+		invoker.invokeDelete(id);
 		publisher.publishEvent(new AfterDeleteEvent(domainObj));
 
 		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);

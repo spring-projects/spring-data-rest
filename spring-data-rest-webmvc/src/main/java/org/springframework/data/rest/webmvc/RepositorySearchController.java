@@ -26,8 +26,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.rest.repository.invoke.RepositoryMethod;
-import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
+import org.springframework.data.rest.repository.invoke.RepositoryInvoker;
 import org.springframework.data.rest.repository.mapping.ResourceMapping;
 import org.springframework.data.rest.repository.mapping.ResourceMappings;
 import org.springframework.data.rest.repository.mapping.ResourceMetadata;
@@ -39,6 +38,8 @@ import org.springframework.hateoas.LinkBuilder;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -98,40 +99,39 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	@RequestMapping(value = BASE_MAPPING + "/{method}", method = RequestMethod.GET, produces = { "application/json",
 			"application/x-spring-data-verbose+json" })
 	@ResponseBody
-	public ResourceSupport query(final RepositoryRestRequest repoRequest, @PathVariable String repository,
-			@PathVariable String method, Pageable pageable) throws ResourceNotFoundException {
+	public ResponseEntity<ResourceSupport> query(final RepositoryRestRequest repoRequest,
+			@PathVariable String repository, @PathVariable String method, Pageable pageable) throws ResourceNotFoundException {
 
-		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
+		ResourceMetadata metadata = repoRequest.getResourceMetadata();
+		SearchResourceMappings searchMapping = metadata.getSearchResourceMappings();
 
-		if (repoMethodInvoker.getQueryMethods().isEmpty()) {
-			throw new ResourceNotFoundException();
+		if (searchMapping.isExported()) {
+			return new ResponseEntity<ResourceSupport>(HttpStatus.NOT_FOUND);
 		}
 
-		ResourceMetadata repoMapping = repoRequest.getRepositoryResourceMapping();
+		RepositoryInvoker repoMethodInvoker = repoRequest.getRepositoryInvoker();
 
-		SearchResourceMappings searchResourceMappings = repoMapping.getSearchResourceMappings();
-		Method mappedMethod = searchResourceMappings.getMappedMethod(method);
+		Method mappedMethod = searchMapping.getMappedMethod(method);
 
 		if (mappedMethod == null) {
-			throw new ResourceNotFoundException();
+			return new ResponseEntity<ResourceSupport>(HttpStatus.NOT_FOUND);
 		}
 
-		RepositoryMethod repositoryMethod = new RepositoryMethod(mappedMethod);
+		Map<String, String[]> parameters = repoRequest.getRequest().getParameterMap();
+		Object result = repoMethodInvoker.invokeQueryMethod(mappedMethod, parameters, pageable, null);
 
-		Map<String, String[]> rawParameters = repoRequest.getRequest().getParameterMap();
-		Object result = repoMethodInvoker.invokeQueryMethod(repositoryMethod, pageable, rawParameters);
-
-		return resultToResources(result);
+		return new ResponseEntity<ResourceSupport>(resultToResources(result), HttpStatus.OK);
 	}
 
+	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{method}", method = RequestMethod.GET,
 			produces = { "application/x-spring-data-compact+json" })
-	@ResponseBody
 	public ResourceSupport queryCompact(RepositoryRestRequest repoRequest, @PathVariable String repository,
-			@PathVariable String method, Pageable pageable) throws ResourceNotFoundException {
+			@PathVariable String method, Pageable pageable) {
 		List<Link> links = new ArrayList<Link>();
 
-		ResourceSupport resource = query(repoRequest, repository, method, pageable);
+		ResponseEntity<ResourceSupport> entity = query(repoRequest, repository, method, pageable);
+		ResourceSupport resource = entity.getBody();
 		links.addAll(resource.getLinks());
 
 		if (resource instanceof Resources && ((Resources<?>) resource).getContent() != null) {
@@ -148,5 +148,4 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		return new Resource<Object>(EMPTY_RESOURCE_LIST, links);
 	}
-
 }

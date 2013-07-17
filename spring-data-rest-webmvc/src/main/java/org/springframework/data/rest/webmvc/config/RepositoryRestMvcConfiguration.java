@@ -213,7 +213,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public RepositoryRestRequestHandlerMethodArgumentResolver repoRequestArgumentResolver() {
-		return new RepositoryRestRequestHandlerMethodArgumentResolver(defaultConversionService());
+		return new RepositoryRestRequestHandlerMethodArgumentResolver(repositories(), defaultConversionService(),
+				resourceMetadataHandlerMethodArgumentResolver(), baseUriMethodArgumentResolver());
 	}
 
 	@Bean

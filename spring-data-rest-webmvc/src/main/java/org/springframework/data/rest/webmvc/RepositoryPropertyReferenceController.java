@@ -43,12 +43,13 @@ import org.springframework.data.rest.repository.context.AfterLinkDeleteEvent;
 import org.springframework.data.rest.repository.context.AfterLinkSaveEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.repository.context.BeforeLinkSaveEvent;
-import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
+import org.springframework.data.rest.repository.invoke.RepositoryInvoker;
 import org.springframework.data.rest.repository.mapping.ResourceMetadata;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -149,9 +150,11 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	public ResponseEntity<Resource<?>> deletePropertyReference(final RepositoryRestRequest repoRequest,
 			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException, NoSuchMethodException,
 			HttpRequestMethodNotSupportedException {
-		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if (!repoMethodInvoker.hasDeleteOne()) {
-			throw new NoSuchMethodException();
+
+		final RepositoryInvoker repoMethodInvoker = repoRequest.getRepositoryInvoker();
+
+		if (!repoMethodInvoker.exposesDelete()) {
+			return new ResponseEntity<Resource<?>>(HttpStatus.METHOD_NOT_ALLOWED);
 		}
 
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
@@ -169,7 +172,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 				}
 
 				publisher.publishEvent(new BeforeLinkDeleteEvent(prop.wrapper.getBean(), prop.propertyValue));
-				Object result = repoMethodInvoker.save(prop.wrapper.getBean());
+				Object result = repoMethodInvoker.invokeSave(prop.wrapper.getBean());
 				publisher.publishEvent(new AfterLinkDeleteEvent(result, prop.propertyValue));
 				return null;
 			}
@@ -245,7 +248,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			return response;
 		}
 
-		ResourceMetadata repoMapping = repoRequest.getRepositoryResourceMapping();
+		ResourceMetadata repoMapping = repoRequest.getResourceMetadata();
 		PersistentProperty<?> persistentProp = repoRequest.getPersistentEntity().getPersistentProperty(property);
 
 		Class<?> propType = persistentProp.isCollectionLike() || persistentProp.isMap() ? persistentProp.getComponentType()
@@ -281,17 +284,19 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	@ResponseBody
 	public ResponseEntity<Resource<?>> createPropertyReference(final RepositoryRestRequest repoRequest,
 			final @RequestBody Resource<Object> incoming, @PathVariable String id, @PathVariable String property)
-			throws ResourceNotFoundException, NoSuchMethodException {
-		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if (!repoMethodInvoker.hasSaveOne()) {
-			throw new NoSuchMethodException();
+			throws NoSuchMethodException {
+
+		final RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
+
+		if (!invoker.exposesSave()) {
+			return new ResponseEntity<Resource<?>>(HttpStatus.METHOD_NOT_ALLOWED);
 		}
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
 			@Override
 			public Resource<?> apply(ReferencedProperty prop) {
 				if (prop.property.isCollectionLike()) {
 					Collection<Object> coll = new ArrayList<Object>();
-					if ("POST".equals(repoRequest.getRequest().getMethod())) {
+					if (HttpMethod.POST.equals(repoRequest.getRequestMethod())) {
 						coll.addAll((Collection<Object>) prop.propertyValue);
 					}
 					for (Link l : incoming.getLinks()) {
@@ -301,7 +306,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					prop.wrapper.setProperty(prop.property, coll);
 				} else if (prop.property.isMap()) {
 					Map<String, Object> m = new HashMap<String, Object>();
-					if ("POST".equals(repoRequest.getRequest().getMethod())) {
+					if (HttpMethod.POST.equals(repoRequest.getRequestMethod())) {
 						m.putAll((Map<String, Object>) prop.propertyValue);
 					}
 					for (Link l : incoming.getLinks()) {
@@ -310,7 +315,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					}
 					prop.wrapper.setProperty(prop.property, m);
 				} else {
-					if ("POST".equals(repoRequest.getRequest().getMethod())) {
+					if (HttpMethod.POST.equals(repoRequest.getRequestMethod())) {
 						throw new IllegalStateException(
 								"Cannot POST a reference to this singular property since the property type is not a List or a Map.");
 					}
@@ -323,12 +328,14 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 				}
 
 				publisher.publishEvent(new BeforeLinkSaveEvent(prop.wrapper.getBean(), prop.propertyValue));
-				Object result = repoMethodInvoker.save(prop.wrapper.getBean());
+				Object result = invoker.invokeSave(prop.wrapper.getBean());
 				publisher.publishEvent(new AfterLinkSaveEvent(result, prop.propertyValue));
 				return null;
 			}
 		};
+
 		doWithReferencedProperty(repoRequest, id, property, handler);
+
 		return ControllerUtils.toResponseEntity(null, EMPTY_RESOURCE, HttpStatus.CREATED);
 	}
 
@@ -336,10 +343,12 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	@ResponseBody
 	public ResponseEntity<Resource<?>> deletePropertyReferenceId(final RepositoryRestRequest repoRequest,
 			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId)
-			throws ResourceNotFoundException, NoSuchMethodException {
-		final RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if (!repoMethodInvoker.hasDeleteOne()) {
-			throw new NoSuchMethodException();
+			throws NoSuchMethodException {
+
+		final RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
+
+		if (!invoker.exposesDelete()) {
+			throw new NoSuchMethodError();
 		}
 
 		Function<ReferencedProperty, Resource<?>> handler = new Function<ReferencedProperty, Resource<?>>() {
@@ -373,11 +382,12 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 				}
 
 				publisher.publishEvent(new BeforeLinkDeleteEvent(prop.wrapper.getBean(), prop.propertyValue));
-				Object result = repoMethodInvoker.save(prop.wrapper.getBean());
+				Object result = invoker.invokeSave(prop.wrapper.getBean());
 				publisher.publishEvent(new AfterLinkDeleteEvent(result, prop.propertyValue));
 				return null;
 			}
 		};
+
 		doWithReferencedProperty(repoRequest, id, property, handler);
 
 		return ControllerUtils.toResponseEntity(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
@@ -395,9 +405,11 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	}
 
 	private Resource<?> doWithReferencedProperty(RepositoryRestRequest repoRequest, String id, String propertyPath,
-			Function<ReferencedProperty, Resource<?>> handler) throws ResourceNotFoundException, NoSuchMethodException {
-		RepositoryMethodInvoker repoMethodInvoker = repoRequest.getRepositoryMethodInvoker();
-		if (!repoMethodInvoker.hasFindOne()) {
+			Function<ReferencedProperty, Resource<?>> handler) throws NoSuchMethodException {
+
+		RepositoryInvoker repoMethodInvoker = repoRequest.getRepositoryInvoker();
+
+		if (!repoMethodInvoker.exposesFindOne()) {
 			throw new NoSuchMethodException();
 		}
 

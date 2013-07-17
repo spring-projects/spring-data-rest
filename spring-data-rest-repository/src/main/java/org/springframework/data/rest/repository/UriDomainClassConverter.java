@@ -91,7 +91,7 @@ public class UriDomainClassConverter implements ConditionalGenericConverter {
 
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(targetType.getType());
 
-		if (entity != null || !domainClassConverter.matches(STRING_TYPE, targetType)) {
+		if (entity == null || !domainClassConverter.matches(STRING_TYPE, targetType)) {
 			throw new ConversionFailedException(sourceType, targetType, source, new IllegalArgumentException(
 					"No PersistentEntity information available for " + targetType.getType()));
 		}

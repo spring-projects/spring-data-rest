@@ -197,7 +197,7 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 
 	protected Link resourceLink(RepositoryRestRequest repoRequest, Resource resource) {
 
-		ResourceMetadata repoMapping = repoRequest.getRepositoryResourceMapping();
+		ResourceMetadata repoMapping = repoRequest.getResourceMetadata();
 
 		Link selfLink = resource.getLink("self");
 		String rel = repoMapping.getSingleResourceRel();

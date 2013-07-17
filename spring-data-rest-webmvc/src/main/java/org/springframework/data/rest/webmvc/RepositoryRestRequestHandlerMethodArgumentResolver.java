@@ -17,14 +17,14 @@ package org.springframework.data.rest.webmvc;
 
 import java.net.URI;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.repository.invoke.RepositoryInvoker;
+import org.springframework.data.rest.repository.invoke.RepositoryInvokerFactory;
 import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -36,15 +36,29 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  */
 public class RepositoryRestRequestHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private final ConversionService conversionService;
+	private final Repositories repositories;
+	private final RepositoryInvokerFactory invokerFactory;
+	private final ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver;
+	private final BaseUriMethodArgumentResolver baseUriResolver;
 
-	@Autowired private RepositoryRestConfiguration config;
-	@Autowired private Repositories repositories;
-	@Autowired private ResourceMetadataHandlerMethodArgumentResolver repoInfoResolver;
-	@Autowired private BaseUriMethodArgumentResolver baseUriResolver;
+	/**
+	 * Creates a new {@link RepositoryRestRequestHandlerMethodArgumentResolver} using the given {@link Repositories} and
+	 * {@link ConversionService}.
+	 * 
+	 * @param repositories must not be {@literal null}.
+	 * @param conversionService must not be {@literal null}.
+	 */
+	public RepositoryRestRequestHandlerMethodArgumentResolver(Repositories repositories,
+			ConversionService conversionService, ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver,
+			BaseUriMethodArgumentResolver baseUriResolver) {
 
-	public RepositoryRestRequestHandlerMethodArgumentResolver(ConversionService conversionService) {
-		this.conversionService = conversionService;
+		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(conversionService, "ConversionService must not be null!");
+
+		this.repositories = repositories;
+		this.invokerFactory = new RepositoryInvokerFactory(repositories, conversionService);
+		this.resourceMetadataResolver = resourceMetadataResolver;
+		this.baseUriResolver = baseUriResolver;
 	}
 
 	/*
@@ -65,11 +79,14 @@ public class RepositoryRestRequestHandlerMethodArgumentResolver implements Handl
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
 		URI baseUri = baseUriResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
-		ResourceMetadata repoInfo = repoInfoResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
+		ResourceMetadata repoInfo = resourceMetadataResolver.resolveArgument(parameter, mavContainer, webRequest,
+				binderFactory);
+
+		RepositoryInvoker repositoryInvoker = invokerFactory.getInvokerFor(repoInfo.getDomainType());
+		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(repoInfo.getDomainType());
 
 		// TODO reject if ResourceMetadata cannot be resolved
 
-		return new RepositoryRestRequest(config, repositories, webRequest.getNativeRequest(HttpServletRequest.class),
-				baseUri, repoInfo, conversionService);
+		return new RepositoryRestRequest(persistentEntity, webRequest, baseUri, repoInfo, repositoryInvoker);
 	}
 }

@@ -16,11 +16,17 @@
 package org.springframework.data.rest.repository.invoke;
 
 /**
+ * Meta-information about the methods a repository exposes.
+ * 
  * @author Oliver Gierke
  */
 public interface RepositoryInvocationInformation {
 
-	boolean hasFindOne();
+	boolean exposesSave();
 
-	boolean hasFindAll();
+	boolean exposesDelete();
+
+	boolean exposesFindOne();
+
+	boolean exposesFindAll();
 }

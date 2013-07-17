@@ -15,19 +15,15 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import java.io.Serializable;
 import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.repository.invoke.RepositoryMethodInvoker;
+import org.springframework.data.rest.repository.invoke.RepositoryInvoker;
 import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.context.request.NativeWebRequest;
 
 /**
  * @author Jon Brisbin
@@ -35,48 +31,47 @@ import org.springframework.data.rest.repository.mapping.ResourceMetadata;
  */
 class RepositoryRestRequest {
 
-	private final HttpServletRequest request;
+	private final NativeWebRequest request;
 	private final URI baseUri;
 	private final ResourceMetadata resourceMetadata;
-	private final RepositoryMethodInvoker repoMethodInvoker;
+	private final RepositoryInvoker repoInvoker;
 	private final PersistentEntity<?, ?> persistentEntity;
 
-	public RepositoryRestRequest(RepositoryRestConfiguration config, Repositories repositories,
-			HttpServletRequest request, URI baseUri, ResourceMetadata repoInfo, ConversionService conversionService) {
+	public RepositoryRestRequest(PersistentEntity<?, ?> entity, NativeWebRequest request, URI baseUri,
+			ResourceMetadata repoInfo, RepositoryInvoker invoker) {
 
 		this.request = request;
 		this.baseUri = baseUri;
 		this.resourceMetadata = repoInfo;
 		if (resourceMetadata == null || !resourceMetadata.isExported()) {
 
-			this.repoMethodInvoker = null;
+			this.repoInvoker = null;
 			this.persistentEntity = null;
 
 		} else {
-
-			Class<?> domainType = repoInfo.getDomainType();
-			CrudRepository<Object, Serializable> repositoryFor = repositories.getRepositoryFor(domainType);
-			RepositoryInformation information = repositories.getRepositoryInformationFor(domainType);
-
-			this.repoMethodInvoker = new RepositoryMethodInvoker(repositoryFor, information, conversionService);
-			this.persistentEntity = repositories.getPersistentEntity(domainType);
+			this.repoInvoker = invoker;
+			this.persistentEntity = entity;
 		}
 	}
 
-	HttpServletRequest getRequest() {
+	NativeWebRequest getRequest() {
 		return request;
+	}
+
+	HttpMethod getRequestMethod() {
+		return HttpMethod.valueOf(request.getNativeRequest(HttpServletRequest.class).getMethod());
 	}
 
 	URI getBaseUri() {
 		return baseUri;
 	}
 
-	ResourceMetadata getRepositoryResourceMapping() {
+	ResourceMetadata getResourceMetadata() {
 		return resourceMetadata;
 	}
 
-	RepositoryMethodInvoker getRepositoryMethodInvoker() {
-		return repoMethodInvoker;
+	RepositoryInvoker getRepositoryInvoker() {
+		return repoInvoker;
 	}
 
 	PersistentEntity<?, ?> getPersistentEntity() {

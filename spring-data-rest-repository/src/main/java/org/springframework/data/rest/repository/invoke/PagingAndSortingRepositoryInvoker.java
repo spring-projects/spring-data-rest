@@ -17,12 +17,16 @@ package org.springframework.data.rest.repository.invoke;
 
 import java.io.Serializable;
 
-import org.springframework.data.domain.Page;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.core.RepositoryInformation;
 
 /**
+ * A special {@link RepositoryInvoker} that shortcuts invocations to methods on {@link PagingAndSortingRepository} to
+ * avoid reflection overhead introduced by the superclass.
+ * 
  * @author Oliver Gierke
  */
 class PagingAndSortingRepositoryInvoker extends CrudRepositoryInvoker {
@@ -30,28 +34,35 @@ class PagingAndSortingRepositoryInvoker extends CrudRepositoryInvoker {
 	private final PagingAndSortingRepository<Object, Serializable> repository;
 
 	/**
+	 * Creates a new {@link PagingAndSortingRepositoryInvoker} using the given repository, {@link RepositoryInformation}
+	 * and {@link ConversionService}.
+	 * 
 	 * @param repository must not be {@literal null}.
+	 * @param information must not be {@literal null}.
+	 * @param conversionService must not be {@literal null}.
 	 */
-	public PagingAndSortingRepositoryInvoker(PagingAndSortingRepository<Object, Serializable> repository) {
-		super(repository);
+	public PagingAndSortingRepositoryInvoker(PagingAndSortingRepository<Object, Serializable> repository,
+			RepositoryInformation information, ConversionService conversionService) {
+
+		super(repository, information, conversionService);
 		this.repository = repository;
 	}
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.repository.invoke.CrudRepositoryInvoker#findAll(org.springframework.data.domain.Pageable)
+	 * @see org.springframework.data.rest.repository.invoke.CrudRepositoryInvoker#invokeFindAll(org.springframework.data.domain.Sort)
 	 */
 	@Override
-	public Page<Object> findAll(Pageable pageable) {
-		return repository.findAll(pageable);
+	public Iterable<Object> invokeFindAll(Sort sort) {
+		return sort == null ? invokeFindAll() : repository.findAll(sort);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.repository.invoke.CrudRepositoryInvoker#findAll(org.springframework.data.domain.Sort)
+	 * @see org.springframework.data.rest.repository.invoke.CrudRepositoryInvoker#invokeFindAll(org.springframework.data.domain.Pageable)
 	 */
 	@Override
-	public Iterable<Object> findAll(Sort sort) {
-		return repository.findAll(sort);
+	public Iterable<Object> invokeFindAll(Pageable pageable) {
+		return pageable == null ? invokeFindAll() : repository.findAll(pageable);
 	}
 }

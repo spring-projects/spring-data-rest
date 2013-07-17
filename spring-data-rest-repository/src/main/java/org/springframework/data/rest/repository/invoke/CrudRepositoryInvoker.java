@@ -17,157 +17,88 @@ package org.springframework.data.rest.repository.invoke;
 
 import java.io.Serializable;
 
-import org.springframework.data.domain.Page;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.RepositoryInformation;
 
 /**
+ * {@link RepositoryInvoker} to shortcut execution of CRUD methods into direct calls on a {@link CrudRepository}. Used
+ * to avoid reflection overhead introduced by the base class if we know we work with a {@link CrudRepository}.
+ * 
  * @author Oliver Gierke
  */
-class CrudRepositoryInvoker implements RepositoryInvoker {
+class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 
 	private final CrudRepository<Object, Serializable> repository;
 
 	/**
+	 * Creates a new {@link CrudRepositoryInvoker} for the given {@link CrudRepository}, {@link RepositoryInformation} and
+	 * {@link ConversionService}.
+	 * 
 	 * @param repository must not be {@literal null}.
+	 * @param information must not be {@literal null}.
+	 * @param conversionService must not be {@literal null}.
 	 */
-	public CrudRepositoryInvoker(CrudRepository<Object, Serializable> repository) {
+	public CrudRepositoryInvoker(CrudRepository<Object, Serializable> repository, RepositoryInformation information,
+			ConversionService conversionService) {
+
+		super(repository, information, conversionService);
 		this.repository = repository;
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.PagingAndSortingRepository#findAll(org.springframework.data.domain.Sort)
+	/**
+	 * Invokes the method equivalent to {@link CrudRepository#findAll()}.
+	 * 
+	 * @return
 	 */
-	@Override
-	public Iterable<Object> findAll(Sort sort) {
-		throw new UnsupportedOperationException();
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.PagingAndSortingRepository#findAll(org.springframework.data.domain.Pageable)
-	 */
-	@Override
-	public Page<Object> findAll(Pageable pageable) {
-		throw new UnsupportedOperationException();
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Object)
-	 */
-	@Override
-	public <S> S save(S entity) {
-		return repository.save(entity);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
-	 */
-	@Override
-	public <S> Iterable<S> save(Iterable<S> entities) {
-		return repository.save(entities);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
-	 */
-	@Override
-	public Object findOne(Serializable id) {
-		return repository.findOne(id);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#exists(java.io.Serializable)
-	 */
-	@Override
-	public boolean exists(Serializable id) {
-		return repository.exists(id);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAll()
-	 */
-	@Override
-	public Iterable<Object> findAll() {
+	protected Iterable<Object> invokeFindAll() {
 		return repository.findAll();
 	}
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
+	 * @see org.springframework.data.rest.repository.invoke.RepositoryInvoker#invokeFindAll(org.springframework.data.domain.Sort)
 	 */
 	@Override
-	public Iterable<Object> findAll(Iterable<Serializable> ids) {
-		return repository.findAll(ids);
+	public Iterable<Object> invokeFindAll(Sort pageable) {
+		return repository.findAll();
 	}
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#count()
+	 * @see org.springframework.data.rest.repository.invoke.RepositoryInvoker#invokeFindAll(org.springframework.data.domain.Pageable)
 	 */
 	@Override
-	public long count() {
-		return repository.count();
+	public Iterable<Object> invokeFindAll(Pageable pageable) {
+		return repository.findAll();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#delete(java.io.Serializable)
+	 * @see org.springframework.data.rest.repository.invoke.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 	 */
 	@Override
-	public void delete(Serializable id) {
-		repository.delete(id);
+	public Object invokeFindOne(Serializable id) {
+		return repository.findOne(convertId(id));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
+	 * @see org.springframework.data.rest.repository.invoke.ReflectionRepositoryInvoker#invokeSave(java.lang.Object)
 	 */
 	@Override
-	public void delete(Object entity) {
-		repository.delete(entity);
+	public Object invokeSave(Object entity) {
+		return repository.save(entity);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
+	 * @see org.springframework.data.rest.repository.invoke.RepositoryInvoker#invokeDelete(java.io.Serializable)
 	 */
 	@Override
-	public void delete(Iterable<? extends Object> entities) {
-		repository.delete(entities);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
-	 */
-	@Override
-	public void deleteAll() {
-		repository.deleteAll();
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.repository.invoke.RepositoryInvocationInformation#hasFindOne()
-	 */
-	@Override
-	public boolean hasFindOne() {
-		return true;
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.repository.invoke.RepositoryInvocationInformation#hasFindAll()
-	 */
-	@Override
-	public boolean hasFindAll() {
-		return true;
+	public void invokeDelete(Serializable id) {
+		repository.delete(convertId(id));
 	}
 }

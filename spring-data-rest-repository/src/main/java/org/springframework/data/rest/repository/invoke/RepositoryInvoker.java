@@ -16,13 +16,26 @@
 package org.springframework.data.rest.repository.invoke;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Map;
 
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * @author Oliver Gierke
  */
-public interface RepositoryInvoker extends PagingAndSortingRepository<Object, Serializable>,
-		RepositoryInvocationInformation {
+public interface RepositoryInvoker extends RepositoryInvocationInformation {
 
+	Object invokeSave(Object object);
+
+	Object invokeFindOne(Serializable id);
+
+	Iterable<Object> invokeFindAll(Pageable pageable);
+
+	Iterable<Object> invokeFindAll(Sort pageable);
+
+	void invokeDelete(Serializable serializable);
+
+	Object invokeQueryMethod(Method method, Map<String, String[]> parameters, Pageable pageable, Sort sort);
 }
