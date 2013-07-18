@@ -15,15 +15,13 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import java.net.URI;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.repository.invoke.RepositoryInvoker;
-import org.springframework.data.rest.repository.invoke.RepositoryInvokerFactory;
-import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.invoke.RepositoryInvoker;
+import org.springframework.data.rest.core.invoke.RepositoryInvokerFactory;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -39,7 +37,6 @@ public class RepositoryRestRequestHandlerMethodArgumentResolver implements Handl
 	private final Repositories repositories;
 	private final RepositoryInvokerFactory invokerFactory;
 	private final ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver;
-	private final BaseUriMethodArgumentResolver baseUriResolver;
 
 	/**
 	 * Creates a new {@link RepositoryRestRequestHandlerMethodArgumentResolver} using the given {@link Repositories} and
@@ -49,8 +46,7 @@ public class RepositoryRestRequestHandlerMethodArgumentResolver implements Handl
 	 * @param conversionService must not be {@literal null}.
 	 */
 	public RepositoryRestRequestHandlerMethodArgumentResolver(Repositories repositories,
-			ConversionService conversionService, ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver,
-			BaseUriMethodArgumentResolver baseUriResolver) {
+			ConversionService conversionService, ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(conversionService, "ConversionService must not be null!");
@@ -58,7 +54,6 @@ public class RepositoryRestRequestHandlerMethodArgumentResolver implements Handl
 		this.repositories = repositories;
 		this.invokerFactory = new RepositoryInvokerFactory(repositories, conversionService);
 		this.resourceMetadataResolver = resourceMetadataResolver;
-		this.baseUriResolver = baseUriResolver;
 	}
 
 	/*
@@ -78,7 +73,6 @@ public class RepositoryRestRequestHandlerMethodArgumentResolver implements Handl
 	public RepositoryRestRequest resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-		URI baseUri = baseUriResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 		ResourceMetadata repoInfo = resourceMetadataResolver.resolveArgument(parameter, mavContainer, webRequest,
 				binderFactory);
 
@@ -87,6 +81,6 @@ public class RepositoryRestRequestHandlerMethodArgumentResolver implements Handl
 
 		// TODO reject if ResourceMetadata cannot be resolved
 
-		return new RepositoryRestRequest(persistentEntity, webRequest, baseUri, repoInfo, repositoryInvoker);
+		return new RepositoryRestRequest(persistentEntity, webRequest, repoInfo, repositoryInvoker);
 	}
 }

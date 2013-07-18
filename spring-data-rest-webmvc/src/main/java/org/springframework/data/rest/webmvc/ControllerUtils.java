@@ -19,6 +19,7 @@ import java.util.Collections;
 
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -35,14 +36,14 @@ public class ControllerUtils {
 	public static final Iterable<Resource<?>> EMPTY_RESOURCE_LIST = Collections.emptyList();
 	public static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
 
-	public static <R extends Resource<?>> ResponseEntity<Resource<?>> toResponseEntity(HttpHeaders headers, R resource,
-			HttpStatus status) {
+	public static <R extends ResourceSupport> ResponseEntity<ResourceSupport> toResponseEntity(HttpHeaders headers,
+			R resource, HttpStatus status) {
 
 		HttpHeaders hdrs = new HttpHeaders();
 		if (null != headers) {
 			hdrs.putAll(headers);
 		}
 
-		return new ResponseEntity<Resource<?>>(resource, hdrs, status);
+		return new ResponseEntity<ResourceSupport>(resource, hdrs, status);
 	}
 }

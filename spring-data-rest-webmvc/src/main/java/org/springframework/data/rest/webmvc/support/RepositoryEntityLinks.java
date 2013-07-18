@@ -2,9 +2,9 @@ package org.springframework.data.rest.webmvc.support;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.repository.mapping.ResourceMappings;
-import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkBuilder;
 import org.springframework.hateoas.core.AbstractEntityLinks;

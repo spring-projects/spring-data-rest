@@ -18,7 +18,6 @@ package org.springframework.data.rest.webmvc;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.repository.PersistentEntityResource;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceAssembler;

@@ -63,6 +63,10 @@ public class Path {
 		return new Path(this.path + cleanUp(path), false);
 	}
 
+	public Path slash(Path path) {
+		return slash(path.toString());
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -79,13 +83,14 @@ public class Path {
 		}
 
 		String trimmed = path.trim().replaceAll(" ", "");
-		trimmed = SLASH + trimmed.substring(getFirstNoneSlashIndex(trimmed));
 
 		while (trimmed.endsWith("/")) {
 			trimmed = trimmed.substring(0, trimmed.length() - 1);
 		}
 
-		return trimmed;
+		trimmed = trimmed.substring(getFirstNoneSlashIndex(trimmed));
+
+		return trimmed.contains("://") ? trimmed : SLASH + trimmed;
 	}
 
 	/* 

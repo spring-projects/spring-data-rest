@@ -16,8 +16,8 @@
 package org.springframework.data.rest.webmvc;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.data.rest.repository.invoke.RepositoryInvoker;
-import org.springframework.data.rest.repository.invoke.RepositoryInvokerFactory;
+import org.springframework.data.rest.core.invoke.RepositoryInvoker;
+import org.springframework.data.rest.core.invoke.RepositoryInvokerFactory;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

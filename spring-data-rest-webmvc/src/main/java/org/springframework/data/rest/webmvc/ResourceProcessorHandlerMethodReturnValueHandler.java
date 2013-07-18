@@ -15,6 +15,14 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.springframework.data.util.ClassTypeInformation.*;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
@@ -32,14 +40,6 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import static org.springframework.data.util.ClassTypeInformation.from;
 
 /**
  * {@link HandlerMethodReturnValueHandler} to post-process the objects returned from controller methods using the

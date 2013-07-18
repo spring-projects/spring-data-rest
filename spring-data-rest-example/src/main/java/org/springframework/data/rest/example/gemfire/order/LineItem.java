@@ -17,9 +17,8 @@ package org.springframework.data.rest.example.gemfire.order;
 
 import java.math.BigDecimal;
 
-import org.springframework.util.Assert;
-
 import org.springframework.data.rest.example.gemfire.core.Product;
+import org.springframework.util.Assert;
 
 /**
  * @author Oliver Gierke

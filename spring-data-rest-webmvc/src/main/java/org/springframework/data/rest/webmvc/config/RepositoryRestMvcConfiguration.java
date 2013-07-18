@@ -32,15 +32,14 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.convert.ISO8601DateConverter;
-import org.springframework.data.rest.convert.UUIDConverter;
-import org.springframework.data.rest.repository.UriDomainClassConverter;
-import org.springframework.data.rest.repository.context.AnnotatedHandlerBeanPostProcessor;
-import org.springframework.data.rest.repository.context.ValidatingRepositoryEventListener;
-import org.springframework.data.rest.repository.mapping.ResourceMappings;
-import org.springframework.data.rest.repository.support.DomainObjectMerger;
-import org.springframework.data.rest.webmvc.BaseUriMethodArgumentResolver;
+import org.springframework.data.rest.core.UriDomainClassConverter;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.event.AnnotatedHandlerBeanPostProcessor;
+import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
+import org.springframework.data.rest.core.invoke.RepositoryInvokerFactory;
+import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.support.DomainObjectMerger;
+import org.springframework.data.rest.core.util.UUIDConverter;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
@@ -107,7 +106,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
 		conversionService.addConverter(UUIDConverter.INSTANCE);
-		conversionService.addConverter(ISO8601DateConverter.INSTANCE);
 		configureConversionService(conversionService);
 		return conversionService;
 	}
@@ -186,16 +184,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	/**
-	 * Resolves the base {@link java.net.URI} under which this application is configured.
-	 * 
-	 * @return
-	 */
-	@Bean
-	public BaseUriMethodArgumentResolver baseUriMethodArgumentResolver() {
-		return new BaseUriMethodArgumentResolver(config());
-	}
-
-	/**
 	 * Turns an {@link javax.servlet.http.HttpServletRequest} into a
 	 * {@link org.springframework.http.server.ServerHttpRequest}.
 	 * 
@@ -214,7 +202,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public RepositoryRestRequestHandlerMethodArgumentResolver repoRequestArgumentResolver() {
 		return new RepositoryRestRequestHandlerMethodArgumentResolver(repositories(), defaultConversionService(),
-				resourceMetadataHandlerMethodArgumentResolver(), baseUriMethodArgumentResolver());
+				resourceMetadataHandlerMethodArgumentResolver());
 	}
 
 	@Bean
@@ -378,6 +366,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return er;
 	}
 
+	@Bean
+	public RepositoryInvokerFactory repositoryInvokerFactory() {
+		return new RepositoryInvokerFactory(repositories(), defaultConversionService());
+	}
+
 	private List<HttpMessageConverter<?>> defaultMessageConverters() {
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
 		messageConverters.add(jacksonHttpMessageConverter());
@@ -386,8 +379,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
-		return Arrays.asList(baseUriMethodArgumentResolver(), pageableResolver(), sortResolver(),
-				serverHttpRequestMethodArgumentResolver(), repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
+		return Arrays.asList(pageableResolver(), sortResolver(), serverHttpRequestMethodArgumentResolver(),
+				repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
 				resourceMetadataHandlerMethodArgumentResolver());
 	}
 

@@ -62,4 +62,9 @@ public class PathUnitTests {
 	public void doesNotMatchIfDifferent() {
 		assertThat(new Path("/foobar").matches("barfoo"), is(false));
 	}
+
+	@Test
+	public void doesNotPrefixAbsoluteUris() {
+		assertThat(new Path("http://localhost").toString(), is("http://localhost"));
+	}
 }

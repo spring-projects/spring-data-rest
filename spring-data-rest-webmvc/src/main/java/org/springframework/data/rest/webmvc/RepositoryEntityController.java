@@ -34,23 +34,23 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.repository.PersistentEntityResource;
-import org.springframework.data.rest.repository.context.AfterCreateEvent;
-import org.springframework.data.rest.repository.context.AfterDeleteEvent;
-import org.springframework.data.rest.repository.context.AfterSaveEvent;
-import org.springframework.data.rest.repository.context.BeforeCreateEvent;
-import org.springframework.data.rest.repository.context.BeforeDeleteEvent;
-import org.springframework.data.rest.repository.context.BeforeSaveEvent;
-import org.springframework.data.rest.repository.invoke.RepositoryInvoker;
-import org.springframework.data.rest.repository.mapping.ResourceMetadata;
-import org.springframework.data.rest.repository.mapping.SearchResourceMappings;
-import org.springframework.data.rest.repository.support.DomainObjectMerger;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.event.AfterCreateEvent;
+import org.springframework.data.rest.core.event.AfterDeleteEvent;
+import org.springframework.data.rest.core.event.AfterSaveEvent;
+import org.springframework.data.rest.core.event.BeforeCreateEvent;
+import org.springframework.data.rest.core.event.BeforeDeleteEvent;
+import org.springframework.data.rest.core.event.BeforeSaveEvent;
+import org.springframework.data.rest.core.invoke.RepositoryInvoker;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.mapping.SearchResourceMappings;
+import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -160,7 +160,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.POST, consumes = { "application/json" }, produces = {
 			"application/json", "text/uri-list" })
-	public ResponseEntity<Resource<?>> createNewEntity(RepositoryRestRequest repoRequest,
+	public ResponseEntity<ResourceSupport> createNewEntity(RepositoryRestRequest repoRequest,
 			PersistentEntityResource<?> incoming) {
 
 		RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
@@ -222,7 +222,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PUT, consumes = { "application/json" },
 			produces = { "application/json", "text/uri-list" })
-	public ResponseEntity<Resource<?>> updateEntity(RepositoryRestRequest request,
+	public ResponseEntity<? extends ResourceSupport> updateEntity(RepositoryRestRequest request,
 			PersistentEntityResource<Object> incoming, @PathVariable String id) {
 
 		RepositoryInvoker invoker = request.getRepositoryInvoker();

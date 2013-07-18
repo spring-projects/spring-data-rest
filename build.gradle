@@ -10,7 +10,7 @@ ext {
 
   // Spring
   springVersion = "3.2.3.RELEASE"
-  hateoasVersion = "0.7.0.BUILD-SNAPSHOT"
+  hateoasVersion = "0.8.0.BUILD-SNAPSHOT"
   springPluginVersion = "0.8.0.RELEASE"
   springSecurityVersion = "3.1.3.RELEASE"
   sdCommonsVersion = "1.6.0.BUILD-SNAPSHOT"
@@ -124,7 +124,9 @@ configure(subprojects) { subproject ->
   }
 }
 
+
 project("spring-data-rest-core") {
+
   apply plugin: "maven"
   description = "Spring Data REST core components."
 
@@ -134,63 +136,27 @@ project("spring-data-rest-core") {
 
   dependencies {
 
+    // Spring Data Commons
+    compile "org.springframework.data:spring-data-commons:$sdCommonsVersion"
+    compile "org.springframework.hateoas:spring-hateoas:$hateoasVersion"
+    compile "org.springframework.plugin:spring-plugin-core:$springPluginVersion"
+
     // Spring
     compile "org.springframework:spring-aop:$springVersion"
     compile "org.springframework:spring-core:$springVersion"
     compile "org.springframework:spring-beans:$springVersion"
-    compile "org.springframework:spring-web:$springVersion"
+    compile "org.springframework:spring-tx:$springVersion"
     runtime "cglib:cglib-nodep:$cglibVersion"
 
-    // Spring HATEOAS
-    compile("org.springframework.hateoas:spring-hateoas:$hateoasVersion") {
-      exclude module: "spring-webmvc"
-    }
-
-    // Spring Data Commons
-    providedCompile("org.springframework.data:spring-data-commons:$sdCommonsVersion") {
-      force = true
-      exclude module: "slf4j-api"
-      exclude module: "jcl-over-slf4j"
-    }
-  }
-}
-
-project("spring-data-rest-repository") {
-  apply plugin: "maven"
-  description = "Spring Data REST Repository integration."
-
-  dependencies {
-    // Exporter core
-    compile project(":spring-data-rest-core")
-
-    // JSR-305
-    compile "com.google.code.findbugs:jsr305:2.0.1"
+    // JSR 303 Validation
+    compile("javax.validation:validation-api:1.0.0.GA", optional)
 
     // JODA
     compile("joda-time:joda-time:$jodaVersion", optional)
 
-    // Jackson JSON
-    compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-    compile("com.fasterxml.jackson.datatype:jackson-datatype-joda:$jacksonVersion", optional)
-    compile("com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:$jacksonVersion", optional)
-
-    // ROME
-    //compile "rome:rome:1.0"
-
-    // JPA
-    compile("org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final", optional)
-
-    compile("org.springframework:spring-orm:$springVersion", optional)
-
-    // Spring Plugin
-    compile "org.springframework.plugin:spring-plugin-core:$springPluginVersion"
-
     // Spring Data
-    compile("org.springframework.data:spring-data-jpa:$sdJpaVersion", optional)
-    compile("org.springframework.data:spring-data-mongodb:$sdMongoVersion", optional)
-
-    // JSR 303 Validation
-    compile("javax.validation:validation-api:1.0.0.GA", optional)
+    testCompile("org.springframework.data:spring-data-jpa:$sdJpaVersion", optional)
+    testCompile("org.springframework.data:spring-data-mongodb:$sdMongoVersion", optional)
 
     // Evo Inflector
     compile "org.atteo:evo-inflector:${evoVersion}"
@@ -199,6 +165,13 @@ project("spring-data-rest-repository") {
     testCompile "org.hsqldb:hsqldb:$hsqldbVersion"
     testCompile "org.hibernate:hibernate-entitymanager:$hibernateVersion"
     testRuntime "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
+
+    // JPA
+    testRuntime("org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final", optional)
+
+    testRuntime("org.springframework:spring-orm:$springVersion", optional)
+
+
   }
 }
 
@@ -207,34 +180,39 @@ project("spring-data-rest-webmvc") {
   description = "Spring Data REST MVC components."
 
   dependencies {
+
     // Repository Exporter support
-    compile project(":spring-data-rest-repository")
+    compile project(":spring-data-rest-core")
 
     // Spring
+    compile "org.springframework:spring-web:$springVersion"
     compile "org.springframework:spring-webmvc:$springVersion"
+
+    compile("org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final", optional)
+    compile("org.springframework:spring-orm:$springVersion", optional)
 
     // APIs
     compile("javax.servlet:javax.servlet-api:3.0.1", provided)
+
+    // Jackson
+    compile "com.fasterxml.jackson.datatype:jackson-datatype-joda:$jacksonVersion"
+    compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:$jacksonVersion"
 
     // Testing
     testCompile "org.eclipse.jetty:jetty-servlet:$jettyVersion"
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
     testCompile "org.mozilla:rhino:1.7R4"
+
     // Spring Data
     testCompile "org.springframework:spring-core:$springVersion"
     testCompile "org.springframework:spring-tx:$springVersion"
     testCompile "org.springframework.data:spring-data-jpa:$sdJpaVersion"
     testCompile "org.springframework.data:spring-data-mongodb:$sdMongoVersion"
-    testCompile("org.springframework.data:spring-data-gemfire:$sdGemfireVersion") {
-      exclude group: "junit"
-      exclude group: "org.hamcrest"
-      exclude module: "spring-test"
-    }
+    testCompile "org.springframework.data:spring-data-gemfire:$sdGemfireVersion"
+
     // JODA
     testCompile "joda-time:joda-time:$jodaVersion"
-    // Jackson
-    testCompile "com.fasterxml.jackson.datatype:jackson-datatype-joda:$jacksonVersion"
-    testCompile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:$jacksonVersion"
+    
     // Hibernate
     testRuntime "org.hibernate:hibernate-entitymanager:$hibernateVersion"
     testRuntime "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
@@ -363,7 +341,6 @@ configure(rootProject) {
   dependencies {
     // For integration testing
     testCompile project(":spring-data-rest-core")
-    testCompile project(":spring-data-rest-repository")
     testCompile project(":spring-data-rest-webmvc")
   }
 

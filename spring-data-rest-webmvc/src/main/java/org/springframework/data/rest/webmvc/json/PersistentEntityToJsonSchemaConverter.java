@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.core.convert.TypeDescriptor;
@@ -20,9 +19,9 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.repository.annotation.Description;
-import org.springframework.data.rest.repository.mapping.ResourceMappings;
-import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.annotation.Description;
+import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.RepositoryLinkBuilder;
 import org.springframework.hateoas.Link;
 
@@ -90,9 +89,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			public void doWithPersistentProperty(PersistentProperty persistentProperty) {
 				Class<?> propertyType = persistentProperty.getType();
 				String type = uncapitalize(propertyType.getSimpleName());
-				boolean notNull = persistentProperty.getField().isAnnotationPresent(Nonnull.class)
-						|| persistentProperty.getGetter().isAnnotationPresent(Nonnull.class)
-						|| persistentProperty.getField().isAnnotationPresent(NotNull.class)
+				boolean notNull = persistentProperty.getField().isAnnotationPresent(NotNull.class)
 						|| persistentProperty.getGetter().isAnnotationPresent(NotNull.class);
 				String desc = persistentProperty.getField().isAnnotationPresent(Description.class) ? persistentProperty
 						.getField().getAnnotation(Description.class).value() : persistentProperty.getGetter().isAnnotationPresent(

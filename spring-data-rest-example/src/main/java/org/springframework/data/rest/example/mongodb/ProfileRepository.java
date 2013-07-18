@@ -1,7 +1,7 @@
 package org.springframework.data.rest.example.mongodb;
 
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.rest.repository.annotation.RestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 /**
  * @author Jon Brisbin

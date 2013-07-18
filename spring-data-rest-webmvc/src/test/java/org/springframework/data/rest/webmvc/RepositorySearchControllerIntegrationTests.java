@@ -1,0 +1,86 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.rest.webmvc;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.ResourceTester.HasSelfLink;
+import org.springframework.data.rest.webmvc.jpa.CreditCard;
+import org.springframework.data.rest.webmvc.jpa.Order;
+import org.springframework.data.rest.webmvc.jpa.Person;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
+import org.springframework.http.ResponseEntity;
+
+/**
+ * Integration tests for the {@link RepositorySearchController}.
+ * 
+ * @author Oliver Gierke
+ */
+public class RepositorySearchControllerIntegrationTests extends AbstractControllerIntegrationTests {
+
+	@Autowired RepositorySearchController controller;
+
+	@Test
+	public void rendersCorrectSearchLinksForPersons() {
+
+		RepositoryRestRequest request = getRequest(Person.class);
+		Resource<?> resource = controller.listSearches(request);
+
+		ResourceTester tester = ResourceTester.of(resource);
+		tester.assertNumberOfLinks(4);
+		tester.assertHasLink("findFirstPersonByFirstName", "http://localhost/people/search/findFirstPersonByFirstName");
+		tester.assertHasLink("firstname", "http://localhost/people/search/firstname");
+		tester.assertHasLink("findByCreatedUsingISO8601Date",
+				"http://localhost/people/search/findByCreatedUsingISO8601Date");
+		tester.assertHasLink("findByCreatedGreaterThan", "http://localhost/people/search/findByCreatedGreaterThan");
+	}
+
+	@Test(expected = ResourceNotFoundException.class)
+	public void returns404ForUnexportedRepository() {
+
+		RepositoryRestRequest request = getRequest(CreditCard.class);
+		controller.listSearches(request);
+	}
+
+	@Test(expected = ResourceNotFoundException.class)
+	public void returns404ForRepositoryWithoutSearches() {
+
+		RepositoryRestRequest request = getRequest(Order.class);
+		controller.listSearches(request);
+	}
+
+	@Test
+	public void executesSearchAgainstRepository() {
+
+		RequestParameters parameters = new RequestParameters("firstName", "John");
+		RepositoryRestRequest request = getRequest(Person.class, parameters);
+
+		ResponseEntity<Resources<?>> response = controller.executeSearch(request, "firstname", null);
+
+		ResourceTester tester = ResourceTester.of(response.getBody());
+		PagedResources<Object> pagedResources = tester.assertIsPage();
+		assertThat(pagedResources.getContent().size(), is(1));
+
+		ResourceMetadata metadata = getMetadata(Person.class);
+		tester.withContentResource(new HasSelfLink(BASE.slash(metadata.getPath()).slash("{id}")));
+	}
+}

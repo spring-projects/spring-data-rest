@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.context.MessageSource;
-import org.springframework.data.rest.repository.RepositoryConstraintViolationException;
+import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.validation.FieldError;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Jon Brisbin

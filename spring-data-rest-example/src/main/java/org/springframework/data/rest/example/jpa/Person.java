@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -15,39 +16,34 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.data.rest.repository.annotation.Description;
-import org.springframework.data.rest.repository.annotation.RestResource;
+import org.springframework.data.rest.core.annotation.Description;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 /**
  * An entity that represents a person.
- *
+ * 
  * @author Jon Brisbin
  */
 @Entity
 public class Person {
 
-	private Long   id;
-	@Description("A person's first name")
-	private String firstName;
-	@Description("A person's last name")
-	@NotNull
-	private String lastName;
-	@Description("A person's siblings")
-	@RestResource(exported = false)
-	private List<Person> siblings = Collections.emptyList();
+	private Long id;
+	private @Description("A person's first name") String firstName;
+	private @Description("A person's last name") @NotNull String lastName;
+	private @Description("Timestamp this person object was created") Date created;
+	private @Description("A person's siblings") @RestResource(exported = false) List<Person> siblings = Collections
+			.emptyList();
 	private Person father;
-	@Description("Timestamp this person object was created")
-	private Date   created;
 
-	public Person() {
-	}
+	public Person() {}
 
 	public Person(String firstName, String lastName) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 	}
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public Long getId() {
 		return id;
 	}
@@ -73,7 +69,7 @@ public class Person {
 	}
 
 	public Person addSibling(Person p) {
-		if(siblings == Collections.EMPTY_LIST) {
+		if (siblings == Collections.EMPTY_LIST) {
 			siblings = new ArrayList<Person>();
 		}
 		siblings.add(p);
@@ -89,7 +85,8 @@ public class Person {
 		this.siblings = siblings;
 	}
 
-	@ManyToOne public Person getFather() {
+	@ManyToOne
+	public Person getFather() {
 		return father;
 	}
 
@@ -101,23 +98,17 @@ public class Person {
 		return created;
 	}
 
-	public void setCreated(Date created) {
-	}
+	public void setCreated(Date created) {}
 
 	@PrePersist
 	private void prePersist() {
 		this.created = Calendar.getInstance().getTime();
 	}
 
-	@Override public String toString() {
-		return "Person{" +
-				"id=" + id +
-				", firstName='" + firstName + '\'' +
-				", lastName='" + lastName + '\'' +
-				", siblings=[" + siblings.size() + "]" +
-				", father=" + father +
-				", created=" + created +
-				'}';
+	@Override
+	public String toString() {
+		return "Person{" + "id=" + id + ", firstName='" + firstName + '\'' + ", lastName='" + lastName + '\''
+				+ ", siblings=[" + siblings.size() + "]" + ", father=" + father + ", created=" + created + '}';
 	}
 
 }

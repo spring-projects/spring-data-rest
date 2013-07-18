@@ -15,13 +15,12 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import java.net.URI;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.rest.repository.invoke.RepositoryInvoker;
-import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.invoke.RepositoryInvoker;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.context.request.NativeWebRequest;
 
@@ -32,16 +31,14 @@ import org.springframework.web.context.request.NativeWebRequest;
 class RepositoryRestRequest {
 
 	private final NativeWebRequest request;
-	private final URI baseUri;
 	private final ResourceMetadata resourceMetadata;
 	private final RepositoryInvoker repoInvoker;
 	private final PersistentEntity<?, ?> persistentEntity;
 
-	public RepositoryRestRequest(PersistentEntity<?, ?> entity, NativeWebRequest request, URI baseUri,
-			ResourceMetadata repoInfo, RepositoryInvoker invoker) {
+	public RepositoryRestRequest(PersistentEntity<?, ?> entity, NativeWebRequest request, ResourceMetadata repoInfo,
+			RepositoryInvoker invoker) {
 
 		this.request = request;
-		this.baseUri = baseUri;
 		this.resourceMetadata = repoInfo;
 		if (resourceMetadata == null || !resourceMetadata.isExported()) {
 
@@ -62,12 +59,16 @@ class RepositoryRestRequest {
 		return HttpMethod.valueOf(request.getNativeRequest(HttpServletRequest.class).getMethod());
 	}
 
-	URI getBaseUri() {
-		return baseUri;
+	Class<?> getDomainType() {
+		return resourceMetadata.getDomainType();
 	}
 
 	ResourceMetadata getResourceMetadata() {
 		return resourceMetadata;
+	}
+
+	SearchResourceMappings getSearchMappings() {
+		return resourceMetadata.getSearchResourceMappings();
 	}
 
 	RepositoryInvoker getRepositoryInvoker() {

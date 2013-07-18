@@ -18,7 +18,7 @@ package org.springframework.data.rest.webmvc.support;
 import java.net.URI;
 
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.rest.repository.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.RepositoryController;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.core.LinkBuilderSupport;

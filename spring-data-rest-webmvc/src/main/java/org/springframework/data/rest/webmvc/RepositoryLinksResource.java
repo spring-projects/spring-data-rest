@@ -1,8 +1,8 @@
 package org.springframework.data.rest.webmvc;
 
-import org.springframework.hateoas.Resources;
-
 import java.util.Collections;
+
+import org.springframework.hateoas.Resources;
 
 /**
  * @author Jon Brisbin

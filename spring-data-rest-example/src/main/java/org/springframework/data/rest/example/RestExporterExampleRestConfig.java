@@ -4,7 +4,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.data.rest.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.example.jpa.Person;
 import org.springframework.data.rest.example.jpa.PersonValidator;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
