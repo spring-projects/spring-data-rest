@@ -18,26 +18,39 @@ package org.springframework.data.rest.webmvc;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.ResourceTester.HasSelfLink;
 import org.springframework.data.rest.webmvc.jpa.CreditCard;
+import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
+import org.springframework.data.rest.webmvc.jpa.PersonLoader;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Integration tests for the {@link RepositorySearchController}.
  * 
  * @author Oliver Gierke
  */
+@ContextConfiguration(classes = JpaRepositoryConfig.class)
+@Transactional
 public class RepositorySearchControllerIntegrationTests extends AbstractControllerIntegrationTests {
 
+	@Autowired PersonLoader loader;
 	@Autowired RepositorySearchController controller;
+
+	@Before
+	public void setUp() {
+		loader.populateRepository();
+	}
 
 	@Test
 	public void rendersCorrectSearchLinksForPersons() {

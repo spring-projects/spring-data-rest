@@ -2,7 +2,6 @@ package org.springframework.data.rest.webmvc.jpa;
 
 import java.util.Arrays;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -10,12 +9,21 @@ import org.springframework.stereotype.Component;
  * @author Jon Brisbin
  */
 @Component
-public class PersonLoader implements InitializingBean {
+public class PersonLoader {
 
-	@Autowired PersonRepository people;
+	private final PersonRepository people;
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
+	@Autowired
+	public PersonLoader(PersonRepository people) {
+		this.people = people;
+	}
+
+	public void populateRepository() {
+
+		if (people.count() != 0) {
+			return;
+		}
+
 		Person billyBob = people.save(new Person("Billy Bob", "Thornton"));
 
 		Person john = new Person("John", "Doe");
@@ -27,5 +35,4 @@ public class PersonLoader implements InitializingBean {
 
 		people.save(Arrays.asList(john, jane));
 	}
-
 }

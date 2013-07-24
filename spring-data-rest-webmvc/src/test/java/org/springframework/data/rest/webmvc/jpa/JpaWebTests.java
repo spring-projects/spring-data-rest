@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Arrays;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -34,11 +35,23 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  * @author Oliver Gierke
  */
-@ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
+@ContextConfiguration(classes = JpaRepositoryConfig.class)
 public class JpaWebTests extends AbstractWebIntegrationTests {
 
+	@Autowired PersonLoader loader;
 	@Autowired ResourceMappings mappings;
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#setUp()
+	 */
+	@Override
+	@Before
+	public void setUp() {
+		loader.populateRepository();
+		super.setUp();
+	}
 
 	/* 
 	 * (non-Javadoc)

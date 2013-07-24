@@ -24,7 +24,6 @@ import org.springframework.data.rest.core.invoke.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
-import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -39,8 +38,8 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Oliver Gierke
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { RepositoryRestMvcConfiguration.class, JpaRepositoryConfig.class })
-public class AbstractControllerIntegrationTests {
+@ContextConfiguration(classes = { RepositoryRestMvcConfiguration.class })
+public abstract class AbstractControllerIntegrationTests {
 
 	public static final Path BASE = new Path("http://localhost");
 
