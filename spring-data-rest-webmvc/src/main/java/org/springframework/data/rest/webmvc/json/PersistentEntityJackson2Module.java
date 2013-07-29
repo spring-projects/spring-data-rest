@@ -299,10 +299,6 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 
 						PersistentProperty property = association.getInverse();
 
-						if (!mappings.isMapped(property)) {
-							return;
-						}
-
 						if (maybeAddAssociationLink(builder, mappings, property, links)) {
 							return;
 						}
