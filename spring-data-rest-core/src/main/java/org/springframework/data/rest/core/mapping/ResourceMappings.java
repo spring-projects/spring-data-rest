@@ -137,7 +137,11 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 
 		if (resourceMapping.isExported()) {
 			for (Method queryMethod : repositoryInformation.getQueryMethods()) {
-				mappings.add(new RepositoryMethodResourceMapping(queryMethod, resourceMapping));
+				RepositoryMethodResourceMapping methodMapping = new RepositoryMethodResourceMapping(
+						queryMethod, resourceMapping);
+				if (methodMapping.isExported()) {
+					mappings.add(methodMapping);
+				}
 			}
 		}
 
