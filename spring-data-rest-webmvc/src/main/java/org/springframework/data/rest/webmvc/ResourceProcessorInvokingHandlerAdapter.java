@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.support.WebBindingInitializer;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
@@ -36,7 +38,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * <p/>
  * This is a separate component as it might make sense to deploy it in a standalone SpringMVC application to enable post
  * processing. It would actually make most sense in Spring HATEOAS project.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandlerAdapter {
@@ -53,7 +55,7 @@ public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandl
 	/**
 	 * Copy constructor to copy configuration of {@link HttpMessageConverter}s, {@link WebBindingInitializer}, custom
 	 * {@link HandlerMethodArgumentResolver}s and custom {@link HandlerMethodReturnValueHandler}s.
-	 * 
+	 *
 	 * @param original must not be {@literal null}.
 	 */
 	public ResourceProcessorInvokingHandlerAdapter(RequestMappingHandlerAdapter original) {
@@ -76,7 +78,7 @@ public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandl
 		super.afterPropertiesSet();
 
 		// Retrieve actual handlers to use as delegate
-		HandlerMethodReturnValueHandlerComposite oldHandlers = getReturnValueHandlers();
+		HandlerMethodReturnValueHandlerComposite oldHandlers = getReturnValueHandlersComposite();
 
 		// Set up ResourceProcessingHandlerMethodResolver to delegate to originally configured ones
 		List<HandlerMethodReturnValueHandler> newHandlers = new ArrayList<HandlerMethodReturnValueHandler>();
@@ -84,5 +86,21 @@ public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandl
 
 		// Configure the new handler to be used
 		this.setReturnValueHandlers(newHandlers);
+	}
+
+	/**
+	 * Gets a HandlerMethodReturnValueHandlerComposite for return handlers, dealing with
+	 * API changes introduced in Spring 4.0.
+	 * @return a HandlerMethodReturnValueHandlerComposite
+	 */
+	@SuppressWarnings("unchecked")
+	private HandlerMethodReturnValueHandlerComposite getReturnValueHandlersComposite() {
+		Object handlers = ReflectionUtils.invokeMethod(
+				ReflectionUtils.findMethod(getClass(), "getReturnValueHandlers"), this);
+		if(handlers instanceof HandlerMethodReturnValueHandlerComposite) {
+			return (HandlerMethodReturnValueHandlerComposite) handlers;
+		}
+		return new HandlerMethodReturnValueHandlerComposite().addHandlers(
+				(List<? extends HandlerMethodReturnValueHandler>) handlers);
 	}
 }
