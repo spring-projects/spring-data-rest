@@ -63,7 +63,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@RestController
+@RepositoryRestController
 @SuppressWarnings({ "unchecked" })
 public class RepositoryPropertyReferenceController extends AbstractRepositoryRestController implements
 		ApplicationEventPublisherAware {

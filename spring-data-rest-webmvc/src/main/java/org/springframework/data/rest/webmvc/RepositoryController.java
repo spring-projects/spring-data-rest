@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@RestController
+@RepositoryRestController
 public class RepositoryController extends AbstractRepositoryRestController {
 
 	private final Repositories repositories;

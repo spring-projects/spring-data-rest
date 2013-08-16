@@ -24,12 +24,15 @@ import java.lang.annotation.Target;
 import org.springframework.stereotype.Component;
 
 /**
+ * Annotation to demarcate Spring MVC controllers provided by Spring Data REST. Allows to easily detect them and exclude
+ * them from standard Spring MVC handling.
+ * 
  * @author Oliver Gierke
  */
 @Documented
 @Component
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.ANNOTATION_TYPE })
-public @interface RestController {
+public @interface RepositoryRestController {
 
 }

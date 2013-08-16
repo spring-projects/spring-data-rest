@@ -52,7 +52,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@RestController
+@RepositoryRestController
 class RepositorySearchController extends AbstractRepositoryRestController {
 
 	private static final String SEARCH = "/search";

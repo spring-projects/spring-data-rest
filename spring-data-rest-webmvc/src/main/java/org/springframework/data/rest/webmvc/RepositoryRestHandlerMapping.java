@@ -92,7 +92,7 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 
 	@Override
 	protected boolean isHandler(Class<?> beanType) {
-		return AnnotationUtils.findAnnotation(beanType, RestController.class) != null;
+		return AnnotationUtils.findAnnotation(beanType, RepositoryRestController.class) != null;
 	}
 
 	@Override

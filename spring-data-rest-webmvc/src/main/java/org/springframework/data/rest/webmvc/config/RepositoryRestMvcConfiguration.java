@@ -17,12 +17,14 @@ package org.springframework.data.rest.webmvc.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
@@ -42,11 +44,11 @@ import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.rest.core.util.UUIDConverter;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
 import org.springframework.data.rest.webmvc.RepositoryRestRequestHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.ResourceMetadataHandlerMethodArgumentResolver;
-import org.springframework.data.rest.webmvc.RestController;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
@@ -59,6 +61,7 @@ import org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguratio
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.RelProvider;
+import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -83,8 +86,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * @author Oliver Gierke
  */
 @Configuration
-@ComponentScan(basePackageClasses = RestController.class, includeFilters = @Filter(RestController.class),
-		useDefaultFilters = false)
+@ComponentScan(basePackageClasses = RepositoryRestController.class,
+		includeFilters = @Filter(RepositoryRestController.class), useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration {
 
@@ -94,6 +97,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			RepositoryRestMvcConfiguration.class.getClassLoader());
 
 	@Autowired ListableBeanFactory beanFactory;
+	@Autowired(required = false) List<ResourceProcessor<?>> resourceProcessors = Collections.emptyList();
 
 	@Bean
 	public Repositories repositories() {
@@ -297,6 +301,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * Special {@link org.springframework.web.servlet.HandlerAdapter} that only recognizes handler methods defined in the
 	 * provided controller classes.
 	 * 
+	 * @param resourceProcessors {@link ResourceProcessor}s available in the {@link ApplicationContext}.
 	 * @return
 	 */
 	@Bean
@@ -305,9 +310,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		List<HttpMessageConverter<?>> messageConverters = defaultMessageConverters();
 		configureHttpMessageConverters(messageConverters);
 
-		RepositoryRestHandlerAdapter handlerAdapter = new RepositoryRestHandlerAdapter();
+		RepositoryRestHandlerAdapter handlerAdapter = new RepositoryRestHandlerAdapter(defaultMethodArgumentResolvers(),
+				resourceProcessors);
 		handlerAdapter.setMessageConverters(messageConverters);
-		handlerAdapter.setCustomArgumentResolvers(defaultMethodArgumentResolvers());
 
 		return handlerAdapter;
 	}

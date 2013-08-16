@@ -21,11 +21,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.web.bind.support.WebBindingInitializer;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
@@ -47,30 +44,18 @@ public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandl
 	private static final Method RETURN_VALUE_HANDLER_METHOD = ReflectionUtils.findMethod(
 			ResourceProcessorInvokingHandlerAdapter.class, "getReturnValueHandlers");
 
-	@Autowired(required = false)//
-	private List<ResourceProcessor<?>> resourcesProcessors = new ArrayList<ResourceProcessor<?>>();
+	private final List<ResourceProcessor<?>> resourcesProcessors;
 
 	/**
-	 * Empty constructor to setup a {@link ResourceProcessorInvokingHandlerAdapter}.
-	 */
-	public ResourceProcessorInvokingHandlerAdapter() {
-
-	}
-
-	/**
-	 * Copy constructor to copy configuration of {@link HttpMessageConverter}s, {@link WebBindingInitializer}, custom
-	 * {@link HandlerMethodArgumentResolver}s and custom {@link HandlerMethodReturnValueHandler}s.
+	 * Creates a new {@link ResourceProcessorInvokingHandlerAdapter} with the given {@link ResourceProcessor}s.
 	 * 
-	 * @param original must not be {@literal null}.
+	 * @param resourcesProcessors must not be {@literal null}.
 	 */
-	public ResourceProcessorInvokingHandlerAdapter(RequestMappingHandlerAdapter original) {
+	@Autowired(required = false)
+	public ResourceProcessorInvokingHandlerAdapter(List<ResourceProcessor<?>> resourcesProcessors) {
 
-		Assert.notNull(original);
-
-		setMessageConverters(original.getMessageConverters());
-		setWebBindingInitializer(original.getWebBindingInitializer());
-		setCustomArgumentResolvers(original.getCustomArgumentResolvers());
-		setCustomReturnValueHandlers(original.getCustomReturnValueHandlers());
+		Assert.notNull(resourcesProcessors);
+		this.resourcesProcessors = resourcesProcessors;
 	}
 
 	/*

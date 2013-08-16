@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@RestController
+@RepositoryRestController
 class RepositorySchemaController {
 
 	private static final String BASE_MAPPING = "/{repository}";
