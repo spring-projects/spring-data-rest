@@ -24,13 +24,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.domain.jpa.CreditCard;
 import org.springframework.data.rest.core.domain.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.core.domain.jpa.Person;
-import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,5 +78,23 @@ public class ResourceMappingsIntegrationTest {
 
 		assertThat(creditCardMapping.isExported(), is(false));
 		assertThat(creditCardMapping.getSearchResourceMappings().isExported(), is(false));
+	}
+
+	/**
+	 * @see DATAREST-112
+	 */
+	@Test
+	public void usesPropertyNameAsRelForPropertyResourceMapping() {
+
+		Repositories repositories = new Repositories(factory);
+		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(Person.class);
+		PersistentProperty<?> property = entity.getPersistentProperty("siblings");
+
+		ResourceMetadata metadata = mappings.getMappingFor(Person.class);
+		ResourceMapping mapping = metadata.getMappingFor(property);
+
+		assertThat(mapping.getRel(), is("siblings"));
+		assertThat(mapping.getPath(), is(new Path("siblings")));
+		assertThat(mapping.isExported(), is(true));
 	}
 }

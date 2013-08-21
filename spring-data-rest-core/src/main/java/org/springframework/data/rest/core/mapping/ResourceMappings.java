@@ -25,6 +25,7 @@ import java.util.Map;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.support.RepositoriesUtils;
 import org.springframework.hateoas.RelProvider;
@@ -44,6 +45,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 
 	private final Map<Class<?>, ResourceMetadata> cache = new HashMap<Class<?>, ResourceMetadata>();
 	private final Map<Class<?>, SearchResourceMappings> searchCache = new HashMap<Class<?>, SearchResourceMappings>();
+	private final Map<PersistentProperty<?>, ResourceMapping> propertyCache = new HashMap<PersistentProperty<?>, ResourceMapping>();
 
 	/**
 	 * Creates a new {@link ResourceMappings} using the given {@link RepositoryRestConfiguration} and {@link Repositories}
@@ -187,7 +189,19 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#getMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
 	ResourceMapping getMappingFor(PersistentProperty<?> property) {
-		return getMappingFor(property.getActualType());
+
+		ResourceMapping propertyMapping = propertyCache.get(property);
+
+		if (propertyMapping != null) {
+			return propertyMapping;
+		}
+
+		ResourceMetadata propertyTypeMapping = getMappingFor(property.getActualType());
+		propertyMapping = new PersistentPropertyResourceMapping(property, propertyTypeMapping == null ? false
+				: propertyTypeMapping.isExported());
+		propertyCache.put(property, propertyMapping);
+
+		return propertyMapping;
 	}
 
 	/* 
@@ -207,5 +221,56 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 	@Override
 	public Iterator<ResourceMetadata> iterator() {
 		return cache.values().iterator();
+	}
+
+	/**
+	 * Special resource mapping for {@link PersistentProperty} instances.
+	 * 
+	 * @author Oliver Gierke
+	 */
+	private static class PersistentPropertyResourceMapping implements ResourceMapping {
+
+		private final PersistentProperty<?> property;
+		private final boolean exported;
+
+		/**
+		 * Creates a new {@link PersistentPropertyResourceMapping}.
+		 * 
+		 * @param property must not be {@literal null}.
+		 * @param exported whether the property is exported or not.
+		 */
+		public PersistentPropertyResourceMapping(PersistentProperty<?> property, boolean exported) {
+
+			Assert.notNull(property, "PersistentProperty must not be null!");
+			this.property = property;
+			this.exported = exported;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getPath()
+		 */
+		@Override
+		public Path getPath() {
+			return new Path(property.getName());
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
+		 */
+		@Override
+		public String getRel() {
+			return property.getName();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
+		 */
+		@Override
+		public Boolean isExported() {
+			return exported;
+		}
 	}
 }

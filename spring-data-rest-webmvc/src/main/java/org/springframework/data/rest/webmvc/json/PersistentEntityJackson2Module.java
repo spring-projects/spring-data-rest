@@ -27,6 +27,7 @@ import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.UriDomainClassConverter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
@@ -72,19 +73,16 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 			PersistentProperty<?> persistentProperty, List<Link> links) {
 
 		Assert.isTrue(persistentProperty.isAssociation(), "PersistentProperty must be an association!");
-		ResourceMetadata metadata = mappings.getMappingFor(persistentProperty.getOwner().getType());
+		ResourceMetadata ownerMetadata = mappings.getMappingFor(persistentProperty.getOwner().getType());
 
-		if (!metadata.isManagedResource(persistentProperty)) {
+		if (!ownerMetadata.isManagedResource(persistentProperty)) {
 			return false;
 		}
 
-		metadata = mappings.getMappingFor(persistentProperty.getActualType());
+		ResourceMapping propertyMapping = ownerMetadata.getMappingFor(persistentProperty);
 
-		if (metadata.isExported()) {
-
-			String propertyRel = String.format("%s.%s", metadata.getSingleResourceRel(), persistentProperty.getName());
-			links.add(builder.slash(persistentProperty.getName()).withRel(propertyRel));
-
+		if (propertyMapping.isExported()) {
+			links.add(builder.slash(propertyMapping.getPath()).withRel(propertyMapping.getRel()));
 			// This is an association. We added a Link.
 			return true;
 		}
