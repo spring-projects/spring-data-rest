@@ -146,7 +146,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	@Lazy
 	public JpaHelper jpaHelper() {
 		if (IS_JPA_AVAILABLE) {
 			return new JpaHelper();
@@ -325,7 +324,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public RequestMappingHandlerMapping repositoryExporterHandlerMapping() {
-		return new RepositoryRestHandlerMapping(resourceMappings());
+
+		RepositoryRestHandlerMapping mapping = new RepositoryRestHandlerMapping(resourceMappings(), config());
+		mapping.setJpaHelper(jpaHelper());
+
+		return mapping;
 	}
 
 	@Bean

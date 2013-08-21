@@ -162,6 +162,25 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 	}
 
 	/**
+	 * Returns whether we export a top-level resource for the given path.
+	 * 
+	 * @param path must not be {@literal null} or empty.
+	 * @return
+	 */
+	public boolean exportsTopLevelResourceFor(String path) {
+
+		Assert.hasText(path);
+
+		for (ResourceMetadata metadata : cache.values()) {
+			if (metadata.getPath().matches(path)) {
+				return metadata.isExported();
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns whether we have a {@link ResourceMapping} for the given type.
 	 * 
 	 * @param type must not be {@literal null}.

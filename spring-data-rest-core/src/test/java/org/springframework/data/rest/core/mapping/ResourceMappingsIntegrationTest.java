@@ -97,4 +97,20 @@ public class ResourceMappingsIntegrationTest {
 		assertThat(mapping.getPath(), is(new Path("siblings")));
 		assertThat(mapping.isExported(), is(true));
 	}
+
+	/**
+	 * @see DATAREST-111
+	 */
+	@Test
+	public void exposesResourceByPath() {
+
+		assertThat(mappings.exportsTopLevelResourceFor("people"), is(true));
+		assertThat(mappings.exportsTopLevelResourceFor("orders"), is(true));
+
+		ResourceMetadata creditCardMapping = mappings.getMappingFor(CreditCard.class);
+		assertThat(creditCardMapping, is(notNullValue()));
+		assertThat(creditCardMapping.getPath(), is(new Path("creditCards")));
+		assertThat(creditCardMapping.isExported(), is(false));
+		assertThat(mappings.exportsTopLevelResourceFor("creditCards"), is(false));
+	}
 }
