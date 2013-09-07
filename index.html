@@ -1,0 +1,80 @@
+---
+# The name of your project
+title: Spring Data REST
+
+badges:
+
+  # Specify your project's twitter handle, if any. Delete if none.
+  twitter: SpringData
+
+  # Customize your project's badges. Delete any entries that do not apply.
+  custom:
+    - name: Source (GitHub)
+      url:  https://github.com/spring-projects/spring-data-rest
+      icon: github
+
+    - name: Issues (JIRA)
+      url:  https://jira.springframework.org/browse/DATAREST
+      icon: tracking
+
+    - name: CI (Bamboo)
+      url:  https://build.springsource.org/browse/SPRINGDATA-DATAWEB
+      icon: ci
+
+    - name: Forum
+      url:  http://forum.spring.io/forum/spring-projects/data
+      icon: forum
+
+    - name: StackOverflow
+      url:  http://stackoverflow.com/questions/tagged/spring-data-rest
+      icon: stackoverflow
+
+---
+<!DOCTYPE HTML>
+<html lang="en-US">
+
+<!-- Specify the parent of this project (or delete if none) to influence the rendering of the breadcrumb -->
+{% capture parent_link %}
+[Spring Data]({{ site.projects_site_url }}/spring-data)
+{% endcapture %}
+
+
+{% capture billboard_description %}
+Spring Data REST is part of the umbrella [Spring Data](#) project that makes it easy to expose JPA based repositories as RESTful endpoints.
+{% endcapture %}
+
+{% capture main_content %}
+The goal of the Spring Data REST project is to provide a solid foundation on which to expose CRUD operations to your JPA Repository-managed entities using plain HTTP REST semantics. The first implementation of this exporter uses Spring MVC and the standard Servlet architecture to make it easy to deploy a WAR file that becomes a full-blown CRUD application simply by including your domain classes and their corresponding Repository definitions. Future implementations will allow you to export your repositories in non-Servlet HTTP environments using high-throughput non-blocking IO, and will provide enhanced HTML5 capabilities.
+
+## Features
+
+* Supports JPA, MongoDB, Gemfire, and Neo4J Repositories
+* Create new entities (auto-generated or pre-assigned IDs are both supported) using POST
+* Update existing entities using PUT
+* Delete entities using DELETE
+* Manage entity relationships using POST, PUT, DELETE
+* Discover services and get or list available entities using GET
+* Search entities through Repository query methods using GET
+* Validate entities with JSR-303 or Spring Validator beans
+* Extend the REST exporter's functionality by capturing ApplicationEvents
+* Configure path and rel values using annotations or DSL config helper
+* Page large results sets
+* Sort results
+
+<span id="quick-start"></span>
+## Quick Start
+
+{% include download_widget.md %}
+
+{% endcapture %}
+
+{% capture related_resources %}
+
+### Sample Projects
+
+* [Spring Data Book Example](https://github.com/SpringSource/spring-data-book/tree/master/rest)
+
+{% endcapture %}
+
+{% include project_page.html %}
+</html>
