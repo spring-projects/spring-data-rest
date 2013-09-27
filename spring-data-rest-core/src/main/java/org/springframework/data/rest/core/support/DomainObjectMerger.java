@@ -32,12 +32,18 @@ public class DomainObjectMerger {
 		final BeanWrapper<?, Object> fromWrapper = BeanWrapper.create(from, conversionService);
 		final BeanWrapper<?, Object> targetWrapper = BeanWrapper.create(target, conversionService);
 
-		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(target.getClass());
+		final PersistentEntity<?, ?> entity = repositories.getPersistentEntity(target.getClass());
 		entity.doWithProperties(new PropertyHandler() {
 			@Override
 			public void doWithPersistentProperty(PersistentProperty persistentProperty) {
 				Object fromVal = fromWrapper.getProperty(persistentProperty);
-				if (null != fromVal && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
+				
+				// Support PUTting null property values per DATAREST-130.
+				boolean mergeProperty =
+						!entity.isIdProperty(persistentProperty)
+						&& (fromVal == null || !fromVal.equals(targetWrapper.getProperty(persistentProperty)));
+				
+				if (mergeProperty) {
 					targetWrapper.setProperty(persistentProperty, fromVal);
 				}
 			}
