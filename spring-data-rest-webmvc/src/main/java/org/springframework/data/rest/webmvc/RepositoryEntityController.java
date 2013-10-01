@@ -164,6 +164,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			PersistentEntityResource<?> incoming) {
 
 		RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
+
 		if (!invoker.exposesSave()) {
 			throw new NoSuchMethodError();
 		}
@@ -176,11 +177,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		HttpHeaders headers = new HttpHeaders();
 		headers.setLocation(URI.create(selfLink.getHref()));
 
-		if (config.isReturnBodyOnCreate()) {
-			return ControllerUtils.toResponseEntity(headers, perAssembler.toResource(obj), HttpStatus.CREATED);
-		} else {
-			return ControllerUtils.toResponseEntity(headers, null, HttpStatus.CREATED);
-		}
+		PersistentEntityResource<Object> resource = config.isReturnBodyOnCreate() ? perAssembler.toResource(obj) : null;
+		return ControllerUtils.toResponseEntity(headers, resource, HttpStatus.CREATED);
 	}
 
 	/**
