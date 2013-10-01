@@ -16,17 +16,21 @@
 package org.springframework.data.rest.webmvc.jpa;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  * @author Oliver Gierke
  */
 @Entity
+@Table(name = "ORDERS")
 public class Order {
 
-	@Id private Long id;
-	@ManyToOne private Person creator;
+	@Id @GeneratedValue private Long id;
+	@ManyToOne(fetch = FetchType.LAZY) private Person creator;
 
 	public Order(Person creator) {
 		this.creator = creator;

@@ -27,7 +27,7 @@ import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
-import org.springframework.data.rest.webmvc.jpa.PersonLoader;
+import org.springframework.data.rest.webmvc.jpa.TestDataPopulator;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
@@ -44,12 +44,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class RepositorySearchControllerIntegrationTests extends AbstractControllerIntegrationTests {
 
-	@Autowired PersonLoader loader;
+	@Autowired TestDataPopulator loader;
 	@Autowired RepositorySearchController controller;
 
 	@Before
 	public void setUp() {
-		loader.populateRepository();
+		loader.populateRepositories();
 	}
 
 	@Test

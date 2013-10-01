@@ -42,6 +42,8 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.jayway.jsonpath.JsonPath;
+
 /**
  * @author Oliver Gierke
  */
@@ -111,6 +113,16 @@ public abstract class AbstractWebIntegrationTests {
 				is(notNullValue()));
 
 		return link;
+	}
+
+	protected Link assertHasContentLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
+
+		String href = JsonPath
+				.read(response.getContentAsString(), String.format("$..links[?(@.rel == '%s')].href[0]", rel)).toString();
+		assertThat("Expected to find a link with rel" + rel + " in the content section of the response!", href,
+				is(notNullValue()));
+
+		return new Link(href, rel);
 	}
 
 	protected void assertDoesNotHaveLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {

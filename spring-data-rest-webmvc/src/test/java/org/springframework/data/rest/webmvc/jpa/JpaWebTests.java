@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -39,7 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 public class JpaWebTests extends AbstractWebIntegrationTests {
 
-	@Autowired PersonLoader loader;
+	@Autowired TestDataPopulator loader;
 	@Autowired ResourceMappings mappings;
 
 	/* 
@@ -49,7 +51,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Override
 	@Before
 	public void setUp() {
-		loader.populateRepository();
+		loader.populateRepositories();
 		super.setUp();
 	}
 
@@ -88,5 +90,20 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 		response = request(nextLink);
 		assertHasLinkWithRel(Link.REL_PREVIOUS, response);
 		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);
+	}
+
+	/**
+	 * @see DATAREST-169
+	 */
+	@Test
+	public void exposesCreatorOfAnOrder() throws Exception {
+
+		MockHttpServletResponse response = request("/");
+		Link ordersLink = assertHasLinkWithRel("orders", response);
+
+		MockHttpServletResponse orders = request(ordersLink);
+
+		Link creatorLink = assertHasContentLinkWithRel("creator", orders);
+		assertThat(request(creatorLink), is(notNullValue()));
 	}
 }
