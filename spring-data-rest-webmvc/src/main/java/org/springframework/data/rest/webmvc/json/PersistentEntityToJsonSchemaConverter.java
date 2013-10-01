@@ -3,7 +3,6 @@ package org.springframework.data.rest.webmvc.json;
 import static org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.*;
 import static org.springframework.util.StringUtils.*;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -79,7 +78,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity((Class<?>) source);
-		final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getClass());
+		final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getType());
 		String entityDesc = persistentEntity.getType().isAnnotationPresent(Description.class) ? persistentEntity.getType()
 				.getAnnotation(Description.class).value() : null;
 
@@ -122,7 +121,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 					return;
 				}
 
-				RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, URI.create("{id}"));
+				RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, null).slash("{id}");
 				maybeAddAssociationLink(builder, mappings, persistentProperty, links);
 			}
 		});

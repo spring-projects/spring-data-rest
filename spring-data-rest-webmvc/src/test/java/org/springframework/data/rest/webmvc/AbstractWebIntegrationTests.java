@@ -168,5 +168,27 @@ public abstract class AbstractWebIntegrationTests {
 		}
 	}
 
+	/**
+	 * @see DATAREST-113
+	 */
+	@Test
+	public void exposesSchemasForResourcesExposed() throws Exception {
+
+		MockHttpServletResponse response = request("/");
+
+		for (String rel : expectedRootLinkRels()) {
+
+			Link link = assertHasLinkWithRel(rel, response);
+
+			// Resource
+			request(link);
+
+			// Schema - TODO:Improve by using hypermedia
+			mvc.perform(get(link.getHref() + "/schema").//
+					accept(MediaType.parseMediaType("application/schema+json"))).//
+					andExpect(status().isOk());
+		}
+	}
+
 	protected abstract Iterable<String> expectedRootLinkRels();
 }
