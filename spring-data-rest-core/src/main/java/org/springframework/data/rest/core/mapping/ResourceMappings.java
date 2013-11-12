@@ -23,14 +23,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.support.RepositoriesUtils;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Central abstraction obtain {@link ResourceMetadata} and {@link ResourceMapping} instances for domain types and
@@ -216,8 +219,8 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 		}
 
 		ResourceMetadata propertyTypeMapping = getMappingFor(property.getActualType());
-		propertyMapping = new PersistentPropertyResourceMapping(property, propertyTypeMapping == null ? false
-				: propertyTypeMapping.isExported());
+		propertyMapping = new PersistentPropertyResourceMapping(property, propertyTypeMapping);
+
 		propertyCache.put(property, propertyMapping);
 
 		return propertyMapping;
@@ -247,10 +250,11 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static class PersistentPropertyResourceMapping implements ResourceMapping {
+	static class PersistentPropertyResourceMapping implements ResourceMapping {
 
 		private final PersistentProperty<?> property;
-		private final boolean exported;
+		private final ResourceMapping typeMapping;
+		private final RestResource annotation;
 
 		/**
 		 * Creates a new {@link PersistentPropertyResourceMapping}.
@@ -258,11 +262,13 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 		 * @param property must not be {@literal null}.
 		 * @param exported whether the property is exported or not.
 		 */
-		public PersistentPropertyResourceMapping(PersistentProperty<?> property, boolean exported) {
+		public PersistentPropertyResourceMapping(PersistentProperty<?> property, ResourceMapping typeMapping) {
 
 			Assert.notNull(property, "PersistentProperty must not be null!");
 			this.property = property;
-			this.exported = exported;
+			this.typeMapping = typeMapping;
+			this.annotation = property instanceof AnnotationBasedPersistentProperty ? ((AnnotationBasedPersistentProperty<?>) property)
+					.findAnnotation(RestResource.class) : null;
 		}
 
 		/* 
@@ -271,7 +277,8 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 		 */
 		@Override
 		public Path getPath() {
-			return new Path(property.getName());
+			return annotation != null && StringUtils.hasText(annotation.path()) ? new Path(annotation.path()) : new Path(
+					property.getName());
 		}
 
 		/* 
@@ -280,7 +287,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 		 */
 		@Override
 		public String getRel() {
-			return property.getName();
+			return annotation != null && StringUtils.hasText(annotation.rel()) ? annotation.rel() : property.getName();
 		}
 
 		/* 
@@ -289,7 +296,12 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 		 */
 		@Override
 		public Boolean isExported() {
-			return exported;
+
+			if (typeMapping == null) {
+				return false;
+			}
+
+			return !typeMapping.isExported() ? false : annotation == null ? true : annotation.exported();
 		}
 	}
 }
