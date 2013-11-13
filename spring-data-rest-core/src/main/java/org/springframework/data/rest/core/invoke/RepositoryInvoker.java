@@ -33,7 +33,7 @@ public interface RepositoryInvoker extends RepositoryInvocationInformation {
 
 	Iterable<Object> invokeFindAll(Pageable pageable);
 
-	Iterable<Object> invokeFindAll(Sort pageable);
+	Iterable<Object> invokeFindAll(Sort sort);
 
 	void invokeDelete(Serializable serializable);
 

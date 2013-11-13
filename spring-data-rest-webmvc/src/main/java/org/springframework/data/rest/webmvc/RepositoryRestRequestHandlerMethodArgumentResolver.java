@@ -16,7 +16,6 @@
 package org.springframework.data.rest.webmvc;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.invoke.RepositoryInvoker;
@@ -39,20 +38,22 @@ public class RepositoryRestRequestHandlerMethodArgumentResolver implements Handl
 	private final ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver;
 
 	/**
-	 * Creates a new {@link RepositoryRestRequestHandlerMethodArgumentResolver} using the given {@link Repositories} and
-	 * {@link ConversionService}.
+	 * Creates a new {@link RepositoryRestRequestHandlerMethodArgumentResolver} using the given {@link Repositories},
+	 * {@link RepositoryInvokerFactory} and {@link ResourceMetadataHandlerMethodArgumentResolver}.
 	 * 
 	 * @param repositories must not be {@literal null}.
-	 * @param conversionService must not be {@literal null}.
+	 * @param invokerFactory must not be {@literal null}.
+	 * @param resourceMetadataResolver must not be {@literal null}.
 	 */
 	public RepositoryRestRequestHandlerMethodArgumentResolver(Repositories repositories,
-			ConversionService conversionService, ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver) {
+			RepositoryInvokerFactory invokerFactory, ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(invokerFactory, "invokerFactory must not be null!");
+		Assert.notNull(resourceMetadataResolver, "ResourceMetadataHandlerMethodArgumentResolver must not be null!");
 
 		this.repositories = repositories;
-		this.invokerFactory = new RepositoryInvokerFactory(repositories, conversionService);
+		this.invokerFactory = invokerFactory;
 		this.resourceMetadataResolver = resourceMetadataResolver;
 	}
 

@@ -38,6 +38,7 @@ import org.springframework.data.rest.core.UriDomainClassConverter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AnnotatedHandlerBeanPostProcessor;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
+import org.springframework.data.rest.core.invoke.DefaultRepositoryInvokerFactory;
 import org.springframework.data.rest.core.invoke.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
@@ -204,7 +205,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public RepositoryRestRequestHandlerMethodArgumentResolver repoRequestArgumentResolver() {
-		return new RepositoryRestRequestHandlerMethodArgumentResolver(repositories(), defaultConversionService(),
+		return new RepositoryRestRequestHandlerMethodArgumentResolver(repositories(), repositoryInvokerFactory(),
 				resourceMetadataHandlerMethodArgumentResolver());
 	}
 
@@ -376,7 +377,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public RepositoryInvokerFactory repositoryInvokerFactory() {
-		return new RepositoryInvokerFactory(repositories(), defaultConversionService());
+		return new DefaultRepositoryInvokerFactory(repositories(), defaultConversionService());
 	}
 
 	private List<HttpMessageConverter<?>> defaultMessageConverters() {

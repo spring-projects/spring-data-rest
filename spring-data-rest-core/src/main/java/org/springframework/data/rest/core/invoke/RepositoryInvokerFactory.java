@@ -15,65 +15,19 @@
  */
 package org.springframework.data.rest.core.invoke;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.core.convert.ConversionService;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.support.Repositories;
-
 /**
+ * Interface for a factory to create {@link RepositoryInvoker} instances for repositories managing a particular domain
+ * type.
+ * 
  * @author Oliver Gierke
  */
-public class RepositoryInvokerFactory {
-
-	private final Repositories repositories;
-	private final ConversionService conversionService;
-
-	private final Map<Class<?>, RepositoryInvoker> invokers;
+public interface RepositoryInvokerFactory {
 
 	/**
-	 * @param repositories
+	 * Returns the {@link RepositoryInvoker} for a repository managing the given domain type.
+	 * 
+	 * @param domainType must not be {@literal null}.
+	 * @return
 	 */
-	public RepositoryInvokerFactory(Repositories repositories, ConversionService conversionService) {
-
-		this.repositories = repositories;
-		this.conversionService = conversionService;
-		this.invokers = new HashMap<Class<?>, RepositoryInvoker>();
-
-	}
-
-	@SuppressWarnings("unchecked")
-	private RepositoryInvoker prepareInvokers(Class<?> domainType) {
-
-		Object repository = repositories.getRepositoryFor(domainType);
-		RepositoryInformation information = repositories.getRepositoryInformationFor(domainType);
-
-		if (repository instanceof PagingAndSortingRepository) {
-			return new PagingAndSortingRepositoryInvoker((PagingAndSortingRepository<Object, Serializable>) repository,
-					information, conversionService);
-		} else if (repository instanceof CrudRepository) {
-			return new CrudRepositoryInvoker((CrudRepository<Object, Serializable>) repository, information,
-					conversionService);
-		} else {
-			return new ReflectionRepositoryInvoker(repository, information, conversionService);
-		}
-	}
-
-	public RepositoryInvoker getInvokerFor(Class<?> domainType) {
-
-		RepositoryInvoker invoker = invokers.get(domainType);
-
-		if (invoker != null) {
-			return invoker;
-		}
-
-		invoker = prepareInvokers(domainType);
-		invokers.put(domainType, invoker);
-
-		return invoker;
-	}
+	RepositoryInvoker getInvokerFor(Class<?> domainType);
 }
