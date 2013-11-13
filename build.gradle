@@ -17,7 +17,7 @@ ext {
   sdJpaVersion = "1.5.0.BUILD-SNAPSHOT"
   sdMongoVersion = "1.4.0.BUILD-SNAPSHOT"
   sdGemfireVersion = "1.3.3.BUILD-SNAPSHOT"
-  sdNeo4jVersion = "2.3.2.RELEASE"
+  sdNeo4jVersion = "2.3.3.BUILD-SNAPSHOT"
 
   // Libraries
   jacksonVersion = "2.2.2"
@@ -168,14 +168,12 @@ project("spring-data-rest-core") {
 
     // JPA
     testRuntime("org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final", optional)
-
     testRuntime("org.springframework:spring-orm:$springVersion", optional)
-
-
   }
 }
 
 project("spring-data-rest-webmvc") {
+
   apply plugin: "maven"
   description = "Spring Data REST MVC components."
 
@@ -209,6 +207,7 @@ project("spring-data-rest-webmvc") {
     testCompile "org.springframework.data:spring-data-jpa:$sdJpaVersion"
     testCompile "org.springframework.data:spring-data-mongodb:$sdMongoVersion"
     testCompile "org.springframework.data:spring-data-gemfire:$sdGemfireVersion"
+    testCompile "org.springframework.data:spring-data-neo4j:$sdNeo4jVersion"
 
     // JODA
     testCompile "joda-time:joda-time:$jodaVersion"
