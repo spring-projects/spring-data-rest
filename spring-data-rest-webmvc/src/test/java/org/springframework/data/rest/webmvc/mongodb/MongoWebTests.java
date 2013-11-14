@@ -29,12 +29,15 @@ import org.springframework.hateoas.Link;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
+ * Integration tests for MongoDB repositories.
+ * 
  * @author Oliver Gierke
  */
 @ContextConfiguration(classes = MongoDbRepositoryConfig.class)
 public class MongoWebTests extends AbstractWebIntegrationTests {
 
 	@Autowired ProfileRepository repository;
+	@Autowired UserRepository userRepository;
 
 	@Before
 	public void populateProfiles() {
@@ -48,11 +51,23 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 		linkedIn.setType("LinkedIn");
 
 		repository.save(Arrays.asList(twitter, linkedIn));
+
+		Address address = new Address();
+		address.street = "Foo";
+		address.zipCode = "Bar";
+
+		User user = new User();
+		user.firstname = "Oliver";
+		user.lastname = "Gierke";
+		user.address = address;
+
+		userRepository.save(user);
 	}
 
 	@After
 	public void cleanUp() {
 		repository.deleteAll();
+		userRepository.deleteAll();
 	}
 
 	/* 
@@ -61,7 +76,7 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 	 */
 	@Override
 	protected Iterable<String> expectedRootLinkRels() {
-		return Arrays.asList("profiles");
+		return Arrays.asList("profiles", "users");
 	}
 
 	@Test
@@ -69,5 +84,13 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 
 		Link profileLink = discoverUnique("profiles");
 		follow(profileLink).andExpect(jsonPath("$.content").value(hasSize(2)));
+	}
+
+	@Test
+	public void rendersEmbeddedDocuments() throws Exception {
+
+		Link usersLink = discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel("self", request(usersLink));
+		follow(userLink).andExpect(jsonPath("$.address.zipCode").value(is(notNullValue())));
 	}
 }

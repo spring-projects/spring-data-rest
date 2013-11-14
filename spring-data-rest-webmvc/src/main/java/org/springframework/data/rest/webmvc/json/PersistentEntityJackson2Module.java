@@ -276,9 +276,9 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 							return;
 						}
 
-						if (property.isEntity() && maybeAddAssociationLink(builder, mappings, property, links)) {
-							return;
-						}
+						// if (property.isEntity() && maybeAddAssociationLink(builder, mappings, property, links)) {
+						// return;
+						// }
 
 						// Property is a normal or non-managed property.
 						Object propertyValue = wrapper.getProperty(property);
