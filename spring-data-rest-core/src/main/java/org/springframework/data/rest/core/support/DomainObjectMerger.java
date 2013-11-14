@@ -18,15 +18,17 @@ package org.springframework.data.rest.core.support;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.Association;
-import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.SimpleAssociationHandler;
+import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.util.Assert;
 
 /**
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
 public class DomainObjectMerger {
 
@@ -35,32 +37,51 @@ public class DomainObjectMerger {
 
 	@Autowired
 	public DomainObjectMerger(Repositories repositories, ConversionService conversionService) {
+
+		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(conversionService, "ConversionService must not be null!");
+
 		this.repositories = repositories;
 		this.conversionService = conversionService;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void merge(Object from, Object target) {
+
 		if (null == from || null == target) {
 			return;
 		}
+
 		final BeanWrapper<?, Object> fromWrapper = BeanWrapper.create(from, conversionService);
 		final BeanWrapper<?, Object> targetWrapper = BeanWrapper.create(target, conversionService);
 
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(target.getClass());
-		entity.doWithProperties(new PropertyHandler() {
+
+		entity.doWithProperties(new SimplePropertyHandler() {
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.springframework.data.mapping.SimplePropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
+			 */
 			@Override
-			public void doWithPersistentProperty(PersistentProperty persistentProperty) {
-				Object fromVal = fromWrapper.getProperty(persistentProperty);
-				if (null != fromVal && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
-					targetWrapper.setProperty(persistentProperty, fromVal);
+			public void doWithPersistentProperty(PersistentProperty<?> property) {
+
+				Object fromVal = fromWrapper.getProperty(property);
+				if (null != fromVal && !fromVal.equals(targetWrapper.getProperty(property))) {
+					targetWrapper.setProperty(property, fromVal);
 				}
 			}
 		});
-		entity.doWithAssociations(new AssociationHandler() {
+
+		entity.doWithAssociations(new SimpleAssociationHandler() {
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
+			 */
 			@Override
-			public void doWithAssociation(Association association) {
-				PersistentProperty persistentProperty = association.getInverse();
+			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
+
+				PersistentProperty<?> persistentProperty = association.getInverse();
 				Object fromVal = fromWrapper.getProperty(persistentProperty);
 				if (null != fromVal && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
 					targetWrapper.setProperty(persistentProperty, fromVal);
@@ -68,5 +89,4 @@ public class DomainObjectMerger {
 			}
 		});
 	}
-
 }

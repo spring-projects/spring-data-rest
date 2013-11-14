@@ -219,9 +219,11 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	private Links getSearchLinks(Class<?> domainType) {
 
 		List<Link> links = new ArrayList<Link>();
-		LinkBuilder builder = entityLinks.linkFor(domainType).slash(SEARCH);
 
-		for (ResourceMapping mapping : mappings.getSearchResourceMappings(domainType)) {
+		SearchResourceMappings searchMappings = mappings.getSearchResourceMappings(domainType);
+		LinkBuilder builder = entityLinks.linkFor(domainType).slash(searchMappings.getPath());
+
+		for (ResourceMapping mapping : searchMappings) {
 
 			if (!mapping.isExported()) {
 				continue;

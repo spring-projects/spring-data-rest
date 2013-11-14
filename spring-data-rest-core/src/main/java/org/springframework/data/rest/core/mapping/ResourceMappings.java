@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
@@ -267,8 +266,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 			Assert.notNull(property, "PersistentProperty must not be null!");
 			this.property = property;
 			this.typeMapping = typeMapping;
-			this.annotation = property instanceof AnnotationBasedPersistentProperty ? ((AnnotationBasedPersistentProperty<?>) property)
-					.findAnnotation(RestResource.class) : null;
+			this.annotation = property.findAnnotation(RestResource.class);
 		}
 
 		/* 

@@ -19,10 +19,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.Association;
-import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.SimpleAssociationHandler;
+import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.UriDomainClassConverter;
@@ -234,26 +234,29 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 		}
 	}
 
-	@SuppressWarnings("rawtypes")
-	private class ResourceSerializer extends StdSerializer<PersistentEntityResource> {
+	private class ResourceSerializer extends StdSerializer<PersistentEntityResource<?>> {
 
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		private ResourceSerializer() {
-			super(PersistentEntityResource.class);
+			super((Class) PersistentEntityResource.class);
 		}
 
-		@SuppressWarnings({ "unchecked" })
+		/*
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
+		 */
 		@Override
-		public void serialize(final PersistentEntityResource resource, final JsonGenerator jgen,
+		public void serialize(final PersistentEntityResource<?> resource, final JsonGenerator jgen,
 				final SerializerProvider provider) throws IOException, JsonGenerationException {
+
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Serializing PersistentEntity " + resource.getPersistentEntity());
 			}
 
 			Object obj = resource.getContent();
 
-			final PersistentEntity entity = resource.getPersistentEntity();
-
-			final BeanWrapper wrapper = BeanWrapper.create(obj, null);
+			final PersistentEntity<?, ?> entity = resource.getPersistentEntity();
+			final BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper.create(obj, null);
 			final Object entityId = wrapper.getProperty(entity.getIdProperty());
 			final ResourceMappings mappings = new ResourceMappings(config, repositories);
 			final ResourceMetadata metadata = mappings.getMappingFor(entity.getType());
@@ -262,12 +265,18 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 			final List<Link> links = new ArrayList<Link>();
 			// Start with ResourceProcessor-added links
 			links.addAll(resource.getLinks());
-
 			jgen.writeStartObject();
+
 			try {
-				entity.doWithProperties(new PropertyHandler() {
+
+				entity.doWithProperties(new SimplePropertyHandler() {
+
+					/*
+					 * (non-Javadoc)
+					 * @see org.springframework.data.mapping.SimplePropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
+					 */
 					@Override
-					public void doWithPersistentProperty(PersistentProperty property) {
+					public void doWithPersistentProperty(PersistentProperty<?> property) {
 
 						boolean idAvailableAndShallNotBeExposed = property.isIdProperty()
 								&& !config.isIdExposedFor(entity.getType());
@@ -275,10 +284,6 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 						if (idAvailableAndShallNotBeExposed) {
 							return;
 						}
-
-						// if (property.isEntity() && maybeAddAssociationLink(builder, mappings, property, links)) {
-						// return;
-						// }
 
 						// Property is a normal or non-managed property.
 						Object propertyValue = wrapper.getProperty(property);
@@ -291,11 +296,16 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 				});
 
 				// Add associations as links
-				entity.doWithAssociations(new AssociationHandler() {
-					@Override
-					public void doWithAssociation(Association association) {
+				entity.doWithAssociations(new SimpleAssociationHandler() {
 
-						PersistentProperty property = association.getInverse();
+					/*
+					 * (non-Javadoc)
+					 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
+					 */
+					@Override
+					public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
+
+						PersistentProperty<?> property = association.getInverse();
 
 						if (!mappings.isMapped(property)) {
 							return;
@@ -315,9 +325,11 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 				});
 
 				jgen.writeArrayFieldStart("links");
+
 				for (Link l : links) {
 					jgen.writeObject(l);
 				}
+
 				jgen.writeEndArray();
 
 			} catch (IllegalStateException e) {
@@ -327,5 +339,4 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 			}
 		}
 	}
-
 }

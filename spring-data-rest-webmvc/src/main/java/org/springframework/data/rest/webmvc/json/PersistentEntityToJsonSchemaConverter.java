@@ -13,19 +13,21 @@ import javax.validation.constraints.NotNull;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.data.mapping.Association;
-import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.SimpleAssociationHandler;
+import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.RepositoryLinkBuilder;
 import org.springframework.hateoas.Link;
+import org.springframework.util.Assert;
 
 /**
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
 public class PersistentEntityToJsonSchemaConverter implements ConditionalGenericConverter {
 
@@ -37,10 +39,16 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	private final Repositories repositories;
 
 	/**
+	 * Creates a new {@link PersistentEntityToJsonSchemaConverter} for the given {@link Repositories} and
+	 * {@link ResourceMappings}.
+	 * 
 	 * @param repositories must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
 	 */
 	public PersistentEntityToJsonSchemaConverter(Repositories repositories, ResourceMappings mappings) {
+
+		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(mappings, "ResourceMappings must not be null!");
 
 		this.repositories = repositories;
 		this.mappings = mappings;
@@ -73,7 +81,10 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		return (JsonSchema) convert(domainType, STRING_TYPE, SCHEMA_TYPE);
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
+	 */
 	@Override
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -81,41 +92,42 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getType());
 		String entityDesc = persistentEntity.getType().isAnnotationPresent(Description.class) ? persistentEntity.getType()
 				.getAnnotation(Description.class).value() : null;
-
 		final JsonSchema jsonSchema = new JsonSchema(persistentEntity.getName(), entityDesc);
-		persistentEntity.doWithProperties(new PropertyHandler() {
+
+		persistentEntity.doWithProperties(new SimplePropertyHandler() {
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.springframework.data.mapping.PropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
+			 */
 			@Override
-			public void doWithPersistentProperty(PersistentProperty persistentProperty) {
+			public void doWithPersistentProperty(PersistentProperty<?> persistentProperty) {
+
 				Class<?> propertyType = persistentProperty.getType();
 				String type = uncapitalize(propertyType.getSimpleName());
-				boolean notNull = persistentProperty.getField().isAnnotationPresent(NotNull.class)
-						|| persistentProperty.getGetter().isAnnotationPresent(NotNull.class);
-				String desc = persistentProperty.getField().isAnnotationPresent(Description.class) ? persistentProperty
-						.getField().getAnnotation(Description.class).value() : persistentProperty.getGetter().isAnnotationPresent(
-						Description.class) ? persistentProperty.getGetter().getAnnotation(Description.class).value() : null;
 
-				JsonSchema.Property property;
-				if (persistentProperty.isCollectionLike()) {
-					property = new JsonSchema.ArrayProperty("array", desc, notNull);
-				} else {
-					property = new JsonSchema.Property(type, desc, notNull);
-				}
+				boolean notNull = persistentProperty.isAnnotationPresent(NotNull.class);
+				Description descriptionAnnotation = persistentProperty.findAnnotation(Description.class);
+				String desc = descriptionAnnotation == null ? null : descriptionAnnotation.value();
+
+				JsonSchema.Property property = persistentProperty.isCollectionLike() ? new JsonSchema.ArrayProperty("array",
+						desc, notNull) : new JsonSchema.Property(type, desc, notNull);
 				jsonSchema.addProperty(persistentProperty.getName(), property);
 			}
 		});
 
 		final List<Link> links = new ArrayList<Link>();
 
-		persistentEntity.doWithAssociations(new AssociationHandler() {
+		persistentEntity.doWithAssociations(new SimpleAssociationHandler() {
 
 			/*
 			 * (non-Javadoc)
 			 * @see org.springframework.data.mapping.AssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
 			 */
 			@Override
-			public void doWithAssociation(Association association) {
+			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
 
-				PersistentProperty persistentProperty = association.getInverse();
+				PersistentProperty<?> persistentProperty = association.getInverse();
 
 				if (!metadata.isExported(persistentProperty)) {
 					return;
