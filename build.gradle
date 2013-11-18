@@ -16,8 +16,8 @@ ext {
   sdCommonsVersion = "1.7.0.BUILD-SNAPSHOT"
   sdJpaVersion = "1.5.0.BUILD-SNAPSHOT"
   sdMongoVersion = "1.4.0.BUILD-SNAPSHOT"
-  sdGemfireVersion = "1.3.3.BUILD-SNAPSHOT"
-  sdNeo4jVersion = "2.3.3.BUILD-SNAPSHOT"
+  sdGemfireVersion = "1.4.0.BUILD-SNAPSHOT"
+  sdNeo4jVersion = "3.0.0.BUILD-SNAPSHOT"
 
   // Libraries
   jacksonVersion = "2.2.2"
