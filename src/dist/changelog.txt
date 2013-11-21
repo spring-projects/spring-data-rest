@@ -1,0 +1,25 @@
+
+Release Notes - Spring Data REST - Version 2.0 M1
+-------------------------------------------------
+** Bug
+    * [DATAREST-72] - @RestResource(exported = false) is not considered on repository interfaces
+    * [DATAREST-83] - Controller implementations should not be annotated with @Controller
+    * [DATAREST-88] - Build broken
+    * [DATAREST-103] - Add support for non-CrudRepositories
+    * [DATAREST-113] - /{repository}/schema fails on binding parameter - RepositoryRestRequest
+    * [DATAREST-114] - Could not initialize proxy - no Session
+    * [DATAREST-135] - Lost paging after upgrading to 1.1.0.M1
+    * [DATAREST-163] - One-to-one relations in embedded Mongo Documents do not get rendered...
+    * [DATAREST-168] - Master branch build is broken
+    * [DATAREST-169] - Property-link throws Null-pointer exception when property is lazy-loaded
+    * [DATAREST-184] - org.neo4j.graphdb.NotInTransactionException on DELETE
+
+** Improvement
+    * [DATAREST-162] - Support link path definition via @RestResource
+
+** Task
+    * [DATAREST-89] - Upgrade to latest Spring Data milestones
+    * [DATAREST-94] - Remove dependency on Guava
+    * [DATAREST-170] - Upgrade to dependencies of the Codd release train
+    * [DATAREST-185] - Upgrade to Spring 3.2.5
+    * [DATAREST-193] - Release 2.0 M1.
