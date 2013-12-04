@@ -20,17 +20,23 @@ import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 /**
  * Web integration tests specific to JPA.
@@ -119,5 +125,24 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		MockHttpServletResponse orders = request(ordersLink);
 		assertHasJsonPathValue("$..lineItems", orders);
+	}
+
+	/**
+	 * @see DATAREST-199
+	 */
+	@Test
+	public void createsOrderUsingPut() throws Exception {
+
+		mvc.perform(//
+				put("/orders/{id}", 4711).//
+						content(readFile("order.json")).contentType(MediaType.APPLICATION_JSON)//
+		).andExpect(status().isCreated());
+	}
+
+	private String readFile(String name) throws Exception {
+
+		ClassPathResource file = new ClassPathResource(name, getClass());
+		List<String> lines = Files.readAllLines(file.getFile().toPath(), Charset.forName("UTF-8"));
+		return StringUtils.collectionToDelimitedString(lines, System.lineSeparator());
 	}
 }

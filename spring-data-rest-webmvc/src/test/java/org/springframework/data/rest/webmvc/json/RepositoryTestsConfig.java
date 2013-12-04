@@ -71,7 +71,8 @@ public class RepositoryTestsConfig {
 
 	@Bean
 	public Module persistentEntityModule() {
-		return new PersistentEntityJackson2Module(new ResourceMappings(config(), repositories()));
+		return new PersistentEntityJackson2Module(new ResourceMappings(config(), repositories()),
+				defaultConversionService());
 	}
 
 	@Bean

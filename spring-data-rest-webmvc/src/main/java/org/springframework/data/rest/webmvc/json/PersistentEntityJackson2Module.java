@@ -6,17 +6,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.CollectionFactory;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
@@ -60,12 +58,18 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 	@Autowired private RepositoryRestConfiguration config;
 	@Autowired private UriDomainClassConverter uriDomainClassConverter;
 	private final ResourceMappings mappings;
+	private final ConversionService conversionService;
 
-	public PersistentEntityJackson2Module(ResourceMappings resourceMappings) {
+	public PersistentEntityJackson2Module(ResourceMappings resourceMappings, ConversionService conversionService) {
 
 		super(new Version(1, 1, 0, "BUILD-SNAPSHOT", "org.springframework.data.rest", "jackson-module"));
 
+		Assert.notNull(resourceMappings, "ResourceMappings must not be null!");
+		Assert.notNull(conversionService, "ConversionService must not be null!");
+
 		this.mappings = resourceMappings;
+		this.conversionService = conversionService;
+
 		addSerializer(new ResourceSerializer());
 	}
 
@@ -116,11 +120,12 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 			this.persistentEntity = persistentEntity;
 		}
 
-		@SuppressWarnings({ "unchecked", "incomplete-switch", "null", "unused" })
+		@SuppressWarnings({ "unchecked", "incomplete-switch", "unused" })
 		@Override
 		public T deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 			Object entity = instantiateClass(getValueClass());
-			BeanWrapper<?, Object> wrapper = BeanWrapper.create(entity, null);
+
+			BeanWrapper<?, Object> wrapper = BeanWrapper.create(entity, conversionService);
 
 			ResourceMetadata metadata = mappings.getMappingFor(getValueClass());
 
@@ -172,34 +177,27 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 						// Try and read the value of this attribute.
 						// The method of doing that varies based on the type of the property.
 						if (persistentProperty.isCollectionLike()) {
-							Class<? extends Collection<?>> ctype = (Class<? extends Collection<?>>) persistentProperty.getType();
-							Collection<Object> c = (Collection<Object>) wrapper.getProperty(persistentProperty);
-							if (null == c || c == Collections.EMPTY_LIST || c == Collections.EMPTY_SET) {
-								if (Collection.class.isAssignableFrom(ctype)) {
-									c = new ArrayList<Object>();
-								} else if (Set.class.isAssignableFrom(ctype)) {
-									c = new HashSet<Object>();
-								}
-							}
+
+							Class<? extends Collection<?>> collectionType = (Class<? extends Collection<?>>) persistentProperty
+									.getType();
+							Collection<Object> collection = CollectionFactory.createCollection(collectionType, 0);
 
 							if ((tok = jp.nextToken()) == JsonToken.START_ARRAY) {
 								while ((tok = jp.nextToken()) != JsonToken.END_ARRAY) {
 									Object cval = jp.readValueAs(persistentProperty.getComponentType());
-									c.add(cval);
+									collection.add(cval);
 								}
 
-								val = c;
+								val = collection;
 							} else if (tok == JsonToken.VALUE_NULL) {
 								val = null;
 							} else {
 								throw new HttpMessageNotReadableException("Cannot read a JSON " + tok + " as a Collection.");
 							}
 						} else if (persistentProperty.isMap()) {
-							Class<? extends Map<?, ?>> mtype = (Class<? extends Map<?, ?>>) persistentProperty.getType();
-							Map<Object, Object> m = (Map<Object, Object>) wrapper.getProperty(persistentProperty);
-							if (null == m || m == Collections.EMPTY_MAP) {
-								m = new HashMap<Object, Object>();
-							}
+
+							Class<? extends Map<?, ?>> mapType = (Class<? extends Map<?, ?>>) persistentProperty.getType();
+							Map<Object, Object> map = CollectionFactory.createMap(mapType, 0);
 
 							if ((tok = jp.nextToken()) == JsonToken.START_OBJECT) {
 								do {
@@ -208,10 +206,10 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 									tok = jp.nextToken();
 									Object mval = jp.readValueAs(persistentProperty.getMapValueType());
 
-									m.put(name, mval);
+									map.put(name, mval);
 								} while ((tok = jp.nextToken()) != JsonToken.END_OBJECT);
 
-								val = m;
+								val = map;
 							} else if (tok == JsonToken.VALUE_NULL) {
 								val = null;
 							} else {

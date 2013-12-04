@@ -133,6 +133,10 @@ public abstract class AbstractWebIntegrationTests {
 		assertThat("Expected not to find link with rel " + rel + " but found " + link + "!", link, is(nullValue()));
 	}
 
+	protected void assertHasJsonPathValue(String path, MockHttpServletResponse response) throws Exception {
+		assertThat(JsonPath.read(response.getContentAsString(), path), is(notNullValue()));
+	}
+
 	protected ResultMatcher hasLinkWithRel(final String rel) {
 
 		return new ResultMatcher() {

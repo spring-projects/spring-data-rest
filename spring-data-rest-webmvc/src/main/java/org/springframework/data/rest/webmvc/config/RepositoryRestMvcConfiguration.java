@@ -353,7 +353,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public Module persistentEntityJackson2Module() {
-		return new PersistentEntityJackson2Module(resourceMappings());
+		return new PersistentEntityJackson2Module(resourceMappings(), defaultConversionService());
 	}
 
 	/**
