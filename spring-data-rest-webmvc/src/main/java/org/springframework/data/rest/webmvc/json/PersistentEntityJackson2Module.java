@@ -307,13 +307,10 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 
 						PersistentProperty<?> property = association.getInverse();
 
-						if (!mappings.isMapped(property)) {
-							return;
-						}
-
 						if (maybeAddAssociationLink(builder, mappings, property, links)) {
 							return;
 						}
+
 						// Association Link was not added, probably because this isn't a managed type. Add value of property inline.
 						Object propertyValue = wrapper.getProperty(property);
 						try {

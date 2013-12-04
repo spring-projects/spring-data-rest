@@ -104,6 +104,20 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 		MockHttpServletResponse orders = request(ordersLink);
 
 		Link creatorLink = assertHasContentLinkWithRel("creator", orders);
+
 		assertThat(request(creatorLink), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATAREST-200
+	 */
+	@Test
+	public void exposesInlinedEntities() throws Exception {
+
+		MockHttpServletResponse response = request("/");
+		Link ordersLink = assertHasLinkWithRel("orders", response);
+
+		MockHttpServletResponse orders = request(ordersLink);
+		assertHasJsonPathValue("$..lineItems", orders);
 	}
 }

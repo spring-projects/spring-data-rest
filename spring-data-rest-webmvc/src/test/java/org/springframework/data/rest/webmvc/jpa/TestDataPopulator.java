@@ -34,7 +34,9 @@ public class TestDataPopulator {
 
 		Person person = people.findAll().iterator().next();
 
-		orders.save(new Order(person));
+		Order order = new Order(person);
+		order.add(new LineItem("Java Chip"));
+		orders.save(order);
 	}
 
 	private void populatePeople() {
