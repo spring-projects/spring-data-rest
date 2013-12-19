@@ -194,7 +194,7 @@ project("spring-data-rest-webmvc") {
 
     // Jackson
     compile "com.fasterxml.jackson.datatype:jackson-datatype-joda:$jacksonVersion"
-    compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:$jacksonVersion"
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:$jacksonVersion", optional)
 
     // Testing
     testCompile "org.eclipse.jetty:jetty-servlet:$jettyVersion"
@@ -213,6 +213,7 @@ project("spring-data-rest-webmvc") {
     testCompile "joda-time:joda-time:$jodaVersion"
     
     // Hibernate
+    compile("org.hibernate:hibernate-core:$hibernateVersion", optional)
     testRuntime "org.hibernate:hibernate-entitymanager:$hibernateVersion"
     testRuntime "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
     // HSQL
@@ -266,7 +267,7 @@ project("spring-data-rest-example") {
 
     // Jackson
     compile "com.fasterxml.jackson.datatype:jackson-datatype-joda:$jacksonVersion"
-    compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:$jacksonVersion"
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-hibernate4:$jacksonVersion", optional)
 
     // Hibernate
     runtime "org.hibernate:hibernate-entitymanager:$hibernateVersion"
