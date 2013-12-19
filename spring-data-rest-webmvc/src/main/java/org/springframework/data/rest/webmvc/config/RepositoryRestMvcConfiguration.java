@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -61,8 +60,15 @@ import org.springframework.data.rest.webmvc.support.ValidationExceptionHandler;
 import org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.config.EnableHypermediaSupport;
+import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType;
+import org.springframework.hateoas.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.hal.CurieProvider;
+import org.springframework.hateoas.hal.Jackson2HalModule;
+import org.springframework.hateoas.hal.Jackson2HalModule.HalHandlerInstantiator;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -89,6 +95,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @Configuration
 @ComponentScan(basePackageClasses = RepositoryRestController.class,
 		includeFilters = @Filter(RepositoryRestController.class), useDefaultFilters = false)
+@EnableHypermediaSupport(type = HypermediaType.HAL)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration {
 
@@ -99,6 +106,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Autowired ListableBeanFactory beanFactory;
 	@Autowired(required = false) List<ResourceProcessor<?>> resourceProcessors = Collections.emptyList();
+	@Autowired(required = false) RelProvider relProvider;
+	@Autowired(required = false) CurieProvider curieProvider;
 
 	@Bean
 	public Repositories repositories() {
@@ -256,15 +265,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public ObjectMapper objectMapper() {
-		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-		// Our special PersistentEntityResource Module
-		objectMapper.registerModule(persistentEntityJackson2Module());
-		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
-		// Configure custom Modules
-		configureJacksonObjectMapper(objectMapper);
-
-		return objectMapper;
+		return basicObjectMapper();
 	}
 
 	/**
@@ -274,12 +275,56 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public MappingJackson2HttpMessageConverter jacksonHttpMessageConverter() {
+
+		List<MediaType> mediaTypes = new ArrayList<MediaType>();
+		mediaTypes.addAll(Arrays.asList(MediaType.valueOf("application/schema+json"),
+				MediaType.valueOf("application/x-spring-data-verbose+json"),
+				MediaType.valueOf("application/x-spring-data-compact+json")));
+
+		// Configure this mapper to be used if HAL is not the default media type
+		if (!config().getDefaultMediaType().equals(MediaTypes.HAL_JSON)) {
+			mediaTypes.add(MediaType.APPLICATION_JSON);
+		}
+
 		MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
 		jacksonConverter.setObjectMapper(objectMapper());
-		jacksonConverter.setSupportedMediaTypes(Arrays.asList(MediaType.APPLICATION_JSON,
-				MediaType.valueOf("application/schema+json"), MediaType.valueOf("application/x-spring-data-verbose+json"),
-				MediaType.valueOf("application/x-spring-data-compact+json")));
+		jacksonConverter.setSupportedMediaTypes(mediaTypes);
+
 		return jacksonConverter;
+	}
+
+	//
+	// HAL setup
+	//
+
+	@Bean
+	public MappingJackson2HttpMessageConverter halJacksonHttpMessageConverter() {
+
+		ArrayList<MediaType> mediaTypes = new ArrayList<MediaType>();
+		mediaTypes.add(MediaTypes.HAL_JSON);
+
+		// Enable returning HAL if application/json is asked if it's configured to be the default type
+		if (config().getDefaultMediaType().equals(MediaTypes.HAL_JSON)) {
+			mediaTypes.add(MediaType.APPLICATION_JSON);
+		}
+
+		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+		converter.setObjectMapper(halObjectMapper());
+		converter.setSupportedMediaTypes(mediaTypes);
+
+		return converter;
+	}
+
+	@Bean
+	public ObjectMapper halObjectMapper() {
+
+		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(getDefaultedRelProvider(), curieProvider);
+
+		ObjectMapper mapper = basicObjectMapper();
+		mapper.registerModule(new Jackson2HalModule());
+		mapper.setHandlerInstantiator(instantiator);
+
+		return mapper;
 	}
 
 	/**
@@ -338,12 +383,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		Repositories repositories = repositories();
 		RepositoryRestConfiguration config = config();
 
-		try {
-			RelProvider relProvider = beanFactory.getBean(RelProvider.class);
-			return new ResourceMappings(config, repositories, relProvider);
-		} catch (NoSuchBeanDefinitionException e) {
-			return new ResourceMappings(config, repositories);
-		}
+		return new ResourceMappings(config, repositories, getDefaultedRelProvider());
 	}
 
 	/**
@@ -381,9 +421,13 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	private List<HttpMessageConverter<?>> defaultMessageConverters() {
+
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
+
+		messageConverters.add(halJacksonHttpMessageConverter());
 		messageConverters.add(jacksonHttpMessageConverter());
 		messageConverters.add(uriListHttpMessageConverter());
+
 		return messageConverters;
 	}
 
@@ -391,6 +435,23 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return Arrays.asList(pageableResolver(), sortResolver(), serverHttpRequestMethodArgumentResolver(),
 				repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
 				resourceMetadataHandlerMethodArgumentResolver());
+	}
+
+	private ObjectMapper basicObjectMapper() {
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+		// Our special PersistentEntityResource Module
+		objectMapper.registerModule(persistentEntityJackson2Module());
+		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
+		// Configure custom Modules
+		configureJacksonObjectMapper(objectMapper);
+
+		return objectMapper;
+	}
+
+	private RelProvider getDefaultedRelProvider() {
+		return this.relProvider != null ? relProvider : new EvoInflectorRelProvider();
 	}
 
 	/**

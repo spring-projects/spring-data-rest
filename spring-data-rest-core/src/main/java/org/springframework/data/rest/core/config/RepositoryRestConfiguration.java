@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 
@@ -36,7 +37,7 @@ public class RepositoryRestConfiguration {
 	private String pageParamName = "page";
 	private String limitParamName = "limit";
 	private String sortParamName = "sort";
-	private MediaType defaultMediaType = MediaType.APPLICATION_JSON;
+	private MediaType defaultMediaType = MediaTypes.HAL_JSON;
 	private boolean returnBodyOnCreate = false;
 	private boolean returnBodyOnUpdate = false;
 	private List<Class<?>> exposeIdsFor = new ArrayList<Class<?>>();

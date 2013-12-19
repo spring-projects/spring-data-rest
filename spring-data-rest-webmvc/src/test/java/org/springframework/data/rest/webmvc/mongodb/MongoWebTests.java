@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 /**
  * Integration tests for MongoDB repositories.
@@ -83,7 +84,8 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 	public void foo() throws Exception {
 
 		Link profileLink = discoverUnique("profiles");
-		follow(profileLink).andExpect(jsonPath("$.content").value(hasSize(2)));
+		follow(profileLink).//
+				andExpect(jsonPath("$._embedded.profiles").value(hasSize(2)));
 	}
 
 	@Test
@@ -91,6 +93,8 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 
 		Link usersLink = discoverUnique("users");
 		Link userLink = assertHasContentLinkWithRel("self", request(usersLink));
-		follow(userLink).andExpect(jsonPath("$.address.zipCode").value(is(notNullValue())));
+		follow(userLink).//
+				andDo(MockMvcResultHandlers.print()). //
+				andExpect(jsonPath("$.address.zipCode").value(is(notNullValue())));
 	}
 }

@@ -47,6 +47,8 @@ import org.springframework.util.StringUtils;
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 public class JpaWebTests extends AbstractWebIntegrationTests {
 
+	static final String LINK_TO_SIBLINGS_OF = "$._embedded..[?(@.firstName == '%s')]._links.siblings.href[0]";
+
 	@Autowired TestDataPopulator loader;
 	@Autowired ResourceMappings mappings;
 
@@ -137,6 +139,24 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 				put("/orders/{id}", 4711).//
 						content(readFile("order.json")).contentType(MediaType.APPLICATION_JSON)//
 		).andExpect(status().isCreated());
+	}
+
+	@Test
+	public void listsSiblingsWithContentCorrectly() throws Exception {
+
+		MockHttpServletResponse response = mvc.perform(get("/people")).andReturn().getResponse();
+		String href = assertHasJsonPathValue(String.format(LINK_TO_SIBLINGS_OF, "John"), response);
+
+		mvc.perform(get(href)).andExpect(status().isOk());
+	}
+
+	@Test
+	public void listsEmptySiblingsCorrectly() throws Exception {
+
+		MockHttpServletResponse response = mvc.perform(get("/people")).andReturn().getResponse();
+		String href = assertHasJsonPathValue(String.format(LINK_TO_SIBLINGS_OF, "Billy Bob"), response);
+
+		mvc.perform(get(href)).andExpect(status().isOk());
 	}
 
 	private String readFile(String name) throws Exception {

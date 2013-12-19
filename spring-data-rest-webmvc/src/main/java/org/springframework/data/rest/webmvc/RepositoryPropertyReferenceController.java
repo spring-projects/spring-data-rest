@@ -96,9 +96,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		this.publisher = applicationEventPublisher;
 	}
 
-	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = { "application/json",
-			"application/x-spring-data-verbose+json" })
-	@ResponseBody
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
 	public ResponseEntity<ResourceSupport> followPropertyReference(final RepositoryRestRequest repoRequest,
 			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException, NoSuchMethodException {
 
@@ -147,7 +145,6 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	}
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.DELETE)
-	@ResponseBody
 	public ResponseEntity<? extends ResourceSupport> deletePropertyReference(final RepositoryRestRequest repoRequest,
 			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException, NoSuchMethodException,
 			HttpRequestMethodNotSupportedException {
@@ -193,7 +190,6 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		return ControllerUtils.toResponseEntity(null, EMPTY_RESOURCE, HttpStatus.NO_CONTENT);
 	}
 
-	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.GET, produces = { "application/json",
 			"application/x-spring-data-verbose+json", "application/x-spring-data-compact+json", "text/uri-list" })
 	public ResponseEntity<ResourceSupport> followPropertyReference(final RepositoryRestRequest repoRequest,
@@ -246,7 +242,6 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		return ControllerUtils.toResponseEntity(headers, responseResource, HttpStatus.OK);
 	}
 
-	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = {
 			"application/x-spring-data-compact+json", "text/uri-list" })
 	public ResponseEntity<ResourceSupport> followPropertyReferenceCompact(RepositoryRestRequest repoRequest,

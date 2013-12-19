@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,9 +32,12 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.support.RepositoryLinkBuilder;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -54,11 +58,13 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 	private static final long serialVersionUID = -7289265674870906323L;
 	private static final Logger LOG = LoggerFactory.getLogger(PersistentEntityJackson2Module.class);
 	private static final TypeDescriptor URI_TYPE = TypeDescriptor.valueOf(URI.class);
+
+	private final ResourceMappings mappings;
+	private final ConversionService conversionService;
+
 	@Autowired private Repositories repositories;
 	@Autowired private RepositoryRestConfiguration config;
 	@Autowired private UriDomainClassConverter uriDomainClassConverter;
-	private final ResourceMappings mappings;
-	private final ConversionService conversionService;
 
 	public PersistentEntityJackson2Module(ResourceMappings resourceMappings, ConversionService conversionService) {
 
@@ -123,11 +129,10 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 		@SuppressWarnings({ "unchecked", "incomplete-switch", "unused" })
 		@Override
 		public T deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-			Object entity = instantiateClass(getValueClass());
+			Object entity = instantiateClass(handledType());
 
 			BeanWrapper<?, Object> wrapper = BeanWrapper.create(entity, conversionService);
-
-			ResourceMetadata metadata = mappings.getMappingFor(getValueClass());
+			ResourceMetadata metadata = mappings.getMappingFor(handledType());
 
 			for (JsonToken tok = jp.nextToken(); tok != JsonToken.END_OBJECT; tok = jp.nextToken()) {
 				String name = jp.getCurrentName();
@@ -256,14 +261,14 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 			final PersistentEntity<?, ?> entity = resource.getPersistentEntity();
 			final BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper.create(obj, null);
 			final Object entityId = wrapper.getProperty(entity.getIdProperty());
-			final ResourceMappings mappings = new ResourceMappings(config, repositories);
 			final ResourceMetadata metadata = mappings.getMappingFor(entity.getType());
 			final RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, config.getBaseUri()).slash(entityId);
 
 			final List<Link> links = new ArrayList<Link>();
 			// Start with ResourceProcessor-added links
 			links.addAll(resource.getLinks());
-			jgen.writeStartObject();
+
+			final Map<String, Object> model = new LinkedHashMap<String, Object>();
 
 			try {
 
@@ -284,12 +289,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 						}
 
 						// Property is a normal or non-managed property.
-						Object propertyValue = wrapper.getProperty(property);
-						try {
-							jgen.writeObjectField(property.getName(), propertyValue);
-						} catch (IOException e) {
-							throw new IllegalStateException(e);
-						}
+						model.put(property.getName(), wrapper.getProperty(property));
 					}
 				});
 
@@ -310,28 +310,45 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 						}
 
 						// Association Link was not added, probably because this isn't a managed type. Add value of property inline.
-						Object propertyValue = wrapper.getProperty(property);
-						try {
-							jgen.writeObjectField(property.getName(), propertyValue);
-						} catch (IOException e) {
-							throw new IllegalStateException(e);
+						if (metadata.isExported(property)) {
+							model.put(property.getName(), wrapper.getProperty(property));
 						}
+
 					}
 				});
 
-				jgen.writeArrayFieldStart("links");
-
-				for (Link l : links) {
-					jgen.writeObject(l);
-				}
-
-				jgen.writeEndArray();
+				MapResource mapResource = new MapResource(model, links);
+				jgen.writeObject(mapResource);
 
 			} catch (IllegalStateException e) {
 				throw (IOException) e.getCause();
-			} finally {
-				jgen.writeEndObject();
 			}
+		}
+	}
+
+	private static class MapResource extends Resource<Map<String, Object>> {
+
+		/**
+		 * @param content
+		 * @param links
+		 */
+		public MapResource(Map<String, Object> content, Iterable<Link> links) {
+			super(content, links);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.hateoas.Resource#getContent()
+		 */
+		@Override
+		@JsonIgnore
+		public Map<String, Object> getContent() {
+			return super.getContent();
+		}
+
+		@JsonAnyGetter
+		public Map<String, Object> any() {
+			return getContent();
 		}
 	}
 }

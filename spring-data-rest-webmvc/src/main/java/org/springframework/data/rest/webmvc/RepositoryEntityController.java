@@ -105,8 +105,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	@ResponseBody
-	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = { "application/json",
-			"application/x-spring-data-verbose+json" })
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
 	public Resources<?> listEntities(final RepositoryRestRequest request, Pageable pageable, Sort sort)
 			throws ResourceNotFoundException {
 
@@ -158,8 +157,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	@ResponseBody
-	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.POST, consumes = { "application/json" }, produces = {
-			"application/json", "text/uri-list" })
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.POST, consumes = { "application/json" })
 	public ResponseEntity<ResourceSupport> createNewEntity(RepositoryRestRequest repoRequest,
 			PersistentEntityResource<?> incoming) {
 
@@ -189,9 +187,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @return
 	 * @throws ResourceNotFoundException
 	 */
-	@ResponseBody
-	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.GET, produces = { "application/json",
-			"application/x-spring-data-compact+json", "text/uri-list" })
+	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Resource<?>> getSingleEntity(RepositoryRestRequest repoRequest, @PathVariable String id) {
 
 		RepositoryInvoker repoMethodInvoker = repoRequest.getRepositoryInvoker();
@@ -217,9 +213,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @param id
 	 * @return
 	 */
-	@ResponseBody
-	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PUT, consumes = { "application/json" },
-			produces = { "application/json", "text/uri-list" })
+	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PUT, consumes = { "application/json" })
 	public ResponseEntity<? extends ResourceSupport> updateEntity(RepositoryRestRequest request,
 			PersistentEntityResource<Object> incoming, @PathVariable String id) {
 
@@ -251,7 +245,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.DELETE)
-	@ResponseBody
 	public ResponseEntity<?> deleteEntity(final RepositoryRestRequest repoRequest, @PathVariable final String id)
 			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 

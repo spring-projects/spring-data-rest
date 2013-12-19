@@ -12,5 +12,4 @@ public class RepositoryLinksResource extends Resources<Object> {
 	public RepositoryLinksResource() {
 		super(Collections.emptyList());
 	}
-
 }

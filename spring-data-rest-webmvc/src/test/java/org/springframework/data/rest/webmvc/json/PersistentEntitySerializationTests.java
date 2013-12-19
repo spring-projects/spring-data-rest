@@ -18,7 +18,7 @@ import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverer;
-import org.springframework.hateoas.core.DefaultLinkDiscoverer;
+import org.springframework.hateoas.hal.HalLinkDiscoverer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +44,7 @@ public class PersistentEntitySerializationTests {
 
 	@Before
 	public void setUp() {
-		linkDiscoverer = new DefaultLinkDiscoverer();
+		linkDiscoverer = new HalLinkDiscoverer();
 	}
 
 	@Test

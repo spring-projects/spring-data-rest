@@ -54,8 +54,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping(value = "/", method = RequestMethod.GET, //
-			produces = { "application/json", "application/x-spring-data-compact+json" })
+	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public RepositoryLinksResource listRepositories() {
 
 		RepositoryLinksResource resource = new RepositoryLinksResource();

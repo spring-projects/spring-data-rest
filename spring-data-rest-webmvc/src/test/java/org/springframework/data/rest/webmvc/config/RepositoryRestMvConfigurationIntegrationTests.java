@@ -22,8 +22,12 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.hateoas.core.DefaultRelProvider;
+import org.springframework.http.converter.HttpMessageConverter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Oliver Gierke
@@ -45,8 +49,14 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	}
 
 	@Test
-	public void foo() {
+	public void assertBeansBeingSetUp() throws Exception {
+
 		context.getBean(PageableHandlerMethodArgumentResolver.class);
+
+		// Verify HAL setup
+		context.getBean("halJacksonHttpMessageConverter", HttpMessageConverter.class);
+		ObjectMapper mapper = context.getBean("halObjectMapper", ObjectMapper.class);
+		mapper.writeValueAsString(new RepositoryLinksResource());
 	}
 
 	@Configuration
