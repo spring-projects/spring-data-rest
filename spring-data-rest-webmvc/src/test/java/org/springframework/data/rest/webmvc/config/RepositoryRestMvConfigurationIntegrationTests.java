@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,12 +27,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.hateoas.core.DefaultRelProvider;
 import org.springframework.http.converter.HttpMessageConverter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
+ * Integration tests for basic application bootstrapping (general configuration related checks).
+ * 
  * @author Oliver Gierke
  */
 public class RepositoryRestMvConfigurationIntegrationTests {
@@ -46,6 +52,16 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		if (context != null) {
 			context.close();
 		}
+	}
+
+	/**
+	 * @see DATAREST-210
+	 */
+	@Test
+	public void assertEnableHypermediaSupportWorkingCorrectly() {
+
+		assertThat(context.getBean("entityLinksPluginRegistry"), is(notNullValue()));
+		assertThat(context.getBean(LinkDiscoverers.class), is(notNullValue()));
 	}
 
 	@Test

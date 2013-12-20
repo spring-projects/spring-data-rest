@@ -95,9 +95,21 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @Configuration
 @ComponentScan(basePackageClasses = RepositoryRestController.class,
 		includeFilters = @Filter(RepositoryRestController.class), useDefaultFilters = false)
-@EnableHypermediaSupport(type = HypermediaType.HAL)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration {
+
+	/**
+	 * Helper class instead of using {@link EnableHypermediaSupport} directly to make sure the annotation gets inspected
+	 * correctly even if users extend {@link RepositoryRestMvcConfiguration}.
+	 * 
+	 * @see https://jira.springsource.org/browse/SPR-11251
+	 * @author Oliver Gierke
+	 */
+	@Configuration
+	@EnableHypermediaSupport(type = HypermediaType.HAL)
+	static class HypermediaConfigurationDelegate {
+
+	}
 
 	private static final boolean IS_JAVAX_VALIDATION_AVAILABLE = ClassUtils.isPresent(
 			"javax.validation.ConstraintViolationException", RepositoryRestMvcConfiguration.class.getClassLoader());
