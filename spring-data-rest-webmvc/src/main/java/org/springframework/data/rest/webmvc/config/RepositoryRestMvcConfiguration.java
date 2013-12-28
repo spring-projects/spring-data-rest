@@ -436,8 +436,13 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
 
-		messageConverters.add(halJacksonHttpMessageConverter());
-		messageConverters.add(jacksonHttpMessageConverter());
+		if (config().getDefaultMediaType().equals(MediaTypes.HAL_JSON)) {
+			messageConverters.add(halJacksonHttpMessageConverter());
+			messageConverters.add(jacksonHttpMessageConverter());
+		} else {
+			messageConverters.add(jacksonHttpMessageConverter());
+			messageConverters.add(halJacksonHttpMessageConverter());
+		}
 		messageConverters.add(uriListHttpMessageConverter());
 
 		return messageConverters;
