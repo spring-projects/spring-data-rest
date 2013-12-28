@@ -19,7 +19,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -299,7 +302,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			mediaTypes.add(MediaType.APPLICATION_JSON);
 		}
 
-		MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+		MappingJackson2HttpMessageConverter jacksonConverter = new CauseLoggingMappingJackson2HttpMessageConverter();
 		jacksonConverter.setObjectMapper(objectMapper());
 		jacksonConverter.setSupportedMediaTypes(mediaTypes);
 
@@ -321,7 +324,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			mediaTypes.add(MediaType.APPLICATION_JSON);
 		}
 
-		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+		MappingJackson2HttpMessageConverter converter = new CauseLoggingMappingJackson2HttpMessageConverter();
+
 		converter.setObjectMapper(halObjectMapper());
 		converter.setSupportedMediaTypes(mediaTypes);
 
@@ -515,4 +519,53 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @param objectMapper The {@literal ObjectMapper} to be used by the system.
 	 */
 	protected void configureJacksonObjectMapper(ObjectMapper objectMapper) {}
+
+	private static class CauseLoggingMappingJackson2HttpMessageConverter extends MappingJackson2HttpMessageConverter {
+
+		private static final Logger LOGGER = LoggerFactory.getLogger(CauseLoggingMappingJackson2HttpMessageConverter.class);
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
+		 */
+		@Override
+		public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+
+			if (LOGGER.isDebugEnabled()) {
+
+				AtomicReference<Throwable> cause = new AtomicReference<Throwable>();
+				boolean result = getObjectMapper().canSerialize(clazz, cause);
+
+				if (cause.get() != null) {
+					LOGGER.debug(String.format("Cannot write type %s!", clazz.getName()), cause.get());
+				}
+
+				return result && canWrite(mediaType);
+			}
+
+			return super.canWrite(clazz, mediaType);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter#canRead(java.lang.Class, org.springframework.http.MediaType)
+		 */
+		@Override
+		public boolean canRead(Class<?> clazz, MediaType mediaType) {
+
+			if (LOGGER.isDebugEnabled()) {
+
+				AtomicReference<Throwable> cause = new AtomicReference<Throwable>();
+				boolean result = getObjectMapper().canDeserialize(getJavaType(clazz, null), cause);
+
+				if (cause.get() != null) {
+					LOGGER.debug(String.format("Cannot read type %s!", clazz.getName()), cause.get());
+				}
+
+				return result && canRead(mediaType);
+			}
+
+			return super.canWrite(clazz, mediaType);
+		}
+	}
 }
