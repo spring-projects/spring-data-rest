@@ -16,6 +16,7 @@
 package org.springframework.data.rest.webmvc.mongodb;
 
 import java.math.BigInteger;
+import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
 
@@ -24,4 +25,5 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface UserRepository extends CrudRepository<User, BigInteger> {
 
+	List<User> findByFirstname(String firstname);
 }

@@ -255,5 +255,22 @@ public abstract class AbstractWebIntegrationTests {
 				andExpect(jsonPath("$._links", notNullValue()));
 	}
 
+	/**
+	 * @see DATAREST-203
+	 */
+	@Test
+	public void exposesSearchesForRootResources() throws Exception {
+
+		MockHttpServletResponse response = request("/");
+
+		for (String rel : expectedRootLinkRels()) {
+
+			Link link = assertHasLinkWithRel(rel, response);
+			Link searchLink = assertHasLinkWithRel("search", request(link));
+
+			request(searchLink);
+		}
+	}
+
 	protected abstract Iterable<String> expectedRootLinkRels();
 }

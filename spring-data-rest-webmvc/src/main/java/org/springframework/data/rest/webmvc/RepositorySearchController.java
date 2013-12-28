@@ -90,8 +90,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, //
-			produces = { "application/json", "application/x-spring-data-compact+json" })
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
 	public Resource<?> listSearches(RepositoryRestRequest request) {
 
 		SearchResourceMappings resourceMappings = request.getSearchMappings();
@@ -120,8 +119,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @throws ResourceNotFoundException
 	 */
 	@ResponseBody
-	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET, //
-			produces = { "application/json", "application/x-spring-data-verbose+json" })
+	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET)
 	public ResponseEntity<Resources<?>> executeSearch(RepositoryRestRequest request, @PathVariable String search,
 			Pageable pageable) {
 
