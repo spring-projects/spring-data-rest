@@ -17,10 +17,13 @@ package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +43,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -272,5 +276,34 @@ public abstract class AbstractWebIntegrationTests {
 		}
 	}
 
+	@Test
+	public void postsPayloadToResource() throws Exception {
+
+		Map<String, String> payloads = getPayloadToPost();
+		assumeFalse(payloads.isEmpty());
+
+		MockHttpServletResponse response = request("/");
+
+		for (String rel : expectedRootLinkRels()) {
+
+			String payload = payloads.get(rel);
+
+			if (payload != null) {
+				Link link = assertHasLinkWithRel(rel, response);
+
+				MockHttpServletRequestBuilder request = post(link.getHref()).//
+						content(payload).//
+						contentType(MediaType.APPLICATION_JSON);
+
+				mvc.perform(request). //
+						andExpect(status().isCreated());
+			}
+		}
+	}
+
 	protected abstract Iterable<String> expectedRootLinkRels();
+
+	protected Map<String, String> getPayloadToPost() throws Exception {
+		return Collections.emptyMap();
+	}
 }

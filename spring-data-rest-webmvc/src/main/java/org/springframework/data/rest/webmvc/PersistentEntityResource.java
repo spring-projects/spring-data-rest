@@ -27,10 +27,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * A Spring HATEOAS {@link Resource} subclass that holds a reference to the entity's {@link PersistentEntity} metadata.
  * 
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
 public class PersistentEntityResource<T> extends Resource<T> {
 
-	@JsonIgnore private final PersistentEntity<?, ?> entity;
+	private final PersistentEntity<?, ?> entity;
 
 	public static <T> PersistentEntityResource<T> wrap(PersistentEntity<?, ?> entity, T obj) {
 		return new PersistentEntityResource<T>(entity, obj);
@@ -45,6 +46,7 @@ public class PersistentEntityResource<T> extends Resource<T> {
 		this.entity = entity;
 	}
 
+	@JsonIgnore
 	public PersistentEntity<?, ?> getPersistentEntity() {
 		return entity;
 	}

@@ -23,7 +23,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -70,6 +72,15 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Override
 	protected Iterable<String> expectedRootLinkRels() {
 		return Arrays.asList("people");
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#getPayloadToPost()
+	 */
+	@Override
+	protected Map<String, String> getPayloadToPost() throws Exception {
+		return Collections.singletonMap("people", readFile("person.json"));
 	}
 
 	/**

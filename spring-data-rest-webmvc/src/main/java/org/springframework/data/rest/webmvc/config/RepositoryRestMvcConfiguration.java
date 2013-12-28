@@ -254,10 +254,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public PersistentEntityResourceHandlerMethodArgumentResolver persistentEntityArgumentResolver() {
+
 		List<HttpMessageConverter<?>> messageConverters = defaultMessageConverters();
 		configureHttpMessageConverters(messageConverters);
 
-		return new PersistentEntityResourceHandlerMethodArgumentResolver(messageConverters);
+		return new PersistentEntityResourceHandlerMethodArgumentResolver(messageConverters, repoRequestArgumentResolver());
 	}
 
 	/**
@@ -432,7 +433,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new DefaultRepositoryInvokerFactory(repositories(), defaultConversionService());
 	}
 
-	private List<HttpMessageConverter<?>> defaultMessageConverters() {
+	@Bean
+	public List<HttpMessageConverter<?>> defaultMessageConverters() {
 
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
 
