@@ -179,6 +179,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 				return null;
 			}
 		};
+
 		try {
 			doWithReferencedProperty(repoRequest, id, property, handler);
 		} catch (IllegalArgumentException iae) {

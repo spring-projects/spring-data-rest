@@ -24,6 +24,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import net.minidev.json.JSONArray;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +48,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.JsonPath;
@@ -87,7 +92,11 @@ public abstract class AbstractWebIntegrationTests {
 	}
 
 	protected ResultActions follow(Link link) throws Exception {
-		return mvc.perform(get(link.getHref()));
+		return follow(link.getHref());
+	}
+
+	protected ResultActions follow(String href) throws Exception {
+		return mvc.perform(get(href));
 	}
 
 	protected List<Link> discover(String rel) throws Exception {
@@ -270,9 +279,12 @@ public abstract class AbstractWebIntegrationTests {
 		for (String rel : expectedRootLinkRels()) {
 
 			Link link = assertHasLinkWithRel(rel, response);
-			Link searchLink = assertHasLinkWithRel("search", request(link));
+			String rootResourceRepresentation = request(link).getContentAsString();
+			Link searchLink = getDiscoverer(response).findLinkWithRel("search", rootResourceRepresentation);
 
-			request(searchLink);
+			if (searchLink != null) {
+				request(searchLink);
+			}
 		}
 	}
 
@@ -301,9 +313,42 @@ public abstract class AbstractWebIntegrationTests {
 		}
 	}
 
+	/**
+	 * @see DATAREST-198
+	 */
+	@Test
+	public void accessLinkedResources() throws Exception {
+
+		MockHttpServletResponse rootResource = request("/");
+
+		for (Entry<String, List<String>> linked : getRootAndLinkedResources().entrySet()) {
+
+			Link resourceLink = assertHasLinkWithRel(linked.getKey(), rootResource);
+			MockHttpServletResponse resource = request(resourceLink);
+
+			for (String linkedRel : linked.getValue()) {
+
+				// Find URIs pointing to linked resources
+				String jsonPath = String.format("$..%s._links.%s.href", linked.getKey(), linkedRel);
+				String representation = resource.getContentAsString();
+				JSONArray uris = JsonPath.read(representation, jsonPath);
+
+				for (Object href : uris) {
+
+					follow(href.toString()). //
+							andExpect(status().isOk());
+				}
+			}
+		}
+	}
+
 	protected abstract Iterable<String> expectedRootLinkRels();
 
 	protected Map<String, String> getPayloadToPost() throws Exception {
 		return Collections.emptyMap();
+	}
+
+	protected MultiValueMap<String, String> getRootAndLinkedResources() {
+		return new LinkedMultiValueMap<String, String>(0);
 	}
 }

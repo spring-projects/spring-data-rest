@@ -13,17 +13,43 @@ public class TestDataPopulator {
 
 	private final PersonRepository people;
 	private final OrderRepository orders;
+	private final AuthorRepository authorRepository;
+	private final BookRepository books;
 
 	@Autowired
-	public TestDataPopulator(PersonRepository people, OrderRepository orders) {
+	public TestDataPopulator(PersonRepository people, OrderRepository orders, AuthorRepository authors,
+			BookRepository books) {
+
 		this.people = people;
 		this.orders = orders;
+		this.authorRepository = authors;
+		this.books = books;
 	}
 
 	public void populateRepositories() {
 
 		populatePeople();
 		populateOrders();
+		populateAuthorsAndBooks();
+	}
+
+	private void populateAuthorsAndBooks() {
+
+		if (authorRepository.count() != 0 || books.count() != 0) {
+			return;
+		}
+
+		Author ollie = new Author("Ollie");
+		Author mark = new Author("Mark");
+		Author michael = new Author("Michael");
+		Author david = new Author("David");
+		Author john = new Author("John");
+		Author thomas = new Author("Thomas");
+
+		Iterable<Author> authors = authorRepository.save(Arrays.asList(ollie, mark, michael, david, john, thomas));
+
+		books.save(new Book("1449323952", "Spring Data", authors));
+		books.save(new Book("1449323953", "Spring Data (SecondEdition)", authors));
 	}
 
 	private void populateOrders() {
@@ -56,4 +82,5 @@ public class TestDataPopulator {
 
 		people.save(Arrays.asList(john, jane));
 	}
+
 }

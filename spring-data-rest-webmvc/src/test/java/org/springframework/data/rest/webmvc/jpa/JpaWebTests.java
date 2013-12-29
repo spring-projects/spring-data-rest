@@ -38,6 +38,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 /**
@@ -71,7 +73,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	 */
 	@Override
 	protected Iterable<String> expectedRootLinkRels() {
-		return Arrays.asList("people");
+		return Arrays.asList("people", "authors", "books");
 	}
 
 	/* 
@@ -81,6 +83,20 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Override
 	protected Map<String, String> getPayloadToPost() throws Exception {
 		return Collections.singletonMap("people", readFile("person.json"));
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#getRootAndLinkedResources()
+	 */
+	@Override
+	protected MultiValueMap<String, String> getRootAndLinkedResources() {
+
+		MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
+		map.add("authors", "books");
+		map.add("books", "authors");
+
+		return map;
 	}
 
 	/**
