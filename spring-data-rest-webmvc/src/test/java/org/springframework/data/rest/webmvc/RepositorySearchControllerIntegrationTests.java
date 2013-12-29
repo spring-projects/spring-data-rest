@@ -29,7 +29,7 @@ import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.TestDataPopulator;
 import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
@@ -56,7 +56,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	public void rendersCorrectSearchLinksForPersons() {
 
 		RepositoryRestRequest request = getRequest(Person.class);
-		Resource<?> resource = controller.listSearches(request);
+		ResourceSupport resource = controller.listSearches(request);
 
 		ResourceTester tester = ResourceTester.of(resource);
 		tester.assertNumberOfLinks(4);

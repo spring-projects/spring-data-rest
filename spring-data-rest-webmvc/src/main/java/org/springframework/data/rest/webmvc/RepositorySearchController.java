@@ -19,7 +19,6 @@ import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -91,7 +90,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
-	public Resource<?> listSearches(RepositoryRestRequest request) {
+	public ResourceSupport listSearches(RepositoryRestRequest request) {
 
 		SearchResourceMappings resourceMappings = request.getSearchMappings();
 
@@ -105,7 +104,10 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			throw new ResourceNotFoundException();
 		}
 
-		return new Resource<Object>(Collections.emptyList(), queryMethodLinks);
+		ResourceSupport result = new ResourceSupport();
+		result.add(queryMethodLinks);
+
+		return result;
 	}
 
 	/**

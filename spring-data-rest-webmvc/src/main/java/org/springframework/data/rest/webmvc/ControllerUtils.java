@@ -30,7 +30,7 @@ import org.springframework.http.ResponseEntity;
  */
 public class ControllerUtils {
 
-	public static final Resource<?> EMPTY_RESOURCE = new Resource<Object>(Collections.emptyList());
+	public static final Resource<?> EMPTY_RESOURCE = new Resource<Object>(new Object());
 	public static final Resources<Resource<?>> EMPTY_RESOURCES = new Resources<Resource<?>>(
 			Collections.<Resource<?>> emptyList());
 	public static final Iterable<Resource<?>> EMPTY_RESOURCE_LIST = Collections.emptyList();
