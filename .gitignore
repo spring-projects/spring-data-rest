@@ -8,3 +8,4 @@ build/
 .settings
 *.log
 vf.gf.*
+out/
