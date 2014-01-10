@@ -32,6 +32,9 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.domain.jpa.JpaRepositoryConfig;
+import org.springframework.data.rest.core.domain.jpa.Person;
+import org.springframework.data.rest.core.domain.jpa.PersonRepository;
 import org.springframework.hateoas.Resource;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
@@ -43,8 +46,8 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-@ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = JpaRepositoryConfig.class)
 public class DomainObjectMergerTests {
 
 	@Autowired
@@ -58,14 +61,15 @@ public class DomainObjectMergerTests {
 		Repositories repositories = new Repositories(context.getBeanFactory());
 		ConversionService conversionService = new DefaultConversionService();
 
-		Resource<Person> incoming = new Resource<Person>(new Person("Greg"));
-		Person existingDomainObject = new Person("Sara");
+		Resource<Person> incoming = new Resource<Person>(new Person("Greg", "Turnquist"));
+		Person existingDomainObject = new Person("Sara", "Turnquist");
 
 		DomainObjectMerger merger = new DomainObjectMerger(repositories,
 				conversionService);
 		merger.merge(incoming.getContent(), existingDomainObject);
 
-		assertThat(existingDomainObject.getFirstname(), equalTo("Greg"));
+		assertThat(existingDomainObject.getFirstName(), equalTo("Greg"));
+		assertThat(existingDomainObject.getLastName(), equalTo("Turnquist"));
 	}
 
 	/**
@@ -76,87 +80,15 @@ public class DomainObjectMergerTests {
 		Repositories repositories = new Repositories(context.getBeanFactory());
 		ConversionService conversionService = new DefaultConversionService();
 
-		Resource<Person> incoming = new Resource<Person>(new Person(null));
-		Person existingDomainObject = new Person("Sara");
+		Resource<Person> incoming = new Resource<Person>(new Person(null, null));
+		Person existingDomainObject = new Person("Sara", "Turnquist");
 
 		DomainObjectMerger merger = new DomainObjectMerger(repositories,
 				conversionService);
 		merger.merge(incoming.getContent(), existingDomainObject);
 
-		assertThat(existingDomainObject.getFirstname(), equalTo(null));
-	}
-
-	@Configuration
-	@EnableJpaRepositories
-	static class Config {
-
-		@Bean
-		public DataSource dataSource() {
-			return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.HSQL).build();
-		}
-
-		@Bean
-		public JpaTransactionManager transactionManager(EntityManagerFactory emf) {
-			return new JpaTransactionManager(emf);
-		}
-
-		@Bean
-		public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-			LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
-			factoryBean.setJpaVendorAdapter(jpaVendorAdapter());
-			factoryBean.setPersistenceUnitName("jpa.sample");
-			factoryBean.setDataSource(dataSource());
-			factoryBean.setPackagesToScan(DomainObjectMergerTests.class.getPackage().getName());
-			return factoryBean;
-		}
-
-		@Bean
-		public JpaVendorAdapter jpaVendorAdapter() {
-			HibernateJpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
-			jpaVendorAdapter.setDatabase(Database.HSQL);
-			jpaVendorAdapter.setShowSql(true);
-			jpaVendorAdapter.setGenerateDdl(true);
-			return jpaVendorAdapter;
-		}
-	}
-
-	@Entity
-	class Person {
-
-		private Long id;
-
-		private String firstname;
-
-		public Person() {
-			this.firstname = null;
-		}
-
-		public Person(String firstname) {
-			this.firstname = firstname;
-		}
-
-		public void setFirstname(String firstname) {
-			this.firstname = firstname;
-		}
-
-		public String getFirstname() {
-			return this.firstname;
-		}
-
-		@Id
-		@GeneratedValue(strategy = GenerationType.IDENTITY)
-		public Long getId() {
-			return id;
-		}
-
-		public void setId(Long id) {
-			this.id = id;
-		}
-
-		@Override
-		public String toString() {
-			return this.firstname;
-		}
+		assertThat(existingDomainObject.getFirstName(), equalTo(null));
+		assertThat(existingDomainObject.getLastName(), equalTo(null));
 	}
 
 }
