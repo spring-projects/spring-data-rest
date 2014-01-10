@@ -68,6 +68,9 @@ public class DomainObjectMergerTests {
 		assertThat(existingDomainObject.getFirstname(), equalTo("Greg"));
 	}
 
+	/**
+	 * @see DATAREST-130
+	 */
 	@Test
 	public void mergeNullValue() {
 		Repositories repositories = new Repositories(context.getBeanFactory());
