@@ -36,6 +36,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Integration tests for {@link ResourceMappings}.
  * 
@@ -59,7 +63,7 @@ public class ResourceMappingsIntegrationTest {
 
 	@Test
 	public void detectsAllMappings() {
-		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(6)));
+		assertThat(mappings, is(Matchers.<ResourceMetadata>iterableWithSize(6)));
 	}
 
 	@Test
@@ -69,6 +73,15 @@ public class ResourceMappingsIntegrationTest {
 
 		assertThat(personMappings.isExported(), is(true));
 		assertThat(personMappings.getSearchResourceMappings().isExported(), is(true));
+
+		// @see DATAREST-107
+		List<String> methodNames = new ArrayList<String>();
+		for (MethodResourceMapping method : personMappings.getSearchResourceMappings()) {
+			methodNames.add(method.getMethod().getName());
+		}
+		assertThat(methodNames.size(), equalTo(3));
+		assertThat(methodNames, hasItems("findByFirstName", "findByCreatedGreaterThan", "findByCreatedUsingISO8601Date"));
+
 	}
 
 	@Test
@@ -78,6 +91,12 @@ public class ResourceMappingsIntegrationTest {
 
 		assertThat(creditCardMapping.isExported(), is(false));
 		assertThat(creditCardMapping.getSearchResourceMappings().isExported(), is(false));
+
+		int items = 0;
+		for (MethodResourceMapping method : creditCardMapping.getSearchResourceMappings()) {
+			items++;
+		}
+		assertThat(items, equalTo(0));
 	}
 
 	/**
