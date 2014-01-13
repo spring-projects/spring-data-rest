@@ -19,30 +19,17 @@ package org.springframework.data.rest.core.support;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import javax.persistence.*;
-import javax.sql.DataSource;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.domain.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.core.domain.jpa.Person;
 import org.springframework.data.rest.core.domain.jpa.PersonRepository;
 import org.springframework.hateoas.Resource;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.JpaVendorAdapter;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.Database;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -61,15 +48,17 @@ public class DomainObjectMergerTests {
 		Repositories repositories = new Repositories(context.getBeanFactory());
 		ConversionService conversionService = new DefaultConversionService();
 
-		Resource<Person> incoming = new Resource<Person>(new Person("Greg", "Turnquist"));
-		Person existingDomainObject = new Person("Sara", "Turnquist");
+		Resource<Person> incoming = new Resource<Person>(new Person("Bilbo", "Baggins"));
+		Person existingDomainObject = new Person("Frodo", "Baggins");
 
 		DomainObjectMerger merger = new DomainObjectMerger(repositories,
 				conversionService);
 		merger.merge(incoming.getContent(), existingDomainObject);
 
-		assertThat(existingDomainObject.getFirstName(), equalTo("Greg"));
-		assertThat(existingDomainObject.getLastName(), equalTo("Turnquist"));
+		assertThat(existingDomainObject.getFirstName(),
+				equalTo(incoming.getContent().getFirstName()));
+		assertThat(existingDomainObject.getLastName(),
+				equalTo(incoming.getContent().getLastName()));
 	}
 
 	/**
@@ -81,14 +70,16 @@ public class DomainObjectMergerTests {
 		ConversionService conversionService = new DefaultConversionService();
 
 		Resource<Person> incoming = new Resource<Person>(new Person(null, null));
-		Person existingDomainObject = new Person("Sara", "Turnquist");
+		Person existingDomainObject = new Person("Frodo", "Baggins");
 
 		DomainObjectMerger merger = new DomainObjectMerger(repositories,
 				conversionService);
 		merger.merge(incoming.getContent(), existingDomainObject);
 
-		assertThat(existingDomainObject.getFirstName(), equalTo(null));
-		assertThat(existingDomainObject.getLastName(), equalTo(null));
+		assertThat(existingDomainObject.getFirstName(),
+				equalTo(incoming.getContent().getFirstName()));
+		assertThat(existingDomainObject.getLastName(),
+				equalTo(incoming.getContent().getLastName()));
 	}
 
 }
