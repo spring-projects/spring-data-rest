@@ -30,6 +30,12 @@ import org.springframework.data.repository.core.RepositoryInformation;
  * @author Oliver Gierke
  */
 class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
+	/*
+	 * NOTE: FindOne is not called directly as this will bypass any annotated version in the more 
+	 * derived class since the 'findOne(Serializable)' version will be called instead of any 
+	 * overridden, covariant argument version. This is due to the fact that we are providing a parameter
+	 * of type 'Serializable'.
+	 */
 
 	private final CrudRepository<Object, Serializable> repository;
 
@@ -73,15 +79,6 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 	@Override
 	public Iterable<Object> invokeFindAll(Pageable pageable) {
 		return repository.findAll();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindOne(java.io.Serializable)
-	 */
-	@Override
-	public Object invokeFindOne(Serializable id) {
-		return repository.findOne(convertId(id));
 	}
 
 	/*

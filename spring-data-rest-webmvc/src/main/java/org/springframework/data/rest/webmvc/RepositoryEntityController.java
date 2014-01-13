@@ -117,10 +117,14 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throw new ResourceNotFoundException();
 		}
 
-		if (pageable != null) {
-			results = repoMethodInvoker.invokeFindAll(pageable);
+		if(!repoMethodInvoker.exposesFindAll()) {
+			results = Collections.emptyList();
 		} else {
-			results = repoMethodInvoker.invokeFindAll(sort);
+			if (pageable != null) {
+				results = repoMethodInvoker.invokeFindAll(pageable);
+			} else {
+				results = repoMethodInvoker.invokeFindAll(sort);
+			}
 		}
 
 		ResourceMetadata metadata = request.getResourceMetadata();
