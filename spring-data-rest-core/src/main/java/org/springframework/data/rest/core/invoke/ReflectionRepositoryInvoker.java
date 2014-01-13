@@ -31,6 +31,7 @@ import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.rest.core.invoke.CrudVTable.CrudMethodDelegate;
 import org.springframework.hateoas.core.AnnotationAttribute;
 import org.springframework.hateoas.core.MethodParameters;
 import org.springframework.util.Assert;
@@ -47,9 +48,9 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	private static final AnnotationAttribute PARAM_ANNOTATION = new AnnotationAttribute(Param.class);
 
 	private final Object repository;
-	private final CrudMethods methods;
 	private final RepositoryInformation information;
 	private final ConversionService conversionService;
+	private final CrudVTable vTable;
 
 	/**
 	 * Creates a new {@link ReflectionRepositoryInvoker} for the given repository, {@link RepositoryInformation} and
@@ -66,10 +67,67 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		Assert.notNull(information, "RepositoryInformation must not be null!");
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
+		this.vTable = new CrudVTable();
 		this.repository = repository;
-		this.methods = information.getCrudMethods();
 		this.information = information;
 		this.conversionService = conversionService;
+		
+		CrudMethods methods = this.information.getCrudMethods();
+		
+		// Set up the 'vtable' to point to the appropriate repository CRUD methods.
+		// While this notion is a little convoluted, it offers some advantage by way
+		// of efficiency since some of the 'method choosing' reflection work can be 
+		// done once here instead of being performed on a 'per-call' basis.
+		
+		if(methods.hasFindAllMethod() && exposes(methods.getFindAllMethod())) {
+			// Set up the findAll methods. Note that the method delegates for both findAll(Sort)
+			// and findAll(Pageable) will always point to the same repository method.
+			// Note also that a single findAll method provides not only its level of capabilities but 
+			// all of the lesser levels of capabilities as well. For example 'findAll(Pageable)' 
+			// can also provide the equivalent functionality of 'findAll(Sort)' and 'findAll()'
+			// by passing 'null' for the 'Sort' parameter.
+			
+			Method method = methods.getFindAllMethod();
+			Class<?>[] types = method.getParameterTypes();
+			CrudMethodDelegate standardMethodDelegate = new CrudMethodDelegate(repository, method);
+			
+			if (types.length == 0) {
+				CrudMethodDelegate noArgDelegate =
+						new CrudMethodDelegate(repository, method) {
+									public <T> T invoke(Object... arguments) {
+										return super.invoke(Collections.emptyList().toArray());
+									};
+						};
+				vTable.setFindAllPagableMethod(noArgDelegate);
+				vTable.setFindAllSortMethod(noArgDelegate);
+			} else if (Sort.class.isAssignableFrom(types[0])) { 
+				// If we have only a findAll method with a 'sort' parameter then use this
+				// adaptor for handling 'pageable' invocations
+				vTable.setFindAllPagableMethod(new CrudMethodDelegate(repository, method) {
+					public <T> T invoke(Object... arguments) {
+						Pageable pageable = (Pageable)arguments[0];
+						return super.invoke(pageable == null ? null : pageable.getSort());
+					}
+				});
+				vTable.setFindAllSortMethod(standardMethodDelegate);
+			} else {
+				// Just regular delegation
+				vTable.setFindAllPagableMethod(standardMethodDelegate);
+				vTable.setFindAllSortMethod(standardMethodDelegate);
+			}
+		}
+		
+		// Set up the 'save' method
+		if(methods.hasSaveMethod() && exposes(methods.getSaveMethod()))
+			vTable.setSaveMethod(new CrudMethodDelegate(repository, methods.getSaveMethod()));
+
+		// Set up the 'findOne' method
+		if(methods.hasFindOneMethod() && exposes(methods.getFindOneMethod()))
+			vTable.setFindOneMethod(new CrudMethodDelegate(repository, methods.getFindOneMethod()));
+		
+		// Set up the 'delete' method
+		if(methods.hasDelete() && exposes(methods.getDeleteMethod()))
+			vTable.setDeleteMethod(new CrudMethodDelegate(repository, methods.getDeleteMethod()));
 	}
 
 	/* 
@@ -78,16 +136,15 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public boolean exposesFindAll() {
-		return methods.hasFindAllMethod() && exposes(methods.getFindAllMethod());
+		return vTable.getFindAllPagableMethod() != null || vTable.getFindAllSortMethod() != null;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindAll(org.springframework.data.domain.Sort)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public Iterable<Object> invokeFindAll(Sort sort) {
-		return (Iterable<Object>) invoke(methods.getFindAllMethod(), sort);
+		return vTable.getFindAllSortMethod().invoke(sort);
 	}
 
 	/* 
@@ -96,23 +153,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Pageable pageable) {
-
-		if (!exposesFindAll()) {
-			return Collections.emptyList();
-		}
-
-		Method method = methods.getFindAllMethod();
-		Class<?>[] types = method.getParameterTypes();
-
-		if (types.length == 0) {
-			return invoke(method);
-		}
-
-		if (Sort.class.isAssignableFrom(types[0])) {
-			return invoke(method, pageable == null ? null : pageable.getSort());
-		}
-
-		return invoke(method, pageable);
+		return vTable.getFindAllPagableMethod().invoke(pageable);
 	}
 
 	/* 
@@ -121,7 +162,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public boolean exposesSave() {
-		return methods.hasSaveMethod() && exposes(methods.getSaveMethod());
+		return vTable.getSaveMethod() != null;
 	}
 
 	/* (non-Javadoc)
@@ -129,7 +170,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public Object invokeSave(Object object) {
-		return invoke(methods.getSaveMethod(), object);
+		return vTable.getSaveMethod().invoke(object);
 	}
 
 	/*
@@ -138,7 +179,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public boolean exposesFindOne() {
-		return methods.hasFindOneMethod() && exposes(methods.getFindOneMethod());
+		return vTable.getFindOneMethod() != null;
 	}
 
 	/* 
@@ -147,7 +188,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public Object invokeFindOne(Serializable id) {
-		return invoke(methods.getFindOneMethod(), convertId(id));
+		return vTable.getFindOneMethod().invoke(convertId(id));
 	}
 
 	/* 
@@ -156,7 +197,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public boolean exposesDelete() {
-		return methods.hasDelete() && exposes(methods.getDeleteMethod());
+		return vTable.getDeleteMethod() != null;
 	}
 
 	/* 
@@ -165,18 +206,10 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public void invokeDelete(Serializable id) {
-
-		Method method = methods.getDeleteMethod();
-
-		if (method.getParameterTypes()[0].equals(Serializable.class)) {
-			invoke(method, convertId(id));
-		} else {
-			invoke(method, invokeFindOne(id));
-		}
+		vTable.getDeleteMethod().invoke(convertId(id));
 	}
-
-	private boolean exposes(Method method) {
-
+	
+	private static boolean exposes(Method method) {
 		RestResource annotation = AnnotationUtils.findAnnotation(method, RestResource.class);
 		return annotation == null ? true : annotation.exported();
 	}
@@ -187,7 +220,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public Object invokeQueryMethod(Method method, Map<String, String[]> parameters, Pageable pageable, Sort sort) {
-		return invoke(method, prepareParameters(method, parameters, pageable, sort));
+		return ReflectionUtils.invokeMethod(method, repository, prepareParameters(method, parameters, pageable, sort));
 	}
 
 	private Object[] prepareParameters(Method method, Map<String, String[]> rawParameters, Pageable pageable, Sort sort) {
@@ -229,17 +262,6 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 		return result;
 	}
 
-	/**
-	 * Invokes the given method with the given arguments on the backing repository.
-	 * 
-	 * @param method
-	 * @param arguments
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	private <T> T invoke(Method method, Object... arguments) {
-		return (T) ReflectionUtils.invokeMethod(method, repository, arguments);
-	}
 
 	/**
 	 * Converts the given id into the id type of the backing repository.
