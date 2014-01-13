@@ -37,7 +37,7 @@ import org.springframework.util.StringUtils;
 /**
  * Central abstraction obtain {@link ResourceMetadata} and {@link ResourceMapping} instances for domain types and
  * repositories.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ResourceMappings implements Iterable<ResourceMetadata> {
@@ -52,7 +52,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 	/**
 	 * Creates a new {@link ResourceMappings} using the given {@link RepositoryRestConfiguration} and {@link Repositories}
 	 * .
-	 * 
+	 *
 	 * @param config
 	 * @param repositories
 	 */
@@ -63,7 +63,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 	/**
 	 * Creates a new {@link ResourceMappings} from the given {@link RepositoryRestConfiguration}, {@link Repositories} and
 	 * {@link RelProvider}.
-	 * 
+	 *
 	 * @param config must not be {@literal null}.
 	 * @param repositories must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
@@ -81,7 +81,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 
 	/**
 	 * Returns a {@link ResourceMetadata} for the given type if available.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -113,7 +113,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 
 	/**
 	 * Returns the {@link ResourceMapping}s for the search resources of the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -137,7 +137,11 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 
 		if (resourceMapping.isExported()) {
 			for (Method queryMethod : repositoryInformation.getQueryMethods()) {
-				mappings.add(new RepositoryMethodResourceMapping(queryMethod, resourceMapping));
+				RepositoryMethodResourceMapping methodMapping = new RepositoryMethodResourceMapping(
+						queryMethod, resourceMapping);
+				if(methodMapping.isExported()) {
+					mappings.add(methodMapping);
+				}
 			}
 		}
 
@@ -149,7 +153,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 
 	/**
 	 * Returns whether we have a {@link ResourceMapping} for the given type and it is exported.
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -184,7 +188,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 
 	/**
 	 * Returns whether we have a {@link ResourceMapping} for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -205,7 +209,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#getMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
@@ -225,7 +229,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 		return propertyMapping;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#hasMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
@@ -235,7 +239,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 		return metadata != null && metadata.isExported();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
