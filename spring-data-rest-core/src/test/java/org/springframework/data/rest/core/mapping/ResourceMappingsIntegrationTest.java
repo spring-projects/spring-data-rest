@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package org.springframework.data.rest.core.mapping;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -36,14 +39,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 /**
  * Integration tests for {@link ResourceMappings}.
  * 
  * @author Oliver Gierke
+ * @author Greg Trunquist
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
@@ -63,7 +63,7 @@ public class ResourceMappingsIntegrationTest {
 
 	@Test
 	public void detectsAllMappings() {
-		assertThat(mappings, is(Matchers.<ResourceMetadata>iterableWithSize(6)));
+		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(6)));
 	}
 
 	@Test
@@ -73,15 +73,6 @@ public class ResourceMappingsIntegrationTest {
 
 		assertThat(personMappings.isExported(), is(true));
 		assertThat(personMappings.getSearchResourceMappings().isExported(), is(true));
-
-		// @see DATAREST-107
-		List<String> methodNames = new ArrayList<String>();
-		for (MethodResourceMapping method : personMappings.getSearchResourceMappings()) {
-			methodNames.add(method.getMethod().getName());
-		}
-		assertThat(methodNames.size(), equalTo(3));
-		assertThat(methodNames, hasItems("findByFirstName", "findByCreatedGreaterThan", "findByCreatedUsingISO8601Date"));
-
 	}
 
 	@Test
@@ -91,12 +82,6 @@ public class ResourceMappingsIntegrationTest {
 
 		assertThat(creditCardMapping.isExported(), is(false));
 		assertThat(creditCardMapping.getSearchResourceMappings().isExported(), is(false));
-
-		int items = 0;
-		for (MethodResourceMapping method : creditCardMapping.getSearchResourceMappings()) {
-			items++;
-		}
-		assertThat(items, equalTo(0));
 	}
 
 	/**
@@ -131,5 +116,27 @@ public class ResourceMappingsIntegrationTest {
 		assertThat(creditCardMapping.getPath(), is(new Path("creditCards")));
 		assertThat(creditCardMapping.isExported(), is(false));
 		assertThat(mappings.exportsTopLevelResourceFor("creditCards"), is(false));
+	}
+
+	/**
+	 * @see DATAREST-107
+	 */
+	@Test
+	public void skipsSearchMethodsNotExported() {
+
+		ResourceMetadata creditCardMetadata = mappings.getMappingFor(CreditCard.class);
+		SearchResourceMappings searchResourceMappings = creditCardMetadata.getSearchResourceMappings();
+
+		assertThat(searchResourceMappings, is(Matchers.<MethodResourceMapping> iterableWithSize(0)));
+
+		ResourceMetadata personMetadata = mappings.getMappingFor(Person.class);
+		List<String> methodNames = new ArrayList<String>();
+
+		for (MethodResourceMapping method : personMetadata.getSearchResourceMappings()) {
+			methodNames.add(method.getMethod().getName());
+		}
+
+		assertThat(methodNames, hasSize(3));
+		assertThat(methodNames, hasItems("findByFirstName", "findByCreatedGreaterThan", "findByCreatedUsingISO8601Date"));
 	}
 }
