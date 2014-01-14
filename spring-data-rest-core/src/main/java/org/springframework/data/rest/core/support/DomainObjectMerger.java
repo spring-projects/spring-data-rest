@@ -61,7 +61,7 @@ public class DomainObjectMerger {
 	 * @param from can be {@literal null}.
 	 * @param target can be {@literal null}.
 	 */
-	public void merge(Object from, Object target) {
+	public void merge(Object from, Object target, final boolean applyNulls) {
 
 		if (null == from || null == target) {
 			return;
@@ -88,7 +88,11 @@ public class DomainObjectMerger {
 				}
 
 				if (!ObjectUtils.nullSafeEquals(sourceValue, targetValue)) {
-					targetWrapper.setProperty(persistentProperty, sourceValue);
+					// Apply if nulls are allowed, or if the sourceValue isn't null
+					if (applyNulls || sourceValue != null) {
+						System.out.println("Updating " + persistentProperty.getName() + " with " + targetValue);
+						targetWrapper.setProperty(persistentProperty, sourceValue);
+					}
 				}
 			}
 		});

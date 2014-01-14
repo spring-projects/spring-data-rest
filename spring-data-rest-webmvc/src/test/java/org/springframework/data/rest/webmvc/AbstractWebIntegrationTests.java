@@ -37,6 +37,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverer;
 import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -47,6 +48,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -170,6 +172,18 @@ public abstract class AbstractWebIntegrationTests {
 		}
 
 		return request(response.getHeader("Location"));
+	}
+
+	protected MockHttpServletResponse patchAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
+
+		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
+
+		MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.request(HttpMethod.PATCH, href).//
+				content(payload.toString()).contentType(mediaType)).//
+				andExpect(status().isNoContent()).//
+				andReturn().getResponse();
+
+		return request(href);
 	}
 
 	protected MockHttpServletResponse deleteAndGet(Link link, MediaType mediaType) throws Exception {
