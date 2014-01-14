@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Nick Weedon
  */
 @RepositoryRestController
 class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
@@ -117,12 +118,14 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throw new ResourceNotFoundException();
 		}
 
-		if (pageable != null) {
-			results = repoMethodInvoker.invokeFindAll(pageable);
-		} else {
-			results = repoMethodInvoker.invokeFindAll(sort);
-		}
-
+        if(!repoMethodInvoker.exposesFindAll()) {
+            results = Collections.emptyList();
+        } else if (pageable != null) {
+	       results = repoMethodInvoker.invokeFindAll(pageable);
+        } else {
+	        results = repoMethodInvoker.invokeFindAll(sort);
+        }
+		
 		ResourceMetadata metadata = request.getResourceMetadata();
 		SearchResourceMappings searchMappings = metadata.getSearchResourceMappings();
 
