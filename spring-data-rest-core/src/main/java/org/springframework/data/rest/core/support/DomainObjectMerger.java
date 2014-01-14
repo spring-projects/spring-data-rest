@@ -25,16 +25,26 @@ import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
+ * Component to be able to merge the first level of two objects.
+ * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Willie Wheeler
  */
 public class DomainObjectMerger {
 
 	private final Repositories repositories;
 	private final ConversionService conversionService;
 
+	/**
+	 * Creates a new {@link DomainObjectMerger} for the given {@link Repositories} and {@link ConversionService}.
+	 * 
+	 * @param repositories must not be {@literal null}.
+	 * @param conversionService must not be {@literal null}.
+	 */
 	@Autowired
 	public DomainObjectMerger(Repositories repositories, ConversionService conversionService) {
 
@@ -45,6 +55,12 @@ public class DomainObjectMerger {
 		this.conversionService = conversionService;
 	}
 
+	/**
+	 * Merges the given target object into the source one.
+	 * 
+	 * @param from can be {@literal null}.
+	 * @param target can be {@literal null}.
+	 */
 	public void merge(Object from, Object target) {
 
 		if (null == from || null == target) {
@@ -53,8 +69,7 @@ public class DomainObjectMerger {
 
 		final BeanWrapper<?, Object> fromWrapper = BeanWrapper.create(from, conversionService);
 		final BeanWrapper<?, Object> targetWrapper = BeanWrapper.create(target, conversionService);
-
-		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(target.getClass());
+		final PersistentEntity<?, ?> entity = repositories.getPersistentEntity(target.getClass());
 
 		entity.doWithProperties(new SimplePropertyHandler() {
 
@@ -63,16 +78,17 @@ public class DomainObjectMerger {
 			 * @see org.springframework.data.mapping.SimplePropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
 			 */
 			@Override
-			public void doWithPersistentProperty(PersistentProperty persistentProperty) {
-				Object fromVal = fromWrapper.getProperty(persistentProperty);
-				
-				// Support PUTting null property values per DATAREST-130.
-				boolean mergeProperty =
-						!entity.isIdProperty(persistentProperty)
-						&& (fromVal == null || !fromVal.equals(targetWrapper.getProperty(persistentProperty)));
-				
-				if (mergeProperty) {
-					targetWrapper.setProperty(persistentProperty, fromVal);
+			public void doWithPersistentProperty(PersistentProperty<?> persistentProperty) {
+
+				Object sourceValue = fromWrapper.getProperty(persistentProperty);
+				Object targetValue = targetWrapper.getProperty(persistentProperty);
+
+				if (entity.isIdProperty(persistentProperty)) {
+					return;
+				}
+
+				if (!ObjectUtils.nullSafeEquals(sourceValue, targetValue)) {
+					targetWrapper.setProperty(persistentProperty, sourceValue);
 				}
 			}
 		});
