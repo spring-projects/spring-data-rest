@@ -17,11 +17,15 @@ package org.springframework.data.rest.webmvc;
 
 import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
@@ -57,10 +61,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Jon Brisbin
@@ -238,7 +239,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			return createNewEntity(resourceInformation, incoming);
 		}
 
-		domainObjectMerger.merge(incoming.getContent(), domainObj);
+		domainObjectMerger.merge(incoming.getContent(), domainObj, DomainObjectMerger.MergeNullPolicy.APPLY_NULLS);
 
 		publisher.publishEvent(new BeforeSaveEvent(incoming.getContent()));
 		Object obj = invoker.invokeSave(domainObj);
@@ -253,6 +254,36 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		} else {
 			return ControllerUtils.toResponseEntity(HttpStatus.NO_CONTENT, headers, null);
 		}
+	}
+
+	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PATCH, consumes = { "application/json" })
+	public ResponseEntity<? extends ResourceSupport> patchEntity(
+			RepositoryRestRequest request, PersistentEntityResource<Object> incoming,
+			@PathVariable String id) {
+
+		RepositoryInvoker invoker = request.getRepositoryInvoker();
+		if (null == invoker || !invoker.exposesSave() || !invoker.exposesFindOne()) {
+			return new ResponseEntity<Resource<?>>(HttpStatus.METHOD_NOT_ALLOWED);
+		}
+
+		Object domainObj = converter.convert(id, STRING_TYPE,
+				TypeDescriptor.valueOf(request.getPersistentEntity().getType()));
+		if (null == domainObj) {
+			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND);
+		}
+
+		domainObjectMerger.merge(incoming.getContent(), domainObj, DomainObjectMerger.MergeNullPolicy.IGNORE_NULLS);
+
+		publisher.publishEvent(new BeforeSaveEvent(domainObj));
+		Object obj = invoker.invokeSave(domainObj);
+		publisher.publishEvent(new AfterSaveEvent(domainObj));
+
+		if (config.isReturnBodyOnUpdate()) {
+			return ControllerUtils.toResponseEntity(HttpStatus.OK, null, perAssembler.toResource(obj));
+		} else {
+			return ControllerUtils.toEmptyResponse(HttpStatus.NO_CONTENT);
+		}
+
 	}
 
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.DELETE)
