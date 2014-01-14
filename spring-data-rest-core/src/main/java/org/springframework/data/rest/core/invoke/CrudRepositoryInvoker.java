@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
  * to avoid reflection overhead introduced by the base class if we know we work with a {@link CrudRepository}.
  * 
  * @author Oliver Gierke
+ * @author Nick Weedon
  */
 class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 
@@ -48,6 +49,9 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 		this.repository = repository;
 	}
 
+	// Note that findOne should not be called directly as this causes problems with JDK based proxying
+	// See DATAREST-216
+	
 	/**
 	 * Invokes the method equivalent to {@link CrudRepository#findAll()}.
 	 * 
@@ -73,15 +77,6 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 	@Override
 	public Iterable<Object> invokeFindAll(Pageable pageable) {
 		return repository.findAll();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindOne(java.io.Serializable)
-	 */
-	@Override
-	public Object invokeFindOne(Serializable id) {
-		return repository.findOne(convertId(id));
 	}
 
 	/*

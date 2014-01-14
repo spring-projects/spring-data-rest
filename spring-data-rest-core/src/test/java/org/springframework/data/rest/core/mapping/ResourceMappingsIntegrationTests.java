@@ -63,7 +63,7 @@ public class ResourceMappingsIntegrationTests {
 
 	@Test
 	public void detectsAllMappings() {
-		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(6)));
+		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(8)));
 	}
 
 	@Test
