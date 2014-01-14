@@ -63,11 +63,16 @@ public class DomainObjectMerger {
 			 * @see org.springframework.data.mapping.SimplePropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
 			 */
 			@Override
-			public void doWithPersistentProperty(PersistentProperty<?> property) {
-
-				Object fromVal = fromWrapper.getProperty(property);
-				if (null != fromVal && !fromVal.equals(targetWrapper.getProperty(property))) {
-					targetWrapper.setProperty(property, fromVal);
+			public void doWithPersistentProperty(PersistentProperty persistentProperty) {
+				Object fromVal = fromWrapper.getProperty(persistentProperty);
+				
+				// Support PUTting null property values per DATAREST-130.
+				boolean mergeProperty =
+						!entity.isIdProperty(persistentProperty)
+						&& (fromVal == null || !fromVal.equals(targetWrapper.getProperty(persistentProperty)));
+				
+				if (mergeProperty) {
+					targetWrapper.setProperty(persistentProperty, fromVal);
 				}
 			}
 		});
