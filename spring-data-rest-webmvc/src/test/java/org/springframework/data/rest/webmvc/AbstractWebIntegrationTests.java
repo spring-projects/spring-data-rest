@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.InvalidPathException;
@@ -57,6 +58,7 @@ import com.jayway.jsonpath.JsonPath;
 
 /**
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -132,6 +134,74 @@ public abstract class AbstractWebIntegrationTests {
 				andReturn().getResponse();
 
 		return assertHasLinkWithRel(rel, response);
+	}
+
+	protected MockHttpServletResponse postAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
+
+		String href;
+		if (link.isTemplated()) {
+			href = link.expand().getHref();
+		} else {
+			href = link.getHref();
+		}
+
+		MockHttpServletResponse response = mvc.perform(post(href).content(payload.toString()).contentType(mediaType)).//
+				andExpect(status().isCreated()).//
+				andExpect(header().string("Location", is(notNullValue()))).//
+				andReturn().getResponse();
+
+		String content = response.getContentAsString();
+
+		if (StringUtils.hasText(content)) {
+			return response;
+		}
+
+		return request(response.getHeader("Location"));
+	}
+
+	protected MockHttpServletResponse putAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
+
+		String href;
+		if (link.isTemplated()) {
+			href = link.expand().getHref();
+		} else {
+			href = link.getHref();
+		}
+
+		MockHttpServletResponse response = mvc.perform(put(href).content(payload.toString()).contentType(mediaType)).//
+				andExpect(status().isCreated()).//
+				andExpect(header().string("Location", is(notNullValue()))).//
+				andReturn().getResponse();
+
+		String content = response.getContentAsString();
+
+		if (StringUtils.hasText(content)) {
+			return response;
+		}
+
+		return request(response.getHeader("Location"));
+	}
+
+	protected MockHttpServletResponse deleteAndGet(Link link, MediaType mediaType) throws Exception {
+
+		String href;
+		if (link.isTemplated()) {
+			href = link.expand().getHref();
+		} else {
+			href = link.getHref();
+		}
+
+		MockHttpServletResponse response = mvc.perform(delete(href).contentType(mediaType)).//
+				andExpect(status().isNoContent()).//
+				andReturn().getResponse();
+
+		String content = response.getContentAsString();
+
+		if (StringUtils.hasText(content)) {
+			return response;
+		}
+
+		return request(response.getHeader("Location"));
 	}
 
 	protected Link assertHasLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
