@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,13 @@ import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Scanner;
+
+import net.minidev.json.JSONArray;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,15 +42,23 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriTemplate;
+
 /**
  * Web integration tests specific to JPA.
  * 
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 @Transactional
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 public class JpaWebTests extends AbstractWebIntegrationTests {
 
+	private static final MediaType TEXT_URI_LIST = MediaType.valueOf("text/uri-list");
 	static final String LINK_TO_SIBLINGS_OF = "$._embedded..[?(@.firstName == '%s')]._links.siblings.href[0]";
 
 	@Autowired TestDataPopulator loader;
@@ -182,6 +193,203 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		mvc.perform(get(href)).andExpect(status().isOk());
 	}
+
+
+	/**
+	 * @see DATAREST-219
+	 */
+	@Test
+	public void manipulatePropertyCollectionRestfullyWithMultiplePosts() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		String bilbo = mapper.writeValueAsString(new Person("Bilbo", "Baggins"));
+		String frodo = mapper.writeValueAsString(new Person("Frodo", "Baggins"));
+		String merry = mapper.writeValueAsString(new Person("Merry", "Baggins"));
+		String pippin = mapper.writeValueAsString(new Person("Pippin", "Baggins"));
+
+		Link peopleLink = discoverUnique("people");
+
+		MockHttpServletResponse bilboResponse = postAndGet(peopleLink, bilbo, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse frodoResponse = postAndGet(peopleLink, frodo, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse merryResponse = postAndGet(peopleLink, merry, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse pippinResponse = postAndGet(peopleLink, pippin, MediaType.APPLICATION_JSON);
+
+		Link bilboSelfLink = assertHasLinkWithRel(Link.REL_SELF, bilboResponse);
+		Link merrySelfLink = assertHasLinkWithRel(Link.REL_SELF, merryResponse);
+		Link pippinSelfLink = assertHasLinkWithRel(Link.REL_SELF, pippinResponse);
+		Link frodosSiblingsLink = assertHasLinkWithRel("siblings", frodoResponse);
+
+		postAndGet(frodosSiblingsLink, bilboSelfLink.getHref(), TEXT_URI_LIST);
+		postAndGet(frodosSiblingsLink, merrySelfLink.getHref(), TEXT_URI_LIST);
+		postAndGet(frodosSiblingsLink, pippinSelfLink.getHref(), TEXT_URI_LIST);
+
+		MockHttpServletResponse frodosLatestSiblings = request(frodosSiblingsLink);
+		String[] persons = ((JSONArray) JsonPath.read(frodosLatestSiblings.getContentAsString(), "$._embedded.persons[*].firstName")).toArray(new String[]{});
+		assertThat(persons.length, equalTo(3));
+		assertThat(Arrays.asList(persons), hasItems("Bilbo", "Merry", "Pippin"));
+	}
+
+	/**
+	 * @see DATAREST-219
+	 */
+	@Test
+	public void manipulatePropertyCollectionRestfullyWithSinglePost() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		String bilbo = mapper.writeValueAsString(new Person("Bilbo", "Baggins"));
+		String frodo = mapper.writeValueAsString(new Person("Frodo", "Baggins"));
+		String merry = mapper.writeValueAsString(new Person("Merry", "Baggins"));
+		String pippin = mapper.writeValueAsString(new Person("Pippin", "Baggins"));
+
+		Link peopleLink = discoverUnique("people");
+
+		MockHttpServletResponse bilboResponse = postAndGet(peopleLink, bilbo, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse frodoResponse = postAndGet(peopleLink, frodo, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse merryResponse = postAndGet(peopleLink, merry, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse pippinResponse = postAndGet(peopleLink, pippin, MediaType.APPLICATION_JSON);
+
+		final Link bilboSelfLink = assertHasLinkWithRel(Link.REL_SELF, bilboResponse);
+		final Link merrySelfLink = assertHasLinkWithRel(Link.REL_SELF, merryResponse);
+		final Link pippinSelfLink = assertHasLinkWithRel(Link.REL_SELF, pippinResponse);
+		Link frodosSiblingsLink = assertHasLinkWithRel("siblings", frodoResponse);
+
+		postAndGet(frodosSiblingsLink,
+				StringUtils.arrayToDelimitedString(new Object[]{bilboSelfLink.getHref(),
+						merrySelfLink.getHref(), pippinSelfLink.getHref()}, "\n"),
+				TEXT_URI_LIST);
+
+		MockHttpServletResponse frodosLatestSiblings = request(frodosSiblingsLink);
+		String[] persons = ((JSONArray) JsonPath.read(frodosLatestSiblings.getContentAsString(), "$._embedded.persons[*].firstName")).toArray(new String[]{});
+		assertThat(persons.length, equalTo(3));
+		assertThat(Arrays.asList(persons), hasItems("Bilbo", "Merry", "Pippin"));
+	}
+
+	/**
+	 * @see DATAREST-219
+	 */
+	@Test
+	public void manipulatePropertyCollectionRestfullyWithMultiplePuts() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		String bilbo = mapper.writeValueAsString(new Person("Bilbo", "Baggins"));
+		String frodo = mapper.writeValueAsString(new Person("Frodo", "Baggins"));
+		String merry = mapper.writeValueAsString(new Person("Merry", "Baggins"));
+		String pippin = mapper.writeValueAsString(new Person("Pippin", "Baggins"));
+
+		Link peopleLink = discoverUnique("people");
+
+		MockHttpServletResponse bilboResponse = postAndGet(peopleLink, bilbo, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse frodoResponse = postAndGet(peopleLink, frodo, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse merryResponse = postAndGet(peopleLink, merry, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse pippinResponse = postAndGet(peopleLink, pippin, MediaType.APPLICATION_JSON);
+
+		Link bilboSelfLink = assertHasLinkWithRel(Link.REL_SELF, bilboResponse);
+		Link merrySelfLink = assertHasLinkWithRel(Link.REL_SELF, merryResponse);
+		Link pippinSelfLink = assertHasLinkWithRel(Link.REL_SELF, pippinResponse);
+		Link frodosSiblingsLink = assertHasLinkWithRel("siblings", frodoResponse);
+
+		putAndGet(frodosSiblingsLink, bilboSelfLink.getHref(), TEXT_URI_LIST);
+		putAndGet(frodosSiblingsLink, merrySelfLink.getHref(), TEXT_URI_LIST);
+		putAndGet(frodosSiblingsLink, pippinSelfLink.getHref(), TEXT_URI_LIST);
+
+		MockHttpServletResponse frodosLatestSiblings = request(frodosSiblingsLink);
+		String firstName = JsonPath.read(frodosLatestSiblings.getContentAsString(), "$._embedded.person.firstName");
+		assertThat(firstName, equalTo("Pippin"));
+
+		postAndGet(frodosSiblingsLink, merrySelfLink.getHref(), TEXT_URI_LIST);
+
+		frodosLatestSiblings = request(frodosSiblingsLink);
+		String[] persons = ((JSONArray) JsonPath.read(frodosLatestSiblings.getContentAsString(),
+				"$._embedded.persons[*].firstName")).toArray(new String[]{});
+		assertThat(persons.length, equalTo(2));
+		assertThat(Arrays.asList(persons), hasItems("Merry", "Pippin"));
+	}
+
+	/**
+	 * @see DATAREST-219
+	 */
+	@Test
+	public void manipulatePropertyCollectionRestfullyWithSinglePut() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		String bilbo = mapper.writeValueAsString(new Person("Bilbo", "Baggins"));
+		String frodo = mapper.writeValueAsString(new Person("Frodo", "Baggins"));
+		String merry = mapper.writeValueAsString(new Person("Merry", "Baggins"));
+		String pippin = mapper.writeValueAsString(new Person("Pippin", "Baggins"));
+
+		Link peopleLink = discoverUnique("people");
+
+		MockHttpServletResponse bilboResponse = postAndGet(peopleLink, bilbo, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse frodoResponse = postAndGet(peopleLink, frodo, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse merryResponse = postAndGet(peopleLink, merry, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse pippinResponse = postAndGet(peopleLink, pippin, MediaType.APPLICATION_JSON);
+
+		Link bilboSelfLink = assertHasLinkWithRel(Link.REL_SELF, bilboResponse);
+		Link merrySelfLink = assertHasLinkWithRel(Link.REL_SELF, merryResponse);
+		Link pippinSelfLink = assertHasLinkWithRel(Link.REL_SELF, pippinResponse);
+		Link frodosSiblingsLink = assertHasLinkWithRel("siblings", frodoResponse);
+
+		putAndGet(frodosSiblingsLink,
+				StringUtils.arrayToDelimitedString(new Object[]{bilboSelfLink.getHref(),
+						merrySelfLink.getHref()}, "\n"),
+				TEXT_URI_LIST);
+		putAndGet(frodosSiblingsLink, pippinSelfLink.getHref(), TEXT_URI_LIST);
+
+		MockHttpServletResponse frodosLatestSiblings = request(frodosSiblingsLink);
+		String firstName = JsonPath.read(frodosLatestSiblings.getContentAsString(), "$._embedded.person.firstName");
+		assertThat(firstName, equalTo("Pippin"));
+
+		postAndGet(frodosSiblingsLink, merrySelfLink.getHref(), TEXT_URI_LIST);
+
+		frodosLatestSiblings = request(frodosSiblingsLink);
+		String[] persons = ((JSONArray) JsonPath.read(frodosLatestSiblings.getContentAsString(),
+				"$._embedded.persons[*].firstName")).toArray(new String[]{});
+		assertThat(persons.length, equalTo(2));
+		assertThat(Arrays.asList(persons), hasItems("Merry", "Pippin"));
+	}
+
+	/**
+	 * @see DATAREST-219
+	 */
+	@Test
+	public void manipulatePropertyCollectionRestfullyWithDelete() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		String bilbo = mapper.writeValueAsString(new Person("Bilbo", "Baggins"));
+		String frodo = mapper.writeValueAsString(new Person("Frodo", "Baggins"));
+		String merry = mapper.writeValueAsString(new Person("Merry", "Baggins"));
+		String pippin = mapper.writeValueAsString(new Person("Pippin", "Baggins"));
+
+		Link peopleLink = discoverUnique("people");
+
+		MockHttpServletResponse bilboResponse = postAndGet(peopleLink, bilbo, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse frodoResponse = postAndGet(peopleLink, frodo, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse merryResponse = postAndGet(peopleLink, merry, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse pippinResponse = postAndGet(peopleLink, pippin, MediaType.APPLICATION_JSON);
+
+		Link bilboSelfLink = assertHasLinkWithRel(Link.REL_SELF, bilboResponse);
+		Link merrySelfLink = assertHasLinkWithRel(Link.REL_SELF, merryResponse);
+		Link pippinSelfLink = assertHasLinkWithRel(Link.REL_SELF, pippinResponse);
+		Link frodosSiblingsLink = assertHasLinkWithRel("siblings", frodoResponse);
+
+		postAndGet(frodosSiblingsLink, bilboSelfLink.getHref(), TEXT_URI_LIST);
+		postAndGet(frodosSiblingsLink, merrySelfLink.getHref(), TEXT_URI_LIST);
+		postAndGet(frodosSiblingsLink, pippinSelfLink.getHref(), TEXT_URI_LIST);
+
+		String pippinId = new UriTemplate("/people/{id}").match(pippinSelfLink.getHref()).get("id");
+		deleteAndGet(new Link(frodosSiblingsLink.getHref() + "/" + pippinId), TEXT_URI_LIST);
+
+		MockHttpServletResponse frodosLatestSiblings = request(frodosSiblingsLink);
+		String[] persons = ((JSONArray) JsonPath.read(frodosLatestSiblings.getContentAsString(), "$._embedded.persons[*].firstName")).toArray(new String[]{});
+		assertThat(persons.length, equalTo(2));
+		assertThat(Arrays.asList(persons), hasItems("Bilbo", "Merry"));
+	}
+
 
 	private String readFile(String name) throws Exception {
 
