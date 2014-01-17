@@ -13,7 +13,7 @@ ext {
   hateoasVersion = "0.9.0.BUILD-SNAPSHOT"
   springPluginVersion = "0.8.0.RELEASE"
   springSecurityVersion = "3.1.3.RELEASE"
-  sdCommonsVersion = "1.7.0.M1"
+  sdCommonsVersion = "1.7.0.BUILD-SNAPSHOT"
   sdJpaVersion = "1.5.0.M1"
   sdMongoVersion = "1.4.0.M1"
   sdGemfireVersion = "1.3.3.RELEASE"

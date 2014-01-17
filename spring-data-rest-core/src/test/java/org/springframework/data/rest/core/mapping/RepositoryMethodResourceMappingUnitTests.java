@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,20 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
 
 import org.junit.Test;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.data.rest.core.mapping.RepositoryCollectionResourceMapping;
-import org.springframework.data.rest.core.mapping.RepositoryMethodResourceMapping;
-import org.springframework.data.rest.core.mapping.ResourceMapping;
 
 /**
+ * Unit tests for {@link RepositoryMethodResourceMapping}.
+ * 
  * @author Oliver Gierke
  */
 public class RepositoryMethodResourceMappingUnitTests {
@@ -36,7 +36,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	RepositoryCollectionResourceMapping resourceMapping = new RepositoryCollectionResourceMapping(PersonRepository.class);
 
 	@Test
-	public void foo() throws Exception {
+	public void defaultsMappingToMethodName() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
 		ResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
@@ -53,6 +53,31 @@ public class RepositoryMethodResourceMappingUnitTests {
 		assertThat(mapping.getPath(), is(new Path("bar")));
 	}
 
+	/**
+	 * @see DATAREST-31
+	 */
+	@Test
+	public void doesNotDiscoverAnyParametersIfNotAnnotated() throws Exception {
+
+		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
+		MethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+
+		assertThat(mapping.getParameterNames(), is(emptyIterable()));
+	}
+
+	/**
+	 * @see DATAREST-31
+	 */
+	@Test
+	public void resolvesParameterNamesIfNotAnnotated() throws Exception {
+
+		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
+		MethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+
+		assertThat(mapping.getParameterNames(), hasSize(1));
+		assertThat(mapping.getParameterNames(), hasItem("firstname"));
+	}
+
 	static class Person {}
 
 	interface PersonRepository extends Repository<Person, Long> {
@@ -60,7 +85,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Iterable<Person> findByLastname(String lastname);
 
 		@RestResource(path = "/bar")
-		Iterable<Person> findByFirstname(String firstname);
+		Iterable<Person> findByFirstname(@Param("firstname") String firstname);
 
 		@RestResource(path = "foo")
 		Iterable<Person> findByEmailAddress(String email);

@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import org.hamcrest.Matcher;
 import org.springframework.data.rest.core.Path;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
@@ -61,19 +62,33 @@ public class ResourceTester {
 	}
 
 	/**
-	 * Asserts that the {@link Resource} has a linke with the given rel and href.
+	 * Asserts that the {@link Resource} has a link with the given rel and href.
 	 * 
 	 * @param rel must not be {@literal null}.
 	 * @param href can be {@literal null}, if so, only the presence of a {@link Link} with the given rel is checked.
 	 */
 	public Link assertHasLink(String rel, String href) {
+		return assertHasLinkMatching(rel, href == null ? null : is(href));
+	}
+
+	/**
+	 * Asserts that the {@link Resource} has a link with the given rel and ending with the given href.
+	 * 
+	 * @param rel must not be {@literal null}.
+	 * @param href can be {@literal null}, if so, only the presence of a {@link Link} with the given rel is checked.
+	 */
+	public Link assertHasLinkEndingWith(String rel, String hrefEnd) {
+		return assertHasLinkMatching(rel, hrefEnd == null ? null : endsWith(hrefEnd));
+	}
+
+	private final Link assertHasLinkMatching(String rel, Matcher<String> hrefMatcher) {
 
 		Link link = resource.getLink(rel);
 		assertThat("Expected link with rel '" + rel + "' but didn't find it in " + resource.getLinks(), link,
 				is(notNullValue()));
 
-		if (href != null) {
-			assertThat(link.getHref(), is(href));
+		if (hrefMatcher != null) {
+			assertThat(link.getHref(), is(hrefMatcher));
 		}
 
 		return link;

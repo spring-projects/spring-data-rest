@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,14 @@ import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.core.invoke.RepositoryInvoker;
-import org.springframework.data.rest.core.mapping.ResourceMapping;
+import org.springframework.data.rest.core.mapping.MethodResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
@@ -33,6 +34,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkBuilder;
+import org.springframework.hateoas.LinkTemplate;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
@@ -40,6 +42,7 @@ import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -56,6 +59,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	private static final String SEARCH = "/search";
 	private static final String BASE_MAPPING = "/{repository}" + SEARCH;
+	private static final String PARAMETER_NAME_TEMPALTE_PATTERN = "{?%s}";
 
 	private final EntityLinks entityLinks;
 	private final ResourceMappings mappings;
@@ -223,15 +227,23 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		SearchResourceMappings searchMappings = mappings.getSearchResourceMappings(domainType);
 		LinkBuilder builder = entityLinks.linkFor(domainType).slash(searchMappings.getPath());
 
-		for (ResourceMapping mapping : searchMappings) {
+		for (MethodResourceMapping mapping : searchMappings) {
 
 			if (!mapping.isExported()) {
 				continue;
 			}
 
-			links.add(builder.slash(mapping.getPath()).withRel(mapping.getRel()));
+			String parameterTemplateVariable = getParameterTemplateVariable(mapping.getParameterNames());
+			String href = builder.slash(mapping.getPath()).toString().concat(parameterTemplateVariable);
+
+			links.add(new LinkTemplate(href, mapping.getRel()));
 		}
 
 		return new Links(links);
+	}
+
+	private static String getParameterTemplateVariable(Collection<String> parameters) {
+		String parameterString = StringUtils.collectionToCommaDelimitedString(parameters);
+		return parameters.isEmpty() ? "" : String.format(PARAMETER_NAME_TEMPALTE_PATTERN, parameterString);
 	}
 }
