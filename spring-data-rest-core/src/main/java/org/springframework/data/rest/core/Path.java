@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.rest.core;
+
+import java.util.regex.Pattern;
 
 import org.springframework.util.StringUtils;
 
@@ -49,8 +51,14 @@ public class Path {
 		this.path = cleanUp ? cleanUp(path) : path;
 	}
 
+	/**
+	 * Returns whether the given reference String matches the current {@link Path}.
+	 * 
+	 * @param reference
+	 * @return
+	 */
 	public boolean matches(String reference) {
-		return this.path.matches(String.format(MATCH_PATTERN, reference));
+		return reference == null ? false : this.path.matches(String.format(MATCH_PATTERN, Pattern.quote(reference)));
 	}
 
 	/**

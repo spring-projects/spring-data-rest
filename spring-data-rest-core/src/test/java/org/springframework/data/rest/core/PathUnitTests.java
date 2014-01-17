@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,5 +66,21 @@ public class PathUnitTests {
 	@Test
 	public void doesNotPrefixAbsoluteUris() {
 		assertThat(new Path("http://localhost").toString(), is("http://localhost"));
+	}
+
+	/**
+	 * @see DATAREST-222
+	 */
+	@Test
+	public void doesNotMatchIfReferenceContainsReservedCharacters() {
+		assertThat(new Path("/foobar").matches("barfoo{?foo}"), is(false));
+	}
+
+	/**
+	 * @see DATAREST-222
+	 */
+	@Test
+	public void doesNotMatchNullReference() {
+		assertThat(new Path("/foobar").matches(null), is(false));
 	}
 }
