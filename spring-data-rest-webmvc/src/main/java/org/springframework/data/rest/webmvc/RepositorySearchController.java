@@ -34,7 +34,6 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkBuilder;
-import org.springframework.hateoas.LinkTemplate;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
@@ -236,7 +235,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			String parameterTemplateVariable = getParameterTemplateVariable(mapping.getParameterNames());
 			String href = builder.slash(mapping.getPath()).toString().concat(parameterTemplateVariable);
 
-			links.add(new LinkTemplate(href, mapping.getRel()));
+			links.add(new Link(href, mapping.getRel()));
 		}
 
 		return new Links(links);
