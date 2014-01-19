@@ -20,12 +20,10 @@ import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +38,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 
 /**
  * Web integration tests specific to JPA.
@@ -189,7 +186,13 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	private String readFile(String name) throws Exception {
 
 		ClassPathResource file = new ClassPathResource(name, getClass());
-		List<String> lines = Files.readAllLines(file.getFile().toPath(), Charset.forName("UTF-8"));
-		return StringUtils.collectionToDelimitedString(lines, System.lineSeparator());
+		StringBuilder builder = new StringBuilder();
+		Scanner scanner = new Scanner(file.getFile(), "UTF-8");
+
+		while (scanner.hasNextLine()) {
+			builder.append(scanner.nextLine());
+		}
+
+		return builder.toString();
 	}
 }

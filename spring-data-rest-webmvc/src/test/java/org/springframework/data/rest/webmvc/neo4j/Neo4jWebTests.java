@@ -86,6 +86,6 @@ public class Neo4jWebTests extends AbstractWebIntegrationTests {
 		mvc.perform(delete(customerLink.getHref()));
 
 		// Assert no customers anymore
-		assertDoesNotHaveLinkWithRel("self", request(customers));
+		assertDoesNotHaveContentLinkWithRel("self", request(customers));
 	}
 }

@@ -2,6 +2,7 @@
 .gradle/
 bin/
 build/
+target/
 *.i*
 .classpath
 .project

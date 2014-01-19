@@ -52,6 +52,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -61,6 +62,8 @@ import com.jayway.jsonpath.JsonPath;
 @WebAppConfiguration
 @ContextConfiguration(classes = RepositoryRestMvcConfiguration.class)
 public abstract class AbstractWebIntegrationTests {
+
+	private static final String CONTENT_LINK_JSONPATH = "$._embedded.._links.%s.href[0]";
 
 	protected static MediaType DEFAULT_MEDIA_TYPE = org.springframework.hateoas.MediaTypes.HAL_JSON;
 
@@ -143,13 +146,34 @@ public abstract class AbstractWebIntegrationTests {
 	}
 
 	protected Link assertHasContentLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
+		return assertContentLinkWithRel(rel, response, true);
+	}
+
+	protected void assertDoesNotHaveContentLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
+		assertContentLinkWithRel(rel, response, false);
+	}
+
+	protected Link assertContentLinkWithRel(String rel, MockHttpServletResponse response, boolean expected)
+			throws Exception {
 
 		String content = response.getContentAsString();
-		String href = JsonPath.read(content, String.format("$.._links.%s.href[0]", rel)).toString();
-		assertThat("Expected to find a link with rel" + rel + " in the content section of the response!", href,
-				is(notNullValue()));
 
-		return new Link(href, rel);
+		try {
+
+			String href = JsonPath.read(content, String.format(CONTENT_LINK_JSONPATH, rel)).toString();
+			assertThat("Expected to find a link with rel" + rel + " in the content section of the response!", href,
+					is(expected ? notNullValue() : nullValue()));
+
+			return new Link(href, rel);
+
+		} catch (InvalidPathException o_O) {
+
+			if (expected) {
+				fail("Didn't find any content in the given response!");
+			}
+
+			return null;
+		}
 	}
 
 	protected void assertDoesNotHaveLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
