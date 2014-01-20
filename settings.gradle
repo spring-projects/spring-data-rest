@@ -1,6 +1,0 @@
-rootProject.name = "spring-data-rest"
-
-include "spring-data-rest-core",
-        "spring-data-rest-webmvc",
-        "spring-data-rest-example",
-        "spring-data-rest-tck"
