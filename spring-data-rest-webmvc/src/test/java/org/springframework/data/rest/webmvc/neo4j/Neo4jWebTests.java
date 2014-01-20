@@ -22,7 +22,7 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -50,7 +50,7 @@ public class Neo4jWebTests extends AbstractWebIntegrationTests {
 
 		@Bean(destroyMethod = "shutdown")
 		public GraphDatabaseService graphDatabaseService() {
-			return new EmbeddedGraphDatabase("build/graph.db");
+			return new GraphDatabaseFactory().newEmbeddedDatabase("target/graphdb");
 		}
 	}
 

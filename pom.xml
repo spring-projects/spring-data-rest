@@ -29,7 +29,7 @@
 		<springdata.commons>1.7.0.BUILD-SNAPSHOT</springdata.commons>
 		<springdata.jpa>1.5.0.BUILD-SNAPSHOT</springdata.jpa>
 		<springdata.mongodb>1.4.0.BUILD-SNAPSHOT</springdata.mongodb>
-		<springdata.neo4j>3.0.0.M1</springdata.neo4j>
+		<springdata.neo4j>3.0.0.BUILD-SNAPSHOT</springdata.neo4j>
 		<springdata.gemfire>1.3.3.RELEASE</springdata.gemfire>
 
 		<hibernate.version>4.2.0.Final</hibernate.version>
