@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.PersistentEntity;
@@ -46,6 +47,11 @@ public abstract class AbstractControllerIntegrationTests {
 	@Autowired Repositories repositories;
 	@Autowired RepositoryInvokerFactory invokerFactory;
 	@Autowired ResourceMappings mappings;
+
+	@Before
+	public void initWebInfrastructure() {
+		WebTestUtils.initWebTest();
+	}
 
 	/**
 	 * Returns a {@link RepositoryRestRequest} for the given domain type.

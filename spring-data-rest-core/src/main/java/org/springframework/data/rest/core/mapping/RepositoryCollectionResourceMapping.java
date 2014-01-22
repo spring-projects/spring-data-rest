@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.rest.core.mapping;
 import java.lang.reflect.Modifier;
 
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.support.RepositoriesUtils;
@@ -41,9 +42,10 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	private final RestResource annotation;
 	private final CollectionResourceMapping domainTypeMapping;
 	private final boolean repositoryIsExportCandidate;
+	private final RepositoryMetadata metadata;
 
-	public RepositoryCollectionResourceMapping(Class<?> repositoryType) {
-		this(repositoryType, new EvoInflectorRelProvider());
+	public RepositoryCollectionResourceMapping(RepositoryMetadata metadata) {
+		this(metadata, new EvoInflectorRelProvider());
 	}
 
 	/**
@@ -53,7 +55,12 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 * @param repositoryType must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
 	 */
-	public RepositoryCollectionResourceMapping(Class<?> repositoryType, RelProvider relProvider) {
+	public RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RelProvider relProvider) {
+
+		Assert.notNull(metadata, "Repository metadata must not be null!");
+		this.metadata = metadata;
+
+		Class<?> repositoryType = metadata.getRepositoryInterface();
 
 		Assert.isTrue(RepositoriesUtils.isRepositoryInterface(repositoryType), "Given type is not a repository!");
 		Assert.notNull(relProvider, "RelProvider must not be null!");
@@ -102,5 +109,14 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	@Override
 	public Boolean isExported() {
 		return annotation == null ? repositoryIsExportCandidate && domainTypeMapping.isExported() : annotation.exported();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#isPagingResource()
+	 */
+	@Override
+	public boolean isPagingResource() {
+		return metadata.isPagingRepository();
 	}
 }

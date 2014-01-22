@@ -72,13 +72,6 @@
 		</dependency>
 
 		<!-- Test dependencies -->
-		
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-jpa</artifactId>
-			<version>${springdata.jpa}</version>
-			<scope>test</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
@@ -91,6 +84,13 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
 			<version>${hibernate.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-jpa</artifactId>
+			<version>${springdata.jpa}</version>
 			<scope>test</scope>
 		</dependency>
 

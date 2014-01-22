@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 			RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(type);
 			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
 
-			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInterface, relProvider);
+			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInformation, relProvider);
 
 			RepositoryAwareResourceInformation information = new RepositoryAwareResourceInformation(repositories, mapping,
 					this, repositoryInformation);
@@ -137,8 +137,8 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 
 		if (resourceMapping.isExported()) {
 			for (Method queryMethod : repositoryInformation.getQueryMethods()) {
-				RepositoryMethodResourceMapping methodMapping = new RepositoryMethodResourceMapping(
-						queryMethod, resourceMapping);
+				RepositoryMethodResourceMapping methodMapping = new RepositoryMethodResourceMapping(queryMethod,
+						resourceMapping);
 				if (methodMapping.isExported()) {
 					mappings.add(methodMapping);
 				}
@@ -304,6 +304,15 @@ public class ResourceMappings implements Iterable<ResourceMetadata> {
 			}
 
 			return !typeMapping.isExported() ? false : annotation == null ? true : annotation.exported();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isPagingResource()
+		 */
+		@Override
+		public boolean isPagingResource() {
+			return false;
 		}
 	}
 }

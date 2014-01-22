@@ -21,7 +21,11 @@ import static org.junit.Assert.*;
 import java.lang.reflect.Method;
 
 import org.junit.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -33,7 +37,8 @@ import org.springframework.data.rest.core.annotation.RestResource;
  */
 public class RepositoryMethodResourceMappingUnitTests {
 
-	RepositoryCollectionResourceMapping resourceMapping = new RepositoryCollectionResourceMapping(PersonRepository.class);
+	RepositoryMetadata metadata = new DefaultRepositoryMetadata(PersonRepository.class);
+	RepositoryCollectionResourceMapping resourceMapping = new RepositoryCollectionResourceMapping(metadata);
 
 	@Test
 	public void defaultsMappingToMethodName() throws Exception {
@@ -78,6 +83,18 @@ public class RepositoryMethodResourceMappingUnitTests {
 		assertThat(mapping.getParameterNames(), hasItem("firstname"));
 	}
 
+	/**
+	 * @see DATAREST-229
+	 */
+	@Test
+	public void considersPagingFinderAPagingResource() throws Exception {
+
+		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
+		MethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+
+		assertThat(mapping.isPagingResource(), is(true));
+	}
+
 	static class Person {}
 
 	interface PersonRepository extends Repository<Person, Long> {
@@ -89,5 +106,8 @@ public class RepositoryMethodResourceMappingUnitTests {
 
 		@RestResource(path = "foo")
 		Iterable<Person> findByEmailAddress(String email);
+
+		@RestResource(path = "fooPaged")
+		Page<Person> findByEmailAddress(String email, Pageable pageable);
 	}
 }

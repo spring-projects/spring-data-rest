@@ -87,7 +87,7 @@ public abstract class AbstractWebIntegrationTests {
 	}
 
 	protected MockHttpServletResponse request(Link link) throws Exception {
-		return request(link.getHref());
+		return request(link.expand().getHref());
 	}
 
 	protected MockHttpServletResponse request(String href) throws Exception {
@@ -95,7 +95,7 @@ public abstract class AbstractWebIntegrationTests {
 	}
 
 	protected ResultActions follow(Link link) throws Exception {
-		return follow(link.getHref());
+		return follow(link.expand().getHref());
 	}
 
 	protected ResultActions follow(String href) throws Exception {
@@ -264,7 +264,7 @@ public abstract class AbstractWebIntegrationTests {
 			request(link);
 
 			// Schema - TODO:Improve by using hypermedia
-			mvc.perform(get(link.getHref() + "/schema").//
+			mvc.perform(get(link.expand().getHref() + "/schema").//
 					accept(MediaType.parseMediaType("application/schema+json"))).//
 					andExpect(status().isOk());
 		}
@@ -313,7 +313,7 @@ public abstract class AbstractWebIntegrationTests {
 	}
 
 	@Test
-	public void postsPayloadToResource() throws Exception {
+	public void nic() throws Exception {
 
 		Map<String, String> payloads = getPayloadToPost();
 		assumeFalse(payloads.isEmpty());
@@ -325,9 +325,11 @@ public abstract class AbstractWebIntegrationTests {
 			String payload = payloads.get(rel);
 
 			if (payload != null) {
-				Link link = assertHasLinkWithRel(rel, response);
 
-				MockHttpServletRequestBuilder request = post(link.getHref()).//
+				Link link = assertHasLinkWithRel(rel, response);
+				String target = link.expand().getHref();
+
+				MockHttpServletRequestBuilder request = post(target).//
 						content(payload).//
 						contentType(MediaType.APPLICATION_JSON);
 

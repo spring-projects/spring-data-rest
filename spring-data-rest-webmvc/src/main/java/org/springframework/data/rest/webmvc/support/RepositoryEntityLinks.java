@@ -5,12 +5,21 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
+import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkBuilder;
+import org.springframework.hateoas.TemplateVariables;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.core.AbstractEntityLinks;
 import org.springframework.util.Assert;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
+ * {@link EntityLinks} implementation that is able to create {@link Link} for domain classes managed by Spring Data
+ * REST.
+ * 
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -19,15 +28,29 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	private final Repositories repositories;
 	private final ResourceMappings mappings;
 	private final RepositoryRestConfiguration config;
+	private final HateoasPageableHandlerMethodArgumentResolver resolver;
 
+	/**
+	 * Creates a new {@link RepositoryEntityLinks}.
+	 * 
+	 * @param repositories must not be {@literal null}.
+	 * @param mappings must not be {@literal null}.
+	 * @param config must not be {@literal null}.
+	 * @param resolver must not be {@literal null}.
+	 */
 	@Autowired
-	public RepositoryEntityLinks(Repositories repositories, ResourceMappings mappings, RepositoryRestConfiguration config) {
+	public RepositoryEntityLinks(Repositories repositories, ResourceMappings mappings,
+			RepositoryRestConfiguration config, HateoasPageableHandlerMethodArgumentResolver resolver) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
+		Assert.notNull(resolver, "HateoasPageableHandlerMethodArgumentResolver must not be null!");
 
 		this.repositories = repositories;
 		this.mappings = mappings;
 		this.config = config;
+		this.resolver = resolver;
 	}
 
 	/*
@@ -67,6 +90,17 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	public Link linkToCollectionResource(Class<?> type) {
 
 		ResourceMetadata metadata = mappings.getMappingFor(type);
+
+		if (metadata.isPagingResource()) {
+
+			Link link = linkFor(type).withSelfRel();
+			String href = link.getHref();
+			UriComponents components = UriComponentsBuilder.fromUriString(href).build();
+			TemplateVariables variables = resolver.getPaginationTemplateVariables(null, components);
+
+			return new Link(new UriTemplate(href, variables), metadata.getRel());
+		}
+
 		return linkFor(type).withRel(metadata.getRel());
 	}
 

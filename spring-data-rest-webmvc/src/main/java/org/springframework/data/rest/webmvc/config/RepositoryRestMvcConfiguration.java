@@ -244,7 +244,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public EntityLinks entityLinks() {
-		return new RepositoryEntityLinks(repositories(), resourceMappings(), config());
+		return new RepositoryEntityLinks(repositories(), resourceMappings(), config(), pageableResolver());
 	}
 
 	/**

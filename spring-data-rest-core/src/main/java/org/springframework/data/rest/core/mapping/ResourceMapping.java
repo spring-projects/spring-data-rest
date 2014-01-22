@@ -44,4 +44,11 @@ public interface ResourceMapping {
 	 * @return will never be {@literal null}.
 	 */
 	Path getPath();
+
+	/**
+	 * Returns whether the resource is paging one.
+	 * 
+	 * @return
+	 */
+	boolean isPagingResource();
 }

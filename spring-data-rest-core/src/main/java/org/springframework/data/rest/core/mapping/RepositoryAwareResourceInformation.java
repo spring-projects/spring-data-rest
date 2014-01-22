@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,14 @@ package org.springframework.data.rest.core.mapping;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
 import org.springframework.util.Assert;
 
 /**
+ * {@link ResourceMetadata} for a single repository.
+ * 
  * @author Oliver Gierke
  */
 class RepositoryAwareResourceInformation implements ResourceMetadata {
@@ -31,26 +33,37 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	private final Repositories repositories;
 	private final CollectionResourceMapping mapping;
 	private final ResourceMappings provider;
-	private final RepositoryInformation repositoryInterface;
+	private final RepositoryMetadata repositoryInterface;
 
 	/**
+	 * Creates a new {@link RepositoryAwareResourceInformation} for the given {@link Repositories},
+	 * {@link CollectionResourceMapping}, {@link ResourceMappings} and {@link RepositoryMetadata}.
+	 * 
 	 * @param repositories must not be {@literal null}.
 	 * @param mapping must not be {@literal null}.
 	 * @param provider must not be {@literal null}.
+	 * @param repositoryMetadata must not be {@literal null}.
 	 */
 	public RepositoryAwareResourceInformation(Repositories repositories, CollectionResourceMapping mapping,
-			ResourceMappings provider, RepositoryInformation repositoryInterface) {
+			ResourceMappings provider, RepositoryMetadata repositoryMetadata) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(mapping, "ResourceMapping must not be null!");
+		Assert.notNull(mapping, "CollectionResourceMapping must not be null!");
 		Assert.notNull(provider, "ResourceMetadataProvider must not be null!");
+		Assert.notNull(repositoryMetadata, "RepositoryMetadata must not be null!");
 
 		this.repositories = repositories;
 		this.mapping = mapping;
 		this.provider = provider;
-		this.repositoryInterface = repositoryInterface;
+		this.repositoryInterface = repositoryMetadata;
 	}
 
+	/**
+	 * Returns whether the current {@link ResourceMetadata} instance for the repository is the primary one to be used.
+	 * Reflects to the primary state of the bean definition.
+	 * 
+	 * @return
+	 */
 	public boolean isPrimary() {
 		return AnnotationUtils.findAnnotation(repositoryInterface.getRepositoryInterface(), Primary.class) != null;
 	}
@@ -127,6 +140,15 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	@Override
 	public Path getPath() {
 		return mapping.getPath();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#isPagingResource()
+	 */
+	@Override
+	public boolean isPagingResource() {
+		return mapping.isPagingResource();
 	}
 
 	/* 

@@ -48,6 +48,7 @@ public class JpaRepositoryConfig {
 
 	@Bean
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+
 		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
 		vendorAdapter.setDatabase(Database.HSQL);
 		vendorAdapter.setGenerateDdl(true);
@@ -55,6 +56,7 @@ public class JpaRepositoryConfig {
 		LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
 		factory.setJpaVendorAdapter(vendorAdapter);
 		factory.setPackagesToScan(getClass().getPackage().getName());
+		factory.setPersistenceUnitName("spring-data-rest-webmvc");
 		factory.setDataSource(dataSource());
 		factory.afterPropertiesSet();
 
