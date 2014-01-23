@@ -61,9 +61,10 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		ResourceTester tester = ResourceTester.of(resource);
 		tester.assertNumberOfLinks(4);
 		tester.assertHasLinkEndingWith("findFirstPersonByFirstName", "findFirstPersonByFirstName{?firstName}");
-		tester.assertHasLinkEndingWith("firstname", "firstname{?firstName}");
-		tester.assertHasLinkEndingWith("findByCreatedUsingISO8601Date", "findByCreatedUsingISO8601Date{?date}");
-		tester.assertHasLinkEndingWith("findByCreatedGreaterThan", "findByCreatedGreaterThan{?date}");
+		tester.assertHasLinkEndingWith("firstname", "firstname{?firstName,page,size,sort}");
+		tester.assertHasLinkEndingWith("findByCreatedUsingISO8601Date",
+				"findByCreatedUsingISO8601Date{?date,page,size,sort}");
+		tester.assertHasLinkEndingWith("findByCreatedGreaterThan", "findByCreatedGreaterThan{?date,page,size,sort}");
 	}
 
 	@Test(expected = ResourceNotFoundException.class)

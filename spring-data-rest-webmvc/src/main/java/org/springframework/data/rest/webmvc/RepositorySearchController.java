@@ -62,6 +62,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	private final EntityLinks entityLinks;
 	private final ResourceMappings mappings;
+	private final PagedResourcesAssembler<Object> assembler;
 
 	/**
 	 * Creates a new {@link RepositorySearchController} using the given {@link PagedResourcesAssembler},
@@ -83,6 +84,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		this.entityLinks = entityLinks;
 		this.mappings = mappings;
+		this.assembler = assembler;
 	}
 
 	/**
@@ -235,7 +237,13 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			String parameterTemplateVariable = getParameterTemplateVariable(mapping.getParameterNames());
 			String href = builder.slash(mapping.getPath()).toString().concat(parameterTemplateVariable);
 
-			links.add(new Link(href, mapping.getRel()));
+			Link link = new Link(href, mapping.getRel());
+
+			if (mapping.isPagingResource()) {
+				link = assembler.appendPaginationParameterTemplates(link);
+			}
+
+			links.add(link);
 		}
 
 		return new Links(links);
