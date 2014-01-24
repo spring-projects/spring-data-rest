@@ -15,8 +15,11 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import org.springframework.context.MessageSourceResolvable;
+
 /**
- *
+ * Adapter class for the {@link MessageSourceResolvable} part of a {@link ResourceDescription}.
+ * 
  * @author Oliver Gierke
  */
 public abstract class ResolvableResourceDescriptionSupport implements ResourceDescription {
@@ -29,7 +32,7 @@ public abstract class ResolvableResourceDescriptionSupport implements ResourceDe
 	public String[] getCodes() {
 		return new String[] { getMessage() };
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.context.MessageSourceResolvable#getArguments()
@@ -38,7 +41,7 @@ public abstract class ResolvableResourceDescriptionSupport implements ResourceDe
 	public Object[] getArguments() {
 		return new Object[0];
 	}
-	
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.context.MessageSourceResolvable#getDefaultMessage()

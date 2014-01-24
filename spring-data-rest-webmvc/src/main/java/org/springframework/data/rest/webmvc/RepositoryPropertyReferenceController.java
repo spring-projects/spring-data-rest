@@ -18,7 +18,6 @@ package org.springframework.data.rest.webmvc;
 import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,6 +29,7 @@ import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -60,7 +60,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Jon Brisbin
@@ -145,7 +145,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		};
 
 		ResourceSupport responseResource = doWithReferencedProperty(repoRequest, id, property, handler);
-		return ControllerUtils.toResponseEntity(headers, responseResource, HttpStatus.OK);
+		return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, responseResource);
 	}
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.DELETE)
@@ -244,7 +244,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		};
 
 		ResourceSupport responseResource = doWithReferencedProperty(repoRequest, id, property, handler);
-		return ControllerUtils.toResponseEntity(headers, responseResource, HttpStatus.OK);
+		return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, responseResource);
 	}
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = {
@@ -292,7 +292,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			links.add(linkBuilder.withRel(propertyMapping.getRel()));
 		}
 
-		return ControllerUtils.toResponseEntity(null, new Resource<Object>(EMPTY_RESOURCE_LIST, links), HttpStatus.OK);
+		return ControllerUtils.toResponseEntity(HttpStatus.OK, null, new Resource<Object>(EMPTY_RESOURCE_LIST, links));
 	}
 
 	@RequestMapping(value = BASE_MAPPING, //
@@ -301,28 +301,28 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	@ResponseBody
 	public ResponseEntity<? extends ResourceSupport> createPropertyReference(final RepositoryRestRequest repoRequest,
 			final @RequestBody Resources<Object> incoming, @PathVariable String id, @PathVariable String property,
-			final HttpServletRequest request)
-			throws NoSuchMethodException {
+			final UriComponentsBuilder builder) throws NoSuchMethodException {
 
 		final RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
 
 		if (!invoker.exposesSave()) {
 			return new ResponseEntity<Resource<?>>(HttpStatus.METHOD_NOT_ALLOWED);
 		}
+
 		Function<ReferencedProperty, ResourceSupport> handler = new Function<ReferencedProperty, ResourceSupport>() {
 
 			@Override
 			public ResourceSupport apply(ReferencedProperty prop) {
 
+				Class<?> propertyType = prop.property.getType();
+
 				if (prop.property.isCollectionLike()) {
 
-					Collection<Object> coll;
+					Collection<Object> coll = CollectionFactory.createCollection(propertyType, 0);
 
 					// Either load the exist collection to add to it (POST)
 					if (HttpMethod.POST.equals(repoRequest.getRequestMethod())) {
 						coll = (Collection<Object>) prop.propertyValue;
-					} else { // Or start from an empty collection to replace it (PUT)
-						coll = new ArrayList<Object>();
 					}
 
 					// Add to the existing collection
@@ -335,13 +335,11 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 				} else if (prop.property.isMap()) {
 
-					Map<String, Object> m;
+					Map<String, Object> m = CollectionFactory.createMap(propertyType, 0);
 
 					// Either load the exist collection to add to it (POST)
 					if (HttpMethod.POST.equals(repoRequest.getRequestMethod())) {
 						m = (Map<String, Object>) prop.propertyValue;
-					} else { // Or start from an empty collection to replace it (PUT)
-						m = new HashMap<String, Object>();
 					}
 
 					// Add to the existing collection
@@ -378,10 +376,10 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 		doWithReferencedProperty(repoRequest, id, property, handler);
 
-		final HttpHeaders headers = new HttpHeaders();
-		headers.set("Location", String.valueOf(request.getRequestURL()));
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Location", builder.build().toUriString());
 
-		return ControllerUtils.toEmptyResponse(headers, HttpStatus.CREATED);
+		return ControllerUtils.toEmptyResponse(HttpStatus.CREATED, headers);
 	}
 
 	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.DELETE)

@@ -50,10 +50,10 @@ public class RepositoryRelProvider implements RelProvider {
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.RelProvider#getSingleResourceRelFor(java.lang.Class)
+	 * @see org.springframework.hateoas.RelProvider#getItemResourceRelFor(java.lang.Class)
 	 */
 	@Override
-	public String getSingleResourceRelFor(Class<?> type) {
+	public String getItemResourceRelFor(Class<?> type) {
 		return mappings.getMappingFor(type).getItemResourceRel();
 	}
 

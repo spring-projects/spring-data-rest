@@ -33,13 +33,13 @@ import static org.junit.runners.Parameterized.Parameters;
  * @author Florent Biville
  */
 @RunWith(Parameterized.class)
-public class ResourceStringUtilsTest {
+public class ResourceStringUtilsTests {
 
 	final String actual;
 	final String expected;
 	final boolean hasText;
 
-	public ResourceStringUtilsTest(String testDescription, String actual, String expected, boolean hasText) {
+	public ResourceStringUtilsTests(String testDescription, String actual, String expected, boolean hasText) {
 
 		this.actual = actual;
 		this.expected = expected;

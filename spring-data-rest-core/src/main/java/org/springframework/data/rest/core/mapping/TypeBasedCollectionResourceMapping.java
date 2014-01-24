@@ -106,7 +106,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public String getItemResourceRel() {
-		return relProvider.getSingleResourceRelFor(type);
+		return relProvider.getItemResourceRelFor(type);
 	}
 
 	/* 

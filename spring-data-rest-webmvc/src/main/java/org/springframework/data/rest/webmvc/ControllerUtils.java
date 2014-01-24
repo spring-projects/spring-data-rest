@@ -38,14 +38,15 @@ public class ControllerUtils {
 
 	/**
 	 * Wrap a resource as a {@link ResourceEntity} and attach given headers and status.
+	 * 
+	 * @param status
 	 * @param headers
 	 * @param resource
-	 * @param status
 	 * @param <R>
 	 * @return
 	 */
-	public static <R extends ResourceSupport> ResponseEntity<ResourceSupport> toResponseEntity(HttpHeaders headers,
-			R resource, HttpStatus status) {
+	public static <R extends ResourceSupport> ResponseEntity<ResourceSupport> toResponseEntity(HttpStatus status,
+			HttpHeaders headers, R resource) {
 
 		HttpHeaders hdrs = new HttpHeaders();
 		if (null != headers) {
@@ -57,20 +58,22 @@ public class ControllerUtils {
 
 	/**
 	 * Return an empty response that is only comprised of a status
+	 * 
 	 * @param status
 	 * @return
 	 */
 	public static ResponseEntity<ResourceSupport> toEmptyResponse(HttpStatus status) {
-		return toResponseEntity(null, EMPTY_RESOURCES, status);
+		return toResponseEntity(status, null, EMPTY_RESOURCES);
 	}
 
 	/**
 	 * Return an empty response that is only comprised of headers and a status
-	 * @param headers
+	 * 
 	 * @param status
+	 * @param headers
 	 * @return
 	 */
-	public static ResponseEntity<ResourceSupport> toEmptyResponse(HttpHeaders headers, HttpStatus status) {
-		return toResponseEntity(headers, EMPTY_RESOURCES, status);
+	public static ResponseEntity<ResourceSupport> toEmptyResponse(HttpStatus status, HttpHeaders headers) {
+		return toResponseEntity(status, headers, EMPTY_RESOURCES);
 	}
 }

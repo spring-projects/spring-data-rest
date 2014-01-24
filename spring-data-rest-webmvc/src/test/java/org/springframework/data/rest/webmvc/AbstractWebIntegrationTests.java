@@ -138,12 +138,7 @@ public abstract class AbstractWebIntegrationTests {
 
 	protected MockHttpServletResponse postAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
 
-		String href;
-		if (link.isTemplated()) {
-			href = link.expand().getHref();
-		} else {
-			href = link.getHref();
-		}
+		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
 		MockHttpServletResponse response = mvc.perform(post(href).content(payload.toString()).contentType(mediaType)).//
 				andExpect(status().isCreated()).//
@@ -161,12 +156,7 @@ public abstract class AbstractWebIntegrationTests {
 
 	protected MockHttpServletResponse putAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
 
-		String href;
-		if (link.isTemplated()) {
-			href = link.expand().getHref();
-		} else {
-			href = link.getHref();
-		}
+		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
 		MockHttpServletResponse response = mvc.perform(put(href).content(payload.toString()).contentType(mediaType)).//
 				andExpect(status().isCreated()).//
@@ -184,12 +174,7 @@ public abstract class AbstractWebIntegrationTests {
 
 	protected MockHttpServletResponse deleteAndGet(Link link, MediaType mediaType) throws Exception {
 
-		String href;
-		if (link.isTemplated()) {
-			href = link.expand().getHref();
-		} else {
-			href = link.getHref();
-		}
+		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
 		MockHttpServletResponse response = mvc.perform(delete(href).contentType(mediaType)).//
 				andExpect(status().isNoContent()).//

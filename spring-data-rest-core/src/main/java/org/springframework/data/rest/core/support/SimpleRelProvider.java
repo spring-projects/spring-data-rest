@@ -32,11 +32,13 @@ public class SimpleRelProvider implements RelProvider {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.hateoas.RelProvider#getSingleResourceRelFor(java.lang.Class)
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.hateoas.RelProvider#getItemResourceRelFor(java.lang.Class)
 	 */
 	@Override
-	public String getSingleResourceRelFor(Class<?> type) {
+	public String getItemResourceRelFor(Class<?> type) {
+
 		String collectionRel = getCollectionResourceRelFor(type);
 		return String.format("%s.%s", collectionRel, collectionRel);
 	}

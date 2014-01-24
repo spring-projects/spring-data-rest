@@ -176,7 +176,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		headers.setLocation(URI.create(selfLink.getHref()));
 
 		PersistentEntityResource<Object> resource = config.isReturnBodyOnCreate() ? perAssembler.toResource(obj) : null;
-		return ControllerUtils.toResponseEntity(headers, resource, HttpStatus.CREATED);
+		return ControllerUtils.toResponseEntity(HttpStatus.CREATED, headers, resource);
 	}
 
 	/**
@@ -238,9 +238,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		publisher.publishEvent(new AfterSaveEvent(obj));
 
 		if (config.isReturnBodyOnUpdate()) {
-			return ControllerUtils.toResponseEntity(null, perAssembler.toResource(obj), HttpStatus.OK);
+			return ControllerUtils.toResponseEntity(HttpStatus.OK, null, perAssembler.toResource(obj));
 		} else {
-			return ControllerUtils.toResponseEntity(null, null, HttpStatus.NO_CONTENT);
+			return ControllerUtils.toResponseEntity(HttpStatus.NO_CONTENT, null, null);
 		}
 	}
 
