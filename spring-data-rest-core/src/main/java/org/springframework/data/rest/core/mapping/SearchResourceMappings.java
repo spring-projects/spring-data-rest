@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
 	 */
 	@Override
-	public Boolean isExported() {
+	public boolean isExported() {
 		return !mappings.isEmpty();
 	}
 
@@ -111,6 +111,15 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	@Override
 	public boolean isPagingResource() {
 		return false;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
+	 */
+	@Override
+	public ResourceDescription getDescription() {
+		return null;
 	}
 
 	/* 

@@ -111,7 +111,7 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#isExported()
 	 */
 	@Override
-	public Boolean isExported() {
+	public boolean isExported() {
 		return mapping.isExported();
 	}
 
@@ -129,8 +129,8 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getSingleResourceRel()
 	 */
 	@Override
-	public String getSingleResourceRel() {
-		return mapping.getSingleResourceRel();
+	public String getItemResourceRel() {
+		return mapping.getItemResourceRel();
 	}
 
 	/* 
@@ -149,6 +149,24 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	@Override
 	public boolean isPagingResource() {
 		return mapping.isPagingResource();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
+	 */
+	@Override
+	public ResourceDescription getDescription() {
+		return mapping.getDescription();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getItemResourceDescription()
+	 */
+	@Override
+	public ResourceDescription getItemResourceDescription() {
+		return mapping.getItemResourceDescription();
 	}
 
 	/* 

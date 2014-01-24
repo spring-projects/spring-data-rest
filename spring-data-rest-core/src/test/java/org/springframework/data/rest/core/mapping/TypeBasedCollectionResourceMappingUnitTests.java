@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,13 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.data.rest.core.mapping.CollectionResourceMapping;
-import org.springframework.data.rest.core.mapping.TypeBasedCollectionResourceMapping;
 
 /**
  * Unit tests for {@link TypeBasedCollectionResourceMapping}.
  * 
  * @author Oliver Gierke
  */
-public class TypeBasedCollectionResourceMappingUnitTest {
+public class TypeBasedCollectionResourceMappingUnitTests {
 
 	@Test
 	public void defaultsMappingsByType() {
@@ -38,7 +36,7 @@ public class TypeBasedCollectionResourceMappingUnitTest {
 
 		assertThat(mapping.getPath(), is(new Path("sample")));
 		assertThat(mapping.getRel(), is("samples"));
-		assertThat(mapping.getSingleResourceRel(), is("sample"));
+		assertThat(mapping.getItemResourceRel(), is("sample"));
 		assertThat(mapping.isExported(), is(true));
 	}
 
@@ -49,7 +47,7 @@ public class TypeBasedCollectionResourceMappingUnitTest {
 
 		assertThat(mapping.getPath(), is(new Path("customizedSample")));
 		assertThat(mapping.getRel(), is("myRel"));
-		assertThat(mapping.getSingleResourceRel(), is("customizedSample"));
+		assertThat(mapping.getItemResourceRel(), is("customizedSample"));
 		assertThat(mapping.isExported(), is(true));
 	}
 
@@ -62,6 +60,24 @@ public class TypeBasedCollectionResourceMappingUnitTest {
 		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(HiddenSample.class);
 
 		assertThat(mapping.isExported(), is(false));
+	}
+
+	/**
+	 * @see
+	 */
+	@Test
+	public void usesDefaultDescriptionIfNoAnnotationPresent() {
+
+		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(Sample.class);
+		ResourceDescription description = mapping.getDescription();
+
+		assertThat(description.isDefault(), is(true));
+		assertThat(description.getMessage(), is("rest.description.samples"));
+
+		ResourceDescription itemDescription = mapping.getItemResourceDescription();
+
+		assertThat(itemDescription.isDefault(), is(true));
+		assertThat(itemDescription.getMessage(), is("rest.description.sample"));
 	}
 
 	public interface Sample {}

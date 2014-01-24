@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012-2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.rest.webmvc.json;
 
 import static org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.*;
@@ -10,6 +25,7 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.data.mapping.Association;
@@ -18,9 +34,12 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.core.annotation.Description;
+import org.springframework.data.rest.core.mapping.ResourceDescription;
+import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.json.JsonSchema.ArrayProperty;
+import org.springframework.data.rest.webmvc.json.JsonSchema.Property;
 import org.springframework.data.rest.webmvc.support.RepositoryLinkBuilder;
 import org.springframework.hateoas.Link;
 import org.springframework.util.Assert;
@@ -37,6 +56,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	private final Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
 	private final ResourceMappings mappings;
 	private final Repositories repositories;
+	private final MessageSourceAccessor accessor;
 
 	/**
 	 * Creates a new {@link PersistentEntityToJsonSchemaConverter} for the given {@link Repositories} and
@@ -44,14 +64,17 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * 
 	 * @param repositories must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
+	 * @param accessor
 	 */
-	public PersistentEntityToJsonSchemaConverter(Repositories repositories, ResourceMappings mappings) {
+	public PersistentEntityToJsonSchemaConverter(Repositories repositories, ResourceMappings mappings,
+			MessageSourceAccessor accessor) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
 
 		this.repositories = repositories;
 		this.mappings = mappings;
+		this.accessor = accessor;
 
 		for (Class<?> domainType : repositories) {
 			convertiblePairs.add(new ConvertiblePair(domainType, JsonSchema.class));
@@ -90,9 +113,8 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity((Class<?>) source);
 		final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getType());
-		String entityDesc = persistentEntity.getType().isAnnotationPresent(Description.class) ? persistentEntity.getType()
-				.getAnnotation(Description.class).value() : null;
-		final JsonSchema jsonSchema = new JsonSchema(persistentEntity.getName(), entityDesc);
+		final JsonSchema jsonSchema = new JsonSchema(persistentEntity.getName(), accessor.getMessage(metadata
+				.getItemResourceDescription()));
 
 		persistentEntity.doWithProperties(new SimplePropertyHandler() {
 
@@ -106,12 +128,16 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 				Class<?> propertyType = persistentProperty.getType();
 				String type = uncapitalize(propertyType.getSimpleName());
 
-				boolean notNull = persistentProperty.isAnnotationPresent(NotNull.class);
-				Description descriptionAnnotation = persistentProperty.findAnnotation(Description.class);
-				String desc = descriptionAnnotation == null ? null : descriptionAnnotation.value();
+				ResourceMapping propertyMapping = metadata.getMappingFor(persistentProperty);
 
-				JsonSchema.Property property = persistentProperty.isCollectionLike() ? new JsonSchema.ArrayProperty("array",
-						desc, notNull) : new JsonSchema.Property(type, desc, notNull);
+				boolean notNull = persistentProperty.isAnnotationPresent(NotNull.class);
+				ResourceDescription description = propertyMapping.getDescription();
+				String message = accessor.getMessage(description);
+
+				Property property = persistentProperty.isCollectionLike() ? //
+				new ArrayProperty("array", message, notNull)
+						: new Property(type, message, notNull);
+
 				jsonSchema.addProperty(persistentProperty.getName(), property);
 			}
 		});

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
@@ -39,6 +41,7 @@ import org.springframework.data.rest.core.event.AnnotatedHandlerBeanPostProcesso
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.core.invoke.DefaultRepositoryInvokerFactory;
 import org.springframework.data.rest.core.invoke.RepositoryInvokerFactory;
+import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.rest.core.util.UUIDConverter;
@@ -268,7 +271,23 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public PersistentEntityToJsonSchemaConverter jsonSchemaConverter() {
-		return new PersistentEntityToJsonSchemaConverter(repositories(), resourceMappings());
+		return new PersistentEntityToJsonSchemaConverter(repositories(), resourceMappings(),
+				resourceDescriptionMessageSourceAccessor());
+	}
+
+	/**
+	 * The {@link MessageSourceAccessor} to provide messages for {@link ResourceDescription}s being rendered.
+	 * 
+	 * @return
+	 */
+	@Bean
+	public MessageSourceAccessor resourceDescriptionMessageSourceAccessor() {
+
+		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+		messageSource.setBasename("classpath:rest-messages");
+		messageSource.setUseCodeAsDefaultMessage(true);
+
+		return new MessageSourceAccessor(messageSource);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,11 @@ package org.springframework.data.rest.core.support;
 
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.hateoas.RelProvider;
+import org.springframework.util.Assert;
 
 /**
+ * A {@link RelProvider} based on the {@link ResourceMappings} for the registered repositories.
+ * 
  * @author Oliver Gierke
  */
 public class RepositoryRelProvider implements RelProvider {
@@ -26,11 +29,13 @@ public class RepositoryRelProvider implements RelProvider {
 	private final ResourceMappings mappings;
 
 	/**
-	 * @param repositories
-	 * @param config
+	 * Creates a new {@link RepositoryRelProvider} for the given {@link ResourceMappings}.
+	 * 
+	 * @param mappings must not be {@literal null}.
 	 */
 	public RepositoryRelProvider(ResourceMappings mappings) {
 
+		Assert.notNull(mappings, "ResourceMappings must not be null!");
 		this.mappings = mappings;
 	}
 
@@ -49,7 +54,7 @@ public class RepositoryRelProvider implements RelProvider {
 	 */
 	@Override
 	public String getSingleResourceRelFor(Class<?> type) {
-		return mappings.getMappingFor(type).getSingleResourceRel();
+		return mappings.getMappingFor(type).getItemResourceRel();
 	}
 
 	/* 

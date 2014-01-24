@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -30,8 +31,9 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
  * A repository to manage {@link Person}s.
  * 
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
-@RestResource(rel = "people", path = "people")
+@RepositoryRestResource(collectionResourceRel = "people", path = "people")
 public interface PersonRepository extends PagingAndSortingRepository<Person, Long> {
 
 	@RestResource(rel = "firstname", path = "firstname")

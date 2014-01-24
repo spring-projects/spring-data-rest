@@ -19,6 +19,7 @@ import java.lang.reflect.Modifier;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.Path;
+import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
@@ -34,8 +35,9 @@ import org.springframework.util.StringUtils;
 class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 
 	private final Class<?> type;
-	private final RestResource annotation;
 	private final RelProvider relProvider;
+	private final RestResource annotation;
+	private final Description description;
 
 	/**
 	 * Creates a new {@link TypeBasedCollectionResourceMapping} using the given type.
@@ -60,6 +62,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		this.type = type;
 		this.relProvider = relProvider;
 		this.annotation = AnnotationUtils.findAnnotation(type, RestResource.class);
+		this.description = AnnotationUtils.findAnnotation(type, Description.class);
 	}
 
 	/* 
@@ -79,7 +82,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
 	 */
 	@Override
-	public Boolean isExported() {
+	public boolean isExported() {
 		return annotation == null ? Modifier.isPublic(type.getModifiers()) : annotation.exported();
 	}
 
@@ -102,7 +105,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getSingleResourceRel()
 	 */
 	@Override
-	public String getSingleResourceRel() {
+	public String getItemResourceRel() {
 		return relProvider.getSingleResourceRelFor(type);
 	}
 
@@ -115,6 +118,38 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		return false;
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
+	 */
+	@Override
+	public ResourceDescription getDescription() {
+
+		ResourceDescription fallback = SimpleResourceDescription.defaultFor(getRel());
+
+		return fallback;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getItemResourceDescription()
+	 */
+	@Override
+	public ResourceDescription getItemResourceDescription() {
+
+		ResourceDescription fallback = SimpleResourceDescription.defaultFor(getItemResourceRel());
+
+		if (annotation != null && StringUtils.hasText(annotation.description().value())) {
+			return new AnnotationBasedResourceDescription(annotation.description(), fallback);
+		}
+
+		if (description != null) {
+			return new AnnotationBasedResourceDescription(description, fallback);
+		}
+
+		return fallback;
+	}
+
 	/**
 	 * Returns the default path to be used if the path is not configured manually.
 	 * 
@@ -122,6 +157,10 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 * @return
 	 */
 	protected String getDefaultPathFor(Class<?> type) {
+		return getSimpleTypeName(type);
+	}
+
+	private String getSimpleTypeName(Class<?> type) {
 		return StringUtils.uncapitalize(type.getSimpleName());
 	}
 }

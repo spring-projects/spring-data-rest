@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,31 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.MessageSourceResolvable;
+import org.springframework.http.MediaType;
+
 /**
- * A custom resource mapping for collection resources.
+ * A description of a resource. Resolvable to plain text by using a {@link MessageSource}.
  * 
  * @author Oliver Gierke
  */
-public interface CollectionResourceMapping extends ResourceMapping {
+public interface ResourceDescription extends MessageSourceResolvable {
 
 	/**
-	 * Returns the relation type pointing to the item resource within a collection.
+	 * Returns the description. This can be a message source code or a custom text format. Prefer resolving the
+	 * {@link ResourceDescription} using a {@link MessageSource}.
 	 * 
 	 * @return
 	 */
-	String getItemResourceRel();
+	String getMessage();
 
 	/**
-	 * Returns the {@link ResourceDescription} for the item resource.
+	 * Returns whether this is the default description.
 	 * 
 	 * @return
 	 */
-	ResourceDescription getItemResourceDescription();
+	boolean isDefault();
+
+	MediaType getType();
 }

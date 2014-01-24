@@ -25,6 +25,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.rest.core.Path;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 /**
@@ -41,7 +42,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 
 		assertThat(mapping.getPath(), is(new Path("persons")));
 		assertThat(mapping.getRel(), is("persons"));
-		assertThat(mapping.getSingleResourceRel(), is("person"));
+		assertThat(mapping.getItemResourceRel(), is("person"));
 		assertThat(mapping.isExported(), is(true));
 	}
 
@@ -52,7 +53,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 
 		assertThat(mapping.getPath(), is(new Path("bar")));
 		assertThat(mapping.getRel(), is("foo"));
-		assertThat(mapping.getSingleResourceRel(), is("annotatedPerson"));
+		assertThat(mapping.getItemResourceRel(), is("annotatedPerson"));
 		assertThat(mapping.isExported(), is(false));
 	}
 
@@ -63,7 +64,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 
 		assertThat(mapping.getPath(), is(new Path("/trumpsAll")));
 		assertThat(mapping.getRel(), is("foo"));
-		assertThat(mapping.getSingleResourceRel(), is("annotatedPerson"));
+		assertThat(mapping.getItemResourceRel(), is("annotatedPerson"));
 		assertThat(mapping.isExported(), is(true));
 	}
 
@@ -80,6 +81,14 @@ public class RepositoryCollectionResourceMappingUnitTests {
 	@Test
 	public void detectsPagingRepository() {
 		assertThat(getResourceMappingFor(PersonRepository.class).isPagingResource(), is(true));
+	}
+
+	@Test
+	public void discoversCustomizationsUsingRestRepositoryResource() {
+
+		CollectionResourceMapping mapping = getResourceMappingFor(RepositoryAnnotatedRepository.class);
+		assertThat(mapping.getRel(), is("foo"));
+		assertThat(mapping.getItemResourceRel(), is("bar"));
 	}
 
 	private static CollectionResourceMapping getResourceMappingFor(Class<?> repositoryInterface) {
@@ -106,4 +115,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 	public static class PublicClass {}
 
 	interface PackageProtectedRepository extends Repository<PublicClass, Long> {}
+
+	@RepositoryRestResource(collectionResourceRel = "foo", itemResourceRel = "bar")
+	interface RepositoryAnnotatedRepository extends Repository<Person, Long> {}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +22,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotate a {@link org.springframework.data.repository.Repository} with this to influence how it is exported and what
- * the value of the {@literal rel} attribute will be in links.
- * <p>
- * As of Spring Data REST 2.0, prefer using {@link RepositoryRestResource} to also be able to customize the relation
- * type and description for the item resources exposed by the repository.
+ * Annotate a {@link org.springframework.data.repository.Repository} with this to customize export mapping and rels.
  * 
- * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.TYPE })
+@Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface RestResource {
+public @interface RepositoryRestResource {
 
 	/**
 	 * Flag indicating whether this resource is exported at all.
@@ -51,16 +46,30 @@ public @interface RestResource {
 	String path() default "";
 
 	/**
-	 * The rel value to use when generating links to this resource.
+	 * The rel value to use when generating links to the collection resource.
 	 * 
 	 * @return A valid rel value.
 	 */
-	String rel() default "";
+	String collectionResourceRel() default "";
 
 	/**
 	 * The description of the collection resource.
 	 * 
 	 * @return
 	 */
-	Description description() default @Description(value = "");
+	Description collectionResourceDescription() default @Description(value = "");
+
+	/**
+	 * The rel value to use when generating links to the item resource.
+	 * 
+	 * @return A valid rel value.
+	 */
+	String itemResourceRel() default "";
+
+	/**
+	 * The description of the item resource.
+	 * 
+	 * @return
+	 */
+	Description itemResourceDescription() default @Description(value = "");
 }

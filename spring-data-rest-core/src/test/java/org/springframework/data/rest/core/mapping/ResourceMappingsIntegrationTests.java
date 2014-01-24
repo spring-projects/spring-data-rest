@@ -48,7 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
-public class ResourceMappingsIntegrationTest {
+public class ResourceMappingsIntegrationTests {
 
 	@Autowired ListableBeanFactory factory;
 

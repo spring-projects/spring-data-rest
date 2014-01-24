@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,18 @@ package org.springframework.data.rest.core.mapping;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 import org.springframework.data.rest.core.Path;
+import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.mapping.ResourceMappings.PersistentPropertyResourceMapping;
 
@@ -42,14 +41,6 @@ import org.springframework.data.rest.core.mapping.ResourceMappings.PersistentPro
 public class PersistentPropertyResourceMappingUnitTests {
 
 	MongoMappingContext mappingContext = new MongoMappingContext();
-	MongoPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(Entity.class);
-
-	@Mock ResourceMapping typeMapping;
-
-	@Before
-	public void setUp() {
-		when(typeMapping.isExported()).thenReturn(true);
-	}
 
 	/**
 	 * @see DATAREST-175
@@ -57,13 +48,12 @@ public class PersistentPropertyResourceMappingUnitTests {
 	@Test
 	public void usesPropertyNameAsDefaultResourceMappingRelAndPath() {
 
-		MongoPersistentProperty persistentProperty = persistentEntity.getPersistentProperty("first");
-		ResourceMapping propertyMapping = new PersistentPropertyResourceMapping(persistentProperty, typeMapping);
+		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "first");
 
-		assertThat(propertyMapping, is(notNullValue()));
-		assertThat(propertyMapping.getPath(), is(new Path("first")));
-		assertThat(propertyMapping.getRel(), is("first"));
-		assertThat(propertyMapping.isExported(), is(true));
+		assertThat(mapping, is(notNullValue()));
+		assertThat(mapping.getPath(), is(new Path("first")));
+		assertThat(mapping.getRel(), is("first"));
+		assertThat(mapping.isExported(), is(true));
 	}
 
 	/**
@@ -72,13 +62,12 @@ public class PersistentPropertyResourceMappingUnitTests {
 	@Test
 	public void considersMappingAnnotationOnDomainClassProperty() {
 
-		MongoPersistentProperty persistentProperty = persistentEntity.getPersistentProperty("second");
-		ResourceMapping propertyMapping = new PersistentPropertyResourceMapping(persistentProperty, typeMapping);
+		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "second");
 
-		assertThat(propertyMapping, is(notNullValue()));
-		assertThat(propertyMapping.getPath(), is(new Path("secPath")));
-		assertThat(propertyMapping.getRel(), is("secRel"));
-		assertThat(propertyMapping.isExported(), is(false));
+		assertThat(mapping, is(notNullValue()));
+		assertThat(mapping.getPath(), is(new Path("secPath")));
+		assertThat(mapping.getRel(), is("secRel"));
+		assertThat(mapping.isExported(), is(false));
 	}
 
 	/**
@@ -87,21 +76,59 @@ public class PersistentPropertyResourceMappingUnitTests {
 	@Test
 	public void considersMappingAnnotationOnDomainClassPropertyMethod() {
 
-		MongoPersistentProperty persistentProperty = persistentEntity.getPersistentProperty("third");
-		ResourceMapping propertyMapping = new PersistentPropertyResourceMapping(persistentProperty, typeMapping);
+		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "third");
 
-		assertThat(propertyMapping, is(notNullValue()));
-		assertThat(propertyMapping.getPath(), is(new Path("thirdPath")));
-		assertThat(propertyMapping.getRel(), is("thirdRel"));
-		assertThat(propertyMapping.isExported(), is(false));
+		assertThat(mapping, is(notNullValue()));
+		assertThat(mapping.getPath(), is(new Path("thirdPath")));
+		assertThat(mapping.getRel(), is("thirdRel"));
+		assertThat(mapping.isExported(), is(false));
 	}
 
-	static class Entity {
+	@Test
+	public void returnsDefaultDescriptionKey() {
 
-		Related first, third;
+		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "second");
 
+		ResourceDescription description = mapping.getDescription();
+
+		assertThat(description.isDefault(), is(true));
+		assertThat(description.getMessage(), is("rest.description.entity.second"));
+	}
+
+	/**
+	 * @see DATAREST-???
+	 */
+	@Test
+	public void considersAtDescription() {
+
+		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "fourth");
+
+		ResourceDescription description = mapping.getDescription();
+		assertThat(description.isDefault(), is(false));
+		assertThat(description.getMessage(), is("Some description"));
+	}
+
+	private ResourceMapping getPropertyMappingFor(Class<?> entity, String propertyName) {
+
+		MongoPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(entity);
+		MongoPersistentProperty property = persistentEntity.getPersistentProperty(propertyName);
+
+		CollectionResourceMapping entityResourceMapping = new TypeBasedCollectionResourceMapping(entity);
+		ResourceMapping propertyTypeMapping = new TypeBasedCollectionResourceMapping(property.getType());
+
+		return new PersistentPropertyResourceMapping(property, propertyTypeMapping, entityResourceMapping);
+	}
+
+	public static class Entity {
+
+		Related first;
+		@DBRef Related third;
+
+		@DBRef//
 		@RestResource(path = "secPath", rel = "secRel", exported = false)//
 		List<Related> second;
+
+		@Description("Some description") String fourth;
 
 		@RestResource(path = "thirdPath", rel = "thirdRel", exported = false)
 		public Related getThird() {
@@ -109,7 +136,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 		}
 	}
 
-	static class Related {
+	public static class Related {
 
 	}
 }

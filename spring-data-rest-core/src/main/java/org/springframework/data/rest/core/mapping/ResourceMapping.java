@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public interface ResourceMapping {
 	 * 
 	 * @return will never be {@literal null}.
 	 */
-	Boolean isExported();
+	boolean isExported();
 
 	/**
 	 * Returns the relation for the resource exported.
@@ -51,4 +51,11 @@ public interface ResourceMapping {
 	 * @return
 	 */
 	boolean isPagingResource();
+
+	/**
+	 * Returns the resource's description.
+	 * 
+	 * @return
+	 */
+	ResourceDescription getDescription();
 }

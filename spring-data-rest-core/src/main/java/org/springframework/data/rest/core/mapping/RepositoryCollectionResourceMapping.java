@@ -17,9 +17,12 @@ package org.springframework.data.rest.core.mapping;
 
 import java.lang.reflect.Modifier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.rest.core.Path;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.support.RepositoriesUtils;
 import org.springframework.hateoas.RelProvider;
@@ -37,9 +40,11 @@ import org.springframework.util.StringUtils;
  */
 class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 
-	private final boolean EVO_INFLECTOR_IS_PRESENT = ClassUtils.isPresent("org.atteo.evo.inflector.English", null);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryCollectionResourceMapping.class);
+	private static final boolean EVO_INFLECTOR_IS_PRESENT = ClassUtils.isPresent("org.atteo.evo.inflector.English", null);
 
 	private final RestResource annotation;
+	private final RepositoryRestResource repositoryAnnotation;
 	private final CollectionResourceMapping domainTypeMapping;
 	private final boolean repositoryIsExportCandidate;
 	private final RepositoryMetadata metadata;
@@ -66,11 +71,18 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		Assert.notNull(relProvider, "RelProvider must not be null!");
 
 		this.annotation = AnnotationUtils.findAnnotation(repositoryType, RestResource.class);
+		this.repositoryAnnotation = AnnotationUtils.findAnnotation(repositoryType, RepositoryRestResource.class);
 		this.repositoryIsExportCandidate = Modifier.isPublic(repositoryType.getModifiers());
 
 		Class<?> domainType = RepositoriesUtils.getDomainType(repositoryType);
 		this.domainTypeMapping = EVO_INFLECTOR_IS_PRESENT ? new EvoInflectorTypeBasedCollectionResourceMapping(domainType,
 				relProvider) : new TypeBasedCollectionResourceMapping(domainType, relProvider);
+
+		if (annotation != null) {
+			LOGGER.warn(
+					"@RestResource detected to customize the repository resource for {}! Use @RepositoryRestResource instead!",
+					metadata.getRepositoryInterface().getName());
+		}
 	}
 
 	/* 
@@ -80,8 +92,19 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	@Override
 	public Path getPath() {
 
-		return annotation == null || !StringUtils.hasText(annotation.path()) ? domainTypeMapping.getPath() : new Path(
-				annotation.path());
+		Path fallback = domainTypeMapping.getPath();
+
+		if (repositoryAnnotation != null) {
+			String path = repositoryAnnotation.path();
+			return StringUtils.hasText(path) ? new Path(path) : fallback;
+		}
+
+		if (annotation != null) {
+			String path = annotation.path();
+			return StringUtils.hasText(path) ? new Path(path) : fallback;
+		}
+
+		return fallback;
 	}
 
 	/* 
@@ -90,7 +113,20 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public String getRel() {
-		return annotation == null || !StringUtils.hasText(annotation.rel()) ? domainTypeMapping.getRel() : annotation.rel();
+
+		String fallback = domainTypeMapping.getRel();
+
+		if (repositoryAnnotation != null) {
+			String rel = repositoryAnnotation.collectionResourceRel();
+			return StringUtils.hasText(rel) ? rel : fallback;
+		}
+
+		if (annotation != null) {
+			String rel = annotation.rel();
+			return StringUtils.hasText(rel) ? rel : fallback;
+		}
+
+		return fallback;
 	}
 
 	/* 
@@ -98,8 +134,16 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getSingleResourceRel()
 	 */
 	@Override
-	public String getSingleResourceRel() {
-		return domainTypeMapping.getSingleResourceRel();
+	public String getItemResourceRel() {
+
+		String fallback = domainTypeMapping.getItemResourceRel();
+
+		if (repositoryAnnotation != null) {
+			String rel = repositoryAnnotation.itemResourceRel();
+			return StringUtils.hasText(rel) ? rel : fallback;
+		}
+
+		return fallback;
 	}
 
 	/* 
@@ -107,8 +151,17 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
 	 */
 	@Override
-	public Boolean isExported() {
-		return annotation == null ? repositoryIsExportCandidate && domainTypeMapping.isExported() : annotation.exported();
+	public boolean isExported() {
+
+		if (repositoryAnnotation != null) {
+			return repositoryAnnotation.exported();
+		}
+
+		if (annotation != null) {
+			return annotation.exported();
+		}
+
+		return repositoryIsExportCandidate && domainTypeMapping.isExported();
 	}
 
 	/* 
@@ -118,5 +171,37 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	@Override
 	public boolean isPagingResource() {
 		return metadata.isPagingRepository();
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
+	 */
+	@Override
+	public ResourceDescription getDescription() {
+
+		ResourceDescription fallback = SimpleResourceDescription.defaultFor(getRel());
+
+		if (repositoryAnnotation != null) {
+			return new AnnotationBasedResourceDescription(repositoryAnnotation.collectionResourceDescription(), fallback);
+		}
+
+		return fallback;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getItemResourceDescription()
+	 */
+	@Override
+	public ResourceDescription getItemResourceDescription() {
+
+		ResourceDescription fallback = SimpleResourceDescription.defaultFor(getItemResourceRel());
+
+		if (repositoryAnnotation != null) {
+			return new AnnotationBasedResourceDescription(repositoryAnnotation.itemResourceDescription(), fallback);
+		}
+
+		return fallback;
 	}
 }

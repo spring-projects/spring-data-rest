@@ -90,7 +90,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
 	 */
 	@Override
-	public Boolean isExported() {
+	public boolean isExported() {
 		return isExported;
 	}
 
@@ -137,5 +137,14 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	@Override
 	public boolean isPagingResource() {
 		return paging;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
+	 */
+	@Override
+	public ResourceDescription getDescription() {
+		return null;
 	}
 }
