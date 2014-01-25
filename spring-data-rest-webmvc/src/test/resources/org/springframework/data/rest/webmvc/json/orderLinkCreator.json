@@ -1,8 +1,8 @@
 { 
   "_links" : {
-    "creator" : { "href" : "http://localhost:8080/people/1" }
+    "creator" : { "href" : "http://localhost:8080/people/2" }
   },
-  "orderName" : "Billy's crazy food order",
+  "orderName" : "Junk food",
   "lineItems" : [ 
   	{ "name" : "Java Chip" },
   	{ "name" : "Chocolate Mocca " } ]

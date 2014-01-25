@@ -59,6 +59,7 @@ import com.jayway.jsonpath.JsonPath;
 /**
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Nick Weedon
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -255,10 +256,25 @@ public abstract class AbstractWebIntegrationTests {
 
 		Object jsonPathResult = JsonPath.read(response.getContentAsString(), path);
 		assertThat(jsonPathResult, is(notNullValue()));
+		if(jsonPathResult instanceof JSONArray) {
+			assertTrue(((JSONArray)jsonPathResult).size() > 0);
+		}
 
 		return (T) jsonPathResult;
 	}
 
+	protected void assertDoesNotHaveJsonPathValue(String path, MockHttpServletResponse response) throws Exception {
+
+		Object jsonPathResult = JsonPath.read(response.getContentAsString(), path);
+		if(jsonPathResult == null) {
+			return;
+		}
+		if(jsonPathResult instanceof JSONArray && ((JSONArray)jsonPathResult).size() == 0) {
+			return;
+		}
+		fail("Json path '" + path + "' matches the response body.");
+	}
+	
 	protected ResultMatcher hasLinkWithRel(final String rel) {
 
 		return new ResultMatcher() {
