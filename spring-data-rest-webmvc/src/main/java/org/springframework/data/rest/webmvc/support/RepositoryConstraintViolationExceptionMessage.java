@@ -1,6 +1,7 @@
 package org.springframework.data.rest.webmvc.support;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -25,9 +26,7 @@ public class RepositoryConstraintViolationExceptionMessage {
 			args.add(fe.getField());
 			args.add(fe.getRejectedValue());
 			if (null != fe.getArguments()) {
-				for (Object o : fe.getArguments()) {
-					args.add(o);
-				}
+                Collections.addAll(args, fe.getArguments());
 			}
 
 			String msg = msgSrc.getMessage(fe.getCode(), args.toArray(), fe.getDefaultMessage(), locale);
