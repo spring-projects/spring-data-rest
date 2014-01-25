@@ -23,9 +23,7 @@ public class RepositoryQueryMethod {
 		this.method = method;
 		paramTypes = method.getParameterTypes();
 		paramNames = new String[paramTypes.length];
-		if (null == paramNames) {
-			paramNames = new String[paramTypes.length];
-		}
+
 		Annotation[][] paramAnnos = method.getParameterAnnotations();
 		for (int i = 0; i < paramAnnos.length; i++) {
 			if (paramAnnos[i].length == 0) {
