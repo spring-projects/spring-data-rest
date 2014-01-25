@@ -166,12 +166,7 @@ public class PersistentEntityJackson2Module extends SimpleModule implements Init
 							continue;
 						}
 
-						if (null == persistentProperty) {
-							// do nothing
-							continue;
-						}
-
-						// Try and read the value of this attribute.
+                        // Try and read the value of this attribute.
 						// The method of doing that varies based on the type of the property.
 						if (persistentProperty.isCollectionLike()) {
 							Class<? extends Collection<?>> ctype = (Class<? extends Collection<?>>) persistentProperty.getType();
