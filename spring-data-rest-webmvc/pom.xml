@@ -16,7 +16,6 @@
 	</parent>
 	
 	<properties>
-		<jackson>2.3.0</jackson>
 		<jsonpath>0.8.1</jsonpath>
 	</properties>
 	
