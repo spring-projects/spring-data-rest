@@ -57,7 +57,7 @@ public class DomainObjectMergerTests {
 		Person existingDomainObject = new Person("Frodo", "Baggins");
 
 		DomainObjectMerger merger = new DomainObjectMerger(repositories, conversionService);
-		merger.merge(incoming, existingDomainObject, true);
+		merger.merge(incoming, existingDomainObject, DomainObjectMerger.MergeNullPolicy.APPLY_NULLS);
 
 		assertThat(existingDomainObject.getFirstName(), equalTo(incoming.getFirstName()));
 		assertThat(existingDomainObject.getLastName(), equalTo(incoming.getLastName()));
@@ -76,7 +76,7 @@ public class DomainObjectMergerTests {
 		Person existingDomainObject = new Person("Frodo", "Baggins");
 
 		DomainObjectMerger merger = new DomainObjectMerger(repositories, conversionService);
-		merger.merge(incoming, existingDomainObject, true);
+		merger.merge(incoming, existingDomainObject, DomainObjectMerger.MergeNullPolicy.APPLY_NULLS);
 
 		assertThat(existingDomainObject.getFirstName(), equalTo(incoming.getFirstName()));
 		assertThat(existingDomainObject.getLastName(), equalTo(incoming.getLastName()));

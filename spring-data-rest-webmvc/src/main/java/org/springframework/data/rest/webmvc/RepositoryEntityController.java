@@ -233,7 +233,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			return createNewEntity(request, incoming);
 		}
 
-		domainObjectMerger.merge(incoming.getContent(), domainObj, true);
+		domainObjectMerger.merge(incoming.getContent(), domainObj, DomainObjectMerger.MergeNullPolicy.APPLY_NULLS);
 
 		publisher.publishEvent(new BeforeSaveEvent(incoming.getContent()));
 		Object obj = invoker.invokeSave(domainObj);
@@ -266,21 +266,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND);
 		}
 
-//		try {
-//			new ObjectMapper().readerForUpdating(domainObj).readValue(node);
-//		} catch (JsonProcessingException e) {
-//			throw new IllegalArgumentException(e);
-//		} catch (IOException e) {
-//			throw new IllegalArgumentException(e);
-//		}
-
-		System.out.println("node = " + incoming.getContent());
-		System.out.println("domainObj = " + domainObj);
-
-		domainObjectMerger.merge(incoming.getContent(), domainObj, false);
-
-		System.out.println("node = " + incoming.getContent());
-		System.out.println("domainObj = " + domainObj);
+		domainObjectMerger.merge(incoming.getContent(), domainObj, DomainObjectMerger.MergeNullPolicy.IGNORE_NULLS);
 
 		publisher.publishEvent(new BeforeSaveEvent(domainObj));
 		Object obj = invoker.invokeSave(domainObj);
