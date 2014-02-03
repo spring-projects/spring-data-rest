@@ -1,6 +1,35 @@
+Spring Data REST Changelog
+==========================
 
-Release Notes - Spring Data REST - Version 2.0 M1
--------------------------------------------------
+Changes in version 2.0.0.RC1 (2014-01-29)
+-----------------------------------------
+** Bug
+    * [DATAREST-107] - @RestResource exported=false ignored on methods
+    * [DATAREST-130] - Updating value to NULL using Spring Data REST and PUT Method
+    * [DATAREST-188] - Spring data rest wrongly handles jpa collection attributes
+    * [DATAREST-195] - Limiting page size
+    * [DATAREST-198] - NullPointerException when accessing OneToMany Relationship
+    * [DATAREST-199] - Collection/Object conversion broken in PersistentEntityJackson2Module
+    * [DATAREST-200] - Embedded associations do not get rendered
+    * [DATAREST-209] - Hard Dependency on Jackson-Hibernate
+    * [DATAREST-210] - ApplicationContext fails to load with HAL enabled snapshot
+    * [DATAREST-213] - Make old presentation available for smooth migration to HAL
+    * [DATAREST-222] - Path.matches(…) should escape reference before trying to match it
+
+** Improvement
+    * [DATAREST-75] - PersistentEntityJackson2Module should be more lenient regarding other registered modules
+    * [DATAREST-203] - Move to HAL as default hypermedia format
+    * [DATAREST-219] - Improve handling of updates to related collection properties
+    * [DATAREST-229] - RepositoryEntityLinks should exposed templated link for pageable collection resources
+    * [DATAREST-233] - Improve annotation based customization 
+
+** Task
+    * [DATAREST-220] - Add contribution guidelines
+    * [DATAREST-224] - Switch to Maven build system
+    * [DATAREST-226] - Release Spring Data REST 2.0.0.RC1
+
+Changes in version 2.0.0 M1 (2013-11-21)
+----------------------------------------
 ** Bug
     * [DATAREST-72] - @RestResource(exported = false) is not considered on repository interfaces
     * [DATAREST-83] - Controller implementations should not be annotated with @Controller
