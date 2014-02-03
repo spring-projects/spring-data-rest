@@ -62,6 +62,8 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Autowired TestDataPopulator loader;
 	@Autowired ResourceMappings mappings;
 
+	ObjectMapper mapper = new ObjectMapper();
+
 	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#setUp()
@@ -265,7 +267,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		Link frodoSiblingLink = links.get(0);
 
-		putAndGet(frodoSiblingLink, toUriList(links.get(1), links.get(2), (links.get(3))), TEXT_URI_LIST);
+		putAndGet(frodoSiblingLink, toUriList(links.get(1), links.get(2), links.get(3)), TEXT_URI_LIST);
 		assertSiblingNames(frodoSiblingLink, "Bilbo", "Merry", "Pippin");
 
 		putAndGet(frodoSiblingLink, toUriList(links.get(3)), TEXT_URI_LIST);
@@ -305,7 +307,6 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	public void propertiesCanHaveNulls() throws Exception {
 
 		Link peopleLink = discoverUnique("people");
-		ObjectMapper mapper = new ObjectMapper();
 
 		Person frodo = new Person();
 		frodo.setFirstName("Frodo");
@@ -319,10 +320,33 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 		assertNull(JsonPath.read(responseBody, "$.lastName"));
 	}
 
+	/**
+	 * @see DATAREST-238
+	 */
+	@Test
+	public void putShouldWorkDespiteExistingLinks() throws Exception {
+
+		Link peopleLink = discoverUnique("people");
+
+		Person frodo = new Person("Frodo", "Baggins");
+		String frodoString = mapper.writeValueAsString(frodo);
+
+		MockHttpServletResponse createdPerson = postAndGet(peopleLink, frodoString, MediaType.APPLICATION_JSON);
+
+		Link frodoLink = assertHasLinkWithRel("self", createdPerson);
+		assertJsonPathEquals("$.firstName", createdPerson, "Frodo");
+
+		String bilboWithFrodosLinks = createdPerson.getContentAsString().replace("Frodo", "Bilbo");
+
+		MockHttpServletResponse overwrittenResponse = putAndGet(frodoLink, bilboWithFrodosLinks, MediaType.APPLICATION_JSON);
+
+		assertHasLinkWithRel("self", overwrittenResponse);
+		assertJsonPathEquals("$.firstName", overwrittenResponse, "Bilbo");
+	}
+
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
 
 		Link peopleLink = discoverUnique("people");
-		ObjectMapper mapper = new ObjectMapper();
 		List<Link> links = new ArrayList<Link>();
 
 		MockHttpServletResponse primaryResponse = postAndGet(peopleLink, mapper.writeValueAsString(primary),

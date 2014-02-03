@@ -159,7 +159,7 @@ public abstract class AbstractWebIntegrationTests {
 		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
 		MockHttpServletResponse response = mvc.perform(put(href).content(payload.toString()).contentType(mediaType)).//
-				andExpect(status().isCreated()).//
+				andExpect(status().is(both(greaterThanOrEqualTo(200)).and(lessThan(300)))).//
 				andExpect(header().string("Location", is(notNullValue()))).//
 				andReturn().getResponse();
 
@@ -257,6 +257,15 @@ public abstract class AbstractWebIntegrationTests {
 		assertThat(jsonPathResult, is(notNullValue()));
 
 		return (T) jsonPathResult;
+	}
+
+	protected String assertJsonPathEquals(String path, MockHttpServletResponse response, String expected)
+			throws Exception {
+
+		String jsonQueryResults = assertHasJsonPathValue(path, response);
+		assertThat(jsonQueryResults, is(expected));
+
+		return jsonQueryResults;
 	}
 
 	protected ResultMatcher hasLinkWithRel(final String rel) {

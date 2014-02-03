@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 @RepositoryRestController
 class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
@@ -237,10 +238,14 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		Object obj = invoker.invokeSave(domainObj);
 		publisher.publishEvent(new AfterSaveEvent(obj));
 
+		Link selfLink = perAssembler.getSelfLinkFor(obj);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setLocation(URI.create(selfLink.getHref()));
+
 		if (config.isReturnBodyOnUpdate()) {
-			return ControllerUtils.toResponseEntity(HttpStatus.OK, null, perAssembler.toResource(obj));
+			return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, perAssembler.toResource(obj));
 		} else {
-			return ControllerUtils.toResponseEntity(HttpStatus.NO_CONTENT, null, null);
+			return ControllerUtils.toResponseEntity(HttpStatus.NO_CONTENT, headers, null);
 		}
 	}
 

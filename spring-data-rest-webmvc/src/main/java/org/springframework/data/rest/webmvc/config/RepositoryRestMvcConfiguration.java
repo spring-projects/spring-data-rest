@@ -82,6 +82,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExc
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -482,6 +483,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 		// Our special PersistentEntityResource Module
 		objectMapper.registerModule(persistentEntityJackson2Module());
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
 		// Configure custom Modules
 		configureJacksonObjectMapper(objectMapper);
