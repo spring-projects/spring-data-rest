@@ -1,7 +1,15 @@
-{ "creator" : {
-    "href" : "http://localhost:8080/persons/1"
-  },
-  "lineItems" : [ 
-  	{ "name" : "Java Chip" },
-  	{ "name" : "Chocolate Mocca " } ]
+{
+    "_links": {
+        "self": {
+            "href": "http://localhost:8080/persons/1"
+        }
+    },
+    "lineItems": [
+        {
+            "name": "Java Chip"
+        },
+        {
+            "name": "Chocolate Mocca "
+        }
+    ]
 }

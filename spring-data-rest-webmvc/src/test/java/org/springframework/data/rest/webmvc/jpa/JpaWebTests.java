@@ -319,6 +319,33 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 		assertNull(JsonPath.read(responseBody, "$.lastName"));
 	}
 
+	/**
+	 * @see DATAREST-238
+	 */
+	@Test
+	public void putShouldWorkDespiteExistingLinks() throws Exception {
+
+		Link peopleLink = discoverUnique("people");
+		ObjectMapper mapper = new ObjectMapper();
+
+		Person frodo = new Person("Frodo", "Baggins");
+		String frodoString = mapper.writeValueAsString(frodo);
+
+		MockHttpServletResponse createdPerson = postAndGet(peopleLink, frodoString, MediaType.APPLICATION_JSON);
+
+		Link frodoLink = assertHasLinkWithRel("self", createdPerson);
+		assertJsonPathEquals("$.firstName", "Frodo", createdPerson);
+
+		String bilboWithFrodosLinks = createdPerson.getContentAsString().replace("Frodo", "Bilbo");
+
+		MockHttpServletResponse overwrittenResponse = putAndGet(frodoLink,
+				bilboWithFrodosLinks,
+				MediaType.APPLICATION_JSON);
+
+		Link putLink = assertHasLinkWithRel("self", overwrittenResponse);
+		assertJsonPathEquals("$.firstName", "Bilbo", overwrittenResponse);
+	}
+
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
 
 		Link peopleLink = discoverUnique("people");
