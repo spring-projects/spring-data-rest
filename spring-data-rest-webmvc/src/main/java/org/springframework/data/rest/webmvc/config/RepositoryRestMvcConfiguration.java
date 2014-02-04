@@ -54,6 +54,7 @@ import org.springframework.data.rest.webmvc.RepositoryRestRequestHandlerMethodAr
 import org.springframework.data.rest.webmvc.ResourceMetadataHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
+import org.springframework.data.rest.webmvc.json.DomainClassIntrospector;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
@@ -94,6 +95,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Nick Weedon
  */
 @Configuration
 @ComponentScan(basePackageClasses = RepositoryRestController.class,
@@ -348,12 +350,24 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
+	public DomainClassIntrospector domainClassIntrospector() {
+		// IteratorUtils would be good here
+		List<Class<?>> repositoryList = new ArrayList<Class<?>>();
+		Repositories repositories = repositories();
+		for(Class<?> domainClass : repositories) {
+			repositoryList.add(domainClass);
+		}
+		return new DomainClassIntrospector(repositoryList);
+	}
+	
+	@Bean 
 	public ObjectMapper halObjectMapper() {
 
 		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(getDefaultedRelProvider(), curieProvider);
 
 		ObjectMapper mapper = basicObjectMapper();
 		mapper.registerModule(new Jackson2HalModule());
+		mapper.setAnnotationIntrospector(domainClassIntrospector());
 		mapper.setHandlerInstantiator(instantiator);
 
 		return mapper;
@@ -425,9 +439,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public Module persistentEntityJackson2Module() {
-		return new PersistentEntityJackson2Module(resourceMappings(), defaultConversionService());
-	}
+		return new PersistentEntityJackson2Module(resourceMappings()) {
+			private static final long serialVersionUID = 3909586849991553446L;
 
+			protected ObjectMapper getObjectMapper() {
+				return halObjectMapper();
+			}
+		};
+	}
+	
 	/**
 	 * Bean for looking up methods annotated with {@link org.springframework.web.bind.annotation.ExceptionHandler}.
 	 * 

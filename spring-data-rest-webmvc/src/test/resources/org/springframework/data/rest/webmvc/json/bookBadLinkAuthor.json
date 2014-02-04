@@ -1,0 +1,7 @@
+{
+  "_links" : {
+    "authors" : [ { "href" : "http://localhost:8080/BADF00D/57" } ]
+  },   
+  "isbn" : "978-0321356680",
+  "title" : "Effective Java"
+}

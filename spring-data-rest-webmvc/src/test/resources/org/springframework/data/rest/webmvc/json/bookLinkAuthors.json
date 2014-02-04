@@ -1,0 +1,11 @@
+{
+  "_links" : {
+    "authors" : [ 
+      { "href" : "http://localhost:8080/authors/5" },
+      { "href" : "http://localhost:8080/authors/57" },
+      { "href" : "http://localhost:8080/authors/28" }
+    ]
+  },   
+  "isbn" : "978-0321349606",
+  "title" : "Java Concurrency in Practice"
+}

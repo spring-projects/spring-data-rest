@@ -1,0 +1,11 @@
+{ 
+  "authors" : [ {
+      "_links" : {
+        "books" : [ { "href" : "http://localhost:8080/books/7" } ]
+      },   
+      "name" : "Joshua Bloch"
+    }
+  ],
+  "isbn" : "978-0321356680",
+  "title" : "Effective Java"
+}

@@ -1,0 +1,8 @@
+{ 
+  "authors" : [ { 
+      "name" : "Bruce Eckel" 
+    }
+  ],
+  "isbn" : "978-0-13-187248-6",
+  "title" : "Thinking in Java"
+}

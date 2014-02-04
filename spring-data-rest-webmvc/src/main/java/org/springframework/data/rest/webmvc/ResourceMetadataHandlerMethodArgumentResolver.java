@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.springframework.data.rest.webmvc;
 
 import static org.springframework.util.ClassUtils.*;
-import static org.springframework.util.StringUtils.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,7 +24,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
-import org.springframework.util.Assert;
+import org.springframework.data.rest.webmvc.support.RepositoryUriResolver;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -35,23 +34,18 @@ import org.springframework.web.util.UrlPathHelper;
 /**
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Nick Weedon
  */
 public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private final Repositories repositories;
-	private final ResourceMappings mappings;
-
+	private final RepositoryUriResolver repoositoryUriResolver;
+	
 	/**
 	 * @param repositories must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
 	 */
 	public ResourceMetadataHandlerMethodArgumentResolver(Repositories repositories, ResourceMappings mappings) {
-
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
-
-		this.repositories = repositories;
-		this.mappings = mappings;
+		this.repoositoryUriResolver = new RepositoryUriResolver(repositories, mappings);
 	}
 
 	/*
@@ -74,33 +68,6 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 		HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
 		String requestUri = new UrlPathHelper().getLookupPathForRequest(request);
 
-		if (requestUri.startsWith("/")) {
-			requestUri = requestUri.substring(1);
-		}
-
-		String[] parts = requestUri.split("/");
-
-		if (parts.length == 0) {
-			// Root request
-			return null;
-		}
-
-		return findRepositoryInfoFor(parts[0]);
-	}
-
-	private ResourceMetadata findRepositoryInfoFor(String pathSegment) {
-
-		if (!hasText(pathSegment)) {
-			return null;
-		}
-
-		for (Class<?> domainType : repositories) {
-			ResourceMetadata mapping = mappings.getMappingFor(domainType);
-			if (mapping.getPath().matches(pathSegment) && mapping.isExported()) {
-				return mapping;
-			}
-		}
-
-		return null;
+		return repoositoryUriResolver.findRepositoryInfoForUriPath(requestUri);
 	}
 }
