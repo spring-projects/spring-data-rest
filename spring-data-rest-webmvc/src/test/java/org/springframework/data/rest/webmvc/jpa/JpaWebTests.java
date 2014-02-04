@@ -298,6 +298,27 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 		assertSiblingNames(frodosSiblingsLink, "Bilbo", "Merry");
 	}
 
+	/**
+	 * @see DATAREST-50
+	 */
+	@Test
+	public void propertiesCanHaveNulls() throws Exception {
+
+		Link peopleLink = discoverUnique("people");
+		ObjectMapper mapper = new ObjectMapper();
+
+		Person frodo = new Person();
+		frodo.setFirstName("Frodo");
+		frodo.setLastName(null);
+
+		MockHttpServletResponse response = postAndGet(peopleLink, mapper.writeValueAsString(frodo),
+				MediaType.APPLICATION_JSON);
+		String responseBody = response.getContentAsString();
+
+		assertEquals(JsonPath.read(responseBody, "$.firstName"), "Frodo");
+		assertNull(JsonPath.read(responseBody, "$.lastName"));
+	}
+
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
 
 		Link peopleLink = discoverUnique("people");
