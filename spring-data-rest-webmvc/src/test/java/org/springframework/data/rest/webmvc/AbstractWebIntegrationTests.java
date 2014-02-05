@@ -164,7 +164,13 @@ public abstract class AbstractWebIntegrationTests {
 				andExpect(status().is(both(greaterThanOrEqualTo(200)).and(lessThan(300)))).//
 				andReturn().getResponse();
 
-		return StringUtils.hasText(response.getContentAsString()) ? response : request(link);
+		String content = response.getContentAsString();
+
+		if (StringUtils.hasText(content)) {
+			return response;
+		}
+
+		return request(link.expand().getHref());
 	}
 
 	protected MockHttpServletResponse patchAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
