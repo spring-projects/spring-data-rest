@@ -207,8 +207,10 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void createThenPatch() throws Exception {
 
-		MockHttpServletResponse bilbo = postAndGet(new Link("/people"),
-				"{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }", MediaType.APPLICATION_JSON);
+		Link peopleLink = discoverUnique("people");
+
+		MockHttpServletResponse bilbo = postAndGet(peopleLink, "{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }",
+				MediaType.APPLICATION_JSON);
 
 		Link bilboLink = assertHasLinkWithRel("self", bilbo);
 
@@ -219,6 +221,31 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), equalTo("Frodo"));
 		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName"), equalTo("Baggins"));
+	}
+
+	/**
+	 * @see DATAREST-150
+	 */
+	@Test
+	public void createThenPut() throws Exception {
+
+		Link peopleLink = discoverUnique("people");
+
+		MockHttpServletResponse bilbo = postAndGet(peopleLink,//
+				"{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }",//
+				MediaType.APPLICATION_JSON);
+
+		Link bilboLink = assertHasLinkWithRel("self", bilbo);
+
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName"), equalTo("Bilbo"));
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName"), equalTo("Baggins"));
+
+		MockHttpServletResponse frodo = putAndGet(bilboLink,//
+				"{ \"firstName\" : \"Frodo\" }",//
+				MediaType.APPLICATION_JSON);
+
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), equalTo("Frodo"));
+		assertNull(JsonPath.read(frodo.getContentAsString(), "$.lastName"));
 	}
 
 	@Test
