@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.springframework.data.rest.core.invoke;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +40,7 @@ import org.springframework.util.StringUtils;
  * Base {@link RepositoryInvoker} using reflection to invoke methods on Spring Data Repositories.
  * 
  * @author Oliver Gierke
+ * @author Nick Weedon
  */
 class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
@@ -96,11 +96,6 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@Override
 	public Iterable<Object> invokeFindAll(Pageable pageable) {
-
-		if (!exposesFindAll()) {
-			return Collections.emptyList();
-		}
-
 		Method method = methods.getFindAllMethod();
 		Class<?>[] types = method.getParameterTypes();
 

@@ -51,6 +51,7 @@ import com.jayway.jsonpath.JsonPath;
  * 
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Nick Weedon
  */
 @Transactional
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
@@ -58,6 +59,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 	private static final MediaType TEXT_URI_LIST = MediaType.valueOf("text/uri-list");
 	static final String LINK_TO_SIBLINGS_OF = "$._embedded..[?(@.firstName == '%s')]._links.siblings.href[0]";
+	static final String EMPTY_JSON_OBJECT_STRING = "{ }";
 
 	@Autowired TestDataPopulator loader;
 	@Autowired ResourceMappings mappings;
@@ -190,6 +192,16 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 		String href = assertHasJsonPathValue(String.format(LINK_TO_SIBLINGS_OF, "Billy Bob"), response);
 
 		mvc.perform(get(href)).andExpect(status().isOk());
+	}
+	
+	@Test
+	/**
+	 * @see DATAREST-217
+	 */
+	public void doesNotExposeUnexportedAnimalEntities() throws Exception {
+		MockHttpServletResponse response = mvc.perform(get("/animal")).andReturn().getResponse();
+		
+		assertEquals("Expected no entities to be returned.", EMPTY_JSON_OBJECT_STRING, response.getContentAsString());
 	}
 
 	/**
