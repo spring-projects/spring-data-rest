@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -154,8 +155,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * {@link org.springframework.validation.Validator} instances assigned to specific domain types.
 	 */
 	@Bean
-	public ValidatingRepositoryEventListener validatingRepositoryEventListener() {
-		ValidatingRepositoryEventListener listener = new ValidatingRepositoryEventListener();
+	public ValidatingRepositoryEventListener validatingRepositoryEventListener(ObjectFactory<Repositories> repositories) {
+		ValidatingRepositoryEventListener listener = new ValidatingRepositoryEventListener(repositories);
 		configureValidatingRepositoryEventListener(listener);
 		return listener;
 	}

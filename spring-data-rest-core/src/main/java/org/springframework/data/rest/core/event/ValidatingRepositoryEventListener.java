@@ -1,32 +1,32 @@
+/*
+ * Copyright 2012-2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.rest.core.event;
 
-import static org.springframework.beans.factory.BeanFactoryUtils.*;
-import static org.springframework.core.annotation.AnnotationUtils.*;
-import static org.springframework.util.StringUtils.*;
-
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.data.rest.core.ValidationErrors;
-import org.springframework.data.rest.core.annotation.HandleAfterDelete;
-import org.springframework.data.rest.core.annotation.HandleAfterLinkDelete;
-import org.springframework.data.rest.core.annotation.HandleAfterLinkSave;
-import org.springframework.data.rest.core.annotation.HandleAfterSave;
-import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
-import org.springframework.data.rest.core.annotation.HandleBeforeLinkDelete;
-import org.springframework.data.rest.core.annotation.HandleBeforeLinkSave;
-import org.springframework.data.rest.core.annotation.HandleBeforeSave;
-import org.springframework.data.rest.core.util.MapUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.Errors;
@@ -37,56 +37,27 @@ import org.springframework.validation.Validator;
  * {@link org.springframework.context.ApplicationListener} implementation that dispatches {@link RepositoryEvent}s to a
  * specific {@link Validator}.
  * 
- * @author Jon Brisbin <jbrisbin@vmware.com>
+ * @author Jon Brisbin
+ * @author Oliver Gierke
  */
-public class ValidatingRepositoryEventListener extends AbstractRepositoryEventListener<Object> implements
-		InitializingBean {
+public class ValidatingRepositoryEventListener extends AbstractRepositoryEventListener<Object> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ValidatingRepositoryEventListener.class);
-	@SuppressWarnings({ "unchecked" }) private static final List<Class<? extends Annotation>> ANNOTATIONS_TO_FIND = Arrays
-			.asList(HandleBeforeSave.class, HandleAfterSave.class, HandleBeforeDelete.class, HandleAfterDelete.class,
-					HandleBeforeLinkSave.class, HandleAfterLinkSave.class, HandleBeforeLinkDelete.class,
-					HandleAfterLinkDelete.class);
-	@Autowired private Repositories repositories;
-	private MultiValueMap<String, Validator> validators = new LinkedMultiValueMap<String, Validator>();
+	private static final Logger LOGGER = LoggerFactory.getLogger(ValidatingRepositoryEventListener.class);
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		if (validators.size() == 0) {
-			for (Map.Entry<String, Validator> entry : beansOfTypeIncludingAncestors(applicationContext, Validator.class)
-					.entrySet()) {
-				String name = null;
-				Validator v = entry.getValue();
-
-				if (entry.getKey().contains("Save")) {
-					name = entry.getKey().substring(0, entry.getKey().indexOf("Save") + 4);
-				} else if (entry.getKey().contains("Create")) {
-					name = entry.getKey().substring(0, entry.getKey().indexOf("Create") + 6);
-				} else if (entry.getKey().contains("Delete")) {
-					name = entry.getKey().substring(0, entry.getKey().indexOf("Delete") + 6);
-				} else {
-
-					for (Class<? extends Annotation> annoType : ANNOTATIONS_TO_FIND) {
-						if (findAnnotation(v.getClass(), annoType) != null) {
-							name = uncapitalize(annoType.getSimpleName().substring(6));
-						}
-					}
-				}
-
-				if (null != name) {
-					this.validators.add(name, v);
-				}
-			}
-		}
-	}
+	private final ObjectFactory<Repositories> repositoriesFactory;
+	private final MultiValueMap<String, Validator> validators;
 
 	/**
-	 * Get a Map of {@link Validator}s that are assigned to the various {@link RepositoryEvent}s.
+	 * Creates a new {@link ValidatingRepositoryEventListener} using the given repositories.
 	 * 
-	 * @return Validators assigned to events.
+	 * @param repositoriesFactory must not be {@literal null}.
 	 */
-	public Map<String, Collection<Validator>> getValidators() {
-		return MapUtils.toMap(validators);
+	public ValidatingRepositoryEventListener(ObjectFactory<Repositories> repositoriesFactory) {
+
+		Assert.notNull(repositoriesFactory, "Repositories must not be null!");
+
+		this.repositoriesFactory = repositoriesFactory;
+		this.validators = new LinkedMultiValueMap<String, Validator>();
 	}
 
 	/**
@@ -96,9 +67,11 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 	 * @return @this
 	 */
 	public ValidatingRepositoryEventListener setValidators(Map<String, Collection<Validator>> validators) {
+
 		for (Map.Entry<String, Collection<Validator>> entry : validators.entrySet()) {
 			this.validators.put(entry.getKey(), new ArrayList<Validator>(entry.getValue()));
 		}
+
 		return this;
 	}
 
@@ -114,68 +87,104 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 		return this;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onBeforeCreate(java.lang.Object)
+	 */
 	@Override
 	protected void onBeforeCreate(Object entity) {
 		validate("beforeCreate", entity);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onAfterCreate(java.lang.Object)
+	 */
 	@Override
 	protected void onAfterCreate(Object entity) {
 		validate("afterCreate", entity);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onBeforeSave(java.lang.Object)
+	 */
 	@Override
 	protected void onBeforeSave(Object entity) {
 		validate("beforeSave", entity);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onAfterSave(java.lang.Object)
+	 */
 	@Override
 	protected void onAfterSave(Object entity) {
 		validate("afterSave", entity);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onBeforeLinkSave(java.lang.Object, java.lang.Object)
+	 */
 	@Override
 	protected void onBeforeLinkSave(Object parent, Object linked) {
 		validate("beforeLinkSave", parent);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onAfterLinkSave(java.lang.Object, java.lang.Object)
+	 */
 	@Override
 	protected void onAfterLinkSave(Object parent, Object linked) {
 		validate("afterLinkSave", parent);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onBeforeDelete(java.lang.Object)
+	 */
 	@Override
 	protected void onBeforeDelete(Object entity) {
 		validate("beforeDelete", entity);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onAfterDelete(java.lang.Object)
+	 */
 	@Override
 	protected void onAfterDelete(Object entity) {
 		validate("afterDelete", entity);
 	}
 
 	private Errors validate(String event, Object o) {
-		Errors errors = null;
-		if (null != o) {
-			Class<?> domainType = o.getClass();
-			errors = new ValidationErrors(domainType.getSimpleName(), o, repositories.getPersistentEntity(domainType));
 
-			Collection<Validator> validators = this.validators.get(event);
-			if (null != validators) {
-				for (Validator v : validators) {
-					if (v.supports(o.getClass())) {
-						LOG.debug(event + ": " + o + " with " + v);
-						ValidationUtils.invokeValidator(v, o, errors);
-					}
-				}
-			}
+		if (o == null) {
+			return null;
+		}
 
-			if (errors.getErrorCount() > 0) {
-				throw new RepositoryConstraintViolationException(errors);
+		Class<?> domainType = o.getClass();
+		Repositories repositories = repositoriesFactory.getObject();
+		Errors errors = new ValidationErrors(domainType.getSimpleName(), o, repositories.getPersistentEntity(domainType));
+
+		for (Validator v : getValidatorsForEvent(event)) {
+			if (v.supports(domainType)) {
+				LOGGER.debug("{}: {} with {}", event, o, v);
+				ValidationUtils.invokeValidator(v, o, errors);
 			}
+		}
+
+		if (errors.getErrorCount() > 0) {
+			throw new RepositoryConstraintViolationException(errors);
 		}
 
 		return errors;
 	}
 
+	private Collection<Validator> getValidatorsForEvent(String event) {
+		Collection<Validator> validators = this.validators.get(event);
+		return validators == null ? Collections.<Validator> emptySet() : validators;
+	}
 }
