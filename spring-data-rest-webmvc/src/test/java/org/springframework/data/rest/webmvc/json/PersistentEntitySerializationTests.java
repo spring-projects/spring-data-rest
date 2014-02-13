@@ -57,6 +57,34 @@ public class PersistentEntitySerializationTests {
 		assertThat(p.getSiblings(), is(Collections.EMPTY_LIST));
 	}
 
+	/**
+	 * @see DATAREST-238
+	 */
+	@Test
+	public void deserializePersonWithLinks() throws IOException {
+
+		String bilbo = "{\n" +
+				"  \"_links\" : {\n" +
+				"    \"self\" : {\n" +
+				"      \"href\" : \"http://localhost/people/4\"\n" +
+				"    },\n" +
+				"    \"siblings\" : {\n" +
+				"      \"href\" : \"http://localhost/people/4/siblings\"\n" +
+				"    },\n" +
+				"    \"father\" : {\n" +
+				"      \"href\" : \"http://localhost/people/4/father\"\n" +
+				"    }\n" +
+				"  },\n" +
+				"  \"firstName\" : \"Bilbo\",\n" +
+				"  \"lastName\" : \"Baggins\",\n" +
+				"  \"created\" : \"2014-01-31T21:07:45.574+0000\"\n" +
+				"}\n";
+
+		Person p = mapper.readValue(bilbo, Person.class);
+		assertThat(p.getFirstName(), equalTo("Bilbo"));
+		assertThat(p.getLastName(), equalTo("Baggins"));
+	}
+
 	@Test
 	public void serializesPersonEntity() throws IOException, InterruptedException {
 
@@ -73,5 +101,6 @@ public class PersistentEntitySerializationTests {
 
 		Link siblingLink = linkDiscoverer.findLinkWithRel("siblings", s);
 		assertThat(siblingLink.getHref(), endsWith(new UriTemplate("/{id}/siblings").expand(person.getId()).toString()));
+
 	}
 }

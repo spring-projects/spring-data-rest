@@ -237,10 +237,14 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		Object obj = invoker.invokeSave(domainObj);
 		publisher.publishEvent(new AfterSaveEvent(obj));
 
+		Link selfLink = perAssembler.getSelfLinkFor(obj);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setLocation(URI.create(selfLink.getHref()));
+
 		if (config.isReturnBodyOnUpdate()) {
-			return ControllerUtils.toResponseEntity(HttpStatus.OK, null, perAssembler.toResource(obj));
+			return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, perAssembler.toResource(obj));
 		} else {
-			return ControllerUtils.toResponseEntity(HttpStatus.NO_CONTENT, null, null);
+			return ControllerUtils.toResponseEntity(HttpStatus.NO_CONTENT, headers, null);
 		}
 	}
 
