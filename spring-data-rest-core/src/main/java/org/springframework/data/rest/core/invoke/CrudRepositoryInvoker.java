@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 package org.springframework.data.rest.core.invoke;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.repository.core.RepositoryInformation;
 
 /**
@@ -32,6 +34,11 @@ import org.springframework.data.repository.core.RepositoryInformation;
 class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 
 	private final CrudRepository<Object, Serializable> repository;
+	private final CrudMethods crudMethods;
+
+	private final boolean customSaveMethod;
+	private final boolean customFindOneMethod;
+	private final boolean customDeleteMethod;
 
 	/**
 	 * Creates a new {@link CrudRepositoryInvoker} for the given {@link CrudRepository}, {@link RepositoryInformation} and
@@ -46,6 +53,11 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 
 		super(repository, information, conversionService);
 		this.repository = repository;
+		this.crudMethods = information.getCrudMethods();
+
+		this.customSaveMethod = isRedeclaredMethod(crudMethods.getSaveMethod());
+		this.customFindOneMethod = isRedeclaredMethod(crudMethods.getFindOneMethod());
+		this.customDeleteMethod = isRedeclaredMethod(crudMethods.getDeleteMethod());
 	}
 
 	/**
@@ -80,8 +92,9 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 	 */
 	@Override
-	public Object invokeFindOne(Serializable id) {
-		return repository.findOne(convertId(id));
+	@SuppressWarnings("unchecked")
+	public <T> T invokeFindOne(Serializable id) {
+		return customFindOneMethod ? super.<T> invokeFindOne(id) : (T) repository.findOne(convertId(id));
 	}
 
 	/*
@@ -89,8 +102,8 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.ReflectionRepositoryInvoker#invokeSave(java.lang.Object)
 	 */
 	@Override
-	public Object invokeSave(Object entity) {
-		return repository.save(entity);
+	public <T> T invokeSave(T entity) {
+		return customSaveMethod ? super.invokeSave(entity) : repository.save(entity);
 	}
 
 	/*
@@ -99,6 +112,15 @@ class CrudRepositoryInvoker extends ReflectionRepositoryInvoker {
 	 */
 	@Override
 	public void invokeDelete(Serializable id) {
-		repository.delete(convertId(id));
+
+		if (customDeleteMethod) {
+			super.invokeDelete(id);
+		} else {
+			repository.delete(convertId(id));
+		}
+	}
+
+	private boolean isRedeclaredMethod(Method method) {
+		return !method.getDeclaringClass().equals(CrudRepository.class);
 	}
 }

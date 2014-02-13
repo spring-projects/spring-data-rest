@@ -128,7 +128,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeSave(java.lang.Object)
 	 */
 	@Override
-	public Object invokeSave(Object object) {
+	public <T> T invokeSave(T object) {
 		return invoke(methods.getSaveMethod(), object);
 	}
 
@@ -146,7 +146,7 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 	 */
 	@Override
-	public Object invokeFindOne(Serializable id) {
+	public <T> T invokeFindOne(Serializable id) {
 		return invoke(methods.getFindOneMethod(), convertId(id));
 	}
 

@@ -22,4 +22,17 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface OrderRepository extends CrudRepository<Order, Long> {
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Object)
+	 */
+	@Override
+	public <S extends Order> S save(S entity);
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
+	 */
+	@Override
+	public Order findOne(Long id);
 }

@@ -27,9 +27,9 @@ import org.springframework.data.domain.Sort;
  */
 public interface RepositoryInvoker extends RepositoryInvocationInformation {
 
-	Object invokeSave(Object object);
+	<T> T invokeSave(T object);
 
-	Object invokeFindOne(Serializable id);
+	<T> T invokeFindOne(Serializable id);
 
 	Iterable<Object> invokeFindAll(Pageable pageable);
 

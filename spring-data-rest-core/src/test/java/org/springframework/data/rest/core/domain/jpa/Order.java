@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.rest.core.domain.jpa;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -27,7 +28,7 @@ import javax.persistence.Table;
 @Table(name = "ORDERS")
 public class Order {
 
-	private @Id Long id;
+	private @Id @GeneratedValue Long id;
 	private @ManyToOne Person creator;
 
 	public Order(Person creator) {
