@@ -53,7 +53,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test
-	public void rendersCorrectSearchLinksForPersons() {
+	public void rendersCorrectSearchLinksForPersons() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Person.class);
 		ResourceSupport resource = controller.listSearches(request);

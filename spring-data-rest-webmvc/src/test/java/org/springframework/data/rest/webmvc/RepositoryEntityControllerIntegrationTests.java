@@ -56,6 +56,6 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		RootResourceInformation request = getResourceInformation(Address.class);
 
-		controller.createNewEntity(request, null);
+		controller.postEntity(request, null);
 	}
 }

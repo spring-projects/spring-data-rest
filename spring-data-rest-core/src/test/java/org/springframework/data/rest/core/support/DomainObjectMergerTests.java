@@ -17,6 +17,7 @@ package org.springframework.data.rest.core.support;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,7 +58,7 @@ public class DomainObjectMergerTests {
 		Person existingDomainObject = new Person("Frodo", "Baggins");
 
 		DomainObjectMerger merger = new DomainObjectMerger(repositories, conversionService);
-		merger.merge(incoming, existingDomainObject, DomainObjectMerger.MergeNullPolicy.APPLY_NULLS);
+		merger.merge(incoming, existingDomainObject, APPLY_NULLS);
 
 		assertThat(existingDomainObject.getFirstName(), equalTo(incoming.getFirstName()));
 		assertThat(existingDomainObject.getLastName(), equalTo(incoming.getLastName()));
@@ -76,7 +77,7 @@ public class DomainObjectMergerTests {
 		Person existingDomainObject = new Person("Frodo", "Baggins");
 
 		DomainObjectMerger merger = new DomainObjectMerger(repositories, conversionService);
-		merger.merge(incoming, existingDomainObject, DomainObjectMerger.MergeNullPolicy.APPLY_NULLS);
+		merger.merge(incoming, existingDomainObject, APPLY_NULLS);
 
 		assertThat(existingDomainObject.getFirstName(), equalTo(incoming.getFirstName()));
 		assertThat(existingDomainObject.getLastName(), equalTo(incoming.getLastName()));

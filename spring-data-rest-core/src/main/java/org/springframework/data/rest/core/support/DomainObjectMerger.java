@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.rest.core.support;
+
+import static org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
@@ -60,10 +62,11 @@ public class DomainObjectMerger {
 	 * 
 	 * @param from can be {@literal null}.
 	 * @param target can be {@literal null}.
+	 * @param nullPolicy how to handle {@literal null} values in the source object.
 	 */
-	public void merge(Object from, Object target, final MergeNullPolicy nullPolicy) {
+	public void merge(Object from, Object target, final NullHandlingPolicy nullPolicy) {
 
-		if (null == from || null == target) {
+		if (from == null || target == null) {
 			return;
 		}
 
@@ -87,10 +90,12 @@ public class DomainObjectMerger {
 					return;
 				}
 
-				if (!ObjectUtils.nullSafeEquals(sourceValue, targetValue)) {
-					if (nullPolicy == MergeNullPolicy.APPLY_NULLS || sourceValue != null) {
-						targetWrapper.setProperty(persistentProperty, sourceValue);
-					}
+				if (ObjectUtils.nullSafeEquals(sourceValue, targetValue)) {
+					return;
+				}
+
+				if (nullPolicy == APPLY_NULLS || sourceValue != null) {
+					targetWrapper.setProperty(persistentProperty, sourceValue);
 				}
 			}
 		});
@@ -106,7 +111,8 @@ public class DomainObjectMerger {
 
 				PersistentProperty<?> persistentProperty = association.getInverse();
 				Object fromVal = fromWrapper.getProperty(persistentProperty);
-				if (null != fromVal && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
+
+				if (fromVal != null && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
 					targetWrapper.setProperty(persistentProperty, fromVal);
 				}
 			}
@@ -114,13 +120,9 @@ public class DomainObjectMerger {
 	}
 
 	/**
-	 * A switch on whether or not to ignore nulls.
-	 * NOTE: This could have been a simple boolean flag but the enumerated value clearly
-	 * denotes which version is being used.
+	 * Strategy to express whether {@literal null} values should be ignored or set on the target domain object.
 	 */
-	public static enum MergeNullPolicy {
+	public static enum NullHandlingPolicy {
 		APPLY_NULLS, IGNORE_NULLS;
 	}
-
-
 }

@@ -27,14 +27,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.CollectionFactory;
-import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BeanWrapper;
-import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.event.AfterLinkDeleteEvent;
 import org.springframework.data.rest.core.event.AfterLinkSaveEvent;
@@ -60,7 +60,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Jon Brisbin
@@ -69,26 +68,27 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @RepositoryRestController
 @SuppressWarnings({ "unchecked" })
-public class RepositoryPropertyReferenceController extends AbstractRepositoryRestController implements
+class RepositoryPropertyReferenceController extends AbstractRepositoryRestController implements
 		ApplicationEventPublisherAware {
 
 	private static final String BASE_MAPPING = "/{repository}/{id}/{property}";
 
 	private final Repositories repositories;
 	private final PersistentEntityResourceAssembler<Object> perAssembler;
-	private final DomainClassConverter<?> converter;
+	private final ConversionService conversionService;
 
 	private ApplicationEventPublisher publisher;
 
 	@Autowired
-	public RepositoryPropertyReferenceController(Repositories repositories, DomainClassConverter<?> domainClassConverter,
+	public RepositoryPropertyReferenceController(Repositories repositories,
+			@Qualifier("defaultConversionService") ConversionService conversionService,
 			PagedResourcesAssembler<Object> assembler, PersistentEntityResourceAssembler<Object> perAssembler) {
 
 		super(assembler, perAssembler);
 
 		this.repositories = repositories;
 		this.perAssembler = perAssembler;
-		this.converter = domainClassConverter;
+		this.conversionService = conversionService;
 	}
 
 	/* 
@@ -102,8 +102,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
 	public ResponseEntity<ResourceSupport> followPropertyReference(final RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException,
-			HttpRequestMethodNotSupportedException {
+			@PathVariable String id, @PathVariable String property) throws Exception {
 
 		final HttpHeaders headers = new HttpHeaders();
 
@@ -151,8 +150,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.DELETE)
 	public ResponseEntity<? extends ResourceSupport> deletePropertyReference(final RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException, NoSuchMethodException,
-			HttpRequestMethodNotSupportedException {
+			@PathVariable String id, @PathVariable String property) throws Exception {
 
 		final RepositoryInvoker repoMethodInvoker = repoRequest.getInvoker();
 
@@ -163,16 +161,16 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		Function<ReferencedProperty, ResourceSupport> handler = new Function<ReferencedProperty, ResourceSupport>() {
 
 			@Override
-			public Resource<?> apply(ReferencedProperty prop) {
+			public Resource<?> apply(ReferencedProperty prop) throws HttpRequestMethodNotSupportedException {
 
 				if (null == prop.propertyValue) {
 					return null;
 				}
 
 				if (prop.property.isCollectionLike()) {
-					throw new IllegalArgumentException(new HttpRequestMethodNotSupportedException("DELETE"));
+					throw new HttpRequestMethodNotSupportedException("DELETE");
 				} else if (prop.property.isMap()) {
-					throw new IllegalArgumentException(new HttpRequestMethodNotSupportedException("DELETE"));
+					throw new HttpRequestMethodNotSupportedException("DELETE");
 				} else {
 					prop.wrapper.setProperty(prop.property, null);
 				}
@@ -185,24 +183,17 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			}
 		};
 
-		try {
-			doWithReferencedProperty(repoRequest, id, property, handler, HttpMethod.DELETE);
-		} catch (IllegalArgumentException iae) {
-			if (iae.getCause() instanceof HttpRequestMethodNotSupportedException) {
-				throw (HttpRequestMethodNotSupportedException) iae.getCause();
-			}
-		}
+		doWithReferencedProperty(repoRequest, id, property, handler, HttpMethod.DELETE);
 
 		return ControllerUtils.toEmptyResponse(HttpStatus.NO_CONTENT);
 	}
 
-	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.GET, produces = { "application/json",
-			"application/x-spring-data-verbose+json", "application/x-spring-data-compact+json", "text/uri-list" })
+	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.GET)
 	public ResponseEntity<ResourceSupport> followPropertyReference(final RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId)
-			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
+			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId) throws Exception {
 
 		final HttpHeaders headers = new HttpHeaders();
+
 		Function<ReferencedProperty, ResourceSupport> handler = new Function<ReferencedProperty, ResourceSupport>() {
 
 			@Override
@@ -240,7 +231,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 				} else {
 					return new Resource<Object>(prop.propertyValue);
 				}
-				throw new IllegalArgumentException(new ResourceNotFoundException());
+				throw new ResourceNotFoundException();
 			}
 		};
 
@@ -251,8 +242,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = {
 			"application/x-spring-data-compact+json", "text/uri-list" })
 	public ResponseEntity<ResourceSupport> followPropertyReferenceCompact(RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException,
-			HttpRequestMethodNotSupportedException {
+			@PathVariable String id, @PathVariable String property) throws Exception {
 
 		ResponseEntity<ResourceSupport> response = followPropertyReference(repoRequest, id, property);
 
@@ -298,20 +288,20 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	}
 
 	@RequestMapping(value = BASE_MAPPING, //
-			method = { RequestMethod.POST, RequestMethod.PUT }, //
+			method = { RequestMethod.PATCH, RequestMethod.PUT }, //
 			consumes = { "application/json", "application/x-spring-data-compact+json", "text/uri-list" })
 	@ResponseBody
 	public ResponseEntity<? extends ResourceSupport> createPropertyReference(
 			final RootResourceInformation resourceInformation, final HttpMethod requestMethod,
-			final @RequestBody Resources<Object> incoming, @PathVariable String id, @PathVariable String property,
-			final UriComponentsBuilder builder) throws HttpRequestMethodNotSupportedException {
+			final @RequestBody Resources<Object> incoming, @PathVariable String id, @PathVariable String property)
+			throws Exception {
 
 		final RepositoryInvoker invoker = resourceInformation.getInvoker();
 
 		Function<ReferencedProperty, ResourceSupport> handler = new Function<ReferencedProperty, ResourceSupport>() {
 
 			@Override
-			public ResourceSupport apply(ReferencedProperty prop) {
+			public ResourceSupport apply(ReferencedProperty prop) throws HttpRequestMethodNotSupportedException {
 
 				Class<?> propertyType = prop.property.getType();
 
@@ -319,8 +309,8 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 					Collection<Object> coll = CollectionFactory.createCollection(propertyType, 0);
 
-					// Either load the exist collection to add to it (POST)
-					if (HttpMethod.POST.equals(requestMethod)) {
+					// Either load the exist collection to add to it (PATCH)
+					if (HttpMethod.PATCH.equals(requestMethod)) {
 						coll = (Collection<Object>) prop.propertyValue;
 					}
 
@@ -336,8 +326,8 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 					Map<String, Object> m = CollectionFactory.createMap(propertyType, 0);
 
-					// Either load the exist collection to add to it (POST)
-					if (HttpMethod.POST.equals(requestMethod)) {
+					// Either load the exist collection to add to it (PATCH)
+					if (HttpMethod.PATCH.equals(requestMethod)) {
 						m = (Map<String, Object>) prop.propertyValue;
 					}
 
@@ -351,9 +341,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 				} else {
 
-					if (HttpMethod.POST.equals(requestMethod)) {
-						throw new IllegalStateException(
-								"Cannot POST a reference to this singular property since the property type is not a List or a Map.");
+					if (HttpMethod.PATCH.equals(requestMethod)) {
+						throw new HttpRequestMethodNotSupportedException(HttpMethod.PATCH.name(), new String[] { "PATCH" },
+								"Cannot PATCH a reference to this singular property since the property type is not a List or a Map.");
 					}
 
 					if (incoming.getLinks().size() != 1) {
@@ -375,17 +365,13 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 		doWithReferencedProperty(resourceInformation, id, property, handler, requestMethod);
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("Location", builder.build().toUriString());
-
-		return ControllerUtils.toEmptyResponse(HttpStatus.CREATED, headers);
+		return ControllerUtils.toEmptyResponse(HttpStatus.NO_CONTENT);
 	}
 
 	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.DELETE)
 	@ResponseBody
 	public ResponseEntity<ResourceSupport> deletePropertyReferenceId(final RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId)
-			throws HttpRequestMethodNotSupportedException {
+			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId) throws Exception {
 
 		final RepositoryInvoker invoker = repoRequest.getInvoker();
 
@@ -442,13 +428,13 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	}
 
 	private Object loadPropertyValue(Class<?> type, String href) {
+
 		String id = href.substring(href.lastIndexOf('/') + 1);
-		return converter.convert(id, STRING_TYPE, TypeDescriptor.valueOf(type));
+		return conversionService.convert(id, type);
 	}
 
 	private ResourceSupport doWithReferencedProperty(RootResourceInformation repoRequest, String id, String propertyPath,
-			Function<ReferencedProperty, ResourceSupport> handler, HttpMethod method)
-			throws HttpRequestMethodNotSupportedException {
+			Function<ReferencedProperty, ResourceSupport> handler, HttpMethod method) throws Exception {
 
 		RepositoryInvoker invoker = repoRequest.getInvoker();
 

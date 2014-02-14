@@ -15,28 +15,22 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.rest.webmvc.ControllerUtils.*;
+import static org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy.*;
+import static org.springframework.http.HttpMethod.*;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BeanWrapper;
-import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
@@ -49,6 +43,7 @@ import org.springframework.data.rest.core.invoke.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
+import org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
@@ -61,7 +56,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * @author Jon Brisbin
@@ -76,7 +74,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	private final EntityLinks entityLinks;
 	private final PersistentEntityResourceAssembler<Object> perAssembler;
 	private final RepositoryRestConfiguration config;
-	private final DomainClassConverter<?> converter;
 	private final ConversionService conversionService;
 	private final DomainObjectMerger domainObjectMerger;
 
@@ -85,7 +82,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@Autowired
 	public RepositoryEntityController(Repositories repositories, RepositoryRestConfiguration config,
 			EntityLinks entityLinks, PagedResourcesAssembler<Object> assembler,
-			PersistentEntityResourceAssembler<Object> perAssembler, DomainClassConverter<?> converter,
+			PersistentEntityResourceAssembler<Object> perAssembler,
 			@Qualifier("defaultConversionService") ConversionService conversionService, DomainObjectMerger domainObjectMerger) {
 
 		super(assembler, perAssembler);
@@ -93,7 +90,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		this.entityLinks = entityLinks;
 		this.perAssembler = perAssembler;
 		this.config = config;
-		this.converter = converter;
 		this.conversionService = conversionService;
 		this.domainObjectMerger = domainObjectMerger;
 	}
@@ -163,29 +159,26 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		}
 	}
 
+	/**
+	 * <code>POST /{repository}</code> - Creates a new entity instances from the collection resource.
+	 * 
+	 * @param resourceInformation
+	 * @param payload
+	 * @return
+	 * @throws HttpRequestMethodNotSupportedException
+	 */
 	@ResponseBody
-	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.POST, consumes = { "application/json" })
-	public ResponseEntity<ResourceSupport> createNewEntity(RootResourceInformation resourceInformation,
-			PersistentEntityResource<?> incoming) throws HttpRequestMethodNotSupportedException {
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.POST)
+	public ResponseEntity<ResourceSupport> postEntity(RootResourceInformation resourceInformation,
+			PersistentEntityResource<?> payload) throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.POST, ResourceType.COLLECTION);
 
-		RepositoryInvoker invoker = resourceInformation.getInvoker();
-
-		publisher.publishEvent(new BeforeCreateEvent(incoming.getContent()));
-		Object obj = invoker.invokeSave(incoming.getContent());
-		publisher.publishEvent(new AfterCreateEvent(obj));
-
-		Link selfLink = perAssembler.getSelfLinkFor(obj);
-		HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(URI.create(selfLink.getHref()));
-
-		PersistentEntityResource<Object> resource = config.isReturnBodyOnCreate() ? perAssembler.toResource(obj) : null;
-		return ControllerUtils.toResponseEntity(HttpStatus.CREATED, headers, resource);
+		return createAndReturn(payload.getContent(), resourceInformation.getInvoker());
 	}
 
 	/**
-	 * {@code GET /$repository/$id}
+	 * <code>GET /{repository}/{id}</code> - Returns a single entity.
 	 * 
 	 * @param resourceInformation
 	 * @param id
@@ -214,78 +207,69 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	/**
-	 * {@code PUT /$repository/$id} - Updates an existing entity or creates one at exactly that place.
+	 * <code>PUT /{repository}/{id}</code> - Updates an existing entity or creates one at exactly that place.
 	 * 
 	 * @param resourceInformation
-	 * @param incoming
+	 * @param payload
 	 * @param id
 	 * @return
 	 * @throws HttpRequestMethodNotSupportedException
 	 */
-	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PUT, consumes = { "application/json" })
-	public ResponseEntity<? extends ResourceSupport> updateEntity(RootResourceInformation resourceInformation,
-			PersistentEntityResource<Object> incoming, @PathVariable String id) throws HttpRequestMethodNotSupportedException {
+	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<? extends ResourceSupport> putEntity(RootResourceInformation resourceInformation,
+			PersistentEntityResource<Object> payload, @PathVariable String id) throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PUT, ResourceType.ITEM);
 
+		Object domainObject = conversionService.convert(id, resourceInformation.getDomainType());
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
 
-		Object domainObj = converter.convert(id, STRING_TYPE,
-				TypeDescriptor.valueOf(resourceInformation.getPersistentEntity().getType()));
-		if (null == domainObj) {
-			BeanWrapper<?, Object> incomingWrapper = BeanWrapper.create(incoming.getContent(), conversionService);
-			PersistentProperty<?> idProp = incoming.getPersistentEntity().getIdProperty();
-			incomingWrapper.setProperty(idProp, conversionService.convert(id, idProp.getType()));
-			return createNewEntity(resourceInformation, incoming);
+		if (domainObject == null) {
+
+			BeanWrapper<?, Object> incomingWrapper = BeanWrapper.create(payload.getContent(), conversionService);
+			incomingWrapper.setProperty(payload.getPersistentEntity().getIdProperty(), id);
+
+			return createAndReturn(incomingWrapper.getBean(), invoker);
 		}
 
-		domainObjectMerger.merge(incoming.getContent(), domainObj, DomainObjectMerger.MergeNullPolicy.APPLY_NULLS);
-
-		publisher.publishEvent(new BeforeSaveEvent(incoming.getContent()));
-		Object obj = invoker.invokeSave(domainObj);
-		publisher.publishEvent(new AfterSaveEvent(obj));
-
-		Link selfLink = perAssembler.getSelfLinkFor(obj);
-		HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(URI.create(selfLink.getHref()));
-
-		if (config.isReturnBodyOnUpdate()) {
-			return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, perAssembler.toResource(obj));
-		} else {
-			return ControllerUtils.toResponseEntity(HttpStatus.NO_CONTENT, headers, null);
-		}
+		return mergeAndReturn(payload.getContent(), domainObject, invoker, PUT);
 	}
 
-	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PATCH, consumes = { "application/json" })
-	public ResponseEntity<? extends ResourceSupport> patchEntity(
-			RepositoryRestRequest request, PersistentEntityResource<Object> incoming,
-			@PathVariable String id) {
+	/**
+	 * <code>PUT /{repository}/{id}</code> - Updates an existing entity or creates one at exactly that place.
+	 * 
+	 * @param resourceInformation
+	 * @param payload
+	 * @param id
+	 * @return
+	 * @throws HttpRequestMethodNotSupportedException
+	 * @throws ResourceNotFoundException
+	 */
+	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PATCH)
+	public ResponseEntity<ResourceSupport> patchEntity(RootResourceInformation resourceInformation,
+			PersistentEntityResource<Object> payload, @PathVariable String id) throws HttpRequestMethodNotSupportedException,
+			ResourceNotFoundException {
 
-		RepositoryInvoker invoker = request.getRepositoryInvoker();
-		if (null == invoker || !invoker.exposesSave() || !invoker.exposesFindOne()) {
-			return new ResponseEntity<Resource<?>>(HttpStatus.METHOD_NOT_ALLOWED);
+		resourceInformation.verifySupportedMethod(HttpMethod.PATCH, ResourceType.ITEM);
+
+		Object domainObject = conversionService.convert(id, resourceInformation.getDomainType());
+
+		if (domainObject == null) {
+			throw new ResourceNotFoundException();
 		}
 
-		Object domainObj = converter.convert(id, STRING_TYPE,
-				TypeDescriptor.valueOf(request.getPersistentEntity().getType()));
-		if (null == domainObj) {
-			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND);
-		}
-
-		domainObjectMerger.merge(incoming.getContent(), domainObj, DomainObjectMerger.MergeNullPolicy.IGNORE_NULLS);
-
-		publisher.publishEvent(new BeforeSaveEvent(domainObj));
-		Object obj = invoker.invokeSave(domainObj);
-		publisher.publishEvent(new AfterSaveEvent(domainObj));
-
-		if (config.isReturnBodyOnUpdate()) {
-			return ControllerUtils.toResponseEntity(HttpStatus.OK, null, perAssembler.toResource(obj));
-		} else {
-			return ControllerUtils.toEmptyResponse(HttpStatus.NO_CONTENT);
-		}
-
+		return mergeAndReturn(payload.getContent(), domainObject, resourceInformation.getInvoker(), PATCH);
 	}
 
+	/**
+	 * <code>DELETE /{repository}/{id}</code> - Deletes the entity backing the item resource.
+	 * 
+	 * @param resourceInformation
+	 * @param id
+	 * @return
+	 * @throws ResourceNotFoundException
+	 * @throws HttpRequestMethodNotSupportedException
+	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<?> deleteEntity(final RootResourceInformation resourceInformation, @PathVariable final String id)
 			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
@@ -308,5 +292,58 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		publisher.publishEvent(new AfterDeleteEvent(domainObj));
 
 		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+	}
+
+	/**
+	 * Merges the given incoming object into the given domain object.
+	 * 
+	 * @param incoming
+	 * @param domainObject
+	 * @param invoker
+	 * @param httpMethod
+	 * @return
+	 */
+	private ResponseEntity<ResourceSupport> mergeAndReturn(Object incoming, Object domainObject,
+			RepositoryInvoker invoker, HttpMethod httpMethod) {
+
+		NullHandlingPolicy nullPolicy = httpMethod.equals(PATCH) ? IGNORE_NULLS : APPLY_NULLS;
+		domainObjectMerger.merge(incoming, domainObject, nullPolicy);
+
+		publisher.publishEvent(new BeforeSaveEvent(domainObject));
+		Object obj = invoker.invokeSave(domainObject);
+		publisher.publishEvent(new AfterSaveEvent(domainObject));
+
+		HttpHeaders headers = new HttpHeaders();
+
+		if (PUT.equals(httpMethod)) {
+			headers.setLocation(URI.create(perAssembler.getSelfLinkFor(obj).getHref()));
+		}
+
+		if (config.isReturnBodyOnUpdate()) {
+			return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, perAssembler.toResource(obj));
+		} else {
+			return ControllerUtils.toEmptyResponse(HttpStatus.NO_CONTENT, headers);
+		}
+	}
+
+	/**
+	 * Triggers the creation of the domain object and renders it into the response if needed.
+	 * 
+	 * @param domainObject
+	 * @param invoker
+	 * @return
+	 */
+	private ResponseEntity<ResourceSupport> createAndReturn(Object domainObject, RepositoryInvoker invoker) {
+
+		publisher.publishEvent(new BeforeCreateEvent(domainObject));
+		Object savedObject = invoker.invokeSave(domainObject);
+		publisher.publishEvent(new AfterCreateEvent(savedObject));
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setLocation(URI.create(perAssembler.getSelfLinkFor(savedObject).getHref()));
+
+		PersistentEntityResource<Object> resource = config.isReturnBodyOnCreate() ? perAssembler.toResource(savedObject)
+				: null;
+		return ControllerUtils.toResponseEntity(HttpStatus.CREATED, headers, resource);
 	}
 }

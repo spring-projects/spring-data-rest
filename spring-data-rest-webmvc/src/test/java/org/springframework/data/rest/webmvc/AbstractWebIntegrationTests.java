@@ -162,16 +162,9 @@ public abstract class AbstractWebIntegrationTests {
 
 		MockHttpServletResponse response = mvc.perform(put(href).content(payload.toString()).contentType(mediaType)).//
 				andExpect(status().is(both(greaterThanOrEqualTo(200)).and(lessThan(300)))).//
-				andExpect(header().string("Location", is(notNullValue()))).//
 				andReturn().getResponse();
 
-		String content = response.getContentAsString();
-
-		if (StringUtils.hasText(content)) {
-			return response;
-		}
-
-		return request(response.getHeader("Location"));
+		return StringUtils.hasText(response.getContentAsString()) ? response : request(link);
 	}
 
 	protected MockHttpServletResponse patchAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
@@ -183,24 +176,20 @@ public abstract class AbstractWebIntegrationTests {
 				andExpect(status().isNoContent()).//
 				andReturn().getResponse();
 
-		return request(href);
+		return StringUtils.hasText(response.getContentAsString()) ? response : request(href);
 	}
 
-	protected MockHttpServletResponse deleteAndGet(Link link, MediaType mediaType) throws Exception {
+	protected void deleteAndVerify(Link link) throws Exception {
 
 		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
-		MockHttpServletResponse response = mvc.perform(delete(href).contentType(mediaType)).//
+		mvc.perform(delete(href)).//
 				andExpect(status().isNoContent()).//
 				andReturn().getResponse();
 
-		String content = response.getContentAsString();
-
-		if (StringUtils.hasText(content)) {
-			return response;
-		}
-
-		return request(response.getHeader("Location"));
+		// Check that the resource is unavailable after a DELETE
+		mvc.perform(get(href)).//
+				andExpect(status().isNotFound());
 	}
 
 	protected Link assertHasLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {

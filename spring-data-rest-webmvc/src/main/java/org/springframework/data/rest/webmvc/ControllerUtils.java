@@ -17,10 +17,8 @@ package org.springframework.data.rest.webmvc;
 
 import java.util.Collections;
 
-import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,10 +29,7 @@ import org.springframework.http.ResponseEntity;
  */
 public class ControllerUtils {
 
-	public static final Resources<Resource<?>> EMPTY_RESOURCES = new Resources<Resource<?>>(
-			Collections.<Resource<?>> emptyList());
 	public static final Iterable<Resource<?>> EMPTY_RESOURCE_LIST = Collections.emptyList();
-	public static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
 
 	/**
 	 * Wrap a resource as a {@link ResourceEntity} and attach given headers and status.
@@ -49,7 +44,8 @@ public class ControllerUtils {
 			HttpHeaders headers, R resource) {
 
 		HttpHeaders hdrs = new HttpHeaders();
-		if (null != headers) {
+
+		if (headers != null) {
 			hdrs.putAll(headers);
 		}
 
@@ -63,7 +59,7 @@ public class ControllerUtils {
 	 * @return
 	 */
 	public static ResponseEntity<ResourceSupport> toEmptyResponse(HttpStatus status) {
-		return toResponseEntity(status, null, EMPTY_RESOURCES);
+		return toEmptyResponse(status, null);
 	}
 
 	/**
@@ -74,6 +70,6 @@ public class ControllerUtils {
 	 * @return
 	 */
 	public static ResponseEntity<ResourceSupport> toEmptyResponse(HttpStatus status, HttpHeaders headers) {
-		return toResponseEntity(status, headers, EMPTY_RESOURCES);
+		return toResponseEntity(status, headers, null);
 	}
 }

@@ -22,5 +22,5 @@ package org.springframework.data.rest.core.util;
  */
 public interface Function<S, T> {
 
-	T apply(S input);
+	T apply(S input) throws Exception;
 }

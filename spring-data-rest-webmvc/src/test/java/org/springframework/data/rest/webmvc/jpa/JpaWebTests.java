@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,11 +34,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -185,27 +182,19 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void createThenPatch() throws Exception {
 
-		MockHttpServletResponse bilbo = postAndGet(new Link("/people/"),//
-				"{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }",//
-				MediaType.APPLICATION_JSON);
+		MockHttpServletResponse bilbo = postAndGet(new Link("/people"),
+				"{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }", MediaType.APPLICATION_JSON);
 
 		Link bilboLink = assertHasLinkWithRel("self", bilbo);
 
-		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName"),
-				equalTo("Bilbo"));
-		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName"),
-				equalTo("Baggins"));
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName"), equalTo("Bilbo"));
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName"), equalTo("Baggins"));
 
-		MockHttpServletResponse frodo = patchAndGet(bilboLink,//
-				"{ \"firstName\" : \"Frodo\" }",//
-				MediaType.APPLICATION_JSON);
+		MockHttpServletResponse frodo = patchAndGet(bilboLink, "{ \"firstName\" : \"Frodo\" }", MediaType.APPLICATION_JSON);
 
-		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"),
-				equalTo("Frodo"));
-		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName"),
-				equalTo("Baggins"));
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), equalTo("Frodo"));
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName"), equalTo("Baggins"));
 	}
-
 
 	@Test
 	public void listsSiblingsWithContentCorrectly() throws Exception {
@@ -238,9 +227,9 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		Link frodosSiblingLink = links.get(0);
 
-		postAndGet(frodosSiblingLink, links.get(1).getHref(), TEXT_URI_LIST);
-		postAndGet(frodosSiblingLink, links.get(2).getHref(), TEXT_URI_LIST);
-		postAndGet(frodosSiblingLink, links.get(3).getHref(), TEXT_URI_LIST);
+		patchAndGet(frodosSiblingLink, links.get(1).getHref(), TEXT_URI_LIST);
+		patchAndGet(frodosSiblingLink, links.get(2).getHref(), TEXT_URI_LIST);
+		patchAndGet(frodosSiblingLink, links.get(3).getHref(), TEXT_URI_LIST);
 
 		assertSiblingNames(frodosSiblingLink, "Bilbo", "Merry", "Pippin");
 	}
@@ -258,7 +247,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		Link frodosSiblingLink = links.get(0);
 
-		postAndGet(frodosSiblingLink, toUriList(links.get(1), links.get(2), links.get(3)), TEXT_URI_LIST);
+		patchAndGet(frodosSiblingLink, toUriList(links.get(1), links.get(2), links.get(3)), TEXT_URI_LIST);
 
 		assertSiblingNames(frodosSiblingLink, "Bilbo", "Merry", "Pippin");
 	}
@@ -281,7 +270,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 		putAndGet(frodosSiblingsLink, links.get(3).getHref(), TEXT_URI_LIST);
 		assertSiblingNames(frodosSiblingsLink, "Pippin");
 
-		postAndGet(frodosSiblingsLink, links.get(2).getHref(), TEXT_URI_LIST);
+		patchAndGet(frodosSiblingsLink, links.get(2).getHref(), TEXT_URI_LIST);
 		assertSiblingNames(frodosSiblingsLink, "Merry", "Pippin");
 	}
 
@@ -304,7 +293,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 		putAndGet(frodoSiblingLink, toUriList(links.get(3)), TEXT_URI_LIST);
 		assertSiblingNames(frodoSiblingLink, "Pippin");
 
-		postAndGet(frodoSiblingLink, toUriList(links.get(2)), TEXT_URI_LIST);
+		patchAndGet(frodoSiblingLink, toUriList(links.get(2)), TEXT_URI_LIST);
 		assertSiblingNames(frodoSiblingLink, "Merry", "Pippin");
 	}
 
@@ -321,12 +310,12 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		Link frodosSiblingsLink = links.get(0);
 
-		postAndGet(frodosSiblingsLink, links.get(1).getHref(), TEXT_URI_LIST);
-		postAndGet(frodosSiblingsLink, links.get(2).getHref(), TEXT_URI_LIST);
-		postAndGet(frodosSiblingsLink, links.get(3).getHref(), TEXT_URI_LIST);
+		patchAndGet(frodosSiblingsLink, links.get(1).getHref(), TEXT_URI_LIST);
+		patchAndGet(frodosSiblingsLink, links.get(2).getHref(), TEXT_URI_LIST);
+		patchAndGet(frodosSiblingsLink, links.get(3).getHref(), TEXT_URI_LIST);
 
 		String pippinId = new UriTemplate("/people/{id}").match(links.get(3).getHref()).get("id");
-		deleteAndGet(new Link(frodosSiblingsLink.getHref() + "/" + pippinId), TEXT_URI_LIST);
+		deleteAndVerify(new Link(frodosSiblingsLink.getHref() + "/" + pippinId));
 
 		assertSiblingNames(frodosSiblingsLink, "Bilbo", "Merry");
 	}
