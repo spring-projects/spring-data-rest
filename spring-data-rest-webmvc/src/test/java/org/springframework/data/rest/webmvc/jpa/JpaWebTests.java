@@ -177,6 +177,29 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	}
 
 	/**
+	 * @see DATAREST-117
+	 */
+	@Test
+	public void createPersonThenVerifyIgnoredAttributesDontExist() throws Exception {
+
+		Link peopleLink = discoverUnique("people");
+		ObjectMapper mapper = new ObjectMapper();
+		Person frodo = new Person("Frodo", "Baggins");
+		frodo.setAge(77);
+		frodo.setHeight(42);
+		frodo.setWeight(75);
+		String frodoString = mapper.writeValueAsString(frodo);
+
+		MockHttpServletResponse response = postAndGet(peopleLink, frodoString, MediaType.APPLICATION_JSON);
+
+		assertJsonPathEquals("$.firstName", "Frodo", response);
+		assertJsonPathEquals("$.lastName", "Baggins", response);
+		assertJsonPathDoesntExist("$.age", response);
+		assertJsonPathDoesntExist("$.height", response);
+		assertJsonPathDoesntExist("$.weight", response);
+	}
+
+	/**
 	 * @see DATAREST-95
 	 */
 	@Test
@@ -354,14 +377,14 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 		MockHttpServletResponse createdPerson = postAndGet(peopleLink, frodoString, MediaType.APPLICATION_JSON);
 
 		Link frodoLink = assertHasLinkWithRel("self", createdPerson);
-		assertJsonPathEquals("$.firstName", createdPerson, "Frodo");
+		assertJsonPathEquals("$.firstName", "Frodo", createdPerson);
 
 		String bilboWithFrodosLinks = createdPerson.getContentAsString().replace("Frodo", "Bilbo");
 
 		MockHttpServletResponse overwrittenResponse = putAndGet(frodoLink, bilboWithFrodosLinks, MediaType.APPLICATION_JSON);
 
 		assertHasLinkWithRel("self", overwrittenResponse);
-		assertJsonPathEquals("$.firstName", overwrittenResponse, "Bilbo");
+		assertJsonPathEquals("$.firstName", "Bilbo", overwrittenResponse);
 	}
 
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {

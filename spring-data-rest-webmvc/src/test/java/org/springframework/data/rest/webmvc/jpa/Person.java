@@ -14,14 +14,19 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import org.springframework.data.rest.core.annotation.Description;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * An entity that represents a person.
- * 
+ *
  * @author Jon Brisbin
  */
 @Entity
+@JsonIgnoreProperties({"height", "weight"})
 public class Person {
 
 	private Long id;
@@ -30,6 +35,9 @@ public class Person {
 	@Description("A person's siblings") private List<Person> siblings = Collections.emptyList();
 	private Person father;
 	@Description("Timestamp this person object was created") private Date created;
+	private int age;
+	private int height;
+	private int weight;
 
 	public Person() {}
 
@@ -102,4 +110,28 @@ public class Person {
 		this.created = Calendar.getInstance().getTime();
 	}
 
+	@JsonIgnore
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
+	public int getWeight() {
+		return weight;
+	}
+
+	public void setWeight(int weight) {
+		this.weight = weight;
+	}
 }
