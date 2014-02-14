@@ -61,7 +61,7 @@ public class DomainObjectMerger {
 	 * @param from can be {@literal null}.
 	 * @param target can be {@literal null}.
 	 */
-	public void merge(Object from, Object target) {
+	public void merge(Object from, Object target, final MergeNullPolicy nullPolicy) {
 
 		if (null == from || null == target) {
 			return;
@@ -88,7 +88,9 @@ public class DomainObjectMerger {
 				}
 
 				if (!ObjectUtils.nullSafeEquals(sourceValue, targetValue)) {
-					targetWrapper.setProperty(persistentProperty, sourceValue);
+					if (nullPolicy == MergeNullPolicy.APPLY_NULLS || sourceValue != null) {
+						targetWrapper.setProperty(persistentProperty, sourceValue);
+					}
 				}
 			}
 		});
@@ -110,4 +112,15 @@ public class DomainObjectMerger {
 			}
 		});
 	}
+
+	/**
+	 * A switch on whether or not to ignore nulls.
+	 * NOTE: This could have been a simple boolean flag but the enumerated value clearly
+	 * denotes which version is being used.
+	 */
+	public static enum MergeNullPolicy {
+		APPLY_NULLS, IGNORE_NULLS;
+	}
+
+
 }

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +35,11 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -175,6 +178,34 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 						content(readFile("order.json")).contentType(MediaType.APPLICATION_JSON)//
 		).andExpect(status().isCreated());
 	}
+
+	/**
+	 * @see DATAREST-95
+	 */
+	@Test
+	public void createThenPatch() throws Exception {
+
+		MockHttpServletResponse bilbo = postAndGet(new Link("/people/"),//
+				"{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }",//
+				MediaType.APPLICATION_JSON);
+
+		Link bilboLink = assertHasLinkWithRel("self", bilbo);
+
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName"),
+				equalTo("Bilbo"));
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName"),
+				equalTo("Baggins"));
+
+		MockHttpServletResponse frodo = patchAndGet(bilboLink,//
+				"{ \"firstName\" : \"Frodo\" }",//
+				MediaType.APPLICATION_JSON);
+
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"),
+				equalTo("Frodo"));
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName"),
+				equalTo("Baggins"));
+	}
+
 
 	@Test
 	public void listsSiblingsWithContentCorrectly() throws Exception {
