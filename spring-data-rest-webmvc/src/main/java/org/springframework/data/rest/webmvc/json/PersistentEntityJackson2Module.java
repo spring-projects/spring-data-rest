@@ -16,6 +16,8 @@
 package org.springframework.data.rest.webmvc.json;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,6 +46,7 @@ import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.Version;
@@ -133,6 +136,17 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			final Map<String, Object> model = new LinkedHashMap<String, Object>();
 
+			String[] fieldsToIgnore = new String[]{};
+
+			for (Annotation annotation : entity.getType().getAnnotations()) {
+				if (annotation.annotationType().equals(JsonIgnoreProperties.class)) {
+					JsonIgnoreProperties ann = (JsonIgnoreProperties)annotation;
+					fieldsToIgnore = ann.value();
+					break;
+				}
+			}
+			final String[] finalFieldsToIgnore = fieldsToIgnore;
+
 			try {
 
 				entity.doWithProperties(new SimplePropertyHandler() {
@@ -149,6 +163,24 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 						if (idAvailableAndShallNotBeExposed) {
 							return;
+						}
+
+						final Method getter = property.getGetter();
+						if (getter != null) {
+							final Annotation[] annotations = getter.getAnnotations();
+							for (Annotation annotation : annotations) {
+								if (annotation.annotationType().equals(JsonIgnore.class)) {
+									if (((JsonIgnore)annotation).value()) {
+										return;
+									}
+								}
+							}
+						}
+
+						for (String fieldToIgnore : finalFieldsToIgnore) {
+							if (property.getName().equals(fieldToIgnore)) {
+								return;
+							}
 						}
 
 						// Property is a normal or non-managed property.
