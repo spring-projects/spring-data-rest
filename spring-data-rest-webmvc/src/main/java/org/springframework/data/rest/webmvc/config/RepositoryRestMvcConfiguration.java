@@ -51,13 +51,14 @@ import org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMetho
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
-import org.springframework.data.rest.webmvc.RepositoryRestRequestHandlerMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.RootResourceInformationHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.ResourceMetadataHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
+import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.rest.webmvc.support.ValidationExceptionHandler;
@@ -230,8 +231,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @return
 	 */
 	@Bean
-	public RepositoryRestRequestHandlerMethodArgumentResolver repoRequestArgumentResolver() {
-		return new RepositoryRestRequestHandlerMethodArgumentResolver(repositories(), repositoryInvokerFactory(),
+	public RootResourceInformationHandlerMethodArgumentResolver repoRequestArgumentResolver() {
+		return new RootResourceInformationHandlerMethodArgumentResolver(repositories(), repositoryInvokerFactory(),
 				resourceMetadataHandlerMethodArgumentResolver());
 	}
 
@@ -474,7 +475,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 		return Arrays.asList(pageableResolver(), sortResolver(), serverHttpRequestMethodArgumentResolver(),
 				repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
-				resourceMetadataHandlerMethodArgumentResolver());
+				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE);
 	}
 
 	private ObjectMapper basicObjectMapper() {

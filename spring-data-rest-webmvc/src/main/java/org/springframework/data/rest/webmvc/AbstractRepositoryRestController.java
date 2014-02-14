@@ -43,6 +43,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -108,12 +109,6 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 		return notFound();
 	}
 
-	@ExceptionHandler({ NoSuchMethodError.class, HttpRequestMethodNotSupportedException.class })
-	@ResponseBody
-	public ResponseEntity<?> handleNoSuchMethod() {
-		return errorResponse(null, HttpStatus.METHOD_NOT_ALLOWED);
-	}
-
 	@ExceptionHandler({ HttpMessageNotReadableException.class, HttpMessageNotWritableException.class })
 	@ResponseBody
 	public ResponseEntity<ExceptionMessage> handleNotReadable(HttpMessageNotReadableException e) {
@@ -157,6 +152,22 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 		return errorResponse(null, ex, HttpStatus.CONFLICT);
 	}
 
+	/**
+	 * Send {@code 405 Method Not Allowed} and include the supported {@link HttpMethod}s in the {@code Allow} header.
+	 * 
+	 * @param o_O
+	 * @return
+	 */
+	@ExceptionHandler
+	@ResponseBody
+	public ResponseEntity<Void> handle(HttpRequestMethodNotSupportedException o_O) {
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAllow(o_O.getSupportedHttpMethods());
+
+		return new ResponseEntity<Void>(headers, HttpStatus.METHOD_NOT_ALLOWED);
+	}
+
 	protected <T> ResponseEntity<T> notFound() {
 		return notFound(null, null);
 	}
@@ -195,9 +206,9 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 		return new ResponseEntity<T>(body, hdrs, status);
 	}
 
-	protected Link resourceLink(RepositoryRestRequest repoRequest, Resource resource) {
+	protected Link resourceLink(RootResourceInformation resourceLink, Resource resource) {
 
-		ResourceMetadata repoMapping = repoRequest.getResourceMetadata();
+		ResourceMetadata repoMapping = resourceLink.getResourceMetadata();
 
 		Link selfLink = resource.getLink("self");
 		String rel = repoMapping.getItemResourceRel();

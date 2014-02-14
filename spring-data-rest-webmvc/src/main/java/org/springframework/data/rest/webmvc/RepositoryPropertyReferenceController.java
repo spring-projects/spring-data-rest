@@ -101,8 +101,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 	}
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
-	public ResponseEntity<ResourceSupport> followPropertyReference(final RepositoryRestRequest repoRequest,
-			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException, NoSuchMethodException {
+	public ResponseEntity<ResourceSupport> followPropertyReference(final RootResourceInformation repoRequest,
+			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException,
+			HttpRequestMethodNotSupportedException {
 
 		final HttpHeaders headers = new HttpHeaders();
 
@@ -144,16 +145,16 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			}
 		};
 
-		ResourceSupport responseResource = doWithReferencedProperty(repoRequest, id, property, handler);
+		ResourceSupport responseResource = doWithReferencedProperty(repoRequest, id, property, handler, HttpMethod.GET);
 		return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, responseResource);
 	}
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.DELETE)
-	public ResponseEntity<? extends ResourceSupport> deletePropertyReference(final RepositoryRestRequest repoRequest,
+	public ResponseEntity<? extends ResourceSupport> deletePropertyReference(final RootResourceInformation repoRequest,
 			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException, NoSuchMethodException,
 			HttpRequestMethodNotSupportedException {
 
-		final RepositoryInvoker repoMethodInvoker = repoRequest.getRepositoryInvoker();
+		final RepositoryInvoker repoMethodInvoker = repoRequest.getInvoker();
 
 		if (!repoMethodInvoker.exposesDelete()) {
 			return new ResponseEntity<Resource<?>>(HttpStatus.METHOD_NOT_ALLOWED);
@@ -185,7 +186,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		};
 
 		try {
-			doWithReferencedProperty(repoRequest, id, property, handler);
+			doWithReferencedProperty(repoRequest, id, property, handler, HttpMethod.DELETE);
 		} catch (IllegalArgumentException iae) {
 			if (iae.getCause() instanceof HttpRequestMethodNotSupportedException) {
 				throw (HttpRequestMethodNotSupportedException) iae.getCause();
@@ -197,9 +198,9 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.GET, produces = { "application/json",
 			"application/x-spring-data-verbose+json", "application/x-spring-data-compact+json", "text/uri-list" })
-	public ResponseEntity<ResourceSupport> followPropertyReference(final RepositoryRestRequest repoRequest,
+	public ResponseEntity<ResourceSupport> followPropertyReference(final RootResourceInformation repoRequest,
 			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId)
-			throws ResourceNotFoundException, NoSuchMethodException {
+			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 
 		final HttpHeaders headers = new HttpHeaders();
 		Function<ReferencedProperty, ResourceSupport> handler = new Function<ReferencedProperty, ResourceSupport>() {
@@ -243,14 +244,15 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			}
 		};
 
-		ResourceSupport responseResource = doWithReferencedProperty(repoRequest, id, property, handler);
+		ResourceSupport responseResource = doWithReferencedProperty(repoRequest, id, property, handler, HttpMethod.GET);
 		return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, responseResource);
 	}
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = {
 			"application/x-spring-data-compact+json", "text/uri-list" })
-	public ResponseEntity<ResourceSupport> followPropertyReferenceCompact(RepositoryRestRequest repoRequest,
-			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException, NoSuchMethodException {
+	public ResponseEntity<ResourceSupport> followPropertyReferenceCompact(RootResourceInformation repoRequest,
+			@PathVariable String id, @PathVariable String property) throws ResourceNotFoundException,
+			HttpRequestMethodNotSupportedException {
 
 		ResponseEntity<ResourceSupport> response = followPropertyReference(repoRequest, id, property);
 
@@ -299,15 +301,12 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			method = { RequestMethod.POST, RequestMethod.PUT }, //
 			consumes = { "application/json", "application/x-spring-data-compact+json", "text/uri-list" })
 	@ResponseBody
-	public ResponseEntity<? extends ResourceSupport> createPropertyReference(final RepositoryRestRequest repoRequest,
+	public ResponseEntity<? extends ResourceSupport> createPropertyReference(
+			final RootResourceInformation resourceInformation, final HttpMethod requestMethod,
 			final @RequestBody Resources<Object> incoming, @PathVariable String id, @PathVariable String property,
-			final UriComponentsBuilder builder) throws NoSuchMethodException {
+			final UriComponentsBuilder builder) throws HttpRequestMethodNotSupportedException {
 
-		final RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
-
-		if (!invoker.exposesSave()) {
-			return new ResponseEntity<Resource<?>>(HttpStatus.METHOD_NOT_ALLOWED);
-		}
+		final RepositoryInvoker invoker = resourceInformation.getInvoker();
 
 		Function<ReferencedProperty, ResourceSupport> handler = new Function<ReferencedProperty, ResourceSupport>() {
 
@@ -321,7 +320,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					Collection<Object> coll = CollectionFactory.createCollection(propertyType, 0);
 
 					// Either load the exist collection to add to it (POST)
-					if (HttpMethod.POST.equals(repoRequest.getRequestMethod())) {
+					if (HttpMethod.POST.equals(requestMethod)) {
 						coll = (Collection<Object>) prop.propertyValue;
 					}
 
@@ -338,7 +337,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 					Map<String, Object> m = CollectionFactory.createMap(propertyType, 0);
 
 					// Either load the exist collection to add to it (POST)
-					if (HttpMethod.POST.equals(repoRequest.getRequestMethod())) {
+					if (HttpMethod.POST.equals(requestMethod)) {
 						m = (Map<String, Object>) prop.propertyValue;
 					}
 
@@ -352,7 +351,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 				} else {
 
-					if (HttpMethod.POST.equals(repoRequest.getRequestMethod())) {
+					if (HttpMethod.POST.equals(requestMethod)) {
 						throw new IllegalStateException(
 								"Cannot POST a reference to this singular property since the property type is not a List or a Map.");
 					}
@@ -374,7 +373,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			}
 		};
 
-		doWithReferencedProperty(repoRequest, id, property, handler);
+		doWithReferencedProperty(resourceInformation, id, property, handler, requestMethod);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Location", builder.build().toUriString());
@@ -384,14 +383,14 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 
 	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public ResponseEntity<ResourceSupport> deletePropertyReferenceId(final RepositoryRestRequest repoRequest,
+	public ResponseEntity<ResourceSupport> deletePropertyReferenceId(final RootResourceInformation repoRequest,
 			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId)
-			throws NoSuchMethodException {
+			throws HttpRequestMethodNotSupportedException {
 
-		final RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
+		final RepositoryInvoker invoker = repoRequest.getInvoker();
 
-		if (!invoker.exposesDelete()) {
-			throw new NoSuchMethodError();
+		if (!invoker.exposesSave()) {
+			throw new HttpRequestMethodNotSupportedException(HttpMethod.DELETE.name());
 		}
 
 		Function<ReferencedProperty, ResourceSupport> handler = new Function<ReferencedProperty, ResourceSupport>() {
@@ -437,7 +436,7 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 			}
 		};
 
-		doWithReferencedProperty(repoRequest, id, property, handler);
+		doWithReferencedProperty(repoRequest, id, property, handler, HttpMethod.DELETE);
 
 		return ControllerUtils.toEmptyResponse(HttpStatus.NO_CONTENT);
 	}
@@ -447,13 +446,14 @@ public class RepositoryPropertyReferenceController extends AbstractRepositoryRes
 		return converter.convert(id, STRING_TYPE, TypeDescriptor.valueOf(type));
 	}
 
-	private ResourceSupport doWithReferencedProperty(RepositoryRestRequest repoRequest, String id, String propertyPath,
-			Function<ReferencedProperty, ResourceSupport> handler) throws NoSuchMethodException {
+	private ResourceSupport doWithReferencedProperty(RootResourceInformation repoRequest, String id, String propertyPath,
+			Function<ReferencedProperty, ResourceSupport> handler, HttpMethod method)
+			throws HttpRequestMethodNotSupportedException {
 
-		RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
+		RepositoryInvoker invoker = repoRequest.getInvoker();
 
 		if (!invoker.exposesFindOne()) {
-			throw new NoSuchMethodException();
+			throw new HttpRequestMethodNotSupportedException(method.name());
 		}
 
 		Object domainObj = invoker.invokeFindOne(id);

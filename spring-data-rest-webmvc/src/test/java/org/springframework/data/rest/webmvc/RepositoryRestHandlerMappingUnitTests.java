@@ -64,7 +64,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		mockRequest = new MockHttpServletRequest();
 
-		listEntitiesMethod = RepositoryEntityController.class.getMethod("listEntities", RepositoryRestRequest.class,
+		listEntitiesMethod = RepositoryEntityController.class.getMethod("listEntities", RootResourceInformation.class,
 				Pageable.class, Sort.class);
 	}
 

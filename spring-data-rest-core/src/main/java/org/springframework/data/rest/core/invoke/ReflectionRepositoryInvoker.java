@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,15 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	/* 
 	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasFindAllMethod()
+	 */
+	@Override
+	public boolean hasFindAllMethod() {
+		return methods.hasFindAllMethod();
+	}
+
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#exposesFindAll()
 	 */
 	@Override
@@ -117,6 +126,15 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 
 	/* 
 	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasSaveMethod()
+	 */
+	@Override
+	public boolean hasSaveMethod() {
+		return methods.hasSaveMethod();
+	}
+
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#exposesSave()
 	 */
 	@Override
@@ -130,6 +148,15 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	@Override
 	public <T> T invokeSave(T object) {
 		return invoke(methods.getSaveMethod(), object);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasFindOneMethod()
+	 */
+	@Override
+	public boolean hasFindOneMethod() {
+		return methods.hasFindOneMethod();
 	}
 
 	/*
@@ -148,6 +175,15 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	@Override
 	public <T> T invokeFindOne(Serializable id) {
 		return invoke(methods.getFindOneMethod(), convertId(id));
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.invoke.RepositoryInvocationInformation#hasDeleteMethod()
+	 */
+	@Override
+	public boolean hasDeleteMethod() {
+		return methods.hasDelete();
 	}
 
 	/* 

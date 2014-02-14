@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
 
 /**
  * Base class to write integration tests for controllers.
@@ -54,18 +55,22 @@ public abstract class AbstractControllerIntegrationTests {
 	}
 
 	/**
-	 * Returns a {@link RepositoryRestRequest} for the given domain type.
+	 * Returns a {@link RootResourceInformation} for the given domain type.
 	 * 
 	 * @param domainType must not be {@literal null}.
 	 * @return
 	 */
-	protected RepositoryRestRequest getRequest(Class<?> domainType) {
-		return getRequest(domainType, RequestParameters.NONE);
-	}
-
-	protected RepositoryRestRequest getRequest(Class<?> domainType, RequestParameters parameters) {
+	protected RootResourceInformation getResourceInformation(Class<?> domainType) {
 
 		Assert.notNull(domainType, "Domain type must not be null!");
+
+		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(domainType);
+
+		return new RootResourceInformation(mappings.getMappingFor(domainType), entity,
+				invokerFactory.getInvokerFor(domainType));
+	}
+
+	protected WebRequest getRequest(RequestParameters parameters) {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.setParameters(parameters.asMap());
@@ -73,10 +78,7 @@ public abstract class AbstractControllerIntegrationTests {
 		ServletRequestAttributes requestAttributes = new ServletRequestAttributes(request);
 		RequestContextHolder.setRequestAttributes(requestAttributes);
 
-		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(domainType);
-
-		return new RepositoryRestRequest(entity, new ServletWebRequest(request), mappings.getMappingFor(domainType),
-				invokerFactory.getInvokerFor(domainType));
+		return new ServletWebRequest(request);
 	}
 
 	protected ResourceMetadata getMetadata(Class<?> domainType) {

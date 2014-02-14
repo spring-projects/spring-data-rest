@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,33 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc;
+package org.springframework.data.rest.webmvc.support;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.data.rest.core.invoke.RepositoryInvoker;
-import org.springframework.data.rest.core.invoke.RepositoryInvokerFactory;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
+ * {@link HandlerMethodArgumentResolver} to provide {@link HttpMethod} instances for innjection into MVC controller
+ * methods.
+ * 
  * @author Oliver Gierke
  */
-public class RepositoryInvokerHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
+public enum HttpMethodHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private final RepositoryRestRequestHandlerMethodArgumentResolver requestResolver;
-	private final RepositoryInvokerFactory invokerFactory;
-
-	/**
-	 * @param requestResolver
-	 * @param invokerFactory
-	 */
-	private RepositoryInvokerHandlerMethodArgumentResolver(
-			RepositoryRestRequestHandlerMethodArgumentResolver requestResolver, RepositoryInvokerFactory invokerFactory) {
-		this.requestResolver = requestResolver;
-		this.invokerFactory = invokerFactory;
-	}
+	INSTANCE;
 
 	/* 
 	 * (non-Javadoc)
@@ -47,17 +40,18 @@ public class RepositoryInvokerHandlerMethodArgumentResolver implements HandlerMe
 	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return RepositoryInvoker.class.isAssignableFrom(parameter.getParameterType());
+		return HttpMethod.class.equals(parameter.getParameterType());
 	}
 
-	/* (non-Javadoc)
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+	public HttpMethod resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-		RepositoryRestRequest request = requestResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
-		return invokerFactory.getInvokerFor(request.getPersistentEntity().getType());
+		HttpServletRequest httpServletRequest = webRequest.getNativeRequest(HttpServletRequest.class);
+		return HttpMethod.valueOf(httpServletRequest.getMethod().trim().toUpperCase());
 	}
 }

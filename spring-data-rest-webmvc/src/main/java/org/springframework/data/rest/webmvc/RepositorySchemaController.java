@@ -51,13 +51,13 @@ class RepositorySchemaController {
 	/**
 	 * Exposes a JSON schema for the repository referenced.
 	 * 
-	 * @param repoRequest will never be {@literal null}.
+	 * @param resourceInformation will never be {@literal null}.
 	 * @return
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/schema", method = RequestMethod.GET,
 			produces = { "application/schema+json" })
 	@ResponseBody
-	public JsonSchema schema(RepositoryRestRequest repoRequest) {
-		return jsonSchemaConverter.convert(repoRequest.getPersistentEntity().getType());
+	public JsonSchema schema(RootResourceInformation resourceInformation) {
+		return jsonSchemaConverter.convert(resourceInformation.getPersistentEntity().getType());
 	}
 }

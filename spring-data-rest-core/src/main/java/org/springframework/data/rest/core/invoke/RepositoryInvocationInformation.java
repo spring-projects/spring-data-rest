@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,59 @@ package org.springframework.data.rest.core.invoke;
  */
 public interface RepositoryInvocationInformation {
 
+	/**
+	 * Returns whether the repository has a method to save objects.
+	 * 
+	 * @return
+	 */
+	boolean hasSaveMethod();
+
+	/**
+	 * Returns whether the repository exposes the save method.
+	 * 
+	 * @return
+	 */
 	boolean exposesSave();
 
+	/**
+	 * Returns whether the repository has a method to delete objects.
+	 * 
+	 * @return
+	 */
+	boolean hasDeleteMethod();
+
+	/**
+	 * Returns whether the repository exposes the delete method.
+	 * 
+	 * @return
+	 */
 	boolean exposesDelete();
 
+	/**
+	 * Returns whether the repository has a method to find a single object.
+	 * 
+	 * @return
+	 */
+	boolean hasFindOneMethod();
+
+	/**
+	 * Returns whether the repository exposes the method to find a single object.
+	 * 
+	 * @return
+	 */
 	boolean exposesFindOne();
 
+	/**
+	 * Returns whether the repository has a method to find all objects.
+	 * 
+	 * @return
+	 */
+	boolean hasFindAllMethod();
+
+	/**
+	 * Returns whether the repository exposes the method to find all objects.
+	 * 
+	 * @return
+	 */
 	boolean exposesFindAll();
 }

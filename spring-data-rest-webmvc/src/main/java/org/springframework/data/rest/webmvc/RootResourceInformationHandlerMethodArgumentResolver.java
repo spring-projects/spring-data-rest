@@ -28,24 +28,27 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
+ * {@link HandlerMethodArgumentResolver} to create {@link RootResourceInformation} for injection into Spring MVC
+ * controller methods.
+ * 
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public class RepositoryRestRequestHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
+public class RootResourceInformationHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private final Repositories repositories;
 	private final RepositoryInvokerFactory invokerFactory;
 	private final ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver;
 
 	/**
-	 * Creates a new {@link RepositoryRestRequestHandlerMethodArgumentResolver} using the given {@link Repositories},
+	 * Creates a new {@link RootResourceInformationHandlerMethodArgumentResolver} using the given {@link Repositories},
 	 * {@link RepositoryInvokerFactory} and {@link ResourceMetadataHandlerMethodArgumentResolver}.
 	 * 
 	 * @param repositories must not be {@literal null}.
 	 * @param invokerFactory must not be {@literal null}.
 	 * @param resourceMetadataResolver must not be {@literal null}.
 	 */
-	public RepositoryRestRequestHandlerMethodArgumentResolver(Repositories repositories,
+	public RootResourceInformationHandlerMethodArgumentResolver(Repositories repositories,
 			RepositoryInvokerFactory invokerFactory, ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
@@ -63,7 +66,7 @@ public class RepositoryRestRequestHandlerMethodArgumentResolver implements Handl
 	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return RepositoryRestRequest.class.isAssignableFrom(parameter.getParameterType());
+		return RootResourceInformation.class.isAssignableFrom(parameter.getParameterType());
 	}
 
 	/*
@@ -71,17 +74,17 @@ public class RepositoryRestRequestHandlerMethodArgumentResolver implements Handl
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	public RepositoryRestRequest resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+	public RootResourceInformation resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-		ResourceMetadata repoInfo = resourceMetadataResolver.resolveArgument(parameter, mavContainer, webRequest,
+		ResourceMetadata resourceMetadata = resourceMetadataResolver.resolveArgument(parameter, mavContainer, webRequest,
 				binderFactory);
 
-		RepositoryInvoker repositoryInvoker = invokerFactory.getInvokerFor(repoInfo.getDomainType());
-		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(repoInfo.getDomainType());
+		Class<?> domainType = resourceMetadata.getDomainType();
+		RepositoryInvoker repositoryInvoker = invokerFactory.getInvokerFor(domainType);
+		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(domainType);
 
 		// TODO reject if ResourceMetadata cannot be resolved
-
-		return new RepositoryRestRequest(persistentEntity, webRequest, repoInfo, repositoryInvoker);
+		return new RootResourceInformation(resourceMetadata, persistentEntity, repositoryInvoker);
 	}
 }

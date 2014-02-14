@@ -46,6 +46,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.WebRequest;
 
 /**
  * Controller to lookup and execute searches on a given repository.
@@ -90,20 +91,20 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	/**
 	 * Exposes links to the individual search resources exposed by the backing repository.
 	 * 
-	 * @param request
+	 * @param resourceInformation
 	 * @return
 	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
-	public ResourceSupport listSearches(RepositoryRestRequest request) {
+	public ResourceSupport listSearches(RootResourceInformation resourceInformation) {
 
-		SearchResourceMappings resourceMappings = request.getSearchMappings();
+		SearchResourceMappings resourceMappings = resourceInformation.getSearchMappings();
 
 		if (!resourceMappings.isExported()) {
 			throw new ResourceNotFoundException();
 		}
 
-		Links queryMethodLinks = getSearchLinks(request.getDomainType());
+		Links queryMethodLinks = getSearchLinks(resourceInformation.getDomainType());
 
 		if (queryMethodLinks.isEmpty()) {
 			throw new ResourceNotFoundException();
@@ -127,11 +128,11 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET)
-	public ResponseEntity<Resources<?>> executeSearch(RepositoryRestRequest request, @PathVariable String search,
-			Pageable pageable) {
+	public ResponseEntity<Resources<?>> executeSearch(RootResourceInformation resourceInformation, WebRequest request,
+			@PathVariable String search, Pageable pageable) {
 
-		Method method = checkExecutability(request, search);
-		Resources<?> resources = executeQueryMethod(request, method, pageable);
+		Method method = checkExecutability(resourceInformation, search);
+		Resources<?> resources = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable);
 
 		return new ResponseEntity<Resources<?>>(resources, HttpStatus.OK);
 	}
@@ -139,7 +140,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	/**
 	 * Executes a query method and exposes the results in compact form.
 	 * 
-	 * @param repoRequest
+	 * @param resourceInformation
 	 * @param repository
 	 * @param method
 	 * @param pageable
@@ -148,11 +149,11 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{method}", method = RequestMethod.GET, //
 			produces = { "application/x-spring-data-compact+json" })
-	public ResourceSupport executeSearchCompact(RepositoryRestRequest repoRequest, @PathVariable String repository,
-			@PathVariable String search, Pageable pageable) {
+	public ResourceSupport executeSearchCompact(RootResourceInformation resourceInformation, WebRequest request,
+			@PathVariable String repository, @PathVariable String search, Pageable pageable) {
 
-		Method method = checkExecutability(repoRequest, search);
-		ResourceSupport resource = executeQueryMethod(repoRequest, method, pageable);
+		Method method = checkExecutability(resourceInformation, search);
+		ResourceSupport resource = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable);
 
 		List<Link> links = new ArrayList<Link>();
 
@@ -161,14 +162,14 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			for (Object obj : ((Resources<?>) resource).getContent()) {
 				if (null != obj && obj instanceof Resource) {
 					Resource<?> res = (Resource<?>) obj;
-					links.add(resourceLink(repoRequest, res));
+					links.add(resourceLink(resourceInformation, res));
 				}
 			}
 
 		} else if (resource instanceof Resource) {
 
 			Resource<?> res = (Resource<?>) resource;
-			links.add(resourceLink(repoRequest, res));
+			links.add(resourceLink(resourceInformation, res));
 		}
 
 		return new Resource<Object>(EMPTY_RESOURCE_LIST, links);
@@ -178,13 +179,13 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * Checks that the given request is actually executable. Will reject execution if we don't find a search with the
 	 * given name.
 	 * 
-	 * @param request
+	 * @param resourceInformation
 	 * @param searchName
 	 * @return
 	 */
-	private Method checkExecutability(RepositoryRestRequest request, String searchName) {
+	private Method checkExecutability(RootResourceInformation resourceInformation, String searchName) {
 
-		ResourceMetadata metadata = request.getResourceMetadata();
+		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
 		SearchResourceMappings searchMapping = metadata.getSearchResourceMappings();
 
 		if (!searchMapping.isExported()) {
@@ -201,16 +202,17 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	}
 
 	/**
-	 * @param repoRequest
+	 * @param invoker
+	 * @param request
 	 * @param method
 	 * @param pageable
 	 * @return
 	 */
-	private Resources<?> executeQueryMethod(final RepositoryRestRequest repoRequest, Method method, Pageable pageable) {
+	private Resources<?> executeQueryMethod(final RepositoryInvoker invoker, WebRequest request, Method method,
+			Pageable pageable) {
 
-		RepositoryInvoker repoMethodInvoker = repoRequest.getRepositoryInvoker();
-		Map<String, String[]> parameters = repoRequest.getRequest().getParameterMap();
-		Object result = repoMethodInvoker.invokeQueryMethod(method, parameters, pageable, null);
+		Map<String, String[]> parameters = request.getParameterMap();
+		Object result = invoker.invokeQueryMethod(method, parameters, pageable, null);
 
 		return resultToResources(result);
 	}

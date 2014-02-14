@@ -365,6 +365,30 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	}
 
 	/**
+	 * @see DATAREST-217
+	 */
+	@Test
+	public void doesNotAllowGetToCollectionResourceIfFindAllIsNotExported() throws Exception {
+
+		Link link = discoverUnique("addresses");
+
+		mvc.perform(get(link.getHref())).//
+				andExpect(status().isMethodNotAllowed());
+	}
+
+	/**
+	 * @see DATAREST-217
+	 */
+	@Test
+	public void doesNotAllowPostToCollectionResourceIfSaveIsNotExported() throws Exception {
+
+		Link link = discoverUnique("addresses");
+
+		mvc.perform(post(link.getHref()).content("{}").contentType(MediaType.APPLICATION_JSON)).//
+				andExpect(status().isMethodNotAllowed());
+	}
+
+	/**
 	 * Asserts the {@link Person} resource the given link points to contains siblings with the given names.
 	 * 
 	 * @param link

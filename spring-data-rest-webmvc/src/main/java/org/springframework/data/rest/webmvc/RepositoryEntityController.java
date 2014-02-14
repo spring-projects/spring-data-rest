@@ -53,6 +53,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -107,25 +108,28 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
-	public Resources<?> listEntities(final RepositoryRestRequest request, Pageable pageable, Sort sort)
-			throws ResourceNotFoundException {
+	public Resources<?> listEntities(final RootResourceInformation resourceInformation, Pageable pageable, Sort sort)
+			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 
-		List<Link> links = new ArrayList<Link>();
-		Iterable<?> results;
-		RepositoryInvoker repoMethodInvoker = request.getRepositoryInvoker();
+		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.COLLECTION);
 
-		if (null == repoMethodInvoker) {
+		RepositoryInvoker invoker = resourceInformation.getInvoker();
+
+		if (null == invoker) {
 			throw new ResourceNotFoundException();
 		}
 
+		Iterable<?> results;
+
 		if (pageable != null) {
-			results = repoMethodInvoker.invokeFindAll(pageable);
+			results = invoker.invokeFindAll(pageable);
 		} else {
-			results = repoMethodInvoker.invokeFindAll(sort);
+			results = invoker.invokeFindAll(sort);
 		}
 
-		ResourceMetadata metadata = request.getResourceMetadata();
+		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
 		SearchResourceMappings searchMappings = metadata.getSearchResourceMappings();
+		List<Link> links = new ArrayList<Link>();
 
 		if (searchMappings.isExported()) {
 			links.add(entityLinks.linkFor(metadata.getDomainType()).slash(searchMappings.getPath())
@@ -141,7 +145,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@SuppressWarnings({ "unchecked" })
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = {
 			"application/x-spring-data-compact+json", "text/uri-list" })
-	public Resources<?> listEntitiesCompact(final RepositoryRestRequest repoRequest, Pageable pageable, Sort sort) {
+	public Resources<?> listEntitiesCompact(final RootResourceInformation repoRequest, Pageable pageable, Sort sort)
+			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 
 		Resources<?> resources = listEntities(repoRequest, pageable, sort);
 		List<Link> links = new ArrayList<Link>(resources.getLinks());
@@ -159,14 +164,12 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.POST, consumes = { "application/json" })
-	public ResponseEntity<ResourceSupport> createNewEntity(RepositoryRestRequest repoRequest,
-			PersistentEntityResource<?> incoming) {
+	public ResponseEntity<ResourceSupport> createNewEntity(RootResourceInformation resourceInformation,
+			PersistentEntityResource<?> incoming) throws HttpRequestMethodNotSupportedException {
 
-		RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
+		resourceInformation.verifySupportedMethod(HttpMethod.POST, ResourceType.COLLECTION);
 
-		if (!invoker.exposesSave()) {
-			throw new NoSuchMethodError();
-		}
+		RepositoryInvoker invoker = resourceInformation.getInvoker();
 
 		publisher.publishEvent(new BeforeCreateEvent(incoming.getContent()));
 		Object obj = invoker.invokeSave(incoming.getContent());
@@ -181,17 +184,20 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	/**
-	 * {@code GET / repository}/{id}}
+	 * {@code GET /$repository/$id}
 	 * 
-	 * @param repoRequest
+	 * @param resourceInformation
 	 * @param id
 	 * @return
-	 * @throws ResourceNotFoundException
+	 * @throws HttpRequestMethodNotSupportedException
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.GET)
-	public ResponseEntity<Resource<?>> getSingleEntity(RepositoryRestRequest repoRequest, @PathVariable String id) {
+	public ResponseEntity<Resource<?>> getSingleEntity(RootResourceInformation resourceInformation,
+			@PathVariable String id) throws HttpRequestMethodNotSupportedException {
 
-		RepositoryInvoker repoMethodInvoker = repoRequest.getRepositoryInvoker();
+		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.ITEM);
+
+		RepositoryInvoker repoMethodInvoker = resourceInformation.getInvoker();
 
 		if (!repoMethodInvoker.exposesFindOne()) {
 			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND);
@@ -207,29 +213,29 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	/**
-	 * {@code PUT / repository}/{id}} - Updates an existing entity or creates one at exactly that place.
+	 * {@code PUT /$repository/$id} - Updates an existing entity or creates one at exactly that place.
 	 * 
-	 * @param request
+	 * @param resourceInformation
 	 * @param incoming
 	 * @param id
 	 * @return
+	 * @throws HttpRequestMethodNotSupportedException
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PUT, consumes = { "application/json" })
-	public ResponseEntity<? extends ResourceSupport> updateEntity(RepositoryRestRequest request,
-			PersistentEntityResource<Object> incoming, @PathVariable String id) {
+	public ResponseEntity<? extends ResourceSupport> updateEntity(RootResourceInformation resourceInformation,
+			PersistentEntityResource<Object> incoming, @PathVariable String id) throws HttpRequestMethodNotSupportedException {
 
-		RepositoryInvoker invoker = request.getRepositoryInvoker();
-		if (!invoker.exposesSave() || !invoker.exposesFindOne()) {
-			return new ResponseEntity<Resource<?>>(HttpStatus.METHOD_NOT_ALLOWED);
-		}
+		resourceInformation.verifySupportedMethod(HttpMethod.PUT, ResourceType.ITEM);
+
+		RepositoryInvoker invoker = resourceInformation.getInvoker();
 
 		Object domainObj = converter.convert(id, STRING_TYPE,
-				TypeDescriptor.valueOf(request.getPersistentEntity().getType()));
+				TypeDescriptor.valueOf(resourceInformation.getPersistentEntity().getType()));
 		if (null == domainObj) {
 			BeanWrapper<?, Object> incomingWrapper = BeanWrapper.create(incoming.getContent(), conversionService);
 			PersistentProperty<?> idProp = incoming.getPersistentEntity().getIdProperty();
 			incomingWrapper.setProperty(idProp, conversionService.convert(id, idProp.getType()));
-			return createNewEntity(request, incoming);
+			return createNewEntity(resourceInformation, incoming);
 		}
 
 		domainObjectMerger.merge(incoming.getContent(), domainObj);
@@ -250,14 +256,12 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.DELETE)
-	public ResponseEntity<?> deleteEntity(final RepositoryRestRequest repoRequest, @PathVariable final String id)
+	public ResponseEntity<?> deleteEntity(final RootResourceInformation resourceInformation, @PathVariable final String id)
 			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 
-		RepositoryInvoker invoker = repoRequest.getRepositoryInvoker();
+		resourceInformation.verifySupportedMethod(HttpMethod.DELETE, ResourceType.ITEM);
 
-		if (!invoker.exposesDelete() || !invoker.exposesFindOne()) {
-			throw new HttpRequestMethodNotSupportedException(RequestMethod.DELETE.toString());
-		}
+		RepositoryInvoker invoker = resourceInformation.getInvoker();
 
 		// TODO: re-enable not exposing delete method if hidden
 
@@ -274,5 +278,4 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
 	}
-
 }

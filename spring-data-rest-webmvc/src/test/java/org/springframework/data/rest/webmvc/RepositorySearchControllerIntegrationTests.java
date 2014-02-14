@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	@Test
 	public void rendersCorrectSearchLinksForPersons() {
 
-		RepositoryRestRequest request = getRequest(Person.class);
+		RootResourceInformation request = getResourceInformation(Person.class);
 		ResourceSupport resource = controller.listSearches(request);
 
 		ResourceTester tester = ResourceTester.of(resource);
@@ -70,24 +70,23 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	@Test(expected = ResourceNotFoundException.class)
 	public void returns404ForUnexportedRepository() {
 
-		RepositoryRestRequest request = getRequest(CreditCard.class);
-		controller.listSearches(request);
+		controller.listSearches(getResourceInformation(CreditCard.class));
 	}
 
 	@Test(expected = ResourceNotFoundException.class)
 	public void returns404ForRepositoryWithoutSearches() {
 
-		RepositoryRestRequest request = getRequest(Order.class);
-		controller.listSearches(request);
+		controller.listSearches(getResourceInformation(Order.class));
 	}
 
 	@Test
 	public void executesSearchAgainstRepository() {
 
 		RequestParameters parameters = new RequestParameters("firstName", "John");
-		RepositoryRestRequest request = getRequest(Person.class, parameters);
+		RootResourceInformation resourceInformation = getResourceInformation(Person.class);
 
-		ResponseEntity<Resources<?>> response = controller.executeSearch(request, "firstname", null);
+		ResponseEntity<Resources<?>> response = controller.executeSearch(resourceInformation, getRequest(parameters),
+				"firstname", null);
 
 		ResourceTester tester = ResourceTester.of(response.getBody());
 		PagedResources<Object> pagedResources = tester.assertIsPage();

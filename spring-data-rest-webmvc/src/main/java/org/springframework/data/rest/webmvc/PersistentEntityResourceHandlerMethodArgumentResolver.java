@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,21 +41,22 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	private static final String ERROR_MESSAGE = "Could not read an object of type %s from the request! Converter %s returned null!";
 	private static final String NO_CONVERTER_FOUND = "No suitable HttpMessageConverter found to read request body into object of type %s from request with content type of %s!";
 
-	private final RepositoryRestRequestHandlerMethodArgumentResolver repoRequestResolver;
+	private final RootResourceInformationHandlerMethodArgumentResolver repoRequestResolver;
 	private final List<HttpMessageConverter<?>> messageConverters;
 
 	/**
 	 * Creates a new {@link PersistentEntityResourceHandlerMethodArgumentResolver} for the given
-	 * {@link HttpMessageConverter}s and {@link RepositoryRestRequestHandlerMethodArgumentResolver}..
+	 * {@link HttpMessageConverter}s and {@link RootResourceInformationHandlerMethodArgumentResolver}..
 	 * 
 	 * @param messageConverters must not be {@literal null}.
 	 * @param repositoryRequestResolver must not be {@literal null}.
 	 */
 	public PersistentEntityResourceHandlerMethodArgumentResolver(List<HttpMessageConverter<?>> messageConverters,
-			RepositoryRestRequestHandlerMethodArgumentResolver repositoryRequestResolver) {
+			RootResourceInformationHandlerMethodArgumentResolver repositoryRequestResolver) {
 
 		Assert.notEmpty(messageConverters, "MessageConverters must not be null or empty!");
-		Assert.notNull(repositoryRequestResolver, "RepositoryRestRequestHandlerMethodArgumentResolver must not be empty!");
+		Assert
+				.notNull(repositoryRequestResolver, "RootResourceInformationHandlerMethodArgumentResolver must not be empty!");
 
 		this.messageConverters = messageConverters;
 		this.repoRequestResolver = repositoryRequestResolver;
@@ -78,13 +79,14 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-		RepositoryRestRequest repoRequest = (RepositoryRestRequest) repoRequestResolver.resolveArgument(parameter,
-				mavContainer, webRequest, binderFactory);
+
+		RootResourceInformation resourceInformation = repoRequestResolver.resolveArgument(parameter, mavContainer,
+				webRequest, binderFactory);
 
 		HttpServletRequest nativeRequest = webRequest.getNativeRequest(HttpServletRequest.class);
 		ServletServerHttpRequest request = new ServletServerHttpRequest(nativeRequest);
 
-		Class<?> domainType = repoRequest.getPersistentEntity().getType();
+		Class<?> domainType = resourceInformation.getPersistentEntity().getType();
 		MediaType contentType = request.getHeaders().getContentType();
 
 		for (HttpMessageConverter converter : messageConverters) {
@@ -99,7 +101,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 				throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType, converter));
 			}
 
-			return new PersistentEntityResource<Object>(repoRequest.getPersistentEntity(), obj);
+			return new PersistentEntityResource<Object>(resourceInformation.getPersistentEntity(), obj);
 		}
 
 		throw new HttpMessageNotReadableException(String.format(NO_CONVERTER_FOUND, domainType, contentType));
