@@ -16,9 +16,10 @@
 package org.springframework.data.rest.webmvc.json;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,17 +136,13 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			links.addAll(resource.getLinks());
 
 			final Map<String, Object> model = new LinkedHashMap<String, Object>();
+			final Collection<String> fieldsToIgnore = new HashSet<String>();
 
-			String[] fieldsToIgnore = new String[]{};
+			JsonIgnoreProperties ann = entity.getType().getAnnotation(JsonIgnoreProperties.class);
 
-			for (Annotation annotation : entity.getType().getAnnotations()) {
-				if (annotation.annotationType().equals(JsonIgnoreProperties.class)) {
-					JsonIgnoreProperties ann = (JsonIgnoreProperties)annotation;
-					fieldsToIgnore = ann.value();
-					break;
-				}
+			if (ann != null) {
+				fieldsToIgnore.addAll(Arrays.asList(ann.value()));
 			}
-			final String[] finalFieldsToIgnore = fieldsToIgnore;
 
 			try {
 
@@ -165,22 +162,12 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 							return;
 						}
 
-						final Method getter = property.getGetter();
-						if (getter != null) {
-							final Annotation[] annotations = getter.getAnnotations();
-							for (Annotation annotation : annotations) {
-								if (annotation.annotationType().equals(JsonIgnore.class)) {
-									if (((JsonIgnore)annotation).value()) {
-										return;
-									}
-								}
-							}
+						if (property.isAnnotationPresent(JsonIgnore.class)) {
+							return;
 						}
 
-						for (String fieldToIgnore : finalFieldsToIgnore) {
-							if (property.getName().equals(fieldToIgnore)) {
-								return;
-							}
+						if (fieldsToIgnore.contains(property.getName())) {
+							return;
 						}
 
 						// Property is a normal or non-managed property.
@@ -201,6 +188,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 						PersistentProperty<?> property = association.getInverse();
 
 						if (maybeAddAssociationLink(builder, mappings, property, links)) {
+							return;
+						}
+
+						if (property.isAnnotationPresent(JsonIgnore.class)) {
 							return;
 						}
 
