@@ -29,8 +29,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
+import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
+import org.springframework.data.rest.webmvc.util.TestUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverer;
 import org.springframework.hateoas.hal.HalLinkDiscoverer;
@@ -42,8 +44,11 @@ import org.springframework.web.util.UriTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
+ * Integration tests for entity (de)serialization.
+ * 
  * @author Jon Brisbin
  * @author Greg Turnquist
+ * @author Oliver Gierke
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RepositoryTestsConfig.class)
@@ -110,5 +115,47 @@ public class PersistentEntitySerializationTests {
 
 		Link siblingLink = linkDiscoverer.findLinkWithRel("siblings", s);
 		assertThat(siblingLink.getHref(), endsWith(new UriTemplate("/{id}/siblings").expand(person.getId()).toString()));
+	}
+
+	/**
+	 * @see DATAREST-248
+	 */
+	@Test
+	public void deserializesPersonWithLinkToOtherPersonCorrectly() throws Exception {
+
+		Person father = people.save(new Person("John", "Doe"));
+
+		String child = String.format("{ \"firstName\" : \"Bilbo\", \"father\" : \"/persons/%s\"}", father.getId());
+		Person result = mapper.readValue(child, Person.class);
+
+		assertThat(result.getFather(), is(father));
+	}
+
+	/**
+	 * @see DATAREST-248
+	 */
+	@Test
+	public void deserializesPersonWithLinkToOtherPersonsCorrectly() throws Exception {
+
+		Person firstSibling = people.save(new Person("John", "Doe"));
+		Person secondSibling = people.save(new Person("Dave", "Doe"));
+
+		String child = String.format("{ \"firstName\" : \"Bilbo\", \"siblings\" : [\"/persons/%s\", \"/persons/%s\"]}",
+				firstSibling.getId(), secondSibling.getId());
+		Person result = mapper.readValue(child, Person.class);
+
+		assertThat(result.getSiblings(), hasItems(firstSibling, secondSibling));
+	}
+
+	/**
+	 * @see DATAREST-248
+	 */
+	@Test
+	public void deserializesEmbeddedAssociationsCorrectly() throws Exception {
+
+		String content = TestUtils.readFileFromClasspath("order.json");
+
+		Order order = mapper.readValue(content, Order.class);
+		assertThat(order.getLineItems(), hasSize(2));
 	}
 }

@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.jpa;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,12 +26,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
@@ -90,7 +89,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	 */
 	@Override
 	protected Map<String, String> getPayloadToPost() throws Exception {
-		return Collections.singletonMap("people", readFile("person.json"));
+		return Collections.singletonMap("people", readFileFromClasspath("person.json"));
 	}
 
 	/* 
@@ -172,7 +171,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		mvc.perform(//
 				put("/orders/{id}", 4711).//
-						content(readFile("order.json")).contentType(MediaType.APPLICATION_JSON)//
+						content(readFileFromClasspath("order.json")).contentType(MediaType.APPLICATION_JSON)//
 		).andExpect(status().isCreated());
 	}
 
@@ -445,26 +444,6 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		assertThat(persons, hasSize(siblingNames.length));
 		assertThat(persons, hasItems(siblingNames));
-	}
-
-	private static String readFile(String name) throws Exception {
-
-		ClassPathResource file = new ClassPathResource(name, JpaWebTests.class);
-		StringBuilder builder = new StringBuilder();
-
-		Scanner scanner = new Scanner(file.getFile(), "UTF-8");
-
-		try {
-
-			while (scanner.hasNextLine()) {
-				builder.append(scanner.nextLine());
-			}
-
-		} finally {
-			scanner.close();
-		}
-
-		return builder.toString();
 	}
 
 	private static String toUriList(Link... links) {

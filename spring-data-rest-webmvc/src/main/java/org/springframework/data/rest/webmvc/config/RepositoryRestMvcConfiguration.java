@@ -36,7 +36,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.core.UriDomainClassConverter;
+import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AnnotatedHandlerBeanPostProcessor;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
@@ -51,8 +51,8 @@ import org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMetho
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
-import org.springframework.data.rest.webmvc.RootResourceInformationHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.ResourceMetadataHandlerMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.RootResourceInformationHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
@@ -148,8 +148,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public UriDomainClassConverter uriDomainClassConverter() {
-		return new UriDomainClassConverter(repositories(), domainClassConverter());
+	public UriToEntityConverter uriToEntityConverter() {
+		return new UriToEntityConverter(repositories(), domainClassConverter());
 	}
 
 	/**
@@ -428,7 +428,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public Module persistentEntityJackson2Module() {
-		return new PersistentEntityJackson2Module(resourceMappings(), defaultConversionService());
+		return new PersistentEntityJackson2Module(resourceMappings(), repositories(), config(), uriToEntityConverter());
 	}
 
 	/**

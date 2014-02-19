@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.core.UriDomainClassConverter;
+import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
@@ -42,6 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * @author Jon Brisbin
  * @author Greg Trunquist
+ * @author Oliver Gierke
  */
 @Configuration
 @Import({ JpaRepositoryConfig.class })
@@ -85,14 +86,14 @@ public class RepositoryTestsConfig {
 	}
 
 	@Bean
-	public UriDomainClassConverter uriDomainClassConverter() {
-		return new UriDomainClassConverter(repositories(), domainClassConverter());
+	public UriToEntityConverter uriToEntityConverter() {
+		return new UriToEntityConverter(repositories(), domainClassConverter());
 	}
 
 	@Bean
 	public Module persistentEntityModule() {
-		return new PersistentEntityJackson2Module(new ResourceMappings(config(), repositories()),
-				defaultConversionService());
+		return new PersistentEntityJackson2Module(new ResourceMappings(config(), repositories()), repositories(), config(),
+				uriToEntityConverter());
 	}
 
 	@Bean

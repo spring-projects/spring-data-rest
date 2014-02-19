@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.util.Assert;
 
 /**
@@ -33,7 +34,7 @@ import org.springframework.util.Assert;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public class UriDomainClassConverter implements ConditionalGenericConverter {
+public class UriToEntityConverter implements ConditionalGenericConverter {
 
 	private static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
 
@@ -41,14 +42,15 @@ public class UriDomainClassConverter implements ConditionalGenericConverter {
 	private final DomainClassConverter<?> domainClassConverter;
 	private final Set<ConvertiblePair> convertiblePairs;
 
+	private ResourceMappings mappings;
+
 	/**
-	 * Creates a new {@link UriDomainClassConverter} using the given {@link Repositories} and {@link DomainClassConverter}
-	 * .
+	 * Creates a new {@link UriToEntityConverter} using the given {@link Repositories} and {@link DomainClassConverter}.
 	 * 
 	 * @param repositories must not be {@literal null}.
 	 * @param domainClassConverter must not be {@literal null}.
 	 */
-	public UriDomainClassConverter(Repositories repositories, DomainClassConverter<?> domainClassConverter) {
+	public UriToEntityConverter(Repositories repositories, DomainClassConverter<?> domainClassConverter) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(domainClassConverter, "DomainClassConverter must not be null!");
@@ -68,6 +70,8 @@ public class UriDomainClassConverter implements ConditionalGenericConverter {
 	 */
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+
+		mappings.exportsMappingFor(targetType.getType());
 
 		return URI.class.isAssignableFrom(sourceType.getType())
 				&& repositories.getPersistentEntity(targetType.getType()) != null;
@@ -106,5 +110,4 @@ public class UriDomainClassConverter implements ConditionalGenericConverter {
 
 		return domainClassConverter.convert(parts[parts.length - 1], STRING_TYPE, targetType);
 	}
-
 }
