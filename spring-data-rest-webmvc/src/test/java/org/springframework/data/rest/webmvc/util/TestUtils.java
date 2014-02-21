@@ -21,6 +21,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.rest.webmvc.jpa.JpaWebTests;
 
 /**
+ * Test helper methods.
+ * 
  * @author Oliver Gierke
  */
 public class TestUtils {

@@ -190,10 +190,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
 
 					PersistentProperty<?> property = association.getInverse();
-
-					if (maybeAddAssociationLink(builder, mappings, property, links)) {
-						return;
-					}
+					maybeAddAssociationLink(builder, mappings, property, links);
 				}
 			});
 
@@ -250,23 +247,12 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 				PersistentProperty<?> persistentProperty = entity.getPersistentProperty(writer.getName());
 
-				if (persistentProperty.isAssociation()) {
-
-					if (!resourceMetadata.isManagedResource(persistentProperty)) {
-						continue;
-					}
-
-					if (mappings.getMappingFor(persistentProperty.getActualType()).isExported()) {
-						continue;
-					}
-
-					ResourceMapping propertyMapping = resourceMetadata.getMappingFor(persistentProperty);
-
-					if (!propertyMapping.isExported()) {
-						continue;
-					}
+				// Skip exported associations
+				if (persistentProperty.isAssociation() && resourceMetadata.isExported(persistentProperty)) {
+					continue;
 				}
 
+				// Skip ids unless explicitly configured to expose
 				if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(entity.getType())) {
 					continue;
 				}

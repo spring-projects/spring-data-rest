@@ -259,6 +259,11 @@ public abstract class AbstractWebIntegrationTests {
 		Object jsonPathResult = JsonPath.read(response.getContentAsString(), path);
 		assertThat(jsonPathResult, is(notNullValue()));
 
+		if (jsonPathResult instanceof JSONArray) {
+			JSONArray array = (JSONArray) jsonPathResult;
+			assertThat(array, hasSize(greaterThan(0)));
+		}
+
 		return (T) jsonPathResult;
 	}
 
@@ -267,8 +272,7 @@ public abstract class AbstractWebIntegrationTests {
 		try {
 			JsonPath.read(response.getContentAsString(), path);
 			fail(path + " should have failed");
-		} catch (InvalidPathException e) {
-		}
+		} catch (InvalidPathException e) {}
 	}
 
 	protected String assertJsonPathEquals(String path, String expected, MockHttpServletResponse response)
