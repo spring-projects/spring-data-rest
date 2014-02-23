@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.*;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Before;
@@ -29,15 +30,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
+import org.springframework.data.rest.webmvc.jpa.LineItem;
 import org.springframework.data.rest.webmvc.jpa.Order;
+import org.springframework.data.rest.webmvc.jpa.OrderRepository;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
+import org.springframework.data.rest.webmvc.mongodb.Address;
+import org.springframework.data.rest.webmvc.mongodb.User;
 import org.springframework.data.rest.webmvc.util.TestUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverer;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.hal.HalLinkDiscoverer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriTemplate;
 
@@ -60,6 +68,7 @@ public class PersistentEntitySerializationTests {
 	@Autowired ObjectMapper mapper;
 	@Autowired Repositories repositories;
 	@Autowired PersonRepository people;
+	@Autowired OrderRepository orders;
 
 	LinkDiscoverer linkDiscoverer;
 
@@ -157,5 +166,53 @@ public class PersistentEntitySerializationTests {
 
 		Order order = mapper.readValue(content, Order.class);
 		assertThat(order.getLineItems(), hasSize(2));
+	}
+
+	/**
+	 * @see DATAREST-250
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void serializesEmbeddedReferencesCorrectly() throws Exception {
+
+		User user = new User();
+		user.address = new Address();
+		user.address.street = "Street";
+
+		PersistentEntityResource<User> userResource = new PersistentEntityResource<User>(
+				repositories.getPersistentEntity(User.class), user);
+
+		PagedResources<PersistentEntityResource<User>> persistentEntityResource = new PagedResources<PersistentEntityResource<User>>(
+				Arrays.asList(userResource), new PageMetadata(1, 0, 10));
+
+		assertThat(
+				mapper.writeValueAsString(persistentEntityResource),
+				is("{\"_embedded\":{\"users\":[{\"address\":{\"street\":\"Street\"}}]},\"page\":{\"size\":1,\"totalElements\":10,\"totalPages\":10,\"number\":0}}"));
+	}
+
+	/**
+	 * @see DATAREST-250
+	 */
+	@Test
+	public void serializesReferencesWithinPagedResourceCorrectly() throws Exception {
+
+		Person creator = new Person("Dave", "Matthews");
+
+		Order order = new Order(creator);
+		ReflectionTestUtils.setField(order, "id", 1L);
+		order.add(new LineItem("first"));
+		order.add(new LineItem("second"));
+
+		PersistentEntityResource<Order> orderResource = new PersistentEntityResource<Order>(
+				repositories.getPersistentEntity(Order.class), order);
+
+		@SuppressWarnings("unchecked")
+		PagedResources<PersistentEntityResource<Order>> persistentEntityResource = new PagedResources<PersistentEntityResource<Order>>(
+				Arrays.asList(orderResource), new PageMetadata(1, 0, 10));
+
+		assertThat(mapper.writeValueAsString(persistentEntityResource),
+				is("{\"_embedded\":{\"orders\":[{\"lineItems\":[{\"name\":\"first\"},{\"name\":\"second\"}]"
+						+ ",\"_links\":{\"creator\":{\"href\":\"http://localhost:8080/orders/1/creator\"}}}]},\""
+						+ "page\":{\"size\":1,\"totalElements\":10,\"totalPages\":10,\"number\":0}}"));
 	}
 }

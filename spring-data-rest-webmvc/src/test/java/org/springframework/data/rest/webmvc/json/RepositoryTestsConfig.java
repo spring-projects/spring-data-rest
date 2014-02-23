@@ -30,11 +30,13 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
+import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,7 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  */
 @Configuration
-@Import({ JpaRepositoryConfig.class })
+@Import({ JpaRepositoryConfig.class, MongoDbRepositoryConfig.class })
 @SuppressWarnings("deprecation")
 public class RepositoryTestsConfig {
 
@@ -106,6 +108,7 @@ public class RepositoryTestsConfig {
 		mapper.registerModule(persistentEntityModule());
 		mapper.setHandlerInstantiator(new Jackson2HalModule.HalHandlerInstantiator(relProvider, null));
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper.setSerializationInclusion(Include.NON_EMPTY);
 
 		return mapper;
 	}
