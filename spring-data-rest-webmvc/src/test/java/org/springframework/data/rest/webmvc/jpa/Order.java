@@ -15,8 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -39,7 +39,7 @@ public class Order {
 	@ManyToOne(fetch = FetchType.LAZY)//
 	private Person creator;
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)//
-	private Set<LineItem> lineItems = new HashSet<LineItem>();
+	private List<LineItem> lineItems = new ArrayList<LineItem>();
 
 	public Order(Person creator) {
 		this.creator = creator;
@@ -60,7 +60,7 @@ public class Order {
 	/**
 	 * @return the lineItems
 	 */
-	public Set<LineItem> getLineItems() {
+	public List<LineItem> getLineItems() {
 		return lineItems;
 	}
 
