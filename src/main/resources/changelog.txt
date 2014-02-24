@@ -1,6 +1,27 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.0.0.RELEASE (2014-02-24)
+---------------------------------------------
+** Bug
+    * [DATAREST-50] - Properties with null values are always omitted from the JSON
+    * [DATAREST-117] - @JsonIgnore and other Jackson annotations are ignored
+    * [DATAREST-143] - PUT of entity with links fails..
+    * [DATAREST-216] - AOP proxying does not work for findOne(ID) method
+    * [DATAREST-217] - Crud or PagingAndSorting based repository entites still listed when findAll method is 'exported = false'
+    * [DATAREST-238] - PUT on entity with self links causes changes to be overwritten with old values
+    * [DATAREST-246] - ValidatingRepositoryEventListener should use Repositories more lenient
+    * [DATAREST-250] - Embedded associations do not get rendered
+
+** Improvement
+    * [DATAREST-95] - Add support for partial updates using PATCH
+    * [DATAREST-228] - Add enforcer plugin to the maven build process
+    * [DATAREST-248] - Creating resources using POST should support providing URIs for non-optional associations
+    * [DATAREST-252] - Documentation overhaul
+
+** Task
+    * [DATAREST-249] - Release 2.0 GA
+
 Changes in version 2.0.0.RC1 (2014-01-29)
 -----------------------------------------
 ** Bug
