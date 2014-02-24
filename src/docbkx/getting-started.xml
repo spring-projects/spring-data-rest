@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0"
+         xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+         xml:id="install-chapter" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:ns="http://docbook.org/ns/docbook">
+  <title xml:id="getting-started">Getting started</title>
+
+  <section>
+    <title xml:id="getting-started.introduction">Introduction</title>
+
+    <para>Spring Data REST is itself a Spring MVC application and is designed
+    in such a way that it should integrate with your existing Spring MVC
+    applications with very little effort. An existing (or future) layer of
+    services can run alongside Spring Data REST with only minor
+    considerations.</para>
+
+    <para>To install Spring Data REST alongside your application, simply add
+    the required dependencies, include the stock <code>@Configuration</code>
+    class <classname>RepositoryRestMvcConfiguration</classname> (or subclass
+    it and perform any required manual configuration), and map some URLs to be
+    managed by Spring Data REST.</para>
+  </section>
+
+  <section>
+    <title xml:base="getting-started.gradle">Adding Spring Data REST to a
+    Gradle project</title>
+
+    <para>To add Spring Data REST to a Gradle-based project, add the
+    <code>spring-data-rest-webmvc</code> artifact to your compile-time
+    dependencies: <programlisting language="groovy">dependencies {
+  … other project dependencies
+  compile "org.springframework.data:spring-data-rest-webmvc:${spring-data-rest-version}"
+}</programlisting></para>
+  </section>
+
+  <section>
+    <title xml:id="getting-started.maven">Adding Spring Data REST to a Maven
+    project</title>
+
+    <para>To add Spring Data REST to a Maven-based project, add the
+    <code>spring-data-rest-webmvc</code> artifact to your compile-time
+    dependencies: <programlisting language="xml">&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.data&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-data-rest-webmvc&lt;/artifactId&gt;
+  &lt;version&gt;${spring-data-rest-version}&lt;/version&gt;
+&lt;/dependency&gt;</programlisting></para>
+  </section>
+
+  <section>
+    <title xml:id="getting-started.configuration">Configuring Spring Data
+    REST</title>
+
+    <para>To install Spring Data REST alongside your existing Spring MVC
+    application, you need to include the appropriate MVC configuration. Spring
+    Data REST configuration is defined in a class called
+    <classname>RepositoryRestMvcConfiguration</classname>. You can either
+    import this class into your existing configuration using an
+    <code>@Import</code> annotation or you can subclass it and override any of
+    the <code>configureXXX</code> methods to add your own configuration to
+    that of Spring Data REST.</para>
+
+    <para>In the following example, we'll subclass the standard
+    <classname>RepositoryRestMvcConfiguration</classname> and add some
+    <classname>ResourceMapping</classname> configurations for the
+    <classname>Person</classname> domain object to alter how the JSON will
+    look and how the links to related entities will be handled.
+    <programlisting language="java">@Configuration
+@Import(RepositoryRestMvcConfiguration.class)
+public class MyWebConfiguration extends RepositoryRestMvcConfiguration {
+
+  // … further configuration
+}</programlisting></para>
+
+    <para>Make sure you also configure Spring Data repositories for the store
+    you use. For details on that, please consult the reference documentation
+    for the corresponding Spring Data module.</para>
+  </section>
+
+  <section>
+    <title xml:id="getting-started.bootstrap">Starting the application</title>
+
+    <para>As Spring Data REST is build on SpringMVC, you simply stick to the
+    means you use to bootstrap Spring MVC. In a Servlet 3.0 environment this
+    might look something like this:</para>
+
+    <para><programlisting language="java">public class RestExporterWebInitializer implements WebApplicationInitializer {
+
+  @Override public void onStartup(ServletContext servletContext) throws ServletException {
+
+    // Bootstrap repositories in root application context
+    AnnotationConfigWebApplicationContext rootCtx = new AnnotationConfigWebApplicationContext();
+    rootCtx.register(JpaRepositoryConfig.class); // Include JPA entities, Repositories
+    servletContext.addListener(new ContextLoaderListener(rootCtx));
+
+    // Enable Spring Data REST in the DispatcherServlet
+    AnnotationConfigWebApplicationContext webCtx = new AnnotationConfigWebApplicationContext();
+    webCtx.register(MyWebConfiguration.class);
+
+    DispatcherServlet dispatcherServlet = new DispatcherServlet(webCtx);
+    ServletRegistration.Dynamic reg = servletContext.addServlet("rest-exporter", dispatcherServlet);
+    reg.setLoadOnStartup(1);
+    reg.addMapping("/*");
+  }
+}</programlisting></para>
+
+    <para>The equivalent of the above in a standard web.xml will also work
+    identically to this configuration if you are still in a servlet 2.5
+    environment. When you deploy this application to your servlet container,
+    you should be able to see what repositories are exported by accessing the
+    root of the application.</para>
+  </section>
+</chapter>

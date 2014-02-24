@@ -1,53 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<book xml:id="spring-data-rest-reference"
+<book version="5.0"
+      xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd"
+      xml:id="spring-data-rest-reference"
       xmlns="http://docbook.org/ns/docbook"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://docbook.org/ns/docbook http://www.oasis-open.org/docbook/xml/5.0/xsd/docbook.xsd">
-
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:ns="http://docbook.org/ns/docbook">
   <info>
     <title>Spring Data REST Reference Documentation</title>
+
     <productname>Spring Data REST</productname>
 
-    <releaseinfo>${version}</releaseinfo>
+    <releaseinfo>version;</releaseinfo>
 
     <authorgroup>
       <author>
-        <personname>
-          <firstname>Jon</firstname>
-          <surname>Brisbin</surname>
-        </personname>
+        <personname><firstname>Jon</firstname>
+        <surname>Brisbin</surname></personname>
       </author>
+
       <author>
-        <personname>
-          <firstname>Oliver</firstname>
-          <surname>Gierke</surname>
-        </personname>
+        <personname><firstname>Oliver</firstname>
+        <surname>Gierke</surname></personname>
       </author>
     </authorgroup>
 
     <copyright>
-      <year>2012-2013</year>
+      <year>2012-2014</year>
     </copyright>
 
     <legalnotice>
-      <para>Copies of this document may be made for your own use and for distribution to others, provided that you do
-        not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether
-        distributed in print or electronically.
-      </para>
+      <para>Copies of this document may be made for your own use and for
+      distribution to others, provided that you do not charge any fee for such
+      copies and further provided that each copy contains this Copyright
+      Notice, whether distributed in print or electronically.</para>
     </legalnotice>
   </info>
 
-  <toc>
-
-  </toc>
+  <toc/>
 
   <xi:include href="intro.xml"/>
-  <xi:include href="install.xml"/>
-  <xi:include href="representations.xml"/>
-  <xi:include href="paging.xml"/>
-  <xi:include href="validation.xml"/>
-  <xi:include href="events.xml"/>
-  <xi:include href="rest-shell.xml"/>
 
+  <xi:include href="getting-started.xml"/>
+
+  <xi:include href="repository-resources.xml" />
+
+  <xi:include href="representations.xml"/>
+
+  <xi:include href="validation.xml"/>
+
+  <xi:include href="events.xml"/>
+  
 </book>

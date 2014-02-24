@@ -1,171 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter xml:id="intro-chapter"
-         xmlns="http://docbook.org/ns/docbook"
-         xmlns:xlink="http://www.w3.org/1999/xlink"
+<chapter xsi:schemaLocation="http://docbook.org/ns/docbook http://docbook.org/xml/5.0/xsd/docbook.xsd http://www.w3.org/1999/xlink http://docbook.org/xml/5.0/xsd/xlink.xsd"
+         xml:id="intro-chapter" xmlns="http://docbook.org/ns/docbook"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://docbook.org/ns/docbook http://www.oasis-open.org/docbook/xml/5.0/xsd/docbook.xsd
-         http://www.w3.org/1999/xlink http://www.oasis-open.org/docbook/xml/5.0/xsd/xlink.xsd">
-
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:ns="http://docbook.org/ns/docbook">
   <title>Introduction</title>
 
-  <para>Spring Data REST makes exporting domain objects to RESTful clients using
-    <link
-        xlink:href="http://en.wikipedia.org/wiki/HATEOAS">HATEOAS
-    </link>
-    principles very easy. It exposes the CRUD methods of the Spring Data
-    <link
-        xlink:href="http://static.springsource.org/spring-data/commons/docs/current/api/org/springframework/data/repository/CrudRepository.html">
-      <classname>CrudRepository</classname>
-    </link>
-    interface to HTTP. Spring Data REST also reads the body of HTTP requests and interprets them as domain objects. It
-    recognizes relationships between entities and represents that relationship in the form of a<code>Link</code>.
-  </para>
+  <para>REST web services have become the number one means for application
+  integration on the web. In its core, REST defines that a system consists of
+  resources that clients interact with. These resources are implemented in a
+  hypermedia drive way. Spring MVC offers a solid foundation to build theses
+  kinds of services but implementic very basic functionality of REST web
+  service can be tedious and result in a lot of boilderplate code.</para>
 
-  <section>
-    <title>HTTP Verb to CRUD Method Mapping</title>
-
-    <para>Spring Data REST translates HTTP calls to method calls by mapping the HTTP verbs to CRUD methods. The
-      following table illustrates the way in which an HTTP verb is mapped to a
-      <code>CrudRepository</code>
-      method.
-    </para>
-
-    <table>
-      <caption>HTTP verb to CRUD method mapping</caption>
-
-      <thead>
-        <tr>
-          <th>Verb</th>
-          <th>Method</th>
-        </tr>
-      </thead>
-      <tr>
-        <td>
-          <code>GET</code>
-        </td>
-        <td>
-          <code>CrudRepository&lt;ID,T&gt;.findOne(ID id)</code>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <code>POST</code>
-        </td>
-        <td>
-          <code>CrudRepository&lt;ID,T&gt;.save(T entity)</code>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <code>PUT</code>
-        </td>
-        <td>
-          <code>CrudRepository&lt;ID,T&gt;.save(T entity)</code>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <code>DELETE</code>
-        </td>
-        <td>
-          <code>CrudRepository&lt;ID,T&gt;.delete(ID id)</code>
-        </td>
-      </tr>
-    </table>
-
-    <para>By default, all of these methods are exported to clients. By placing an annotation on your
-      <classname>CrudRepository</classname>
-      subinterface, however, you can turn access to a method off. This is discussed in more detail in the section on
-      configuration.
-    </para>
-  </section>
-
-  <section xml:id="hateoas-discoverability">
-    <title>Resource Discoverability</title>
-
-    <para>A core principle of HATEOAS is that resources should be discoverable through the publication of links that
-      point to the available resources. There are a number of ways to accomplish this but no real standard way. Spring
-      Data REST uses a link method that is consistent across Spring Data REST: it provides links in a property called
-      <code>links</code>. That property is an array of objects that take the form of something resembling an
-      <link xlink:href="http://tools.ietf.org/html/rfc4287#section-4.2.7">atom:link</link>
-      element in the
-      <link xlink:href="http://tools.ietf.org/html/rfc4287">Atom XML namespace</link>.
-    </para>
-
-    <para>Resource discovery starts at the top level of the application. By issuing a request to the root URL under
-      which the Spring Data REST application is deployed, the client can extract a set of links from the returned JSON
-      object that represent the next level of resources that are available to the client.
-    </para>
-
-    <para>For example, to discover what resources are available at the root of the application, issue an HTTP GET to
-      the root URL:
-    </para>
-
-    <programlisting><![CDATA[curl -v http://localhost:8080/
-
-< HTTP/1.1 200 OK
-< Content-Type: application/json
-<
-{
-  "links" : [ {
-    "rel" : "customer",
-    "href" : "http://localhost:8080/customer"
-  }, {
-    "rel" : "profile",
-    "href" : "http://localhost:8080/profile"
-  }, {
-    "rel" : "order",
-    "href" : "http://localhost:8080/order"
-  }, {
-    "rel" : "people",
-    "href" : "http://localhost:8080/people"
-  }, {
-    "rel" : "product",
-    "href" : "http://localhost:8080/product"
-  } ],
-  "content" : [ ]
-}]]></programlisting>
-
-    <para>The
-      <property>links</property>
-      property of the result document contains an array of objects that have
-      <property>rel</property>
-      and
-      <property>href</property>
-      properties on them.
-    </para>
-
-    <section>
-      <title>Compact vs. Verbose</title>
-
-      <para>When issuing a request to a resource, the default behavior is to provide as much information as possible in
-        the body of the response. In the case of accessing a
-        <classname>Repository</classname>
-        resource, Spring Data REST will inline entities into the body of the response. This could lead to poor network
-        performance in the case of a very large number of entities. To reduce the amount of data sent back in the
-        response, a user agent can request the special content type
-        <code>application/x-spring-data-compact+json</code>
-        by placing this in the request
-        <code>Accept</code>
-        header. Rather than inlining the entities, this content-type provides a link to each entity in the
-        <property>links</property>
-        property.
-      </para>
-
-      <programlisting><![CDATA[curl -v -H "Accept: application/x-spring-data-compact+json" http://localhost:8080/customer
-
-< HTTP/1.1 200 OK
-< Content-Type: application/x-spring-data-compact+json
-<
-{
-  "links" : [ {
-    "rel" : "customer.search",
-    "href" : "http://localhost:8080/customer/search"
-  } ],
-  "content" : [ ]
-}]]></programlisting>
-    </section>
-
-  </section>
-
+  <para>Spring Data REST builds on top of Spring Data repositories and
+  automatically exports those as REST resources. It leverages hypermedia to
+  allow clients to find functionality exposed by the repositories and allows
+  to integrate the resources into related hypermedia based functionality as
+  easy as possible.</para>
 </chapter>
