@@ -72,7 +72,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	private static final String BASE_MAPPING = "/{repository}";
 
 	private final EntityLinks entityLinks;
-	private final PersistentEntityResourceAssembler<Object> perAssembler;
 	private final RepositoryRestConfiguration config;
 	private final ConversionService conversionService;
 	private final DomainObjectMerger domainObjectMerger;
@@ -82,13 +81,11 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@Autowired
 	public RepositoryEntityController(Repositories repositories, RepositoryRestConfiguration config,
 			EntityLinks entityLinks, PagedResourcesAssembler<Object> assembler,
-			PersistentEntityResourceAssembler<Object> perAssembler,
 			@Qualifier("defaultConversionService") ConversionService conversionService, DomainObjectMerger domainObjectMerger) {
 
-		super(assembler, perAssembler);
+		super(assembler);
 
 		this.entityLinks = entityLinks;
-		this.perAssembler = perAssembler;
 		this.config = config;
 		this.conversionService = conversionService;
 		this.domainObjectMerger = domainObjectMerger;
@@ -105,8 +102,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
-	public Resources<?> listEntities(final RootResourceInformation resourceInformation, Pageable pageable, Sort sort)
-			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
+	public Resources<?> getCollectionResource(final RootResourceInformation resourceInformation, Pageable pageable,
+			Sort sort, PersistentEntityResourceAssembler assembler) throws ResourceNotFoundException,
+			HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.COLLECTION);
 
@@ -133,7 +131,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 					.withRel(searchMappings.getRel()));
 		}
 
-		Resources<?> resources = resultToResources(results);
+		Resources<?> resources = resultToResources(results, assembler);
 		resources.add(links);
 		return resources;
 	}
@@ -142,10 +140,11 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@SuppressWarnings({ "unchecked" })
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = {
 			"application/x-spring-data-compact+json", "text/uri-list" })
-	public Resources<?> listEntitiesCompact(final RootResourceInformation repoRequest, Pageable pageable, Sort sort)
-			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
+	public Resources<?> getCollectionResourceCompact(RootResourceInformation repoRequest, Pageable pageable, Sort sort,
+			PersistentEntityResourceAssembler assembler) throws ResourceNotFoundException,
+			HttpRequestMethodNotSupportedException {
 
-		Resources<?> resources = listEntities(repoRequest, pageable, sort);
+		Resources<?> resources = getCollectionResource(repoRequest, pageable, sort, assembler);
 		List<Link> links = new ArrayList<Link>(resources.getLinks());
 
 		for (Resource<?> resource : ((Resources<Resource<?>>) resources).getContent()) {
@@ -170,11 +169,12 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.POST)
 	public ResponseEntity<ResourceSupport> postEntity(RootResourceInformation resourceInformation,
-			PersistentEntityResource<?> payload) throws HttpRequestMethodNotSupportedException {
+			PersistentEntityResource<?> payload, PersistentEntityResourceAssembler assembler)
+			throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.POST, ResourceType.COLLECTION);
 
-		return createAndReturn(payload.getContent(), resourceInformation.getInvoker());
+		return createAndReturn(payload.getContent(), resourceInformation.getInvoker(), assembler);
 	}
 
 	/**
@@ -186,8 +186,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @throws HttpRequestMethodNotSupportedException
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.GET)
-	public ResponseEntity<Resource<?>> getSingleEntity(RootResourceInformation resourceInformation,
-			@PathVariable String id) throws HttpRequestMethodNotSupportedException {
+	public ResponseEntity<Resource<?>> getItemResource(RootResourceInformation resourceInformation,
+			@PathVariable String id, PersistentEntityResourceAssembler assembler)
+			throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.ITEM);
 
@@ -203,7 +204,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity<Resource<?>>(perAssembler.toResource(domainObj), HttpStatus.OK);
+		return new ResponseEntity<Resource<?>>(assembler.toResource(domainObj), HttpStatus.OK);
 	}
 
 	/**
@@ -217,7 +218,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PUT)
 	public ResponseEntity<? extends ResourceSupport> putEntity(RootResourceInformation resourceInformation,
-			PersistentEntityResource<Object> payload, @PathVariable String id) throws HttpRequestMethodNotSupportedException {
+			PersistentEntityResource<Object> payload, @PathVariable String id, PersistentEntityResourceAssembler assembler)
+			throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PUT, ResourceType.ITEM);
 
@@ -229,10 +231,10 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			BeanWrapper<?, Object> incomingWrapper = BeanWrapper.create(payload.getContent(), conversionService);
 			incomingWrapper.setProperty(payload.getPersistentEntity().getIdProperty(), id);
 
-			return createAndReturn(incomingWrapper.getBean(), invoker);
+			return createAndReturn(incomingWrapper.getBean(), invoker, assembler);
 		}
 
-		return mergeAndReturn(payload.getContent(), domainObject, invoker, PUT);
+		return mergeAndReturn(payload.getContent(), domainObject, invoker, PUT, assembler);
 	}
 
 	/**
@@ -247,8 +249,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PATCH)
 	public ResponseEntity<ResourceSupport> patchEntity(RootResourceInformation resourceInformation,
-			PersistentEntityResource<Object> payload, @PathVariable String id) throws HttpRequestMethodNotSupportedException,
-			ResourceNotFoundException {
+			PersistentEntityResource<Object> payload, @PathVariable String id, PersistentEntityResourceAssembler assembler)
+			throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PATCH, ResourceType.ITEM);
 
@@ -258,7 +260,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throw new ResourceNotFoundException();
 		}
 
-		return mergeAndReturn(payload.getContent(), domainObject, resourceInformation.getInvoker(), PATCH);
+		return mergeAndReturn(payload.getContent(), domainObject, resourceInformation.getInvoker(), PATCH, assembler);
 	}
 
 	/**
@@ -304,7 +306,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @return
 	 */
 	private ResponseEntity<ResourceSupport> mergeAndReturn(Object incoming, Object domainObject,
-			RepositoryInvoker invoker, HttpMethod httpMethod) {
+			RepositoryInvoker invoker, HttpMethod httpMethod, PersistentEntityResourceAssembler assembler) {
 
 		NullHandlingPolicy nullPolicy = httpMethod.equals(PATCH) ? IGNORE_NULLS : APPLY_NULLS;
 		domainObjectMerger.merge(incoming, domainObject, nullPolicy);
@@ -316,11 +318,11 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		HttpHeaders headers = new HttpHeaders();
 
 		if (PUT.equals(httpMethod)) {
-			headers.setLocation(URI.create(perAssembler.getSelfLinkFor(obj).getHref()));
+			headers.setLocation(URI.create(assembler.getSelfLinkFor(obj).getHref()));
 		}
 
 		if (config.isReturnBodyOnUpdate()) {
-			return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, perAssembler.toResource(obj));
+			return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, assembler.toResource(obj));
 		} else {
 			return ControllerUtils.toEmptyResponse(HttpStatus.NO_CONTENT, headers);
 		}
@@ -333,16 +335,17 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @param invoker
 	 * @return
 	 */
-	private ResponseEntity<ResourceSupport> createAndReturn(Object domainObject, RepositoryInvoker invoker) {
+	private ResponseEntity<ResourceSupport> createAndReturn(Object domainObject, RepositoryInvoker invoker,
+			PersistentEntityResourceAssembler assembler) {
 
 		publisher.publishEvent(new BeforeCreateEvent(domainObject));
 		Object savedObject = invoker.invokeSave(domainObject);
 		publisher.publishEvent(new AfterCreateEvent(savedObject));
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(URI.create(perAssembler.getSelfLinkFor(savedObject).getHref()));
+		headers.setLocation(URI.create(assembler.getSelfLinkFor(savedObject).expand().getHref()));
 
-		PersistentEntityResource<Object> resource = config.isReturnBodyOnCreate() ? perAssembler.toResource(savedObject)
+		PersistentEntityResource<Object> resource = config.isReturnBodyOnCreate() ? assembler.toResource(savedObject)
 				: null;
 		return ControllerUtils.toResponseEntity(HttpStatus.CREATED, headers, resource);
 	}

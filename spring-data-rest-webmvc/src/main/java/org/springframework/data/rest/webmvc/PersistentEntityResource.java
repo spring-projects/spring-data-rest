@@ -34,8 +34,8 @@ public class PersistentEntityResource<T> extends Resource<T> {
 
 	private final PersistentEntity<?, ?> entity;
 
-	public static <T> PersistentEntityResource<T> wrap(PersistentEntity<?, ?> entity, T obj) {
-		return new PersistentEntityResource<T>(entity, obj);
+	public static <T> PersistentEntityResource<T> wrap(PersistentEntity<?, ?> entity, T obj, Link selfLink) {
+		return new PersistentEntityResource<T>(entity, obj, selfLink);
 	}
 
 	public PersistentEntityResource(PersistentEntity<?, ?> entity, T content, Link... links) {

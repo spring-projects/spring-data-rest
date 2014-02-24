@@ -46,6 +46,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 
 	@Autowired TestDataPopulator loader;
 	@Autowired RepositorySearchController controller;
+	@Autowired PersistentEntityResourceAssembler assembler;
 
 	@Before
 	public void setUp() {
@@ -86,7 +87,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		RootResourceInformation resourceInformation = getResourceInformation(Person.class);
 
 		ResponseEntity<Resources<?>> response = controller.executeSearch(resourceInformation, getRequest(parameters),
-				"firstname", null);
+				"firstname", null, assembler);
 
 		ResourceTester tester = ResourceTester.of(response.getBody());
 		PagedResources<Object> pagedResources = tester.assertIsPage();

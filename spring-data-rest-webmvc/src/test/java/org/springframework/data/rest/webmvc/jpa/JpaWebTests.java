@@ -40,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -428,6 +429,31 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		mvc.perform(post(link.getHref()).content("{}").contentType(MediaType.APPLICATION_JSON)).//
 				andExpect(status().isMethodNotAllowed());
+	}
+
+	/**
+	 * Checks, that the server only returns the properties contained in the projection requested.
+	 * 
+	 * @see OrderSummary
+	 * @see DATAREST-221
+	 */
+	@Test
+	public void returnsProjectionIfRequested() throws Exception {
+
+		Link orders = discoverUnique("orders");
+
+		MockHttpServletResponse response = request(orders);
+		Link orderLink = assertContentLinkWithRel("self", response, true).expand();
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(orderLink.getHref());
+		String uri = builder.queryParam("projection", "summary").build().toUriString();
+
+		response = mvc.perform(get(uri)). //
+				andExpect(status().isOk()). //
+				andExpect(jsonPath("$.price", is(2.5))).//
+				andReturn().getResponse();
+
+		assertJsonPathDoesntExist("$.lineItems", response);
 	}
 
 	/**

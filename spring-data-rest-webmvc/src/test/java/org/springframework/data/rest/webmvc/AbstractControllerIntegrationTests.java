@@ -18,6 +18,8 @@ package org.springframework.data.rest.webmvc;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
@@ -25,6 +27,7 @@ import org.springframework.data.rest.core.invoke.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
+import org.springframework.data.rest.webmvc.support.Projector;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -40,10 +43,19 @@ import org.springframework.web.context.request.WebRequest;
  * @author Oliver Gierke
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { RepositoryRestMvcConfiguration.class })
+@ContextConfiguration
 public abstract class AbstractControllerIntegrationTests {
 
 	public static final Path BASE = new Path("http://localhost");
+
+	@Configuration
+	static class TestConfiguration extends RepositoryRestMvcConfiguration {
+
+		@Bean
+		public PersistentEntityResourceAssembler persistentEntityResourceAssembler() {
+			return new PersistentEntityResourceAssembler(repositories(), entityLinks(), Projector.NoOpProjector.INSTANCE);
+		}
+	}
 
 	@Autowired Repositories repositories;
 	@Autowired RepositoryInvokerFactory invokerFactory;

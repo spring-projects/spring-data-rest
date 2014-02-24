@@ -29,15 +29,14 @@ import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimpleAssociationHandler;
-import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
-import org.springframework.data.rest.webmvc.support.RepositoryLinkBuilder;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.util.Assert;
@@ -99,12 +98,12 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
 		Assert.notNull(converter, "UriToEntityConverter must not be null!");
 
-		addSerializer(new PersistentEntityResourceSerializer(mappings, config));
+		addSerializer(new PersistentEntityResourceSerializer(mappings));
 		setSerializerModifier(new AssociationOmittingSerializerModifier(repositories, mappings, config));
 		setDeserializerModifier(new AssociationUriResolvingDeserializerModifier(repositories, converter, mappings));
 	}
 
-	public static boolean maybeAddAssociationLink(RepositoryLinkBuilder builder, ResourceMappings mappings,
+	public static boolean maybeAddAssociationLink(Path path, ResourceMappings mappings,
 			PersistentProperty<?> persistentProperty, List<Link> links) {
 
 		Assert.isTrue(persistentProperty.isAssociation(), "PersistentProperty must be an association!");
@@ -117,7 +116,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		ResourceMapping propertyMapping = ownerMetadata.getMappingFor(persistentProperty);
 
 		if (propertyMapping.isExported()) {
-			links.add(builder.slash(propertyMapping.getPath()).withRel(propertyMapping.getRel()));
+
+			links.add(new Link(path.slash(propertyMapping.getPath()).toString(), propertyMapping.getRel()));
 			// This is an association. We added a Link.
 			return true;
 		}
@@ -135,25 +135,20 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	private static class PersistentEntityResourceSerializer extends StdSerializer<PersistentEntityResource<?>> {
 
 		private final ResourceMappings mappings;
-		private final RepositoryRestConfiguration configuration;
 
 		/**
-		 * Creates a new {@link PersistentEntityResourceSerializer} using the given {@link ResourceMappings} and
-		 * {@link RepositoryRestConfiguration}.
+		 * Creates a new {@link PersistentEntityResourceSerializer} using the given {@link ResourceMappings}.
 		 * 
 		 * @param mappings must not be {@literal null}.
-		 * @param configuration must not be {@literal null}.
 		 */
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		private PersistentEntityResourceSerializer(ResourceMappings mappings, RepositoryRestConfiguration configuration) {
+		private PersistentEntityResourceSerializer(ResourceMappings mappings) {
 
 			super((Class) PersistentEntityResource.class);
 
 			Assert.notNull(mappings, "ResourceMappings must not be null!");
-			Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
 
 			this.mappings = mappings;
-			this.configuration = configuration;
 		}
 
 		/*
@@ -168,19 +163,17 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				LOG.debug("Serializing PersistentEntity " + resource.getPersistentEntity());
 			}
 
-			Object obj = resource.getContent();
-			PersistentEntity<?, ?> entity = resource.getPersistentEntity();
-			BeanWrapper<PersistentEntity<Object, ?>, Object> wrapper = BeanWrapper.create(obj, null);
-			Object entityId = wrapper.getProperty(entity.getIdProperty());
-			ResourceMetadata metadata = mappings.getMappingFor(entity.getType());
-			URI baseUri = configuration.getBaseUri();
+			final Link id = resource.getId();
 
-			final RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, baseUri).slash(entityId);
+			if (id == null) {
+				throw new JsonGenerationException(String.format("No self link found resource %s!", resource));
+			}
+
 			final List<Link> links = new ArrayList<Link>();
 			links.addAll(resource.getLinks());
 
 			// Add associations as links
-			entity.doWithAssociations(new SimpleAssociationHandler() {
+			resource.getPersistentEntity().doWithAssociations(new SimpleAssociationHandler() {
 
 				/*
 				 * (non-Javadoc)
@@ -190,11 +183,11 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
 
 					PersistentProperty<?> property = association.getInverse();
-					maybeAddAssociationLink(builder, mappings, property, links);
+					maybeAddAssociationLink(new Path(id.expand().getHref()), mappings, property, links);
 				}
 			});
 
-			Resource<Object> resourceToRender = new Resource<Object>(obj, links);
+			Resource<Object> resourceToRender = new Resource<Object>(resource.getContent(), links);
 			provider.defaultSerializeValue(resourceToRender, jgen);
 		}
 	}

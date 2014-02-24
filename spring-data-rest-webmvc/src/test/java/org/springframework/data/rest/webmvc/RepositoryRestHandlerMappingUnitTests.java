@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +64,8 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		mockRequest = new MockHttpServletRequest();
 
-		listEntitiesMethod = RepositoryEntityController.class.getMethod("listEntities", RootResourceInformation.class,
-				Pageable.class, Sort.class);
+		listEntitiesMethod = RepositoryEntityController.class.getMethod("getCollectionResource",
+				RootResourceInformation.class, Pageable.class, Sort.class, PersistentEntityResourceAssembler.class);
 	}
 
 	@Test(expected = IllegalArgumentException.class)

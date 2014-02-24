@@ -45,7 +45,6 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.hal.HalLinkDiscoverer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriTemplate;
 
@@ -114,8 +113,11 @@ public class PersistentEntitySerializationTests {
 		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(Person.class);
 		Person person = people.save(new Person("John", "Doe"));
 
+		PersistentEntityResource<Person> resource = PersistentEntityResource.wrap(persistentEntity, person, new Link(
+				"/person/" + person.getId()));
+
 		StringWriter writer = new StringWriter();
-		mapper.writeValue(writer, PersistentEntityResource.wrap(persistentEntity, person));
+		mapper.writeValue(writer, resource);
 
 		String s = writer.toString();
 
@@ -180,14 +182,15 @@ public class PersistentEntitySerializationTests {
 		user.address.street = "Street";
 
 		PersistentEntityResource<User> userResource = new PersistentEntityResource<User>(
-				repositories.getPersistentEntity(User.class), user);
+				repositories.getPersistentEntity(User.class), user, new Link("/users/1"));
 
 		PagedResources<PersistentEntityResource<User>> persistentEntityResource = new PagedResources<PersistentEntityResource<User>>(
 				Arrays.asList(userResource), new PageMetadata(1, 0, 10));
 
 		assertThat(
 				mapper.writeValueAsString(persistentEntityResource),
-				is("{\"_embedded\":{\"users\":[{\"address\":{\"street\":\"Street\"}}]},\"page\":{\"size\":1,\"totalElements\":10,\"totalPages\":10,\"number\":0}}"));
+				is("{\"_embedded\":{\"users\":[{\"address\":{\"street\":\"Street\"},\"_links\":{\"self\":{\"href\":\"/users/1\"}}}]},"
+						+ "\"page\":{\"size\":1,\"totalElements\":10,\"totalPages\":10,\"number\":0}}"));
 	}
 
 	/**
@@ -199,12 +202,12 @@ public class PersistentEntitySerializationTests {
 		Person creator = new Person("Dave", "Matthews");
 
 		Order order = new Order(creator);
-		ReflectionTestUtils.setField(order, "id", 1L);
 		order.add(new LineItem("first"));
 		order.add(new LineItem("second"));
 
 		PersistentEntityResource<Order> orderResource = new PersistentEntityResource<Order>(
 				repositories.getPersistentEntity(Order.class), order);
+		orderResource.add(new Link("/orders/1"));
 
 		@SuppressWarnings("unchecked")
 		PagedResources<PersistentEntityResource<Order>> persistentEntityResource = new PagedResources<PersistentEntityResource<Order>>(
@@ -212,7 +215,7 @@ public class PersistentEntitySerializationTests {
 
 		assertThat(mapper.writeValueAsString(persistentEntityResource),
 				is("{\"_embedded\":{\"orders\":[{\"lineItems\":[{\"name\":\"first\"},{\"name\":\"second\"}],\"price\":2.5"
-						+ ",\"_links\":{\"creator\":{\"href\":\"http://localhost:8080/orders/1/creator\"}}}]},\""
+						+ ",\"_links\":{\"self\":{\"href\":\"/orders/1\"},\"creator\":{\"href\":\"/orders/1/creator\"}}}]},\""
 						+ "page\":{\"size\":1,\"totalElements\":10,\"totalPages\":10,\"number\":0}}"));
 	}
 }

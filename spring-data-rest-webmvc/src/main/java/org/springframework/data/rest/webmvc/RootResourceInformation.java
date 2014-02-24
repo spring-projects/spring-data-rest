@@ -34,7 +34,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-class RootResourceInformation {
+public class RootResourceInformation {
 
 	private final ResourceMetadata resourceMetadata;
 	private final RepositoryInvoker invoker;

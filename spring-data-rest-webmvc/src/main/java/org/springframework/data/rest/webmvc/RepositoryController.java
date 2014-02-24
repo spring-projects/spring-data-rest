@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +37,10 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	private final ResourceMappings mappings;
 
 	@Autowired
-	public RepositoryController(PagedResourcesAssembler<Object> assembler,
-			PersistentEntityResourceAssembler<Object> perAssembler, Repositories repositories, EntityLinks entityLinks,
-			ResourceMappings mappings) {
+	public RepositoryController(PagedResourcesAssembler<Object> assembler, Repositories repositories,
+			EntityLinks entityLinks, ResourceMappings mappings) {
 
-		super(assembler, perAssembler);
+		super(assembler);
 
 		this.repositories = repositories;
 		this.entityLinks = entityLinks;

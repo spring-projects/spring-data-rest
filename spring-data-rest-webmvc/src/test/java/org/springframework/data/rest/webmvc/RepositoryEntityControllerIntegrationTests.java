@@ -45,7 +45,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		repository.save(new Address());
 
 		RootResourceInformation request = getResourceInformation(Address.class);
-		controller.listEntities(request, null, null);
+		controller.getCollectionResource(request, null, null, null);
 	}
 
 	/**
@@ -56,6 +56,6 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		RootResourceInformation request = getResourceInformation(Address.class);
 
-		controller.postEntity(request, null);
+		controller.postEntity(request, null, null);
 	}
 }

@@ -34,13 +34,14 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.json.JsonSchema.ArrayProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.Property;
-import org.springframework.data.rest.webmvc.support.RepositoryLinkBuilder;
+import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.util.Assert;
 
@@ -57,6 +58,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	private final ResourceMappings mappings;
 	private final Repositories repositories;
 	private final MessageSourceAccessor accessor;
+	private final EntityLinks entityLinks;
 
 	/**
 	 * Creates a new {@link PersistentEntityToJsonSchemaConverter} for the given {@link Repositories} and
@@ -67,7 +69,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @param accessor
 	 */
 	public PersistentEntityToJsonSchemaConverter(Repositories repositories, ResourceMappings mappings,
-			MessageSourceAccessor accessor) {
+			MessageSourceAccessor accessor, EntityLinks entityLinks) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
@@ -75,6 +77,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		this.repositories = repositories;
 		this.mappings = mappings;
 		this.accessor = accessor;
+		this.entityLinks = entityLinks;
 
 		for (Class<?> domainType : repositories) {
 			convertiblePairs.add(new ConvertiblePair(domainType, JsonSchema.class));
@@ -111,7 +114,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	@Override
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity((Class<?>) source);
+		final PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity((Class<?>) source);
 		final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getType());
 		final JsonSchema jsonSchema = new JsonSchema(persistentEntity.getName(), accessor.getMessage(metadata
 				.getItemResourceDescription()));
@@ -159,8 +162,8 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 					return;
 				}
 
-				RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, null).slash("{id}");
-				maybeAddAssociationLink(builder, mappings, persistentProperty, links);
+				Link link = entityLinks.linkToCollectionResource(persistentEntity.getType());
+				maybeAddAssociationLink(new Path(link.getHref()), mappings, persistentProperty, links);
 			}
 		});
 

@@ -2,9 +2,8 @@ package org.springframework.data.rest.webmvc.support;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
-import org.springframework.context.MessageSource;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.validation.FieldError;
 
@@ -18,22 +17,23 @@ public class RepositoryConstraintViolationExceptionMessage {
 	private final List<ValidationError> errors = new ArrayList<ValidationError>();
 
 	public RepositoryConstraintViolationExceptionMessage(RepositoryConstraintViolationException violationException,
-			MessageSource msgSrc, Locale locale) {
+			MessageSourceAccessor accessor) {
 
-		for (FieldError fe : violationException.getErrors().getFieldErrors()) {
+		for (FieldError fieldError : violationException.getErrors().getFieldErrors()) {
+
 			List<Object> args = new ArrayList<Object>();
-			args.add(fe.getObjectName());
-			args.add(fe.getField());
-			args.add(fe.getRejectedValue());
-			if (null != fe.getArguments()) {
-				for (Object o : fe.getArguments()) {
+			args.add(fieldError.getObjectName());
+			args.add(fieldError.getField());
+			args.add(fieldError.getRejectedValue());
+			if (null != fieldError.getArguments()) {
+				for (Object o : fieldError.getArguments()) {
 					args.add(o);
 				}
 			}
 
-			String msg = msgSrc.getMessage(fe.getCode(), args.toArray(), fe.getDefaultMessage(), locale);
-			this.errors.add(new ValidationError(fe.getObjectName(), msg, String.format("%s", fe.getRejectedValue()), fe
-					.getField()));
+			String message = accessor.getMessage(fieldError.getCode(), args.toArray(), fieldError.getDefaultMessage());
+			this.errors.add(new ValidationError(fieldError.getObjectName(), message, String.format("%s",
+					fieldError.getRejectedValue()), fieldError.getField()));
 		}
 	}
 
@@ -43,10 +43,11 @@ public class RepositoryConstraintViolationExceptionMessage {
 	}
 
 	public static class ValidationError {
-		String entity;
-		String message;
-		String invalidValue;
-		String property;
+
+		private final String entity;
+		private final String message;
+		private final String invalidValue;
+		private final String property;
 
 		public ValidationError(String entity, String message, String invalidValue, String property) {
 			this.entity = entity;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class RepositoryRestConfiguration {
 	private int defaultPageSize = 20;
 	private int maxPageSize = 1000;
 	private String pageParamName = "page";
-	private String limitParamName = "limit";
+	private String limitParamName = "size";
 	private String sortParamName = "sort";
 	private MediaType defaultMediaType = MediaTypes.HAL_JSON;
 	private boolean returnBodyOnCreate = false;
@@ -43,6 +43,25 @@ public class RepositoryRestConfiguration {
 	private List<Class<?>> exposeIdsFor = new ArrayList<Class<?>>();
 	private ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
+	private final ProjectionDefinitionConfiguration projectionConfiguration;
+
+	/**
+	 * Creates a new default {@link RepositoryRestConfiguration}.
+	 */
+	public RepositoryRestConfiguration() {
+		this(new ProjectionDefinitionConfiguration());
+	}
+
+	/**
+	 * Creates a new {@link RepositoryRestConfiguration} with the given {@link ProjectionDefinitionConfiguration}.
+	 * 
+	 * @param projectionConfiguration must not be {@literal null}.
+	 */
+	public RepositoryRestConfiguration(ProjectionDefinitionConfiguration projectionConfiguration) {
+
+		Assert.notNull(projectionConfiguration, "ProjectionDefinitionConfiguration must not be null!");
+		this.projectionConfiguration = projectionConfiguration;
+	}
 
 	/**
 	 * The base URI against which the exporter should calculate its links.
@@ -80,7 +99,7 @@ public class RepositoryRestConfiguration {
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setDefaultPageSize(int defaultPageSize) {
-		Assert.isTrue((defaultPageSize > 0), "Page size must be greater than 0.");
+		Assert.isTrue(defaultPageSize > 0, "Page size must be greater than 0.");
 		this.defaultPageSize = defaultPageSize;
 		return this;
 	}
@@ -101,7 +120,7 @@ public class RepositoryRestConfiguration {
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setMaxPageSize(int maxPageSize) {
-		Assert.isTrue((defaultPageSize > 0), "Maximum page size must be greater than 0.");
+		Assert.isTrue(defaultPageSize > 0, "Maximum page size must be greater than 0.");
 		this.maxPageSize = maxPageSize;
 		return this;
 	}
@@ -327,5 +346,14 @@ public class RepositoryRestConfiguration {
 	public RepositoryRestConfiguration exposeIdsFor(Class<?>... domainTypes) {
 		Collections.addAll(exposeIdsFor, domainTypes);
 		return this;
+	}
+
+	/**
+	 * Returns the {@link ProjectionDefinitionConfiguration} to register addition projections.
+	 * 
+	 * @return
+	 */
+	public ProjectionDefinitionConfiguration projectionConfiguration() {
+		return projectionConfiguration;
 	}
 }

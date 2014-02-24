@@ -25,10 +25,10 @@ import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -57,23 +57,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Oliver Gierke
  */
 @SuppressWarnings({ "rawtypes" })
-class AbstractRepositoryRestController implements MessageSourceAware, InitializingBean {
+class AbstractRepositoryRestController implements MessageSourceAware {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractRepositoryRestController.class);
-
-	private final PersistentEntityResourceAssembler<Object> perAssembler;
 
 	@Autowired(required = false) private ValidationExceptionHandler handler;
 	@Autowired(required = false) private PlatformTransactionManager txMgr;
 
-	private MessageSource messageSource;
-	private PagedResourcesAssembler<Object> assembler;
+	private final PagedResourcesAssembler<Object> pagedResourcesAssembler;
+	private MessageSourceAccessor messageSourceAccessor;
 
-	public AbstractRepositoryRestController(PagedResourcesAssembler<Object> assembler,
-			PersistentEntityResourceAssembler<Object> entityResourceAssembler) {
-
-		this.assembler = assembler;
-		this.perAssembler = entityResourceAssembler;
+	public AbstractRepositoryRestController(PagedResourcesAssembler<Object> pagedResourcesAssembler) {
+		this.pagedResourcesAssembler = pagedResourcesAssembler;
 	}
 
 	/* 
@@ -82,18 +77,7 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 	 */
 	@Override
 	public void setMessageSource(MessageSource messageSource) {
-		this.messageSource = messageSource;
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-
-		// FIXME:
-
-		// if (null != txMgr) {
-		// txTmpl = new TransactionTemplate(txMgr);
-		// txTmpl.afterPropertiesSet();
-		// }
+		this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
 	}
 
 	@ExceptionHandler({ NullPointerException.class })
@@ -135,7 +119,7 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 	public ResponseEntity handleRepositoryConstraintViolationException(Locale locale,
 			RepositoryConstraintViolationException rcve) {
 
-		return response(null, new RepositoryConstraintViolationExceptionMessage(rcve, messageSource, locale),
+		return response(null, new RepositoryConstraintViolationExceptionMessage(rcve, messageSourceAccessor),
 				HttpStatus.BAD_REQUEST);
 	}
 
@@ -216,33 +200,33 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	protected Resources resultToResources(Object result) {
+	protected Resources resultToResources(Object result, PersistentEntityResourceAssembler assembler) {
 
 		if (result instanceof Page) {
 			Page<Object> page = (Page<Object>) result;
 			return entitiesToResources(page, assembler);
 		} else if (result instanceof Iterable) {
-			return entitiesToResources((Iterable<Object>) result);
+			return entitiesToResources((Iterable<Object>) result, assembler);
 		} else if (null == result) {
 			return new Resources(EMPTY_RESOURCE_LIST);
 		} else {
-			Resource<Object> resource = perAssembler.toResource(result);
+			Resource<Object> resource = assembler.toResource(result);
 			return new Resources(Collections.singletonList(resource));
 		}
 	}
 
 	protected Resources<? extends Resource<Object>> entitiesToResources(Page<Object> page,
-			PagedResourcesAssembler<Object> assembler) {
-
-		return assembler.toResource(page, perAssembler);
+			PersistentEntityResourceAssembler assembler) {
+		return pagedResourcesAssembler.toResource(page, assembler);
 	}
 
-	protected Resources<Resource<Object>> entitiesToResources(Iterable<Object> entities) {
+	protected Resources<Resource<Object>> entitiesToResources(Iterable<Object> entities,
+			PersistentEntityResourceAssembler assembler) {
 
 		List<Resource<Object>> resources = new ArrayList<Resource<Object>>();
 
 		for (Object obj : entities) {
-			resources.add(obj == null ? null : perAssembler.toResource(obj));
+			resources.add(obj == null ? null : assembler.toResource(obj));
 		}
 
 		return new Resources<Resource<Object>>(resources);

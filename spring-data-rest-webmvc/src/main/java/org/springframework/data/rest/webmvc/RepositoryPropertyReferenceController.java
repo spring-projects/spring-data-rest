@@ -74,7 +74,6 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	private static final String BASE_MAPPING = "/{repository}/{id}/{property}";
 
 	private final Repositories repositories;
-	private final PersistentEntityResourceAssembler<Object> perAssembler;
 	private final ConversionService conversionService;
 
 	private ApplicationEventPublisher publisher;
@@ -82,12 +81,11 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@Autowired
 	public RepositoryPropertyReferenceController(Repositories repositories,
 			@Qualifier("defaultConversionService") ConversionService conversionService,
-			PagedResourcesAssembler<Object> assembler, PersistentEntityResourceAssembler<Object> perAssembler) {
+			PagedResourcesAssembler<Object> assembler) {
 
-		super(assembler, perAssembler);
+		super(assembler);
 
 		this.repositories = repositories;
-		this.perAssembler = perAssembler;
 		this.conversionService = conversionService;
 	}
 
@@ -102,7 +100,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
 	public ResponseEntity<ResourceSupport> followPropertyReference(final RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property) throws Exception {
+			@PathVariable String id, @PathVariable String property, final PersistentEntityResourceAssembler assembler)
+			throws Exception {
 
 		final HttpHeaders headers = new HttpHeaders();
 
@@ -120,7 +119,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					List<Resource<?>> resources = new ArrayList<Resource<?>>();
 
 					for (Object obj : (Iterable<Object>) prop.propertyValue) {
-						resources.add(perAssembler.toResource(obj));
+						resources.add(assembler.toResource(obj));
 					}
 
 					return new Resources<Resource<?>>(resources);
@@ -130,14 +129,14 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					Map<Object, Resource<?>> resources = new HashMap<Object, Resource<?>>();
 
 					for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) prop.propertyValue).entrySet()) {
-						resources.put(entry.getKey(), perAssembler.toResource(entry.getValue()));
+						resources.put(entry.getKey(), assembler.toResource(entry.getValue()));
 					}
 
 					return new Resource<Object>(resources);
 
 				} else {
 
-					PersistentEntityResource<Object> resource = perAssembler.toResource(prop.propertyValue);
+					PersistentEntityResource<Object> resource = assembler.toResource(prop.propertyValue);
 					headers.set("Content-Location", resource.getId().getHref());
 					return resource;
 				}
@@ -190,7 +189,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.GET)
 	public ResponseEntity<ResourceSupport> followPropertyReference(final RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId) throws Exception {
+			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId,
+			final PersistentEntityResourceAssembler assembler) throws Exception {
 
 		final HttpHeaders headers = new HttpHeaders();
 
@@ -210,7 +210,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 						if (propertyId.equals(sId)) {
 
-							PersistentEntityResource<Object> resource = perAssembler.toResource(obj);
+							PersistentEntityResource<Object> resource = assembler.toResource(obj);
 							headers.set("Content-Location", resource.getId().getHref());
 							return resource;
 						}
@@ -223,7 +223,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 						if (propertyId.equals(sId)) {
 
-							PersistentEntityResource<Object> resource = perAssembler.toResource(entry.getValue());
+							PersistentEntityResource<Object> resource = assembler.toResource(entry.getValue());
 							headers.set("Content-Location", resource.getId().getHref());
 							return resource;
 						}
@@ -242,9 +242,10 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = {
 			"application/x-spring-data-compact+json", "text/uri-list" })
 	public ResponseEntity<ResourceSupport> followPropertyReferenceCompact(RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property) throws Exception {
+			@PathVariable String id, @PathVariable String property, PersistentEntityResourceAssembler assembler)
+			throws Exception {
 
-		ResponseEntity<ResourceSupport> response = followPropertyReference(repoRequest, id, property);
+		ResponseEntity<ResourceSupport> response = followPropertyReference(repoRequest, id, property, assembler);
 
 		if (response.getStatusCode() != HttpStatus.OK) {
 			return response;
@@ -259,7 +260,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		List<Link> links = new ArrayList<Link>();
 
 		ControllerLinkBuilder linkBuilder = linkTo(methodOn(RepositoryPropertyReferenceController.class)
-				.followPropertyReference(repoRequest, id, property));
+				.followPropertyReference(repoRequest, id, property, assembler));
 
 		if (resource instanceof Resource) {
 

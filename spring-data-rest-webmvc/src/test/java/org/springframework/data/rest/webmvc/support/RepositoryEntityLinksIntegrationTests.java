@@ -20,8 +20,10 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
+import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.hateoas.Link;
 import org.springframework.test.context.ContextConfiguration;
@@ -34,6 +36,7 @@ import org.springframework.test.context.ContextConfiguration;
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 public class RepositoryEntityLinksIntegrationTests extends AbstractControllerIntegrationTests {
 
+	@Autowired RepositoryRestConfiguration configuration;
 	@Autowired RepositoryEntityLinks entityLinks;
 
 	@Test
@@ -53,5 +56,17 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(link.isTemplated(), is(true));
 		assertThat(link.getVariableNames(), hasItems("page", "size", "sort"));
 		assertThat(link.getRel(), is("people"));
+	}
+
+	/**
+	 * @see DATAREST-221
+	 */
+	@Test
+	public void returnsLinkWithProjectionTemplateVariableIfProjectionIsDefined() {
+
+		Link link = entityLinks.linkToSingleResource(Order.class, 1);
+
+		assertThat(link.isTemplated(), is(true));
+		assertThat(link.getVariableNames(), hasItem(configuration.projectionConfiguration().getParameterName()));
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc;
+package org.springframework.data.rest.webmvc.config;
 
 import static org.springframework.util.ClassUtils.*;
 import static org.springframework.util.StringUtils.*;
@@ -33,6 +33,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.util.UrlPathHelper;
 
 /**
+ * {@link HandlerMethodArgumentResolver} to create {@link ResourceMetadata} instances.
+ * 
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -42,6 +44,9 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 	private final ResourceMappings mappings;
 
 	/**
+	 * Creates a new {@link ResourceMetadataHandlerMethodArgumentResolver} for the given {@link Repositories} and
+	 * {@link ResourceMappings}.
+	 * 
 	 * @param repositories must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
 	 */

@@ -15,8 +15,11 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import static org.springframework.hateoas.TemplateVariable.VariableType.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -24,6 +27,7 @@ import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkBuilder;
+import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.core.AbstractEntityLinks;
@@ -105,18 +109,22 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	public Link linkToCollectionResource(Class<?> type) {
 
 		ResourceMetadata metadata = mappings.getMappingFor(type);
+		TemplateVariables variables = new TemplateVariables();
+		String href = linkFor(type).withSelfRel().getHref();
 
 		if (metadata.isPagingResource()) {
-
-			Link link = linkFor(type).withSelfRel();
-			String href = link.getHref();
 			UriComponents components = UriComponentsBuilder.fromUriString(href).build();
-			TemplateVariables variables = resolver.getPaginationTemplateVariables(null, components);
-
-			return new Link(new UriTemplate(href, variables), metadata.getRel());
+			variables = variables.concat(resolver.getPaginationTemplateVariables(null, components));
 		}
 
-		return linkFor(type).withRel(metadata.getRel());
+		ProjectionDefinitionConfiguration projectionConfiguration = config.projectionConfiguration();
+
+		if (projectionConfiguration.hasProjectionFor(type)) {
+			variables = variables.concat(new TemplateVariable(projectionConfiguration.getParameterName(), REQUEST_PARAM));
+		}
+
+		return variables.asList().isEmpty() ? linkFor(type).withRel(metadata.getRel()) : new Link(new UriTemplate(href,
+				variables), metadata.getRel());
 	}
 
 	/*
@@ -127,6 +135,17 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	public Link linkToSingleResource(Class<?> type, Object id) {
 
 		ResourceMetadata metadata = mappings.getMappingFor(type);
-		return linkFor(type).slash(id).withRel(metadata.getItemResourceRel());
+		Link link = linkFor(type).slash(id).withRel(metadata.getItemResourceRel());
+		ProjectionDefinitionConfiguration projectionConfiguration = config.projectionConfiguration();
+
+		if (!projectionConfiguration.hasProjectionFor(type)) {
+			return link;
+		}
+
+		String parameterName = projectionConfiguration.getParameterName();
+		TemplateVariables templateVariables = new TemplateVariables(new TemplateVariable(parameterName, REQUEST_PARAM));
+		UriTemplate template = new UriTemplate(link.getHref(), templateVariables);
+
+		return new Link(template.toString(), metadata.getItemResourceRel());
 	}
 }

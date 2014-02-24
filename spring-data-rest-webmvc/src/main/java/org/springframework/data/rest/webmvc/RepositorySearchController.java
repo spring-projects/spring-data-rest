@@ -67,18 +67,17 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	/**
 	 * Creates a new {@link RepositorySearchController} using the given {@link PagedResourcesAssembler},
-	 * {@link PersistentEntityResourceAssembler}, {@link EntityLinks} and {@link ResourceMappings}.
+	 * {@link EntityLinks} and {@link ResourceMappings}.
 	 * 
 	 * @param assembler must not be {@literal null}.
-	 * @param perAssembler must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
 	 */
 	@Autowired
-	public RepositorySearchController(PagedResourcesAssembler<Object> assembler,
-			PersistentEntityResourceAssembler<Object> perAssembler, EntityLinks entityLinks, ResourceMappings mappings) {
+	public RepositorySearchController(PagedResourcesAssembler<Object> assembler, EntityLinks entityLinks,
+			ResourceMappings mappings) {
 
-		super(assembler, perAssembler);
+		super(assembler);
 
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
@@ -129,10 +128,10 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET)
 	public ResponseEntity<Resources<?>> executeSearch(RootResourceInformation resourceInformation, WebRequest request,
-			@PathVariable String search, Pageable pageable) {
+			@PathVariable String search, Pageable pageable, PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		Resources<?> resources = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable);
+		Resources<?> resources = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, assembler);
 
 		return new ResponseEntity<Resources<?>>(resources, HttpStatus.OK);
 	}
@@ -150,10 +149,12 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	@RequestMapping(value = BASE_MAPPING + "/{method}", method = RequestMethod.GET, //
 			produces = { "application/x-spring-data-compact+json" })
 	public ResourceSupport executeSearchCompact(RootResourceInformation resourceInformation, WebRequest request,
-			@PathVariable String repository, @PathVariable String search, Pageable pageable) {
+			@PathVariable String repository, @PathVariable String search, Pageable pageable,
+			PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		ResourceSupport resource = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable);
+		ResourceSupport resource = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable,
+				assembler);
 
 		List<Link> links = new ArrayList<Link>();
 
@@ -209,12 +210,12 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @return
 	 */
 	private Resources<?> executeQueryMethod(final RepositoryInvoker invoker, WebRequest request, Method method,
-			Pageable pageable) {
+			Pageable pageable, PersistentEntityResourceAssembler assembler) {
 
 		Map<String, String[]> parameters = request.getParameterMap();
 		Object result = invoker.invokeQueryMethod(method, parameters, pageable, null);
 
-		return resultToResources(result);
+		return resultToResources(result, assembler);
 	}
 
 	/**
