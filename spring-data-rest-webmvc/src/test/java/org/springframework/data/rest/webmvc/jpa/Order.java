@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,5 +67,9 @@ public class Order {
 
 	public void add(LineItem item) {
 		this.lineItems.add(item);
+	}
+
+	public BigDecimal getPrice() {
+		return new BigDecimal(2.50);
 	}
 }
