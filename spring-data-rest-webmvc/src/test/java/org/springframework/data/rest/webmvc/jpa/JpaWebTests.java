@@ -26,10 +26,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
@@ -61,6 +63,9 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Autowired TestDataPopulator loader;
 	@Autowired ResourceMappings mappings;
 
+	@Autowired OrderRepository orderRepo;
+	@Autowired PersonRepository personRepo;
+	
 	ObjectMapper mapper = new ObjectMapper();
 
 	/* 
@@ -362,6 +367,66 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 		assertNull(JsonPath.read(responseBody, "$.lastName"));
 	}
 
+
+	/**
+	 * @see DATAREST-117
+	 */
+	@Test
+	public void jsonPropertyAnnotatedFieldGetsSerialized() throws Exception {
+		final long ORDER_ID = 1;
+		
+		MockHttpServletResponse response = mvc.perform(get("/orders/{id}", ORDER_ID))
+				.andExpect(status()
+						.isOk())
+				.andReturn()
+				.getResponse();
+		assertJsonPathDoesntExist("$.ioc", response);
+		assertHasJsonPathValue("$..internalCode", response);
+	}
+
+	/**
+	 * @see DATAREST-117
+	 */
+	@Test
+	public void jsonPropertyAnnotatedFieldGetsDeserialized() throws Exception {
+		final Long ORDER_ID = (long)300;
+
+		mvc.perform(//
+				put("/orders/{id}", ORDER_ID).//
+						content(readFile("orderWithIOC.json")).contentType(MediaType.APPLICATION_JSON)//
+		).andExpect(status().isCreated());
+
+		// Assert that the ID was set
+		Order order = orderRepo.findOne(ORDER_ID);
+		assertThat(order, is(notNullValue()));
+		assertEquals(ORDER_ID, order.getId());
+		assertEquals("Monday's order", order.getOrderName());
+		
+		// Assert that the IOC was set (the property internalCode was used in the JSON request)
+		assertEquals("IOC-928", order.getIOC());
+	}
+
+	/**
+	 * @see DATAREST-117
+	 */
+	@Test
+	public void jsonPropertyAnnotatedAssociationFieldGetsInlinedOnSerialization() throws Exception {
+		final long ORDER_ID = 1;
+		
+		MockHttpServletResponse response = mvc.perform(get("/orders/{id}", ORDER_ID))
+				.andExpect(status()
+						.isOk())
+				.andReturn()
+				.getResponse();
+		
+		//System.out.println(response.getContentAsString());
+		
+		assertJsonPathDoesntExist("$.GSTFreeLineItems", response);
+		assertJsonPathDoesntExist("$.taxFreeLineItems", response);
+		assertJsonPathDoesntExist("$._links.taxFreeLineItems", response);
+		assertHasJsonPathValue("$._links.GSTFreeLineItems", response);
+	}
+	
 	/**
 	 * @see DATAREST-238
 	 */
@@ -444,6 +509,26 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		assertThat(persons, hasSize(siblingNames.length));
 		assertThat(persons, hasItems(siblingNames));
+	}
+
+	private static String readFile(String name) throws Exception {
+
+		ClassPathResource file = new ClassPathResource(name, JpaWebTests.class);
+		StringBuilder builder = new StringBuilder();
+
+		Scanner scanner = new Scanner(file.getFile(), "UTF-8");
+
+		try {
+
+			while (scanner.hasNextLine()) {
+				builder.append(scanner.nextLine());
+			}
+
+		} finally {
+			scanner.close();
+		}
+
+		return builder.toString();
 	}
 
 	private static String toUriList(Link... links) {
