@@ -47,7 +47,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -109,7 +108,7 @@ class AbstractRepositoryRestController implements MessageSourceAware, Initializi
 		return notFound();
 	}
 
-	@ExceptionHandler({ HttpMessageNotReadableException.class, HttpMessageNotWritableException.class })
+	@ExceptionHandler({ HttpMessageNotReadableException.class })
 	@ResponseBody
 	public ResponseEntity<ExceptionMessage> handleNotReadable(HttpMessageNotReadableException e) {
 		return badRequest(e);
