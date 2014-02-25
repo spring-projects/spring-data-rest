@@ -247,14 +247,17 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 				PersistentProperty<?> persistentProperty = entity.getPersistentProperty(writer.getName());
 
-				// Skip exported associations
-				if (persistentProperty.isAssociation() && resourceMetadata.isExported(persistentProperty)) {
-					continue;
-				}
+				if (persistentProperty != null) {
 
-				// Skip ids unless explicitly configured to expose
-				if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(entity.getType())) {
-					continue;
+					// Skip exported associations
+					if (persistentProperty.isAssociation() && resourceMetadata.isExported(persistentProperty)) {
+						continue;
+					}
+
+					// Skip ids unless explicitly configured to expose
+					if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(entity.getType())) {
+						continue;
+					}
 				}
 
 				result.add(writer);

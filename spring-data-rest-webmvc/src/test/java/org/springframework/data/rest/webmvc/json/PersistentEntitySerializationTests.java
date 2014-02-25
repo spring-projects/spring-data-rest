@@ -211,7 +211,7 @@ public class PersistentEntitySerializationTests {
 				Arrays.asList(orderResource), new PageMetadata(1, 0, 10));
 
 		assertThat(mapper.writeValueAsString(persistentEntityResource),
-				is("{\"_embedded\":{\"orders\":[{\"lineItems\":[{\"name\":\"first\"},{\"name\":\"second\"}]"
+				is("{\"_embedded\":{\"orders\":[{\"lineItems\":[{\"name\":\"first\"},{\"name\":\"second\"}],\"price\":2.5"
 						+ ",\"_links\":{\"creator\":{\"href\":\"http://localhost:8080/orders/1/creator\"}}}]},\""
 						+ "page\":{\"size\":1,\"totalElements\":10,\"totalPages\":10,\"number\":0}}"));
 	}
