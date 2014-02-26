@@ -322,6 +322,19 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 				SettableBeanProperty property = properties.next();
 				PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getName());
+				
+				// This can happen in the case where @JsonProperty is used or if for some weird reason the REST 
+				// client includes a transient property in the REST POST/PUT.
+				// 
+				// Below is a suggested fix (commented out).
+				//
+				// NB: This simple fix does not address the scenario where a @JsonProperty annotated field is 
+				// also an association or an ID field.
+
+				//if(persistentProperty == null) {
+				//	continue;
+				//}
+				
 				ResourceMapping propertyMapping = metadata.getMappingFor(persistentProperty);
 
 				if (!persistentProperty.isAssociation() || !propertyMapping.isExported()) {

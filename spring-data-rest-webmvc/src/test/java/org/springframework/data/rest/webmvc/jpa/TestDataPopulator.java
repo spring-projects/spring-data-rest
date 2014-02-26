@@ -62,6 +62,7 @@ public class TestDataPopulator {
 
 		Order order = new Order(person);
 		order.add(new LineItem("Java Chip"));
+		order.addTaxFree(new TaxFreeItem("Pringles"));
 		orders.save(order);
 	}
 

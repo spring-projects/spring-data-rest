@@ -27,6 +27,12 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Oliver Gierke
@@ -35,13 +41,29 @@ import javax.persistence.Table;
 @Table(name = "ORDERS")
 public class Order {
 
-	@Id @GeneratedValue//
+	@Id 
+	@GeneratedValue(generator = "TransactionalIDGenerator")
+	@GenericGenerator(name = "TransactionalIDGenerator",
+	        strategy = "org.springframework.data.rest.webmvc.jpa.TransactionalIDGenerator")		
 	private Long id;
-	@ManyToOne(fetch = FetchType.LAZY)//
+	@ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)//
 	private Person creator;
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)//
 	private List<LineItem> lineItems = new ArrayList<LineItem>();
 
+	
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)//
+	@JsonProperty("GSTFreeLineItems")
+	private List<TaxFreeItem> taxFreeLineItems = new ArrayList<TaxFreeItem>();
+	
+	public List<TaxFreeItem> getTaxFreeLineItems() {
+		return taxFreeLineItems;
+	}
+
+	public void addTaxFree(TaxFreeItem item) {
+		this.taxFreeLineItems.add(item);
+	}
+	
 	public Order(Person creator) {
 		this.creator = creator;
 	}
@@ -52,6 +74,39 @@ public class Order {
 
 	public Long getId() {
 		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
+	private String orderName;
+
+	public String getOrderName() {
+		return orderName;
+	}
+
+	public void setOrderName(String orderName) {
+		this.orderName = orderName;
+	}
+
+	@Transient
+	@JsonIgnore
+	public double getTax() {
+		return 15.21;
+	}
+
+	@JsonProperty("internalCode")
+	private String IOC; // (internal order code)
+
+	@JsonProperty("internalCode")
+	public String getIOC() {
+		return IOC;
+	}
+
+	@JsonProperty("internalCode")
+	public void setIOC(String iOC) {
+		IOC = iOC;
 	}
 
 	public Person getCreator() {
