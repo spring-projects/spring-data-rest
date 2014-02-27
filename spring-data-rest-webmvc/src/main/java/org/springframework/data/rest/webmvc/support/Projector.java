@@ -16,23 +16,18 @@
 package org.springframework.data.rest.webmvc.support;
 
 /**
+ * Interface for a component being able to create projections for objects.
+ * 
  * @author Oliver Gierke
  */
 public interface Projector {
 
+	/**
+	 * Returns the projection object for the given source. This may result in the same object being returned or a
+	 * completely different acting as projection for the source.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @return
+	 */
 	public Object project(Object source);
-
-	enum NoOpProjector implements Projector {
-
-		INSTANCE;
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.support.Projector#project(java.lang.Object)
-		 */
-		@Override
-		public Object project(Object source) {
-			return source;
-		}
-	}
 }

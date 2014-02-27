@@ -61,6 +61,6 @@ public class PersistentEntityProjector implements Projector {
 		}
 
 		Class<?> projectionType = projectionDefinitions.getProjectionType(source.getClass(), projection);
-		return factory.createProjection(source, projectionType);
+		return projectionType == null ? source : factory.createProjection(source, projectionType);
 	}
 }

@@ -53,7 +53,12 @@ public abstract class AbstractControllerIntegrationTests {
 
 		@Bean
 		public PersistentEntityResourceAssembler persistentEntityResourceAssembler() {
-			return new PersistentEntityResourceAssembler(repositories(), entityLinks(), Projector.NoOpProjector.INSTANCE);
+			return new PersistentEntityResourceAssembler(repositories(), entityLinks(), new Projector() {
+				@Override
+				public Object project(Object source) {
+					return source;
+				}
+			});
 		}
 	}
 
