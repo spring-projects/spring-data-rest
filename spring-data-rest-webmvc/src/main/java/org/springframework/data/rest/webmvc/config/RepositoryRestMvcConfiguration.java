@@ -45,6 +45,7 @@ import org.springframework.data.rest.core.invoke.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
+import org.springframework.data.rest.core.support.RepositoryRelProvider;
 import org.springframework.data.rest.core.util.UUIDConverter;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver;
@@ -130,6 +131,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public Repositories repositories() {
 		return new Repositories(beanFactory);
+	}
+
+	@Bean
+	public RepositoryRelProvider repositoryRelProvider(ObjectFactory<ResourceMappings> resourceMappings) {
+		return new RepositoryRelProvider(resourceMappings);
 	}
 
 	@Bean
@@ -418,7 +424,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		Repositories repositories = repositories();
 		RepositoryRestConfiguration config = config();
 
-		return new ResourceMappings(config, repositories, getDefaultedRelProvider());
+		return new ResourceMappings(config, repositories);
 	}
 
 	/**
