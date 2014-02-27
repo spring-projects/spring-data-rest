@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.core.support;
 
+import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.util.Assert;
@@ -24,16 +27,17 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
+@Order(Ordered.LOWEST_PRECEDENCE + 10)
 public class RepositoryRelProvider implements RelProvider {
 
-	private final ResourceMappings mappings;
+	private final ObjectFactory<ResourceMappings> mappings;
 
 	/**
 	 * Creates a new {@link RepositoryRelProvider} for the given {@link ResourceMappings}.
 	 * 
 	 * @param mappings must not be {@literal null}.
 	 */
-	public RepositoryRelProvider(ResourceMappings mappings) {
+	public RepositoryRelProvider(ObjectFactory<ResourceMappings> mappings) {
 
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
 		this.mappings = mappings;
@@ -45,7 +49,7 @@ public class RepositoryRelProvider implements RelProvider {
 	 */
 	@Override
 	public String getCollectionResourceRelFor(Class<?> type) {
-		return mappings.getMappingFor(type).getRel();
+		return mappings.getObject().getMappingFor(type).getRel();
 	}
 
 	/* 
@@ -54,7 +58,7 @@ public class RepositoryRelProvider implements RelProvider {
 	 */
 	@Override
 	public String getItemResourceRelFor(Class<?> type) {
-		return mappings.getMappingFor(type).getItemResourceRel();
+		return mappings.getObject().getMappingFor(type).getItemResourceRel();
 	}
 
 	/* 
@@ -63,6 +67,6 @@ public class RepositoryRelProvider implements RelProvider {
 	 */
 	@Override
 	public boolean supports(Class<?> delimiter) {
-		return mappings.hasMappingFor(delimiter);
+		return mappings.getObject().hasMappingFor(delimiter);
 	}
 }

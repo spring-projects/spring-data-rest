@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.RelProvider;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -61,6 +62,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 	@Autowired TestDataPopulator loader;
 	@Autowired ResourceMappings mappings;
+	@Autowired RelProvider relProvider;
 
 	ObjectMapper mapper = new ObjectMapper();
 
@@ -457,6 +459,14 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	}
 
 	/**
+	 * @see DATAREST-261
+	 */
+	@Test
+	public void relProviderDetectsCustomizedMapping() {
+		assertThat(relProvider.getCollectionResourceRelFor(Person.class), is("people"));
+	}
+
+	/**
 	 * Asserts the {@link Person} resource the given link points to contains siblings with the given names.
 	 * 
 	 * @param link
@@ -466,7 +476,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	private void assertSiblingNames(Link link, String... siblingNames) throws Exception {
 
 		String responseBody = request(link).getContentAsString();
-		List<String> persons = JsonPath.read(responseBody, "$._embedded.persons[*].firstName");
+		List<String> persons = JsonPath.read(responseBody, "$._embedded.people[*].firstName");
 
 		assertThat(persons, hasSize(siblingNames.length));
 		assertThat(persons, hasItems(siblingNames));
