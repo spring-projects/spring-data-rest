@@ -3,28 +3,16 @@ package org.springframework.data.rest.webmvc.jpa;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * @author Jon Brisbin
  */
-@Component
 public class TestDataPopulator {
 
-	private final PersonRepository people;
-	private final OrderRepository orders;
-	private final AuthorRepository authorRepository;
-	private final BookRepository books;
-
-	@Autowired
-	public TestDataPopulator(PersonRepository people, OrderRepository orders, AuthorRepository authors,
-			BookRepository books) {
-
-		this.people = people;
-		this.orders = orders;
-		this.authorRepository = authors;
-		this.books = books;
-	}
+	@Autowired private PersonRepository people;
+	@Autowired private OrderRepository orders;
+	@Autowired private AuthorRepository authorRepository;
+	@Autowired private BookRepository books;
 
 	public void populateRepositories() {
 

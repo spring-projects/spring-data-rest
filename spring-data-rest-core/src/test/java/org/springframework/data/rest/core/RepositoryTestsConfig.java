@@ -15,11 +15,16 @@
  */
 package org.springframework.data.rest.core;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -37,11 +42,12 @@ import org.springframework.format.support.DefaultFormattingConversionService;
 @Import({ JpaRepositoryConfig.class })
 public class RepositoryTestsConfig {
 
-	@Autowired private ApplicationContext appCtx;
+	@Autowired private ApplicationContext context;
+	@Autowired(required = false) List<MappingContext<?, ?>> mappingContexts = Collections.emptyList();
 
 	@Bean
 	public Repositories repositories() {
-		return new Repositories(appCtx);
+		return new Repositories(context);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -71,7 +77,12 @@ public class RepositoryTestsConfig {
 	}
 
 	@Bean
+	public PersistentEntities persistentEntities() {
+		return new PersistentEntities(mappingContexts);
+	}
+
+	@Bean
 	public UriToEntityConverter uriToEntityConverter() {
-		return new UriToEntityConverter(repositories(), domainClassConverter());
+		return new UriToEntityConverter(persistentEntities(), domainClassConverter());
 	}
 }

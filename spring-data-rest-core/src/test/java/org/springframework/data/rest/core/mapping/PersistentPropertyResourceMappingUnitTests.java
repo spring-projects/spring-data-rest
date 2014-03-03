@@ -30,7 +30,7 @@ import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.data.rest.core.mapping.ResourceMappings.PersistentPropertyResourceMapping;
+import org.springframework.data.rest.core.mapping.RepositoryResourceMappings.PersistentPropertyResourceMapping;
 
 /**
  * Unit tests for {@link PersistentPropertyResourceMapping}.

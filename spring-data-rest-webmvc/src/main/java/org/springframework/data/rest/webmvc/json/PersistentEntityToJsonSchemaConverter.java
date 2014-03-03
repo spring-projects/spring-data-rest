@@ -15,12 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.*;
 import static org.springframework.util.StringUtils.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -28,12 +25,10 @@ import javax.validation.constraints.NotNull;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
-import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
-import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
@@ -41,6 +36,9 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.json.JsonSchema.ArrayProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.Property;
+import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.LinkCollectingAssociationHandler;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.util.Assert;
@@ -56,31 +54,33 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 	private final Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
 	private final ResourceMappings mappings;
-	private final Repositories repositories;
+	private final PersistentEntities repositories;
 	private final MessageSourceAccessor accessor;
 	private final EntityLinks entityLinks;
 
 	/**
-	 * Creates a new {@link PersistentEntityToJsonSchemaConverter} for the given {@link Repositories} and
+	 * Creates a new {@link PersistentEntityToJsonSchemaConverter} for the given {@link PersistentEntities} and
 	 * {@link ResourceMappings}.
 	 * 
-	 * @param repositories must not be {@literal null}.
+	 * @param entities must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
 	 * @param accessor
 	 */
-	public PersistentEntityToJsonSchemaConverter(Repositories repositories, ResourceMappings mappings,
+	public PersistentEntityToJsonSchemaConverter(PersistentEntities entities, ResourceMappings mappings,
 			MessageSourceAccessor accessor, EntityLinks entityLinks) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(accessor, "MessageSourceAccessor must not be null!");
+		Assert.notNull(entityLinks, "EntityLinks must not be null!");
 
-		this.repositories = repositories;
+		this.repositories = entities;
 		this.mappings = mappings;
 		this.accessor = accessor;
 		this.entityLinks = entityLinks;
 
-		for (Class<?> domainType : repositories) {
-			convertiblePairs.add(new ConvertiblePair(domainType, JsonSchema.class));
+		for (TypeInformation<?> domainType : entities.getManagedTypes()) {
+			convertiblePairs.add(new ConvertiblePair(domainType.getType(), JsonSchema.class));
 		}
 	}
 
@@ -145,29 +145,13 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			}
 		});
 
-		final List<Link> links = new ArrayList<Link>();
+		Link link = entityLinks.linkToCollectionResource(persistentEntity.getType()).expand();
 
-		persistentEntity.doWithAssociations(new SimpleAssociationHandler() {
+		LinkCollectingAssociationHandler associationHandler = new LinkCollectingAssociationHandler(repositories, new Path(
+				link.getHref()), new AssociationLinks(mappings));
+		persistentEntity.doWithAssociations(associationHandler);
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.data.mapping.AssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
-			 */
-			@Override
-			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
-
-				PersistentProperty<?> persistentProperty = association.getInverse();
-
-				if (!metadata.isExported(persistentProperty)) {
-					return;
-				}
-
-				Link link = entityLinks.linkToCollectionResource(persistentEntity.getType());
-				maybeAddAssociationLink(new Path(link.getHref()), mappings, persistentProperty, links);
-			}
-		});
-
-		jsonSchema.add(links);
+		jsonSchema.add(associationHandler.getLinks());
 
 		return jsonSchema;
 	}

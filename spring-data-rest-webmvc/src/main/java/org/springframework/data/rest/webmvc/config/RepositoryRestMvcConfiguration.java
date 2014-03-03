@@ -37,6 +37,8 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.env.Environment;
+import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.UriToEntityConverter;
@@ -47,6 +49,7 @@ import org.springframework.data.rest.core.event.AnnotatedHandlerBeanPostProcesso
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.core.invoke.DefaultRepositoryInvokerFactory;
 import org.springframework.data.rest.core.invoke.RepositoryInvokerFactory;
+import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.projection.ProxyProjectionFactory;
@@ -132,6 +135,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Autowired Environment environment;
 
 	@Autowired(required = false) List<ResourceProcessor<?>> resourceProcessors = Collections.emptyList();
+	@Autowired(required = false) List<MappingContext<?, ?>> mappingContexts = Collections.emptyList();
 	@Autowired(required = false) RelProvider relProvider;
 	@Autowired(required = false) CurieProvider curieProvider;
 
@@ -143,6 +147,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public RepositoryRelProvider repositoryRelProvider(ObjectFactory<ResourceMappings> resourceMappings) {
 		return new RepositoryRelProvider(resourceMappings);
+	}
+
+	@Bean
+	public PersistentEntities persistentEntities() {
+		return new PersistentEntities(mappingContexts);
 	}
 
 	@Bean
@@ -162,7 +171,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public UriToEntityConverter uriToEntityConverter() {
-		return new UriToEntityConverter(repositories(), domainClassConverter());
+		return new UriToEntityConverter(persistentEntities(), domainClassConverter());
 	}
 
 	/**
@@ -294,7 +303,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public PersistentEntityToJsonSchemaConverter jsonSchemaConverter() {
-		return new PersistentEntityToJsonSchemaConverter(repositories(), resourceMappings(),
+		return new PersistentEntityToJsonSchemaConverter(persistentEntities(), resourceMappings(),
 				resourceDescriptionMessageSourceAccessor(), entityLinks());
 	}
 
@@ -433,7 +442,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		Repositories repositories = repositories();
 		RepositoryRestConfiguration config = config();
 
-		return new ResourceMappings(config, repositories);
+		return new RepositoryResourceMappings(config, repositories);
 	}
 
 	/**
@@ -443,7 +452,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public Module persistentEntityJackson2Module() {
-		return new PersistentEntityJackson2Module(resourceMappings(), repositories(), config(), uriToEntityConverter());
+		return new PersistentEntityJackson2Module(resourceMappings(), persistentEntities(), config(),
+				uriToEntityConverter());
 	}
 
 	/**

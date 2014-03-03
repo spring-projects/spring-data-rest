@@ -15,9 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.gemfire;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.data.gemfire.mapping.GemfireMappingContext;
+import org.springframework.data.gemfire.mapping.Region;
 import org.springframework.data.gemfire.repository.config.EnableGemfireRepositories;
+import org.springframework.data.util.AnnotatedTypeScanner;
 
 /**
  * Spring JavaConfig configuration class to setup a Spring container and infrastructure components.
@@ -30,4 +34,19 @@ import org.springframework.data.gemfire.repository.config.EnableGemfireRepositor
 @EnableGemfireRepositories
 public class GemfireRepositoryConfig {
 
+	/**
+	 * TODO: Remove, once Spring Data Gemfire exposes a mapping context.
+	 */
+	@Bean
+	@SuppressWarnings("unchecked")
+	public GemfireMappingContext gemfireMappingContext() {
+
+		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(Region.class);
+
+		GemfireMappingContext context = new GemfireMappingContext();
+		context.setInitialEntitySet(scanner.findTypes(GemfireRepositoryConfig.class.getPackage().getName()));
+		context.initialize();
+
+		return context;
+	}
 }

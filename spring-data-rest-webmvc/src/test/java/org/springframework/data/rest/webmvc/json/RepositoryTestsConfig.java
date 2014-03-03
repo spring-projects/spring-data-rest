@@ -16,17 +16,21 @@
 package org.springframework.data.rest.webmvc.json;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
@@ -51,7 +55,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SuppressWarnings("deprecation")
 public class RepositoryTestsConfig {
 
-	@Autowired private ApplicationContext appCtx;
+	@Autowired ApplicationContext appCtx;
+	@Autowired(required = false) List<MappingContext<?, ?>> mappingContexts = Collections.emptyList();
 
 	@Bean
 	public Repositories repositories() {
@@ -88,14 +93,19 @@ public class RepositoryTestsConfig {
 	}
 
 	@Bean
+	public PersistentEntities persistentEntities() {
+		return new PersistentEntities(mappingContexts);
+	}
+
+	@Bean
 	public UriToEntityConverter uriToEntityConverter() {
-		return new UriToEntityConverter(repositories(), domainClassConverter());
+		return new UriToEntityConverter(persistentEntities(), domainClassConverter());
 	}
 
 	@Bean
 	public Module persistentEntityModule() {
-		return new PersistentEntityJackson2Module(new ResourceMappings(config(), repositories()), repositories(), config(),
-				uriToEntityConverter());
+		return new PersistentEntityJackson2Module(new RepositoryResourceMappings(config(), repositories()),
+				persistentEntities(), config(), uriToEntityConverter());
 	}
 
 	@Bean

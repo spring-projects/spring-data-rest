@@ -16,6 +16,7 @@
 package org.springframework.data.rest.core;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,9 +24,9 @@ import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DomainClassConverter;
-import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
@@ -36,45 +37,43 @@ import org.springframework.util.Assert;
  */
 public class UriToEntityConverter implements ConditionalGenericConverter {
 
+	private static final TypeDescriptor URI_TYPE = TypeDescriptor.valueOf(URI.class);
 	private static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
 
-	private final Repositories repositories;
+	private final PersistentEntities entities;
 	private final DomainClassConverter<?> domainClassConverter;
 	private final Set<ConvertiblePair> convertiblePairs;
 
-	private ResourceMappings mappings;
-
 	/**
-	 * Creates a new {@link UriToEntityConverter} using the given {@link Repositories} and {@link DomainClassConverter}.
+	 * Creates a new {@link UriToEntityConverter} using the given {@link PersistentEntities} and
+	 * {@link DomainClassConverter}.
 	 * 
-	 * @param repositories must not be {@literal null}.
+	 * @param entities must not be {@literal null}.
 	 * @param domainClassConverter must not be {@literal null}.
 	 */
-	public UriToEntityConverter(Repositories repositories, DomainClassConverter<?> domainClassConverter) {
+	public UriToEntityConverter(PersistentEntities entities, DomainClassConverter<?> domainClassConverter) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null!");
 		Assert.notNull(domainClassConverter, "DomainClassConverter must not be null!");
 
-		this.repositories = repositories;
-		this.domainClassConverter = domainClassConverter;
-		this.convertiblePairs = new HashSet<ConvertiblePair>();
+		Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
 
-		for (Class<?> domainType : repositories) {
-			convertiblePairs.add(new ConvertiblePair(URI.class, domainType));
+		for (TypeInformation<?> domainType : entities.getManagedTypes()) {
+			convertiblePairs.add(new ConvertiblePair(URI.class, domainType.getType()));
 		}
+
+		this.convertiblePairs = Collections.unmodifiableSet(convertiblePairs);
+		this.entities = entities;
+		this.domainClassConverter = domainClassConverter;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 	 */
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
-
-		mappings.exportsMappingFor(targetType.getType());
-
-		return URI.class.isAssignableFrom(sourceType.getType())
-				&& repositories.getPersistentEntity(targetType.getType()) != null;
+		return domainClassConverter.matches(URI_TYPE, targetType);
 	}
 
 	/*
@@ -93,9 +92,9 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 	@Override
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(targetType.getType());
+		PersistentEntity<?, ?> entity = entities.getPersistentEntity(targetType.getType());
 
-		if (entity == null || !domainClassConverter.matches(STRING_TYPE, targetType)) {
+		if (entity == null) {
 			throw new ConversionFailedException(sourceType, targetType, source, new IllegalArgumentException(
 					"No PersistentEntity information available for " + targetType.getType()));
 		}

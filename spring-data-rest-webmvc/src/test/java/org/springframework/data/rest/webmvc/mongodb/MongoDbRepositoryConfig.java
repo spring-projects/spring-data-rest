@@ -15,15 +15,11 @@
  */
 package org.springframework.data.rest.webmvc.mongodb;
 
-import java.net.UnknownHostException;
-
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.MongoDbFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
+import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
+import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 
 /**
@@ -31,15 +27,32 @@ import com.mongodb.MongoClient;
  */
 @Configuration
 @EnableMongoRepositories
-public class MongoDbRepositoryConfig {
+public class MongoDbRepositoryConfig extends AbstractMongoConfiguration {
 
-	@Bean
-	public MongoDbFactory mongoDbFactory() throws UnknownHostException {
-		return new SimpleMongoDbFactory(new MongoClient("localhost"), "spring-data-rest-example");
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mongodb.config.AbstractMongoConfiguration#getDatabaseName()
+	 */
+	@Override
+	protected String getDatabaseName() {
+		return "spring-data-rest-sample";
 	}
 
-	@Bean
-	public MongoTemplate mongoTemplate() throws UnknownHostException {
-		return new MongoTemplate(mongoDbFactory());
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mongodb.config.AbstractMongoConfiguration#getMappingBasePackage()
+	 */
+	@Override
+	protected String getMappingBasePackage() {
+		return "";
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.mongodb.config.AbstractMongoConfiguration#mongo()
+	 */
+	@Override
+	public Mongo mongo() throws Exception {
+		return new MongoClient();
 	}
 }

@@ -58,7 +58,7 @@ public class ResourceMappingsIntegrationTests {
 	public void setUp() {
 
 		Repositories repositories = new Repositories(factory);
-		this.mappings = new ResourceMappings(new RepositoryRestConfiguration(), repositories);
+		this.mappings = new RepositoryResourceMappings(new RepositoryRestConfiguration(), repositories);
 	}
 
 	@Test

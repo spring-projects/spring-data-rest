@@ -49,6 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 
 /**
  * Integration tests for entity (de)serialization.
@@ -187,10 +188,9 @@ public class PersistentEntitySerializationTests {
 		PagedResources<PersistentEntityResource<User>> persistentEntityResource = new PagedResources<PersistentEntityResource<User>>(
 				Arrays.asList(userResource), new PageMetadata(1, 0, 10));
 
-		assertThat(
-				mapper.writeValueAsString(persistentEntityResource),
-				is("{\"_embedded\":{\"users\":[{\"address\":{\"street\":\"Street\"},\"_links\":{\"self\":{\"href\":\"/users/1\"}}}]},"
-						+ "\"page\":{\"size\":1,\"totalElements\":10,\"totalPages\":10,\"number\":0}}"));
+		String result = mapper.writeValueAsString(persistentEntityResource);
+
+		assertThat(JsonPath.read(result, "$_embedded.users[*].address"), is(notNullValue()));
 	}
 
 	/**
@@ -213,9 +213,8 @@ public class PersistentEntitySerializationTests {
 		PagedResources<PersistentEntityResource<Order>> persistentEntityResource = new PagedResources<PersistentEntityResource<Order>>(
 				Arrays.asList(orderResource), new PageMetadata(1, 0, 10));
 
-		assertThat(mapper.writeValueAsString(persistentEntityResource),
-				is("{\"_embedded\":{\"orders\":[{\"lineItems\":[{\"name\":\"first\"},{\"name\":\"second\"}],\"price\":2.5"
-						+ ",\"_links\":{\"self\":{\"href\":\"/orders/1\"},\"creator\":{\"href\":\"/orders/1/creator\"}}}]},\""
-						+ "page\":{\"size\":1,\"totalElements\":10,\"totalPages\":10,\"number\":0}}"));
+		String result = mapper.writeValueAsString(persistentEntityResource);
+
+		assertThat(JsonPath.read(result, "$_embedded.orders[*].lineItems"), is(notNullValue()));
 	}
 }

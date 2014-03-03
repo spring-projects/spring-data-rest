@@ -32,7 +32,7 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 
 	private final Repositories repositories;
 	private final CollectionResourceMapping mapping;
-	private final ResourceMappings provider;
+	private final RepositoryResourceMappings provider;
 	private final RepositoryMetadata repositoryInterface;
 
 	/**
@@ -45,7 +45,7 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	 * @param repositoryMetadata must not be {@literal null}.
 	 */
 	public RepositoryAwareResourceInformation(Repositories repositories, CollectionResourceMapping mapping,
-			ResourceMappings provider, RepositoryMetadata repositoryMetadata) {
+			RepositoryResourceMappings provider, RepositoryMetadata repositoryMetadata) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(mapping, "CollectionResourceMapping must not be null!");
