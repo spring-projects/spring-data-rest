@@ -17,6 +17,7 @@ package org.springframework.data.rest.core.projection;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -79,10 +80,27 @@ public class ProjectingMethodInterceptorUnitTests {
 		assertThat(methodInterceptor.invoke(invocation), is(nullValue()));
 	}
 
+	/**
+	 * @see DATAREST-221
+	 */
+	@Test
+	public void considersPrimitivesAsWrappers() throws Throwable {
+
+		MethodInterceptor methodInterceptor = new ProjectingMethodInterceptor(factory, interceptor);
+
+		when(invocation.getMethod()).thenReturn(Helper.class.getMethod("getPrimitive"));
+		when(interceptor.invoke(invocation)).thenReturn(1L);
+
+		assertThat(methodInterceptor.invoke(invocation), is((Object) 1L));
+		verify(factory, times(0)).createProjection(anyObject(), (Class<?>) anyObject());
+	}
+
 	interface Helper {
 
 		Helper getHelper();
 
 		String getString();
+
+		long getPrimitive();
 	}
 }

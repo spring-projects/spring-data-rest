@@ -18,6 +18,7 @@ package org.springframework.data.rest.core.projection;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * {@link MethodInterceptor} to delegate the invocation to a different {@link MethodInterceptor} but creating a
@@ -60,6 +61,8 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 		}
 
 		Class<?> returnType = invocation.getMethod().getReturnType();
-		return returnType.isAssignableFrom(result.getClass()) ? result : factory.createProjection(result, returnType);
+
+		return ClassUtils.isAssignable(returnType, result.getClass()) ? result : factory.createProjection(result,
+				returnType);
 	}
 }
