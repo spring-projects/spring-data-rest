@@ -89,13 +89,13 @@ public class ProxyProjectionFactory implements ProjectionFactory {
 	 * Returns the {@link MethodInterceptor} to add to the proxy.
 	 * 
 	 * @param source must not be {@literal null}.
-	 * @param target must not be {@literal null}.
+	 * @param projectionType must not be {@literal null}.
 	 * @return
 	 */
-	private MethodInterceptor getMethodInterceptor(Object source, Class<?> target) {
+	private MethodInterceptor getMethodInterceptor(Object source, Class<?> projectionType) {
 
 		MethodInterceptor propertyInvocationInterceptor = new PropertyAccessingMethodInterceptor(source);
-		return new ProjectingMethodInterceptor(this, getSpelMethodInterceptorIfNecessary(target,
+		return new ProjectingMethodInterceptor(this, getSpelMethodInterceptorIfNecessary(source, projectionType,
 				propertyInvocationInterceptor));
 	}
 
@@ -103,21 +103,24 @@ public class ProxyProjectionFactory implements ProjectionFactory {
 	 * Inspects the given target type for methods with {@link Value} annotations and caches the result. Will create a
 	 * {@link SpelEvaluatingMethodInterceptor} if an annotation was found or return the delegate as is if not.
 	 * 
-	 * @param target the proxy target type.
+	 * @param source The backing source object.
+	 * @param projectionType the proxy target type.
 	 * @param delegate the root {@link MethodInterceptor}.
 	 * @return
 	 */
-	private MethodInterceptor getSpelMethodInterceptorIfNecessary(Class<?> target, MethodInterceptor delegate) {
+	private MethodInterceptor getSpelMethodInterceptorIfNecessary(Object source, Class<?> projectionType,
+			MethodInterceptor delegate) {
 
-		if (!typeCache.containsKey(target)) {
+		if (!typeCache.containsKey(projectionType)) {
 
 			AnnotationDetectionMethodCallback<Value> callback = new AnnotationDetectionMethodCallback<Value>(Value.class);
-			ReflectionUtils.doWithMethods(target, callback);
+			ReflectionUtils.doWithMethods(projectionType, callback);
 
-			typeCache.put(target, callback.hasFoundAnnotation());
+			typeCache.put(projectionType, callback.hasFoundAnnotation());
 		}
 
-		return typeCache.get(target) ? new SpelEvaluatingMethodInterceptor(delegate, target, beanFactory) : delegate;
+		return typeCache.get(projectionType) ? new SpelEvaluatingMethodInterceptor(delegate, source, beanFactory)
+				: delegate;
 	}
 
 	/**

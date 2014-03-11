@@ -24,6 +24,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.data.util.DirectFieldAccessFallbackBeanWrapper;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Method interceptor to forward a delegation to bean property accessor methods to the property of a given target.
@@ -38,7 +39,6 @@ class PropertyAccessingMethodInterceptor implements MethodInterceptor {
 	 * Creates a new {@link PropertyAccessingMethodInterceptor} for the given target object.
 	 * 
 	 * @param target must not be {@literal null}.
-	 * @param factory must not be {@literal null}.
 	 */
 	public PropertyAccessingMethodInterceptor(Object target) {
 
@@ -54,6 +54,11 @@ class PropertyAccessingMethodInterceptor implements MethodInterceptor {
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
+
+		if (ReflectionUtils.isObjectMethod(method)) {
+			return invocation.proceed();
+		}
+
 		PropertyDescriptor descriptor = BeanUtils.findPropertyForMethod(method);
 
 		if (descriptor == null) {

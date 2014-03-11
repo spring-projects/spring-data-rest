@@ -62,6 +62,16 @@ public class PropertyAccessingMethodInterceptorUnitTests {
 		new PropertyAccessingMethodInterceptor(new Source()).invoke(invocation);
 	}
 
+	/**
+	 * @see DATAREST-221
+	 */
+	@Test
+	public void forwardsObjectMethodInvocation() throws Throwable {
+
+		when(invocation.getMethod()).thenReturn(Object.class.getMethod("toString"));
+		new PropertyAccessingMethodInterceptor(new Source()).invoke(invocation);
+	}
+
 	static class Source {
 
 		String firstname;

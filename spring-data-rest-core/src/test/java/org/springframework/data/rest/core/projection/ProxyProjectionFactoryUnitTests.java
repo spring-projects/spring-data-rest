@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.springframework.aop.TargetClassAware;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Unit tests for {@link ProxyProjectionFactory}.
@@ -67,15 +68,29 @@ public class ProxyProjectionFactoryUnitTests {
 		factory.createProjection(new Object(), Object.class);
 	}
 
+	/**
+	 * @see DATAREST-221
+	 */
+	@Test
+	public void exposesSpelInvokingMethod() {
+
+		Customer customer = new Customer();
+		customer.firstname = "Dave";
+		customer.lastname = "Matthews";
+
+		CustomerExcerpt excerpt = factory.createProjection(customer, CustomerExcerpt.class);
+		assertThat(excerpt.getFullName(), is("Dave Matthews"));
+	}
+
 	static class Customer {
 
-		String firstname, lastname;
-		Address address;
+		public String firstname, lastname;
+		public Address address;
 	}
 
 	static class Address {
 
-		String zipCode, city;
+		public String zipCode, city;
 	}
 
 	interface CustomerExcerpt {
@@ -83,6 +98,9 @@ public class ProxyProjectionFactoryUnitTests {
 		String getFirstname();
 
 		AddressExcerpt getAddress();
+
+		@Value("#{target.firstname + ' ' + target.lastname}")
+		String getFullName();
 	}
 
 	interface AddressExcerpt {
