@@ -59,6 +59,7 @@ import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
+import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
@@ -245,6 +246,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public ResourceMetadataHandlerMethodArgumentResolver resourceMetadataHandlerMethodArgumentResolver() {
 		return new ResourceMetadataHandlerMethodArgumentResolver(repositories(), resourceMappings());
+	}
+
+	@Bean
+	public BackendIdHandlerMethodArgumentResolver backendIdHandlerMethodArgumentResolver() {
+		return new BackendIdHandlerMethodArgumentResolver(resourceMetadataHandlerMethodArgumentResolver());
 	}
 
 	/**
@@ -481,7 +487,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 		return Arrays.asList(pageableResolver(), sortResolver(), serverHttpRequestMethodArgumentResolver(),
 				repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
-				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE);
+				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE,
+				backendIdHandlerMethodArgumentResolver());
 	}
 
 	private ObjectMapper basicObjectMapper() {

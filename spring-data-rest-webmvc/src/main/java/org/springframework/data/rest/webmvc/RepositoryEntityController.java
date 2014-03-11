@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc;
 import static org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy.*;
 import static org.springframework.http.HttpMethod.*;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +45,7 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy;
+import org.springframework.data.rest.webmvc.support.BackendId;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
@@ -56,7 +58,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -187,7 +188,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Resource<?>> getSingleEntity(RootResourceInformation resourceInformation,
-			@PathVariable String id) throws HttpRequestMethodNotSupportedException {
+			@BackendId Serializable id) throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.ITEM);
 
@@ -217,7 +218,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PUT)
 	public ResponseEntity<? extends ResourceSupport> putEntity(RootResourceInformation resourceInformation,
-			PersistentEntityResource<Object> payload, @PathVariable String id) throws HttpRequestMethodNotSupportedException {
+			PersistentEntityResource<Object> payload, @BackendId Serializable id)
+			throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PUT, ResourceType.ITEM);
 
@@ -247,8 +249,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PATCH)
 	public ResponseEntity<ResourceSupport> patchEntity(RootResourceInformation resourceInformation,
-			PersistentEntityResource<Object> payload, @PathVariable String id) throws HttpRequestMethodNotSupportedException,
-			ResourceNotFoundException {
+			PersistentEntityResource<Object> payload, @BackendId Serializable id)
+			throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PATCH, ResourceType.ITEM);
 
@@ -271,7 +273,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @throws HttpRequestMethodNotSupportedException
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.DELETE)
-	public ResponseEntity<?> deleteEntity(final RootResourceInformation resourceInformation, @PathVariable final String id)
+	public ResponseEntity<?> deleteEntity(final RootResourceInformation resourceInformation, @BackendId Serializable id)
 			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.DELETE, ResourceType.ITEM);

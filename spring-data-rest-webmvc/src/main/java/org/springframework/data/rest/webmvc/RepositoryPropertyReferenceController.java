@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc;
 import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ import org.springframework.data.rest.core.invoke.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.util.Function;
+import org.springframework.data.rest.webmvc.support.BackendId;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
@@ -102,7 +104,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
 	public ResponseEntity<ResourceSupport> followPropertyReference(final RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property) throws Exception {
+			@BackendId Serializable id, @PathVariable String property) throws Exception {
 
 		final HttpHeaders headers = new HttpHeaders();
 
@@ -150,7 +152,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.DELETE)
 	public ResponseEntity<? extends ResourceSupport> deletePropertyReference(final RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property) throws Exception {
+			@BackendId Serializable id, @PathVariable String property) throws Exception {
 
 		final RepositoryInvoker repoMethodInvoker = repoRequest.getInvoker();
 
@@ -190,7 +192,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.GET)
 	public ResponseEntity<ResourceSupport> followPropertyReference(final RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId) throws Exception {
+			@BackendId Serializable id, @PathVariable String property, final @PathVariable String propertyId)
+			throws Exception {
 
 		final HttpHeaders headers = new HttpHeaders();
 
@@ -242,7 +245,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = {
 			"application/x-spring-data-compact+json", "text/uri-list" })
 	public ResponseEntity<ResourceSupport> followPropertyReferenceCompact(RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property) throws Exception {
+			@BackendId Serializable id, @PathVariable String property) throws Exception {
 
 		ResponseEntity<ResourceSupport> response = followPropertyReference(repoRequest, id, property);
 
@@ -293,7 +296,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@ResponseBody
 	public ResponseEntity<? extends ResourceSupport> createPropertyReference(
 			final RootResourceInformation resourceInformation, final HttpMethod requestMethod,
-			final @RequestBody Resources<Object> incoming, @PathVariable String id, @PathVariable String property)
+			final @RequestBody Resources<Object> incoming, @BackendId Serializable id, @PathVariable String property)
 			throws Exception {
 
 		final RepositoryInvoker invoker = resourceInformation.getInvoker();
@@ -371,7 +374,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = RequestMethod.DELETE)
 	@ResponseBody
 	public ResponseEntity<ResourceSupport> deletePropertyReferenceId(final RootResourceInformation repoRequest,
-			@PathVariable String id, @PathVariable String property, final @PathVariable String propertyId) throws Exception {
+			@BackendId Serializable id, @PathVariable String property, final @PathVariable String propertyId)
+			throws Exception {
 
 		final RepositoryInvoker invoker = repoRequest.getInvoker();
 
@@ -433,8 +437,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		return conversionService.convert(id, type);
 	}
 
-	private ResourceSupport doWithReferencedProperty(RootResourceInformation repoRequest, String id, String propertyPath,
-			Function<ReferencedProperty, ResourceSupport> handler, HttpMethod method) throws Exception {
+	private ResourceSupport doWithReferencedProperty(RootResourceInformation repoRequest, Serializable id,
+			String propertyPath, Function<ReferencedProperty, ResourceSupport> handler, HttpMethod method) throws Exception {
 
 		RepositoryInvoker invoker = repoRequest.getInvoker();
 
