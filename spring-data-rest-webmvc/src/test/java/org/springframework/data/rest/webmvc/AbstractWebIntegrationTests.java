@@ -119,7 +119,7 @@ public abstract class AbstractWebIntegrationTests {
 
 	protected List<Link> discover(Link root, String rel) throws Exception {
 
-		MockHttpServletResponse response = mvc.perform(get(root.getHref()).accept(DEFAULT_MEDIA_TYPE)).//
+		MockHttpServletResponse response = mvc.perform(get(root.expand().getHref()).accept(DEFAULT_MEDIA_TYPE)).//
 				andExpect(status().isOk()).//
 				andExpect(hasLinkWithRel(rel)).//
 				andReturn().getResponse();
@@ -130,7 +130,7 @@ public abstract class AbstractWebIntegrationTests {
 
 	protected Link discoverUnique(Link root, String rel) throws Exception {
 
-		MockHttpServletResponse response = mvc.perform(get(root.getHref()).accept(DEFAULT_MEDIA_TYPE)).//
+		MockHttpServletResponse response = mvc.perform(get(root.expand().getHref()).accept(DEFAULT_MEDIA_TYPE)).//
 				andExpect(status().isOk()).//
 				andExpect(hasLinkWithRel(rel)).//
 				andReturn().getResponse();
