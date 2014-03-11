@@ -41,6 +41,7 @@ import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -127,13 +128,13 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET)
-	public ResponseEntity<Resources<?>> executeSearch(RootResourceInformation resourceInformation, WebRequest request,
+	public ResponseEntity<Object> executeSearch(RootResourceInformation resourceInformation, WebRequest request,
 			@PathVariable String search, Pageable pageable, PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		Resources<?> resources = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, assembler);
+		Object resources = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, assembler);
 
-		return new ResponseEntity<Resources<?>>(resources, HttpStatus.OK);
+		return new ResponseEntity<Object>(resources, HttpStatus.OK);
 	}
 
 	/**
@@ -153,8 +154,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		ResourceSupport resource = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable,
-				assembler);
+		Object resource = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, assembler);
 
 		List<Link> links = new ArrayList<Link>();
 
@@ -209,11 +209,15 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @param pageable
 	 * @return
 	 */
-	private Resources<?> executeQueryMethod(final RepositoryInvoker invoker, WebRequest request, Method method,
+	private Object executeQueryMethod(final RepositoryInvoker invoker, WebRequest request, Method method,
 			Pageable pageable, PersistentEntityResourceAssembler assembler) {
 
 		Map<String, String[]> parameters = request.getParameterMap();
 		Object result = invoker.invokeQueryMethod(method, parameters, pageable, null);
+
+		if (ClassUtils.isPrimitiveOrWrapper(method.getReturnType())) {
+			return result;
+		}
 
 		return resultToResources(result, assembler);
 	}

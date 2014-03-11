@@ -30,7 +30,6 @@ import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.TestDataPopulator;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,7 +85,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		RequestParameters parameters = new RequestParameters("firstName", "John");
 		RootResourceInformation resourceInformation = getResourceInformation(Person.class);
 
-		ResponseEntity<Resources<?>> response = controller.executeSearch(resourceInformation, getRequest(parameters),
+		ResponseEntity<Object> response = controller.executeSearch(resourceInformation, getRequest(parameters),
 				"firstname", null, assembler);
 
 		ResourceTester tester = ResourceTester.of(response.getBody());

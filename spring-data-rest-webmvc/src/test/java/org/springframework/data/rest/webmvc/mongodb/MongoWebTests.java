@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.rest.webmvc.mongodb;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Arrays;
@@ -26,6 +27,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
@@ -94,5 +96,22 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 		Link userLink = assertHasContentLinkWithRel("self", request(usersLink));
 		follow(userLink).//
 				andExpect(jsonPath("$.address.zipCode").value(is(notNullValue())));
+	}
+
+	/**
+	 * @see DATAREST-247
+	 */
+	@Test
+	public void executeQueryMethodWithPrimitiveReturnType() throws Exception {
+
+		Link profiles = discoverUnique("profiles");
+		Link profileSearches = discoverUnique(profiles, "search");
+		Link countByTypeLink = discoverUnique(profileSearches, "countByType");
+
+		assertThat(countByTypeLink.isTemplated(), is(true));
+		assertThat(countByTypeLink.getVariableNames(), hasItem("type"));
+
+		MockHttpServletResponse response = request(countByTypeLink.expand("Twitter"));
+		assertThat(response.getContentAsString(), is("1"));
 	}
 }
