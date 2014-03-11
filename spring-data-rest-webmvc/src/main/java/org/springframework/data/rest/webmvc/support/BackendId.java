@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc.jpa;
+package org.springframework.data.rest.webmvc.support;
 
-import org.springframework.data.repository.CrudRepository;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * Annotation to bind the backend id of an entity.
+ * 
  * @author Oliver Gierke
  */
-public interface BookRepository extends CrudRepository<Book, Long> {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PARAMETER)
+public @interface BackendId {
 
 }

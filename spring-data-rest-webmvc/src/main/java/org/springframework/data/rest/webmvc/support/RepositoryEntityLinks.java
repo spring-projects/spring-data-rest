@@ -17,12 +17,16 @@ package org.springframework.data.rest.webmvc.support;
 
 import static org.springframework.hateoas.TemplateVariable.VariableType.*;
 
+import java.io.Serializable;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
+import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
@@ -31,6 +35,7 @@ import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.core.AbstractEntityLinks;
+import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -48,6 +53,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	private final ResourceMappings mappings;
 	private final RepositoryRestConfiguration config;
 	private final HateoasPageableHandlerMethodArgumentResolver resolver;
+	private final PluginRegistry<BackendIdConverter, Class<?>> idConverters;
 
 	/**
 	 * Creates a new {@link RepositoryEntityLinks}.
@@ -56,20 +62,24 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 * @param mappings must not be {@literal null}.
 	 * @param config must not be {@literal null}.
 	 * @param resolver must not be {@literal null}.
+	 * @param idConverters must not be {@literal null}.
 	 */
 	@Autowired
 	public RepositoryEntityLinks(Repositories repositories, ResourceMappings mappings,
-			RepositoryRestConfiguration config, HateoasPageableHandlerMethodArgumentResolver resolver) {
+			RepositoryRestConfiguration config, HateoasPageableHandlerMethodArgumentResolver resolver,
+			PluginRegistry<BackendIdConverter, Class<?>> idConverters) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
 		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
 		Assert.notNull(resolver, "HateoasPageableHandlerMethodArgumentResolver must not be null!");
+		Assert.notNull(idConverters, "Id converter registry must not be null!");
 
 		this.repositories = repositories;
 		this.mappings = mappings;
 		this.config = config;
 		this.resolver = resolver;
+		this.idConverters = idConverters;
 	}
 
 	/*
@@ -134,8 +144,12 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	@Override
 	public Link linkToSingleResource(Class<?> type, Object id) {
 
+		Assert.isInstanceOf(Serializable.class, id, "Id must be assignable to Serializable!");
+
 		ResourceMetadata metadata = mappings.getMappingFor(type);
-		Link link = linkFor(type).slash(id).withRel(metadata.getItemResourceRel());
+		String mappedId = idConverters.getPluginFor(type, DefaultIdConverter.INSTANCE).toRequestId((Serializable) id, type);
+
+		Link link = linkFor(type).slash(mappedId).withRel(metadata.getItemResourceRel());
 		ProjectionDefinitionConfiguration projectionConfiguration = config.projectionConfiguration();
 
 		if (!projectionConfiguration.hasProjectionFor(type)) {

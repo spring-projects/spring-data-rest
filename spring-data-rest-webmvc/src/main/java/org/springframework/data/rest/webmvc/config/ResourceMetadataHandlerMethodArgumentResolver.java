@@ -18,19 +18,17 @@ package org.springframework.data.rest.webmvc.config;
 import static org.springframework.util.ClassUtils.*;
 import static org.springframework.util.StringUtils.*;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.util.UriUtils;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.util.UrlPathHelper;
 
 /**
  * {@link HandlerMethodArgumentResolver} to create {@link ResourceMetadata} instances.
@@ -76,32 +74,15 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 	public ResourceMetadata resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-		HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
-		String requestUri = new UrlPathHelper().getLookupPathForRequest(request);
+		String repositoryKey = UriUtils.findMappingVariable("repository", parameter, webRequest);
 
-		if (requestUri.startsWith("/")) {
-			requestUri = requestUri.substring(1);
-		}
-
-		String[] parts = requestUri.split("/");
-
-		if (parts.length == 0) {
-			// Root request
-			return null;
-		}
-
-		return findRepositoryInfoFor(parts[0]);
-	}
-
-	private ResourceMetadata findRepositoryInfoFor(String pathSegment) {
-
-		if (!hasText(pathSegment)) {
+		if (!hasText(repositoryKey)) {
 			return null;
 		}
 
 		for (Class<?> domainType : repositories) {
 			ResourceMetadata mapping = mappings.getMappingFor(domainType);
-			if (mapping.getPath().matches(pathSegment) && mapping.isExported()) {
+			if (mapping.getPath().matches(repositoryKey) && mapping.isExported()) {
 				return mapping;
 			}
 		}

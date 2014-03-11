@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.AbstractControllerIntegrationTests;
+import org.springframework.data.rest.webmvc.jpa.Book;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
@@ -68,5 +69,15 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		assertThat(link.isTemplated(), is(true));
 		assertThat(link.getVariableNames(), hasItem(configuration.projectionConfiguration().getParameterName()));
+	}
+
+	/**
+	 * @see DATAREST-155
+	 */
+	@Test
+	public void usesCustomGeneratedBackendId() {
+
+		Link link = entityLinks.linkToSingleResource(Book.class, 7L);
+		assertThat(link.getHref(), endsWith("/7-7-7-7-7-7-7"));
 	}
 }

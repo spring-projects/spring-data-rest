@@ -36,7 +36,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.convert.support.ConfigurableConversionService;
-import org.springframework.core.env.Environment;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DomainClassConverter;
@@ -64,6 +63,9 @@ import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
+import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
+import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
+import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
@@ -86,6 +88,8 @@ import org.springframework.hateoas.hal.Jackson2HalModule.HalHandlerInstantiator;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.plugin.core.OrderAwarePluginRegistry;
+import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
@@ -132,10 +136,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			RepositoryRestMvcConfiguration.class.getClassLoader());
 
 	@Autowired ListableBeanFactory beanFactory;
-	@Autowired Environment environment;
 
-	@Autowired(required = false) List<ResourceProcessor<?>> resourceProcessors = Collections.emptyList();
 	@Autowired(required = false) List<MappingContext<?, ?>> mappingContexts = Collections.emptyList();
+	@Autowired(required = false) List<ResourceProcessor<?>> resourceProcessors = Collections.emptyList();
+	@Autowired(required = false) List<BackendIdConverter> idConverters = Collections.emptyList();
+
 	@Autowired(required = false) RelProvider relProvider;
 	@Autowired(required = false) CurieProvider curieProvider;
 
@@ -270,6 +275,12 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new ResourceMetadataHandlerMethodArgumentResolver(repositories(), resourceMappings());
 	}
 
+	@Bean
+	public BackendIdHandlerMethodArgumentResolver backendIdHandlerMethodArgumentResolver() {
+		return new BackendIdHandlerMethodArgumentResolver(backendIdConverterRegistry(),
+				resourceMetadataHandlerMethodArgumentResolver());
+	}
+
 	/**
 	 * A special {@link org.springframework.hateoas.EntityLinks} implementation that takes repository and current
 	 * configuration into account when generating links.
@@ -279,7 +290,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public EntityLinks entityLinks() {
-		return new RepositoryEntityLinks(repositories(), resourceMappings(), config(), pageableResolver());
+		return new RepositoryEntityLinks(repositories(), resourceMappings(), config(), pageableResolver(),
+				backendIdConverterRegistry());
 	}
 
 	/**
@@ -526,16 +538,25 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return resolver;
 	}
 
+	@Bean
+	public PluginRegistry<BackendIdConverter, Class<?>> backendIdConverterRegistry() {
+
+		List<BackendIdConverter> converters = new ArrayList<BackendIdConverter>(idConverters.size());
+		converters.addAll(this.idConverters);
+		converters.add(DefaultIdConverter.INSTANCE);
+
+		return OrderAwarePluginRegistry.create(converters);
+	}
+
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
 				repositories(), entityLinks(), config().projectionConfiguration(), new ProxyProjectionFactory(beanFactory));
 
-		return Arrays
-				.asList(pageableResolver(), sortResolver(), serverHttpRequestMethodArgumentResolver(),
-						repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
-						resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE,
-						peraResolver);
+		return Arrays.asList(pageableResolver(), sortResolver(), serverHttpRequestMethodArgumentResolver(),
+				repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
+				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE,
+				peraResolver, backendIdHandlerMethodArgumentResolver());
 	}
 
 	private ObjectMapper basicObjectMapper() {
