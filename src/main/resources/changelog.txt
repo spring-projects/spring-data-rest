@@ -1,6 +1,21 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.0.1.RELEASE (2014-03-13)
+---------------------------------------------
+** Bug
+    * [DATAREST-150] - PUT vs PATCH with JPA
+    * [DATAREST-247] - NPE when calling count Queries in SD MongoDB Repositories
+    * [DATAREST-253] - AssociationOmittingSerializerModifier suffers from potential NullPointerException
+    * [DATAREST-254] - org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module does not properly handle JPA @Transient annotation during serialization yeilding a NPE
+    * [DATAREST-261] - RepositoryRelProvider is not registered
+    * [DATAREST-267] - (Potentially) unwanted behaviour for self hrefs with projections
+    * [DATAREST-268] - Exception when putting element with return type
+    * [DATAREST-271] - PaginationCustomizations are not applied
+
+** Task
+    * [DATAREST-258] - Release 2.0.1
+
 Changes in version 2.0.0.RELEASE (2014-02-24)
 ---------------------------------------------
 ** Bug
