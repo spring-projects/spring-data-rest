@@ -48,10 +48,15 @@ public class Neo4jWebTests extends AbstractWebIntegrationTests {
 	@EnableTransactionManagement
 	static class TestConfig extends Neo4jConfiguration {
 
+		public TestConfig() {
+			setBasePackage(Neo4jWebTests.class.getPackage().getName());
+		}
+
 		@Bean(destroyMethod = "shutdown")
 		public GraphDatabaseService graphDatabaseService() {
 			return new GraphDatabaseFactory().newEmbeddedDatabase("target/graphdb");
 		}
+
 	}
 
 	@Autowired TestDataPopulator populator;
