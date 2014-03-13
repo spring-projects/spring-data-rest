@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.AfterClass;
@@ -25,11 +25,17 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
+import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.hateoas.core.DefaultRelProvider;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -75,12 +81,43 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		mapper.writeValueAsString(new RepositoryLinksResource());
 	}
 
+	/**
+	 * @see DATAREST-271
+	 */
+	@Test
+	public void assetConsidersPaginationCustomization() {
+
+		HateoasPageableHandlerMethodArgumentResolver resolver = context
+				.getBean(HateoasPageableHandlerMethodArgumentResolver.class);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
+		resolver.enhance(builder, null, new PageRequest(0, 9000, Direction.ASC, "firstname"));
+
+		MultiValueMap<String, String> params = builder.build().getQueryParams();
+
+		assertThat(params.containsKey("myPage"), is(true));
+		assertThat(params.containsKey("mySort"), is(true));
+
+		assertThat(params.get("mySize"), hasSize(1));
+		assertThat(params.get("mySize").get(0), is("7000"));
+	}
+
 	@Configuration
 	static class ExtendingConfiguration extends RepositoryRestMvcConfiguration {
 
 		@Bean
 		public DefaultRelProvider relProvider() {
 			return new DefaultRelProvider();
+		}
+
+		@Override
+		protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+
+			config.setDefaultPageSize(45);
+			config.setMaxPageSize(7000);
+			config.setPageParamName("myPage");
+			config.setLimitParamName("mySize");
+			config.setSortParamName("mySort");
 		}
 	}
 }

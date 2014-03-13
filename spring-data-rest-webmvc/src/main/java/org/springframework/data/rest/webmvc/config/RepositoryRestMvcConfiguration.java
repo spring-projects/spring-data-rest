@@ -36,6 +36,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DomainClassConverter;
@@ -520,6 +521,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		HateoasPageableHandlerMethodArgumentResolver resolver = super.pageableResolver();
 		resolver.setPageParameterName(config().getPageParamName());
 		resolver.setSizeParameterName(config().getLimitParamName());
+		resolver.setFallbackPageable(new PageRequest(0, config().getDefaultPageSize()));
+		resolver.setMaxPageSize(config().getMaxPageSize());
 
 		return resolver;
 	}
