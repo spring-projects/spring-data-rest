@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.UriToEntityConverter;
@@ -64,6 +65,8 @@ import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgum
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.rest.webmvc.support.ValidationExceptionHandler;
+import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
+import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.EntityLinks;
@@ -482,6 +485,37 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		messageConverters.add(uriListHttpMessageConverter());
 
 		return messageConverters;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration#pageableResolver()
+	 */
+	@Bean
+	@Override
+	public HateoasPageableHandlerMethodArgumentResolver pageableResolver() {
+
+		HateoasPageableHandlerMethodArgumentResolver resolver = super.pageableResolver();
+		resolver.setPageParameterName(config().getPageParamName());
+		resolver.setSizeParameterName(config().getLimitParamName());
+		resolver.setFallbackPageable(new PageRequest(0, config().getDefaultPageSize()));
+		resolver.setMaxPageSize(config().getMaxPageSize());
+
+		return resolver;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration#sortResolver()
+	 */
+	@Bean
+	@Override
+	public HateoasSortHandlerMethodArgumentResolver sortResolver() {
+
+		HateoasSortHandlerMethodArgumentResolver resolver = super.sortResolver();
+		resolver.setSortParameter(config().getSortParamName());
+
+		return resolver;
 	}
 
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {

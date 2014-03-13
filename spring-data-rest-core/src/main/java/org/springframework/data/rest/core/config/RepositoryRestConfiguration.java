@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class RepositoryRestConfiguration {
 	private int defaultPageSize = 20;
 	private int maxPageSize = 1000;
 	private String pageParamName = "page";
-	private String limitParamName = "limit";
+	private String limitParamName = "size";
 	private String sortParamName = "sort";
 	private MediaType defaultMediaType = MediaTypes.HAL_JSON;
 	private boolean returnBodyOnCreate = false;
@@ -80,7 +80,7 @@ public class RepositoryRestConfiguration {
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setDefaultPageSize(int defaultPageSize) {
-		Assert.isTrue((defaultPageSize > 0), "Page size must be greater than 0.");
+		Assert.isTrue(defaultPageSize > 0, "Page size must be greater than 0.");
 		this.defaultPageSize = defaultPageSize;
 		return this;
 	}
@@ -101,7 +101,7 @@ public class RepositoryRestConfiguration {
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setMaxPageSize(int maxPageSize) {
-		Assert.isTrue((defaultPageSize > 0), "Maximum page size must be greater than 0.");
+		Assert.isTrue(defaultPageSize > 0, "Maximum page size must be greater than 0.");
 		this.maxPageSize = maxPageSize;
 		return this;
 	}
