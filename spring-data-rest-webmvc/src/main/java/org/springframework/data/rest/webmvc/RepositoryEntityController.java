@@ -229,7 +229,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		if (domainObject == null) {
 
-			BeanWrapper<?, Object> incomingWrapper = BeanWrapper.create(payload.getContent(), conversionService);
+			BeanWrapper<Object> incomingWrapper = BeanWrapper.create(payload.getContent(), conversionService);
 			incomingWrapper.setProperty(payload.getPersistentEntity().getIdProperty(), id);
 
 			return createAndReturn(incomingWrapper.getBean(), invoker, assembler);

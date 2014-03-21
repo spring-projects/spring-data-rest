@@ -82,7 +82,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 					instanceType));
 		}
 
-		BeanWrapper<?, Object> wrapper = BeanWrapper.create(instance, null);
+		BeanWrapper<Object> wrapper = BeanWrapper.create(instance, null);
 		Object id = wrapper.getProperty(entity.getIdProperty());
 
 		Link resourceLink = entityLinks.linkToSingleResource(entity.getType(), id);

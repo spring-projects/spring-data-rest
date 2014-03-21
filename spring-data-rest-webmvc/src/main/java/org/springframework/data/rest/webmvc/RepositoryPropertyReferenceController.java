@@ -207,7 +207,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				if (prop.property.isCollectionLike()) {
 					for (Object obj : (Iterable<?>) prop.propertyValue) {
 
-						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(obj, null);
+						BeanWrapper<Object> propValWrapper = BeanWrapper.create(obj, null);
 						String sId = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
 
 						if (propertyId.equals(sId)) {
@@ -220,7 +220,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				} else if (prop.property.isMap()) {
 					for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) prop.propertyValue).entrySet()) {
 
-						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(entry.getValue(), null);
+						BeanWrapper<Object> propValWrapper = BeanWrapper.create(entry.getValue(), null);
 						String sId = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
 
 						if (propertyId.equals(sId)) {
@@ -397,7 +397,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					Iterator<Object> itr = coll.iterator();
 					while (itr.hasNext()) {
 						Object obj = itr.next();
-						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(obj, null);
+						BeanWrapper<Object> propValWrapper = BeanWrapper.create(obj, null);
 						String s = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
 						if (propertyId.equals(s)) {
 							itr.remove();
@@ -408,7 +408,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					Iterator<Object> itr = m.keySet().iterator();
 					while (itr.hasNext()) {
 						Object key = itr.next();
-						BeanWrapper<?, Object> propValWrapper = BeanWrapper.create(m.get(key), null);
+						BeanWrapper<Object> propValWrapper = BeanWrapper.create(m.get(key), null);
 						String s = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
 						if (propertyId.equals(s)) {
 							itr.remove();
@@ -457,7 +457,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			throw new ResourceNotFoundException();
 		}
 
-		BeanWrapper<?, Object> wrapper = BeanWrapper.create(domainObj, null);
+		BeanWrapper<Object> wrapper = BeanWrapper.create(domainObj, null);
 		Object propVal = wrapper.getProperty(prop);
 
 		return handler.apply(new ReferencedProperty(prop, propVal, wrapper));
@@ -469,9 +469,9 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		final PersistentProperty<?> property;
 		final Class<?> propertyType;
 		final Object propertyValue;
-		final BeanWrapper<?, ?> wrapper;
+		final BeanWrapper<?> wrapper;
 
-		private ReferencedProperty(PersistentProperty<?> property, Object propertyValue, BeanWrapper<?, ?> wrapper) {
+		private ReferencedProperty(PersistentProperty<?> property, Object propertyValue, BeanWrapper<?> wrapper) {
 
 			this.property = property;
 			this.propertyValue = propertyValue;

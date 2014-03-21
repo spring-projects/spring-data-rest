@@ -70,8 +70,8 @@ public class DomainObjectMerger {
 			return;
 		}
 
-		final BeanWrapper<?, Object> fromWrapper = BeanWrapper.create(from, conversionService);
-		final BeanWrapper<?, Object> targetWrapper = BeanWrapper.create(target, conversionService);
+		final BeanWrapper<Object> fromWrapper = BeanWrapper.create(from, conversionService);
+		final BeanWrapper<Object> targetWrapper = BeanWrapper.create(target, conversionService);
 		final PersistentEntity<?, ?> entity = repositories.getPersistentEntity(target.getClass());
 
 		entity.doWithProperties(new SimplePropertyHandler() {
