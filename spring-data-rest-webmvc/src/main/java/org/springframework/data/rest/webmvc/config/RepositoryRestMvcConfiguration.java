@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -80,6 +82,7 @@ import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration;
+import org.springframework.data.web.config.SpringDataJacksonConfiguration;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.MediaTypes;
@@ -118,23 +121,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * @author Oliver Gierke
  */
 @Configuration
+@EnableHypermediaSupport(type = HypermediaType.HAL)
 @ComponentScan(basePackageClasses = RepositoryRestController.class,
 		includeFilters = @Filter(RepositoryRestController.class), useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
+@Import(SpringDataJacksonConfiguration.class)
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration {
-
-	/**
-	 * Helper class instead of using {@link EnableHypermediaSupport} directly to make sure the annotation gets inspected
-	 * correctly even if users extend {@link RepositoryRestMvcConfiguration}.
-	 * 
-	 * @see https://jira.springsource.org/browse/SPR-11251
-	 * @author Oliver Gierke
-	 */
-	@Configuration
-	@EnableHypermediaSupport(type = HypermediaType.HAL)
-	static class HypermediaConfigurationDelegate {
-
-	}
 
 	private static final boolean IS_JAVAX_VALIDATION_AVAILABLE = ClassUtils.isPresent(
 			"javax.validation.ConstraintViolationException", RepositoryRestMvcConfiguration.class.getClassLoader());
@@ -143,7 +135,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Autowired ListableBeanFactory beanFactory;
 
-	@Autowired(required = false) List<MappingContext<?, ?>> mappingContexts = Collections.emptyList();
 	@Autowired(required = false) List<ResourceProcessor<?>> resourceProcessors = Collections.emptyList();
 	@Autowired(required = false) List<BackendIdConverter> idConverters = Collections.emptyList();
 
@@ -162,7 +153,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public PersistentEntities persistentEntities() {
-		return new PersistentEntities(mappingContexts);
+
+		List<MappingContext<?, ?>> arrayList = new ArrayList<MappingContext<?, ?>>();
+
+		for (MappingContext<?, ?> context : BeanFactoryUtils.beansOfTypeIncludingAncestors(beanFactory,
+				MappingContext.class).values()) {
+			arrayList.add(context);
+		}
+
+		return new PersistentEntities(arrayList);
 	}
 
 	@Bean
