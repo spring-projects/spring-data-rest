@@ -37,6 +37,9 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoModule;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DomainClassConverter;
@@ -60,6 +63,8 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.convert.StringToDistanceConverter;
+import org.springframework.data.rest.webmvc.convert.StringToPointConverter;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
@@ -167,6 +172,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
 		conversionService.addConverter(UUIDConverter.INSTANCE);
 		configureConversionService(conversionService);
+
+		if (!conversionService.canConvert(String.class, Point.class)) {
+			conversionService.addConverter(StringToPointConverter.INSTANCE);
+		}
+
+		if (!conversionService.canConvert(String.class, Distance.class)) {
+			conversionService.addConverter(StringToDistanceConverter.INSTANCE);
+		}
+
 		return conversionService;
 	}
 
@@ -562,12 +576,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				peraResolver, backendIdHandlerMethodArgumentResolver());
 	}
 
+	@Autowired GeoModule geoModule;
+
 	private ObjectMapper basicObjectMapper() {
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 		// Our special PersistentEntityResource Module
 		objectMapper.registerModule(persistentEntityJackson2Module());
+		objectMapper.registerModule(geoModule);
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
 		// Configure custom Modules
