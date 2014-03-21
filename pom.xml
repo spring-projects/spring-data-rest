@@ -31,7 +31,7 @@
 		<springdata.jpa>1.6.0.BUILD-SNAPSHOT</springdata.jpa>
 		<springdata.mongodb>1.5.0.BUILD-SNAPSHOT</springdata.mongodb>
 		<springdata.neo4j>3.1.0.BUILD-SNAPSHOT</springdata.neo4j>
-		<springdata.gemfire>1.3.3.RELEASE</springdata.gemfire>
+		<springdata.gemfire>1.4.0.BUILD-SNAPSHOT</springdata.gemfire>
 
 		<hibernate.version>4.2.0.Final</hibernate.version>
 
