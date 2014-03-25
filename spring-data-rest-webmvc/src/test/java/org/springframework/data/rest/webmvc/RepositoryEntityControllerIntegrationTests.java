@@ -24,9 +24,11 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.AddressRepository;
+import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,5 +85,42 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler);
 
 		assertThat(entity.getHeaders().getLocation().toString(), not(endsWith("{?projection}")));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test
+	public void exposesHeadForCollectionResourceIfExported() throws Exception {
+		ResponseEntity<?> entity = controller.headCollectionResource(getResourceInformation(Person.class));
+		assertThat(entity.getStatusCode(), is(HttpStatus.NO_CONTENT));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test(expected = ResourceNotFoundException.class)
+	public void doesNotExposeHeadForCollectionResourceIfNotExported() throws Exception {
+		controller.headCollectionResource(getResourceInformation(CreditCard.class));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test
+	public void exposesHeadForItemResourceIfExported() throws Exception {
+
+		Address address = repository.save(new Address());
+
+		ResponseEntity<?> entity = controller.headItemResource(getResourceInformation(Address.class), address.id);
+		assertThat(entity.getStatusCode(), is(HttpStatus.NO_CONTENT));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test(expected = ResourceNotFoundException.class)
+	public void doesNotExposeHeadForItemResourceIfNotExisting() throws Exception {
+		controller.headItemResource(getResourceInformation(CreditCard.class), 1L);
 	}
 }

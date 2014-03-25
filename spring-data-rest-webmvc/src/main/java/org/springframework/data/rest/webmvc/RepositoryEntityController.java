@@ -101,6 +101,39 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		this.publisher = publisher;
 	}
 
+	/**
+	 * <code>HEAD /{repository}</code>
+	 * 
+	 * @param resourceInformation
+	 * @return
+	 * @throws HttpRequestMethodNotSupportedException
+	 */
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.HEAD)
+	public ResponseEntity<?> headCollectionResource(RootResourceInformation resourceInformation)
+			throws HttpRequestMethodNotSupportedException {
+
+		resourceInformation.verifySupportedMethod(HttpMethod.HEAD, ResourceType.COLLECTION);
+
+		RepositoryInvoker invoker = resourceInformation.getInvoker();
+
+		if (null == invoker) {
+			throw new ResourceNotFoundException();
+		}
+
+		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+	}
+
+	/**
+	 * <code>GET /{repository}</code> - Returns the collection resource (paged or unpaged).
+	 * 
+	 * @param resourceInformation
+	 * @param pageable
+	 * @param sort
+	 * @param assembler
+	 * @return
+	 * @throws ResourceNotFoundException
+	 * @throws HttpRequestMethodNotSupportedException
+	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
 	public Resources<?> getCollectionResource(final RootResourceInformation resourceInformation, Pageable pageable,
@@ -179,6 +212,25 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	/**
+	 * <code>HEAD /{repsoitory}/{id}</code>
+	 * 
+	 * @param resourceInformation
+	 * @param id
+	 * @return
+	 * @throws HttpRequestMethodNotSupportedException
+	 */
+	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.HEAD)
+	public ResponseEntity<?> headItemResource(RootResourceInformation resourceInformation, @BackendId Serializable id)
+			throws HttpRequestMethodNotSupportedException {
+
+		if (getItemResource(resourceInformation, id) != null) {
+			return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+		}
+
+		throw new ResourceNotFoundException();
+	}
+
+	/**
 	 * <code>GET /{repository}/{id}</code> - Returns a single entity.
 	 * 
 	 * @param resourceInformation
@@ -191,15 +243,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			@BackendId Serializable id, PersistentEntityResourceAssembler assembler)
 			throws HttpRequestMethodNotSupportedException {
 
-		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.ITEM);
-
-		RepositoryInvoker repoMethodInvoker = resourceInformation.getInvoker();
-
-		if (!repoMethodInvoker.exposesFindOne()) {
-			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND);
-		}
-
-		Object domainObj = repoMethodInvoker.invokeFindOne(id);
+		Object domainObj = getItemResource(resourceInformation, id);
 
 		if (domainObj == null) {
 			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND);
@@ -280,14 +324,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		resourceInformation.verifySupportedMethod(HttpMethod.DELETE, ResourceType.ITEM);
 
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
-
-		// TODO: re-enable not exposing delete method if hidden
-
-		// ResourceMapping methodMapping = repoRequest.getRepositoryResourceMapping().getResourceMappingFor("delete");
-		// if (null != methodMapping && !methodMapping.isExported()) {
-		// throw new HttpRequestMethodNotSupportedException("DELETE");
-		// }
-
 		Object domainObj = invoker.invokeFindOne(id);
 
 		publisher.publishEvent(new BeforeDeleteEvent(domainObj));
@@ -363,5 +399,28 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		String selfLink = assembler.getSelfLinkFor(source).getHref();
 		headers.setLocation(new UriTemplate(selfLink).expand());
+	}
+
+	/**
+	 * Returns the object backing the item resource for the given {@link RootResourceInformation} and id.
+	 * 
+	 * @param resourceInformation
+	 * @param id
+	 * @return
+	 * @throws HttpRequestMethodNotSupportedException
+	 * @throws {@link ResourceNotFoundException}
+	 */
+	private Object getItemResource(RootResourceInformation resourceInformation, Serializable id)
+			throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
+
+		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.ITEM);
+
+		RepositoryInvoker repoMethodInvoker = resourceInformation.getInvoker();
+
+		if (!repoMethodInvoker.exposesFindOne()) {
+			throw new ResourceNotFoundException();
+		}
+
+		return repoMethodInvoker.invokeFindOne(id);
 	}
 }

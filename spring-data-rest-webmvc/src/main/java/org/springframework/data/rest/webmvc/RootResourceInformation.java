@@ -95,6 +95,7 @@ public class RootResourceInformation {
 
 				if (invoker.exposesFindAll()) {
 					methods.add(HttpMethod.GET);
+					methods.add(HttpMethod.HEAD);
 				}
 
 				if (invoker.exposesSave()) {
@@ -111,6 +112,7 @@ public class RootResourceInformation {
 
 				if (invoker.exposesFindOne()) {
 					methods.add(HttpMethod.GET);
+					methods.add(HttpMethod.HEAD);
 				}
 
 				if (invoker.exposesSave()) {
@@ -147,11 +149,16 @@ public class RootResourceInformation {
 	 * 
 	 * @param httpMethod must not be {@literal null}.
 	 * @param resourceType must not be {@literal null}.
+	 * @throws ResourceNotFoundException if the repository is not exported at all.
 	 * @throws HttpRequestMethodNotSupportedException if the {@link ResourceType} does not support the given
 	 *           {@link HttpMethod}. Will contain all supported methods as indicators for clients.
 	 */
 	public void verifySupportedMethod(HttpMethod httpMethod, ResourceType resourceType)
-			throws HttpRequestMethodNotSupportedException {
+			throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
+
+		if (!resourceMetadata.isExported()) {
+			throw new ResourceNotFoundException();
+		}
 
 		Assert.notNull(httpMethod, "HTTP method must not be null!");
 		Assert.notNull(resourceType, "Resource type must not be null!");

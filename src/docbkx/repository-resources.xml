@@ -21,7 +21,7 @@
     <para>For this repository, Spring Data REST exposes a collection resource
     at <code>/orders</code>. The path is derived from the uncapitalized,
     pluralized, simple class name of the domain class being managed. It also
-    exposes a an item resource for each of the items managed by te repository
+    exposes an item resource for each of the items managed by the repository
     under the URI template <uri>/orders/{id}</uri>. </para>
 
     <para>By default the HTTP methods to interact with these resources map to
@@ -192,6 +192,12 @@
       </section>
 
       <section>
+        <title><code>HEAD</code></title>
+
+        <para>Returns whether the collection resource is available.</para>
+      </section>
+
+      <section>
         <title><code>POST</code></title>
 
         <para>Creates a new entity from the given request body.</para>
@@ -281,6 +287,12 @@
           linkend="repository-resources.association-resource">association
           resource</link>.</para>
         </simplesect>
+      </section>
+
+      <section>
+        <title><code>HEAD</code></title>
+
+        <para>Returns whether the item resource is available.</para>
       </section>
 
       <section>
@@ -514,6 +526,12 @@
           parameters.</para>
         </simplesect>
       </section>
+          <section>
+        <title><code>HEAD</code></title>
+
+        <para>Returns whether the search resource is available. A 404 return
+        code indicates no query method resources available at all.</para>
+      </section>
     </section>
   </section>
 
@@ -572,6 +590,11 @@
             </listitem>
           </itemizedlist>
         </simplesect>
+      </section>
+          <section>
+        <title><code>HEAD</code></title>
+
+        <para>Returns whether a query method resource is available.</para>
       </section>
     </section>
   </section>

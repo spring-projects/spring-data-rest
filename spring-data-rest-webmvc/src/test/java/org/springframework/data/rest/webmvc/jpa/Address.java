@@ -25,5 +25,5 @@ import javax.persistence.Id;
 @Entity
 public class Address {
 
-	@Id @GeneratedValue Long id;
+	public @Id @GeneratedValue Long id;
 }
