@@ -22,7 +22,7 @@
     at <code>/orders</code>. The path is derived from the uncapitalized,
     pluralized, simple class name of the domain class being managed. It also
     exposes an item resource for each of the items managed by the repository
-    under the URI template <uri>/orders/{id}</uri>. </para>
+    under the URI template <uri>/orders/{id}</uri>.</para>
 
     <para>By default the HTTP methods to interact with these resources map to
     the according methods of <interfacename>CrudRepository</interfacename>.
@@ -192,6 +192,12 @@
       </section>
 
       <section>
+        <title><code>HEAD</code></title>
+
+        <para>Returns whether the collection resource is available.</para>
+      </section>
+
+      <section>
         <title><code>POST</code></title>
 
         <para>Creates a new entity from the given request body.</para>
@@ -281,6 +287,12 @@
           linkend="repository-resources.association-resource">association
           resource</link>.</para>
         </simplesect>
+      </section>
+
+      <section>
+        <title><code>HEAD</code></title>
+
+        <para>Returns whether the item resource is available.</para>
       </section>
 
       <section>
@@ -379,7 +391,7 @@
     each of the associations the item resource has. The name and path of the
     of the resource defaults to the name of the association property and can
     be customized using <interfacename>@RestResource</interfacename> on the
-    association property. </para>
+    association property.</para>
 
     <section>
       <title>Supported HTTP methods</title>
@@ -408,7 +420,7 @@
         <title>PUT</title>
 
         <para>Binds the resource pointed to by the given URI(s) to the
-        resource. This </para>
+        resource. This</para>
 
         <simplesect>
           <title>Custom status codes</title>
@@ -514,6 +526,13 @@
           parameters.</para>
         </simplesect>
       </section>
+
+      <section>
+        <title><code>HEAD</code></title>
+
+        <para>Returns whether the search resource is available. A 404 return
+        code indicates no query method resources available at all.</para>
+      </section>
     </section>
   </section>
 
@@ -572,6 +591,12 @@
             </listitem>
           </itemizedlist>
         </simplesect>
+      </section>
+
+      <section>
+        <title><code>HEAD</code></title>
+
+        <para>Returns whether a query method resource is available.</para>
       </section>
     </section>
   </section>
