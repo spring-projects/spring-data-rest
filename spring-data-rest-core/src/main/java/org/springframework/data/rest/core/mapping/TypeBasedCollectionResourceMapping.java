@@ -127,6 +127,14 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 
 		ResourceDescription fallback = SimpleResourceDescription.defaultFor(getRel());
 
+		if (description != null) {
+			return new AnnotationBasedResourceDescription(description, fallback);
+		}
+
+		if (annotation != null) {
+			return new AnnotationBasedResourceDescription(annotation.description(), fallback);
+		}
+
 		return fallback;
 	}
 

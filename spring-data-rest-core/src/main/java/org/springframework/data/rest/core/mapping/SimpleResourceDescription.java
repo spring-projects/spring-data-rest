@@ -15,8 +15,8 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -24,49 +24,61 @@ import org.springframework.util.StringUtils;
  */
 public class SimpleResourceDescription extends ResolvableResourceDescriptionSupport {
 
-	private static final String DEFAULT_KEY_PREFIX = "rest.description";
-	private static final MediaType DEFAULT_MEDIA_TYPE = MediaType.TEXT_PLAIN;
+	protected static final String DEFAULT_KEY_PREFIX = "rest.description";
+	protected static final MediaType DEFAULT_MEDIA_TYPE = MediaType.TEXT_PLAIN;
 
-	private String message;
-	private MediaType type;
+	private final String message;
+	private final MediaType mediaType;
 
-	private SimpleResourceDescription(String message, MediaType mediaType) {
+	/**
+	 * Creates a new {@link SimpleResourceDescription} with the given message and {@link MediaType}.
+	 * 
+	 * @param message must not be {@literal null} or empty.
+	 * @param mediaType must not be {@literal null} or empty.
+	 */
+	protected SimpleResourceDescription(String message, MediaType mediaType) {
+
+		Assert.hasText(message, "Message must not be null or empty!");
+		Assert.notNull(mediaType, "MediaType must not be null!");
+
 		this.message = message;
-		this.type = mediaType;
-	}
-
-	public static ResourceDescription defaultFor(PersistentProperty<?> property, String rel) {
-
-		String message = String.format("%s.%s.%s", DEFAULT_KEY_PREFIX, rel, property.getName());
-		return new SimpleResourceDescription(message, DEFAULT_MEDIA_TYPE);
+		this.mediaType = mediaType;
 	}
 
 	public static ResourceDescription defaultFor(String rel) {
-
-		String message = String.format("%s.%s", DEFAULT_KEY_PREFIX, rel);
-		return new SimpleResourceDescription(message, DEFAULT_MEDIA_TYPE);
+		return new SimpleResourceDescription(String.format("%s.%s", DEFAULT_KEY_PREFIX, rel), DEFAULT_MEDIA_TYPE);
 	}
 
-	public static ResourceDescription defaultForCollection(Class<?> type) {
-		return null;
-	}
-
-	public static ResourceDescription defaultForMethod(RepositoryMethodResourceMapping mapping) {
-		return null;
-	}
-
-	/**
-	 * @return the message
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.ResourceDescription#getMessage()
 	 */
 	public String getMessage() {
 		return message;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.ResourceDescription#getType()
+	 */
 	public MediaType getType() {
-		return type;
+		return mediaType;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.ResourceDescription#isDefault()
+	 */
 	public boolean isDefault() {
 		return StringUtils.hasText(message) && message.startsWith(DEFAULT_KEY_PREFIX);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.context.MessageSourceResolvable#getCodes()
+	 */
+	@Override
+	public String[] getCodes() {
+		return new String[] { message };
 	}
 }

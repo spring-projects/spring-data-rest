@@ -16,7 +16,6 @@
 package org.springframework.data.rest.core.mapping;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * A {@link ResourceMapping} that is backed by a {@link Method}.
@@ -33,9 +32,9 @@ public interface MethodResourceMapping extends ResourceMapping {
 	Method getMethod();
 
 	/**
-	 * Returns the names of the parameters the method exposes.
+	 * Returns {@link ParameterMetadata} instances for all named parameters.
 	 * 
 	 * @return
 	 */
-	List<String> getParameterNames();
+	ParametersMetadata getParametersMetadata();
 }

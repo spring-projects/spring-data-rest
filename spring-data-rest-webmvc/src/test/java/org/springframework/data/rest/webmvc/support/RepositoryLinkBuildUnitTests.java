@@ -18,13 +18,12 @@ package org.springframework.data.rest.webmvc.support;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
-import java.net.URI;
-
 import org.junit.Test;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
 import org.springframework.data.rest.core.mapping.MappingResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.WebTestUtils;
 import org.springframework.data.rest.webmvc.mongodb.Profile;
 import org.springframework.hateoas.Link;
@@ -62,7 +61,7 @@ public class RepositoryLinkBuildUnitTests {
 		MongoPersistentEntity<?> entity = context.getPersistentEntity(Profile.class);
 		ResourceMetadata metadata = new MappingResourceMetadata(entity);
 
-		RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, URI.create(baseUri));
+		RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, new BaseUri(baseUri));
 		Link link = builder.withSelfRel();
 
 		assertThat(link.getHref(), is(expectedUri));

@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.util;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import org.springframework.hateoas.core.AnnotationMappingDiscoverer;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @author Oliver Gierke
  */
 public abstract class UriUtils {
+
+	private static AnnotationMappingDiscoverer DISCOVERER = new AnnotationMappingDiscoverer(RequestMapping.class);
 
 	private UriUtils() {}
 
@@ -43,16 +46,13 @@ public abstract class UriUtils {
 		Assert.hasText(variable, "Variable name must not be null or empty!");
 		Assert.notNull(method, "Method must not be null!");
 
-		RequestMapping annotation = method.getAnnotation(RequestMapping.class);
+		String mapping = DISCOVERER.getMapping(method);
 
-		for (String mapping : annotation.value()) {
+		Map<String, String> variables = new org.springframework.web.util.UriTemplate(mapping).match(lookupPath);
+		String value = variables.get(variable);
 
-			Map<String, String> variables = new org.springframework.web.util.UriTemplate(mapping).match(lookupPath);
-			String value = variables.get(variable);
-
-			if (value != null) {
-				return value;
-			}
+		if (value != null) {
+			return value;
 		}
 
 		return null;

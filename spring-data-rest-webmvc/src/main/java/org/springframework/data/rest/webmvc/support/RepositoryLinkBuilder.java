@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ import java.net.URI;
 
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkBuilder;
 import org.springframework.hateoas.core.LinkBuilderSupport;
 import org.springframework.util.Assert;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -41,8 +41,8 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 	 * @param metadata must not be {@literal null}.
 	 * @param baseUri
 	 */
-	public RepositoryLinkBuilder(ResourceMetadata metadata, URI baseUri) {
-		this(metadata, prepareBuilder(baseUri, metadata));
+	public RepositoryLinkBuilder(ResourceMetadata metadata, BaseUri baseUri) {
+		this(metadata, baseUri.getUriComponentsBuilder().path(metadata.getPath().toString()));
 	}
 
 	/**
@@ -57,26 +57,6 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 		super(builder);
 		Assert.notNull(metadata, "ResourceMetadata must not be null!");
 		this.metadata = metadata;
-	}
-
-	/**
-	 * Prepares the {@link UriComponentsBuilder} pointing to the root repository path. If the given URI is an absolute one
-	 * (starting with {@code http://}) we'll use it as is and fallback to lookup the root URI of the current request's
-	 * servlet mapping appending the base URI.
-	 * 
-	 * @param baseUri must not be {@literal null}.
-	 * @param metadata must not be {@literal null}.
-	 * @return
-	 */
-	private static UriComponentsBuilder prepareBuilder(URI baseUri, ResourceMetadata metadata) {
-
-		Assert.notNull(baseUri, "Base URI must not be null!");
-		Assert.notNull(metadata, "ResourceMetadata must not be null!");
-
-		UriComponentsBuilder builder = baseUri.isAbsolute() ? UriComponentsBuilder.fromUri(baseUri)
-				: ServletUriComponentsBuilder.fromCurrentServletMapping().path(baseUri.toString());
-
-		return builder.path(metadata.getPath().toString());
 	}
 
 	/*

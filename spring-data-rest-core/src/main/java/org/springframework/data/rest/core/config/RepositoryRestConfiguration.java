@@ -45,23 +45,29 @@ public class RepositoryRestConfiguration {
 	private ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
+	private final MetadataConfiguration metadataConfiguration;
 
 	/**
 	 * Creates a new default {@link RepositoryRestConfiguration}.
 	 */
 	public RepositoryRestConfiguration() {
-		this(new ProjectionDefinitionConfiguration());
+		this(new ProjectionDefinitionConfiguration(), new MetadataConfiguration());
 	}
 
 	/**
 	 * Creates a new {@link RepositoryRestConfiguration} with the given {@link ProjectionDefinitionConfiguration}.
 	 * 
 	 * @param projectionConfiguration must not be {@literal null}.
+	 * @param metadataConfiguration must not be {@literal null}.
 	 */
-	public RepositoryRestConfiguration(ProjectionDefinitionConfiguration projectionConfiguration) {
+	public RepositoryRestConfiguration(ProjectionDefinitionConfiguration projectionConfiguration,
+			MetadataConfiguration metadataConfiguration) {
 
 		Assert.notNull(projectionConfiguration, "ProjectionDefinitionConfiguration must not be null!");
+		Assert.notNull(metadataConfiguration, "MetadataConfiguration must not be null!");
+
 		this.projectionConfiguration = projectionConfiguration;
+		this.metadataConfiguration = metadataConfiguration;
 	}
 
 	/**
@@ -76,11 +82,22 @@ public class RepositoryRestConfiguration {
 	/**
 	 * The base URI against which the exporter should calculate its links.
 	 * 
-	 * @param baseUri The base URI.
+	 * @param baseUri must not be {@literal null}.
 	 */
 	public RepositoryRestConfiguration setBaseUri(URI baseUri) {
-		Assert.notNull(baseUri, "The baseUri cannot be null.");
+		Assert.notNull(baseUri, "The base URI cannot be null.");
 		this.baseUri = baseUri;
+		return this;
+	}
+
+	/**
+	 * The base URI against which the exporter should calculate its links.
+	 * 
+	 * @param baseUri must not be {@literal null}.
+	 */
+	public RepositoryRestConfiguration setBaseUri(String baseUri) {
+		Assert.notNull(baseUri, "The base URI cannot be null.");
+		this.baseUri = URI.create(baseUri);
 		return this;
 	}
 
@@ -380,5 +397,14 @@ public class RepositoryRestConfiguration {
 	 */
 	public ProjectionDefinitionConfiguration projectionConfiguration() {
 		return projectionConfiguration;
+	}
+
+	/**
+	 * Returns the {@link MetadataConfiguration} to customize metadata exposure.
+	 * 
+	 * @return
+	 */
+	public MetadataConfiguration metadataConfiguration() {
+		return metadataConfiguration;
 	}
 }

@@ -210,7 +210,7 @@ public class RepositoryResourceMappings implements ResourceMappings {
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#getMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
-	ResourceMapping getMappingFor(PersistentProperty<?> property) {
+	public ResourceMapping getMappingFor(PersistentProperty<?> property) {
 
 		ResourceMapping propertyMapping = propertyCache.get(property);
 
@@ -322,8 +322,8 @@ public class RepositoryResourceMappings implements ResourceMappings {
 		@Override
 		public ResourceDescription getDescription() {
 
-			ResourceDescription fallback = SimpleResourceDescription.defaultFor(property,
-					ownerTypeMapping.getItemResourceRel());
+			ResourceDescription fallback = TypedResourceDescription.defaultFor(ownerTypeMapping.getItemResourceRel(),
+					property);
 
 			if (description != null) {
 				return new AnnotationBasedResourceDescription(description, fallback);

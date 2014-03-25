@@ -39,21 +39,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Optional store specifics -->
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-orm</artifactId>
-			<optional>true</optional>
-		</dependency>
-
-		<dependency>
-			<groupId>org.hibernate.javax.persistence</groupId>
-			<artifactId>hibernate-jpa-2.0-api</artifactId>
-			<version>1.0.1.Final</version>
-			<optional>true</optional>
-		</dependency>
-
 		<!-- Jackson -->
 
 		<dependency>
@@ -99,6 +84,21 @@
 		    <groupId>com.github.fge</groupId>
 		    <artifactId>json-patch</artifactId>
 		    <version>1.7</version>
+		</dependency>
+
+		<!-- Optional store specifics -->
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hibernate.javax.persistence</groupId>
+			<artifactId>hibernate-jpa-2.0-api</artifactId>
+			<version>1.0.1.Final</version>
+			<optional>true</optional>
 		</dependency>
 
 		<!-- Test dependencies -->

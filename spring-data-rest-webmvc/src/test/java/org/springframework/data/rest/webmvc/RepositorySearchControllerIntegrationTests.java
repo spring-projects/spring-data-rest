@@ -25,9 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.ResourceTester.HasSelfLink;
 import org.springframework.data.rest.webmvc.jpa.Address;
+import org.springframework.data.rest.webmvc.jpa.Author;
 import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
-import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.TestDataPopulator;
 import org.springframework.hateoas.PagedResources;
@@ -73,14 +73,12 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 
 	@Test(expected = ResourceNotFoundException.class)
 	public void returns404ForUnexportedRepository() {
-
 		controller.listSearches(getResourceInformation(CreditCard.class));
 	}
 
 	@Test(expected = ResourceNotFoundException.class)
 	public void returns404ForRepositoryWithoutSearches() {
-
-		controller.listSearches(getResourceInformation(Order.class));
+		controller.listSearches(getResourceInformation(Author.class));
 	}
 
 	@Test
@@ -105,7 +103,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	 */
 	@Test(expected = ResourceNotFoundException.class)
 	public void doesNotExposeHeadForSearchResourceIfResourceDoesnHaveSearches() {
-		controller.headForSearches(getResourceInformation(Order.class));
+		controller.headForSearches(getResourceInformation(Author.class));
 	}
 
 	/**

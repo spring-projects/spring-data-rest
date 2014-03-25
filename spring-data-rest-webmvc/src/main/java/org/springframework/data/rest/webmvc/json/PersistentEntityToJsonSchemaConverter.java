@@ -20,6 +20,7 @@ import static org.springframework.util.StringUtils.*;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
@@ -114,8 +115,8 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		final PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity((Class<?>) source);
 		final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getType());
-		final JsonSchema jsonSchema = new JsonSchema(persistentEntity.getName(), accessor.getMessage(metadata
-				.getItemResourceDescription()));
+		final JsonSchema jsonSchema = new JsonSchema(persistentEntity.getName(),
+				resolveMessage(metadata.getItemResourceDescription()));
 
 		persistentEntity.doWithProperties(new SimplePropertyHandler() {
 
@@ -131,7 +132,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 				ResourceMapping propertyMapping = metadata.getMappingFor(persistentProperty);
 				ResourceDescription description = propertyMapping.getDescription();
-				String message = accessor.getMessage(description);
+				String message = resolveMessage(description);
 
 				Property property = persistentProperty.isCollectionLike() ? //
 				new ArrayProperty("array", message, false)
@@ -150,5 +151,14 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		jsonSchema.add(associationHandler.getLinks());
 
 		return jsonSchema;
+	}
+
+	private String resolveMessage(ResourceDescription description) {
+
+		try {
+			return accessor.getMessage(description);
+		} catch (NoSuchMessageException o_O) {
+			return description.getMessage();
+		}
 	}
 }

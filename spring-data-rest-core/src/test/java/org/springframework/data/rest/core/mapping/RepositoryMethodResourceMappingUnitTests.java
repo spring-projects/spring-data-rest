@@ -67,7 +67,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
 		MethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
 
-		assertThat(mapping.getParameterNames(), is(emptyIterable()));
+		assertThat(mapping.getParametersMetadata().getParameterNames(), is(emptyIterable()));
 	}
 
 	/**
@@ -79,8 +79,8 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
 		MethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
 
-		assertThat(mapping.getParameterNames(), hasSize(1));
-		assertThat(mapping.getParameterNames(), hasItem("firstname"));
+		assertThat(mapping.getParametersMetadata().getParameterNames(), hasSize(1));
+		assertThat(mapping.getParametersMetadata().getParameterNames(), hasItem("firstname"));
 	}
 
 	/**

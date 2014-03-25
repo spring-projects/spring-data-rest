@@ -17,13 +17,16 @@ package org.springframework.data.rest.webmvc.jpa;
 
 import java.math.BigDecimal;
 
+import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.config.Projection;
 
 /**
  * @author Oliver Gierke
  */
 @Projection(name = "summary", types = Order.class)
+@Description("A summary of an order.")
 public interface OrderSummary {
 
+	@Description("Price!!")
 	BigDecimal getPrice();
 }

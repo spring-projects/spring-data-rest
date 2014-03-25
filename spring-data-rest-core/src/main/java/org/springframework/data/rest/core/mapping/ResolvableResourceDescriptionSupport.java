@@ -26,15 +26,6 @@ public abstract class ResolvableResourceDescriptionSupport implements ResourceDe
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.context.MessageSourceResolvable#getCodes()
-	 */
-	@Override
-	public String[] getCodes() {
-		return new String[] { getMessage() };
-	}
-
-	/* 
-	 * (non-Javadoc)
 	 * @see org.springframework.context.MessageSourceResolvable#getArguments()
 	 */
 	@Override

@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UrlPathHelper;
 
@@ -52,6 +53,15 @@ public class BaseUri {
 
 		String uriString = uri.toString();
 		this.baseUri = URI.create(trimTrailingCharacter(trimTrailingCharacter(uriString, '/'), '/'));
+	}
+
+	/**
+	 * Creates a new {@link BaseUri} with the given URI as base.
+	 * 
+	 * @param uri must not be {@literal null}.
+	 */
+	public BaseUri(String uri) {
+		this(URI.create(uri));
 	}
 
 	/**
@@ -130,5 +140,20 @@ public class BaseUri {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns a new {@link UriComponentsBuilder} for the base URI. If the base URI is not absolute, it'll lokup the URI
+	 * for the current servlet mapping and extend it accordingly.
+	 * 
+	 * @return
+	 */
+	public UriComponentsBuilder getUriComponentsBuilder() {
+
+		if (baseUri.isAbsolute()) {
+			return UriComponentsBuilder.fromUri(baseUri);
+		}
+
+		return ServletUriComponentsBuilder.fromCurrentServletMapping().path(baseUri.toString());
 	}
 }

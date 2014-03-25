@@ -26,6 +26,7 @@ import org.springframework.data.rest.core.config.ProjectionDefinitionConfigurati
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
@@ -99,7 +100,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	public LinkBuilder linkFor(Class<?> type) {
 
 		ResourceMetadata metadata = mappings.getMappingFor(type);
-		return new RepositoryLinkBuilder(metadata, config.getBaseUri());
+		return new RepositoryLinkBuilder(metadata, new BaseUri(config.getBaseUri()));
 	}
 
 	/*

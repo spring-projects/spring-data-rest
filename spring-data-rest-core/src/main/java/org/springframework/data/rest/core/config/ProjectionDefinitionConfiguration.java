@@ -17,6 +17,7 @@ package org.springframework.data.rest.core.config;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
@@ -140,6 +141,27 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns all projections registered for the given source type.
+	 * 
+	 * @param sourceType must not be {@literal null}.
+	 * @return
+	 */
+	public Map<String, Class<?>> getProjectionsFor(Class<?> sourceType) {
+
+		Assert.notNull(sourceType, "Source type must not be null!");
+
+		Map<String, Class<?>> result = new HashMap<String, Class<?>>();
+
+		for (Entry<ProjectionDefinitionKey, Class<?>> entry : projectionDefinitions.entrySet()) {
+			if (entry.getKey().sourceType.equals(sourceType)) {
+				result.put(entry.getKey().name, entry.getValue());
+			}
+		}
+
+		return result;
 	}
 
 	/**

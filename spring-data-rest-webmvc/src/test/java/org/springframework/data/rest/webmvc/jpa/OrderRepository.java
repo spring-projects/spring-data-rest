@@ -15,13 +15,19 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 /**
  * @author Oliver Gierke
  */
-@RepositoryRestResource
+@RepositoryRestResource(collectionResourceDescription = @Description("Collection resource description"),
+		itemResourceDescription = @Description("Item resource description."))
 public interface OrderRepository extends CrudRepository<Order, Long> {
 
+	List<Order> findByType(@Param("type") Type type);
 }

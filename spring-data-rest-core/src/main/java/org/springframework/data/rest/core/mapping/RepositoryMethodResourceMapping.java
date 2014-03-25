@@ -47,7 +47,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	private final Method method;
 	private final boolean paging;
 
-	private final List<String> parameterNames;
+	private final List<ParameterMetadata> parameterMetadata;
 
 	/**
 	 * Creates a new {@link RepositoryMethodResourceMapping} for the given {@link Method}.
@@ -61,24 +61,24 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		Assert.notNull(resourceMapping, "ResourceMapping must not be null!");
 
 		RestResource annotation = AnnotationUtils.findAnnotation(method, RestResource.class);
+		String resourceRel = resourceMapping.getRel();
 
 		this.isExported = annotation != null ? annotation.exported() : true;
 		this.rel = annotation == null || !StringUtils.hasText(annotation.rel()) ? method.getName() : annotation.rel();
 		this.path = annotation == null || !StringUtils.hasText(annotation.path()) ? new Path(method.getName()) : new Path(
 				annotation.path());
 		this.method = method;
-		this.parameterNames = discoverParameterNames(method);
+		this.parameterMetadata = discoverParameterMetadata(method, resourceRel.concat(".").concat(rel));
 		this.paging = Arrays.asList(method.getParameterTypes()).contains(Pageable.class);
 	}
 
-	private static final List<String> discoverParameterNames(Method method) {
+	private static final List<ParameterMetadata> discoverParameterMetadata(Method method, String baseRel) {
 
-		List<String> result = new ArrayList<String>();
+		List<ParameterMetadata> result = new ArrayList<ParameterMetadata>();
 
 		for (MethodParameter parameter : new MethodParameters(method, PARAM_VALUE).getParameters()) {
-			String name = parameter.getParameterName();
-			if (name != null) {
-				result.add(name);
+			if (StringUtils.hasText(parameter.getParameterName())) {
+				result.add(new ParameterMetadata(parameter, baseRel));
 			}
 		}
 
@@ -123,11 +123,11 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#getParameterNames()
+	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#getParameterMetadata()
 	 */
 	@Override
-	public List<String> getParameterNames() {
-		return parameterNames;
+	public ParametersMetadata getParametersMetadata() {
+		return new ParametersMetadata(parameterMetadata);
 	}
 
 	/* 

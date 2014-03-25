@@ -19,7 +19,6 @@ import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.core.invoke.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.MethodResourceMapping;
+import org.springframework.data.rest.core.mapping.ParameterMetadata;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -38,6 +38,9 @@ import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.TemplateVariable;
+import org.springframework.hateoas.TemplateVariable.VariableType;
+import org.springframework.hateoas.TemplateVariables;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -45,7 +48,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -63,7 +65,6 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	private static final String SEARCH = "/search";
 	private static final String BASE_MAPPING = "/{repository}" + SEARCH;
-	private static final String PARAMETER_NAME_TEMPALTE_PATTERN = "{?%s}";
 
 	private final EntityLinks entityLinks;
 	private final ResourceMappings mappings;
@@ -302,8 +303,13 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 				continue;
 			}
 
-			String parameterTemplateVariable = getParameterTemplateVariable(mapping.getParameterNames());
-			String href = builder.slash(mapping.getPath()).toString().concat(parameterTemplateVariable);
+			TemplateVariables variables = new TemplateVariables();
+
+			for (ParameterMetadata metadata : mapping.getParametersMetadata()) {
+				variables = variables.concat(new TemplateVariable(metadata.getName(), VariableType.REQUEST_PARAM));
+			}
+
+			String href = builder.slash(mapping.getPath()).toString().concat(variables.toString());
 
 			Link link = new Link(href, mapping.getRel());
 
@@ -315,11 +321,6 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		}
 
 		return new Links(links);
-	}
-
-	private static String getParameterTemplateVariable(Collection<String> parameters) {
-		String parameterString = StringUtils.collectionToCommaDelimitedString(parameters);
-		return parameters.isEmpty() ? "" : String.format(PARAMETER_NAME_TEMPALTE_PATTERN, parameterString);
 	}
 
 	/**

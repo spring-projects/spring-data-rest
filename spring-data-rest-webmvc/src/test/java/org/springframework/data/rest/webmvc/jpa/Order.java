@@ -41,6 +41,7 @@ public class Order {
 	private Person creator;
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)//
 	private List<LineItem> lineItems = new ArrayList<LineItem>();
+	private Type type = Type.TAKE_AWAY;
 
 	public Order(Person creator) {
 		this.creator = creator;
@@ -71,5 +72,12 @@ public class Order {
 
 	public BigDecimal getPrice() {
 		return new BigDecimal(2.50);
+	}
+
+	/**
+	 * @return the type
+	 */
+	public Type getType() {
+		return type;
 	}
 }
