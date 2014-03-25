@@ -94,4 +94,44 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		ResourceMetadata metadata = getMetadata(Person.class);
 		tester.withContentResource(new HasSelfLink(BASE.slash(metadata.getPath()).slash("{id}")));
 	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test(expected = ResourceNotFoundException.class)
+	public void doesNotExposeHeadForSearchResourceIfResourceDoesnHaveSearches() {
+		controller.headForSearches(getResourceInformation(Order.class));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test(expected = ResourceNotFoundException.class)
+	public void exposesHeadForSearchResourceIfResourceIsNotExposed() {
+		controller.headForSearches(getResourceInformation(CreditCard.class));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test
+	public void exposesHeadForSearchResourceIfResourceIsExposed() {
+		controller.headForSearches(getResourceInformation(Person.class));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test
+	public void exposesHeadForExistingQueryMethodResource() {
+		controller.headForSearch(getResourceInformation(Person.class), "findByCreatedUsingISO8601Date");
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test(expected = ResourceNotFoundException.class)
+	public void doesNotExposeHeadForInvalidQueryMethodResource() {
+		controller.headForSearch(getResourceInformation(Person.class), "foobar");
+	}
 }

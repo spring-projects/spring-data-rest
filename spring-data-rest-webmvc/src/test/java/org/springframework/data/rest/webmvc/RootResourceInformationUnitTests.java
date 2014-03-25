@@ -32,6 +32,7 @@ import org.mockito.stubbing.Answer;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.rest.core.invoke.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 /**
  * Unit tests for {@link RootResourceInformation}.
@@ -97,6 +98,56 @@ public class RootResourceInformationUnitTests {
 
 		when(invoker.exposesSave()).thenReturn(false);
 		assertThat(information.supports(POST, ITEM), is(false));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test
+	public void supportsHeadIfFindAllIsExposed() {
+
+		when(invoker.exposesFindAll()).thenReturn(true);
+		assertThat(information.supports(HEAD, COLLECTION), is(true));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test
+	public void doesNotSupportHeadIfFindAllIsNotExposed() {
+
+		when(invoker.exposesFindAll()).thenReturn(false);
+		assertThat(information.supports(HEAD, COLLECTION), is(false));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test
+	public void supportsHeadIfFindOneIsExposed() {
+
+		when(invoker.exposesFindOne()).thenReturn(true);
+		assertThat(information.supports(HEAD, ITEM), is(true));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test
+	public void doesNotSupportHeadIfFindOneIsNotExposed() {
+
+		when(invoker.exposesFindOne()).thenReturn(false);
+		assertThat(information.supports(HEAD, ITEM), is(false));
+	}
+
+	/**
+	 * @see DATAREST-330
+	 */
+	@Test(expected = ResourceNotFoundException.class)
+	public void throwsExceptionOnVerificationIfResourceIsNotExported() throws HttpRequestMethodNotSupportedException {
+
+		when(metadata.isExported()).thenReturn(false);
+		information.verifySupportedMethod(HEAD, COLLECTION);
 	}
 
 	/**

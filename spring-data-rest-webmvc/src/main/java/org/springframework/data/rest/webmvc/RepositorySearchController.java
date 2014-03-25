@@ -28,7 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.core.invoke.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.MethodResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
@@ -38,6 +37,7 @@ import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -90,7 +90,22 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	}
 
 	/**
-	 * Exposes links to the individual search resources exposed by the backing repository.
+	 * <code>HEAD /{repository}/search</code> - Checks whether the search resource is present.
+	 * 
+	 * @param resourceInformation
+	 * @return
+	 */
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.HEAD)
+	public HttpEntity<?> headForSearches(RootResourceInformation resourceInformation) {
+
+		verifySearchesExposed(resourceInformation);
+
+		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+	}
+
+	/**
+	 * <code>GET /{repository}/search</code> - Exposes links to the individual search resources exposed by the backing
+	 * repository.
 	 * 
 	 * @param resourceInformation
 	 * @return
@@ -99,11 +114,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
 	public ResourceSupport listSearches(RootResourceInformation resourceInformation) {
 
-		SearchResourceMappings resourceMappings = resourceInformation.getSearchMappings();
-
-		if (!resourceMappings.isExported()) {
-			throw new ResourceNotFoundException();
-		}
+		verifySearchesExposed(resourceInformation);
 
 		Links queryMethodLinks = getSearchLinks(resourceInformation.getDomainType());
 
@@ -177,6 +188,20 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	}
 
 	/**
+	 * Handles a {@code HEAD} request for individual searches.
+	 * 
+	 * @param information
+	 * @param search
+	 * @return
+	 */
+	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.HEAD)
+	public ResponseEntity<Object> headForSearch(RootResourceInformation information, @PathVariable String search) {
+
+		checkExecutability(information, search);
+		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+	}
+
+	/**
 	 * Checks that the given request is actually executable. Will reject execution if we don't find a search with the
 	 * given name.
 	 * 
@@ -186,12 +211,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 */
 	private Method checkExecutability(RootResourceInformation resourceInformation, String searchName) {
 
-		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
-		SearchResourceMappings searchMapping = metadata.getSearchResourceMappings();
-
-		if (!searchMapping.isExported()) {
-			throw new ResourceNotFoundException();
-		}
+		SearchResourceMappings searchMapping = verifySearchesExposed(resourceInformation);
 
 		Method method = searchMapping.getMappedMethod(searchName);
 
@@ -259,5 +279,21 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	private static String getParameterTemplateVariable(Collection<String> parameters) {
 		String parameterString = StringUtils.collectionToCommaDelimitedString(parameters);
 		return parameters.isEmpty() ? "" : String.format(PARAMETER_NAME_TEMPALTE_PATTERN, parameterString);
+	}
+
+	/**
+	 * Verifies that the given {@link RootResourceInformation} has searches exposed.
+	 * 
+	 * @param resourceInformation
+	 */
+	private SearchResourceMappings verifySearchesExposed(RootResourceInformation resourceInformation) {
+
+		SearchResourceMappings resourceMappings = resourceInformation.getSearchMappings();
+
+		if (!resourceMappings.isExported()) {
+			throw new ResourceNotFoundException();
+		}
+
+		return resourceMappings;
 	}
 }
