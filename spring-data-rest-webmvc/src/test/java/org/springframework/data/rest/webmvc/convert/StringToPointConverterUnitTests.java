@@ -35,7 +35,7 @@ public class StringToPointConverterUnitTests {
 	@Test
 	public void parsesPointFromString() {
 
-		Point reference = new Point(10.8, 20.9);
+		Point reference = new Point(20.9, 10.8);
 
 		assertThat(INSTANCE.convert("10.8,20.9"), is(reference));
 		assertThat(INSTANCE.convert(" 10.8,20.9 "), is(reference));

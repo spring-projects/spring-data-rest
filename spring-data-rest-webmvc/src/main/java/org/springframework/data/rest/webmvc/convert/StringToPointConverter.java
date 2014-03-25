@@ -50,7 +50,7 @@ public enum StringToPointConverter implements Converter<String, Point> {
 			double latitude = Double.parseDouble(parts[0]);
 			double longitude = Double.parseDouble(parts[1]);
 
-			return new Point(latitude, longitude);
+			return new Point(longitude, latitude);
 
 		} catch (NumberFormatException o_O) {
 			throw new IllegalArgumentException(String.format(INVALID_FORMAT, source), o_O);
