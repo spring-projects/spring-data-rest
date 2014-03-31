@@ -1,6 +1,49 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.1.0.M1 (2014-03-31)
+----------------------------------------
+** Bug
+    * [DATAREST-150] - PUT vs PATCH with JPA
+    * [DATAREST-247] - NPE when calling count Queries in SD MongoDB Repositories
+    * [DATAREST-253] - AssociationOmittingSerializerModifier suffers from potential NullPointerException
+    * [DATAREST-254] - org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module does not properly handle JPA @Transient annotation during serialization yeilding a NPE
+    * [DATAREST-261] - RepositoryRelProvider is not registered
+    * [DATAREST-265] - POST/Create with Non-CRUD Repository doesn't save (only checks exists())
+    * [DATAREST-267] - (Potentially) unwanted behaviour for self hrefs with projections
+    * [DATAREST-268] - Exception when putting element with return type
+    * [DATAREST-271] - PaginationCustomizations are not applied
+
+** Improvement
+    * [DATAREST-155] - Allow overriding which field gets exposed in the URI
+    * [DATAREST-262] - Support nested association creation for updating operations
+    * [DATAREST-277] - Adapt changes in BeanWrapper API
+    * [DATAREST-278] - Add converters to bind new geo-types from request parameters
+    * [DATAREST-279] - Add marshalling support for newly introduced geo types
+    * [DATAREST-280] - Let configuration lookup MappingContexts less aggressively
+    * [DATAREST-281] - Upgrade to Spring Data Gemfire 1.4.x branch
+
+** New Feature
+    * [DATAREST-221] - Support use case-driven inlining of managed resources
+
+** Task
+    * [DATAREST-257] - Release 2.1 M1
+
+Changes in version 2.0.1.RELEASE (2014-03-13)
+---------------------------------------------
+** Bug
+    * [DATAREST-150] - PUT vs PATCH with JPA
+    * [DATAREST-247] - NPE when calling count Queries in SD MongoDB Repositories
+    * [DATAREST-253] - AssociationOmittingSerializerModifier suffers from potential NullPointerException
+    * [DATAREST-254] - org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module does not properly handle JPA @Transient annotation during serialization yeilding a NPE
+    * [DATAREST-261] - RepositoryRelProvider is not registered
+    * [DATAREST-267] - (Potentially) unwanted behaviour for self hrefs with projections
+    * [DATAREST-268] - Exception when putting element with return type
+    * [DATAREST-271] - PaginationCustomizations are not applied
+
+** Task
+    * [DATAREST-258] - Release 2.0.1
+
 Changes in version 2.0.0.RELEASE (2014-02-24)
 ---------------------------------------------
 ** Bug
