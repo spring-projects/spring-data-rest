@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-rest-parent</artifactId>
 	<version>2.1.0.BUILD-SNAPSHOT</version>
@@ -21,6 +23,7 @@
 		<module>spring-data-rest-core</module>
 		<module>spring-data-rest-webmvc</module>
 		<module>spring-data-rest-distribution</module>
+		<module>spring-data-rest-browser</module>
 	</modules>
 
 	<properties>
@@ -153,8 +156,12 @@
 			<id>spring-libs-snapshot</id>
 			<url>http://repo.spring.io/libs-snapshot</url>
 		</repository>
+		<repository>
+			<id>spring-libs-snapshots</id>
+			<url>http://repo.spring.io/libs-snapshot</url>
+		</repository>
 	</repositories>
-	
+
 	<pluginRepositories>
 		<pluginRepository>
 			<id>spring-plugins-release</id>
