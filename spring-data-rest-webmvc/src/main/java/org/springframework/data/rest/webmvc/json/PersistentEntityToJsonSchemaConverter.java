@@ -20,8 +20,6 @@ import static org.springframework.util.StringUtils.*;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
-
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
@@ -132,14 +130,12 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 				String type = uncapitalize(propertyType.getSimpleName());
 
 				ResourceMapping propertyMapping = metadata.getMappingFor(persistentProperty);
-
-				boolean notNull = persistentProperty.isAnnotationPresent(NotNull.class);
 				ResourceDescription description = propertyMapping.getDescription();
 				String message = accessor.getMessage(description);
 
 				Property property = persistentProperty.isCollectionLike() ? //
-				new ArrayProperty("array", message, notNull)
-						: new Property(type, message, notNull);
+				new ArrayProperty("array", message, false)
+						: new Property(type, message, false);
 
 				jsonSchema.addProperty(persistentProperty.getName(), property);
 			}
