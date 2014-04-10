@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.springframework.web.bind.annotation.RequestMethod.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.json.JsonSchema;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * Controller to expose a JSON schema via {@code / repository}/schema}.
@@ -54,10 +57,10 @@ class RepositorySchemaController {
 	 * @param resourceInformation will never be {@literal null}.
 	 * @return
 	 */
-	@RequestMapping(value = BASE_MAPPING + "/schema", method = RequestMethod.GET,
-			produces = { "application/schema+json" })
-	@ResponseBody
-	public JsonSchema schema(RootResourceInformation resourceInformation) {
-		return jsonSchemaConverter.convert(resourceInformation.getPersistentEntity().getType());
+	@RequestMapping(value = BASE_MAPPING + "/schema", method = GET, produces = { "application/schema+json" })
+	public HttpEntity<JsonSchema> schema(RootResourceInformation resourceInformation) {
+
+		JsonSchema schema = jsonSchemaConverter.convert(resourceInformation.getPersistentEntity().getType());
+		return new ResponseEntity<JsonSchema>(schema, HttpStatus.OK);
 	}
 }
