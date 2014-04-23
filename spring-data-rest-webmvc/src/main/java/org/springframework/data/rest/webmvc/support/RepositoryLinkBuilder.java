@@ -19,10 +19,9 @@ import java.net.URI;
 
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
-import org.springframework.data.rest.webmvc.RepositoryController;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.core.LinkBuilderSupport;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuilder> {
@@ -41,9 +40,8 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 
 	private static UriComponentsBuilder prepareBuilder(URI baseUri, ResourceMetadata metadata) {
 
-		UriComponentsBuilder builder = baseUri != null ? UriComponentsBuilder.fromUri(baseUri) : ControllerLinkBuilder
-				.linkTo(RepositoryController.class).toUriComponentsBuilder();
-		return builder.path(metadata.getPath().toString());
+		ServletUriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentServletMapping();
+		return builder.path(baseUri.toString()).path(metadata.getPath().toString());
 	}
 
 	@Override
