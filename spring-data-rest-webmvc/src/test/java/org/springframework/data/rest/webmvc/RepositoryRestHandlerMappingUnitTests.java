@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
+import java.net.URI;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	RepositoryRestConfiguration configuration;
 	RepositoryRestHandlerMapping handlerMapping;
 	MockHttpServletRequest mockRequest;
-	Method listEntitiesMethod;
+	Method listEntitiesMethod, rootHandlerMethod;
 
 	@Before
 	public void setUp() throws Exception {
@@ -66,6 +67,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		listEntitiesMethod = RepositoryEntityController.class.getMethod("listEntities", RootResourceInformation.class,
 				Pageable.class, Sort.class);
+		rootHandlerMethod = RepositoryController.class.getMethod("listRepositories");
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -99,5 +101,39 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		assertThat(method, is(notNullValue()));
 		assertThat(method.getMethod(), is(listEntitiesMethod));
+	}
+
+	/**
+	 * @see DATAREST-292
+	 */
+	@Test
+	public void returnsRepositoryHandlerMethodWithBaseUriConfigured() throws Exception {
+
+		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		mockRequest = new MockHttpServletRequest("GET", "/base/people");
+
+		configuration.setBaseUri(URI.create("base"));
+
+		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base/people", mockRequest);
+
+		assertThat(method, is(notNullValue()));
+		assertThat(method.getMethod(), is(listEntitiesMethod));
+	}
+
+	/**
+	 * @see DATAREST-292
+	 */
+	@Test
+	public void returnsRootHandlerMethodWithBaseUriConfigured() throws Exception {
+
+		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		mockRequest = new MockHttpServletRequest("GET", "/base");
+
+		configuration.setBaseUri(URI.create("base"));
+
+		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base", mockRequest);
+
+		assertThat(method, is(notNullValue()));
+		assertThat(method.getMethod(), is(rootHandlerMethod));
 	}
 }

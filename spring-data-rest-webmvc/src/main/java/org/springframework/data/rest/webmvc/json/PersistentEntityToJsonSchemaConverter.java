@@ -32,6 +32,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -55,6 +56,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	private final ResourceMappings mappings;
 	private final Repositories repositories;
 	private final MessageSourceAccessor accessor;
+	private final RepositoryRestConfiguration config;
 
 	/**
 	 * Creates a new {@link PersistentEntityToJsonSchemaConverter} for the given {@link Repositories} and
@@ -65,13 +67,16 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @param accessor
 	 */
 	public PersistentEntityToJsonSchemaConverter(Repositories repositories, ResourceMappings mappings,
-			MessageSourceAccessor accessor) {
+			RepositoryRestConfiguration config, MessageSourceAccessor accessor) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
 
 		this.repositories = repositories;
 		this.mappings = mappings;
+		this.config = config;
+
 		this.accessor = accessor;
 
 		for (Class<?> domainType : repositories) {
@@ -155,7 +160,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 					return;
 				}
 
-				RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, null).slash("{id}");
+				RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, config.getBaseUri()).slash("{id}");
 				maybeAddAssociationLink(builder, mappings, persistentProperty, links);
 			}
 		});

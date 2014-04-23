@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
+import org.springframework.data.rest.webmvc.WebTestUtils;
 import org.springframework.data.rest.webmvc.jpa.LineItem;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.OrderRepository;
@@ -74,6 +75,7 @@ public class PersistentEntitySerializationTests {
 
 	@Before
 	public void setUp() {
+		WebTestUtils.initWebTest();
 		linkDiscoverer = new HalLinkDiscoverer();
 	}
 
@@ -212,7 +214,7 @@ public class PersistentEntitySerializationTests {
 
 		assertThat(mapper.writeValueAsString(persistentEntityResource),
 				is("{\"_embedded\":{\"orders\":[{\"lineItems\":[{\"name\":\"first\"},{\"name\":\"second\"}],\"price\":2.5"
-						+ ",\"_links\":{\"creator\":{\"href\":\"http://localhost:8080/orders/1/creator\"}}}]},\""
+						+ ",\"_links\":{\"creator\":{\"href\":\"http://localhost/orders/1/creator\"}}}]},\""
 						+ "page\":{\"size\":1,\"totalElements\":10,\"totalPages\":10,\"number\":0}}"));
 	}
 }

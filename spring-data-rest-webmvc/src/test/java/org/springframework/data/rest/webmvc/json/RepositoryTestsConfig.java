@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import java.net.URI;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -71,8 +69,6 @@ public class RepositoryTestsConfig {
 
 		config.setResourceMappingForRepository(PersonRepository.class).setRel("people").setPath("people")
 				.addResourceMappingFor("findByFirstName").setRel("firstname").setPath("firstname");
-
-		config.setBaseUri(URI.create("http://localhost:8080"));
 
 		return config;
 	}

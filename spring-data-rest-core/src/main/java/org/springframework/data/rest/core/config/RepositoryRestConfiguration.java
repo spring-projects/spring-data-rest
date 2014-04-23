@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 @SuppressWarnings("deprecation")
 public class RepositoryRestConfiguration {
 
-	private URI baseUri = null;
+	private URI baseUri = URI.create("");
 	private int defaultPageSize = 20;
 	private int maxPageSize = 1000;
 	private String pageParamName = "page";

@@ -289,7 +289,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public PersistentEntityToJsonSchemaConverter jsonSchemaConverter() {
-		return new PersistentEntityToJsonSchemaConverter(repositories(), resourceMappings(),
+		return new PersistentEntityToJsonSchemaConverter(repositories(), resourceMappings(), config(),
 				resourceDescriptionMessageSourceAccessor());
 	}
 

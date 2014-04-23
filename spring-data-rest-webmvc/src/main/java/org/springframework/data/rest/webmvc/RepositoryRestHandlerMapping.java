@@ -31,8 +31,11 @@ import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * {@link RequestMappingHandlerMapping} implementation that will only find a handler method if a
@@ -111,24 +114,28 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 
 		HttpServletRequest request = new DefaultAcceptTypeHttpServletRequest(origRequest, acceptType);
 
-		String requestUri = lookupPath;
-		if (requestUri.startsWith("/")) {
-			requestUri = requestUri.substring(1);
-		}
-
-		if (!hasText(requestUri)) {
+		if (!hasText(lookupPath)) {
 			return super.lookupHandlerMethod(lookupPath, request);
 		}
 
-		String[] parts = requestUri.split("/");
+		// Strip base URI
+		UriComponents components = UriComponentsBuilder.fromPath(lookupPath).build();
+		List<String> segments = components.getPathSegments();
+		String baseUri = config.getBaseUri().toString();
+		int repositoryIndex = !segments.isEmpty() && segments.get(0).equals(baseUri) ? 1 : 0;
+		segments = segments.subList(repositoryIndex, segments.size());
 
-		if (parts.length == 0) {
-			// Root request
-			return super.lookupHandlerMethod(lookupPath, request);
+		String uri = "/".concat(StringUtils.collectionToDelimitedString(segments, "/"));
+
+		request = new DefaultAcceptTypeHttpServletRequest(origRequest, acceptType, uri);
+
+		// Root request
+		if (uri.equals("/")) {
+			return super.lookupHandlerMethod(uri, request);
 		}
 
-		if (mappings.exportsTopLevelResourceFor(parts[0])) {
-			return super.lookupHandlerMethod(lookupPath, request);
+		if (mappings.exportsTopLevelResourceFor(segments.get(0))) {
+			return super.lookupHandlerMethod(uri, request);
 		}
 
 		return null;
@@ -159,10 +166,16 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 	private static class DefaultAcceptTypeHttpServletRequest extends HttpServletRequestWrapper {
 
 		private final String defaultAcceptType;
+		private final String requestUri;
 
 		private DefaultAcceptTypeHttpServletRequest(HttpServletRequest request, String defaultAcceptType) {
+			this(request, defaultAcceptType, null);
+		}
+
+		private DefaultAcceptTypeHttpServletRequest(HttpServletRequest request, String defaultAcceptType, String requestUri) {
 			super(request);
 			this.defaultAcceptType = defaultAcceptType;
+			this.requestUri = requestUri;
 		}
 
 		@Override
@@ -173,6 +186,15 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 			} else {
 				return super.getHeader(name);
 			}
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see javax.servlet.http.HttpServletRequestWrapper#getRequestURI()
+		 */
+		@Override
+		public String getRequestURI() {
+			return requestUri != null ? requestUri : super.getRequestURI();
 		}
 	}
 }
