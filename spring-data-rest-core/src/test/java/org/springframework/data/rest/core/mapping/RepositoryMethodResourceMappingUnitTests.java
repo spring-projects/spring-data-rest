@@ -95,6 +95,15 @@ public class RepositoryMethodResourceMappingUnitTests {
 		assertThat(mapping.isPagingResource(), is(true));
 	}
 
+	@Test
+	public void usesMethodNameAsRelFallbackEvenIfPathIsConfigured() throws Exception {
+
+		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
+		MethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+
+		assertThat(mapping.getRel(), is("findByEmailAddress"));
+	}
+
 	static class Person {}
 
 	interface PersonRepository extends Repository<Person, Long> {
