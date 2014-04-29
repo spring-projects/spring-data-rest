@@ -136,4 +136,43 @@ public class RepositoryRestHandlerMappingUnitTests {
 		assertThat(method, is(notNullValue()));
 		assertThat(method.getMethod(), is(rootHandlerMethod));
 	}
+
+	/**
+	 * @see DATAREST-276
+	 */
+	@Test
+	public void returnsRepositoryHandlerMethodForAbsoluteBaseUri() throws Exception {
+
+		String baseUri = "http://localhost/base";
+
+		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		mockRequest = new MockHttpServletRequest("GET", baseUri.concat("/people/"));
+
+		configuration.setBaseUri(URI.create(baseUri));
+
+		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base/people/", mockRequest);
+
+		assertThat(method, is(notNullValue()));
+		assertThat(method.getMethod(), is(listEntitiesMethod));
+	}
+
+	/**
+	 * @see DATAREST-276
+	 */
+	@Test
+	public void returnsRepositoryHandlerMethodForAbsoluteBaseUriWithServletMapping() throws Exception {
+
+		String baseUri = "http://localhost/base";
+
+		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		mockRequest = new MockHttpServletRequest("GET", baseUri.concat("/people/"));
+		mockRequest.setServletPath(baseUri.concat("/people/"));
+
+		configuration.setBaseUri(URI.create(baseUri));
+
+		HandlerMethod method = handlerMapping.lookupHandlerMethod("/people/", mockRequest);
+
+		assertThat(method, is(notNullValue()));
+		assertThat(method.getMethod(), is(listEntitiesMethod));
+	}
 }

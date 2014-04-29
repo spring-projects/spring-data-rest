@@ -17,7 +17,9 @@ package org.springframework.data.rest.webmvc;
 
 import static org.springframework.util.StringUtils.*;
 
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,7 +36,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -118,27 +119,64 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 			return super.lookupHandlerMethod(lookupPath, request);
 		}
 
-		// Strip base URI
-		UriComponents components = UriComponentsBuilder.fromPath(lookupPath).build();
-		List<String> segments = components.getPathSegments();
-		String baseUri = config.getBaseUri().toString();
-		int repositoryIndex = !segments.isEmpty() && segments.get(0).equals(baseUri) ? 1 : 0;
-		segments = segments.subList(repositoryIndex, segments.size());
-
-		String uri = "/".concat(StringUtils.collectionToDelimitedString(segments, "/"));
-
-		request = new DefaultAcceptTypeHttpServletRequest(origRequest, acceptType, uri);
+		String uri = extractRepositoryLookupPath(lookupPath, config.getBaseUri());
+		request = new DefaultAcceptTypeHttpServletRequest(request, acceptType, uri);
 
 		// Root request
-		if (uri.equals("/")) {
-			return super.lookupHandlerMethod(uri, request);
+		if (!StringUtils.hasText(uri) || uri.equals("/")) {
+			return super.lookupHandlerMethod("/", request);
 		}
 
-		if (mappings.exportsTopLevelResourceFor(segments.get(0))) {
+		String[] parts = uri.split("/");
+
+		if (mappings.exportsTopLevelResourceFor(parts[1])) {
 			return super.lookupHandlerMethod(uri, request);
 		}
 
 		return null;
+	}
+
+	/**
+	 * Extracts the actual lookup path within the Spring Data REST managed URI space. This includes stripping the
+	 * necessary parts of the base URI from the source lookup path.
+	 * 
+	 * @param lookupPath must not be {@literal null}.
+	 * @param baseUri must not be {@literal null}.
+	 * @return
+	 */
+	private static String extractRepositoryLookupPath(String lookupPath, URI baseUri) {
+
+		Assert.notNull(lookupPath, "Lookup path must not be null!");
+		Assert.notNull(baseUri, "Base URI must not be null!");
+
+		lookupPath = StringUtils.trimTrailingCharacter(lookupPath, '/');
+
+		if (!baseUri.isAbsolute()) {
+
+			String uri = baseUri.toString();
+
+			if (!StringUtils.hasText(uri)) {
+				return lookupPath;
+			}
+
+			uri = uri.startsWith("/") ? uri : "/".concat(uri);
+			return lookupPath.substring(uri.length(), lookupPath.length());
+		}
+
+		List<String> baseUriSegments = UriComponentsBuilder.fromUri(baseUri).build().getPathSegments();
+		Collections.reverse(baseUriSegments);
+		String tail = "";
+
+		for (String tailSegment : baseUriSegments) {
+
+			tail = "/".concat(tailSegment).concat(tail);
+
+			if (lookupPath.startsWith(tail)) {
+				return lookupPath.substring(tail.length(), lookupPath.length());
+			}
+		}
+
+		return lookupPath;
 	}
 
 	/*
@@ -195,6 +233,15 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 		@Override
 		public String getRequestURI() {
 			return requestUri != null ? requestUri : super.getRequestURI();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see javax.servlet.http.HttpServletRequestWrapper#getServletPath()
+		 */
+		@Override
+		public String getServletPath() {
+			return requestUri != null ? requestUri : super.getServletPath();
 		}
 	}
 }
