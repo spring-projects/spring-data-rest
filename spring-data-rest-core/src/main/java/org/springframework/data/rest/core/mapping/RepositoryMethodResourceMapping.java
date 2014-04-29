@@ -63,7 +63,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		RestResource annotation = AnnotationUtils.findAnnotation(method, RestResource.class);
 
 		this.isExported = annotation != null ? annotation.exported() : true;
-		this.rel = annotation != null ? annotation.rel() : method.getName();
+		this.rel = annotation == null || !StringUtils.hasText(annotation.rel()) ? method.getName() : annotation.rel();
 		this.path = annotation == null || !StringUtils.hasText(annotation.path()) ? new Path(method.getName()) : new Path(
 				annotation.path());
 		this.method = method;
