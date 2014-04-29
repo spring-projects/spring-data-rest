@@ -20,30 +20,69 @@ import java.net.URI;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkBuilder;
 import org.springframework.hateoas.core.LinkBuilderSupport;
+import org.springframework.util.Assert;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
+/**
+ * {@link LinkBuilder} to be able to create links pointing to repositories.
+ * 
+ * @author Oliver Gierke
+ */
 public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuilder> {
 
 	private final ResourceMetadata metadata;
 
+	/**
+	 * Creates a new {@link RepositoryLinkBuilder} with the given {@link ResourceMetadata} and base {@link URI}.
+	 * 
+	 * @param metadata must not be {@literal null}.
+	 * @param baseUri
+	 */
 	public RepositoryLinkBuilder(ResourceMetadata metadata, URI baseUri) {
 		this(metadata, prepareBuilder(baseUri, metadata));
 	}
 
+	/**
+	 * Creates a new {@link RepositoryLinkBuilder} with the given {@link ResourceMetadata} and
+	 * {@link UriComponentsBuilder}.
+	 * 
+	 * @param metadata must not be {@literal null}.
+	 * @param builder must not be {@literal null}.
+	 */
 	private RepositoryLinkBuilder(ResourceMetadata metadata, UriComponentsBuilder builder) {
 
 		super(builder);
+		Assert.notNull(metadata, "ResourceMetadata must not be null!");
 		this.metadata = metadata;
 	}
 
+	/**
+	 * Prepares the {@link UriComponentsBuilder} pointing to the root repository path. If the given URI is an absolute one
+	 * (starting with {@code http://}) we'll use it as is and fallback to lookup the root URI of the current request's
+	 * servlet mapping appending the base URI.
+	 * 
+	 * @param baseUri must not be {@literal null}.
+	 * @param metadata must not be {@literal null}.
+	 * @return
+	 */
 	private static UriComponentsBuilder prepareBuilder(URI baseUri, ResourceMetadata metadata) {
 
-		ServletUriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentServletMapping();
-		return builder.path(baseUri.toString()).path(metadata.getPath().toString());
+		Assert.notNull(baseUri, "Base URI must not be null!");
+		Assert.notNull(metadata, "ResourceMetadata must not be null!");
+
+		UriComponentsBuilder builder = baseUri.isAbsolute() ? UriComponentsBuilder.fromUri(baseUri)
+				: ServletUriComponentsBuilder.fromCurrentServletMapping().path(baseUri.toString());
+
+		return builder.path(metadata.getPath().toString());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.hateoas.core.LinkBuilderSupport#slash(java.lang.Object)
+	 */
 	@Override
 	public RepositoryLinkBuilder slash(Object object) {
 
