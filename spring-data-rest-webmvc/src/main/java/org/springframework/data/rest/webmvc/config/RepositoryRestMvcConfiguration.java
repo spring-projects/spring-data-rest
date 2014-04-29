@@ -372,7 +372,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				MediaType.valueOf("application/x-spring-data-compact+json")));
 
 		// Configure this mapper to be used if HAL is not the default media type
-		if (!config().getDefaultMediaType().equals(MediaTypes.HAL_JSON)) {
+		if (!config().useHalAsDefaultJsonMediaType()) {
 			mediaTypes.add(MediaType.APPLICATION_JSON);
 		}
 
@@ -394,7 +394,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		mediaTypes.add(MediaTypes.HAL_JSON);
 
 		// Enable returning HAL if application/json is asked if it's configured to be the default type
-		if (config().getDefaultMediaType().equals(MediaTypes.HAL_JSON)) {
+		if (config().useHalAsDefaultJsonMediaType()) {
 			mediaTypes.add(MediaType.APPLICATION_JSON);
 		}
 

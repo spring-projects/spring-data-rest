@@ -39,6 +39,7 @@ public class LegacyRepresentationConfigIntegrationTests extends AbstractReposito
 		@Override
 		protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 			config.setDefaultMediaType(MediaType.APPLICATION_JSON);
+			config.useHalAsDefaultJsonMediaType(false);
 		}
 	}
 

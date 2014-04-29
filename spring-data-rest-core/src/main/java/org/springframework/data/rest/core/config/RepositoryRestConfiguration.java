@@ -38,6 +38,7 @@ public class RepositoryRestConfiguration {
 	private String limitParamName = "size";
 	private String sortParamName = "sort";
 	private MediaType defaultMediaType = MediaTypes.HAL_JSON;
+	private boolean useHalAsDefaultJsonMediaType = true;
 	private boolean returnBodyOnCreate = false;
 	private boolean returnBodyOnUpdate = false;
 	private List<Class<?>> exposeIdsFor = new ArrayList<Class<?>>();
@@ -202,11 +203,35 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Set the {@link MediaType} to use as a default when none is specified.
 	 * 
-	 * @param defaultMediaType Default content type if none has been specified.
+	 * @param defaultMediaType default content type if none has been specified.
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setDefaultMediaType(MediaType defaultMediaType) {
 		this.defaultMediaType = defaultMediaType;
+		return this;
+	}
+
+	/**
+	 * Returns whether HAL will be served as primary representation in case on {@code application/json} is requested. This
+	 * defaults to {@literal true}. If configured to {@literal false} the legacy Spring Data representation will be
+	 * rendered.
+	 * 
+	 * @return
+	 */
+	public boolean useHalAsDefaultJsonMediaType() {
+		return this.useHalAsDefaultJsonMediaType;
+	}
+
+	/**
+	 * Configures whether HAL will be served as primary representation in case on {@code application/json} is requested.
+	 * This defaults to {@literal true}. If configured to {@literal false} the legacy Spring Data representation will be
+	 * rendered.
+	 * 
+	 * @param useHalAsDefaultJsonMediaType
+	 * @return
+	 */
+	public RepositoryRestConfiguration useHalAsDefaultJsonMediaType(boolean useHalAsDefaultJsonMediaType) {
+		this.useHalAsDefaultJsonMediaType = useHalAsDefaultJsonMediaType;
 		return this;
 	}
 
