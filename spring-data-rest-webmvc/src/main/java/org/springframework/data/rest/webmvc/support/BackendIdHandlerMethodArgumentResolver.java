@@ -19,6 +19,7 @@ import java.io.Serializable;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.config.ResourceMetadataHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
@@ -40,22 +41,26 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 
 	private final PluginRegistry<BackendIdConverter, Class<?>> idConverters;
 	private final ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver;
+	private final BaseUri baseUri;
 
 	/**
 	 * Creates a new {@link BackendIdHandlerMethodArgumentResolver} for the given {@link BackendIdConverter}s and
 	 * {@link ResourceMetadataHandlerMethodArgumentResolver}.
 	 * 
-	 * @param idConverters the {@link BackendIdConverter}s registered in the system.
-	 * @param resourceMetadataResolver the resolver to obtain {@link ResourceMetadata} from.
+	 * @param idConverters the {@link BackendIdConverter}s registered in the system, must not be {@literal null}..
+	 * @param resourceMetadataResolver the resolver to obtain {@link ResourceMetadata} from, must not be {@literal null}.
+	 * @param baseUri must not be {@literal null}.
 	 */
 	public BackendIdHandlerMethodArgumentResolver(PluginRegistry<BackendIdConverter, Class<?>> idConverters,
-			ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver) {
+			ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver, BaseUri baseUri) {
 
 		Assert.notNull(idConverters, "Id converters must not be null!");
 		Assert.notNull(resourceMetadataResolver, "ResourceMetadata resolver must not be null!");
+		Assert.notNull(baseUri, "BaseUri must not be null!");
 
 		this.idConverters = idConverters;
 		this.resourceMetadataResolver = resourceMetadataResolver;
+		this.baseUri = baseUri;
 	}
 
 	/* 
@@ -91,6 +96,7 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 		}
 
 		BackendIdConverter pluginFor = idConverters.getPluginFor(metadata.getDomainType(), DefaultIdConverter.INSTANCE);
-		return pluginFor.fromRequestId(UriUtils.findMappingVariable("id", parameter, request), metadata.getDomainType());
+		String lookupPath = baseUri.getRepositoryLookupPath(request);
+		return pluginFor.fromRequestId(UriUtils.findMappingVariable("id", parameter, lookupPath), metadata.getDomainType());
 	}
 }

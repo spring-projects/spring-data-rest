@@ -23,6 +23,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.util.UriUtils;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -40,6 +41,7 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 
 	private final Repositories repositories;
 	private final ResourceMappings mappings;
+	private final BaseUri baseUri;
 
 	/**
 	 * Creates a new {@link ResourceMetadataHandlerMethodArgumentResolver} for the given {@link Repositories} and
@@ -47,14 +49,18 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 	 * 
 	 * @param repositories must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
+	 * @param baseUri must not be {@literal null}.
 	 */
-	public ResourceMetadataHandlerMethodArgumentResolver(Repositories repositories, ResourceMappings mappings) {
+	public ResourceMetadataHandlerMethodArgumentResolver(Repositories repositories, ResourceMappings mappings,
+			BaseUri baseUri) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(baseUri, "BaseUri must not be null!");
 
 		this.repositories = repositories;
 		this.mappings = mappings;
+		this.baseUri = baseUri;
 	}
 
 	/*
@@ -74,7 +80,8 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 	public ResourceMetadata resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-		String repositoryKey = UriUtils.findMappingVariable("repository", parameter, webRequest);
+		String lookupPath = baseUri.getRepositoryLookupPath(webRequest);
+		String repositoryKey = UriUtils.findMappingVariable("repository", parameter, lookupPath);
 
 		if (!hasText(repositoryKey)) {
 			return null;

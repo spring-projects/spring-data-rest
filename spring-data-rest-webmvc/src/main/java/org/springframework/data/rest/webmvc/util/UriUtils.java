@@ -17,14 +17,9 @@ package org.springframework.data.rest.webmvc.util;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.core.MethodParameter;
-import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.util.UrlPathHelper;
 
 /**
  * Utility methods to work with requests and URIs.
@@ -32,8 +27,6 @@ import org.springframework.web.util.UrlPathHelper;
  * @author Oliver Gierke
  */
 public abstract class UriUtils {
-
-	private static final UrlPathHelper URL_PATH_HELPER = new UrlPathHelper();
 
 	private UriUtils() {}
 
@@ -45,13 +38,11 @@ public abstract class UriUtils {
 	 * @param request
 	 * @return
 	 */
-	public static String findMappingVariable(String variable, MethodParameter parameter, NativeWebRequest request) {
+	public static String findMappingVariable(String variable, MethodParameter parameter, String lookupPath) {
 
 		Assert.hasText(variable, "Variable name must not be null or empty!");
 		Assert.notNull(parameter, "Method parameter must not be null!");
-		Assert.notNull(request, "Request must not be null!");
 
-		String lookupPath = getCleanLookupPath(request);
 		RequestMapping annotation = parameter.getMethodAnnotation(RequestMapping.class);
 
 		for (String mapping : annotation.value()) {
@@ -65,12 +56,5 @@ public abstract class UriUtils {
 		}
 
 		return null;
-	}
-
-	private static String getCleanLookupPath(NativeWebRequest request) {
-
-		HttpServletRequest httpServletRequest = request.getNativeRequest(HttpServletRequest.class);
-		String lookupPath = URL_PATH_HELPER.getLookupPathForRequest(httpServletRequest);
-		return new UriTemplate(lookupPath).expand().toString();
 	}
 }
