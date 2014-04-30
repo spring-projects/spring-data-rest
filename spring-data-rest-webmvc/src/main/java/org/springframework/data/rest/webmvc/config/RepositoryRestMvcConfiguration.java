@@ -48,6 +48,7 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.rest.core.support.RepositoryRelProvider;
 import org.springframework.data.rest.core.util.UUIDConverter;
+import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
@@ -202,6 +203,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return config;
 	}
 
+	@Bean
+	public BaseUri baseUri() {
+		return new BaseUri(config().getBaseUri());
+	}
+
 	/**
 	 * {@link org.springframework.beans.factory.config.BeanPostProcessor} to turn beans annotated as
 	 * {@link org.springframework.data.rest.repository.annotation.RepositoryEventHandler}s.
@@ -248,12 +254,12 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public ResourceMetadataHandlerMethodArgumentResolver resourceMetadataHandlerMethodArgumentResolver() {
-		return new ResourceMetadataHandlerMethodArgumentResolver(repositories(), resourceMappings());
+		return new ResourceMetadataHandlerMethodArgumentResolver(repositories(), resourceMappings(), baseUri());
 	}
 
 	@Bean
 	public BackendIdHandlerMethodArgumentResolver backendIdHandlerMethodArgumentResolver() {
-		return new BackendIdHandlerMethodArgumentResolver(resourceMetadataHandlerMethodArgumentResolver());
+		return new BackendIdHandlerMethodArgumentResolver(resourceMetadataHandlerMethodArgumentResolver(), baseUri());
 	}
 
 	/**

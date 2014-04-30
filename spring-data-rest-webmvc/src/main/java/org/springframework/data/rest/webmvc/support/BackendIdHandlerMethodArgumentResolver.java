@@ -19,6 +19,7 @@ import java.io.Serializable;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.ResourceMetadataHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.util.UriUtils;
 import org.springframework.util.Assert;
@@ -36,18 +37,23 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private final ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver;
+	private final BaseUri baseUri;
 
 	/**
 	 * Creates a new {@link BackendIdHandlerMethodArgumentResolver} for the given {@link BackendIdConverter}s and
 	 * {@link ResourceMetadataHandlerMethodArgumentResolver}.
 	 * 
-	 * @param resourceMetadataResolver the resolver to obtain {@link ResourceMetadata} from.
+	 * @param resourceMetadataResolver the resolver to obtain {@link ResourceMetadata} from, must not be {@literal null}.
+	 * @param baseUri must not be {@literal null}.
 	 */
-	public BackendIdHandlerMethodArgumentResolver(ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver) {
+	public BackendIdHandlerMethodArgumentResolver(ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver,
+			BaseUri baseUri) {
 
 		Assert.notNull(resourceMetadataResolver, "ResourceMetadata resolver must not be null!");
+		Assert.notNull(baseUri, "BaseUri must not be null!");
 
 		this.resourceMetadataResolver = resourceMetadataResolver;
+		this.baseUri = baseUri;
 	}
 
 	/* 
@@ -82,6 +88,7 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 			throw new IllegalArgumentException("Could not obtain ResourceMetadata for request " + request);
 		}
 
-		return UriUtils.findMappingVariable("id", parameter, request);
+		String lookupPath = baseUri.getRepositoryLookupPath(request);
+		return UriUtils.findMappingVariable("id", parameter, lookupPath);
 	}
 }

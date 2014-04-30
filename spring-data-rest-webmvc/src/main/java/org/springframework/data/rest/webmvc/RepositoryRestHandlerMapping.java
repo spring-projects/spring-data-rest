@@ -17,9 +17,7 @@ package org.springframework.data.rest.webmvc;
 
 import static org.springframework.util.StringUtils.*;
 
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +34,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * {@link RequestMappingHandlerMapping} implementation that will only find a handler method if a
@@ -113,7 +110,7 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 			acceptType = config.getDefaultMediaType().toString();
 		}
 
-		String uri = extractRepositoryLookupPath(lookupPath, config.getBaseUri());
+		String uri = new BaseUri(config.getBaseUri()).getRepositoryLookupPath(lookupPath);
 
 		if (uri == null) {
 			return null;
@@ -130,50 +127,6 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 
 		if (mappings.exportsTopLevelResourceFor(parts[uri.startsWith("/") ? 1 : 0])) {
 			return super.lookupHandlerMethod(uri, request);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Extracts the actual lookup path within the Spring Data REST managed URI space. This includes stripping the
-	 * necessary parts of the base URI from the source lookup path.
-	 * 
-	 * @param lookupPath must not be {@literal null}.
-	 * @param baseUri must not be {@literal null}.
-	 * @return the stripped lookup path with then the repository URI space or {@literal null} in case the lookup path is
-	 *         not pointing into the repository URI space.
-	 */
-	private static String extractRepositoryLookupPath(String lookupPath, URI baseUri) {
-
-		Assert.notNull(lookupPath, "Lookup path must not be null!");
-		Assert.notNull(baseUri, "Base URI must not be null!");
-
-		lookupPath = StringUtils.trimTrailingCharacter(lookupPath, '/');
-
-		if (!baseUri.isAbsolute()) {
-
-			String uri = baseUri.toString();
-
-			if (!StringUtils.hasText(uri)) {
-				return lookupPath;
-			}
-
-			uri = uri.startsWith("/") ? uri : "/".concat(uri);
-			return lookupPath.startsWith(uri) ? lookupPath.substring(uri.length(), lookupPath.length()) : null;
-		}
-
-		List<String> baseUriSegments = UriComponentsBuilder.fromUri(baseUri).build().getPathSegments();
-		Collections.reverse(baseUriSegments);
-		String tail = "";
-
-		for (String tailSegment : baseUriSegments) {
-
-			tail = "/".concat(tailSegment).concat(tail);
-
-			if (lookupPath.startsWith(tail)) {
-				return lookupPath.substring(tail.length(), lookupPath.length());
-			}
 		}
 
 		return null;

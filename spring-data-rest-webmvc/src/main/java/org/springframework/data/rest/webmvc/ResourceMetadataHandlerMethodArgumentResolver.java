@@ -25,6 +25,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.util.UriUtils;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -40,18 +41,26 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 
 	private final Repositories repositories;
 	private final ResourceMappings mappings;
+	private final BaseUri baseUri;
 
 	/**
+	 * Creates a new {@link ResourceMetadataHandlerMethodArgumentResolver} for the given {@link Repositories} and
+	 * {@link ResourceMappings}.
+	 * 
 	 * @param repositories must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
+	 * @param baseUri must not be {@literal null}.
 	 */
-	public ResourceMetadataHandlerMethodArgumentResolver(Repositories repositories, ResourceMappings mappings) {
+	public ResourceMetadataHandlerMethodArgumentResolver(Repositories repositories, ResourceMappings mappings,
+			BaseUri baseUri) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(baseUri, "BaseUri must not be null!");
 
 		this.repositories = repositories;
 		this.mappings = mappings;
+		this.baseUri = baseUri;
 	}
 
 	/*
@@ -71,32 +80,16 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 	public ResourceMetadata resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
-		HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
-		String requestUri = new UrlPathHelper().getLookupPathForRequest(request);
+		String lookupPath = baseUri.getRepositoryLookupPath(webRequest);
+		String repositoryKey = UriUtils.findMappingVariable("repository", parameter, lookupPath);
 
-		if (requestUri.startsWith("/")) {
-			requestUri = requestUri.substring(1);
-		}
-
-		String[] parts = requestUri.split("/");
-
-		if (parts.length == 0) {
-			// Root request
-			return null;
-		}
-
-		return findRepositoryInfoFor(parts[0]);
-	}
-
-	private ResourceMetadata findRepositoryInfoFor(String pathSegment) {
-
-		if (!hasText(pathSegment)) {
+		if (!hasText(repositoryKey)) {
 			return null;
 		}
 
 		for (Class<?> domainType : repositories) {
 			ResourceMetadata mapping = mappings.getMappingFor(domainType);
-			if (mapping.getPath().matches(pathSegment) && mapping.isExported()) {
+			if (mapping.getPath().matches(repositoryKey) && mapping.isExported()) {
 				return mapping;
 			}
 		}
