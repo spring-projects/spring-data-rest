@@ -163,16 +163,57 @@ public class RepositoryRestHandlerMappingUnitTests {
 	public void returnsRepositoryHandlerMethodForAbsoluteBaseUriWithServletMapping() throws Exception {
 
 		String baseUri = "http://localhost/base";
+		String uri = baseUri.concat("/people/");
 
 		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
-		mockRequest = new MockHttpServletRequest("GET", baseUri.concat("/people/"));
-		mockRequest.setServletPath(baseUri.concat("/people/"));
+		mockRequest = new MockHttpServletRequest("GET", uri);
+		mockRequest.setServletPath(uri);
 
 		configuration.setBaseUri(URI.create(baseUri));
 
-		HandlerMethod method = handlerMapping.lookupHandlerMethod("/people/", mockRequest);
+		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base/people/", mockRequest);
 
 		assertThat(method, is(notNullValue()));
 		assertThat(method.getMethod(), is(listEntitiesMethod));
+	}
+
+	/**
+	 * @see DATAREST-276
+	 */
+	@Test
+	public void refrainsFromMappingIfTheRequestDoesNotPointIntoAbsolutelyDefinedUriSpace() throws Exception {
+
+		String baseUri = "http://localhost/base";
+		String uri = baseUri.concat("/people/");
+
+		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		mockRequest = new MockHttpServletRequest("GET", uri);
+		mockRequest.setServletPath(uri);
+
+		configuration.setBaseUri(URI.create(baseUri));
+
+		HandlerMethod method = handlerMapping.lookupHandlerMethod("/people", mockRequest);
+
+		assertThat(method, is(nullValue()));
+	}
+
+	/**
+	 * @see DATAREST-276
+	 */
+	@Test
+	public void refrainsFromMappingWhenUrisDontMatch() throws Exception {
+
+		String baseUri = "foo";
+		String uri = baseUri.concat("/people");
+
+		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		mockRequest = new MockHttpServletRequest("GET", uri);
+		mockRequest.setServletPath(uri);
+
+		configuration.setBaseUri(URI.create(baseUri));
+
+		HandlerMethod method = handlerMapping.lookupHandlerMethod("/people", mockRequest);
+
+		assertThat(method, is(nullValue()));
 	}
 }
