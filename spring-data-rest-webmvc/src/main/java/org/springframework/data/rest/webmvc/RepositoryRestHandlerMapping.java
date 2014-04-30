@@ -113,14 +113,13 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 			acceptType = config.getDefaultMediaType().toString();
 		}
 
-		HttpServletRequest request = new DefaultAcceptTypeHttpServletRequest(origRequest, acceptType);
+		String uri = extractRepositoryLookupPath(lookupPath, config.getBaseUri());
 
-		if (!hasText(lookupPath)) {
-			return super.lookupHandlerMethod(lookupPath, request);
+		if (uri == null) {
+			return null;
 		}
 
-		String uri = extractRepositoryLookupPath(lookupPath, config.getBaseUri());
-		request = new DefaultAcceptTypeHttpServletRequest(request, acceptType, uri);
+		HttpServletRequest request = new DefaultAcceptTypeHttpServletRequest(origRequest, acceptType, uri);
 
 		// Root request
 		if (!StringUtils.hasText(uri) || uri.equals("/")) {
@@ -129,7 +128,7 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 
 		String[] parts = uri.split("/");
 
-		if (mappings.exportsTopLevelResourceFor(parts[1])) {
+		if (mappings.exportsTopLevelResourceFor(parts[uri.startsWith("/") ? 1 : 0])) {
 			return super.lookupHandlerMethod(uri, request);
 		}
 
@@ -142,7 +141,8 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 	 * 
 	 * @param lookupPath must not be {@literal null}.
 	 * @param baseUri must not be {@literal null}.
-	 * @return
+	 * @return the stripped lookup path with then the repository URI space or {@literal null} in case the lookup path is
+	 *         not pointing into the repository URI space.
 	 */
 	private static String extractRepositoryLookupPath(String lookupPath, URI baseUri) {
 
@@ -160,7 +160,7 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 			}
 
 			uri = uri.startsWith("/") ? uri : "/".concat(uri);
-			return lookupPath.substring(uri.length(), lookupPath.length());
+			return lookupPath.startsWith(uri) ? lookupPath.substring(uri.length(), lookupPath.length()) : null;
 		}
 
 		List<String> baseUriSegments = UriComponentsBuilder.fromUri(baseUri).build().getPathSegments();
@@ -176,7 +176,7 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 			}
 		}
 
-		return lookupPath;
+		return null;
 	}
 
 	/*
