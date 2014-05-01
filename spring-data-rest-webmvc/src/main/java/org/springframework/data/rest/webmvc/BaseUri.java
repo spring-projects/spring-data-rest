@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.springframework.util.StringUtils.*;
+
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +51,8 @@ public class BaseUri {
 
 		Assert.notNull(uri, "Base URI must not be null!");
 
-		this.baseUri = uri;
+		String uriString = uri.toString();
+		this.baseUri = URI.create(trimTrailingCharacter(trimTrailingCharacter(uriString, '/'), '/'));
 	}
 
 	/**
@@ -99,8 +102,6 @@ public class BaseUri {
 	public String getRepositoryLookupPath(String lookupPath) {
 
 		Assert.notNull(lookupPath, "Lookup path must not be null!");
-
-		lookupPath = StringUtils.trimTrailingCharacter(lookupPath, '/');
 
 		if (!baseUri.isAbsolute()) {
 
