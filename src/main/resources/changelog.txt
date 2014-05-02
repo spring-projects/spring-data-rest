@@ -1,6 +1,17 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.1.0.RC1 (2014-05-02)
+-----------------------------------------
+* DATAREST-298 - "rel" attribute of @RestResource should be optional.
+* DATAREST-297 - Release 2.1 RC1.
+* DATAREST-296 - Absolute base URI not applied correctly.
+* DATAREST-294 - Improve media type defaulting.
+* DATAREST-292 - Reconfiguring baseUri isn't enough to change path to resolve URI links.
+* DATAREST-288 - RepositorySchemaController must not depend on javax.validation.
+* DATAREST-276 - 500 returned if URL ends with /.
+
+
 Changes in version 2.0.2.RELEASE (2014-04-15)
 ---------------------------------------------
 ** Bug
