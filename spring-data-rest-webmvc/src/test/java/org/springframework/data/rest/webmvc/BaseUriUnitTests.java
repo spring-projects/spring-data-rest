@@ -59,7 +59,7 @@ public class BaseUriUnitTests {
 		BaseUri uri = new BaseUri(URI.create("foo/"));
 
 		assertThat(uri.getRepositoryLookupPath("/foo"), isEmptyString());
-		assertThat(uri.getRepositoryLookupPath("/foo/"), is("/"));
+		assertThat(uri.getRepositoryLookupPath("/foo/"), isEmptyString());
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class BaseUriUnitTests {
 		BaseUri uri = new BaseUri(URI.create("/foo"));
 
 		assertThat(uri.getRepositoryLookupPath("/foo"), isEmptyString());
-		assertThat(uri.getRepositoryLookupPath("/foo/"), is("/"));
+		assertThat(uri.getRepositoryLookupPath("/foo/"), isEmptyString());
 	}
 
 	/**
@@ -83,8 +83,8 @@ public class BaseUriUnitTests {
 		BaseUri uri = new BaseUri(URI.create("http://localhost:8080/foo/"));
 
 		assertThat(uri.getRepositoryLookupPath("/foo"), isEmptyString());
-		assertThat(uri.getRepositoryLookupPath("/foo/"), is("/"));
+		assertThat(uri.getRepositoryLookupPath("/foo/"), isEmptyString());
 		assertThat(uri.getRepositoryLookupPath("/foo/people"), is("/people"));
-		assertThat(uri.getRepositoryLookupPath("/foo/people/"), is("/people/"));
+		assertThat(uri.getRepositoryLookupPath("/foo/people/"), is("/people"));
 	}
 }
