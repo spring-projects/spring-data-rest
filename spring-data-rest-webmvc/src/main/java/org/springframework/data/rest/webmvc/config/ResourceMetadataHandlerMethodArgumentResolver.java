@@ -94,6 +94,6 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 			}
 		}
 
-		return null;
+		throw new IllegalArgumentException(String.format("Could not resolve repository metadata for %s.", repositoryKey));
 	}
 }

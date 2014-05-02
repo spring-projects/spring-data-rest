@@ -103,6 +103,8 @@ public class BaseUri {
 
 		Assert.notNull(lookupPath, "Lookup path must not be null!");
 
+		lookupPath = trimTrailingCharacter(lookupPath, '/');
+
 		if (!baseUri.isAbsolute()) {
 
 			String uri = baseUri.toString();
