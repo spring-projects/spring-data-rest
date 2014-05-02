@@ -1,6 +1,14 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.0.2.RELEASE (2014-04-15)
+---------------------------------------------
+** Bug
+    * [DATAREST-288] - RepositorySchemaController must not depend on javax.validation
+
+** Task
+    * [DATAREST-291] - Release 2.0.2
+
 Changes in version 2.1.0.M1 (2014-03-31)
 ----------------------------------------
 ** Bug
