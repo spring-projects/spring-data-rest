@@ -103,6 +103,7 @@ public class BaseUri {
 
 		Assert.notNull(lookupPath, "Lookup path must not be null!");
 
+		lookupPath = lookupPath.contains("{") ? lookupPath.substring(0, lookupPath.indexOf('{')) : lookupPath;
 		lookupPath = trimTrailingCharacter(lookupPath, '/');
 
 		if (!baseUri.isAbsolute()) {
