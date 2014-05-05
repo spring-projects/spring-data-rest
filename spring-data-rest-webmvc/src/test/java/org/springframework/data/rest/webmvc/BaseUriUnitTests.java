@@ -87,4 +87,15 @@ public class BaseUriUnitTests {
 		assertThat(uri.getRepositoryLookupPath("/foo/people"), is("/people"));
 		assertThat(uri.getRepositoryLookupPath("/foo/people/"), is("/people"));
 	}
+
+	/**
+	 * @see DATAREST-300
+	 */
+	@Test
+	public void stripsTemplatePlaceholders() {
+
+		BaseUri uri = new BaseUri(URI.create("foo"));
+
+		assertThat(uri.getRepositoryLookupPath("/foo/bar{?projection}"), is("/bar"));
+	}
 }
