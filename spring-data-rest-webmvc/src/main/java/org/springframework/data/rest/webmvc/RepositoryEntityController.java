@@ -19,7 +19,6 @@ import static org.springframework.data.rest.core.support.DomainObjectMerger.Null
 import static org.springframework.http.HttpMethod.*;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +52,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -318,7 +318,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		HttpHeaders headers = new HttpHeaders();
 
 		if (PUT.equals(httpMethod)) {
-			headers.setLocation(URI.create(perAssembler.getSelfLinkFor(obj).getHref()));
+			addLocationHeader(headers, perAssembler, obj);
 		}
 
 		if (config.isReturnBodyOnUpdate()) {
@@ -342,10 +342,24 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		publisher.publishEvent(new AfterCreateEvent(savedObject));
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(URI.create(perAssembler.getSelfLinkFor(savedObject).getHref()));
+		addLocationHeader(headers, perAssembler, savedObject);
 
 		PersistentEntityResource<Object> resource = config.isReturnBodyOnCreate() ? perAssembler.toResource(savedObject)
 				: null;
 		return ControllerUtils.toResponseEntity(HttpStatus.CREATED, headers, resource);
+	}
+
+	/**
+	 * Sets the location header pointing to the resource representing the given instance. Will make sure we properly
+	 * expand the URI template potentially created as self link.
+	 * 
+	 * @param headers must not be {@literal null}.
+	 * @param assembler must not be {@literal null}.
+	 * @param source must not be {@literal null}.
+	 */
+	private void addLocationHeader(HttpHeaders headers, PersistentEntityResourceAssembler<?> assembler, Object source) {
+
+		String selfLink = assembler.getSelfLinkFor(source).getHref();
+		headers.setLocation(new UriTemplate(selfLink).expand());
 	}
 }

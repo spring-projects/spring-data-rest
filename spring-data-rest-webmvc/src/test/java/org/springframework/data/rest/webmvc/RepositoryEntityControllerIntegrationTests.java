@@ -15,11 +15,19 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.AddressRepository;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
+import org.springframework.data.rest.webmvc.jpa.Order;
+import org.springframework.data.rest.webmvc.jpa.Person;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -35,6 +43,8 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 	@Autowired RepositoryEntityController controller;
 	@Autowired AddressRepository repository;
+	@Autowired RepositoryRestConfiguration configuration;
+	@Autowired Repositories repositories;
 
 	/**
 	 * @see DATAREST-217
@@ -57,5 +67,20 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		RootResourceInformation request = getResourceInformation(Address.class);
 
 		controller.postEntity(request, null);
+	}
+
+	/**
+	 * @see DATAREST-301
+	 */
+	@Test
+	public void setsExpandedSelfUriInLocationHeader() throws Exception {
+
+		RootResourceInformation information = getResourceInformation(Order.class);
+		PersistentEntityResource<Object> persistentEntityResource = new PersistentEntityResource<Object>(
+				repositories.getPersistentEntity(Order.class), new Order(new Person()));
+
+		ResponseEntity<?> entity = controller.putEntity(information, persistentEntityResource, 1L);
+
+		assertThat(entity.getHeaders().getLocation().toString(), not(endsWith("{?projection}")));
 	}
 }
