@@ -116,10 +116,12 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 			return null;
 		}
 
+		uri = StringUtils.hasText(uri) ? uri : "/";
+
 		HttpServletRequest request = new DefaultAcceptTypeHttpServletRequest(origRequest, acceptType, uri);
 
 		// Root request
-		if (!StringUtils.hasText(uri) || uri.equals("/")) {
+		if (uri.equals("/")) {
 			return super.lookupHandlerMethod("/", request);
 		}
 
