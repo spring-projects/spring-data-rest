@@ -8,7 +8,7 @@ The first exporter implemented is a JPA Repository exporter. This takes your JPA
 
 Installation instructions are in the docs:
 
-* [http://static.springsource.org/autorepo/docs/spring-data-rest/1.1.0.BUILD-SNAPSHOT/reference/htmlsingle/](http://static.springsource.org/autorepo/docs/spring-data-rest/1.1.0.BUILD-SNAPSHOT/reference/htmlsingle/)
+* [http://docs.spring.io/spring-data/rest/docs/current/reference/htmlsingle/](http://docs.spring.io/spring-data/rest/docs/current/reference/htmlsingle/)
 
 
 ### License
