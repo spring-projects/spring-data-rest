@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import net.minidev.json.JSONArray;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -492,6 +493,39 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	public void relProviderDetectsCustomizedMapping() {
 		assertThat(relProvider.getCollectionResourceRelFor(Person.class), is("people"));
 	}
+
+    /**
+     * @see DATAREST-311
+     */
+    @Test
+    public void onlyLinksShouldAppearWhenExecuteSearchCompact() throws Exception {
+
+        Link peopleLink = discoverUnique("people");
+        Person daenerys = new Person("Daenerys", "Targaryen");
+        String daenerysString = mapper.writeValueAsString(daenerys);
+
+        MockHttpServletResponse createdPerson = postAndGet(peopleLink, daenerysString, MediaType.APPLICATION_JSON);
+        Link daenerysLink = assertHasLinkWithRel("self", createdPerson);
+        assertJsonPathEquals("$.firstName", "Daenerys", createdPerson);
+
+        MockHttpServletResponse response =
+                mvc.perform(
+                        get("/people/search/findFirstPersonByFirstName?firstName=Daenerys")
+                       .header("Accept", "application/*+json"))
+                   .andExpect(status().isOk())
+                   .andReturn().getResponse();
+
+        String responseBody = response.getContentAsString();
+        List<Map<String, Object>> links = JsonPath.read(responseBody, "$.links[*]");
+
+        assertEquals(1, links.size());
+        assertEquals("person", links.get(0).get("rel"));
+        assertEquals(daenerysLink.getHref(), links.get(0).get("href"));
+
+        JSONArray content = JsonPath.read(responseBody, "$.content");
+        assertEquals(0, content.size());
+    }
+
 
 	/**
 	 * Asserts the {@link Person} resource the given link points to contains siblings with the given names.

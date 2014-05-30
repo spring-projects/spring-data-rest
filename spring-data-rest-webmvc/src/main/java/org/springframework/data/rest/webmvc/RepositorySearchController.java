@@ -173,7 +173,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			links.add(resourceLink(resourceInformation, res));
 		}
 
-		return new Resource<Object>(EMPTY_RESOURCE_LIST, links);
+		return new Resources<Object>(EMPTY_RESOURCE_LIST, links);
 	}
 
 	/**
