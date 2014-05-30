@@ -94,6 +94,10 @@ public abstract class AbstractWebIntegrationTests {
 		return request(link.expand().getHref());
 	}
 
+	protected MockHttpServletResponse request(Link link, MediaType mediaType) throws Exception {
+		return request(link.expand().getHref(), mediaType);
+	}
+
 	protected MockHttpServletResponse request(String href) throws Exception {
 		return request(href, DEFAULT_MEDIA_TYPE);
 	}
