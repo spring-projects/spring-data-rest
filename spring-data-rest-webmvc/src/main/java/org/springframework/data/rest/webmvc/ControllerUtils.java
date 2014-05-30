@@ -29,7 +29,7 @@ import org.springframework.http.ResponseEntity;
  */
 public class ControllerUtils {
 
-	public static final Iterable<Resource<?>> EMPTY_RESOURCE_LIST = Collections.emptyList();
+	public static final Iterable<Object> EMPTY_RESOURCE_LIST = Collections.emptyList();
 
 	/**
 	 * Wrap a resource as a {@link ResourceEntity} and attach given headers and status.
