@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
+import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.projection.ProjectionFactory;
 
 /**
@@ -36,6 +37,7 @@ import org.springframework.data.rest.core.projection.ProjectionFactory;
 public class PersistentEntityProjectorUnitTests {
 
 	@Mock ProjectionFactory factory;
+	@Mock ResourceMappings mappings;
 	ProjectionDefinitionConfiguration configuration;
 
 	@Before
@@ -49,7 +51,7 @@ public class PersistentEntityProjectorUnitTests {
 	@Test
 	public void returnsObjectAsIfNoProjectionTypeFound() {
 
-		Projector projector = new PersistentEntityProjector(configuration, factory, "sample");
+		Projector projector = new PersistentEntityProjector(configuration, factory, "sample", mappings);
 
 		Object object = new Object();
 		assertThat(projector.project(object), is(object));
@@ -63,7 +65,7 @@ public class PersistentEntityProjectorUnitTests {
 
 		configuration.addProjection(Sample.class, Object.class);
 
-		Projector projector = new PersistentEntityProjector(configuration, factory, "sample");
+		Projector projector = new PersistentEntityProjector(configuration, factory, "sample", mappings);
 		Object source = new Object();
 		projector.project(source);
 

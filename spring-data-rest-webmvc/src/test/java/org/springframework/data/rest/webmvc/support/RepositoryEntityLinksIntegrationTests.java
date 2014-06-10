@@ -15,11 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.webmvc.jpa.Book;
@@ -45,7 +46,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		Link link = entityLinks.linkToSingleResource(Person.class, 1);
 
-		assertThat(link.getHref(), endsWith("/people/1"));
+		assertThat(link.getHref(), endsWith("/people/1{?projection}"));
 		assertThat(link.getRel(), is("person"));
 	}
 
@@ -78,6 +79,19 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	public void usesCustomGeneratedBackendId() {
 
 		Link link = entityLinks.linkToSingleResource(Book.class, 7L);
-		assertThat(link.getHref(), endsWith("/7-7-7-7-7-7-7"));
+		assertThat(link.expand().getHref(), endsWith("/7-7-7-7-7-7-7"));
+	}
+
+	/**
+	 * @see DATAREST-317
+	 */
+	@Test
+	public void adaptsToExistingPageable() {
+
+		Link link = entityLinks.linkToPagedResource(Person.class, new PageRequest(0, 10));
+
+		assertThat(link.isTemplated(), is(true));
+		assertThat(link.getVariableNames(), hasSize(2));
+		assertThat(link.getVariableNames(), hasItems("sort", "projection"));
 	}
 }

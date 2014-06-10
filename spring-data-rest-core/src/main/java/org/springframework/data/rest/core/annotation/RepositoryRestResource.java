@@ -72,4 +72,15 @@ public @interface RepositoryRestResource {
 	 * @return
 	 */
 	Description itemResourceDescription() default @Description(value = "");
+
+	/**
+	 * Configures the projection type to be used when embedding item resources into collections and related resources.
+	 * Defaults to {@link None}, which indicates full rendering of the items in a collection resource and no inlining of
+	 * related resources.
+	 * 
+	 * @return
+	 */
+	Class<?> excerptProjection() default None.class;
+
+	static class None {}
 }

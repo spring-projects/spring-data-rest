@@ -143,13 +143,12 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	 * @see DATAREST-169
 	 */
 	@Test
-	public void exposesCreatorOfAnOrder() throws Exception {
+	public void exposesLinkForRelatedResource() throws Exception {
 
 		MockHttpServletResponse response = request("/");
 		Link ordersLink = assertHasLinkWithRel("orders", response);
 
 		MockHttpServletResponse orders = request(ordersLink);
-
 		Link creatorLink = assertHasContentLinkWithRel("creator", orders);
 
 		assertThat(request(creatorLink), is(notNullValue()));
@@ -252,20 +251,12 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 	@Test
 	public void listsSiblingsWithContentCorrectly() throws Exception {
-
-		MockHttpServletResponse response = mvc.perform(get("/people")).andReturn().getResponse();
-		String href = assertHasJsonPathValue(String.format(LINK_TO_SIBLINGS_OF, "John"), response);
-
-		mvc.perform(get(href)).andExpect(status().isOk());
+		assertPersonWithNameAndSiblingLink("John");
 	}
 
 	@Test
 	public void listsEmptySiblingsCorrectly() throws Exception {
-
-		MockHttpServletResponse response = mvc.perform(get("/people")).andReturn().getResponse();
-		String href = assertHasJsonPathValue(String.format(LINK_TO_SIBLINGS_OF, "Billy Bob"), response);
-
-		mvc.perform(get(href)).andExpect(status().isOk());
+		assertPersonWithNameAndSiblingLink("Billy Bob");
 	}
 
 	/**
@@ -319,9 +310,9 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		Link frodosSiblingsLink = links.get(0);
 
-		putAndGet(frodosSiblingsLink, links.get(1).getHref(), TEXT_URI_LIST);
-		putAndGet(frodosSiblingsLink, links.get(2).getHref(), TEXT_URI_LIST);
-		putAndGet(frodosSiblingsLink, links.get(3).getHref(), TEXT_URI_LIST);
+		putAndGet(frodosSiblingsLink, links.get(1).expand().getHref(), TEXT_URI_LIST);
+		putAndGet(frodosSiblingsLink, links.get(2).expand().getHref(), TEXT_URI_LIST);
+		putAndGet(frodosSiblingsLink, links.get(3).expand().getHref(), TEXT_URI_LIST);
 		assertSiblingNames(frodosSiblingsLink, "Pippin");
 
 		patchAndGet(frodosSiblingsLink, links.get(2).getHref(), TEXT_URI_LIST);
@@ -525,6 +516,31 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	}
 
 	/**
+	 * @see DATAREST-317
+	 */
+	@Test
+	public void rendersExcerptProjectionsCorrectly() throws Exception {
+
+		Link authorsLink = discoverUnique("authors");
+
+		MockHttpServletResponse response = request(authorsLink);
+		String firstAuthorPath = "$._embedded.authors[0]";
+
+		// Has main content
+		assertHasJsonPathValue(firstAuthorPath.concat(".name"), response);
+
+		// Embeddes content of related entity but no link to it
+		assertHasJsonPathValue(firstAuthorPath.concat("._embedded.books[0].title"), response);
+		assertJsonPathDoesntExist(firstAuthorPath.concat("._links.books"), response);
+
+		// Access item resource and expect link to related resource present
+		String content = response.getContentAsString();
+		String href = JsonPath.read(content, firstAuthorPath.concat("._links.self.href"));
+
+		follow(new Link(href)).andExpect(hasLinkWithRel("books"));
+	}
+
+	/**
 	 * Asserts the {@link Person} resource the given link points to contains siblings with the given names.
 	 * 
 	 * @param link
@@ -538,6 +554,24 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		assertThat(persons, hasSize(siblingNames.length));
 		assertThat(persons, hasItems(siblingNames));
+	}
+
+	private void assertPersonWithNameAndSiblingLink(String name) throws Exception {
+
+		MockHttpServletResponse response = request(discoverUnique("people"));
+
+		String jsonPath = String.format("$._embedded.people[?(@.firstName == '%s')][0]", name);
+
+		// Assert content inlined
+		Object john = JsonPath.read(response.getContentAsString(), jsonPath);
+		assertThat(john, is(notNullValue()));
+		assertThat(JsonPath.read(john, "$.firstName"), is(notNullValue()));
+
+		// Assert sibling link exposed in resource pointed to
+		Link selfLink = new Link(JsonPath.<String> read(john, "$._links.self.href"));
+		follow(selfLink).//
+				andExpect(status().isOk()).//
+				andExpect(jsonPath("$._links.siblings", is(notNullValue())));
 	}
 
 	private static String toUriList(Link... links) {

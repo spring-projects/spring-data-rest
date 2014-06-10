@@ -28,7 +28,7 @@ public class Author {
 
 	@Id @GeneratedValue//
 	Long id;
-	String name;
+	public String name;
 
 	@ManyToMany(mappedBy = "authors")//
 	Set<Book> books = new HashSet<Book>();

@@ -29,11 +29,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
+import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.method.HandlerMethod;
 
@@ -66,7 +66,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 		mockRequest = new MockHttpServletRequest();
 
 		listEntitiesMethod = RepositoryEntityController.class.getMethod("getCollectionResource",
-				RootResourceInformation.class, Pageable.class, Sort.class, PersistentEntityResourceAssembler.class);
+				RootResourceInformation.class, DefaultedPageable.class, Sort.class, PersistentEntityResourceAssembler.class);
 		rootHandlerMethod = RepositoryController.class.getMethod("listRepositories");
 	}
 

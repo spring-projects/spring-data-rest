@@ -138,7 +138,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 				} else {
 
-					PersistentEntityResource<Object> resource = assembler.toResource(prop.propertyValue);
+					PersistentEntityResource resource = assembler.toResource(prop.propertyValue);
 					headers.set("Content-Location", resource.getId().getHref());
 					return resource;
 				}
@@ -212,7 +212,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 						if (propertyId.equals(sId)) {
 
-							PersistentEntityResource<Object> resource = assembler.toResource(obj);
+							PersistentEntityResource resource = assembler.toResource(obj);
 							headers.set("Content-Location", resource.getId().getHref());
 							return resource;
 						}
@@ -225,7 +225,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 						if (propertyId.equals(sId)) {
 
-							PersistentEntityResource<Object> resource = assembler.toResource(entry.getValue());
+							PersistentEntityResource resource = assembler.toResource(entry.getValue());
 							headers.set("Content-Location", resource.getId().getHref());
 							return resource;
 						}

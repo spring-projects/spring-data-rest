@@ -20,6 +20,7 @@ import static org.springframework.hateoas.TemplateVariable.VariableType.*;
 import java.io.Serializable;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -37,7 +38,6 @@ import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.core.AbstractEntityLinks;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -111,20 +111,23 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		return linkFor(type);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.EntityLinks#linkToCollectionResource(java.lang.Class)
-	 */
-	@Override
-	public Link linkToCollectionResource(Class<?> type) {
+	public Link linkToPagedResource(Class<?> type, Pageable pageable) {
 
 		ResourceMetadata metadata = mappings.getMappingFor(type);
 		TemplateVariables variables = new TemplateVariables();
 		String href = linkFor(type).withSelfRel().getHref();
 
 		if (metadata.isPagingResource()) {
-			UriComponents components = UriComponentsBuilder.fromUriString(href).build();
-			variables = variables.concat(resolver.getPaginationTemplateVariables(null, components));
+
+			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(href);
+
+			if (pageable != null) {
+				resolver.enhance(builder, null, pageable);
+			}
+
+			href = builder.build().toString();
+
+			variables = variables.concat(resolver.getPaginationTemplateVariables(null, builder.build()));
 		}
 
 		ProjectionDefinitionConfiguration projectionConfiguration = config.projectionConfiguration();
@@ -135,6 +138,15 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 		return variables.asList().isEmpty() ? linkFor(type).withRel(metadata.getRel()) : new Link(new UriTemplate(href,
 				variables), metadata.getRel());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.hateoas.EntityLinks#linkToCollectionResource(java.lang.Class)
+	 */
+	@Override
+	public Link linkToCollectionResource(Class<?> type) {
+		return linkToPagedResource(type, null);
 	}
 
 	/*

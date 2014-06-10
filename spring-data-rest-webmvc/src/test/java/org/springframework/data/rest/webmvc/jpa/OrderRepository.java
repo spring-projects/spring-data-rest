@@ -16,10 +16,12 @@
 package org.springframework.data.rest.webmvc.jpa;
 
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 /**
  * @author Oliver Gierke
  */
+@RepositoryRestResource
 public interface OrderRepository extends CrudRepository<Order, Long> {
 
 }

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
 import org.springframework.data.rest.core.projection.ProjectionFactory;
 import org.springframework.util.Assert;
@@ -30,6 +32,7 @@ public class PersistentEntityProjector implements Projector {
 	private final ProjectionDefinitions projectionDefinitions;
 	private final ProjectionFactory factory;
 	private final String projection;
+	private final ResourceMappings mappings;
 
 	/**
 	 * Creates a new {@link PersistentEntityProjector} using the given {@link ProjectionDefinitions},
@@ -40,7 +43,7 @@ public class PersistentEntityProjector implements Projector {
 	 * @param projection can be empty.
 	 */
 	public PersistentEntityProjector(ProjectionDefinitions projectionDefinitions, ProjectionFactory factory,
-			String projection) {
+			String projection, ResourceMappings mappings) {
 
 		Assert.notNull(projectionDefinitions, "ProjectionDefinitions must not be null!");
 		Assert.notNull(factory, "ProjectionFactory must not be null!");
@@ -48,6 +51,7 @@ public class PersistentEntityProjector implements Projector {
 		this.projectionDefinitions = projectionDefinitions;
 		this.factory = factory;
 		this.projection = projection;
+		this.mappings = mappings;
 	}
 
 	/*
@@ -56,11 +60,43 @@ public class PersistentEntityProjector implements Projector {
 	 */
 	public Object project(Object source) {
 
+		Assert.notNull(source, "Projection source must not be null!");
+
 		if (!StringUtils.hasText(projection)) {
 			return source;
 		}
 
 		Class<?> projectionType = projectionDefinitions.getProjectionType(source.getClass(), projection);
 		return projectionType == null ? source : factory.createProjection(source, projectionType);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.support.Projector#projectExcerpt(java.lang.Object)
+	 */
+	@Override
+	public Object projectExcerpt(Object source) {
+
+		Assert.notNull(source, "Projection source must not be null!");
+
+		ResourceMetadata metadata = mappings.getMappingFor(source.getClass());
+		Class<?> projection = metadata == null ? null : metadata.getExcerptProjection();
+
+		if (projection == null) {
+			return project(source);
+		}
+
+		return projection == null ? source : factory.createProjection(source, projection);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.support.Projector#hasExcerptProjection(java.lang.Class)
+	 */
+	@Override
+	public boolean hasExcerptProjection(Class<?> type) {
+
+		ResourceMetadata metadata = mappings.getMappingFor(type);
+		return metadata == null ? false : metadata.getExcerptProjection() != null;
 	}
 }

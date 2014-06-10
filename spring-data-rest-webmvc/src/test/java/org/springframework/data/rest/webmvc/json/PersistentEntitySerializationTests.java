@@ -114,8 +114,8 @@ public class PersistentEntitySerializationTests {
 		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(Person.class);
 		Person person = people.save(new Person("John", "Doe"));
 
-		PersistentEntityResource<Person> resource = PersistentEntityResource.wrap(persistentEntity, person, new Link(
-				"/person/" + person.getId()));
+		PersistentEntityResource resource = PersistentEntityResource.build(person, persistentEntity).//
+				withLink(new Link("/person/" + person.getId())).build();
 
 		StringWriter writer = new StringWriter();
 		mapper.writeValue(writer, resource);
@@ -175,17 +175,18 @@ public class PersistentEntitySerializationTests {
 	 * @see DATAREST-250
 	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void serializesEmbeddedReferencesCorrectly() throws Exception {
 
 		User user = new User();
 		user.address = new Address();
 		user.address.street = "Street";
 
-		PersistentEntityResource<User> userResource = new PersistentEntityResource<User>(
-				repositories.getPersistentEntity(User.class), user, new Link("/users/1"));
+		PersistentEntityResource userResource = PersistentEntityResource.//
+				build(user, repositories.getPersistentEntity(User.class)).//
+				withLink(new Link("/users/1")).//
+				build();
 
-		PagedResources<PersistentEntityResource<User>> persistentEntityResource = new PagedResources<PersistentEntityResource<User>>(
+		PagedResources<PersistentEntityResource> persistentEntityResource = new PagedResources<PersistentEntityResource>(
 				Arrays.asList(userResource), new PageMetadata(1, 0, 10));
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
@@ -205,12 +206,12 @@ public class PersistentEntitySerializationTests {
 		order.add(new LineItem("first"));
 		order.add(new LineItem("second"));
 
-		PersistentEntityResource<Order> orderResource = new PersistentEntityResource<Order>(
-				repositories.getPersistentEntity(Order.class), order);
-		orderResource.add(new Link("/orders/1"));
+		PersistentEntityResource orderResource = PersistentEntityResource.//
+				build(order, repositories.getPersistentEntity(Order.class)).//
+				withLink(new Link("/orders/1")).//
+				build();
 
-		@SuppressWarnings("unchecked")
-		PagedResources<PersistentEntityResource<Order>> persistentEntityResource = new PagedResources<PersistentEntityResource<Order>>(
+		PagedResources<PersistentEntityResource> persistentEntityResource = new PagedResources<PersistentEntityResource>(
 				Arrays.asList(orderResource), new PageMetadata(1, 0, 10));
 
 		String result = mapper.writeValueAsString(persistentEntityResource);

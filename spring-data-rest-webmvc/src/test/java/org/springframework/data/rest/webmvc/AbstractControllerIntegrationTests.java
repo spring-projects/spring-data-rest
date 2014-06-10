@@ -53,12 +53,8 @@ public abstract class AbstractControllerIntegrationTests {
 
 		@Bean
 		public PersistentEntityResourceAssembler persistentEntityResourceAssembler() {
-			return new PersistentEntityResourceAssembler(repositories(), entityLinks(), new Projector() {
-				@Override
-				public Object project(Object source) {
-					return source;
-				}
-			});
+			return new PersistentEntityResourceAssembler(repositories(), entityLinks(), StubProjector.INSTANCE,
+					resourceMappings());
 		}
 	}
 
@@ -100,5 +96,25 @@ public abstract class AbstractControllerIntegrationTests {
 
 	protected ResourceMetadata getMetadata(Class<?> domainType) {
 		return mappings.getMappingFor(domainType);
+	}
+
+	private static enum StubProjector implements Projector {
+
+		INSTANCE;
+
+		@Override
+		public Object project(Object source) {
+			return source;
+		}
+
+		@Override
+		public Object projectExcerpt(Object source) {
+			return source;
+		}
+
+		@Override
+		public boolean hasExcerptProjection(Class<?> type) {
+			return false;
+		}
 	}
 }

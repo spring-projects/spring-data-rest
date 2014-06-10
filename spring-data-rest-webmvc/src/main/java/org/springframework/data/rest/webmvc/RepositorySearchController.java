@@ -219,7 +219,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			return result;
 		}
 
-		return resultToResources(result, assembler);
+		return resultToResources(result, assembler, null);
 	}
 
 	/**

@@ -35,4 +35,12 @@ public interface CollectionResourceMapping extends ResourceMapping {
 	 * @return
 	 */
 	ResourceDescription getItemResourceDescription();
+
+	/**
+	 * Returns the projection type to be used when embedding item resources into collections and related resources. If
+	 * {@literal null} is returned this will mean full rendering for collections and no rendering for related resources.
+	 * 
+	 * @return
+	 */
+	Class<?> getExcerptProjection();
 }

@@ -200,24 +200,25 @@ class AbstractRepositoryRestController implements MessageSourceAware {
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	protected Resources resultToResources(Object result, PersistentEntityResourceAssembler assembler) {
+	protected Resources resultToResources(Object result, PersistentEntityResourceAssembler assembler, Link baseLink) {
 
 		if (result instanceof Page) {
 			Page<Object> page = (Page<Object>) result;
-			return entitiesToResources(page, assembler);
+			return entitiesToResources(page, assembler, baseLink);
 		} else if (result instanceof Iterable) {
 			return entitiesToResources((Iterable<Object>) result, assembler);
 		} else if (null == result) {
 			return new Resources(EMPTY_RESOURCE_LIST);
 		} else {
-			Resource<Object> resource = assembler.toResource(result);
+			Resource<Object> resource = assembler.toFullResource(result);
 			return new Resources(Collections.singletonList(resource));
 		}
 	}
 
 	protected Resources<? extends Resource<Object>> entitiesToResources(Page<Object> page,
-			PersistentEntityResourceAssembler assembler) {
-		return pagedResourcesAssembler.toResource(page, assembler);
+			PersistentEntityResourceAssembler assembler, Link baseLink) {
+		return baseLink == null ? pagedResourcesAssembler.toResource(page, assembler) : pagedResourcesAssembler.toResource(
+				page, assembler, baseLink);
 	}
 
 	protected Resources<Resource<Object>> entitiesToResources(Iterable<Object> entities,

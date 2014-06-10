@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
 import org.springframework.data.rest.core.projection.ProjectionFactory;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
@@ -39,6 +40,7 @@ public class PersistentEntityResourceAssemblerArgumentResolver implements Handle
 	private final EntityLinks entityLinks;
 	private final ProjectionDefinitions projectionDefinitions;
 	private final ProjectionFactory projectionFactory;
+	private final ResourceMappings mappings;
 
 	/**
 	 * Creates a new {@link PersistentEntityResourceAssemblerArgumentResolver} for the given {@link Repositories},
@@ -50,7 +52,7 @@ public class PersistentEntityResourceAssemblerArgumentResolver implements Handle
 	 * @param projectionFactory must not be {@literal null}.
 	 */
 	public PersistentEntityResourceAssemblerArgumentResolver(Repositories repositories, EntityLinks entityLinks,
-			ProjectionDefinitions projectionDefinitions, ProjectionFactory projectionFactory) {
+			ProjectionDefinitions projectionDefinitions, ProjectionFactory projectionFactory, ResourceMappings mappings) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
@@ -61,6 +63,7 @@ public class PersistentEntityResourceAssemblerArgumentResolver implements Handle
 		this.entityLinks = entityLinks;
 		this.projectionDefinitions = projectionDefinitions;
 		this.projectionFactory = projectionFactory;
+		this.mappings = mappings;
 	}
 
 	/* 
@@ -82,8 +85,8 @@ public class PersistentEntityResourceAssemblerArgumentResolver implements Handle
 
 		String projectionParameter = webRequest.getParameter(projectionDefinitions.getParameterName());
 		PersistentEntityProjector projector = new PersistentEntityProjector(projectionDefinitions, projectionFactory,
-				projectionParameter);
+				projectionParameter, mappings);
 
-		return new PersistentEntityResourceAssembler(repositories, entityLinks, projector);
+		return new PersistentEntityResourceAssembler(repositories, entityLinks, projector, mappings);
 	}
 }

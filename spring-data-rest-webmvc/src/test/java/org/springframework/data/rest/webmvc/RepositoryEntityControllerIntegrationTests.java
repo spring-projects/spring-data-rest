@@ -77,8 +77,9 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	public void setsExpandedSelfUriInLocationHeader() throws Exception {
 
 		RootResourceInformation information = getResourceInformation(Order.class);
-		PersistentEntityResource<Object> persistentEntityResource = new PersistentEntityResource<Object>(
-				entities.getPersistentEntity(Order.class), new Order(new Person()));
+
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
+				entities.getPersistentEntity(Order.class)).build();
 
 		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler);
 

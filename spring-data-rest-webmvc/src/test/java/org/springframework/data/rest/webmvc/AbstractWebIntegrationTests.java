@@ -260,8 +260,11 @@ public abstract class AbstractWebIntegrationTests {
 	@SuppressWarnings("unchecked")
 	protected <T> T assertHasJsonPathValue(String path, MockHttpServletResponse response) throws Exception {
 
-		Object jsonPathResult = JsonPath.read(response.getContentAsString(), path);
-		assertThat(jsonPathResult, is(notNullValue()));
+		String content = response.getContentAsString();
+		Object jsonPathResult = JsonPath.read(content, path);
+
+		assertThat(String.format("JSONPath lookup for %s did return null in %s.", path, content), jsonPathResult,
+				is(notNullValue()));
 
 		if (jsonPathResult instanceof JSONArray) {
 			JSONArray array = (JSONArray) jsonPathResult;

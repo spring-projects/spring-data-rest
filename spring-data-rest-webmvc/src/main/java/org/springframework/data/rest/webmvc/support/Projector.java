@@ -29,5 +29,23 @@ public interface Projector {
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
-	public Object project(Object source);
+	Object project(Object source);
+
+	/**
+	 * Creates a excerpt projection for the given source. If no excerpt projection is available, the call will fall back
+	 * to the behavior of {@link #project(Object)}. If you completely wish to skip handling the object, check for the
+	 * presence of an excerpt projection using {@link #hasExcerptProjection(Class)}.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @return
+	 */
+	Object projectExcerpt(Object source);
+
+	/**
+	 * Returns whether an excerpt projection has been registered for the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	boolean hasExcerptProjection(Class<?> type);
 }

@@ -38,9 +38,11 @@ import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.mapping.LinkCollectingAssociationHandler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -111,7 +113,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static class PersistentEntityResourceSerializer extends StdSerializer<PersistentEntityResource<?>> {
+	private static class PersistentEntityResourceSerializer extends StdSerializer<PersistentEntityResource> {
 
 		private final PersistentEntities entities;
 		private final AssociationLinks associationLinks;
@@ -140,7 +142,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
 		 */
 		@Override
-		public void serialize(final PersistentEntityResource<?> resource, final JsonGenerator jgen,
+		public void serialize(final PersistentEntityResource resource, final JsonGenerator jgen,
 				final SerializerProvider provider) throws IOException, JsonGenerationException {
 
 			if (LOG.isDebugEnabled()) {
@@ -153,16 +155,28 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				throw new JsonGenerationException(String.format("No self link found resource %s!", resource));
 			}
 
+			List<Link> links = new ArrayList<Link>();
+			links.addAll(resource.getLinks());
+
 			Path basePath = new Path(id.expand().getHref());
 			LinkCollectingAssociationHandler associationHandler = new LinkCollectingAssociationHandler(entities, basePath,
 					associationLinks);
 			resource.getPersistentEntity().doWithAssociations(associationHandler);
 
-			List<Link> links = new ArrayList<Link>();
-			links.addAll(resource.getLinks());
-			links.addAll(associationHandler.getLinks());
+			for (Link link : associationHandler.getLinks()) {
+				if (resource.shouldRenderLink(link)) {
+					links.add(link);
+				}
+			}
 
-			Resource<Object> resourceToRender = new Resource<Object>(resource.getContent(), links);
+			Resource<Object> resourceToRender = new Resource<Object>(resource.getContent(), links) {
+
+				@JsonUnwrapped
+				public Resources<?> getEmbedded() {
+					return resource.getEmbeddeds();
+				}
+			};
+
 			provider.defaultSerializeValue(resourceToRender, jgen);
 		}
 	}

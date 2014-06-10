@@ -103,7 +103,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 				throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType, converter));
 			}
 
-			return new PersistentEntityResource<Object>(resourceInformation.getPersistentEntity(), obj);
+			return PersistentEntityResource.build(obj, resourceInformation.getPersistentEntity()).build();
 		}
 
 		throw new HttpMessageNotReadableException(String.format(NO_CONVERTER_FOUND, domainType, contentType));

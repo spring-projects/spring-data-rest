@@ -171,6 +171,15 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 
 	/* 
 	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getExcerptProjection()
+	 */
+	@Override
+	public Class<?> getExcerptProjection() {
+		return mapping.getExcerptProjection();
+	}
+
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getSearchResourceMappings()
 	 */
 	@Override

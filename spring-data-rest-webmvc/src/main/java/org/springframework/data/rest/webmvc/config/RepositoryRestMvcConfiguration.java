@@ -75,6 +75,7 @@ import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaCon
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
 import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.support.DefaultedPageableHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
@@ -85,7 +86,6 @@ import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration;
 import org.springframework.format.support.DefaultFormattingConversionService;
-import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.ResourceProcessor;
@@ -309,7 +309,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @throws Exception
 	 */
 	@Bean
-	public EntityLinks entityLinks() {
+	public RepositoryEntityLinks entityLinks() {
 		return new RepositoryEntityLinks(repositories(), resourceMappings(), config(), pageableResolver(),
 				backendIdConverterRegistry());
 	}
@@ -573,10 +573,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
-				repositories(), entityLinks(), config().projectionConfiguration(), new ProxyProjectionFactory(beanFactory));
+				repositories(), entityLinks(), config().projectionConfiguration(), new ProxyProjectionFactory(beanFactory),
+				resourceMappings());
 
-		return Arrays.asList(pageableResolver(), sortResolver(), serverHttpRequestMethodArgumentResolver(),
-				repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
+		HateoasPageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
+		HandlerMethodArgumentResolver defaultedPageableResolver = new DefaultedPageableHandlerMethodArgumentResolver(
+				pageableResolver);
+
+		return Arrays.asList(defaultedPageableResolver, pageableResolver, sortResolver(),
+				serverHttpRequestMethodArgumentResolver(), repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
 				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE,
 				peraResolver, backendIdHandlerMethodArgumentResolver());
 	}

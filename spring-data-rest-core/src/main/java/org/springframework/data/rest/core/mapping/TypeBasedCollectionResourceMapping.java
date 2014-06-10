@@ -150,6 +150,15 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		return fallback;
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getExcerptProjection()
+	 */
+	@Override
+	public Class<?> getExcerptProjection() {
+		return null;
+	}
+
 	/**
 	 * Returns the default path to be used if the path is not configured manually.
 	 * 

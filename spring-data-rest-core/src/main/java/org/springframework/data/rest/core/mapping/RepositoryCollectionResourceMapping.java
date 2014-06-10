@@ -204,4 +204,20 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 
 		return fallback;
 	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getExcerptProjection()
+	 */
+	@Override
+	public Class<?> getExcerptProjection() {
+
+		if (repositoryAnnotation == null) {
+			return null;
+		}
+
+		Class<?> excerptProjection = repositoryAnnotation.excerptProjection();
+
+		return excerptProjection.equals(RepositoryRestResource.None.class) ? null : excerptProjection;
+	}
 }

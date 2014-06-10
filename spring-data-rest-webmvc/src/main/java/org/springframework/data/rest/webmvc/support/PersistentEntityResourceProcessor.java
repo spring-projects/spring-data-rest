@@ -16,7 +16,7 @@ import org.springframework.hateoas.ResourceProcessor;
 /**
  * @author Jon Brisbin
  */
-public class PersistentEntityResourceProcessor implements ResourceProcessor<PersistentEntityResource<?>> {
+public class PersistentEntityResourceProcessor implements ResourceProcessor<PersistentEntityResource> {
 
 	private final List<DomainTypeResourceProcessor> resourceProcessors = new ArrayList<DomainTypeResourceProcessor>();
 
@@ -35,8 +35,10 @@ public class PersistentEntityResourceProcessor implements ResourceProcessor<Pers
 	}
 
 	@Override
-	public PersistentEntityResource<?> process(PersistentEntityResource<?> resource) {
+	public PersistentEntityResource process(PersistentEntityResource resource) {
+
 		Object content = resource.getContent();
+
 		if (null == content) {
 			return resource;
 		}
