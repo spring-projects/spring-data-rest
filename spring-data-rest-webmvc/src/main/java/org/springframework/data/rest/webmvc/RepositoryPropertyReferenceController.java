@@ -319,7 +319,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 					// Add to the existing collection
 					for (Link l : incoming.getLinks()) {
-						Object propVal = loadPropertyValue(prop.propertyType, l.getHref());
+						Object propVal = loadPropertyValue(prop.propertyType, l);
 						coll.add(propVal);
 					}
 
@@ -336,7 +336,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 					// Add to the existing collection
 					for (Link l : incoming.getLinks()) {
-						Object propVal = loadPropertyValue(prop.propertyType, l.getHref());
+						Object propVal = loadPropertyValue(prop.propertyType, l);
 						m.put(l.getRel(), propVal);
 					}
 
@@ -354,7 +354,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 								"Must send only 1 link to update a property reference that isn't a List or a Map.");
 					}
 
-					Object propVal = loadPropertyValue(prop.propertyType, incoming.getLinks().get(0).getHref());
+					Object propVal = loadPropertyValue(prop.propertyType, incoming.getLinks().get(0));
 					prop.wrapper.setProperty(prop.property, propVal);
 				}
 
@@ -431,8 +431,9 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		return ControllerUtils.toEmptyResponse(HttpStatus.NO_CONTENT);
 	}
 
-	private Object loadPropertyValue(Class<?> type, String href) {
+	private Object loadPropertyValue(Class<?> type, Link link) {
 
+		String href = link.expand().getHref();
 		String id = href.substring(href.lastIndexOf('/') + 1);
 		return conversionService.convert(id, type);
 	}
