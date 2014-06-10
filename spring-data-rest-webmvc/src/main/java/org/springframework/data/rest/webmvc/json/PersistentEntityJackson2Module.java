@@ -38,6 +38,7 @@ import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.mapping.LinkCollectingAssociationHandler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -324,7 +325,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static class UriStringDeserializer extends StdDeserializer<Object> {
+	static class UriStringDeserializer extends StdDeserializer<Object> {
 
 		private static final long serialVersionUID = -2175900204153350125L;
 
@@ -353,10 +354,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		@Override
 		public Object deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
-			String uriString = jp.getValueAsString();
+			URI uri = new UriTemplate(jp.getValueAsString()).expand();
 			TypeDescriptor typeDescriptor = TypeDescriptor.valueOf(property.getActualType());
 
-			return converter.convert(URI.create(uriString), URI_DESCRIPTOR, typeDescriptor);
+			return converter.convert(uri, URI_DESCRIPTOR, typeDescriptor);
 		}
 	}
 
