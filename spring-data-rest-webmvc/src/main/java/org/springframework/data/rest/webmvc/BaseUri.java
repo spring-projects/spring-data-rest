@@ -23,7 +23,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -87,7 +86,6 @@ public class BaseUri {
 	private String getRepositoryLookupPath(HttpServletRequest request) {
 
 		String lookupPath = URL_PATH_HELPER.getLookupPathForRequest(request);
-		lookupPath = new UriTemplate(lookupPath).expand().toString();
 		return getRepositoryLookupPath(lookupPath);
 	}
 
