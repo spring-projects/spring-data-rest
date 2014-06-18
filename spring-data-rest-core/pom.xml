@@ -16,9 +16,9 @@
 	</parent>
 	
 	<properties>
-		<spring.hateoas>0.9.0.RELEASE</spring.hateoas>
+		<spring.hateoas>0.13.0.RELEASE</spring.hateoas>
 		<springplugin>1.0.0.RELEASE</springplugin>
-		<evoinflector>1.0.1</evoinflector>
+		<evoinflector>1.2</evoinflector>
 	</properties>
 	
 	<dependencies>
