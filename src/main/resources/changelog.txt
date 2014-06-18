@@ -1,6 +1,20 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.0.3.RELEASE (2014-06-18)
+---------------------------------------------
+* DATAREST-322 - Release 2.0.3.
+* DATAREST-318 - BaseUri does not strip template variables correctly if invoked with NativeWebRequest.
+* DATAREST-316 - UriStringDeserializer should guard against URI templates submitted.
+* DATAREST-311 - executeSearchCompact - Mismatch argument name and path variable name.
+* DATAREST-305 - Enable Java 8 build in maven configuration.
+* DATAREST-301 - Illegal character '{' in URL when using projection and PUT request.
+* DATAREST-300 - Request processing shouldn't fail for unexpanded URI templates.
+* DATAREST-298 - "rel" attribute of @RestResource should be optional.
+* DATAREST-292 - Reconfiguring baseUri isn't enough to change path to resolve URI links.
+* DATAREST-276 - 500 returned if URL ends with /.
+
+
 Changes in version 2.1.0.RELEASE (2014-05-20)
 ---------------------------------------------
 * DATAREST-307 - Root mapping not discovered on Tomcat.
