@@ -32,6 +32,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.domain.jpa.Author;
 import org.springframework.data.rest.core.domain.jpa.CreditCard;
 import org.springframework.data.rest.core.domain.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.core.domain.jpa.Person;
@@ -63,7 +64,7 @@ public class ResourceMappingsIntegrationTests {
 
 	@Test
 	public void detectsAllMappings() {
-		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(6)));
+		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(8)));
 	}
 
 	@Test
@@ -138,5 +139,26 @@ public class ResourceMappingsIntegrationTests {
 
 		assertThat(methodNames, hasSize(3));
 		assertThat(methodNames, hasItems("findByFirstName", "findByCreatedGreaterThan", "findByCreatedUsingISO8601Date"));
+	}
+
+	/**
+	 * @see DATAREST-325
+	 */
+	@Test
+	public void exposesMethodResourceMappingInPackageProtectedButExportedRepo() {
+
+		ResourceMetadata metadata = mappings.getMappingFor(Author.class);
+		assertThat(metadata.isExported(), is(true));
+
+		SearchResourceMappings searchMappings = metadata.getSearchResourceMappings();
+
+		assertThat(searchMappings.isExported(), is(true));
+		assertThat(searchMappings.getMappedMethod("findByFirstnameContaining"), is(notNullValue()));
+
+		for (MethodResourceMapping methodMapping : searchMappings) {
+
+			System.out.println(methodMapping.getMethod().getName());
+			assertThat(methodMapping.isExported(), is(true));
+		}
 	}
 }
