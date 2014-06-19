@@ -274,6 +274,8 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 */
 	@SuppressWarnings("unchecked")
 	private <T> T invoke(Method method, Object... arguments) {
+
+		ReflectionUtils.makeAccessible(method);
 		return (T) ReflectionUtils.invokeMethod(method, repository, arguments);
 	}
 

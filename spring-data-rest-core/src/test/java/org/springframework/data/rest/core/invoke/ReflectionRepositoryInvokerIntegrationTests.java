@@ -19,9 +19,11 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +35,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.AbstractIntegrationTests;
+import org.springframework.data.rest.core.domain.jpa.Author;
 import org.springframework.data.rest.core.domain.jpa.Order;
 import org.springframework.data.rest.core.domain.jpa.OrderRepository;
 import org.springframework.data.rest.core.domain.jpa.Person;
@@ -118,5 +121,22 @@ public class ReflectionRepositoryInvokerIntegrationTests extends AbstractIntegra
 		assertThat(result, is(instanceOf(Page.class)));
 		Page<?> page = (Page<?>) result;
 		assertThat(page.getNumberOfElements(), is(1));
+	}
+
+	/**
+	 * @see DATAREST-325
+	 */
+	@Test
+	public void invokesMethodOnPackageProtectedRepository() throws Exception {
+
+		Object authorRepository = repositories.getRepositoryFor(Author.class);
+		RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(Author.class);
+		Method method = repositoryInformation.getRepositoryInterface().getMethod("findByFirstnameContaining", String.class);
+
+		Map<String, String[]> parameters = Collections.singletonMap("firstname", new String[] { "Oliver" });
+
+		ReflectionRepositoryInvoker invoker = new ReflectionRepositoryInvoker(authorRepository, information,
+				conversionService);
+		invoker.invokeQueryMethod(method, parameters, null, null);
 	}
 }
