@@ -27,5 +27,5 @@ Here are some ways for you to get involved in the community:
 Before we accept a non-trivial patch or pull request we will need you to sign the [contributor's agreement](https://support.springsource.com/spring_committer_signup).  Signing the contributor's agreement does not grant anyone commit rights to the main repository, but it does mean that we can accept your contributions, and you will get an author credit if we do.  Active contributors might be asked to join the core team, and given the ability to merge pull requests.
 
 ### Note
-We disabled the github issues since we want to use [JIRA](https://jira.springsource.org/browse/DATAREST) as the only only issue tracker.
+We disabled the github issues since we want to use [JIRA](https://jira.springsource.org/browse/DATAREST) as the only issue tracker.
 All open existing issues have been automatically imported into JIRA, so nothing was lost :)
