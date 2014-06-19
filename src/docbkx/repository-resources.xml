@@ -21,7 +21,7 @@
     <para>For this repository, Spring Data REST exposes a collection resource
     at <code>/orders</code>. The path is derived from the uncapitalized,
     pluralized, simple class name of the domain class being managed. It also
-    exposes a an item resource for each of the items managed by te repository
+    exposes an item resource for each of the items managed by the repository
     under the URI template <uri>/orders/{id}</uri>. </para>
 
     <para>By default the HTTP methods to interact with these resources map to
