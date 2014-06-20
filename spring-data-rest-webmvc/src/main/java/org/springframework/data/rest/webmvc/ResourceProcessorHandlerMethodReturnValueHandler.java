@@ -386,7 +386,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static class ResourcesProcessorWrapper extends DefaultProcessorWrapper {
+	static class ResourcesProcessorWrapper extends DefaultProcessorWrapper {
 
 		/**
 		 * Creates a new {@link ResourcesProcessorWrapper} for the given {@link ResourceProcessor}.
@@ -419,9 +419,9 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		 * @param target that target {@link TypeInformation}.
 		 * @return
 		 */
-		private static boolean isValueTypeMatch(Resources<?> resources, TypeInformation<?> target) {
+		static boolean isValueTypeMatch(Resources<?> resources, TypeInformation<?> target) {
 
-			if (resources == null || !Resources.class.equals(resources.getClass())) {
+			if (resources == null) {
 				return false;
 			}
 
@@ -437,7 +437,9 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 				return false;
 			}
 
-			TypeInformation<?> resourceTypeInformation = target.getSuperTypeInformation(Resources.class).getComponentType();
+			Class<?> resourcesType = resources.getClass();
+
+			TypeInformation<?> resourceTypeInformation = target.getSuperTypeInformation(resourcesType).getComponentType();
 			return ResourceProcessorWrapper.isValueTypeMatch((Resource<?>) element, resourceTypeInformation);
 		}
 	}
