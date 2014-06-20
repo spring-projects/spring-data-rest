@@ -36,8 +36,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.MethodParameter;
+import org.springframework.data.rest.core.projection.ProxyProjectionFactory;
+import org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.ResourcesProcessorWrapper;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.Resources;
@@ -61,6 +68,8 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	static final Resource<String> FOO = new Resource<String>("foo");
 	static final Resources<Resource<String>> FOOS = new Resources<Resource<String>>(Collections.singletonList(FOO));
+	static final PagedResources<Resource<String>> FOO_PAGE = new PagedResources<Resource<String>>(
+			Collections.singleton(FOO), new PageMetadata(1, 0, 10));
 	static final StringResource FOO_RES = new StringResource("foo");
 	static final HttpEntity<Resource<String>> FOO_ENTITY = new HttpEntity<Resource<String>>(FOO);
 	static final ResponseEntity<Resource<String>> FOO_RESP_ENTITY = new ResponseEntity<Resource<String>>(FOO,
@@ -205,6 +214,33 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 				Mockito.any(ModelAndViewContainer.class), Mockito.any(NativeWebRequest.class));
 	}
 
+	/**
+	 * @see DATAREST-331
+	 */
+	@Test
+	public void resourcesProcessorMatchesValueSubTypes() {
+
+		TypeInformation<?> type = ClassTypeInformation.from(PagedStringResources.class);
+		assertThat(ResourcesProcessorWrapper.isValueTypeMatch(FOO_PAGE, type), is(true));
+	}
+
+	/**
+	 * @see DATAREST-331
+	 */
+	@Test
+	public void invokesProcessorsForProjection() throws Exception {
+
+		ProjectionProcessor projectionProcessor = new ProjectionProcessor();
+		resourceProcessors.add(projectionProcessor);
+
+		ProxyProjectionFactory factory = new ProxyProjectionFactory(new DefaultListableBeanFactory());
+		SampleProjection projection = factory.createProjection(new Sample(), SampleProjection.class);
+		Resource<SampleProjection> resource = new Resource<SampleProjection>(projection);
+
+		invokeReturnValueHandler("object", is(resource), resource);
+		assertThat(projectionProcessor.invoked, is(true));
+	}
+
 	// Helpers ---------------------------------------------------------//
 	private void invokeReturnValueHandler(String method, final Matcher<?> matcher, Object returnValue) throws Exception {
 		final MethodParameter methodParam = METHOD_PARAMS.get(method);
@@ -317,4 +353,25 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		}
 	}
 
+	static class PagedStringResources extends PagedResources<Resource<String>> {};
+
+	static class Sample {
+
+	}
+
+	static interface SampleProjection {
+
+	}
+
+	static class ProjectionProcessor implements ResourceProcessor<Resource<SampleProjection>> {
+
+		boolean invoked = false;
+
+		@Override
+		public Resource<SampleProjection> process(Resource<SampleProjection> resource) {
+
+			this.invoked = true;
+			return resource;
+		}
+	}
 }
