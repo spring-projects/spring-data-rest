@@ -19,16 +19,17 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy.*;
 
+import java.util.Arrays;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.domain.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.core.domain.jpa.Person;
-import org.springframework.data.rest.core.domain.jpa.PersonRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -42,8 +43,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 public class DomainObjectMergerTests {
 
-	@Autowired PersonRepository personRepository;
 	@Autowired ConfigurableApplicationContext context;
+
+	DomainObjectMerger merger;
+
+	@Before
+	public void setUp() {
+		this.merger = new DomainObjectMerger(new Repositories(context.getBeanFactory()), new DefaultConversionService());
+	}
 
 	/**
 	 * @see DATAREST-130
@@ -51,17 +58,13 @@ public class DomainObjectMergerTests {
 	@Test
 	public void mergeNewValue() {
 
-		Repositories repositories = new Repositories(context.getBeanFactory());
-		ConversionService conversionService = new DefaultConversionService();
-
 		Person incoming = new Person("Bilbo", "Baggins");
 		Person existingDomainObject = new Person("Frodo", "Baggins");
 
-		DomainObjectMerger merger = new DomainObjectMerger(repositories, conversionService);
 		merger.merge(incoming, existingDomainObject, APPLY_NULLS);
 
-		assertThat(existingDomainObject.getFirstName(), equalTo(incoming.getFirstName()));
-		assertThat(existingDomainObject.getLastName(), equalTo(incoming.getLastName()));
+		assertThat(existingDomainObject.getFirstName(), is(incoming.getFirstName()));
+		assertThat(existingDomainObject.getLastName(), is(incoming.getLastName()));
 	}
 
 	/**
@@ -70,16 +73,28 @@ public class DomainObjectMergerTests {
 	@Test
 	public void mergeNullValue() {
 
-		Repositories repositories = new Repositories(context.getBeanFactory());
-		ConversionService conversionService = new DefaultConversionService();
-
 		Person incoming = new Person(null, null);
 		Person existingDomainObject = new Person("Frodo", "Baggins");
 
-		DomainObjectMerger merger = new DomainObjectMerger(repositories, conversionService);
 		merger.merge(incoming, existingDomainObject, APPLY_NULLS);
 
-		assertThat(existingDomainObject.getFirstName(), equalTo(incoming.getFirstName()));
-		assertThat(existingDomainObject.getLastName(), equalTo(incoming.getLastName()));
+		assertThat(existingDomainObject.getFirstName(), is(incoming.getFirstName()));
+		assertThat(existingDomainObject.getLastName(), is(incoming.getLastName()));
+	}
+
+	/**
+	 * @see DATAREST-327
+	 */
+	@Test
+	public void doesNotMergeEmptyCollectionsForReferences() {
+
+		Person bilbo = new Person("Bilbo", "Baggins");
+
+		Person frodo = new Person("Frodo", "Baggins");
+		frodo.setSiblings(Arrays.asList(bilbo));
+
+		merger.merge(new Person("Sam", null), frodo, IGNORE_NULLS);
+
+		assertThat(frodo.getSiblings(), is(not(emptyIterable())));
 	}
 }
