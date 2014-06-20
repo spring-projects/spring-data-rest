@@ -112,11 +112,35 @@ public class DomainObjectMerger {
 				PersistentProperty<?> persistentProperty = association.getInverse();
 				Object fromVal = fromWrapper.getProperty(persistentProperty);
 
-				if (fromVal != null && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
+				if (!isNullOrEmpty(fromVal) && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
 					targetWrapper.setProperty(persistentProperty, fromVal);
 				}
 			}
 		});
+	}
+
+	/**
+	 * Returns whether the given source is {@literal null} or considered empty, which means it's an {@link Iterable} or
+	 * array and doesn't have any elements.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @return
+	 */
+	static boolean isNullOrEmpty(Object source) {
+
+		if (source == null) {
+			return true;
+		}
+
+		if (source instanceof Iterable) {
+			return !((Iterable<?>) source).iterator().hasNext();
+		}
+
+		if (ObjectUtils.isArray(source)) {
+			return ObjectUtils.isEmpty((Object[]) source);
+		}
+
+		return false;
 	}
 
 	/**
