@@ -421,7 +421,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		 */
 		private static boolean isValueTypeMatch(Resources<?> resources, TypeInformation<?> target) {
 
-			if (resources == null || !Resources.class.equals(resources.getClass())) {
+			if (resources == null || !Resources.class.isAssignableFrom(resources.getClass())) {
 				return false;
 			}
 
@@ -437,8 +437,8 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 				return false;
 			}
 
-			TypeInformation<?> resourceTypeInformation = target.getSuperTypeInformation(Resources.class).getComponentType();
-			return ResourceProcessorWrapper.isValueTypeMatch((Resource<?>) element, resourceTypeInformation);
+            TypeInformation<?> resourceTypeInformation = target.getSuperTypeInformation(Resources.class).getComponentType();
+            return ResourceProcessorWrapper.isValueTypeMatch((Resource<?>) element, resourceTypeInformation);
 		}
 	}
 
