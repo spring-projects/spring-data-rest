@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.geo.Distance;
@@ -118,8 +120,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * Any XML files located in the classpath under the {@literal META-INF/spring-data-rest/} path will be automatically
  * found and loaded into this {@link org.springframework.context.ApplicationContext}.
  * 
- * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Jon Brisbin
  */
 @Configuration
 @EnableHypermediaSupport(type = HypermediaType.HAL)
@@ -136,7 +138,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Autowired ListableBeanFactory beanFactory;
 
-	@Autowired(required = false) List<ResourceProcessor<?>> resourceProcessors = Collections.emptyList();
 	@Autowired(required = false) List<BackendIdConverter> idConverters = Collections.emptyList();
 
 	@Autowired(required = false) RelProvider relProvider;
@@ -253,7 +254,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @return
 	 */
 	@Bean
-	public AnnotatedHandlerBeanPostProcessor annotatedHandlerBeanPostProcessor() {
+	public static AnnotatedHandlerBeanPostProcessor annotatedHandlerBeanPostProcessor() {
 		return new AnnotatedHandlerBeanPostProcessor();
 	}
 
@@ -441,13 +442,23 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @return
 	 */
 	@Bean
+	@SuppressWarnings("rawtypes")
 	public RequestMappingHandlerAdapter repositoryExporterHandlerAdapter() {
 
 		List<HttpMessageConverter<?>> messageConverters = defaultMessageConverters();
 		configureHttpMessageConverters(messageConverters);
 
+		Collection<ResourceProcessor> beans = beanFactory.getBeansOfType(ResourceProcessor.class, false, false).values();
+		List<ResourceProcessor<?>> processors = new ArrayList<ResourceProcessor<?>>(beans.size());
+
+		for (ResourceProcessor<?> bean : beans) {
+			processors.add(bean);
+		}
+
+		AnnotationAwareOrderComparator.sort(processors);
+
 		RepositoryRestHandlerAdapter handlerAdapter = new RepositoryRestHandlerAdapter(defaultMethodArgumentResolvers(),
-				resourceProcessors);
+				processors);
 		handlerAdapter.setMessageConverters(messageConverters);
 
 		return handlerAdapter;
