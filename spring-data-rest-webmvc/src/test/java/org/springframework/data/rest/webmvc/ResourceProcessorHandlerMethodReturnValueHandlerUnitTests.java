@@ -37,10 +37,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.MethodParameter;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.Resources;
+import org.springframework.data.domain.Page;
+import org.springframework.hateoas.*;
 import org.springframework.hateoas.mvc.HeaderLinksResponseEntity;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -61,7 +59,8 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	static final Resource<String> FOO = new Resource<String>("foo");
 	static final Resources<Resource<String>> FOOS = new Resources<Resource<String>>(Collections.singletonList(FOO));
-	static final StringResource FOO_RES = new StringResource("foo");
+    static final PagedResources<Resource<String>> PAGED_FOOS = new PagedResources<Resource<String>>(Collections.singletonList(FOO), new PagedResources.PageMetadata(1,0,1));
+    static final StringResource FOO_RES = new StringResource("foo");
 	static final HttpEntity<Resource<String>> FOO_ENTITY = new HttpEntity<Resource<String>>(FOO);
 	static final ResponseEntity<Resource<String>> FOO_RESP_ENTITY = new ResponseEntity<Resource<String>>(FOO,
 			HttpStatus.OK);
@@ -141,6 +140,30 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 		invokeReturnValueHandler("resources", is(BARS), FOOS);
 	}
+
+    @Test
+    public void postProcessesStringPagedResources() throws Exception {
+        resourceProcessors.add(StringResourcesProcessor.INSTANCE);
+        resourceProcessors.add(LongResourceProcessor.INSTANCE);
+
+        invokeReturnValueHandler("pagedResources", is(BARS), PAGED_FOOS);
+    }
+
+    @Test
+    public void postProcessesStrings() throws Exception {
+        resourceProcessors.add(StringResourcesProcessor.INSTANCE);
+        resourceProcessors.add(LongResourceProcessor.INSTANCE);
+
+        invokeReturnValueHandler("strings", is(BARS), FOOS);
+    }
+
+    @Test
+    public void postProcessesStringsPage() throws Exception {
+        resourceProcessors.add(StringResourcesProcessor.INSTANCE);
+        resourceProcessors.add(LongResourceProcessor.INSTANCE);
+
+        invokeReturnValueHandler("pagedStrings", is(BARS), PAGED_FOOS);
+    }
 
 	@Test
 	public void postProcessesSpecializedStringResource() throws Exception {
@@ -278,6 +301,8 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 		Resources<Resource<String>> resources();
 
+        PagedResources<Resource<String>> pagedResources();
+
 		Resource<String> resource();
 
 		Resource<Long> longResource();
@@ -285,6 +310,10 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		StringResource specializedResource();
 
 		Object object();
+
+        List<String> strings();
+
+        Page<String> pagedStrings();
 
 		HttpEntity<Resource<?>> resourceEntity();
 
