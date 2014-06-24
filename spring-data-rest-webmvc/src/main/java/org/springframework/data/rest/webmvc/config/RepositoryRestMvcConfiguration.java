@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,11 +35,14 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ImportAware;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoModule;
@@ -120,6 +124,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * 
  * @author Oliver Gierke
  * @author Jon Brisbin
+ * @author Greg Turnquist
  */
 @Configuration
 @EnableHypermediaSupport(type = HypermediaType.HAL)
@@ -127,7 +132,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 		includeFilters = @Filter(RepositoryRestController.class), useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 @Import(SpringDataJacksonConfiguration.class)
-public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration {
+public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration implements ImportAware {
 
 	private static final boolean IS_JPA_AVAILABLE = ClassUtils.isPresent("javax.persistence.EntityManager",
 			RepositoryRestMvcConfiguration.class.getClassLoader());
@@ -139,6 +144,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Autowired(required = false) RelProvider relProvider;
 	@Autowired(required = false) CurieProvider curieProvider;
 
+	private String baseUri = null;
+
 	@Bean
 	public Repositories repositories() {
 		return new Repositories(beanFactory);
@@ -147,6 +154,18 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public RepositoryRelProvider repositoryRelProvider(ObjectFactory<ResourceMappings> resourceMappings) {
 		return new RepositoryRelProvider(resourceMappings);
+	}
+
+	@Override
+	public void setImportMetadata(AnnotationMetadata metadata) {
+
+		AnnotationAttributes attributes = AnnotationAttributes.fromMap(metadata
+				.getAnnotationAttributes(EnableRestRepositories.class.getCanonicalName(),
+						true));
+
+		if (attributes != null) {
+			this.baseUri = attributes.getString("baseUri");
+		}
 	}
 
 	@Bean
@@ -225,6 +244,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		RepositoryRestConfiguration config = new RepositoryRestConfiguration(configuration);
 		configureRepositoryRestConfiguration(config);
+		if (this.baseUri != null) {
+			config.setBaseUri(URI.create(this.baseUri));
+		}
 		return config;
 	}
 
