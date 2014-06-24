@@ -35,7 +35,6 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
@@ -81,7 +80,6 @@ import org.springframework.data.rest.webmvc.support.DefaultedPageableHandlerMeth
 import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.data.rest.webmvc.support.ValidationExceptionHandler;
 import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
@@ -131,8 +129,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @Import(SpringDataJacksonConfiguration.class)
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration {
 
-	private static final boolean IS_JAVAX_VALIDATION_AVAILABLE = ClassUtils.isPresent(
-			"javax.validation.ConstraintViolationException", RepositoryRestMvcConfiguration.class.getClassLoader());
 	private static final boolean IS_JPA_AVAILABLE = ClassUtils.isPresent("javax.persistence.EntityManager",
 			RepositoryRestMvcConfiguration.class.getClassLoader());
 
@@ -204,16 +200,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		ValidatingRepositoryEventListener listener = new ValidatingRepositoryEventListener(repositories);
 		configureValidatingRepositoryEventListener(listener);
 		return listener;
-	}
-
-	@Bean
-	@Lazy
-	public ValidationExceptionHandler validationExceptionHandler() {
-		if (IS_JAVAX_VALIDATION_AVAILABLE) {
-			return new ValidationExceptionHandler();
-		} else {
-			return null;
-		}
 	}
 
 	@Bean

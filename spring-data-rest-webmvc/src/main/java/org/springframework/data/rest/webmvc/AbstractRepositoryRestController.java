@@ -25,7 +25,6 @@ import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -37,7 +36,6 @@ import org.springframework.data.rest.core.RepositoryConstraintViolationException
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.ExceptionMessage;
 import org.springframework.data.rest.webmvc.support.RepositoryConstraintViolationExceptionMessage;
-import org.springframework.data.rest.webmvc.support.ValidationExceptionHandler;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
@@ -47,7 +45,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -60,9 +57,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 class AbstractRepositoryRestController implements MessageSourceAware {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractRepositoryRestController.class);
-
-	@Autowired(required = false) private ValidationExceptionHandler handler;
-	@Autowired(required = false) private PlatformTransactionManager txMgr;
 
 	private final PagedResourcesAssembler<Object> pagedResourcesAssembler;
 	private MessageSourceAccessor messageSourceAccessor;
