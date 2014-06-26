@@ -18,6 +18,9 @@ package org.springframework.data.rest.webmvc.config;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.util.Date;
+import java.util.Locale;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,6 +34,8 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.format.datetime.DateFormatter;
 import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.hateoas.core.DefaultRelProvider;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -38,6 +43,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 
 /**
  * Integration tests for basic application bootstrapping (general configuration related checks).
@@ -102,6 +108,25 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(params.get("mySize").get(0), is("7000"));
 	}
 
+	/**
+	 * @see DATAREST-336
+	 */
+	@Test
+	public void objectMapperRendersDatesInIsoByDefault() throws Exception {
+
+		Sample sample = new Sample();
+		sample.date = new Date();
+
+		ObjectMapper mapper = context.getBean("objectMapper", ObjectMapper.class);
+
+		DateFormatter formatter = new DateFormatter();
+		formatter.setIso(ISO.DATE_TIME);
+
+		Object result = JsonPath.read(mapper.writeValueAsString(sample), "$.date");
+		assertThat(result, is(instanceOf(String.class)));
+		assertThat(result, is((Object) formatter.print(sample.date, Locale.US)));
+	}
+
 	@Configuration
 	static class ExtendingConfiguration extends RepositoryRestMvcConfiguration {
 
@@ -119,5 +144,10 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 			config.setLimitParamName("mySize");
 			config.setSortParamName("mySort");
 		}
+	}
+
+	static class Sample {
+
+		public Date date;
 	}
 }

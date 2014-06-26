@@ -589,6 +589,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		// Our special PersistentEntityResource Module
 		objectMapper.registerModule(persistentEntityJackson2Module());
 		objectMapper.registerModule(geoModule);
