@@ -439,7 +439,13 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 
 			Class<?> resourcesType = resources.getClass();
 
-			TypeInformation<?> resourceTypeInformation = target.getSuperTypeInformation(resourcesType).getComponentType();
+			TypeInformation<?> superTypeInformation = target.getSuperTypeInformation(resourcesType);
+
+			if (superTypeInformation == null) {
+				return false;
+			}
+
+			TypeInformation<?> resourceTypeInformation = superTypeInformation.getComponentType();
 			return ResourceProcessorWrapper.isValueTypeMatch((Resource<?>) element, resourceTypeInformation);
 		}
 	}

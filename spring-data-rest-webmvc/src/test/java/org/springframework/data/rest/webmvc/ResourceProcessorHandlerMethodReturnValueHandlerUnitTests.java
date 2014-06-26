@@ -241,6 +241,20 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		assertThat(projectionProcessor.invoked, is(true));
 	}
 
+	/**
+	 * @see DATAREST-331
+	 */
+	@Test
+	public void doesNotMatchOnNonMatchingResourcesTypes() throws Exception {
+
+		Resource<Object> resource = new Resource<Object>(new Object());
+		PagedResources<Resource<Object>> pagedResources = new PagedResources<Resource<Object>>(
+				Collections.singleton(resource), new PageMetadata(1, 0, 10));
+
+		TypeInformation<?> type = ClassTypeInformation.from(RepositoryLinksResource.class);
+		assertThat(ResourcesProcessorWrapper.isValueTypeMatch(pagedResources, type), is(false));
+	}
+
 	// Helpers ---------------------------------------------------------//
 	private void invokeReturnValueHandler(String method, final Matcher<?> matcher, Object returnValue) throws Exception {
 		final MethodParameter methodParam = METHOD_PARAMS.get(method);
