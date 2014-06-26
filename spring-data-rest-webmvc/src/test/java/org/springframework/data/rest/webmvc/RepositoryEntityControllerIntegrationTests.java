@@ -17,6 +17,8 @@ package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.rest.webmvc.WebTestUtils.*;
+import static org.springframework.http.HttpMethod.*;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
@@ -113,7 +116,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		Address address = repository.save(new Address());
 
-		ResponseEntity<?> entity = controller.headItemResource(getResourceInformation(Address.class), address.id);
+		ResponseEntity<?> entity = controller.headForItemResource(getResourceInformation(Address.class), address.id);
 		assertThat(entity.getStatusCode(), is(HttpStatus.NO_CONTENT));
 	}
 
@@ -122,6 +125,36 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	 */
 	@Test(expected = ResourceNotFoundException.class)
 	public void doesNotExposeHeadForItemResourceIfNotExisting() throws Exception {
-		controller.headItemResource(getResourceInformation(CreditCard.class), 1L);
+		controller.headForItemResource(getResourceInformation(CreditCard.class), 1L);
+	}
+
+	/**
+	 * @see DATAREST-333
+	 */
+	@Test
+	public void doesNotExposeMethodsForOptionsIfNotHttpMethodsSupportedForCollectionResource() {
+
+		HttpEntity<?> response = controller.optionsForCollectionResource(getResourceInformation(Address.class));
+		assertAllowHeaders(response, OPTIONS);
+	}
+
+	/**
+	 * @see DATAREST-333
+	 */
+	@Test
+	public void exposesSupportedHttpMethodsInAllowHeaderForOptionsRequestToCollectionResource() {
+
+		HttpEntity<?> response = controller.optionsForCollectionResource(getResourceInformation(Person.class));
+		assertAllowHeaders(response, GET, POST, HEAD, OPTIONS);
+	}
+
+	/**
+	 * @see DATAREST-333
+	 */
+	@Test
+	public void exposesSupportedHttpMethodsInAllowHeaderForOptionsRequestToItemResource() {
+
+		HttpEntity<?> response = controller.optionsForItemResource(getResourceInformation(Person.class));
+		assertAllowHeaders(response, GET, PUT, PATCH, DELETE, HEAD, OPTIONS);
 	}
 }

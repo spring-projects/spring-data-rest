@@ -102,11 +102,28 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	/**
+	 * <code>OPTIONS /{repository}</code>.
+	 * 
+	 * @param information
+	 * @return
+	 * @since 2.2
+	 */
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.OPTIONS)
+	public ResponseEntity<?> optionsForCollectionResource(RootResourceInformation information) {
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAllow(information.getSupportedMethods(ResourceType.COLLECTION));
+
+		return new ResponseEntity<Object>(headers, HttpStatus.OK);
+	}
+
+	/**
 	 * <code>HEAD /{repository}</code>
 	 * 
 	 * @param resourceInformation
 	 * @return
 	 * @throws HttpRequestMethodNotSupportedException
+	 * @since 2.2
 	 */
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.HEAD)
 	public ResponseEntity<?> headCollectionResource(RootResourceInformation resourceInformation)
@@ -215,15 +232,32 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	/**
+	 * <code>OPTIONS /{repository}/{id}<code>
+	 * 
+	 * @param information
+	 * @return
+	 * @since 2.2
+	 */
+	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.OPTIONS)
+	public ResponseEntity<?> optionsForItemResource(RootResourceInformation information) {
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAllow(information.getSupportedMethods(ResourceType.ITEM));
+
+		return new ResponseEntity<Object>(headers, HttpStatus.OK);
+	}
+
+	/**
 	 * <code>HEAD /{repsoitory}/{id}</code>
 	 * 
 	 * @param resourceInformation
 	 * @param id
 	 * @return
 	 * @throws HttpRequestMethodNotSupportedException
+	 * @since 2.2
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.HEAD)
-	public ResponseEntity<?> headItemResource(RootResourceInformation resourceInformation, @BackendId Serializable id)
+	public ResponseEntity<?> headForItemResource(RootResourceInformation resourceInformation, @BackendId Serializable id)
 			throws HttpRequestMethodNotSupportedException {
 
 		if (getItemResource(resourceInformation, id) != null) {

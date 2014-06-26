@@ -20,6 +20,7 @@ import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,8 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -86,6 +89,24 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		this.entityLinks = entityLinks;
 		this.mappings = mappings;
 		this.assembler = assembler;
+	}
+
+	/**
+	 * <code>OPTIONS /{repository}/search</code>.
+	 * 
+	 * @param resourceInformation
+	 * @return
+	 * @since 2.2
+	 */
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.OPTIONS)
+	public HttpEntity<?> optionsForSearches(RootResourceInformation resourceInformation) {
+
+		verifySearchesExposed(resourceInformation);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAllow(Collections.singleton(HttpMethod.GET));
+
+		return new ResponseEntity<Object>(headers, HttpStatus.OK);
 	}
 
 	/**
@@ -188,11 +209,31 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	}
 
 	/**
+	 * <code>OPTIONS /{repository}/search/{search}</code>.
+	 * 
+	 * @param information
+	 * @param search
+	 * @return
+	 * @since 2.2
+	 */
+	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.OPTIONS)
+	public ResponseEntity<Object> optionsForSearch(RootResourceInformation information, @PathVariable String search) {
+
+		checkExecutability(information, search);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAllow(Collections.singleton(HttpMethod.GET));
+
+		return new ResponseEntity<Object>(headers, HttpStatus.OK);
+	}
+
+	/**
 	 * Handles a {@code HEAD} request for individual searches.
 	 * 
 	 * @param information
 	 * @param search
 	 * @return
+	 * @since 2.2
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.HEAD)
 	public ResponseEntity<Object> headForSearch(RootResourceInformation information, @PathVariable String search) {

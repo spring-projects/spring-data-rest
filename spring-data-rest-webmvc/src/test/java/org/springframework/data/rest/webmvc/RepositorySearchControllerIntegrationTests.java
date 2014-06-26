@@ -15,14 +15,16 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.rest.webmvc.WebTestUtils.*;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.ResourceTester.HasSelfLink;
+import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
@@ -30,6 +32,8 @@ import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.TestDataPopulator;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
@@ -134,5 +138,33 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	@Test(expected = ResourceNotFoundException.class)
 	public void doesNotExposeHeadForInvalidQueryMethodResource() {
 		controller.headForSearch(getResourceInformation(Person.class), "foobar");
+	}
+
+	/**
+	 * @see DATAREST-333
+	 */
+	@Test
+	public void searchResourceSupportsGetOnly() {
+		assertAllowHeaders(controller.optionsForSearches(getResourceInformation(Person.class)), HttpMethod.GET);
+	}
+
+	/**
+	 * @see DATAREST-333
+	 */
+	@Test(expected = ResourceNotFoundException.class)
+	public void returns404ForOptionsForRepositoryWithoutSearches() {
+		controller.optionsForSearches(getResourceInformation(Address.class));
+	}
+
+	/**
+	 * @see DATAREST-333
+	 */
+	@Test
+	public void queryMethodResourceSupportsGetOnly() {
+
+		RootResourceInformation resourceInformation = getResourceInformation(Person.class);
+		HttpEntity<Object> response = controller.optionsForSearch(resourceInformation, "firstname");
+
+		assertAllowHeaders(response, HttpMethod.GET);
 	}
 }

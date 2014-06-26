@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.webmvc.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
+import org.atteo.evo.inflector.English;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,15 +58,15 @@ public class RootResourceInformationUnitTests {
 	}
 
 	/**
-	 * @see DATAREST-217
+	 * @see DATAREST-217, DATAREST-330
 	 */
 	@Test
 	public void defaultsSupportedHttpMethodsForItemResource() {
 
-		assertThat(information.getSupportedMethods(ResourceType.ITEM), hasItems(GET, PUT, PATCH, DELETE));
+		assertThat(information.getSupportedMethods(ResourceType.ITEM), hasItems(GET, PUT, PATCH, DELETE, OPTIONS));
 		assertThat(information.getSupportedMethods(ResourceType.ITEM), not(hasItems(POST)));
 
-		assertThat(information.getSupportedMethods(COLLECTION), hasItems(GET, POST));
+		assertThat(information.getSupportedMethods(COLLECTION), hasItems(GET, POST, OPTIONS));
 		assertThat(information.getSupportedMethods(COLLECTION), not(hasItems(PUT, PATCH, DELETE)));
 
 	}

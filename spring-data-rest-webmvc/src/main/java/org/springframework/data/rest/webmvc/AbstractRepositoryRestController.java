@@ -45,6 +45,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.util.Assert;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -61,7 +62,14 @@ class AbstractRepositoryRestController implements MessageSourceAware {
 	private final PagedResourcesAssembler<Object> pagedResourcesAssembler;
 	private MessageSourceAccessor messageSourceAccessor;
 
+	/**
+	 * Creates a new {@link AbstractRepositoryRestController} for the given {@link PagedResourcesAssembler}.
+	 * 
+	 * @param pagedResourcesAssembler must not be {@literal null}.
+	 */
 	public AbstractRepositoryRestController(PagedResourcesAssembler<Object> pagedResourcesAssembler) {
+
+		Assert.notNull(pagedResourcesAssembler, "PagedResourcesAssembler must not be null!");
 		this.pagedResourcesAssembler = pagedResourcesAssembler;
 	}
 

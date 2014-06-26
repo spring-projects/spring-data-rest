@@ -80,7 +80,7 @@ public class RootResourceInformation {
 	 * @param resourcType must not be {@literal null}.
 	 * @return
 	 */
-	public Collection<HttpMethod> getSupportedMethods(ResourceType resourcType) {
+	public Set<HttpMethod> getSupportedMethods(ResourceType resourcType) {
 
 		Assert.notNull(resourcType, "Resource type must not be null!");
 
@@ -89,6 +89,7 @@ public class RootResourceInformation {
 		}
 
 		Set<HttpMethod> methods = new HashSet<HttpMethod>();
+		methods.add(HttpMethod.OPTIONS);
 
 		switch (resourcType) {
 			case COLLECTION:

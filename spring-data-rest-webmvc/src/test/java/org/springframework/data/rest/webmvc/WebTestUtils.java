@@ -15,6 +15,12 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -34,5 +40,13 @@ public class WebTestUtils {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		ServletRequestAttributes requestAttributes = new ServletRequestAttributes(request);
 		RequestContextHolder.setRequestAttributes(requestAttributes);
+	}
+
+	public static void assertAllowHeaders(HttpEntity<?> response, HttpMethod... methods) {
+
+		HttpHeaders headers = response.getHeaders();
+
+		assertThat(headers.getAllow(), hasSize(methods.length));
+		assertThat(headers.getAllow(), hasItems(methods));
 	}
 }
