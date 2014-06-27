@@ -61,6 +61,7 @@ import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.deser.std.CollectionDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerBuilder;
@@ -186,7 +187,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * 
 	 * @author Oliver Gierke
 	 */
-	private static class AssociationOmittingSerializerModifier extends BeanSerializerModifier {
+	static class AssociationOmittingSerializerModifier extends BeanSerializerModifier {
 
 		private final PersistentEntities entities;
 		private final RepositoryRestConfiguration configuration;
@@ -200,7 +201,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @param associationLinks must not be {@literal null}.
 		 * @param configuration must not be {@literal null}.
 		 */
-		private AssociationOmittingSerializerModifier(PersistentEntities entities, AssociationLinks associationLinks,
+		public AssociationOmittingSerializerModifier(PersistentEntities entities, AssociationLinks associationLinks,
 				RepositoryRestConfiguration configuration) {
 
 			Assert.notNull(entities, "PersistentEntities must not be null!");
@@ -231,7 +232,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			for (BeanPropertyWriter writer : builder.getProperties()) {
 
 				// Skip exported associations
-				PersistentProperty<?> persistentProperty = entity.getPersistentProperty(writer.getName());
+				PersistentProperty<?> persistentProperty = findProperty(writer.getName(), entity, beanDesc);
 
 				if (persistentProperty == null) {
 					continue;
@@ -252,6 +253,27 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			builder.setProperties(result);
 
 			return builder;
+		}
+
+		/**
+		 * Returns the {@link PersistentProperty} for the property with the given final name (the name that it will be
+		 * rendered under eventually).
+		 * 
+		 * @param finalName the output name the property will be rendered under.
+		 * @param entity the {@link PersistentEntity} to find the property on.
+		 * @param description the Jackson {@link BeanDescription}.
+		 * @return
+		 */
+		private PersistentProperty<?> findProperty(String finalName, PersistentEntity<?, ?> entity,
+				BeanDescription description) {
+
+			for (BeanPropertyDefinition definition : description.findProperties()) {
+				if (definition.getName().equals(finalName)) {
+					return entity.getPersistentProperty(definition.getInternalName());
+				}
+			}
+
+			return null;
 		}
 	}
 
