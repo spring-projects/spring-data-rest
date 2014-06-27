@@ -203,8 +203,11 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	public void invokeDelete(Serializable id) {
 
 		Method method = methods.getDeleteMethod();
+		Class<?> parameterType = method.getParameterTypes()[0];
 
-		if (method.getParameterTypes()[0].equals(Serializable.class)) {
+		if (parameterType.equals(information.getIdType())) {
+			invoke(method, id);
+		} else if (parameterType.equals(Serializable.class)) {
 			invoke(method, convertId(id));
 		} else {
 			invoke(method, invokeFindOne(id));
