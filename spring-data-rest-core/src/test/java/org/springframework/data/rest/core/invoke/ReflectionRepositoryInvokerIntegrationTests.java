@@ -17,6 +17,7 @@ package org.springframework.data.rest.core.invoke;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -25,13 +26,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+
+import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.repository.support.MongoRepositoryFactoryBean;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.AbstractIntegrationTests;
@@ -52,6 +61,7 @@ public class ReflectionRepositoryInvokerIntegrationTests extends AbstractIntegra
 	@Autowired ConversionService conversionService;
 	@Autowired PersonRepository repository;
 	@Autowired OrderRepository orderRepository;
+	@Autowired EntityManager em;
 
 	RepositoryInformation information;
 	RepositoryInvoker invoker;
@@ -138,5 +148,36 @@ public class ReflectionRepositoryInvokerIntegrationTests extends AbstractIntegra
 		ReflectionRepositoryInvoker invoker = new ReflectionRepositoryInvoker(authorRepository, information,
 				conversionService);
 		invoker.invokeQueryMethod(method, parameters, null, null);
+	}
+
+	/**
+	 * @see DATAREST-335
+	 */
+	@Test
+	public void invokesOverriddenDeleteMethodCorrectly() {
+
+		MyRepo repository = mock(MyRepo.class);
+
+		MongoRepositoryFactoryBean<MyRepo, Object, ObjectId> factory = new MongoRepositoryFactoryBean<MyRepo, Object, ObjectId>();
+		factory.setMongoOperations(new MongoTemplate(mock(MongoDbFactory.class)));
+		factory.setRepositoryInterface(MyRepo.class);
+		factory.setLazyInit(true);
+		factory.afterPropertiesSet();
+
+		ObjectId id = new ObjectId();
+
+		ReflectionRepositoryInvoker invoker = new ReflectionRepositoryInvoker(repository,
+				factory.getRepositoryInformation(), conversionService);
+		invoker.invokeDelete(id);
+
+		verify((CustomRepo) repository, times(1)).delete(id);
+		verify(repository, times(0)).findOne(Matchers.any(ObjectId.class));
+
+	}
+
+	interface MyRepo extends CustomRepo, CrudRepository<Object, ObjectId> {}
+
+	interface CustomRepo {
+		void delete(ObjectId id);
 	}
 }
