@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -32,6 +33,7 @@ import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.jayway.jsonpath.JsonPath;
 
 /**
  * Unit tests for {@link PersistentEntityJackson2Module}.
@@ -43,27 +45,59 @@ public class PersistentEntityJackson2ModuleUnitTests {
 
 	@Mock AssociationLinks associationLinks;
 
-	/**
-	 * @see DATAREST-328, DATAREST-320
-	 */
-	@Test
-	public void doesNotDropPropertiesWithCustomizedNames() throws Exception {
+	ObjectMapper mapper;
+
+	@Before
+	public void setUp() {
 
 		MongoMappingContext mappingContext = new MongoMappingContext();
 		mappingContext.getPersistentEntity(Sample.class);
+		mappingContext.getPersistentEntity(SampleWithAdditionalGetters.class);
+
 		PersistentEntities persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
 
 		SimpleModule module = new SimpleModule();
 		module.setSerializerModifier(new PersistentEntityJackson2Module.AssociationOmittingSerializerModifier(
 				persistentEntities, associationLinks, new RepositoryRestConfiguration()));
 
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.registerModule(module);
+		this.mapper = new ObjectMapper();
+		this.mapper.registerModule(module);
+	}
 
-		assertThat(mapper.writeValueAsString(new Sample()), is(notNullValue()));
+	/**
+	 * @see DATAREST-328, DATAREST-320
+	 */
+	@Test
+	public void doesNotDropPropertiesWithCustomizedNames() throws Exception {
+
+		Sample sample = new Sample();
+		sample.name = "bar";
+
+		String result = mapper.writeValueAsString(sample);
+
+		assertThat(JsonPath.read(result, "$.foo"), is((Object) "bar"));
+	}
+
+	/**
+	 * @see DATAREST-340
+	 */
+	@Test
+	public void rendersAdditionalJsonPropertiesNotBackedByAPersistentField() throws Exception {
+
+		SampleWithAdditionalGetters sample = new SampleWithAdditionalGetters();
+
+		String result = mapper.writeValueAsString(sample);
+		assertThat(JsonPath.read(result, "$.number"), is((Object) 5));
 	}
 
 	static class Sample {
 		public @JsonProperty("foo") String name;
+	}
+
+	static class SampleWithAdditionalGetters extends Sample {
+
+		public int getNumber() {
+			return 5;
+		}
 	}
 }
