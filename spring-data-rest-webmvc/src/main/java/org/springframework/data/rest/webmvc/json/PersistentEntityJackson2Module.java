@@ -235,6 +235,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				PersistentProperty<?> persistentProperty = findProperty(writer.getName(), entity, beanDesc);
 
 				if (persistentProperty == null) {
+					result.add(writer);
 					continue;
 				}
 
