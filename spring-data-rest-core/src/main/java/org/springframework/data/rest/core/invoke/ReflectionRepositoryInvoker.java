@@ -17,6 +17,7 @@ package org.springframework.data.rest.core.invoke;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -200,14 +201,14 @@ class ReflectionRepositoryInvoker implements RepositoryInvoker {
 	 * @see org.springframework.data.rest.core.invoke.RepositoryInvoker#invokeDelete(java.io.Serializable)
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public void invokeDelete(Serializable id) {
 
 		Method method = methods.getDeleteMethod();
 		Class<?> parameterType = method.getParameterTypes()[0];
+		List<Class<? extends Serializable>> idTypes = Arrays.asList(information.getIdType(), Serializable.class);
 
-		if (parameterType.equals(information.getIdType())) {
-			invoke(method, id);
-		} else if (parameterType.equals(Serializable.class)) {
+		if (idTypes.contains(parameterType)) {
 			invoke(method, convertId(id));
 		} else {
 			invoke(method, invokeFindOne(id));

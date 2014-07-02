@@ -151,7 +151,7 @@ public class ReflectionRepositoryInvokerIntegrationTests extends AbstractIntegra
 	}
 
 	/**
-	 * @see DATAREST-335
+	 * @see DATAREST-335, DATAREST-346
 	 */
 	@Test
 	public void invokesOverriddenDeleteMethodCorrectly() {
@@ -168,7 +168,9 @@ public class ReflectionRepositoryInvokerIntegrationTests extends AbstractIntegra
 
 		ReflectionRepositoryInvoker invoker = new ReflectionRepositoryInvoker(repository,
 				factory.getRepositoryInformation(), conversionService);
-		invoker.invokeDelete(id);
+
+		// We must assume a non matching type here as clients might provide the raw ID value obtained from the request
+		invoker.invokeDelete(id.toString());
 
 		verify((CustomRepo) repository, times(1)).delete(id);
 		verify(repository, times(0)).findOne(Matchers.any(ObjectId.class));
