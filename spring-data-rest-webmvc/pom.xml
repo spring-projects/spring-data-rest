@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<artifactId>spring-data-rest-webmvc</artifactId>
 
 	<name>Spring Data REST - WebMVC</name>
@@ -14,48 +14,48 @@
 		<version>2.2.0.BUILD-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	
+
 	<properties>
 		<jsonpath>0.8.1</jsonpath>
 	</properties>
-	
+
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>spring-data-rest-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<version>3.0.1</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- Optional store specifics -->
-		
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-orm</artifactId>
 			<optional>true</optional>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
 			<artifactId>hibernate-jpa-2.0-api</artifactId>
 			<version>1.0.1.Final</version>
 			<optional>true</optional>
 		</dependency>
-		
+
 		<!-- Jackson -->
-		
+
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
@@ -67,25 +67,25 @@
 			<artifactId>jackson-annotations</artifactId>
 			<version>${jackson}</version>
 		</dependency>
-		
+
 		<!-- Jackson Hibernate -->
-		
+
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-hibernate4</artifactId>
 			<version>${jackson}</version>
 			<optional>true</optional>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
 			<version>${hibernate.version}</version>
 			<optional>true</optional>
 		</dependency>
-		
+
 		<!-- Jackson JodaTime -->
-		
+
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-joda</artifactId>
@@ -102,14 +102,14 @@
 		</dependency>
 
 		<!-- Test dependencies -->
-		
+
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
 			<version>${jsonpath}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
 
 </project>
