@@ -81,7 +81,7 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
 		String lookupPath = baseUri.getRepositoryLookupPath(webRequest);
-		String repositoryKey = UriUtils.findMappingVariable("repository", parameter, lookupPath);
+		String repositoryKey = UriUtils.findMappingVariable("repository", parameter.getMethod(), lookupPath);
 
 		if (!hasText(repositoryKey)) {
 			return null;

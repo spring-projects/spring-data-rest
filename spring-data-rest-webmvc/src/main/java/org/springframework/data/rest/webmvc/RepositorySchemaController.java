@@ -60,7 +60,7 @@ class RepositorySchemaController {
 	@RequestMapping(value = BASE_MAPPING + "/schema", method = GET, produces = { "application/schema+json" })
 	public HttpEntity<JsonSchema> schema(RootResourceInformation resourceInformation) {
 
-		JsonSchema schema = jsonSchemaConverter.convert(resourceInformation.getPersistentEntity().getType());
+		JsonSchema schema = jsonSchemaConverter.convert(resourceInformation.getDomainType());
 		return new ResponseEntity<JsonSchema>(schema, HttpStatus.OK);
 	}
 }

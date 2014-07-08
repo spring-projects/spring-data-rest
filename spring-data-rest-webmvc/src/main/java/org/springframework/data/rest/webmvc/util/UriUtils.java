@@ -15,9 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.util;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
-import org.springframework.core.MethodParameter;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -38,12 +38,12 @@ public abstract class UriUtils {
 	 * @param request
 	 * @return
 	 */
-	public static String findMappingVariable(String variable, MethodParameter parameter, String lookupPath) {
+	public static String findMappingVariable(String variable, Method method, String lookupPath) {
 
 		Assert.hasText(variable, "Variable name must not be null or empty!");
-		Assert.notNull(parameter, "Method parameter must not be null!");
+		Assert.notNull(method, "Method must not be null!");
 
-		RequestMapping annotation = parameter.getMethodAnnotation(RequestMapping.class);
+		RequestMapping annotation = method.getAnnotation(RequestMapping.class);
 
 		for (String mapping : annotation.value()) {
 

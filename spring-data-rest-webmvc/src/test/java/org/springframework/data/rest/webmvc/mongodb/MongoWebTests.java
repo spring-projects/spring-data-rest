@@ -26,9 +26,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
+import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.hateoas.Link;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
+
+import com.jayway.jsonpath.JsonPath;
 
 /**
  * Integration tests for MongoDB repositories.
@@ -113,5 +117,34 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 
 		MockHttpServletResponse response = request(countByTypeLink.expand("Twitter"));
 		assertThat(response.getContentAsString(), is("1"));
+	}
+
+	@Test
+	public void testname() throws Exception {
+
+		Link usersLink = discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel("self", request(usersLink));
+
+		MockHttpServletResponse response = patchAndGet(userLink,
+				"{\"lastname\" : null, \"address\" : { \"zipCode\" : \"ZIP\"}}", MediaType.APPLICATION_JSON);
+
+		assertThat(JsonPath.read(response.getContentAsString(), "$.lastname"), is(nullValue()));
+		assertThat(JsonPath.read(response.getContentAsString(), "$.address.zipCode"), is((Object) "ZIP"));
+	}
+
+	@Test
+	public void testname2() throws Exception {
+
+		Link usersLink = discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel("self", request(usersLink));
+
+		MockHttpServletResponse response = patchAndGet(userLink,
+				"[{ \"op\": \"replace\", \"path\": \"/address/zipCode\", \"value\": \"ZIP\" },"
+				// + "{ \"op\": \"replace\", \"path\": \"/lastname\", \"value\": null }]", //
+						+ "{ \"op\": \"remove\", \"path\": \"/lastname\" }]", //
+				RestMediaTypes.JSON_PATCH_JSON);
+
+		assertThat(JsonPath.read(response.getContentAsString(), "$.lastname"), is(nullValue()));
+		assertThat(JsonPath.read(response.getContentAsString(), "$.address.zipCode"), is((Object) "ZIP"));
 	}
 }

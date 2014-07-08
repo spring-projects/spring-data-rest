@@ -15,10 +15,14 @@
  */
 package org.springframework.data.rest.webmvc.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Scanner;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.rest.webmvc.jpa.JpaWebTests;
+import org.springframework.util.Assert;
 
 /**
  * Test helper methods.
@@ -45,5 +49,16 @@ public class TestUtils {
 		}
 
 		return builder.toString();
+	}
+
+	/**
+	 * Returns the given {@link String} as {@link InputStream}.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @return
+	 */
+	public static InputStream asStream(String source) {
+		Assert.notNull(source, "Source string must not be null!");
+		return new ByteArrayInputStream(source.getBytes(Charset.forName("UTF-8")));
 	}
 }

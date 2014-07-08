@@ -77,12 +77,12 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+	public Serializable resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest request, WebDataBinderFactory binderFactory) throws Exception {
 
 		Class<?> parameterType = parameter.getParameterType();
 
-		if (!parameterType.equals(Serializable.class)) {
+		if (parameter.getMethodAnnotation(BackendId.class) != null && !parameterType.equals(Serializable.class)) {
 			throw new IllegalArgumentException(String.format(
 					"Method parameter for @%s must be of type %s! Got %s for method %s.", BackendId.class.getSimpleName(),
 					Serializable.class.getSimpleName(), parameterType.getSimpleName(), parameter.getMethod()));
@@ -97,6 +97,7 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 
 		BackendIdConverter pluginFor = idConverters.getPluginFor(metadata.getDomainType(), DefaultIdConverter.INSTANCE);
 		String lookupPath = baseUri.getRepositoryLookupPath(request);
-		return pluginFor.fromRequestId(UriUtils.findMappingVariable("id", parameter, lookupPath), metadata.getDomainType());
+		return pluginFor.fromRequestId(UriUtils.findMappingVariable("id", parameter.getMethod(), lookupPath),
+				metadata.getDomainType());
 	}
 }

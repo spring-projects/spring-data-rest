@@ -15,7 +15,6 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy.*;
 import static org.springframework.http.HttpMethod.*;
 
 import java.io.Serializable;
@@ -41,8 +40,6 @@ import org.springframework.data.rest.core.event.BeforeSaveEvent;
 import org.springframework.data.rest.core.invoke.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
-import org.springframework.data.rest.core.support.DomainObjectMerger;
-import org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy;
 import org.springframework.data.rest.webmvc.support.BackendId;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
@@ -75,21 +72,19 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	private final RepositoryEntityLinks entityLinks;
 	private final RepositoryRestConfiguration config;
 	private final ConversionService conversionService;
-	private final DomainObjectMerger domainObjectMerger;
 
 	private ApplicationEventPublisher publisher;
 
 	@Autowired
 	public RepositoryEntityController(Repositories repositories, RepositoryRestConfiguration config,
 			RepositoryEntityLinks entityLinks, PagedResourcesAssembler<Object> assembler,
-			@Qualifier("defaultConversionService") ConversionService conversionService, DomainObjectMerger domainObjectMerger) {
+			@Qualifier("defaultConversionService") ConversionService conversionService) {
 
 		super(assembler);
 
 		this.entityLinks = entityLinks;
 		this.config = config;
 		this.conversionService = conversionService;
-		this.domainObjectMerger = domainObjectMerger;
 	}
 
 	/*
@@ -305,18 +300,15 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PUT, ResourceType.ITEM);
 
-		Object domainObject = conversionService.convert(id, resourceInformation.getDomainType());
+		// Force ID on unmarshalled object
+		BeanWrapper<Object> incomingWrapper = BeanWrapper.create(payload.getContent(), conversionService);
+		incomingWrapper.setProperty(payload.getPersistentEntity().getIdProperty(), id);
+
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
+		Object objectToSave = incomingWrapper.getBean();
 
-		if (domainObject == null) {
-
-			BeanWrapper<Object> incomingWrapper = BeanWrapper.create(payload.getContent(), conversionService);
-			incomingWrapper.setProperty(payload.getPersistentEntity().getIdProperty(), id);
-
-			return createAndReturn(incomingWrapper.getBean(), invoker, assembler);
-		}
-
-		return mergeAndReturn(payload.getContent(), domainObject, invoker, PUT, assembler);
+		return invoker.invokeFindOne(id) == null ? createAndReturn(objectToSave, invoker, assembler) : saveAndReturn(
+				objectToSave, invoker, PUT, assembler);
 	}
 
 	/**
@@ -336,13 +328,11 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PATCH, ResourceType.ITEM);
 
-		Object domainObject = conversionService.convert(id, resourceInformation.getDomainType());
-
-		if (domainObject == null) {
+		if (resourceInformation.getInvoker().invokeFindOne(id) == null) {
 			throw new ResourceNotFoundException();
 		}
 
-		return mergeAndReturn(payload.getContent(), domainObject, resourceInformation.getInvoker(), PATCH, assembler);
+		return saveAndReturn(payload.getContent(), resourceInformation.getInvoker(), PATCH, assembler);
 	}
 
 	/**
@@ -379,11 +369,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @param httpMethod
 	 * @return
 	 */
-	private ResponseEntity<ResourceSupport> mergeAndReturn(Object incoming, Object domainObject,
-			RepositoryInvoker invoker, HttpMethod httpMethod, PersistentEntityResourceAssembler assembler) {
-
-		NullHandlingPolicy nullPolicy = httpMethod.equals(PATCH) ? IGNORE_NULLS : APPLY_NULLS;
-		domainObjectMerger.merge(incoming, domainObject, nullPolicy);
+	private ResponseEntity<ResourceSupport> saveAndReturn(Object domainObject, RepositoryInvoker invoker,
+			HttpMethod httpMethod, PersistentEntityResourceAssembler assembler) {
 
 		publisher.publishEvent(new BeforeSaveEvent(domainObject));
 		Object obj = invoker.invokeSave(domainObject);

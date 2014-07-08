@@ -66,10 +66,12 @@ import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
+import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.convert.StringToDistanceConverter;
 import org.springframework.data.rest.webmvc.convert.StringToPointConverter;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
+import org.springframework.data.rest.webmvc.json.DomainObjectReader;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
@@ -312,7 +314,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		List<HttpMessageConverter<?>> messageConverters = defaultMessageConverters();
 		configureHttpMessageConverters(messageConverters);
 
-		return new PersistentEntityResourceHandlerMethodArgumentResolver(messageConverters, repoRequestArgumentResolver());
+		return new PersistentEntityResourceHandlerMethodArgumentResolver(messageConverters, repoRequestArgumentResolver(),
+				backendIdHandlerMethodArgumentResolver(), new DomainObjectReader(persistentEntities(), resourceMappings()));
 	}
 
 	/**
@@ -360,9 +363,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public MappingJackson2HttpMessageConverter jacksonHttpMessageConverter() {
 
 		List<MediaType> mediaTypes = new ArrayList<MediaType>();
-		mediaTypes.addAll(Arrays.asList(MediaType.valueOf("application/schema+json"),
-				MediaType.valueOf("application/x-spring-data-verbose+json"),
-				MediaType.valueOf("application/x-spring-data-compact+json")));
+		mediaTypes.addAll(Arrays.asList(RestMediaTypes.SCHEMA_JSON, //
+				RestMediaTypes.JSON_PATCH_JSON, RestMediaTypes.MERGE_PATCH_JSON, //
+				RestMediaTypes.SPRING_DATA_VERBOSE_JSON, RestMediaTypes.SPRING_DATA_COMPACT_JSON));
 
 		// Configure this mapper to be used if HAL is not the default media type
 		if (!config().useHalAsDefaultJsonMediaType()) {
