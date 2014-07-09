@@ -19,6 +19,7 @@ import static org.springframework.http.HttpMethod.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,6 +54,7 @@ import org.springframework.hateoas.UriTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,6 +70,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
 
 	private static final String BASE_MAPPING = "/{repository}";
+	private static final List<String> ACCEPT_PATCH_HEADERS = Arrays.asList(//
+			RestMediaTypes.MERGE_PATCH_JSON.toString(), //
+			RestMediaTypes.JSON_PATCH_JSON.toString(), //
+			MediaType.APPLICATION_JSON_VALUE);
 
 	private final RepositoryEntityLinks entityLinks;
 	private final RepositoryRestConfiguration config;
@@ -238,6 +244,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAllow(information.getSupportedMethods(ResourceType.ITEM));
+		headers.put("Accept-Patch", ACCEPT_PATCH_HEADERS);
 
 		return new ResponseEntity<Object>(headers, HttpStatus.OK);
 	}

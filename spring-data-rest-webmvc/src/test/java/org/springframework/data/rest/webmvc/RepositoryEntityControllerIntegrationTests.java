@@ -20,6 +20,8 @@ import static org.junit.Assert.*;
 import static org.springframework.data.rest.webmvc.WebTestUtils.*;
 import static org.springframework.http.HttpMethod.*;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -32,6 +34,7 @@ import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
@@ -156,5 +159,22 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		HttpEntity<?> response = controller.optionsForItemResource(getResourceInformation(Person.class));
 		assertAllowHeaders(response, GET, PUT, PATCH, DELETE, HEAD, OPTIONS);
+	}
+
+	/**
+	 * @see DATAREST-333, DATAREST-348
+	 */
+	@Test
+	public void optionsForItermResourceSetsAllowPatchHeader() {
+
+		ResponseEntity<?> entity = controller.optionsForItemResource(getResourceInformation(Person.class));
+
+		List<String> value = entity.getHeaders().get("Accept-Patch");
+
+		assertThat(value, hasSize(3));
+		assertThat(value, hasItems(//
+				RestMediaTypes.JSON_PATCH_JSON.toString(), //
+				RestMediaTypes.MERGE_PATCH_JSON.toString(), //
+				MediaType.APPLICATION_JSON_VALUE));
 	}
 }
