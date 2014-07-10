@@ -1,6 +1,38 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.2.0.M1 (2014-07-10)
+----------------------------------------
+* DATAREST-352 - Remove links to forum.spring.io.
+* DATAREST-351 - Upgrade to Evo Inflector 1.2 to stay Java 6 compatible.
+* DATAREST-350 - Release 2.2 M1.
+* DATAREST-348 - Add support for application/json-patch+json and application/merge-patch+json.
+* DATAREST-346 - ReflectionRepositoryInvoker doesn't apply conversion on invocation of an overridden delete(…) method.
+* DATAREST-345 - Nulling out fields doesn't work on PATCH requests.
+* DATAREST-343 - Fix Jackson dependency setup.
+* DATAREST-341 - Upgrade to Spring HATEOAS 0.14.0.RELEASE.
+* DATAREST-340 - Non-persistent properties not rendered.
+* DATAREST-336 - Default mapping setup to render ISO8601 dates by default.
+* DATAREST-335 - Overriding repositories delete method results in "argument type mismatch" exception.
+* DATAREST-333 - Handle OPTIONS request for CORS.
+* DATAREST-331 - Improvements in ResourceProcessorHandlerMethodReturnValueHandler.
+* DATAREST-330 - Resources should support HEAD method.
+* DATAREST-329 - RepositoryRestMvcConfiguration causes eager initialization of beans.
+* DATAREST-328 - Serialization errors if type contains only renamed properties.
+* DATAREST-327 - Collection references are removed on PUT and PATCH if defaulted to empty collections.
+* DATAREST-325 - ReflectionRepositoryInvoker fails to invoke non-public methods.
+* DATAREST-324 - Fix typos.
+* DATAREST-323 - Clean up README and docbook text.
+* DATAREST-320 - Fields with @JsonProperty are ignored on serialization.
+* DATAREST-318 - BaseUri does not strip template variables correctly if invoked with NativeWebRequest.
+* DATAREST-317 - Add support for excerpt projections.
+* DATAREST-316 - UriStringDeserializer should guard against URI templates submitted.
+* DATAREST-311 - executeSearchCompact - Mismatch argument name and path variable name.
+* DATAREST-230 - Add the ability to expose an ALPS resource for service documentation.
+* DATAREST-212 - Update documentation to reflect new way of parsing sorting options.
+* DATAREST-182 - PlatformTransactionManager can't be autowired if more than one available in ApplicationContext.
+
+
 Changes in version 2.1.1.RELEASE (2014-06-30)
 ---------------------------------------------
 * DATAREST-341 - Upgrade to Spring HATEOAS 0.14.0.RELEASE.
