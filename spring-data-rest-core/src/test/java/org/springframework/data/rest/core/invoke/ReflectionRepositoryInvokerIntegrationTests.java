@@ -158,7 +158,7 @@ public class ReflectionRepositoryInvokerIntegrationTests extends AbstractIntegra
 
 		MyRepo repository = mock(MyRepo.class);
 
-		MongoRepositoryFactoryBean<MyRepo, Object, ObjectId> factory = new MongoRepositoryFactoryBean<MyRepo, Object, ObjectId>();
+		MongoRepositoryFactoryBean<MyRepo, Domain, ObjectId> factory = new MongoRepositoryFactoryBean<MyRepo, Domain, ObjectId>();
 		factory.setMongoOperations(new MongoTemplate(mock(MongoDbFactory.class)));
 		factory.setRepositoryInterface(MyRepo.class);
 		factory.setLazyInit(true);
@@ -177,7 +177,9 @@ public class ReflectionRepositoryInvokerIntegrationTests extends AbstractIntegra
 
 	}
 
-	interface MyRepo extends CustomRepo, CrudRepository<Object, ObjectId> {}
+	interface MyRepo extends CustomRepo, CrudRepository<Domain, ObjectId> {}
+
+	interface Domain {}
 
 	interface CustomRepo {
 		void delete(ObjectId id);
