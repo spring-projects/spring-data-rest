@@ -326,6 +326,10 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
 		Object domainObj = invoker.invokeFindOne(id);
 
+		if (domainObj == null) {
+			throw new ResourceNotFoundException();
+		}
+
 		publisher.publishEvent(new BeforeDeleteEvent(domainObj));
 		invoker.invokeDelete(id);
 		publisher.publishEvent(new AfterDeleteEvent(domainObj));
