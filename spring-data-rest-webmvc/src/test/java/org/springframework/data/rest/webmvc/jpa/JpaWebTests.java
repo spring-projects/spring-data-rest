@@ -546,6 +546,18 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	}
 
 	/**
+	 * @see DATAREST-353
+	 */
+	@Test
+	public void returns404WhenTryingToDeleteANonExistingResource() throws Exception {
+
+		Link authorsLink = discoverUnique("authors");
+
+		mvc.perform(delete(authorsLink.getHref().concat("/{id}"), 4711)).//
+				andExpect(status().isNotFound());
+	}
+
+	/**
 	 * Asserts the {@link Person} resource the given link points to contains siblings with the given names.
 	 * 
 	 * @param link
