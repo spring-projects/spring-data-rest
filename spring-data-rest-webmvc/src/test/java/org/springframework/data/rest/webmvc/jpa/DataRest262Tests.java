@@ -24,7 +24,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
+
+import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -117,9 +120,37 @@ public class DataRest262Tests {
 
 		String result = mapper.writeValueAsString(resource);
 
+		System.out.println(result);
+
 		assertThat(JsonPath.read(result, "$_links.self"), is(notNullValue()));
 		assertThat(JsonPath.read(result, "$_links.airport"), is(notNullValue()));
 		assertThat(JsonPath.read(result, "$_links.originOrDestinationAirport"), is(notNullValue()));
+	}
+
+	@Test
+	public void serializeCircularReference() throws IOException, InterruptedException {
+
+		Order order = new Order();
+		order.name = "Shopping basket #1";
+		order.id = 1L;
+		//relatedOrder.lineItems = new ArrayList<LineItem>();
+
+		LineItem lineItem = new LineItem();
+		lineItem.description = "iPhone case";
+		lineItem.target = order;
+
+		//relatedOrder.lineItems.add(lineItem);
+		order.lineItem = lineItem;
+
+		JpaPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(Order.class);
+
+		Resource<Object> resource = PersistentEntityResource.build(order, persistentEntity).//
+				withLink(new Link("/api/relatedOrder/" + order.id)).//
+				build();
+
+		String result = mapper.writeValueAsString(resource);
+
+		System.out.println(result);
 	}
 
 	public interface AircraftMovementRepository extends CrudRepository<AircraftMovement, Long> {
@@ -127,6 +158,10 @@ public class DataRest262Tests {
 	}
 
 	public interface AirportRepository extends CrudRepository<Airport, Long> {
+
+	}
+
+	public interface OrderRepository extends CrudRepository<Order, Long> {
 
 	}
 
@@ -140,11 +175,29 @@ public class DataRest262Tests {
 
 	@Embeddable
 	public static class FlightPart {
+
 		@ManyToOne Airport airport;
 	}
 
 	@Entity(name = "airport")
 	public static class Airport {
+
 		@Id @GeneratedValue Long id;
+	}
+
+	@Entity(name = "system")
+	public static class Order {
+
+		@Id @GeneratedValue Long id;
+		String name;
+		// Change lineItem to List<LineItem>, and the whole field gets dropped
+		@Embedded LineItem lineItem;
+	}
+
+	@Embeddable
+	public static class LineItem {
+
+		@OneToOne Order target;
+		String description;
 	}
 }
