@@ -35,7 +35,7 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.json.JsonSchema.ArrayProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.Property;
-import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.AssociationValueLinks;
 import org.springframework.data.rest.webmvc.mapping.LinkCollectingAssociationHandler;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.EntityLinks;
@@ -144,8 +144,10 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		Link link = entityLinks.linkToCollectionResource(persistentEntity.getType()).expand();
 
-		LinkCollectingAssociationHandler associationHandler = new LinkCollectingAssociationHandler(repositories, new Path(
-				link.getHref()), new AssociationLinks(mappings));
+		AssociationValueLinks valueLinks = new AssociationValueLinks(mappings, repositories, entityLinks);
+
+		LinkCollectingAssociationHandler associationHandler = new LinkCollectingAssociationHandler(valueLinks, new Path(
+				link.getHref()));
 		persistentEntity.doWithAssociations(associationHandler);
 
 		jsonSchema.add(associationHandler.getLinks());

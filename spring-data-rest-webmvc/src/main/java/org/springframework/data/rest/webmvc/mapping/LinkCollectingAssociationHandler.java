@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.mapping.Association;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.rest.core.Path;
 import org.springframework.hateoas.Link;
@@ -39,29 +39,37 @@ public class LinkCollectingAssociationHandler implements SimpleAssociationHandle
 
 	private static final String AMBIGUOUS_ASSOCIATIONS = "Detected multiple association links with same relation type! Disambiguate association %s using @RestResource!";
 
-	private final PersistentEntities entities;
-	private final AssociationLinks associationLinks;
-	private final Path basePath;
+	private final AssociationValueLinks associationValueLinks;
 
+	private final Path basePath;
+	private final Object object;
 	private final List<Link> links;
 
 	/**
 	 * Creates a new {@link LinkCollectingAssociationHandler} for the given {@link PersistentEntities}, {@link Path} and
 	 * {@link AssociationLinks}.
 	 * 
-	 * @param entities must not be {@literal null}.
-	 * @param path must not be {@literal null}.
+	 * @param entityLinks must not be {@literal null}.
 	 * @param associationLinks must not be {@literal null}.
+	 * @param path must not be {@literal null}.
 	 */
-	public LinkCollectingAssociationHandler(PersistentEntities entities, Path path, AssociationLinks associationLinks) {
+	public LinkCollectingAssociationHandler(AssociationValueLinks associationLinks, Path path) {
+		this(associationLinks, path, null);
+	}
 
-		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(path, "Path must not be null!");
+	public LinkCollectingAssociationHandler(AssociationValueLinks associationLinks, Object object) {
+		this(associationLinks, null, object);
+	}
+
+	private LinkCollectingAssociationHandler(AssociationValueLinks associationLinks, Path path, Object object) {
+
+		// Assert.notNull(entityLinks, "PersistentEntities must not be null!");
+		// Assert.notNull(path, "Path must not be null!");
 		Assert.notNull(associationLinks, "AssociationLinks must not be null!");
 
-		this.entities = entities;
-		this.associationLinks = associationLinks;
+		this.associationValueLinks = associationLinks;
 		this.basePath = path;
+		this.object = object;
 
 		this.links = new ArrayList<Link>();
 	}
@@ -84,21 +92,27 @@ public class LinkCollectingAssociationHandler implements SimpleAssociationHandle
 
 		PersistentProperty<?> property = association.getInverse();
 
-		if (associationLinks.isLinkableAssociation(property)) {
+		if (!associationValueLinks.isLinkableAssociation(property)) {
+			return;
+		}
 
-			Links existingLinks = new Links(links);
+		Links existingLinks = new Links(links);
 
-			for (Link link : associationLinks.getLinksFor(association, basePath)) {
-				if (existingLinks.hasLink(link.getRel())) {
-					throw new MappingException(String.format(AMBIGUOUS_ASSOCIATIONS, property.toString()));
-				} else {
-					links.add(link);
-				}
+		if (object != null) {
+
+			BeanWrapper<Object> wrapper = BeanWrapper.create(object, null);
+			Object associationValue = wrapper.getProperty(property);
+
+			links.addAll(associationValueLinks.getLinksFor(association, associationValue));
+			return;
+		}
+
+		for (Link link : associationValueLinks.getLinksFor(association, basePath)) {
+			if (existingLinks.hasLink(link.getRel())) {
+				throw new MappingException(String.format(AMBIGUOUS_ASSOCIATIONS, property.toString()));
+			} else {
+				links.add(link);
 			}
-
-		} else {
-			PersistentEntity<?, ?> associationEntity = entities.getPersistentEntity(property.getActualType());
-			associationEntity.doWithAssociations(this);
 		}
 	}
 }

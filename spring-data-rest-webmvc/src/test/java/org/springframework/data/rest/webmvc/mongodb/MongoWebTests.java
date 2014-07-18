@@ -44,9 +44,13 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 
 	@Autowired ProfileRepository repository;
 	@Autowired UserRepository userRepository;
+	@Autowired CountryRepository countryRepository;
 
 	@Before
 	public void populateProfiles() {
+
+		Country germany = countryRepository.save(new Country("Germany"));
+		Country usa = countryRepository.save(new Country("USA"));
 
 		Profile twitter = new Profile();
 		twitter.setPerson(1L);
@@ -58,14 +62,20 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 
 		repository.save(Arrays.asList(twitter, linkedIn));
 
-		Address address = new Address();
-		address.street = "Foo";
-		address.zipCode = "Bar";
+		Address germanAddress = new Address();
+		germanAddress.street = "Foo";
+		germanAddress.zipCode = "Bar";
+		germanAddress.country = germany;
+
+		Address usAddress = new Address();
+		usAddress.street = "Foo";
+		usAddress.zipCode = "Bar";
+		usAddress.country = usa;
 
 		User user = new User();
 		user.firstname = "Oliver";
 		user.lastname = "Gierke";
-		user.address = address;
+		user.addresses = Arrays.asList(germanAddress, usAddress);
 
 		userRepository.save(user);
 	}
@@ -74,6 +84,7 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 	public void cleanUp() {
 		repository.deleteAll();
 		userRepository.deleteAll();
+		countryRepository.deleteAll();
 	}
 
 	/* 
@@ -146,5 +157,16 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 
 		assertThat(JsonPath.read(response.getContentAsString(), "$.lastname"), is(nullValue()));
 		assertThat(JsonPath.read(response.getContentAsString(), "$.address.zipCode"), is((Object) "ZIP"));
+	}
+
+	@Test
+	public void bar() throws Exception {
+
+		Link usersLink = discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel("self", request(usersLink));
+
+		String responseBody = request(userLink).getContentAsString();
+
+		assertThat(JsonPath.read(responseBody, "$.addresses[0]._links.country.href"), is(notNullValue()));
 	}
 }

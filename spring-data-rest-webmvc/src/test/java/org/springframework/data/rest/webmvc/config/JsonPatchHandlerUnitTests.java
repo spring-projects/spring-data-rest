@@ -65,7 +65,7 @@ public class JsonPatchHandlerUnitTests {
 		this.user = new User();
 		this.user.firstname = "Oliver";
 		this.user.lastname = "Gierke";
-		this.user.address = address;
+		this.user.billingAddress = address;
 	}
 
 	/**
@@ -74,13 +74,13 @@ public class JsonPatchHandlerUnitTests {
 	@Test
 	public void appliesRemoveOperationCorrectly() throws Exception {
 
-		String input = "[{ \"op\": \"replace\", \"path\": \"/address/zipCode\", \"value\": \"ZIP\" },"
+		String input = "[{ \"op\": \"replace\", \"path\": \"/address/0/zipCode\", \"value\": \"ZIP\" },"
 				+ "{ \"op\": \"remove\", \"path\": \"/lastname\" }]";
 
 		User result = handler.applyPatch(asStream(input), user);
 
 		assertThat(result.lastname, is(nullValue()));
-		assertThat(result.address.zipCode, is("ZIP"));
+		assertThat(result.billingAddress.zipCode, is("ZIP"));
 	}
 
 	/**
@@ -89,11 +89,11 @@ public class JsonPatchHandlerUnitTests {
 	@Test
 	public void appliesMergePatchCorrectly() throws Exception {
 
-		String input = "{ \"address\" : { \"zipCode\" : \"ZIP\"}, \"lastname\" : null }";
+		String input = "{ \"addresses\" : { \"zipCode\" : \"ZIP\"}, \"lastname\" : null }";
 
 		User result = handler.applyMergePatch(asStream(input), user);
 
 		assertThat(result.lastname, is(nullValue()));
-		assertThat(result.address.zipCode, is("ZIP"));
+		assertThat(result.billingAddress.zipCode, is("ZIP"));
 	}
 }

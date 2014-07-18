@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.json;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,6 +36,7 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.AssociationValueLinks;
 import org.springframework.data.rest.webmvc.mapping.LinkCollectingAssociationHandler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
@@ -92,7 +94,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * @param converter must not be {@literal null}.
 	 */
 	public PersistentEntityJackson2Module(ResourceMappings mappings, PersistentEntities entities,
-			RepositoryRestConfiguration config, UriToEntityConverter converter) {
+			AssociationValueLinks associationValueLinks, RepositoryRestConfiguration config, UriToEntityConverter converter) {
 
 		super(new Version(2, 0, 0, null, "org.springframework.data.rest", "jackson-module"));
 
@@ -101,11 +103,9 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
 		Assert.notNull(converter, "UriToEntityConverter must not be null!");
 
-		AssociationLinks associationLinks = new AssociationLinks(mappings);
-
-		addSerializer(new PersistentEntityResourceSerializer(entities, associationLinks));
-		setSerializerModifier(new AssociationOmittingSerializerModifier(entities, associationLinks, config));
-		setDeserializerModifier(new AssociationUriResolvingDeserializerModifier(entities, converter, associationLinks));
+		addSerializer(new PersistentEntityResourceSerializer(associationValueLinks));
+		setSerializerModifier(new AssociationOmittingSerializerModifier(entities, associationValueLinks, config));
+		setDeserializerModifier(new AssociationUriResolvingDeserializerModifier(entities, converter, associationValueLinks));
 	}
 
 	/**
@@ -116,26 +116,23 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 */
 	private static class PersistentEntityResourceSerializer extends StdSerializer<PersistentEntityResource> {
 
-		private final PersistentEntities entities;
-		private final AssociationLinks associationLinks;
+		private final AssociationValueLinks associationValueLinks;
 
 		/**
 		 * Creates a new {@link PersistentEntityResourceSerializer} using the given {@link PersistentEntities} and
 		 * {@link AssociationLinks}.
 		 * 
-		 * @param entities must not be {@literal null}.
+		 * @param entityLinks must not be {@literal null}.
 		 * @param links must not be {@literal null}.
 		 */
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		private PersistentEntityResourceSerializer(PersistentEntities entities, AssociationLinks links) {
+		private PersistentEntityResourceSerializer(AssociationValueLinks associationValueLinks) {
 
 			super((Class) PersistentEntityResource.class);
 
-			Assert.notNull(entities, "PersistentEntities must not be null!");
-			Assert.notNull(links, "AssociationLinks must not be null!");
+			Assert.notNull(associationValueLinks, "AssociationLinks must not be null!");
 
-			this.associationLinks = links;
-			this.entities = entities;
+			this.associationValueLinks = associationValueLinks;
 		}
 
 		/*
@@ -150,18 +147,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				LOG.debug("Serializing PersistentEntity " + resource.getPersistentEntity());
 			}
 
-			final Link id = resource.getId();
-
-			if (id == null) {
-				throw new JsonGenerationException(String.format("No self link found resource %s!", resource));
-			}
-
 			List<Link> links = new ArrayList<Link>();
 			links.addAll(resource.getLinks());
 
-			Path basePath = new Path(id.expand().getHref());
-			LinkCollectingAssociationHandler associationHandler = new LinkCollectingAssociationHandler(entities, basePath,
-					associationLinks);
+			LinkCollectingAssociationHandler associationHandler = getAssociationHandler(resource);
 			resource.getPersistentEntity().doWithAssociations(associationHandler);
 
 			for (Link link : associationHandler.getLinks()) {
@@ -179,6 +168,19 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			};
 
 			provider.defaultSerializeValue(resourceToRender, jgen);
+		}
+
+		private LinkCollectingAssociationHandler getAssociationHandler(PersistentEntityResource resource) {
+
+			Link id = resource.getId();
+
+			if (id != null) {
+
+				Path basePath = new Path(id.expand().getHref());
+				return new LinkCollectingAssociationHandler(associationValueLinks, basePath);
+			}
+
+			return new LinkCollectingAssociationHandler(associationValueLinks, resource.getContent());
 		}
 	}
 
@@ -246,6 +248,12 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				// Skip ids unless explicitly configured to expose
 				if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(entity.getType())) {
 					continue;
+				}
+
+				if (persistentProperty.isEntity()) {
+
+					PersistentEntity<?, ?> propertyEntity = entities.getPersistentEntity(persistentProperty.getActualType());
+					writer.assignSerializer(new PersistentEntityResourceSerializerAdapter(propertyEntity));
 				}
 
 				result.add(writer);
@@ -441,6 +449,42 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			return property.isMap() ? CollectionFactory.createMap(collectionOrMapType, 0) : CollectionFactory
 					.createCollection(collectionOrMapType, 0);
+		}
+	}
+
+	private static class PersistentEntityResourceSerializerAdapter extends JsonSerializer<Object> {
+
+		private final PersistentEntity<?, ?> entity;
+
+		/**
+		 * @param entity
+		 */
+		public PersistentEntityResourceSerializerAdapter(PersistentEntity<?, ?> entity) {
+			this.entity = entity;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.JsonSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
+		 */
+		@Override
+		public void serialize(Object value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
+				JsonProcessingException {
+
+			if (value instanceof Collection) {
+
+				Collection<?> source = (Collection<?>) value;
+				Collection<Object> target = CollectionFactory.createApproximateCollection(source.getClass(), source.size());
+
+				for (Object element : source) {
+					target.add(PersistentEntityResource.build(element, entity).build());
+				}
+
+				provider.defaultSerializeValue(target, jgen);
+				return;
+			}
+
+			provider.defaultSerializeValue(PersistentEntityResource.build(value, entity).build(), jgen);
 		}
 	}
 }

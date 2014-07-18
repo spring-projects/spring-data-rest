@@ -82,6 +82,7 @@ import org.springframework.data.rest.webmvc.json.DomainObjectReader;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
+import org.springframework.data.rest.webmvc.mapping.AssociationValueLinks;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
 import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
@@ -510,8 +511,12 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public Module persistentEntityJackson2Module() {
-		return new PersistentEntityJackson2Module(resourceMappings(), persistentEntities(), config(),
-				uriToEntityConverter());
+
+		AssociationValueLinks associationValueLinks = new AssociationValueLinks(resourceMappings(), persistentEntities(),
+				entityLinks());
+
+		return new PersistentEntityJackson2Module(resourceMappings(), persistentEntities(), associationValueLinks,
+				config(), uriToEntityConverter());
 	}
 
 	/**

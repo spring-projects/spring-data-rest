@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.mongodb;
 
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 /**
  * @author Oliver Gierke
@@ -22,4 +23,5 @@ package org.springframework.data.rest.webmvc.mongodb;
 public class Address {
 
 	public String street, zipCode;
+	public @DBRef Country country;
 }

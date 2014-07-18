@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import static org.mockito.Mockito.*;
+
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +36,7 @@ import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
+import org.springframework.data.rest.webmvc.mapping.AssociationValueLinks;
 import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.RelProvider;
@@ -105,7 +108,7 @@ public class RepositoryTestsConfig {
 	@Bean
 	public Module persistentEntityModule() {
 		return new PersistentEntityJackson2Module(new RepositoryResourceMappings(config(), repositories()),
-				persistentEntities(), config(), uriToEntityConverter());
+				persistentEntities(), mock(AssociationValueLinks.class), config(), uriToEntityConverter());
 	}
 
 	@Bean

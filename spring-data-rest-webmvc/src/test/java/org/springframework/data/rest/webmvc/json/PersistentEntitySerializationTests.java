@@ -177,9 +177,11 @@ public class PersistentEntitySerializationTests {
 	@Test
 	public void serializesEmbeddedReferencesCorrectly() throws Exception {
 
+		Address address = new Address();
+		address.street = "Street";
+
 		User user = new User();
-		user.address = new Address();
-		user.address.street = "Street";
+		user.addresses = Arrays.asList(address);
 
 		PersistentEntityResource userResource = PersistentEntityResource.//
 				build(user, repositories.getPersistentEntity(User.class)).//
@@ -190,6 +192,8 @@ public class PersistentEntitySerializationTests {
 				Arrays.asList(userResource), new PageMetadata(1, 0, 10));
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
+
+		System.out.println(result);
 
 		assertThat(JsonPath.read(result, "$_embedded.users[*].address"), is(notNullValue()));
 	}
@@ -218,4 +222,5 @@ public class PersistentEntitySerializationTests {
 
 		assertThat(JsonPath.read(result, "$_embedded.orders[*].lineItems"), is(notNullValue()));
 	}
+
 }

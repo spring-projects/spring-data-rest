@@ -65,17 +65,14 @@ public class AssociationLinks {
 
 		PersistentProperty<?> property = association.getInverse();
 
-		if (isLinkableAssociation(property)) {
-
-			ResourceMapping propertyMapping = propertyMappings.getMappingFor(property);
-
-			String href = path.slash(propertyMapping.getPath()).toString();
-			String rel = propertyMapping.getRel();
-
-			return Collections.singletonList(new Link(href, rel));
+		if (!isLinkableAssociation(property)) {
+			return Collections.emptyList();
 		}
 
-		return Collections.emptyList();
+		ResourceMapping propertyMapping = propertyMappings.getMappingFor(property);
+		String href = path.slash(propertyMapping.getPath()).toString();
+
+		return Collections.singletonList(new Link(href, getPropertyRel(property)));
 	}
 
 	/**
@@ -98,5 +95,11 @@ public class AssociationLinks {
 
 		metadata = mappings.getMappingFor(property.getActualType());
 		return metadata == null ? false : metadata.isExported();
+	}
+
+	protected String getPropertyRel(PersistentProperty<?> property) {
+
+		ResourceMapping propertyMapping = propertyMappings.getMappingFor(property);
+		return propertyMapping.getRel();
 	}
 }

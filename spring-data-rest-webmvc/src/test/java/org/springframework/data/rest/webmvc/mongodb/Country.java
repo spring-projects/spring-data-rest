@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,18 @@
  */
 package org.springframework.data.rest.webmvc.mongodb;
 
-import java.math.BigInteger;
-import java.util.List;
-
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.bson.types.ObjectId;
 
 /**
  * @author Oliver Gierke
  */
-@Document
-public class User {
+public class Country {
 
-	public BigInteger id;
-	public String firstname, lastname;
-	public Address billingAddress;
-	public List<Address> addresses;
+	public ObjectId id;
+	public String name;
+
+	public Country(String name) {
+		this.id = new ObjectId();
+		this.name = name;
+	}
 }
