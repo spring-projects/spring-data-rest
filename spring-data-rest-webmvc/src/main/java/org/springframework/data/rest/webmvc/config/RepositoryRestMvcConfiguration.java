@@ -89,12 +89,14 @@ import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.CurieProvider;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.hateoas.hal.Jackson2HalModule.HalHandlerInstantiator;
+import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -334,11 +336,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public MessageSourceAccessor resourceDescriptionMessageSourceAccessor() {
 
-		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-		messageSource.setBasename("classpath:rest-messages");
-		messageSource.setUseCodeAsDefaultMessage(true);
+			ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+			messageSource.setBasename("classpath:rest-messages");
+			messageSource.setUseCodeAsDefaultMessage(true);
 
-		return new MessageSourceAccessor(messageSource);
+			return new MessageSourceAccessor(messageSource);
 	}
 
 	/**
@@ -348,7 +350,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public ObjectMapper objectMapper() {
-		return basicObjectMapper();
+
+		ObjectMapper mapper = basicObjectMapper();
+		mapper.registerModule(persistentEntityJackson2Module());
+
+		return mapper;
 	}
 
 	/**
@@ -369,7 +375,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			mediaTypes.add(MediaType.APPLICATION_JSON);
 		}
 
-		MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+		MappingJackson2HttpMessageConverter jacksonConverter = new TypeConstrainedMappingJackson2HttpMessageConverter(
+				ResourceSupport.class);
 		jacksonConverter.setObjectMapper(objectMapper());
 		jacksonConverter.setSupportedMediaTypes(mediaTypes);
 
@@ -391,7 +398,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			mediaTypes.add(MediaType.APPLICATION_JSON);
 		}
 
-		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+		MappingJackson2HttpMessageConverter converter = new TypeConstrainedMappingJackson2HttpMessageConverter(
+				ResourceSupport.class);
 		converter.setObjectMapper(halObjectMapper());
 		converter.setSupportedMediaTypes(mediaTypes);
 
@@ -404,6 +412,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(getDefaultedRelProvider(), curieProvider);
 
 		ObjectMapper mapper = basicObjectMapper();
+		mapper.registerModule(persistentEntityJackson2Module());
 		mapper.registerModule(new Jackson2HalModule());
 		mapper.setHandlerInstantiator(instantiator);
 
@@ -479,8 +488,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * 
 	 * @return
 	 */
-	@Bean
-	public Module persistentEntityJackson2Module() {
+	private Module persistentEntityJackson2Module() {
 		return new PersistentEntityJackson2Module(resourceMappings(), persistentEntities(), config(),
 				uriToEntityConverter());
 	}
@@ -521,6 +529,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			messageConverters.add(jacksonHttpMessageConverter());
 			messageConverters.add(halJacksonHttpMessageConverter());
 		}
+
+		MappingJackson2HttpMessageConverter fallbackJsonConverter = new MappingJackson2HttpMessageConverter();
+		fallbackJsonConverter.setObjectMapper(basicObjectMapper());
+
+		messageConverters.add(fallbackJsonConverter);
 		messageConverters.add(uriListHttpMessageConverter());
 
 		return messageConverters;
@@ -583,11 +596,12 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private ObjectMapper basicObjectMapper() {
 
 		ObjectMapper objectMapper = new ObjectMapper();
+
 		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-		// Our special PersistentEntityResource Module
-		objectMapper.registerModule(persistentEntityJackson2Module());
-		objectMapper.registerModule(geoModule);
+		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+		objectMapper.registerModule(geoModule);
 		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
 		// Configure custom Modules
 		configureJacksonObjectMapper(objectMapper);
