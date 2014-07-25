@@ -380,7 +380,7 @@ public abstract class AbstractWebIntegrationTests {
 	public void servesHalWhenJsonIsRequested() throws Exception {
 
 		mvc.perform(get("/").accept(MediaType.APPLICATION_JSON)). //
-				andExpect(content().contentType(MediaType.APPLICATION_JSON)). //
+				andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)). //
 				andExpect(jsonPath("$._links", notNullValue()));
 	}
 

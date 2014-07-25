@@ -18,12 +18,14 @@ package org.springframework.data.rest.webmvc.config;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,13 +34,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.format.datetime.DateFormatter;
 import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.hateoas.core.DefaultRelProvider;
+import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -125,6 +130,28 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		Object result = JsonPath.read(mapper.writeValueAsString(sample), "$.date");
 		assertThat(result, is(instanceOf(String.class)));
 		assertThat(result, is((Object) formatter.print(sample.date, Locale.US)));
+	}
+
+	/**
+	 * @see DATAREST-362
+	 */
+	@Test(expected = NoSuchBeanDefinitionException.class)
+	public void doesNotExposePersistentEntityJackson2ModuleAsBean() {
+		context.getBean(PersistentEntityJackson2Module.class);
+	}
+
+	/**
+	 * @see DATAREST-362
+	 */
+	@Test
+	public void registeredHttpMessageConvertersAreTypeConstrained() {
+
+		Collection<MappingJackson2HttpMessageConverter> converters = context.getBeansOfType(
+				MappingJackson2HttpMessageConverter.class).values();
+
+		for (HttpMessageConverter<?> converter : converters) {
+			assertThat(converter, is(instanceOf(TypeConstrainedMappingJackson2HttpMessageConverter.class)));
+		}
 	}
 
 	@Configuration

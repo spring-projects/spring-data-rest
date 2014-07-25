@@ -115,7 +115,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 		for (HttpMessageConverter converter : messageConverters) {
 
-			if (!converter.canRead(domainType, contentType)) {
+			if (!converter.canRead(PersistentEntityResource.class, contentType)) {
 				continue;
 			}
 
