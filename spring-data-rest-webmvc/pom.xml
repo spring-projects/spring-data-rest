@@ -65,7 +65,9 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>${jackson}</version>
+			<!-- Jackson releases artifacts at will, need to explicitly refer to this one -->
+			<!-- See https://github.com/FasterXML/jackson-annotations/issues/39 -->
+			<version>2.3.3</version>
 		</dependency>
 
 		<!-- Jackson Hibernate -->
