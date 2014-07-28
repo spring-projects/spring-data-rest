@@ -1,6 +1,17 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.1.2.RELEASE (2014-07-28)
+---------------------------------------------
+* DATAREST-362 - Improve configuration setup for Spring Boot compatibility.
+* DATAREST-361 - Release 2.1.2.
+* DATAREST-353 - Deleting a non-existing resource leads to NullPointerException in RepositoryEntityController.
+* DATAREST-351 - Upgrade to Evo Inflector 1.2 to stay Java 6 compatible.
+* DATAREST-346 - ReflectionRepositoryInvoker doesn't apply conversion on invocation of an overridden delete(…) method.
+* DATAREST-343 - Fix Jackson dependency setup.
+* DATAREST-212 - Update documentation to reflect new way of parsing sorting options.
+
+
 Changes in version 2.2.0.M1 (2014-07-10)
 ----------------------------------------
 * DATAREST-352 - Remove links to forum.spring.io.
