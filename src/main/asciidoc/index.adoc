@@ -1,0 +1,19 @@
+[[spring-data-rest-reference]]
+= Spring Data REST Reference Documentation
+Jon Brisbin, Oliver Gierke
+:toc:
+:idprefix:
+
+{version}
+
+(C) 2012-2014 Original authors
+
+NOTE: _Copies of this document may be made for your own use and for distribution to others, provided that you do not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed in print or electronically._
+
+:leveloffset: 1
+include::intro.adoc[]
+include::getting-started.adoc[]
+include::repository-resources.adoc[]
+include::representations.adoc[]
+include::validation.adoc[]
+include::events.adoc[]

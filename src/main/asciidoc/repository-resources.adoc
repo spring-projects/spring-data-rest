@@ -1,0 +1,266 @@
+[[repository-resources]]
+= Repository resources
+
+[[repository-resources.fundamentals]]
+== Fundamentals
+
+The core functionality of Spring Data REST is to export resources for Spring Data repositories. Thus, the core artifact to look at and potentially tweak to customize the way the exporting works is the repository interface. Assume the following repository interface:
+
+[source]
+----
+public interface OrderRepository extends CrudRepository<Order, Long> { }
+----
+
+For this repository, Spring Data REST exposes a collection resource at `/orders`. The path is derived from the uncapitalized, pluralized, simple class name of the domain class being managed. It also exposes an item resource for each of the items managed by the repository under the URI template `/orders/{id}`.
+
+By default the HTTP methods to interact with these resources map to the according methods of `CrudRepository`. Read more on that in the sections on <<repository-resources.collection-resource,collection resources>> and <<repository-resources.item-resource,item resources>>.
+
+[[repository-resources.default-status-codes]]
+=== Default status codes
+
+For the resources exposed, we use a set of default status codes:
+
+* `200 OK` - for plain `GET` requests.
+* `201 Created` - for `POST` and `PUT` requests that create new resources.
+* `204 No Content` - for `PUT`, `PATCH`, and `DELETE` requests if the configuration is set to not return response bodies for resource updates (`RepositoryRestConfiguration.returnBodyOnUpdate`). If the configuration value is set to include responses for `PUT`, `200 OK` will be returned for updates, `201 Created` will be returned for resource created through `PUT`.
+
+[[repository-resources.resource-discoverability]]
+=== Resource discoverability
+
+A core principle of HATEOAS is that resources should be discoverable through the publication of links that point to the available resources. There are a few competing de-facto standards of how to represent links in JSON. By default, Spring Data REST uses http://tools.ietf.org/html/draft-kelly-json-hal[HAL] to render responses. HAL defines links to be contained in a  property of the returned document.
+
+Resource discovery starts at the top level of the application. By issuing a request to the root URL under which the Spring Data REST application is deployed, the client can extract a set of links from the returned JSON object that represent the next level of resources that are available to the client.
+
+For example, to discover what resources are available at the root of the application, issue an HTTP `GET` to the root URL:
+
+[source]
+----
+curl -v http://localhost:8080/
+
+< HTTP/1.1 200 OK
+< Content-Type: application/hal+json
+
+{ "_links" : {
+    "orders" : {
+      "href" : "http://localhost:8080/orders"
+    }
+  }
+}
+----
+
+The  property of the result document is an object in itself consisting of keys representing the relation type with nested link objects as specified in HAL.
+
+[[repository-resources.collection-resource]]
+== The collection resource
+
+Spring Data REST exposes a collection resource named after the uncapitalized, pluralized version of the domain class the exported repository is handling. Both the name of the resource and the path can be customized using the `@RepositoryRestResource` on the repository interface.
+
+=== Supported HTTP Methods
+
+Collections resources support both `GET` and `POST`. All other HTTP methods will cause a `405 Method Not Allowed`.
+
+==== GET
+
+Returns all entities the repository servers through its `findAll(…)` method. If the repository is a paging repository we include the pagination links if necessary and additional page metadata.
+
+===== Parameters
+
+If the repository has pagination capabilities the resource takes the following parameters:
+
+* `page` - the page number to access (0 indexed, defaults to 0).
+* `size` - the page size requested (defaults to 20).
+* `sort` - a collection of sort directives in the format `($propertyname,)+[asc|desc]`?.
+
+===== Custom status codes
+
+* `405 Method Not Allowed` - if the `findAll(…)` methods was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
+
+===== Supported media types
+
+* application/hal+json
+* application/json
+
+===== Related resources
+
+* `search` - a <<repository-resources.search-resource,search resource>> if the backing repository exposes query methods.
+
+==== HEAD
+
+Returns whether the collection resource is available.
+
+==== POST
+
+Creates a new entity from the given request body.
+
+===== Custom status codes
+
+* `405 Method Not Allowed` - if the `save(…)` methods was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
+
+===== Supported media types
+
+* application/hal+json
+* application/json
+
+[[repository-resources.item-resource]]
+== The item resource
+
+Spring Data REST exposes a resource for individual collection items as sub-resources of the collection resource.
+
+=== Supported HTTP methods
+
+Item resources generally support `GET`, `PUT`, `PATCH` and `DELETE` unless explicit configuration prevents that (see below for details).
+
+==== GET
+
+Returns a single entity.
+
+===== Custom status codes
+
+* `405 Method Not Allowed` - if the `findOne(…)` methods was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
+
+===== Supported media types
+
+* application/hal+json
+* application/json
+
+===== Related resources
+
+For every association of the domain type we expose links named after the association property. This can be customized by using `@RestResource` on the property. The related resources are of type <<repository-resources.association-resource,association resource>>.
+
+==== HEAD
+
+Returns whether the item resource is available.
+
+==== PUT
+
+Replaces the state of the target resource with the supplied request body.
+
+===== Custom status codes
+
+* `405 Method Not Allowed` - if the `save(…)` methods was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
+
+===== Supported media types
+
+* application/hal+json
+* application/json
+
+==== PATCH
+
+Similar to `PUT` but only applying values sent with the request body.
+
+===== Custom status codes
+
+* `405 Method Not Allowed` - if the `save(…)` methods was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
+
+===== Supported media types
+
+* application/hal+json
+* application/json
+
+==== DELETE
+
+Deletes the resource exposed.
+
+===== Custom status codes
+
+* `405 Method Not Allowed` - if the `delete(…)` methods was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
+
+[[repository-resources.association-resource]]
+== The association resource
+
+Spring Data REST exposes sub-resources of every item resource for each of the associations the item resource has. The name and path of the of the resource defaults to the name of the association property and can be customized using `@RestResource` on the association property.
+
+=== Supported HTTP methods
+
+==== GET
+
+Returns the state of the association resource
+
+===== Supported media types
+
+* application/hal+json
+* application/json
+
+==== PUT
+
+Binds the resource pointed to by the given URI(s) to the resource. This
+
+===== Custom status codes
+
+* `400 Bad Request` - if multiple URIs were given for a to-one-association.
+
+===== Supported media types
+
+* text/uri-list - URIs pointing to the resource to bind to the association.
+
+==== POST
+
+Only supported for collection associations. Adds a new element to the collection.
+
+===== Supported media types
+
+* text/uri-list - URIs pointing to the resource to add to the association.
+
+==== DELETE
+
+Unbinds the association.
+
+===== Custom status codes
+
+* `405 Method Not Allowed` - if the association is non-optional.
+
+[[repository-resources.search-resource]]
+== The search resource
+
+The search resource returns links for all query methods exposed by a repository. The path and name of the query method resources can be modified using `@RestResource` on the method declaration.
+
+=== Supported HTTP methods
+
+As the search resource is a read-only resource it supports `GET` only.
+
+==== GET
+
+Returns a list of links pointing to the individual query method resources
+
+===== Supported media types
+
+* application/hal+json
+* application/json
+
+===== Related resources
+
+For every query method declared in the repository we expose a <<repository-resources.query-method-resource,query method resource>>. If the resource supports pagination, the URI pointing to it will be a URI template containing the pagination parameters.
+
+==== HEAD
+
+Returns whether the search resource is available. A 404 return code indicates no query method resources available at all.
+
+[[repository-resources.query-method-resource]]
+== The query method resource
+
+The query method resource executes the query exposed through an individual query method on the repository interface.
+
+=== Supported HTTP methods
+
+As the search resource is a read-only resource it supports `GET` only.
+
+==== GET
+
+Returns the result of the query execution.
+
+===== Parameters
+
+If the query method has pagination capabilities (indicated in the URI template pointing to the resource) the resource takes the following parameters:
+
+* `page` - the page number to access (0 indexed, defaults to 0).
+* `size` - the page size requested (defaults to 20).
+* `sort` - a collection of sort directives in the format `($propertyname,)+[asc|desc]`?.
+
+===== Supported media types
+
+* application/hal+json
+* application/json
+
+==== HEAD
+
+Returns whether a query method resource is available.

@@ -1,0 +1,69 @@
+[[representations-chapter]]
+= Domain Object Representations
+
+[[mapping]]
+== Object Mapping
+
+Spring Data REST returns a representation of a domain object that corresponds to the requested `Accept` type specified in the HTTP request. 
+
+Currently, only JSON representations are supported. Other representation types can be supported in the future by adding an appropriate converter and updating the controller methods with the appropriate content-type.
+
+Sometimes the behavior of the Spring Data REST's ObjectMapper, which has been specially configured to use intelligent serializers that can turn domain objects into links and back again, may not handle your domain model correctly. There are so many ways one can structure your data that you may find your own domain model isn't being translated to JSON correctly. It's also sometimes not practical in these cases to try and support a complex domain model in a generic way. Sometimes, depending on the complexity, it's not even possible to offer a generic solution.
+
+=== Adding custom (de)serializers to Jackson's ObjectMapper
+
+To accommodate the largest percentage of use cases, Spring Data REST tries very hard to render your object graph correctly. It will try and serialize unmanaged beans as normal POJOs and it will try and create links to managed beans where that's necessary. But if your domain model doesn't easily lend itself to reading or writing plain JSON, you may want to configure Jackson's ObjectMapper with your own custom type mappings and (de)serializers.
+
+==== Abstract class registration
+
+One key configuration point you might need to hook into is when you're using an abstract class (or an interface) in your domain model. Jackson won't know by default what implementation to create for an interface. Take the following example:
+
+[source,java]
+----
+@Entity
+public class MyEntity {
+  @OneToMany
+  private List<MyInterface> interfaces;
+}
+----
+
+In a default configuration, Jackson has no idea what class to instantiate when POSTing new data to the exporter. This is something you'll need to tell Jackson either through an annotation, or, more cleanly, by registering a type mapping using a `Module`.
+
+To add your own Jackson configuration to the `ObjectMapper` used by Spring Data REST, override the `configureJacksonObjectMapper` method. That method will be passed an `ObjectMapper` instance that has a special module to handle serializing and deserializing `PersistentEntity`s. You can register your own modules as well, like in the following example. 
+
+[source,java]
+----
+@Override 
+protected void configureJacksonObjectMapper(ObjectMapper objectMapper) {
+    objectMapper.registerModule(new SimpleModule("MyCustomModule") {
+        @Override 
+        public void setupModule(SetupContext context) {
+            context.addAbstractTypeResolver(
+                new SimpleAbstractTypeResolver().addMapping(MyInterface.class,
+                                                            MyInterfaceImpl.class)
+            );
+        }
+    });
+}
+----
+
+Once you have access to the `SetupContext` object in your `Module`, you can do all sorts of cool things to configure Jacskon's JSON mapping. You can read more about how `Module`s work on Jackson's wiki: http://wiki.fasterxml.com/JacksonFeatureModules[ http://wiki.fasterxml.com/JacksonFeatureModules ]
+
+==== Adding custom serializers for domain types
+
+If you want to (de)serialize a domain type in a special way, you can register your own implementations with Jackson's `ObjectMapper` and the Spring Data REST exporter will transparently handle those domain objects correctly. To add serializers, from your `setupModule` method implementation, do something like the following:
+
+[source,java]
+----
+@Override 
+public void setupModule(SetupContext context) {
+  SimpleSerializers serializers = new SimpleSerializers();
+  SimpleDeserializers deserializers = new SimpleDeserializers();
+
+  serializers.addSerializer(MyEntity.class, new MyEntitySerializer());
+  deserializers.addDeserializer(MyEntity.class, new MyEntityDeserializer());
+
+  context.addSerializers(serializers);
+  context.addDeserializers(deserializers);
+}
+----

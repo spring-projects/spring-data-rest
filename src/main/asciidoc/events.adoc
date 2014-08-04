@@ -1,0 +1,86 @@
+[[events-chapter]]
+= Events
+
+There are eight different events that the REST exporter emits throughout the process of working with an entity. Those are:  
+
+* BeforeCreateEvent
+* AfterCreateEvent
+* BeforeSaveEvent
+* AfterSaveEvent
+* BeforeLinkSaveEvent
+* AfterLinkSaveEvent
+* BeforeDeleteEvent
+* AfterDeleteEvent
+
+== Writing an ApplicationListener
+
+There is an abstract class you can subclass which listens for these kinds of events and calls the appropriate method based on the event type. You just override the methods for the events you're interested in.  
+
+[source,java]
+----
+public class BeforeSaveEventListener extends AbstractRepositoryEventListener {
+
+  @Override public void onBeforeSave(Object entity) {
+    ... logic to handle inspecting the entity before the Repository saves it
+  }
+
+  @Override public void onAfterDelete(Object entity) {
+    ... send a message that this entity has been deleted
+  }
+}
+----
+
+One thing to note with this approach, however, is that it makes no distinction based on the type of the entity. You'll have to inspect that yourself. 
+
+== Writing an annotated handler
+
+Another approach is to use an annotated handler, which does filter events based on domain type.
+
+To declare a handler, create a POJO and put the `@RepositoryEventHandler` annotation on it. This tells the `BeanPostProcessor` that this class needs to be inspected for handler methods. 
+
+Once it finds a bean with this annotation, it iterates over the exposed methods and looks for annotations that correspond to the event you're interested in. For example, to handle BeforeSaveEvents in an annotated POJO for different kinds of domain types, you'd define your class like this:  
+
+[source,java]
+----
+@RepositoryEventHandler
+public class PersonEventHandler {
+
+  @HandleBeforeSave(Person.class) public void handlePersonSave(Person p) {
+    ... you can now deal with Person in a type-safe way
+  }
+
+  @HandleBeforeSave(Profile.class) public void handleProfileSave(Profile p) {
+    ... you can now deal with Profile in a type-safe way
+  }
+}
+----
+
+You can also declare the domain type at the class level:  
+
+[source,java]
+----
+@RepositoryEventHandler(Person.class)
+public class PersonEventHandler {
+
+  @HandleBeforeSave public void handleBeforeSave(Person p) {
+    ...
+  }
+
+  @HandleAfterDelete public void handleAfterDelete(Person p) {
+    ...
+  }
+}
+----
+
+Just declare an instance of your annotated bean in your `ApplicationContext` and the `BeanPostProcessor` that is by default created in `RepositoryRestMvcConfiguration` will inspect the bean for handlers and wire them to the correct events.  
+
+[source,java]
+----
+@Configuration
+public class RepositoryConfiguration {
+
+  @Bean PersonEventHandler personEventHandler() {
+    return new PersonEventHandler();
+  }
+}
+----
