@@ -1,0 +1,6 @@
+[[intro-chapter]]
+= Introduction
+
+REST web services have become the number one means for application integration on the web. In its core, REST defines that a system consists of resources that clients interact with. These resources are implemented in a hypermedia drive way. Spring MVC offers a solid foundation to build theses kinds of services but implementing very basic functionality of REST web service can be tedious and result in a lot of boilerplate code.
+
+Spring Data REST builds on top of Spring Data repositories and automatically exports those as REST resources. It leverages hypermedia to allow clients to find functionality exposed by the repositories and allows to integrate the resources into related hypermedia based functionality as easy as possible.
