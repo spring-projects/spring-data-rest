@@ -1,6 +1,15 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.2.0.RC1 (2014-08-13)
+-----------------------------------------
+* DATAREST-374 - Release 2.2 RC1.
+* DATAREST-364 - Move to Asciidoctor for reference documentation.
+* DATAREST-362 - Improve configuration setup for Spring Boot compatibility.
+* DATAREST-353 - Deleting a non-existing resource leads to NullPointerException in RepositoryEntityController.
+* DATAREST-319 - Add means to prefer deleting by object instead of deleting by id.
+
+
 Changes in version 2.1.2.RELEASE (2014-07-28)
 ---------------------------------------------
 * DATAREST-362 - Improve configuration setup for Spring Boot compatibility.
