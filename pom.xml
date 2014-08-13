@@ -146,6 +146,10 @@
 			<id>spring-libs-snapshot</id>
 			<url>http://repo.spring.io/libs-snapshot</url>
 		</repository>
+		<repository>
+			<id>gemfire</id>
+			<url>http://dist.gemstone.com.s3.amazonaws.com/maven/release</url>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
