@@ -1,4 +1,4 @@
-Spring Data REST 2.2 M1
+Spring Data REST 2.2 RC1
 Copyright (c) 2012-2014 Pivotal Software, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
