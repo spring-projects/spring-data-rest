@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import java.lang.annotation.Target;
 import org.springframework.stereotype.Component;
 
 /**
- * Annotation to demarcate Spring MVC controllers provided by Spring Data REST. Allows to easily detect them and exclude
- * them from standard Spring MVC handling.
+ * Annotation to declare a controller that declares request mappings to be augmented with a base URI in the Spring Data
+ * REST configuration.
  * 
  * @author Oliver Gierke
  */
@@ -33,6 +33,5 @@ import org.springframework.stereotype.Component;
 @Component
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.ANNOTATION_TYPE })
-@BaseUriAwareController
-public @interface RepositoryRestController {
+public @interface BaseUriAwareController {
 }

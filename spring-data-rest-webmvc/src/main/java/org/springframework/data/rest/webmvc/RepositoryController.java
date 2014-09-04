@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @author Oliver Gierke
  */
 @RepositoryRestController
-@RequestMapping("/")
 public class RepositoryController extends AbstractRepositoryRestController {
 
 	private final Repositories repositories;
@@ -76,7 +75,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	 * @return
 	 * @since 2.2
 	 */
-	@RequestMapping(method = RequestMethod.OPTIONS)
+	@RequestMapping(value = "/", method = RequestMethod.OPTIONS)
 	public HttpEntity<?> optionsForRepositories() {
 
 		HttpHeaders headers = new HttpHeaders();
@@ -91,7 +90,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	 * @return
 	 * @since 2.2
 	 */
-	@RequestMapping(method = RequestMethod.HEAD)
+	@RequestMapping(value = "/", method = RequestMethod.HEAD)
 	public ResponseEntity<?> headForRepositories() {
 		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
 	}
@@ -101,7 +100,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public HttpEntity<RepositoryLinksResource> listRepositories() {
 
 		RepositoryLinksResource resource = new RepositoryLinksResource();

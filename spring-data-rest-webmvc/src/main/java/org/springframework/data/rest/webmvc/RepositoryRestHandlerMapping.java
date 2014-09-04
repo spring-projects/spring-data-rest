@@ -15,24 +15,15 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.util.StringUtils.*;
-
-import java.util.ArrayList;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
-import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
@@ -44,10 +35,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
+public class RepositoryRestHandlerMapping extends BaseUriAwareHandlerMapping {
 
 	private final ResourceMappings mappings;
-	private final RepositoryRestConfiguration config;
 
 	private JpaHelper jpaHelper;
 
@@ -60,11 +50,12 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 	 */
 	public RepositoryRestHandlerMapping(ResourceMappings mappings, RepositoryRestConfiguration config) {
 
+		super(config);
+
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
 		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
 
 		this.mappings = mappings;
-		this.config = config;
 
 		setOrder(Ordered.LOWEST_PRECEDENCE - 100);
 	}
@@ -76,62 +67,19 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 		this.jpaHelper = jpaHelper;
 	}
 
-	/*
+	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#lookupHandlerMethod(java.lang.String, javax.servlet.http.HttpServletRequest)
+	 * @see org.springframework.data.rest.webmvc.BaseUriAwareHandlerMapping#supportsLookupPath(java.lang.String)
 	 */
 	@Override
-	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest origRequest) throws Exception {
+	protected boolean supportsLookupPath(String lookupPath) {
 
-		String acceptType = origRequest.getHeader("Accept");
-
-		if (null == acceptType) {
-			acceptType = config.getDefaultMediaType().toString();
+		if ("/".equals(lookupPath)) {
+			return true;
 		}
 
-		List<MediaType> acceptHeaderTypes = MediaType.parseMediaTypes(acceptType);
-		List<MediaType> acceptableTypes = new ArrayList<MediaType>();
-
-		for (MediaType mt : acceptHeaderTypes) {
-			if ("*".equals(mt.getType()) && "*".equals(mt.getSubtype()) || "application".equals(mt.getType())
-					&& "*".equals(mt.getSubtype())) {
-				mt = config.getDefaultMediaType();
-			}
-			if (!acceptableTypes.contains(mt)) {
-				acceptableTypes.add(mt);
-			}
-		}
-
-		if (acceptableTypes.size() > 1) {
-			acceptType = collectionToDelimitedString(acceptableTypes, ",");
-		} else if (acceptableTypes.size() == 1) {
-			acceptType = acceptableTypes.get(0).toString();
-		} else {
-			acceptType = config.getDefaultMediaType().toString();
-		}
-
-		String uri = new BaseUri(config.getBaseUri()).getRepositoryLookupPath(lookupPath);
-
-		if (uri == null) {
-			return null;
-		}
-
-		uri = StringUtils.hasText(uri) ? uri : "/";
-
-		HttpServletRequest request = new DefaultAcceptTypeHttpServletRequest(origRequest, acceptType, uri);
-
-		// Root request
-		if (uri.equals("/")) {
-			return super.lookupHandlerMethod("/", request);
-		}
-
-		String[] parts = uri.split("/");
-
-		if (mappings.exportsTopLevelResourceFor(parts[uri.startsWith("/") ? 1 : 0])) {
-			return super.lookupHandlerMethod(uri, request);
-		}
-
-		return null;
+		String[] parts = lookupPath.split("/");
+		return mappings.exportsTopLevelResourceFor(parts[lookupPath.startsWith("/") ? 1 : 0]);
 	}
 
 	/*
@@ -153,50 +101,6 @@ public class RepositoryRestHandlerMapping extends RequestMappingHandlerMapping {
 			for (Object o : jpaHelper.getInterceptors()) {
 				interceptors.add(o);
 			}
-		}
-	}
-
-	private static class DefaultAcceptTypeHttpServletRequest extends HttpServletRequestWrapper {
-
-		private final String defaultAcceptType;
-		private final String requestUri;
-
-		private DefaultAcceptTypeHttpServletRequest(HttpServletRequest request, String defaultAcceptType) {
-			this(request, defaultAcceptType, null);
-		}
-
-		private DefaultAcceptTypeHttpServletRequest(HttpServletRequest request, String defaultAcceptType, String requestUri) {
-			super(request);
-			this.defaultAcceptType = defaultAcceptType;
-			this.requestUri = requestUri;
-		}
-
-		@Override
-		public String getHeader(String name) {
-
-			if ("accept".equals(name.toLowerCase())) {
-				return defaultAcceptType;
-			} else {
-				return super.getHeader(name);
-			}
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see javax.servlet.http.HttpServletRequestWrapper#getRequestURI()
-		 */
-		@Override
-		public String getRequestURI() {
-			return requestUri != null ? requestUri : super.getRequestURI();
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see javax.servlet.http.HttpServletRequestWrapper#getServletPath()
-		 */
-		@Override
-		public String getServletPath() {
-			return requestUri != null ? requestUri : super.getServletPath();
 		}
 	}
 }
