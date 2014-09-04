@@ -476,8 +476,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		AnnotationAwareOrderComparator.sort(processors);
 
-		RepositoryRestHandlerAdapter handlerAdapter = new RepositoryRestHandlerAdapter(defaultMethodArgumentResolvers(),
-				processors);
+        List<HandlerMethodArgumentResolver> argumentResolvers = defaultMethodArgumentResolvers();
+        configureMethodArgumentResolvers(argumentResolvers);
+
+        RepositoryRestHandlerAdapter handlerAdapter = new RepositoryRestHandlerAdapter(argumentResolvers, processors);
 		handlerAdapter.setMessageConverters(messageConverters);
 
 		return handlerAdapter;
@@ -530,7 +532,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public ExceptionHandlerExceptionResolver exceptionHandlerExceptionResolver() {
 		ExceptionHandlerExceptionResolver er = new ExceptionHandlerExceptionResolver();
-		er.setCustomArgumentResolvers(defaultMethodArgumentResolvers());
+
+        List<HandlerMethodArgumentResolver> argumentResolvers = defaultMethodArgumentResolvers();
+        configureMethodArgumentResolvers(argumentResolvers);
+        er.setCustomArgumentResolvers(argumentResolvers);
 
 		List<HttpMessageConverter<?>> messageConverters = defaultMessageConverters();
 		configureHttpMessageConverters(messageConverters);
@@ -721,6 +726,13 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @param messageConverters The converters to be used by the system.
 	 */
 	protected void configureHttpMessageConverters(List<HttpMessageConverter<?>> messageConverters) {}
+
+    /**
+     * Configure the available {@link HandlerMethodArgumentResolver}s.
+     *
+     * @param argumentResolvers The converters to be used by the system.
+     */
+    protected void configureMethodArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {}
 
 	/**
 	 * Configure the Jackson {@link ObjectMapper} directly.
