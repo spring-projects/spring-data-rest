@@ -168,7 +168,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		Iterable<?> results;
 
-		if (pageable != null) {
+		if (pageable.getPageable() != null) {
 			results = invoker.invokeFindAll(pageable.getPageable());
 		} else {
 			results = invoker.invokeFindAll(sort);

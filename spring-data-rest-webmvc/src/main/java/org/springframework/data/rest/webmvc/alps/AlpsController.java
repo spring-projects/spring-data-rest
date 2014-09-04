@@ -26,8 +26,8 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.BaseUriAwareController;
 import org.springframework.data.rest.webmvc.BaseUri;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.hateoas.alps.Alps;
@@ -48,11 +48,11 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Oliver Gierke
  * @see http://alps.io
  */
-@RepositoryRestController
-@RequestMapping(AlpsController.ALPS_ROOT_MAPPING)
+@BaseUriAwareController
 public class AlpsController {
 
 	static final String ALPS_ROOT_MAPPING = "/alps";
+	static final String ALPS_RESOURCE_MAPPING = ALPS_ROOT_MAPPING + "/{repository}";
 
 	private final Repositories repositories;
 	private final ResourceMappings mappings;
@@ -83,7 +83,7 @@ public class AlpsController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = { "", "/{repository}" }, method = OPTIONS)
+	@RequestMapping(value = { ALPS_ROOT_MAPPING, ALPS_RESOURCE_MAPPING }, method = OPTIONS)
 	HttpEntity<?> alpsOptions() {
 
 		verifyAlpsEnabled();
@@ -99,7 +99,7 @@ public class AlpsController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(method = GET)
+	@RequestMapping(value = ALPS_ROOT_MAPPING, method = GET)
 	HttpEntity<Alps> alps() {
 
 		verifyAlpsEnabled();
@@ -132,7 +132,7 @@ public class AlpsController {
 	 * @param information
 	 * @return
 	 */
-	@RequestMapping(value = "/{repository}", method = GET)
+	@RequestMapping(value = ALPS_RESOURCE_MAPPING, method = GET)
 	HttpEntity<RootResourceInformation> descriptor(RootResourceInformation information) {
 
 		verifyAlpsEnabled();

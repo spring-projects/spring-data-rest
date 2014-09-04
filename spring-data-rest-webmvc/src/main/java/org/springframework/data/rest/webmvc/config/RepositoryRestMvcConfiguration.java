@@ -66,7 +66,9 @@ import org.springframework.data.rest.core.projection.ProxyProjectionFactory;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.rest.core.support.RepositoryRelProvider;
 import org.springframework.data.rest.core.util.UUIDConverter;
+import org.springframework.data.rest.webmvc.BaseUriAwareController;
 import org.springframework.data.rest.webmvc.BaseUri;
+import org.springframework.data.rest.webmvc.BaseUriAwareHandlerMapping;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
@@ -135,7 +137,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @Configuration
 @EnableHypermediaSupport(type = HypermediaType.HAL)
 @ComponentScan(basePackageClasses = RepositoryRestController.class,
-		includeFilters = @Filter(RepositoryRestController.class), useDefaultFilters = false)
+		includeFilters = @Filter(BaseUriAwareController.class), useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 @Import(SpringDataJacksonConfiguration.class)
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration {
@@ -500,7 +502,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public RequestMappingHandlerMapping fallbackMapping() {
-		return new RequestMappingHandlerMapping();
+		return new BaseUriAwareHandlerMapping(config());
 	}
 
 	@Bean
