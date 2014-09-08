@@ -18,9 +18,12 @@ package org.springframework.data.rest.webmvc.mongodb;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +36,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.jayway.jsonpath.JsonPath;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Integration tests for MongoDB repositories.
@@ -44,6 +48,8 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 
 	@Autowired ProfileRepository repository;
 	@Autowired UserRepository userRepository;
+
+    ObjectMapper mapper = new ObjectMapper();
 
 	@Before
 	public void populateProfiles() {
@@ -147,4 +153,33 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 		assertThat(JsonPath.read(response.getContentAsString(), "$.lastname"), is(nullValue()));
 		assertThat(JsonPath.read(response.getContentAsString(), "$.address.zipCode"), is((Object) "ZIP"));
 	}
+
+
+    @Test
+    public void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
+        Link receiptLink = discoverUnique("receipts");
+
+        Receipt receipt = new Receipt();
+        receipt.setAmount(new BigDecimal(50));
+        receipt.setSaleItem("Springy Tacos");
+
+        String stringReceipt = mapper.writeValueAsString(receipt);
+
+        MockHttpServletResponse createdReceipt = postAndGet(receiptLink, stringReceipt, MediaType.APPLICATION_JSON);
+        Link tacosLink = assertHasLinkWithRel("self", createdReceipt);
+        assertJsonPathEquals("$.saleItem","Springy Tacos", createdReceipt);
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(tacosLink.getHref());
+        String concurrencyTag = createdReceipt.getHeader("ETag");
+
+        mvc.perform(patch(builder.build().toUriString())
+                .content("{ \"saleItem\" : \"SpringyBurritos\" }").contentType(MediaType.APPLICATION_JSON)
+                .header("If-Match",concurrencyTag))
+                .andExpect(status().isNoContent());
+
+        mvc.perform(patch(builder.build().toUriString())
+                .content("{ \"saleItem\" : \"SpringyTequila\" }").contentType(MediaType.APPLICATION_JSON)
+                .header("If-Match",concurrencyTag))
+                .andExpect(status().isConflict());
+    }
 }

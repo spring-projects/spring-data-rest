@@ -89,7 +89,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
 				entities.getPersistentEntity(Order.class)).build();
 
-		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler);
+		ResponseEntity<?> entity = controller.putItemResource(null, information, persistentEntityResource, 1L, assembler);
 
 		assertThat(entity.getHeaders().getLocation().toString(), not(endsWith("{?projection}")));
 	}

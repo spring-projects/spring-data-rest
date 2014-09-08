@@ -91,6 +91,7 @@ import org.springframework.data.rest.webmvc.support.DefaultedPageableHandlerMeth
 import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.data.rest.webmvc.support.EtagValidator;
 import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
@@ -614,6 +615,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		return OrderAwarePluginRegistry.create(converters);
 	}
+
+    @Bean
+    public EtagValidator etagValidator(){
+        return new EtagValidator(objectMapper(),defaultConversionService());
+    }
 
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 
