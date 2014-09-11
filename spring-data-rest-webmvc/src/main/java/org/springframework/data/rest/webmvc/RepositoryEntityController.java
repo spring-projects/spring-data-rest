@@ -326,7 +326,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
         Object domainObject = invoker.invokeFindOne(id);
         if(domainObject != null) {
             if (eTagMatch != null && !etagValidator.isEtagValueValid(eTagMatch, resourceInformation, domainObject)) {
-                etagValidator.throwOptimisitcLockingException();
+                etagValidator.throwOptimisticLockingException();
             }
         }
 
@@ -359,7 +359,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
         }
 
         if (eTagMatch != null && !etagValidator.isEtagValueValid(eTagMatch, resourceInformation, domainObject)) {
-            etagValidator.throwOptimisitcLockingException();
+            etagValidator.throwOptimisticLockingException();
         }
 
         return saveAndReturn(payload.getContent(), resourceInformation.getInvoker(), PATCH, assembler);
@@ -390,7 +390,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		}
 
         if(eTagMatch != null && !etagValidator.isEtagValueValid(eTagMatch, resourceInformation, domainObj)){
-            etagValidator.throwOptimisitcLockingException();
+            etagValidator.throwOptimisticLockingException();
         }
 
 		publisher.publishEvent(new BeforeDeleteEvent(domainObj));

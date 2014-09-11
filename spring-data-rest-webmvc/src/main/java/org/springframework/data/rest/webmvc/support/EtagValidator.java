@@ -96,7 +96,7 @@ public class EtagValidator {
     /**
      * Throws an {@link OptimisticLockingFailureException} related to the mismatch of the ETags
      */
-    public void throwOptimisitcLockingException(){
+    public void throwOptimisticLockingException(){
         throw new OptimisticLockingFailureException("Invalid If-Match version provided, the resource has gone thru" +
                 " changes after resource's request");
     }
