@@ -154,32 +154,34 @@ public class MongoWebTests extends AbstractWebIntegrationTests {
 		assertThat(JsonPath.read(response.getContentAsString(), "$.address.zipCode"), is((Object) "ZIP"));
 	}
 
+	/**
+	 * @see DATAREST-160
+	 */
+	@Test
+	public void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
+		Link receiptLink = discoverUnique("receipts");
 
-    @Test
-    public void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
-        Link receiptLink = discoverUnique("receipts");
+		Receipt receipt = new Receipt();
+		receipt.setAmount(new BigDecimal(50));
+		receipt.setSaleItem("Springy Tacos");
 
-        Receipt receipt = new Receipt();
-        receipt.setAmount(new BigDecimal(50));
-        receipt.setSaleItem("Springy Tacos");
+		String stringReceipt = mapper.writeValueAsString(receipt);
 
-        String stringReceipt = mapper.writeValueAsString(receipt);
+		MockHttpServletResponse createdReceipt = postAndGet(receiptLink, stringReceipt, MediaType.APPLICATION_JSON);
+		Link tacosLink = assertHasLinkWithRel("self", createdReceipt);
+		assertJsonPathEquals("$.saleItem", "Springy Tacos", createdReceipt);
 
-        MockHttpServletResponse createdReceipt = postAndGet(receiptLink, stringReceipt, MediaType.APPLICATION_JSON);
-        Link tacosLink = assertHasLinkWithRel("self", createdReceipt);
-        assertJsonPathEquals("$.saleItem","Springy Tacos", createdReceipt);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(tacosLink.getHref());
+		String concurrencyTag = createdReceipt.getHeader("ETag");
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(tacosLink.getHref());
-        String concurrencyTag = createdReceipt.getHeader("ETag");
+		mvc.perform(
+				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
+						.contentType(MediaType.APPLICATION_JSON).header("If-Match", concurrencyTag)).andExpect(
+				status().isNoContent());
 
-        mvc.perform(patch(builder.build().toUriString())
-                .content("{ \"saleItem\" : \"SpringyBurritos\" }").contentType(MediaType.APPLICATION_JSON)
-                .header("If-Match",concurrencyTag))
-                .andExpect(status().isNoContent());
-
-        mvc.perform(patch(builder.build().toUriString())
-                .content("{ \"saleItem\" : \"SpringyTequila\" }").contentType(MediaType.APPLICATION_JSON)
-                .header("If-Match",concurrencyTag))
-                .andExpect(status().isConflict());
-    }
+		mvc.perform(
+				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
+						.contentType(MediaType.APPLICATION_JSON).header("If-Match", concurrencyTag)).andExpect(
+				status().isConflict());
+	}
 }

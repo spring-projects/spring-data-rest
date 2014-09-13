@@ -89,6 +89,7 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConv
 import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.DefaultedPageableHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.support.IfMatchHeaderArgumentResolver;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.rest.webmvc.support.EtagValidator;
@@ -307,6 +308,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				resourceMetadataHandlerMethodArgumentResolver(), baseUri());
 	}
 
+	@Bean
+	public IfMatchHeaderArgumentResolver ifMatchHeaderArgumentResolver(){
+		return new IfMatchHeaderArgumentResolver();
+	}
 	/**
 	 * A special {@link org.springframework.hateoas.EntityLinks} implementation that takes repository and current
 	 * configuration into account when generating links.
@@ -616,10 +621,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return OrderAwarePluginRegistry.create(converters);
 	}
 
-    @Bean
-    public EtagValidator etagValidator(){
-        return new EtagValidator(objectMapper(),defaultConversionService());
-    }
+	@Bean
+	public EtagValidator etagValidator() {
+		return new EtagValidator(defaultConversionService());
+	}
 
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 
@@ -634,7 +639,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return Arrays.asList(defaultedPageableResolver, pageableResolver, sortResolver(),
 				serverHttpRequestMethodArgumentResolver(), repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
 				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE,
-				peraResolver, backendIdHandlerMethodArgumentResolver());
+				peraResolver, backendIdHandlerMethodArgumentResolver(), ifMatchHeaderArgumentResolver());
 	}
 
 	@Autowired GeoModule geoModule;
