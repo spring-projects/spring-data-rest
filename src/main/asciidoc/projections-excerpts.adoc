@@ -188,7 +188,7 @@ Projection definitions will be picked up and made available for clients if they 
 * Manually registered via `RepositoryRestConfiguration.projectionConfiguration().addProjection(…)`.
 ====
 
-[[projections-excerpts.hidden-data]]
+[[projections-excerpts.projections.hidden-data]]
 === Bringing in hidden data
 
 So far, you have seen how projections can be used to reduce the information that is presented to the user. Projections can also bring in normally unseen data. For example, Spring Data REST will ignore fields or getters that are marked up with `@JsonIgnore` annotations. Look at the following domain object:

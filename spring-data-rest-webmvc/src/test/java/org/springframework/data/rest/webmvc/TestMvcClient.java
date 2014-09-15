@@ -104,6 +104,22 @@ public class TestMvcClient {
 	}
 
 	/**
+	 * Perform GET [href] with an explicit Accept media type using MockMvc. Verify the requests succeeded and also came
+	 * back as the Accept type.
+	 *
+	 * @param href
+	 * @param contentType
+	 * @return a mocked servlet response with results from GET [href]
+	 * @throws Exception
+	 */
+	public MockHttpServletResponse request(String href, MediaType contentType, HttpHeaders httpHeaders) throws Exception {
+		return mvc.perform(get(href).accept(contentType).headers(httpHeaders)). //
+				andExpect(status().isOk()). //
+				andExpect(content().contentType(contentType)). //
+				andReturn().getResponse();
+	}
+
+	/**
 	 * Convenience wrapper that first expands the link using URI substitution before requesting with the default media
 	 * type.
 	 *

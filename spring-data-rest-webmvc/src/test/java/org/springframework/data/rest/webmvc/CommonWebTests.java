@@ -48,6 +48,8 @@ import com.jayway.jsonpath.JsonPath;
  */
 public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
+	protected abstract Iterable<String> expectedRootLinkRels();
+
 	// Root test cases
 
 	@Test

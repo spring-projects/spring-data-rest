@@ -1,0 +1,67 @@
+[[security]]
+= Security
+:spring-data-rest-root: ../../..
+:spring-security-docs: http://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle
+
+Spring Data REST works quite well with Spring Security. This section will show examples of how to secure your Spring Data REST services with *method level security*.
+
+[[security.pre-and-post]]
+== @Pre and @Post security
+
+The following example from Spring Data REST's test suite shows Spring Security's {spring-security-docs}/#el-pre-post-annotations[PreAuthorization model], the most sophisticated version:
+
+.spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/PreAuthorizedOrderRepository.java
+====
+[source,java]
+----
+include::{spring-data-rest-root}/spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/PreAuthorizedOrderRepository.java[tag=code]
+----
+====
+
+This is a standard Spring Data repository definition extending `CrudRepository` with some key changes.
+
+<1> This Spring Security annotation secures the entire repository. The {spring-security-docs}/#el-common-built-in[Spring Security SpEL expression] indicates the principal must have *ROLE_USER* in his collection of roles.
+<2> To change method-level settings, you must override the method signature and apply a Spring Security annotation. In this case, the method overrides the repository-level settings with the requirement that the user have *ROLE_ADMIN* to perform a delete.
+
+IMPORTANT: Repository and method level security settings don't combine. Instead, method-level settings _override_ repository level settings.
+
+The previous example illustrates that `CrudRepository`, in fact, has four delete methods. You must override all delete methods to properly secure it.
+
+[[security.secured]]
+== @Secured security
+
+The following example shows Spring Security's older `@Secured` annotation, which is purely role-based:
+
+.spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/SecuredPersonRepository.java
+====
+[source,java]
+----
+include::{spring-data-rest-root}/spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/SecuredPersonRepository.java[tag=code]
+----
+====
+
+<1> This results in the same security check, but has less flexibility. It only allows roles as the means to restrict access.
+<2> Again, this shows that delete methods require *ROLE_ADMIN*.
+
+NOTE: If you are starting with a new project or first applying Spring Security, `@PreAuthorize` is the recommended solution. If are already using Spring Security with `@Secured` in other parts of your app, you can continue on that path without rewriting everything.
+
+[[security.enable-method-level]]
+== Enabling method level security
+
+To configure method level security, here is a brief snippet from Spring Data REST's test suite:
+
+.spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/SecurityConfiguration.java
+====
+[source,java]
+----
+include::{spring-data-rest-root}/spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/SecurityConfiguration.java[tag=code]
+	...
+}
+----
+====
+
+<1> This is a Spring configuration class.
+<2> It uses Spring Security's `@EnableGlobalMethodSecurity` annotation to enable both `@Secured` and `@Pre`/`@Post` support. NOTE: You don't have to use both. This particular case is used to prove both versions work with Spring Data REST.
+<3> This class extends Spring Security's `WebSecurityConfigurerAdapter` which is used for pure Java configuration of security.
+
+The rest of the configuration class isn't listed because it follows {spring-security-docs}/#hello-web-security-java-configuration[standard practices] you can read about in the Spring Security reference docs.

@@ -74,10 +74,13 @@ public abstract class AbstractWebIntegrationTests {
 
 	@Before
 	public void setUp() {
+		setupMockMvc();
+		this.client = new TestMvcClient(mvc, discoverers);
+	}
 
+	protected void setupMockMvc() {
 		this.mvc = MockMvcBuilders.webAppContextSetup(context).//
 				defaultRequest(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)).build();
-		this.client = new TestMvcClient(mvc, discoverers);
 	}
 
 	protected MockHttpServletResponse postAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
@@ -235,8 +238,6 @@ public abstract class AbstractWebIntegrationTests {
 			}
 		};
 	}
-
-	protected abstract Iterable<String> expectedRootLinkRels();
 
 	protected Map<String, String> getPayloadToPost() throws Exception {
 		return Collections.emptyMap();
