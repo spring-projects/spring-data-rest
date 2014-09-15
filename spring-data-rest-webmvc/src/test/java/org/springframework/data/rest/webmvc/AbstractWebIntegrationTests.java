@@ -17,26 +17,20 @@ package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import net.minidev.json.JSONArray;
 
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkDiscoverer;
 import org.springframework.hateoas.LinkDiscoverers;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -45,9 +39,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
@@ -59,6 +51,10 @@ import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 
 /**
+ * A test harness for hypermedia unit/integration testing. Provides chained operations (like postAndGet) to create
+ * a new entity and then retrieve it with a single method call. It also provides often-used assertions (like
+ * assertJsonPathEquals).
+ *
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
@@ -69,77 +65,18 @@ public abstract class AbstractWebIntegrationTests {
 
 	private static final String CONTENT_LINK_JSONPATH = "$._embedded.._links.%s.href[0]";
 
-	protected static MediaType DEFAULT_MEDIA_TYPE = org.springframework.hateoas.MediaTypes.HAL_JSON;
-
 	@Autowired WebApplicationContext context;
 	@Autowired LinkDiscoverers discoverers;
 
+	protected WebTestUtils testUtils;
 	protected MockMvc mvc;
 
 	@Before
 	public void setUp() {
 
 		mvc = MockMvcBuilders.webAppContextSetup(context).//
-				defaultRequest(get("/").accept(DEFAULT_MEDIA_TYPE)).build();
-	}
-
-	protected MockHttpServletResponse request(String href, MediaType contentType) throws Exception {
-		return mvc.perform(get(href).accept(contentType)). //
-				andExpect(status().isOk()). //
-				andExpect(content().contentType(contentType)). //
-				andReturn().getResponse();
-	}
-
-	protected MockHttpServletResponse request(Link link) throws Exception {
-		return request(link.expand().getHref());
-	}
-
-	protected MockHttpServletResponse request(Link link, MediaType mediaType) throws Exception {
-		return request(link.expand().getHref(), mediaType);
-	}
-
-	protected MockHttpServletResponse request(String href) throws Exception {
-		return request(href, DEFAULT_MEDIA_TYPE);
-	}
-
-	protected ResultActions follow(Link link) throws Exception {
-		return follow(link.expand().getHref());
-	}
-
-	protected ResultActions follow(String href) throws Exception {
-		return mvc.perform(get(href));
-	}
-
-	protected List<Link> discover(String rel) throws Exception {
-		return discover(new Link("/"), rel);
-	}
-
-	protected Link discoverUnique(String rel) throws Exception {
-
-		List<Link> discover = discover(rel);
-		assertThat(discover, hasSize(1));
-		return discover.get(0);
-	}
-
-	protected List<Link> discover(Link root, String rel) throws Exception {
-
-		MockHttpServletResponse response = mvc.perform(get(root.expand().getHref()).accept(DEFAULT_MEDIA_TYPE)).//
-				andExpect(status().isOk()).//
-				andExpect(hasLinkWithRel(rel)).//
-				andReturn().getResponse();
-
-		String s = response.getContentAsString();
-		return getDiscoverer(response).findLinksWithRel(rel, s);
-	}
-
-	protected Link discoverUnique(Link root, String rel) throws Exception {
-
-		MockHttpServletResponse response = mvc.perform(get(root.expand().getHref()).accept(DEFAULT_MEDIA_TYPE)).//
-				andExpect(status().isOk()).//
-				andExpect(hasLinkWithRel(rel)).//
-				andReturn().getResponse();
-
-		return assertHasLinkWithRel(rel, response);
+				defaultRequest(get("/").accept(WebTestUtils.DEFAULT_MEDIA_TYPE)).build();
+		testUtils = new WebTestUtils(mvc, discoverers);
 	}
 
 	protected MockHttpServletResponse postAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
@@ -157,7 +94,7 @@ public abstract class AbstractWebIntegrationTests {
 			return response;
 		}
 
-		return request(response.getHeader("Location"));
+		return testUtils.request(response.getHeader("Location"));
 	}
 
 	protected MockHttpServletResponse putAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
@@ -168,7 +105,7 @@ public abstract class AbstractWebIntegrationTests {
 				andExpect(status().is(both(greaterThanOrEqualTo(200)).and(lessThan(300)))).//
 				andReturn().getResponse();
 
-		return StringUtils.hasText(response.getContentAsString()) ? response : request(link);
+		return StringUtils.hasText(response.getContentAsString()) ? response : testUtils.request(link);
 	}
 
 	protected MockHttpServletResponse patchAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
@@ -180,7 +117,7 @@ public abstract class AbstractWebIntegrationTests {
 				andExpect(status().isNoContent()).//
 				andReturn().getResponse();
 
-		return StringUtils.hasText(response.getContentAsString()) ? response : request(href);
+		return StringUtils.hasText(response.getContentAsString()) ? response : testUtils.request(href);
 	}
 
 	protected void deleteAndVerify(Link link) throws Exception {
@@ -194,17 +131,6 @@ public abstract class AbstractWebIntegrationTests {
 		// Check that the resource is unavailable after a DELETE
 		mvc.perform(get(href)).//
 				andExpect(status().isNotFound());
-	}
-
-	protected Link assertHasLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
-
-		String content = response.getContentAsString();
-		Link link = getDiscoverer(response).findLinkWithRel(rel, content);
-
-		assertThat("Expected to find link with rel " + rel + " but found none in " + content + "!", link,
-				is(notNullValue()));
-
-		return link;
 	}
 
 	protected Link assertHasContentLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
@@ -241,20 +167,9 @@ public abstract class AbstractWebIntegrationTests {
 	protected void assertDoesNotHaveLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
 
 		String content = response.getContentAsString();
-		Link link = getDiscoverer(response).findLinkWithRel(rel, content);
+		Link link = testUtils.getDiscoverer(response).findLinkWithRel(rel, content);
 
 		assertThat("Expected not to find link with rel " + rel + " but found " + link + "!", link, is(nullValue()));
-	}
-
-	private LinkDiscoverer getDiscoverer(MockHttpServletResponse response) {
-
-		String contentType = response.getContentType();
-		LinkDiscoverer linkDiscovererFor = discoverers.getLinkDiscovererFor(contentType);
-
-		assertThat("Did not find a LinkDiscoverer for returned media type " + contentType + "!", linkDiscovererFor,
-				is(notNullValue()));
-
-		return linkDiscovererFor;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -296,22 +211,6 @@ public abstract class AbstractWebIntegrationTests {
 		return jsonQueryResults;
 	}
 
-	protected ResultMatcher hasLinkWithRel(final String rel) {
-
-		return new ResultMatcher() {
-
-			@Override
-			public void match(MvcResult result) throws Exception {
-
-				MockHttpServletResponse response = result.getResponse();
-				String s = response.getContentAsString();
-
-				assertThat("Expected to find link with rel " + rel + " but found none in " + s, //
-						getDiscoverer(response).findLinkWithRel(rel, s), notNullValue());
-			}
-		};
-	}
-
 	protected ResultMatcher doesNotHaveLinkWithRel(final String rel) {
 
 		return new ResultMatcher() {
@@ -323,159 +222,9 @@ public abstract class AbstractWebIntegrationTests {
 				String s = response.getContentAsString();
 
 				assertThat("Expected not to find link with rel " + rel + " but found one in " + s, //
-						getDiscoverer(response).findLinkWithRel(rel, s), nullValue());
+						testUtils.getDiscoverer(response).findLinkWithRel(rel, s), nullValue());
 			}
 		};
-	}
-
-	// Root test cases
-
-	@Test
-	public void exposesRootResource() throws Exception {
-
-		ResultActions actions = mvc.perform(get("/").accept(DEFAULT_MEDIA_TYPE)).andExpect(status().isOk());
-
-		for (String rel : expectedRootLinkRels()) {
-			actions.andExpect(hasLinkWithRel(rel));
-		}
-	}
-
-	/**
-	 * @see DATAREST-113
-	 */
-	@Test
-	public void exposesSchemasForResourcesExposed() throws Exception {
-
-		MockHttpServletResponse response = request("/");
-
-		for (String rel : expectedRootLinkRels()) {
-
-			Link link = assertHasLinkWithRel(rel, response);
-
-			// Resource
-			request(link);
-
-			// Schema - TODO:Improve by using hypermedia
-			mvc.perform(get(link.expand().getHref() + "/schema").//
-					accept(MediaType.parseMediaType("application/schema+json"))).//
-					andExpect(status().isOk());
-		}
-	}
-
-	/**
-	 * @see DATAREST-203
-	 */
-	@Test
-	public void servesHalWhenRequested() throws Exception {
-
-		mvc.perform(get("/")). //
-				andExpect(content().contentType(MediaTypes.HAL_JSON)). //
-				andExpect(jsonPath("$._links", notNullValue()));
-	}
-
-	/**
-	 * @see DATAREST-203
-	 */
-	@Test
-	public void servesHalWhenJsonIsRequested() throws Exception {
-
-		mvc.perform(get("/").accept(MediaType.APPLICATION_JSON)). //
-				andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)). //
-				andExpect(jsonPath("$._links", notNullValue()));
-	}
-
-	/**
-	 * @see DATAREST-203
-	 */
-	@Test
-	public void exposesSearchesForRootResources() throws Exception {
-
-		MockHttpServletResponse response = request("/");
-
-		for (String rel : expectedRootLinkRels()) {
-
-			Link link = assertHasLinkWithRel(rel, response);
-			String rootResourceRepresentation = request(link).getContentAsString();
-			Link searchLink = getDiscoverer(response).findLinkWithRel("search", rootResourceRepresentation);
-
-			if (searchLink != null) {
-				request(searchLink);
-			}
-		}
-	}
-
-	@Test
-	public void nic() throws Exception {
-
-		Map<String, String> payloads = getPayloadToPost();
-		assumeFalse(payloads.isEmpty());
-
-		MockHttpServletResponse response = request("/");
-
-		for (String rel : expectedRootLinkRels()) {
-
-			String payload = payloads.get(rel);
-
-			if (payload != null) {
-
-				Link link = assertHasLinkWithRel(rel, response);
-				String target = link.expand().getHref();
-
-				MockHttpServletRequestBuilder request = post(target).//
-						content(payload).//
-						contentType(MediaType.APPLICATION_JSON);
-
-				mvc.perform(request). //
-						andExpect(status().isCreated());
-			}
-		}
-	}
-
-	/**
-	 * @see DATAREST-198
-	 */
-	@Test
-	public void accessLinkedResources() throws Exception {
-
-		MockHttpServletResponse rootResource = request("/");
-
-		for (Entry<String, List<String>> linked : getRootAndLinkedResources().entrySet()) {
-
-			Link resourceLink = assertHasLinkWithRel(linked.getKey(), rootResource);
-			MockHttpServletResponse resource = request(resourceLink);
-
-			for (String linkedRel : linked.getValue()) {
-
-				// Find URIs pointing to linked resources
-				String jsonPath = String.format("$..%s._links.%s.href", linked.getKey(), linkedRel);
-				String representation = resource.getContentAsString();
-				JSONArray uris = JsonPath.read(representation, jsonPath);
-
-				for (Object href : uris) {
-
-					follow(href.toString()). //
-							andExpect(status().isOk());
-				}
-			}
-		}
-	}
-
-	/**
-	 * @see DATAREST-230
-	 */
-	@Test
-	public void exposesDescriptionAsAlpsDocuments() throws Exception {
-
-		MediaType ALPS_MEDIA_TYPE = MediaType.valueOf("application/alps+json");
-
-		MockHttpServletResponse response = request("/");
-		Link profileLink = assertHasLinkWithRel("profile", response);
-
-		mvc.perform(//
-				get(profileLink.expand().getHref()).//
-						accept(ALPS_MEDIA_TYPE)).//
-				andExpect(status().isOk()).//
-				andExpect(content().contentType(ALPS_MEDIA_TYPE));
 	}
 
 	protected abstract Iterable<String> expectedRootLinkRels();

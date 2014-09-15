@@ -17,14 +17,14 @@ package org.springframework.data.rest.webmvc.gemfire;
 
 import java.util.Arrays;
 
-import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
+import org.springframework.data.rest.webmvc.CommonWebTests;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
  * @author Oliver Gierke
  */
 @ContextConfiguration(classes = GemfireRepositoryConfig.class)
-public class GemfireWebTests extends AbstractWebIntegrationTests {
+public class GemfireWebTests extends CommonWebTests {
 
 	/* 
 	 * (non-Javadoc)

@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
+import org.springframework.data.rest.webmvc.CommonWebTests;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.http.MediaType;
@@ -57,7 +57,7 @@ import com.jayway.jsonpath.JsonPath;
  */
 @Transactional
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
-public class JpaWebTests extends AbstractWebIntegrationTests {
+public class JpaWebTests extends CommonWebTests {
 
 	private static final MediaType TEXT_URI_LIST = MediaType.valueOf("text/uri-list");
 	static final String LINK_TO_SIBLINGS_OF = "$._embedded..[?(@.firstName == '%s')]._links.siblings.href[0]";
@@ -125,17 +125,17 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void accessPersons() throws Exception {
 
-		MockHttpServletResponse response = request("/people?page=0&size=1");
+		MockHttpServletResponse response = testUtils.request("/people?page=0&size=1");
 
-		Link nextLink = assertHasLinkWithRel(Link.REL_NEXT, response);
+		Link nextLink = testUtils.assertHasLinkWithRel(Link.REL_NEXT, response);
 		assertDoesNotHaveLinkWithRel(Link.REL_PREVIOUS, response);
 
-		response = request(nextLink);
-		assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		nextLink = assertHasLinkWithRel(Link.REL_NEXT, response);
+		response = testUtils.request(nextLink);
+		testUtils.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
+		nextLink = testUtils.assertHasLinkWithRel(Link.REL_NEXT, response);
 
-		response = request(nextLink);
-		assertHasLinkWithRel(Link.REL_PREVIOUS, response);
+		response = testUtils.request(nextLink);
+		testUtils.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
 		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);
 	}
 
@@ -145,13 +145,13 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void exposesLinkForRelatedResource() throws Exception {
 
-		MockHttpServletResponse response = request("/");
-		Link ordersLink = assertHasLinkWithRel("orders", response);
+		MockHttpServletResponse response = testUtils.request("/");
+		Link ordersLink = testUtils.assertHasLinkWithRel("orders", response);
 
-		MockHttpServletResponse orders = request(ordersLink);
+		MockHttpServletResponse orders = testUtils.request(ordersLink);
 		Link creatorLink = assertHasContentLinkWithRel("creator", orders);
 
-		assertThat(request(creatorLink), is(notNullValue()));
+		assertThat(testUtils.request(creatorLink), is(notNullValue()));
 	}
 
 	/**
@@ -160,10 +160,10 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void exposesInlinedEntities() throws Exception {
 
-		MockHttpServletResponse response = request("/");
-		Link ordersLink = assertHasLinkWithRel("orders", response);
+		MockHttpServletResponse response = testUtils.request("/");
+		Link ordersLink = testUtils.assertHasLinkWithRel("orders", response);
 
-		MockHttpServletResponse orders = request(ordersLink);
+		MockHttpServletResponse orders = testUtils.request(ordersLink);
 		assertHasJsonPathValue("$..lineItems", orders);
 	}
 
@@ -185,7 +185,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void createPersonThenVerifyIgnoredAttributesDontExist() throws Exception {
 
-		Link peopleLink = discoverUnique("people");
+		Link peopleLink = testUtils.discoverUnique("people");
 		ObjectMapper mapper = new ObjectMapper();
 		Person frodo = new Person("Frodo", "Baggins");
 		frodo.setAge(77);
@@ -208,12 +208,12 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void createThenPatch() throws Exception {
 
-		Link peopleLink = discoverUnique("people");
+		Link peopleLink = testUtils.discoverUnique("people");
 
 		MockHttpServletResponse bilbo = postAndGet(peopleLink, "{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }",
 				MediaType.APPLICATION_JSON);
 
-		Link bilboLink = assertHasLinkWithRel("self", bilbo);
+		Link bilboLink = testUtils.assertHasLinkWithRel("self", bilbo);
 
 		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName"), is("Bilbo"));
 		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName"), is("Baggins"));
@@ -235,13 +235,13 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void createThenPut() throws Exception {
 
-		Link peopleLink = discoverUnique("people");
+		Link peopleLink = testUtils.discoverUnique("people");
 
 		MockHttpServletResponse bilbo = postAndGet(peopleLink,//
 				"{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }",//
 				MediaType.APPLICATION_JSON);
 
-		Link bilboLink = assertHasLinkWithRel("self", bilbo);
+		Link bilboLink = testUtils.assertHasLinkWithRel("self", bilbo);
 
 		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName"), equalTo("Bilbo"));
 		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName"), equalTo("Baggins"));
@@ -376,7 +376,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void propertiesCanHaveNulls() throws Exception {
 
-		Link peopleLink = discoverUnique("people");
+		Link peopleLink = testUtils.discoverUnique("people");
 
 		Person frodo = new Person();
 		frodo.setFirstName("Frodo");
@@ -396,39 +396,39 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void putShouldWorkDespiteExistingLinks() throws Exception {
 
-		Link peopleLink = discoverUnique("people");
+		Link peopleLink = testUtils.discoverUnique("people");
 
 		Person frodo = new Person("Frodo", "Baggins");
 		String frodoString = mapper.writeValueAsString(frodo);
 
 		MockHttpServletResponse createdPerson = postAndGet(peopleLink, frodoString, MediaType.APPLICATION_JSON);
 
-		Link frodoLink = assertHasLinkWithRel("self", createdPerson);
+		Link frodoLink = testUtils.assertHasLinkWithRel("self", createdPerson);
 		assertJsonPathEquals("$.firstName", "Frodo", createdPerson);
 
 		String bilboWithFrodosLinks = createdPerson.getContentAsString().replace("Frodo", "Bilbo");
 
 		MockHttpServletResponse overwrittenResponse = putAndGet(frodoLink, bilboWithFrodosLinks, MediaType.APPLICATION_JSON);
 
-		assertHasLinkWithRel("self", overwrittenResponse);
+		testUtils.assertHasLinkWithRel("self", overwrittenResponse);
 		assertJsonPathEquals("$.firstName", "Bilbo", overwrittenResponse);
 	}
 
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
 
-		Link peopleLink = discoverUnique("people");
+		Link peopleLink = testUtils.discoverUnique("people");
 		List<Link> links = new ArrayList<Link>();
 
 		MockHttpServletResponse primaryResponse = postAndGet(peopleLink, mapper.writeValueAsString(primary),
 				MediaType.APPLICATION_JSON);
-		links.add(assertHasLinkWithRel("siblings", primaryResponse));
+		links.add(testUtils.assertHasLinkWithRel("siblings", primaryResponse));
 
 		for (Person person : persons) {
 
 			String payload = mapper.writeValueAsString(person);
 			MockHttpServletResponse response = postAndGet(peopleLink, payload, MediaType.APPLICATION_JSON);
 
-			links.add(assertHasLinkWithRel(Link.REL_SELF, response));
+			links.add(testUtils.assertHasLinkWithRel(Link.REL_SELF, response));
 		}
 
 		return links;
@@ -440,7 +440,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void doesNotAllowGetToCollectionResourceIfFindAllIsNotExported() throws Exception {
 
-		Link link = discoverUnique("addresses");
+		Link link = testUtils.discoverUnique("addresses");
 
 		mvc.perform(get(link.getHref())).//
 				andExpect(status().isMethodNotAllowed());
@@ -452,7 +452,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void doesNotAllowPostToCollectionResourceIfSaveIsNotExported() throws Exception {
 
-		Link link = discoverUnique("addresses");
+		Link link = testUtils.discoverUnique("addresses");
 
 		mvc.perform(post(link.getHref()).content("{}").contentType(MediaType.APPLICATION_JSON)).//
 				andExpect(status().isMethodNotAllowed());
@@ -467,9 +467,9 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void returnsProjectionIfRequested() throws Exception {
 
-		Link orders = discoverUnique("orders");
+		Link orders = testUtils.discoverUnique("orders");
 
-		MockHttpServletResponse response = request(orders);
+		MockHttpServletResponse response = testUtils.request(orders);
 		Link orderLink = assertContentLinkWithRel("self", response, true).expand();
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(orderLink.getHref());
@@ -497,18 +497,18 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void onlyLinksShouldAppearWhenExecuteSearchCompact() throws Exception {
 
-		Link peopleLink = discoverUnique("people");
+		Link peopleLink = testUtils.discoverUnique("people");
 		Person daenerys = new Person("Daenerys", "Targaryen");
 		String daenerysString = mapper.writeValueAsString(daenerys);
 
 		MockHttpServletResponse createdPerson = postAndGet(peopleLink, daenerysString, MediaType.APPLICATION_JSON);
-		Link daenerysLink = assertHasLinkWithRel("self", createdPerson);
+		Link daenerysLink = testUtils.assertHasLinkWithRel("self", createdPerson);
 		assertJsonPathEquals("$.firstName", "Daenerys", createdPerson);
 
-		Link searchLink = discoverUnique(peopleLink, "search");
-		Link byFirstNameLink = discoverUnique(searchLink, "findFirstPersonByFirstName");
+		Link searchLink = testUtils.discoverUnique(peopleLink, "search");
+		Link byFirstNameLink = testUtils.discoverUnique(searchLink, "findFirstPersonByFirstName");
 
-		MockHttpServletResponse response = request(byFirstNameLink.expand("Daenerys"),
+		MockHttpServletResponse response = testUtils.request(byFirstNameLink.expand("Daenerys"),
 				MediaType.parseMediaType("application/x-spring-data-compact+json"));
 
 		String responseBody = response.getContentAsString();
@@ -526,9 +526,9 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void rendersExcerptProjectionsCorrectly() throws Exception {
 
-		Link authorsLink = discoverUnique("authors");
+		Link authorsLink = testUtils.discoverUnique("authors");
 
-		MockHttpServletResponse response = request(authorsLink);
+		MockHttpServletResponse response = testUtils.request(authorsLink);
 		String firstAuthorPath = "$._embedded.authors[0]";
 
 		// Has main content
@@ -542,7 +542,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 		String content = response.getContentAsString();
 		String href = JsonPath.read(content, firstAuthorPath.concat("._links.self.href"));
 
-		follow(new Link(href)).andExpect(hasLinkWithRel("books"));
+		testUtils.follow(new Link(href)).andExpect(testUtils.hasLinkWithRel("books"));
 	}
 
 	/**
@@ -551,7 +551,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void returns404WhenTryingToDeleteANonExistingResource() throws Exception {
 
-		Link authorsLink = discoverUnique("authors");
+		Link authorsLink = testUtils.discoverUnique("authors");
 
 		mvc.perform(delete(authorsLink.getHref().concat("/{id}"), 4711)).//
 				andExpect(status().isNotFound());
@@ -563,20 +563,20 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void execturesSearchThatTakesASort() throws Exception {
 
-		Link booksLink = discoverUnique("books");
-		Link searchLink = discoverUnique(booksLink, "search");
-		Link findBySortedLink = discoverUnique(searchLink, "find-by-sorted");
+		Link booksLink = testUtils.discoverUnique("books");
+		Link searchLink = testUtils.discoverUnique(booksLink, "search");
+		Link findBySortedLink = testUtils.discoverUnique(searchLink, "find-by-sorted");
 
 		// Assert sort options advertised
 		assertThat(findBySortedLink.isTemplated(), is(true));
 		assertThat(findBySortedLink.getVariableNames(), contains("sort"));
 
 		// Assert results returned as specified
-		follow(findBySortedLink.expand("title,desc")).//
+		testUtils.follow(findBySortedLink.expand("title,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data"));
 
-		follow(findBySortedLink.expand("title,asc")).//
+		testUtils.follow(findBySortedLink.expand("title,asc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)"));
 	}
@@ -590,7 +590,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	 */
 	private void assertSiblingNames(Link link, String... siblingNames) throws Exception {
 
-		String responseBody = request(link).getContentAsString();
+		String responseBody = testUtils.request(link).getContentAsString();
 		List<String> persons = JsonPath.read(responseBody, "$._embedded.people[*].firstName");
 
 		assertThat(persons, hasSize(siblingNames.length));
@@ -599,7 +599,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 	private void assertPersonWithNameAndSiblingLink(String name) throws Exception {
 
-		MockHttpServletResponse response = request(discoverUnique("people"));
+		MockHttpServletResponse response = testUtils.request(testUtils.discoverUnique("people"));
 
 		String jsonPath = String.format("$._embedded.people[?(@.firstName == '%s')][0]", name);
 
@@ -610,7 +610,7 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 
 		// Assert sibling link exposed in resource pointed to
 		Link selfLink = new Link(JsonPath.<String> read(john, "$._links.self.href"));
-		follow(selfLink).//
+		testUtils.follow(selfLink).//
 				andExpect(status().isOk()).//
 				andExpect(jsonPath("$._links.siblings", is(notNullValue())));
 	}
