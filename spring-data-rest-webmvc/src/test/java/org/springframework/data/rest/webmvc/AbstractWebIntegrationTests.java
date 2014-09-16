@@ -57,6 +57,7 @@ import com.jayway.jsonpath.JsonPath;
  *
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Christoph Strobl
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -205,10 +206,18 @@ public abstract class AbstractWebIntegrationTests {
 	protected String assertJsonPathEquals(String path, String expected, MockHttpServletResponse response)
 			throws Exception {
 
-		String jsonQueryResults = assertHasJsonPathValue(path, response);
-		assertThat(jsonQueryResults, is(expected));
+		Object jsonQueryResults = assertHasJsonPathValue(path, response);
 
-		return jsonQueryResults;
+		String jsonString = "";
+
+		if (jsonQueryResults instanceof JSONArray) {
+			jsonString = ((JSONArray) jsonQueryResults).toJSONString();
+		} else {
+			jsonString = jsonQueryResults != null ? jsonQueryResults.toString() : null;
+		}
+
+		assertThat(jsonString, is(expected));
+		return jsonString;
 	}
 
 	protected ResultMatcher doesNotHaveLinkWithRel(final String rel) {

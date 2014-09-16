@@ -15,10 +15,15 @@
  */
 package org.springframework.data.rest.webmvc.solr;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import java.util.Arrays;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -26,7 +31,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
+import org.springframework.hateoas.Link;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Christoph Strobl
@@ -35,6 +45,12 @@ import org.springframework.test.context.ContextConfiguration;
 public class SolrWebTests extends AbstractWebIntegrationTests {
 
 	public static @ClassRule TemporaryFolder tempFoler = new TemporaryFolder();
+
+	private static final Product PLAYSTATION = new Product("1", "playstation", "electronic", "game", "media");
+	private static final Product GAMEBOY = new Product("2", "gameboy", "electronic");
+	private static final Product AMIGA500 = new Product("3", "amiga500", "ancient");
+
+	private static final ObjectMapper MAPPER = new ObjectMapper();
 
 	@Configuration
 	@EnableSolrRepositories
@@ -54,17 +70,82 @@ public class SolrWebTests extends AbstractWebIntegrationTests {
 	public void setUp() {
 
 		super.setUp();
+		repo.save(Arrays.asList(PLAYSTATION, GAMEBOY, AMIGA500));
+	}
 
-		Product product = new Product();
-		product.id = "one";
-		product.name = "name-wow";
-		product.categories = Arrays.asList("one", "two", "three");
+	@After
+	public void tearDown() {
+		repo.deleteAll();
+	}
 
-		repo.save(product);
+	/**
+	 * @see DATASOLR-387
+	 */
+	@Test
+	public void allowsPaginationThroughData() throws Exception {
+
+		MockHttpServletResponse response = request("/products?page=0&size=1");
+
+		Link nextLink = assertHasLinkWithRel(Link.REL_NEXT, response);
+		assertDoesNotHaveLinkWithRel(Link.REL_PREVIOUS, response);
+
+		response = request(nextLink);
+		assertHasLinkWithRel(Link.REL_PREVIOUS, response);
+		nextLink = assertHasLinkWithRel(Link.REL_NEXT, response);
+
+		response = request(nextLink);
+		assertHasLinkWithRel(Link.REL_PREVIOUS, response);
+		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);
+	}
+
+	/**
+	 * @see DATASOLR-387
+	 */
+	@Test
+	public void allowsRetrievingDataById() throws Exception {
+		requestAndCompare(PLAYSTATION);
+	}
+
+	/**
+	 * @see DATASOLR-387
+	 */
+	@Test
+	public void createsEntitesCorrectly() throws Exception {
+
+		Product product = new Product("4", "iWatch", "trends", "scary");
+
+		mvc.perform(
+				put("/products/{id}", 4).content(MAPPER.writeValueAsString(product)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated()).andReturn().getResponse();
+
+		assertJsonDocumentMatches(product);
+	}
+
+	/**
+	 * @see DATASOLR-387
+	 */
+	@Test
+	public void deletesEntitiesCorrectly() throws Exception {
+		deleteAndVerify(new Link("/products/1"));
 	}
 
 	@Override
 	protected Iterable<String> expectedRootLinkRels() {
 		return Arrays.asList("products");
 	}
+
+	private void assertJsonDocumentMatches(Product reference) throws Exception {
+		requestAndCompare(reference);
+	}
+
+	private MockHttpServletResponse requestAndCompare(Product reference) throws Exception {
+
+		MockHttpServletResponse response = request("/products/" + reference.getId());
+
+		assertJsonPathEquals("name", reference.getName(), response);
+		assertJsonPathEquals("categories", MAPPER.writeValueAsString(reference.getCategories()), response);
+
+		return response;
+	}
+
 }

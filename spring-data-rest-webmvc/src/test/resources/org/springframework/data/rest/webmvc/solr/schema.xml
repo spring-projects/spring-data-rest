@@ -9,4 +9,5 @@
 		<field name="name" type="string" indexed="true" stored="true" />
 		<field name="cat" type="string" indexed="true" stored="true" multiValued="true" />
 	</fields>
+	<uniqueKey>id</uniqueKey>
 </schema>
