@@ -32,6 +32,7 @@
 		<springdata.mongodb>1.7.0.BUILD-SNAPSHOT</springdata.mongodb>
 		<springdata.neo4j>3.3.0.BUILD-SNAPSHOT</springdata.neo4j>
 		<springdata.gemfire>1.6.0.BUILD-SNAPSHOT</springdata.gemfire>
+		<springdata.solr>1.4.0.BUILD-SNAPSHOT</springdata.solr>
 
 		<hibernate.version>4.3.5.Final</hibernate.version>
 
@@ -106,6 +107,13 @@
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-gemfire</artifactId>
 			<version>${springdata.gemfire}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-solr</artifactId>
+			<version>${springdata.solr}</version>
 			<scope>test</scope>
 		</dependency>
 

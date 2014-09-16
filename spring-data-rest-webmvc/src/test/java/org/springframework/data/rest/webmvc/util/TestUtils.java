@@ -16,27 +16,37 @@
 package org.springframework.data.rest.webmvc.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Map;
 import java.util.Scanner;
 
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.rest.webmvc.jpa.JpaWebTests;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StreamUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Test helper methods.
  * 
  * @author Oliver Gierke
+ * @author Christoph Strobl
  */
 public class TestUtils {
+
+	private static final Charset UTF8 = Charset.forName("UTF-8");
 
 	public static String readFileFromClasspath(String name) throws Exception {
 
 		ClassPathResource file = new ClassPathResource(name, JpaWebTests.class);
 		StringBuilder builder = new StringBuilder();
 
-		Scanner scanner = new Scanner(file.getFile(), "UTF-8");
+		Scanner scanner = new Scanner(file.getFile(), UTF8.name());
 
 		try {
 
@@ -59,6 +69,31 @@ public class TestUtils {
 	 */
 	public static InputStream asStream(String source) {
 		Assert.notNull(source, "Source string must not be null!");
-		return new ByteArrayInputStream(source.getBytes(Charset.forName("UTF-8")));
+		return new ByteArrayInputStream(source.getBytes(UTF8));
 	}
+
+	/**
+	 * Filters the given {@link Resource} by replacing values within.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @param replacements
+	 * @return {@link Resource} with replaced values.
+	 * @throws IOException
+	 */
+	public static Resource filterResource(Resource source, Map<String, ?> replacements) throws IOException {
+
+		Assert.notNull(source, "Cannot filter 'null' resource");
+		if (CollectionUtils.isEmpty(replacements)) {
+			return source;
+		}
+
+		String temp = StreamUtils.copyToString(source.getInputStream(), UTF8);
+
+		for (Map.Entry<String, ?> entry : replacements.entrySet()) {
+			temp = StringUtils.replace(temp, entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : "");
+		}
+
+		return new ByteArrayResource(temp.getBytes(UTF8));
+	}
+
 }
