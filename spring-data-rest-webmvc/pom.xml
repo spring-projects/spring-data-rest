@@ -110,6 +110,23 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.solr</groupId>
+			<artifactId>solr-core</artifactId>
+			<version>4.7.2</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jdk.tools</artifactId>
+					<groupId>jdk.tools</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 	</dependencies>
 
 </project>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<dataDir>${data.dir}</dataDir>
+	<directoryFactory name="DirectoryFactory"
+		class="solr.NRTCachingDirectoryFactory" />
+	<luceneMatchVersion>${lucene.version}</luceneMatchVersion>
+	<updateHandler class="solr.DirectUpdateHandler2">
+		<commitWithin>
+			<softCommit>${solr.commitwithin.softcommit:true}</softCommit>
+		</commitWithin>
+	</updateHandler>
+	<requestHandler name="/select" class="solr.SearchHandler">
+		<lst name="defaults">
+			<str name="echoParams">explicit</str>
+			<str name="indent">true</str>
+			<str name="df">text</str>
+		</lst>
+	</requestHandler>
+	<requestHandler name="/admin/"
+		class="org.apache.solr.handler.admin.AdminHandlers" />
+	<requestHandler name="/update" class="solr.UpdateRequestHandler" />
+</config>
