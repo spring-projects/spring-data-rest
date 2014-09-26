@@ -15,6 +15,11 @@
  */
 package org.springframework.data.rest.core.projection;
 
+import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.util.Assert;
@@ -62,6 +67,23 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 
 		Class<?> returnType = invocation.getMethod().getReturnType();
 
+		if (result instanceof Collection && (Collection.class.equals(returnType) || List.class.equals(returnType))) {
+			ParameterizedType genericReturnType = (ParameterizedType) invocation.getMethod().getGenericReturnType();
+			Class<?> resultElementClass = (Class<?>) genericReturnType.getActualTypeArguments()[0];
+			
+			Collection<?> resultCollection = (Collection<?>) result;
+			List<Object> projections = new ArrayList<Object>(resultCollection.size());
+			for (Object resultElement : resultCollection) {
+				Object projection = getProjection(resultElement, resultElementClass);
+				projections.add(projection);
+			}
+			return projections;
+		}
+
+		return getProjection(result, returnType);
+	}
+
+	private Object getProjection(Object result, Class<?> returnType) {
 		return ClassUtils.isAssignable(returnType, result.getClass()) ? result : factory.createProjection(result,
 				returnType);
 	}
