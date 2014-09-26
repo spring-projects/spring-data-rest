@@ -15,8 +15,17 @@
  */
 package org.springframework.data.rest.core.projection;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.core.CollectionFactory;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -60,9 +69,77 @@ class ProjectingMethodInterceptor implements MethodInterceptor {
 			return null;
 		}
 
-		Class<?> returnType = invocation.getMethod().getReturnType();
+		TypeInformation<?> type = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod());
 
+		if (type.isCollectionLike()) {
+			return projectCollectionElements(asCollection(result), type);
+		} else if (type.isMap()) {
+			return projectMapValues((Map<?, ?>) result, type);
+		} else {
+			return getProjection(result, type.getType());
+		}
+	}
+
+	/**
+	 * Creates projections of the given {@link Collection}'s elements if necessary and returns a new collection containing
+	 * the projection results.
+	 * 
+	 * @param sources must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private Collection<Object> projectCollectionElements(Collection<?> sources, TypeInformation<?> type) {
+
+		Collection<Object> result = CollectionFactory.createCollection(type.getType(), sources.size());
+
+		for (Object source : sources) {
+			result.add(getProjection(source, type.getComponentType().getType()));
+		}
+
+		return result;
+	}
+
+	/**
+	 * Creates projections of the given {@link Map}'s values if necessary and returns an new {@link Map} with the handled
+	 * values.
+	 * 
+	 * @param sources must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	private Map<Object, Object> projectMapValues(Map<?, ?> sources, TypeInformation<?> type) {
+
+		Map<Object, Object> result = CollectionFactory.createMap(type.getType(), sources.size());
+
+		for (Entry<?, ?> source : sources.entrySet()) {
+			result.put(source.getKey(), getProjection(source.getValue(), type.getMapValueType().getType()));
+		}
+
+		return result;
+	}
+
+	private Object getProjection(Object result, Class<?> returnType) {
 		return ClassUtils.isAssignable(returnType, result.getClass()) ? result : factory.createProjection(result,
 				returnType);
+	}
+
+	/**
+	 * Turns the given value into a {@link Collection}. Will create an empty {@link Collection} for {@literal null}, turn
+	 * an array iinto a collection an wrap all other values into a single-element collection.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @return
+	 */
+	private static Collection<?> asCollection(Object source) {
+
+		if (source == null) {
+			return Collections.emptySet();
+		} else if (source instanceof Collection) {
+			return (Collection<?>) source;
+		} else if (source.getClass().isArray()) {
+			return Arrays.asList((Object[]) source);
+		} else {
+			return Collections.singleton(source);
+		}
 	}
 }
