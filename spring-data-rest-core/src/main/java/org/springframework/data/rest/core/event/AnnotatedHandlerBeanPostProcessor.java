@@ -30,6 +30,7 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Jon Brisbin
+ * @author Saulo Medeiros de Araujo
  */
 public class AnnotatedHandlerBeanPostProcessor implements ApplicationListener<RepositoryEvent>, BeanPostProcessor {
 
