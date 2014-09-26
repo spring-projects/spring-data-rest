@@ -30,6 +30,7 @@ import org.springframework.util.ClassUtils;
  * projecting proxy in case the returned value is not of the return type of the invoked method.
  * 
  * @author Oliver Gierke
+ * @author Saulo Medeiros de Araujo 
  */
 class ProjectingMethodInterceptor implements MethodInterceptor {
 
