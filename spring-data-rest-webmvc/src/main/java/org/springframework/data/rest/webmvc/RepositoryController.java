@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	 * @return
 	 * @since 2.2
 	 */
-	@RequestMapping(value = "/", method = RequestMethod.OPTIONS)
+	@RequestMapping(value = { "/", "" }, method = RequestMethod.OPTIONS)
 	public HttpEntity<?> optionsForRepositories() {
 
 		HttpHeaders headers = new HttpHeaders();
@@ -90,7 +90,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	 * @return
 	 * @since 2.2
 	 */
-	@RequestMapping(value = "/", method = RequestMethod.HEAD)
+	@RequestMapping(value = { "/", "" }, method = RequestMethod.HEAD)
 	public ResponseEntity<?> headForRepositories() {
 		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
 	}
@@ -100,7 +100,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/", method = RequestMethod.GET)
+	@RequestMapping(value = { "/", "" }, method = RequestMethod.GET)
 	public HttpEntity<RepositoryLinksResource> listRepositories() {
 
 		RepositoryLinksResource resource = new RepositoryLinksResource();

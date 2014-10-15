@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Jon Brisbin
@@ -31,7 +34,11 @@ import org.springframework.util.Assert;
 @SuppressWarnings("deprecation")
 public class RepositoryRestConfiguration {
 
-	private URI baseUri = URI.create("");
+	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryRestConfiguration.class);
+	private static final URI NO_URI = URI.create("");
+
+	private URI baseUri = NO_URI;
+	private URI basePath = NO_URI;
 	private int defaultPageSize = 20;
 	private int maxPageSize = 1000;
 	private String pageParamName = "page";
@@ -76,16 +83,36 @@ public class RepositoryRestConfiguration {
 	 * @return The base URI.
 	 */
 	public URI getBaseUri() {
-		return baseUri;
+		return basePath != NO_URI ? basePath : baseUri;
+	}
+
+	/**
+	 * The base path to expose repository resources under.
+	 * 
+	 * @return the basePath
+	 */
+	public URI getBasePath() {
+		return basePath;
 	}
 
 	/**
 	 * The base URI against which the exporter should calculate its links.
 	 * 
 	 * @param baseUri must not be {@literal null}.
+	 * @deprecated use {@link #setBasePath(String)} instead.
 	 */
+	@Deprecated
 	public RepositoryRestConfiguration setBaseUri(URI baseUri) {
+
 		Assert.notNull(baseUri, "The base URI cannot be null.");
+
+		LOGGER.warn("Configuring a base URI has been deprecated. Use basePath property instead!");
+
+		if (baseUri.isAbsolute()) {
+			LOGGER
+					.warn("Using absolute base URIs will not be supported as of Spring Data REST 2.3! Be sure to switch to configuring a base path!");
+		}
+
 		this.baseUri = baseUri;
 		return this;
 	}
@@ -94,11 +121,25 @@ public class RepositoryRestConfiguration {
 	 * The base URI against which the exporter should calculate its links.
 	 * 
 	 * @param baseUri must not be {@literal null}.
+	 * @deprecated use {@link #setBasePath(String)} instead.
 	 */
+	@Deprecated
 	public RepositoryRestConfiguration setBaseUri(String baseUri) {
 		Assert.notNull(baseUri, "The base URI cannot be null.");
-		this.baseUri = URI.create(baseUri);
-		return this;
+		return setBaseUri(URI.create(baseUri));
+	}
+
+	/**
+	 * Configures the base path to be used by Spring Data REST to expose repository resources.
+	 * 
+	 * @param basePath the basePath to set
+	 */
+	public void setBasePath(String basePath) {
+
+		basePath = StringUtils.trimTrailingCharacter(basePath, '/');
+		this.basePath = URI.create(basePath.startsWith("/") ? basePath : "/".concat(basePath));
+
+		Assert.isTrue(!this.basePath.isAbsolute(), "Absolute URIs are not supported as base path!");
 	}
 
 	/**

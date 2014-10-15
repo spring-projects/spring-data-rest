@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,9 +65,9 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.projection.ProxyProjectionFactory;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.rest.core.support.RepositoryRelProvider;
+import org.springframework.data.rest.webmvc.BasePathAwareController;
+import org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping;
 import org.springframework.data.rest.webmvc.BaseUri;
-import org.springframework.data.rest.webmvc.BaseUriAwareController;
-import org.springframework.data.rest.webmvc.BaseUriAwareHandlerMapping;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
@@ -139,7 +139,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @Configuration
 @EnableHypermediaSupport(type = HypermediaType.HAL)
 @ComponentScan(basePackageClasses = RepositoryRestController.class,
-		includeFilters = @Filter(BaseUriAwareController.class), useDefaultFilters = false)
+		includeFilters = @Filter(BasePathAwareController.class), useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 @Import(SpringDataJacksonConfiguration.class)
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration {
@@ -239,6 +239,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		RepositoryRestConfiguration config = new RepositoryRestConfiguration(configuration, metadataConfiguration());
 		configureRepositoryRestConfiguration(config);
+
 		return config;
 	}
 
@@ -519,7 +520,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public RequestMappingHandlerMapping fallbackMapping() {
-		return new BaseUriAwareHandlerMapping(config());
+		return new BasePathAwareHandlerMapping(config());
 	}
 
 	@Bean
