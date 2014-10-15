@@ -24,6 +24,7 @@ import java.util.List;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -46,6 +47,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	private final Path path;
 	private final Method method;
 	private final boolean paging;
+	private final boolean sorting;
 
 	private final List<ParameterMetadata> parameterMetadata;
 
@@ -69,7 +71,11 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 				annotation.path());
 		this.method = method;
 		this.parameterMetadata = discoverParameterMetadata(method, resourceRel.concat(".").concat(rel));
-		this.paging = Arrays.asList(method.getParameterTypes()).contains(Pageable.class);
+
+		List<Class<?>> parameterTypes = Arrays.asList(method.getParameterTypes());
+
+		this.paging = parameterTypes.contains(Pageable.class);
+		this.sorting = parameterTypes.contains(Sort.class);
 	}
 
 	private static final List<ParameterMetadata> discoverParameterMetadata(Method method, String baseRel) {
@@ -137,6 +143,15 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	@Override
 	public boolean isPagingResource() {
 		return paging;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#isSortableResource()
+	 */
+	@Override
+	public boolean isSortableResource() {
+		return sorting;
 	}
 
 	/* 

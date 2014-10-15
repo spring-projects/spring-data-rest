@@ -558,6 +558,30 @@ public class JpaWebTests extends AbstractWebIntegrationTests {
 	}
 
 	/**
+	 * @see DATAREST-384
+	 */
+	@Test
+	public void execturesSearchThatTakesASort() throws Exception {
+
+		Link booksLink = discoverUnique("books");
+		Link searchLink = discoverUnique(booksLink, "search");
+		Link findBySortedLink = discoverUnique(searchLink, "find-by-sorted");
+
+		// Assert sort options advertised
+		assertThat(findBySortedLink.isTemplated(), is(true));
+		assertThat(findBySortedLink.getVariableNames(), contains("sort"));
+
+		// Assert results returned as specified
+		follow(findBySortedLink.expand("title,desc")).//
+				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data"));
+
+		follow(findBySortedLink.expand("title,asc")).//
+				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)"));
+	}
+
+	/**
 	 * Asserts the {@link Person} resource the given link points to contains siblings with the given names.
 	 * 
 	 * @param link
