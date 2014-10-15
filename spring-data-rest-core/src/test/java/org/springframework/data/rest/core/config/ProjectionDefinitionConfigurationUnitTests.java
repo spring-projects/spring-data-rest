@@ -135,6 +135,21 @@ public class ProjectionDefinitionConfigurationUnitTests {
 		assertThat(objectOtherNameKey, is(not(objectNameKey)));
 	}
 
+	/**
+	 * @see DATAREST-385
+	 */
+	@Test
+	public void returnsProjectionForParentClass() {
+
+		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
+		configuration.addProjection(ParentProjection.class);
+
+		assertThat(configuration.hasProjectionFor(Child.class), is(true));
+		assertThat(configuration.getProjectionsFor(Child.class).values(), hasItem(ParentProjection.class));
+		assertThat(configuration.getProjectionType(Child.class, "parentProjection"),
+				is(typeCompatibleWith(ParentProjection.class)));
+	}
+
 	@Projection(name = "name", types = Integer.class)
 	interface SampleProjection {
 
@@ -144,4 +159,11 @@ public class ProjectionDefinitionConfigurationUnitTests {
 	interface Default {
 
 	}
+
+	class Parent {}
+
+	class Child extends Parent {}
+
+	@Projection(types = Parent.class)
+	interface ParentProjection {}
 }
