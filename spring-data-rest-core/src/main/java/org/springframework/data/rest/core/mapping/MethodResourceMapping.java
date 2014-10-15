@@ -37,4 +37,11 @@ public interface MethodResourceMapping extends ResourceMapping {
 	 * @return
 	 */
 	ParametersMetadata getParametersMetadata();
+
+	/**
+	 * Returns whether the resource is sortable.
+	 * 
+	 * @return
+	 */
+	boolean isSortableResource();
 }

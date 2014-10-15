@@ -24,12 +24,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.rest.core.invoke.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.MethodResourceMapping;
 import org.springframework.data.rest.core.mapping.ParameterMetadata;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
+import org.springframework.data.rest.webmvc.support.DefaultedPageable;
+import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
@@ -41,6 +43,7 @@ import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariable.VariableType;
 import org.springframework.hateoas.TemplateVariables;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -53,6 +56,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Controller to lookup and execute searches on a given repository.
@@ -69,6 +73,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	private final EntityLinks entityLinks;
 	private final ResourceMappings mappings;
 	private final PagedResourcesAssembler<Object> assembler;
+	private final HateoasSortHandlerMethodArgumentResolver sortResolver;
 
 	/**
 	 * Creates a new {@link RepositorySearchController} using the given {@link PagedResourcesAssembler},
@@ -80,16 +85,18 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 */
 	@Autowired
 	public RepositorySearchController(PagedResourcesAssembler<Object> assembler, EntityLinks entityLinks,
-			ResourceMappings mappings) {
+			ResourceMappings mappings, HateoasSortHandlerMethodArgumentResolver sortResolver) {
 
 		super(assembler);
 
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(sortResolver, "HateoasSortHandlerMethodArgumentResolver must not be null!");
 
 		this.entityLinks = entityLinks;
 		this.mappings = mappings;
 		this.assembler = assembler;
+		this.sortResolver = sortResolver;
 	}
 
 	/**
@@ -162,10 +169,10 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET)
 	public ResponseEntity<Object> executeSearch(RootResourceInformation resourceInformation, WebRequest request,
-			@PathVariable String search, Pageable pageable, PersistentEntityResourceAssembler assembler) {
+			@PathVariable String search, DefaultedPageable pageable, Sort sort, PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		Object resources = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, assembler);
+		Object resources = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, sort, assembler);
 
 		return new ResponseEntity<Object>(resources, HttpStatus.OK);
 	}
@@ -183,11 +190,11 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET, //
 			produces = { "application/x-spring-data-compact+json" })
 	public ResourceSupport executeSearchCompact(RootResourceInformation resourceInformation, WebRequest request,
-			@PathVariable String repository, @PathVariable String search, Pageable pageable,
+			@PathVariable String repository, @PathVariable String search, DefaultedPageable pageable, Sort sort,
 			PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		Object resource = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, assembler);
+		Object resource = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, sort, assembler);
 
 		List<Link> links = new ArrayList<Link>();
 
@@ -272,10 +279,10 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @return
 	 */
 	private Object executeQueryMethod(final RepositoryInvoker invoker, WebRequest request, Method method,
-			Pageable pageable, PersistentEntityResourceAssembler assembler) {
+			DefaultedPageable pageable, Sort sort, PersistentEntityResourceAssembler assembler) {
 
 		Map<String, String[]> parameters = request.getParameterMap();
-		Object result = invoker.invokeQueryMethod(method, parameters, pageable, null);
+		Object result = invoker.invokeQueryMethod(method, parameters, pageable.getPageable(), sort);
 
 		if (ClassUtils.isPrimitiveOrWrapper(method.getReturnType())) {
 			return result;
@@ -315,6 +322,11 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 			if (mapping.isPagingResource()) {
 				link = assembler.appendPaginationParameterTemplates(link);
+			} else if (mapping.isSortableResource()) {
+
+				TemplateVariables sortVariable = sortResolver.getSortTemplateVariables(null, UriComponentsBuilder
+						.fromUriString(link.expand().getHref()).build());
+				link = new Link(new UriTemplate(link.getHref()).with(sortVariable), link.getRel());
 			}
 
 			links.add(link);

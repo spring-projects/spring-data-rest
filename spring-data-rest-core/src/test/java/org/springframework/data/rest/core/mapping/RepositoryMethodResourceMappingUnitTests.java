@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
@@ -104,6 +105,23 @@ public class RepositoryMethodResourceMappingUnitTests {
 		assertThat(mapping.getRel(), is("findByEmailAddress"));
 	}
 
+	/**
+	 * @see DATAREST-384
+	 */
+	@Test
+	public void considersResourceSortableIfSortParameterIsPresent() throws Exception {
+
+		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Sort.class);
+		RepositoryMethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+
+		assertThat(mapping.isSortableResource(), is(true));
+
+		method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
+		mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+
+		assertThat(mapping.isSortableResource(), is(false));
+	}
+
 	static class Person {}
 
 	interface PersonRepository extends Repository<Person, Long> {
@@ -118,5 +136,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 
 		@RestResource(path = "fooPaged")
 		Page<Person> findByEmailAddress(String email, Pageable pageable);
+
+		Page<Person> findByEmailAddress(String email, Sort pageable);
 	}
 }

@@ -15,8 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 /**
  * @author Oliver Gierke
@@ -24,4 +28,6 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 @RepositoryRestResource(excerptProjection = BookExcerpt.class)
 public interface BookRepository extends CrudRepository<Book, Long> {
 
+	@RestResource(rel = "find-by-sorted")
+	List<Book> findBy(Sort sort);
 }

@@ -37,7 +37,7 @@ public class TestDataPopulator {
 		Iterable<Author> authors = authorRepository.save(Arrays.asList(ollie, mark, michael, david, john, thomas));
 
 		books.save(new Book("1449323952", "Spring Data", authors));
-		books.save(new Book("1449323953", "Spring Data (SecondEdition)", authors));
+		books.save(new Book("1449323953", "Spring Data (Second Edition)", authors));
 	}
 
 	private void populateOrders() {
