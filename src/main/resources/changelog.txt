@@ -1,6 +1,14 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.2.1.RELEASE (2014-10-30)
+---------------------------------------------
+* DATAREST-401 - Release 2.2.1.
+* DATAREST-385 - Projection doesn't work with a @MappedSuperclass.
+* DATAREST-384 - Query method do not consider Sort parameters.
+* DATAREST-381 - Controllers for Alps and repository listing get listed under the root even if a base URI is configured.
+
+
 Changes in version 2.2.0.RELEASE (2014-09-05)
 ---------------------------------------------
 * DATAREST-381 - Controllers for Alps and repository listing get listed under the root even if a base URI is configured.
