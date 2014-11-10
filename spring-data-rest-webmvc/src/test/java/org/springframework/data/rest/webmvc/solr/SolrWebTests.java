@@ -61,7 +61,6 @@ public class SolrWebTests extends AbstractWebIntegrationTests {
 		String solrHomeDir() {
 			return TEMP_FOLDER.getRoot().getAbsolutePath();
 		}
-
 	}
 
 	@Autowired ProductRepository repo;

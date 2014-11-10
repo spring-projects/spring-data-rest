@@ -113,7 +113,7 @@
 		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-core</artifactId>
-			<version>4.7.2</version>
+			<version>4.10.1</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -128,5 +128,104 @@
 		</dependency>
 
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-test</id>
+						<configuration>
+							<excludes>
+								<exclude>**/*</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>base-tests</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<phase>test</phase>
+						<configuration>
+							<includes>
+								<include>**/*Test*.java</include>
+							</includes>
+							<!-- exclude store-specific tests from base-tests -->
+							<excludes>
+								<exclude>**/gemfire/*Test*.java</exclude>
+								<exclude>**/jpa/*Test*.java</exclude>
+								<exclude>**/mongodb/*Test*.java</exclude>
+								<exclude>**/neo4j/*Test*.java</exclude>
+								<exclude>**/solr/*Test*.java</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>gemfire-tests</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<phase>test</phase>
+						<configuration>
+							<includes>
+								<include>**/gemfire/*Test*.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>jpa-tests</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<phase>test</phase>
+						<configuration>
+							<includes>
+								<include>**/jpa/*Test*.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>mongodb-tests</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<phase>test</phase>
+						<configuration>
+							<includes>
+								<include>**/mongodb/*Test*.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>neo4j-tests</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<phase>test</phase>
+						<configuration>
+							<includes>
+								<include>**/neo4j/*Test*.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>solr-tests</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<phase>test</phase>
+						<configuration>
+							<includes>
+								<include>**/solr/*Test*.java</include>
+							</includes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
