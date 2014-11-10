@@ -64,7 +64,7 @@ public abstract class AbstractControllerIntegrationTests {
 
 	@Before
 	public void initWebInfrastructure() {
-		WebTestUtils.initWebTest();
+		TestMvcClient.initWebTest();
 	}
 
 	/**

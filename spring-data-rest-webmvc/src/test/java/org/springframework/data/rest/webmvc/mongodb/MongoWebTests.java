@@ -89,17 +89,17 @@ public class MongoWebTests extends CommonWebTests {
 	@Test
 	public void foo() throws Exception {
 
-		Link profileLink = testUtils.discoverUnique("profiles");
-		testUtils.follow(profileLink).//
+		Link profileLink = client.discoverUnique("profiles");
+		client.follow(profileLink).//
 				andExpect(jsonPath("$._embedded.profiles").value(hasSize(2)));
 	}
 
 	@Test
 	public void rendersEmbeddedDocuments() throws Exception {
 
-		Link usersLink = testUtils.discoverUnique("users");
-		Link userLink = assertHasContentLinkWithRel("self", testUtils.request(usersLink));
-		testUtils.follow(userLink).//
+		Link usersLink = client.discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
+		client.follow(userLink).//
 				andExpect(jsonPath("$.address.zipCode").value(is(notNullValue())));
 	}
 
@@ -109,22 +109,22 @@ public class MongoWebTests extends CommonWebTests {
 	@Test
 	public void executeQueryMethodWithPrimitiveReturnType() throws Exception {
 
-		Link profiles = testUtils.discoverUnique("profiles");
-		Link profileSearches = testUtils.discoverUnique(profiles, "search");
-		Link countByTypeLink = testUtils.discoverUnique(profileSearches, "countByType");
+		Link profiles = client.discoverUnique("profiles");
+		Link profileSearches = client.discoverUnique(profiles, "search");
+		Link countByTypeLink = client.discoverUnique(profileSearches, "countByType");
 
 		assertThat(countByTypeLink.isTemplated(), is(true));
 		assertThat(countByTypeLink.getVariableNames(), hasItem("type"));
 
-		MockHttpServletResponse response = testUtils.request(countByTypeLink.expand("Twitter"));
+		MockHttpServletResponse response = client.request(countByTypeLink.expand("Twitter"));
 		assertThat(response.getContentAsString(), is("1"));
 	}
 
 	@Test
 	public void testname() throws Exception {
 
-		Link usersLink = testUtils.discoverUnique("users");
-		Link userLink = assertHasContentLinkWithRel("self", testUtils.request(usersLink));
+		Link usersLink = client.discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
 
 		MockHttpServletResponse response = patchAndGet(userLink,
 				"{\"lastname\" : null, \"address\" : { \"zipCode\" : \"ZIP\"}}", MediaType.APPLICATION_JSON);
@@ -136,8 +136,8 @@ public class MongoWebTests extends CommonWebTests {
 	@Test
 	public void testname2() throws Exception {
 
-		Link usersLink = testUtils.discoverUnique("users");
-		Link userLink = assertHasContentLinkWithRel("self", testUtils.request(usersLink));
+		Link usersLink = client.discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
 
 		MockHttpServletResponse response = patchAndGet(userLink,
 				"[{ \"op\": \"replace\", \"path\": \"/address/zipCode\", \"value\": \"ZIP\" },"

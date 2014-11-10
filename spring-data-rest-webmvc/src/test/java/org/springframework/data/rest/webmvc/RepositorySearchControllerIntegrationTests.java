@@ -17,7 +17,7 @@ package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.springframework.data.rest.webmvc.WebTestUtils.*;
+import static org.springframework.data.rest.webmvc.TestMvcClient.*;
 
 import org.junit.Before;
 import org.junit.Test;

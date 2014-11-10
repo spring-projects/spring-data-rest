@@ -35,6 +35,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -44,14 +45,24 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
-public class WebTestUtils {
+public class TestMvcClient {
 
 	public static MediaType DEFAULT_MEDIA_TYPE = org.springframework.hateoas.MediaTypes.HAL_JSON;
 
 	private final MockMvc mvc;
 	private final LinkDiscoverers discoverers;
 
-	public WebTestUtils(MockMvc mvc, LinkDiscoverers discoverers) {
+	/**
+	 * Creates a new {@link TestMvcClient} for the given {@link MockMvc} and {@link LinkDiscoverers}.
+	 * 
+	 * @param mvc must not be {@literal null}.
+	 * @param discoverers must not be {@literal null}.
+	 */
+	public TestMvcClient(MockMvc mvc, LinkDiscoverers discoverers) {
+
+		Assert.notNull(mvc, "MockMvc must not be null!");
+		Assert.notNull(discoverers, "LinkDiscoverers must not be null!");
+
 		this.mvc = mvc;
 		this.discoverers = discoverers;
 	}
@@ -75,8 +86,8 @@ public class WebTestUtils {
 	}
 
 	/**
-	 * Perform GET [href] with an explicit Accept media type using MockMvc. Verify the requests succeeded
-	 * and also came back as the Accept type.
+	 * Perform GET [href] with an explicit Accept media type using MockMvc. Verify the requests succeeded and also came
+	 * back as the Accept type.
 	 *
 	 * @param href
 	 * @param contentType
@@ -91,8 +102,8 @@ public class WebTestUtils {
 	}
 
 	/**
-	 * Convenience wrapper that first expands the link using URI substitution before requesting with the
-	 * default media type.
+	 * Convenience wrapper that first expands the link using URI substitution before requesting with the default media
+	 * type.
 	 *
 	 * @param link
 	 * @return
@@ -103,8 +114,8 @@ public class WebTestUtils {
 	}
 
 	/**
-	 * Convenience wrapper that first expands the link using URI substitution and then GET [href] using
-	 * an explicit media type
+	 * Convenience wrapper that first expands the link using URI substitution and then GET [href] using an explicit media
+	 * type
 	 *
 	 * @param link
 	 * @param mediaType
@@ -161,6 +172,7 @@ public class WebTestUtils {
 
 	/**
 	 * Discover single URI associated with a rel, starting at the root node ("/")
+	 * 
 	 * @param rel
 	 * @return
 	 * @throws Exception
@@ -210,8 +222,7 @@ public class WebTestUtils {
 	}
 
 	/**
-	 * For a given servlet response, verify that the provided rel exists in its hypermedia. If so,
-	 * return the URI link.
+	 * For a given servlet response, verify that the provided rel exists in its hypermedia. If so, return the URI link.
 	 *
 	 * @param rel
 	 * @param response
@@ -267,6 +278,4 @@ public class WebTestUtils {
 
 		return linkDiscovererFor;
 	}
-
-
 }

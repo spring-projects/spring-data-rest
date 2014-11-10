@@ -53,10 +53,10 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void exposesRootResource() throws Exception {
 
-		ResultActions actions = mvc.perform(get("/").accept(WebTestUtils.DEFAULT_MEDIA_TYPE)).andExpect(status().isOk());
+		ResultActions actions = mvc.perform(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)).andExpect(status().isOk());
 
 		for (String rel : expectedRootLinkRels()) {
-			actions.andExpect(webTestUtils.hasLinkWithRel(rel));
+			actions.andExpect(client.hasLinkWithRel(rel));
 		}
 	}
 
@@ -66,14 +66,14 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void exposesSchemasForResourcesExposed() throws Exception {
 
-		MockHttpServletResponse response = webTestUtils.request("/");
+		MockHttpServletResponse response = client.request("/");
 
 		for (String rel : expectedRootLinkRels()) {
 
-			Link link = webTestUtils.assertHasLinkWithRel(rel, response);
+			Link link = client.assertHasLinkWithRel(rel, response);
 
 			// Resource
-			webTestUtils.request(link);
+			client.request(link);
 
 			// Schema - TODO:Improve by using hypermedia
 			mvc.perform(get(link.expand().getHref() + "/schema").//
@@ -110,16 +110,16 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void exposesSearchesForRootResources() throws Exception {
 
-		MockHttpServletResponse response = webTestUtils.request("/");
+		MockHttpServletResponse response = client.request("/");
 
 		for (String rel : expectedRootLinkRels()) {
 
-			Link link = webTestUtils.assertHasLinkWithRel(rel, response);
-			String rootResourceRepresentation = webTestUtils.request(link).getContentAsString();
-			Link searchLink = webTestUtils.getDiscoverer(response).findLinkWithRel("search", rootResourceRepresentation);
+			Link link = client.assertHasLinkWithRel(rel, response);
+			String rootResourceRepresentation = client.request(link).getContentAsString();
+			Link searchLink = client.getDiscoverer(response).findLinkWithRel("search", rootResourceRepresentation);
 
 			if (searchLink != null) {
-				webTestUtils.request(searchLink);
+				client.request(searchLink);
 			}
 		}
 	}
@@ -130,7 +130,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 		Map<String, String> payloads = getPayloadToPost();
 		assumeFalse(payloads.isEmpty());
 
-		MockHttpServletResponse response = webTestUtils.request("/");
+		MockHttpServletResponse response = client.request("/");
 
 		for (String rel : expectedRootLinkRels()) {
 
@@ -138,7 +138,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 			if (payload != null) {
 
-				Link link = webTestUtils.assertHasLinkWithRel(rel, response);
+				Link link = client.assertHasLinkWithRel(rel, response);
 				String target = link.expand().getHref();
 
 				MockHttpServletRequestBuilder request = post(target).//
@@ -157,12 +157,12 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void accessLinkedResources() throws Exception {
 
-		MockHttpServletResponse rootResource = webTestUtils.request("/");
+		MockHttpServletResponse rootResource = client.request("/");
 
 		for (Map.Entry<String, List<String>> linked : getRootAndLinkedResources().entrySet()) {
 
-			Link resourceLink = webTestUtils.assertHasLinkWithRel(linked.getKey(), rootResource);
-			MockHttpServletResponse resource = webTestUtils.request(resourceLink);
+			Link resourceLink = client.assertHasLinkWithRel(linked.getKey(), rootResource);
+			MockHttpServletResponse resource = client.request(resourceLink);
 
 			for (String linkedRel : linked.getValue()) {
 
@@ -173,7 +173,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 				for (Object href : uris) {
 
-					webTestUtils.follow(href.toString()). //
+					client.follow(href.toString()). //
 							andExpect(status().isOk());
 				}
 			}
@@ -188,8 +188,8 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 		MediaType ALPS_MEDIA_TYPE = MediaType.valueOf("application/alps+json");
 
-		MockHttpServletResponse response = webTestUtils.request("/");
-		Link profileLink = webTestUtils.assertHasLinkWithRel("profile", response);
+		MockHttpServletResponse response = client.request("/");
+		Link profileLink = client.assertHasLinkWithRel("profile", response);
 
 		mvc.perform(//
 				get(profileLink.expand().getHref()).//

@@ -24,7 +24,7 @@ import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
 import org.springframework.data.rest.core.mapping.MappingResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.BaseUri;
-import org.springframework.data.rest.webmvc.WebTestUtils;
+import org.springframework.data.rest.webmvc.TestMvcClient;
 import org.springframework.data.rest.webmvc.mongodb.Profile;
 import org.springframework.hateoas.Link;
 
@@ -43,7 +43,7 @@ public class RepositoryLinkBuildUnitTests {
 	@Test
 	public void usesCurrentRequestsUriBaseForRelativeBaseUri() {
 
-		WebTestUtils.initWebTest();
+		TestMvcClient.initWebTest();
 
 		assertRootUriFor("api", "http://localhost/api/profile");
 	}

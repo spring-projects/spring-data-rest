@@ -86,13 +86,13 @@ public class Neo4jWebTests extends CommonWebTests {
 	public void deletesCustomer() throws Exception {
 
 		// Lookup customer
-		Link customers = testUtils.discoverUnique("customers");
-		Link customerLink = assertHasContentLinkWithRel("self", testUtils.request(customers));
+		Link customers = client.discoverUnique("customers");
+		Link customerLink = assertHasContentLinkWithRel("self", client.request(customers));
 
 		// Delete customer
 		mvc.perform(delete(customerLink.getHref()));
 
 		// Assert no customers anymore
-		assertDoesNotHaveContentLinkWithRel("self", testUtils.request(customers));
+		assertDoesNotHaveContentLinkWithRel("self", client.request(customers));
 	}
 }
