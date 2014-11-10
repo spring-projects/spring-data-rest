@@ -51,8 +51,8 @@ import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 
 /**
- * A test harness for hypermedia unit/integration testing. Provides chained operations (like postAndGet) to create
- * a new entity and then retrieve it with a single method call. It also provides often-used assertions (like
+ * A test harness for hypermedia unit/integration testing. Provides chained operations (like postAndGet) to create a new
+ * entity and then retrieve it with a single method call. It also provides often-used assertions (like
  * assertJsonPathEquals).
  *
  * @author Oliver Gierke
@@ -68,15 +68,15 @@ public abstract class AbstractWebIntegrationTests {
 	@Autowired WebApplicationContext context;
 	@Autowired LinkDiscoverers discoverers;
 
-	protected WebTestUtils testUtils;
+	protected TestMvcClient client;
 	protected MockMvc mvc;
 
 	@Before
 	public void setUp() {
 
-		mvc = MockMvcBuilders.webAppContextSetup(context).//
-				defaultRequest(get("/").accept(WebTestUtils.DEFAULT_MEDIA_TYPE)).build();
-		testUtils = new WebTestUtils(mvc, discoverers);
+		this.mvc = MockMvcBuilders.webAppContextSetup(context).//
+				defaultRequest(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)).build();
+		this.client = new TestMvcClient(mvc, discoverers);
 	}
 
 	protected MockHttpServletResponse postAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
@@ -94,7 +94,7 @@ public abstract class AbstractWebIntegrationTests {
 			return response;
 		}
 
-		return testUtils.request(response.getHeader("Location"));
+		return client.request(response.getHeader("Location"));
 	}
 
 	protected MockHttpServletResponse putAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
@@ -105,7 +105,7 @@ public abstract class AbstractWebIntegrationTests {
 				andExpect(status().is(both(greaterThanOrEqualTo(200)).and(lessThan(300)))).//
 				andReturn().getResponse();
 
-		return StringUtils.hasText(response.getContentAsString()) ? response : testUtils.request(link);
+		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(link);
 	}
 
 	protected MockHttpServletResponse patchAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
@@ -117,7 +117,7 @@ public abstract class AbstractWebIntegrationTests {
 				andExpect(status().isNoContent()).//
 				andReturn().getResponse();
 
-		return StringUtils.hasText(response.getContentAsString()) ? response : testUtils.request(href);
+		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(href);
 	}
 
 	protected void deleteAndVerify(Link link) throws Exception {
@@ -167,7 +167,7 @@ public abstract class AbstractWebIntegrationTests {
 	protected void assertDoesNotHaveLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
 
 		String content = response.getContentAsString();
-		Link link = testUtils.getDiscoverer(response).findLinkWithRel(rel, content);
+		Link link = client.getDiscoverer(response).findLinkWithRel(rel, content);
 
 		assertThat("Expected not to find link with rel " + rel + " but found " + link + "!", link, is(nullValue()));
 	}
@@ -222,7 +222,7 @@ public abstract class AbstractWebIntegrationTests {
 				String s = response.getContentAsString();
 
 				assertThat("Expected not to find link with rel " + rel + " but found one in " + s, //
-						testUtils.getDiscoverer(response).findLinkWithRel(rel, s), nullValue());
+						client.getDiscoverer(response).findLinkWithRel(rel, s), nullValue());
 			}
 		};
 	}
