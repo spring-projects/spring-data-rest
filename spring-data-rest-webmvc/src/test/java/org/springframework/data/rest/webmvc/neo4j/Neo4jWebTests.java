@@ -30,7 +30,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
-import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
+import org.springframework.data.rest.webmvc.CommonWebTests;
 import org.springframework.hateoas.Link;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -42,7 +42,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @ContextConfiguration
 @Ignore
-public class Neo4jWebTests extends AbstractWebIntegrationTests {
+public class Neo4jWebTests extends CommonWebTests {
 
 	@Configuration
 	@ComponentScan
@@ -86,13 +86,13 @@ public class Neo4jWebTests extends AbstractWebIntegrationTests {
 	public void deletesCustomer() throws Exception {
 
 		// Lookup customer
-		Link customers = discoverUnique("customers");
-		Link customerLink = assertHasContentLinkWithRel("self", request(customers));
+		Link customers = client.discoverUnique("customers");
+		Link customerLink = assertHasContentLinkWithRel("self", client.request(customers));
 
 		// Delete customer
 		mvc.perform(delete(customerLink.getHref()));
 
 		// Assert no customers anymore
-		assertDoesNotHaveContentLinkWithRel("self", request(customers));
+		assertDoesNotHaveContentLinkWithRel("self", client.request(customers));
 	}
 }

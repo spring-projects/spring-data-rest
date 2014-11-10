@@ -33,7 +33,7 @@ public class DefaultedPageable {
 	 * @param pageable can be {@literal null}.
 	 * @param isDefault
 	 */
-	DefaultedPageable(Pageable pageable, boolean isDefault) {
+	public DefaultedPageable(Pageable pageable, boolean isDefault) {
 
 		this.pageable = pageable;
 		this.isDefault = isDefault;

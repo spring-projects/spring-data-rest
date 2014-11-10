@@ -17,11 +17,12 @@ package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.springframework.data.rest.webmvc.WebTestUtils.*;
+import static org.springframework.data.rest.webmvc.TestMvcClient.*;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.ResourceTester.HasSelfLink;
 import org.springframework.data.rest.webmvc.jpa.Address;
@@ -30,6 +31,7 @@ import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.TestDataPopulator;
+import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.http.HttpEntity;
@@ -88,7 +90,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		RootResourceInformation resourceInformation = getResourceInformation(Person.class);
 
 		ResponseEntity<Object> response = controller.executeSearch(resourceInformation, getRequest(parameters),
-				"firstname", null, assembler);
+				"firstname", new DefaultedPageable(new PageRequest(0, 10), true), null, assembler);
 
 		ResourceTester tester = ResourceTester.of(response.getBody());
 		PagedResources<Object> pagedResources = tester.assertIsPage();

@@ -124,7 +124,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	 */
 	@Override
 	public Class<?> getProjectionType(Class<?> sourceType, String name) {
-		return projectionDefinitions.get(new ProjectionDefinitionKey(sourceType, name));
+		return getProjectionsFor(sourceType).get(name);
 	}
 
 	/* 
@@ -135,7 +135,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	public boolean hasProjectionFor(Class<?> sourceType) {
 
 		for (ProjectionDefinitionKey key : projectionDefinitions.keySet()) {
-			if (key.sourceType.equals(sourceType)) {
+			if (key.sourceType.isAssignableFrom(sourceType)) {
 				return true;
 			}
 		}
@@ -156,7 +156,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		Map<String, Class<?>> result = new HashMap<String, Class<?>>();
 
 		for (Entry<ProjectionDefinitionKey, Class<?>> entry : projectionDefinitions.entrySet()) {
-			if (entry.getKey().sourceType.equals(sourceType)) {
+			if (entry.getKey().sourceType.isAssignableFrom(sourceType)) {
 				result.put(entry.getKey().name, entry.getValue());
 			}
 		}
