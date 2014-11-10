@@ -62,12 +62,13 @@ public class RepositoryControllerIntegrationTests extends AbstractControllerInte
 
 		RepositoryLinksResource resource = controller.listRepositories().getBody();
 
-		assertThat(resource.getLinks(), hasSize(5));
+		assertThat(resource.getLinks(), hasSize(6));
 
 		assertThat(resource.hasLink("people"), is(true));
 		assertThat(resource.hasLink("orders"), is(true));
 		assertThat(resource.hasLink("addresses"), is(true));
 		assertThat(resource.hasLink("books"), is(true));
 		assertThat(resource.hasLink("authors"), is(true));
+		assertThat(resource.hasLink("receipts"), is(true));
 	}
 }
