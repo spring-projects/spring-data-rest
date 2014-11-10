@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Arrays;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -29,20 +30,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
+import org.springframework.data.rest.webmvc.CommonWebTests;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
 import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * @author Christoph Strobl
  */
 @ContextConfiguration(classes = { SolrWebTests.MyConf.class })
-public class SolrWebTests extends AbstractWebIntegrationTests {
+public class SolrWebTests extends CommonWebTests {
 
 	public static @ClassRule TemporaryFolder tempFoler = new TemporaryFolder();
 
@@ -84,17 +83,17 @@ public class SolrWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void allowsPaginationThroughData() throws Exception {
 
-		MockHttpServletResponse response = request("/products?page=0&size=1");
+		MockHttpServletResponse response = client.request("/products?page=0&size=1");
 
-		Link nextLink = assertHasLinkWithRel(Link.REL_NEXT, response);
+		Link nextLink = client.assertHasLinkWithRel(Link.REL_NEXT, response);
 		assertDoesNotHaveLinkWithRel(Link.REL_PREVIOUS, response);
 
-		response = request(nextLink);
-		assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		nextLink = assertHasLinkWithRel(Link.REL_NEXT, response);
+		response = client.request(nextLink);
+		client.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
+		nextLink = client.assertHasLinkWithRel(Link.REL_NEXT, response);
 
-		response = request(nextLink);
-		assertHasLinkWithRel(Link.REL_PREVIOUS, response);
+		response = client.request(nextLink);
+		client.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
 		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);
 	}
 
@@ -140,7 +139,7 @@ public class SolrWebTests extends AbstractWebIntegrationTests {
 
 	private MockHttpServletResponse requestAndCompare(Product reference) throws Exception {
 
-		MockHttpServletResponse response = request("/products/" + reference.getId());
+		MockHttpServletResponse response = client.request("/products/" + reference.getId());
 
 		assertJsonPathEquals("name", reference.getName(), response);
 		assertJsonPathEquals("categories", MAPPER.writeValueAsString(reference.getCategories()), response);
