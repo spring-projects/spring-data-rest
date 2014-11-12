@@ -15,13 +15,10 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.data.rest.webmvc.ResourceType.*;
+import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
-import org.atteo.evo.inflector.English;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,7 +28,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.rest.core.invoke.RepositoryInvoker;
+import org.springframework.data.repository.invoker.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 
@@ -55,90 +52,6 @@ public class RootResourceInformationUnitTests {
 		when(metadata.isExported()).thenReturn(true);
 		this.invoker = mock(RepositoryInvoker.class, new DefaultBooleanToTrue());
 		this.information = new RootResourceInformation(metadata, entity, invoker);
-	}
-
-	/**
-	 * @see DATAREST-217, DATAREST-330
-	 */
-	@Test
-	public void defaultsSupportedHttpMethodsForItemResource() {
-
-		assertThat(information.getSupportedMethods(ResourceType.ITEM), hasItems(GET, PUT, PATCH, DELETE, OPTIONS));
-		assertThat(information.getSupportedMethods(ResourceType.ITEM), not(hasItems(POST)));
-
-		assertThat(information.getSupportedMethods(COLLECTION), hasItems(GET, POST, OPTIONS));
-		assertThat(information.getSupportedMethods(COLLECTION), not(hasItems(PUT, PATCH, DELETE)));
-
-	}
-
-	/**
-	 * @see DATAREST-217
-	 */
-	@Test
-	public void doesNotSupportGetOnItemResourceIfFindOneIsNotExported() {
-
-		when(invoker.exposesFindOne()).thenReturn(false);
-		assertThat(information.supports(GET, ITEM), is(false));
-	}
-
-	/**
-	 * @see DATAREST-217
-	 */
-	@Test
-	public void doesNotSupportDeleteOnItemResourceIfDeleteIsNotExported() {
-
-		when(invoker.exposesDelete()).thenReturn(false);
-		assertThat(information.supports(DELETE, ITEM), is(false));
-	}
-
-	/**
-	 * @see DATAREST-217
-	 */
-	@Test
-	public void doesNotSupportPutOnItemResourceIfSaveIsNotExported() {
-
-		when(invoker.exposesSave()).thenReturn(false);
-		assertThat(information.supports(POST, ITEM), is(false));
-	}
-
-	/**
-	 * @see DATAREST-330
-	 */
-	@Test
-	public void supportsHeadIfFindAllIsExposed() {
-
-		when(invoker.exposesFindAll()).thenReturn(true);
-		assertThat(information.supports(HEAD, COLLECTION), is(true));
-	}
-
-	/**
-	 * @see DATAREST-330
-	 */
-	@Test
-	public void doesNotSupportHeadIfFindAllIsNotExposed() {
-
-		when(invoker.exposesFindAll()).thenReturn(false);
-		assertThat(information.supports(HEAD, COLLECTION), is(false));
-	}
-
-	/**
-	 * @see DATAREST-330
-	 */
-	@Test
-	public void supportsHeadIfFindOneIsExposed() {
-
-		when(invoker.exposesFindOne()).thenReturn(true);
-		assertThat(information.supports(HEAD, ITEM), is(true));
-	}
-
-	/**
-	 * @see DATAREST-330
-	 */
-	@Test
-	public void doesNotSupportHeadIfFindOneIsNotExposed() {
-
-		when(invoker.exposesFindOne()).thenReturn(false);
-		assertThat(information.supports(HEAD, ITEM), is(false));
 	}
 
 	/**

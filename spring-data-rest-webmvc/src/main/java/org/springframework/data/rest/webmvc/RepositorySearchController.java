@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.rest.core.invoke.RepositoryInvoker;
+import org.springframework.data.repository.invoker.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.MethodResourceMapping;
 import org.springframework.data.rest.core.mapping.ParameterMetadata;
 import org.springframework.data.rest.core.mapping.ResourceMappings;

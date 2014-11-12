@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.rest.core.mapping.SupportedHttpMethods.NoSupportedMethods;
 
 /**
  * {@link ResourceMetadata} based on a {@link PersistentEntity}.
@@ -99,5 +100,14 @@ public class MappingResourceMetadata extends TypeBasedCollectionResourceMapping 
 	@Override
 	public SearchResourceMappings getSearchResourceMappings() {
 		return new SearchResourceMappings(Collections.<MethodResourceMapping> emptyList());
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getSupportedHttpMethods()
+	 */
+	@Override
+	public SupportedHttpMethods getSupportedHttpMethods() {
+		return NoSupportedMethods.INSTANCE;
 	}
 }

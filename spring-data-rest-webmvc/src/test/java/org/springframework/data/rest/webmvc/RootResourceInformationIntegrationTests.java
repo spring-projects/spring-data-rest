@@ -20,6 +20,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.data.rest.core.mapping.ResourceType;
+import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.http.HttpMethod;
@@ -43,8 +45,8 @@ public class RootResourceInformationIntegrationTests extends AbstractControllerI
 	@Test
 	public void getIsNotSupportedIfFindAllIsNotExported() {
 
-		RootResourceInformation information = getResourceInformation(Address.class);
-		assertThat(information.supports(HttpMethod.GET, ResourceType.COLLECTION), is(false));
+		SupportedHttpMethods supportedMethods = getResourceInformation(Address.class).getSupportedMethods();
+		assertThat(supportedMethods.supports(HttpMethod.GET, ResourceType.COLLECTION), is(false));
 	}
 
 	/**
@@ -53,7 +55,7 @@ public class RootResourceInformationIntegrationTests extends AbstractControllerI
 	@Test
 	public void postIsNotSupportedIfSaveIsNotExported() {
 
-		RootResourceInformation information = getResourceInformation(Address.class);
-		assertThat(information.supports(HttpMethod.POST, ResourceType.COLLECTION), is(false));
+		SupportedHttpMethods supportedMethods = getResourceInformation(Address.class).getSupportedMethods();
+		assertThat(supportedMethods.supports(HttpMethod.POST, ResourceType.COLLECTION), is(false));
 	}
 }

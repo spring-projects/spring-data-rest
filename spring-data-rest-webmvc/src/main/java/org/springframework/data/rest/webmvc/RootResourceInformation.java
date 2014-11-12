@@ -16,14 +16,15 @@
 package org.springframework.data.rest.webmvc;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.rest.core.invoke.RepositoryInvoker;
+import org.springframework.data.repository.invoker.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
+import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -43,6 +44,7 @@ public class RootResourceInformation {
 	public RootResourceInformation(ResourceMetadata metadata, PersistentEntity<?, ?> entity, RepositoryInvoker invoker) {
 
 		this.resourceMetadata = metadata;
+
 		if (resourceMetadata == null || !resourceMetadata.isExported()) {
 
 			this.invoker = null;
@@ -74,75 +76,8 @@ public class RootResourceInformation {
 		return persistentEntity;
 	}
 
-	/**
-	 * Returns the supported {@link HttpMethod}s for the given {@link ResourceType}.
-	 * 
-	 * @param resourcType must not be {@literal null}.
-	 * @return
-	 */
-	public Set<HttpMethod> getSupportedMethods(ResourceType resourcType) {
-
-		Assert.notNull(resourcType, "Resource type must not be null!");
-
-		if (invoker == null) {
-			return Collections.emptySet();
-		}
-
-		Set<HttpMethod> methods = new HashSet<HttpMethod>();
-		methods.add(HttpMethod.OPTIONS);
-
-		switch (resourcType) {
-			case COLLECTION:
-
-				if (invoker.exposesFindAll()) {
-					methods.add(HttpMethod.GET);
-					methods.add(HttpMethod.HEAD);
-				}
-
-				if (invoker.exposesSave()) {
-					methods.add(HttpMethod.POST);
-				}
-
-				break;
-
-			case ITEM:
-
-				if (invoker.exposesDelete() && invoker.hasFindOneMethod()) {
-					methods.add(HttpMethod.DELETE);
-				}
-
-				if (invoker.exposesFindOne()) {
-					methods.add(HttpMethod.GET);
-					methods.add(HttpMethod.HEAD);
-				}
-
-				if (invoker.exposesSave()) {
-					methods.add(HttpMethod.PUT);
-					methods.add(HttpMethod.PATCH);
-				}
-
-				break;
-
-			default:
-				throw new IllegalArgumentException(String.format("Unsupported resource type %s!", resourcType));
-		}
-
-		return Collections.unmodifiableSet(methods);
-	}
-
-	/**
-	 * Returns whether the given {@link HttpMethod} is supported for the given {@link ResourceType}.
-	 * 
-	 * @param httpMethod must not be {@literal null}.
-	 * @param resourceType must not be {@literal null}.
-	 * @return
-	 */
-	public boolean supports(HttpMethod httpMethod, ResourceType resourceType) {
-
-		Assert.notNull(httpMethod, "HTTP method must not be null!");
-		Assert.notNull(resourceType, "Resource type must not be null!");
-
-		return getSupportedMethods(resourceType).contains(httpMethod);
+	public SupportedHttpMethods getSupportedMethods() {
+		return resourceMetadata.getSupportedHttpMethods();
 	}
 
 	/**
@@ -164,7 +99,8 @@ public class RootResourceInformation {
 		Assert.notNull(httpMethod, "HTTP method must not be null!");
 		Assert.notNull(resourceType, "Resource type must not be null!");
 
-		Collection<HttpMethod> supportedMethods = getSupportedMethods(resourceType);
+		SupportedHttpMethods httpMethods = resourceMetadata.getSupportedHttpMethods();
+		Collection<HttpMethod> supportedMethods = httpMethods.getMethodsFor(resourceType);
 
 		if (!supportedMethods.contains(httpMethod)) {
 

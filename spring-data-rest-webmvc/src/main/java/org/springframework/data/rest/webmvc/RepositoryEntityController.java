@@ -30,6 +30,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.model.BeanWrapper;
+import org.springframework.data.repository.invoker.RepositoryInvoker;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
@@ -38,9 +39,10 @@ import org.springframework.data.rest.core.event.AfterSaveEvent;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
 import org.springframework.data.rest.core.event.BeforeDeleteEvent;
 import org.springframework.data.rest.core.event.BeforeSaveEvent;
-import org.springframework.data.rest.core.invoke.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
+import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.data.rest.webmvc.support.BackendId;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
@@ -113,7 +115,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	public ResponseEntity<?> optionsForCollectionResource(RootResourceInformation information) {
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setAllow(information.getSupportedMethods(ResourceType.COLLECTION));
+		SupportedHttpMethods supportedMethods = information.getSupportedMethods();
+
+		headers.setAllow(supportedMethods.getMethodsFor(ResourceType.COLLECTION));
 
 		return new ResponseEntity<Object>(headers, HttpStatus.OK);
 	}
@@ -243,7 +247,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	public ResponseEntity<?> optionsForItemResource(RootResourceInformation information) {
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setAllow(information.getSupportedMethods(ResourceType.ITEM));
+		SupportedHttpMethods supportedMethods = information.getSupportedMethods();
+
+		headers.setAllow(supportedMethods.getMethodsFor(ResourceType.ITEM));
 		headers.put("Accept-Patch", ACCEPT_PATCH_HEADERS);
 
 		return new ResponseEntity<Object>(headers, HttpStatus.OK);
@@ -449,12 +455,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.ITEM);
 
-		RepositoryInvoker repoMethodInvoker = resourceInformation.getInvoker();
-
-		if (!repoMethodInvoker.exposesFindOne()) {
-			throw new ResourceNotFoundException();
-		}
-
-		return repoMethodInvoker.invokeFindOne(id);
+		return resourceInformation.getInvoker().invokeFindOne(id);
 	}
 }

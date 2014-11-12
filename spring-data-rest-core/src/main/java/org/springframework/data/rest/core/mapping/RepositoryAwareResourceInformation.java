@@ -34,6 +34,7 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	private final CollectionResourceMapping mapping;
 	private final RepositoryResourceMappings provider;
 	private final RepositoryMetadata repositoryInterface;
+	private final SupportedHttpMethods crudMethodsSupportedHttpMethods;
 
 	/**
 	 * Creates a new {@link RepositoryAwareResourceInformation} for the given {@link Repositories},
@@ -56,6 +57,7 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 		this.mapping = mapping;
 		this.provider = provider;
 		this.repositoryInterface = repositoryMetadata;
+		this.crudMethodsSupportedHttpMethods = new CrudMethodsSupportedHttpMethods(repositoryMetadata.getCrudMethods());
 	}
 
 	/**
@@ -185,5 +187,14 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	@Override
 	public SearchResourceMappings getSearchResourceMappings() {
 		return provider.getSearchResourceMappings(repositoryInterface.getRepositoryInterface());
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getSupportedHttpMethods()
+	 */
+	@Override
+	public SupportedHttpMethods getSupportedHttpMethods() {
+		return crudMethodsSupportedHttpMethods;
 	}
 }

@@ -45,8 +45,9 @@ import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SimpleResourceDescription;
-import org.springframework.data.rest.webmvc.ResourceType;
+import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.JacksonMetadata;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
@@ -121,14 +122,16 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 		descriptors.add(representationDescriptor);
 
-		for (HttpMethod method : resourceInformation.getSupportedMethods(ResourceType.COLLECTION)) {
+		SupportedHttpMethods supportedHttpMethods = resourceInformation.getSupportedMethods();
+
+		for (HttpMethod method : supportedHttpMethods.getMethodsFor(ResourceType.COLLECTION)) {
 
 			if (!UNDOCUMENTED_METHODS.contains(method)) {
 				descriptors.add(buildCollectionResourceDescriptor(type, resourceInformation, representationDescriptor, method));
 			}
 		}
 
-		for (HttpMethod method : resourceInformation.getSupportedMethods(ResourceType.ITEM)) {
+		for (HttpMethod method : supportedHttpMethods.getMethodsFor(ResourceType.ITEM)) {
 
 			if (!UNDOCUMENTED_METHODS.contains(method)) {
 				descriptors.add(buildItemResourceDescriptor(resourceInformation, representationDescriptor, method));

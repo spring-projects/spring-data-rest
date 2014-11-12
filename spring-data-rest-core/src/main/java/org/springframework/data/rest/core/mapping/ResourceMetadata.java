@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
 package org.springframework.data.rest.core.mapping;
 
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.http.HttpMethod;
 
 /**
- * Interface for metadata of resources exposed throught the system.
+ * Interface for metadata of resources exposed through the system.
  * 
  * @author Oliver Gierke
  */
@@ -62,4 +63,12 @@ public interface ResourceMetadata extends CollectionResourceMapping {
 	 * @return
 	 */
 	SearchResourceMappings getSearchResourceMappings();
+
+	/**
+	 * Returns the supported {@link HttpMethod}s for the given {@link ResourceType}.
+	 * 
+	 * @param resourcType must not be {@literal null}.
+	 * @return
+	 */
+	SupportedHttpMethods getSupportedHttpMethods();
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc;
+package org.springframework.data.rest.core.mapping;
 
 /**
  * An enum listing all supported resource types.

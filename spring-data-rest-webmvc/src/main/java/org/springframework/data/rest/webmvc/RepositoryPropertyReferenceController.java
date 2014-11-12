@@ -36,14 +36,15 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BeanWrapper;
+import org.springframework.data.repository.invoker.RepositoryInvoker;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.event.AfterLinkDeleteEvent;
 import org.springframework.data.rest.core.event.AfterLinkSaveEvent;
 import org.springframework.data.rest.core.event.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.core.event.BeforeLinkSaveEvent;
-import org.springframework.data.rest.core.invoke.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.util.Function;
 import org.springframework.data.rest.webmvc.support.BackendId;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -155,7 +156,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 		final RepositoryInvoker repoMethodInvoker = repoRequest.getInvoker();
 
-		if (!repoMethodInvoker.exposesDelete()) {
+		// Can't delete a property if
+		if (repoRequest.getSupportedMethods().supports(HttpMethod.PUT, ResourceType.ITEM)) {
 			return new ResponseEntity<Resource<?>>(HttpStatus.METHOD_NOT_ALLOWED);
 		}
 
@@ -379,7 +381,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 		final RepositoryInvoker invoker = repoRequest.getInvoker();
 
-		if (!invoker.exposesSave()) {
+		// Property can't be deleted if root resource can't be updated
+		if (!repoRequest.getSupportedMethods().supports(HttpMethod.PUT, ResourceType.ITEM)) {
 			throw new HttpRequestMethodNotSupportedException(HttpMethod.DELETE.name());
 		}
 
@@ -443,7 +446,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 		RepositoryInvoker invoker = repoRequest.getInvoker();
 
-		if (!invoker.exposesFindOne()) {
+		if (!repoRequest.getSupportedMethods().supports(method, ResourceType.ITEM)) {
 			throw new HttpRequestMethodNotSupportedException(method.name());
 		}
 
