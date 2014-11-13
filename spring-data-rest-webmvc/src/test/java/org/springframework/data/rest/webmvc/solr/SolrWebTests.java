@@ -18,9 +18,15 @@ package org.springframework.data.rest.webmvc.solr;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
+import org.apache.solr.core.CloseHook;
+import org.apache.solr.core.CoreDescriptor;
+import org.apache.solr.core.SolrCore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -32,6 +38,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.rest.webmvc.CommonWebTests;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
+import org.springframework.data.solr.server.support.EmbeddedSolrServerFactory;
 import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -64,11 +71,31 @@ public class SolrWebTests extends CommonWebTests {
 	}
 
 	@Autowired ProductRepository repo;
+	@Autowired EmbeddedSolrServerFactory solrServerFactory;
 
 	@Before
 	public void setUp() {
 
 		super.setUp();
+		for (SolrCore core : solrServerFactory.getSolrServer().getCoreContainer().getCores()) {
+			core.addCloseHook(new CloseHook() {
+				@Override
+				public void preClose(SolrCore core) {}
+
+				@Override
+				public void postClose(SolrCore core) {
+					CoreDescriptor cd = core.getCoreDescriptor();
+					if (cd != null) {
+						File dataDir = new File(cd.getInstanceDir() + File.separator + "data");
+						try {
+							FileUtils.deleteDirectory(dataDir);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			});
+		}
 		repo.save(Arrays.asList(PLAYSTATION, GAMEBOY, AMIGA500));
 	}
 

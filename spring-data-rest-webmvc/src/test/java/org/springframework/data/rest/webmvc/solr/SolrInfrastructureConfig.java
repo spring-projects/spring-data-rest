@@ -17,13 +17,12 @@ package org.springframework.data.rest.webmvc.solr;
 
 import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +45,7 @@ public class SolrInfrastructureConfig {
 	private static final Resource SOLR_SCHEMA = new ClassPathResource("schema.xml", SolrInfrastructureConfig.class);
 
 	@Bean
-	public SolrServerFactory solrServerFactory(final String solrHomeDir) throws ParserConfigurationException,
+	public EmbeddedSolrServerFactory solrServerFactory(final String solrHomeDir) throws ParserConfigurationException,
 			IOException, SAXException {
 
 		prepareConfiguration(solrHomeDir);
