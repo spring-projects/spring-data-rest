@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
@@ -73,6 +74,15 @@ public class PersistentEntityResource extends Resource<Object> {
 	 */
 	public PersistentEntity<?, ? extends PersistentProperty<?>> getPersistentEntity() {
 		return entity;
+	}
+
+	/**
+	 * Returns the {@link PersistentPropertyAccessor} for the underlying content bean.
+	 * 
+	 * @return
+	 */
+	public PersistentPropertyAccessor getPropertyAccessor() {
+		return entity.getPropertyAccessor(getContent());
 	}
 
 	/**

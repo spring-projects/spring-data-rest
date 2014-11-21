@@ -35,7 +35,7 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.model.BeanWrapper;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.repository.invoker.RepositoryInvoker;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.event.AfterLinkDeleteEvent;
@@ -175,11 +175,11 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				} else if (prop.property.isMap()) {
 					throw new HttpRequestMethodNotSupportedException("DELETE");
 				} else {
-					prop.wrapper.setProperty(prop.property, null);
+					prop.accessor.setProperty(prop.property, null);
 				}
 
-				publisher.publishEvent(new BeforeLinkDeleteEvent(prop.wrapper.getBean(), prop.propertyValue));
-				Object result = repoMethodInvoker.invokeSave(prop.wrapper.getBean());
+				publisher.publishEvent(new BeforeLinkDeleteEvent(prop.accessor.getBean(), prop.propertyValue));
+				Object result = repoMethodInvoker.invokeSave(prop.accessor.getBean());
 				publisher.publishEvent(new AfterLinkDeleteEvent(result, prop.propertyValue));
 
 				return null;
@@ -209,8 +209,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				if (prop.property.isCollectionLike()) {
 					for (Object obj : (Iterable<?>) prop.propertyValue) {
 
-						BeanWrapper<Object> propValWrapper = BeanWrapper.create(obj, null);
-						String sId = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
+						PersistentPropertyAccessor accessor = prop.entity.getPropertyAccessor(obj);
+						String sId = accessor.getProperty(prop.entity.getIdProperty()).toString();
 
 						if (propertyId.equals(sId)) {
 
@@ -222,8 +222,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				} else if (prop.property.isMap()) {
 					for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) prop.propertyValue).entrySet()) {
 
-						BeanWrapper<Object> propValWrapper = BeanWrapper.create(entry.getValue(), null);
-						String sId = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
+						PersistentPropertyAccessor accessor = prop.entity.getPropertyAccessor(entry.getValue());
+						String sId = accessor.getProperty(prop.entity.getIdProperty()).toString();
 
 						if (propertyId.equals(sId)) {
 
@@ -325,7 +325,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 						coll.add(propVal);
 					}
 
-					prop.wrapper.setProperty(prop.property, coll);
+					prop.accessor.setProperty(prop.property, coll);
 
 				} else if (prop.property.isMap()) {
 
@@ -342,7 +342,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 						m.put(l.getRel(), propVal);
 					}
 
-					prop.wrapper.setProperty(prop.property, m);
+					prop.accessor.setProperty(prop.property, m);
 
 				} else {
 
@@ -357,11 +357,11 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					}
 
 					Object propVal = loadPropertyValue(prop.propertyType, incoming.getLinks().get(0));
-					prop.wrapper.setProperty(prop.property, propVal);
+					prop.accessor.setProperty(prop.property, propVal);
 				}
 
-				publisher.publishEvent(new BeforeLinkSaveEvent(prop.wrapper.getBean(), prop.propertyValue));
-				Object result = invoker.invokeSave(prop.wrapper.getBean());
+				publisher.publishEvent(new BeforeLinkSaveEvent(prop.accessor.getBean(), prop.propertyValue));
+				Object result = invoker.invokeSave(prop.accessor.getBean());
 				publisher.publishEvent(new AfterLinkSaveEvent(result, prop.propertyValue));
 
 				return null;
@@ -400,8 +400,9 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					Iterator<Object> itr = coll.iterator();
 					while (itr.hasNext()) {
 						Object obj = itr.next();
-						BeanWrapper<Object> propValWrapper = BeanWrapper.create(obj, null);
-						String s = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
+
+						PersistentPropertyAccessor accessor = prop.entity.getPropertyAccessor(obj);
+						String s = accessor.getProperty(prop.entity.getIdProperty()).toString();
 						if (propertyId.equals(s)) {
 							itr.remove();
 						}
@@ -411,18 +412,18 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					Iterator<Object> itr = m.keySet().iterator();
 					while (itr.hasNext()) {
 						Object key = itr.next();
-						BeanWrapper<Object> propValWrapper = BeanWrapper.create(m.get(key), null);
-						String s = propValWrapper.getProperty(prop.entity.getIdProperty()).toString();
+						PersistentPropertyAccessor accessor = prop.entity.getPropertyAccessor(m.get(key));
+						String s = accessor.getProperty(prop.entity.getIdProperty()).toString();
 						if (propertyId.equals(s)) {
 							itr.remove();
 						}
 					}
 				} else {
-					prop.wrapper.setProperty(prop.property, null);
+					prop.accessor.setProperty(prop.property, null);
 				}
 
-				publisher.publishEvent(new BeforeLinkDeleteEvent(prop.wrapper.getBean(), prop.propertyValue));
-				Object result = invoker.invokeSave(prop.wrapper.getBean());
+				publisher.publishEvent(new BeforeLinkDeleteEvent(prop.accessor.getBean(), prop.propertyValue));
+				Object result = invoker.invokeSave(prop.accessor.getBean());
 				publisher.publishEvent(new AfterLinkDeleteEvent(result, prop.propertyValue));
 
 				return null;
@@ -456,15 +457,17 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			throw new ResourceNotFoundException();
 		}
 
-		PersistentProperty<?> prop = repoRequest.getPersistentEntity().getPersistentProperty(propertyPath);
+		PersistentEntity<?, ?> persistentEntity = repoRequest.getPersistentEntity();
+		PersistentProperty<?> prop = persistentEntity.getPersistentProperty(propertyPath);
+
 		if (null == prop) {
 			throw new ResourceNotFoundException();
 		}
 
-		BeanWrapper<Object> wrapper = BeanWrapper.create(domainObj, null);
-		Object propVal = wrapper.getProperty(prop);
+		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(domainObj);
+		Object propVal = accessor.getProperty(prop);
 
-		return handler.apply(new ReferencedProperty(prop, propVal, wrapper));
+		return handler.apply(new ReferencedProperty(prop, propVal, accessor));
 	}
 
 	private class ReferencedProperty {
@@ -473,13 +476,13 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		final PersistentProperty<?> property;
 		final Class<?> propertyType;
 		final Object propertyValue;
-		final BeanWrapper<?> wrapper;
+		final PersistentPropertyAccessor accessor;
 
-		private ReferencedProperty(PersistentProperty<?> property, Object propertyValue, BeanWrapper<?> wrapper) {
+		private ReferencedProperty(PersistentProperty<?> property, Object propertyValue, PersistentPropertyAccessor wrapper) {
 
 			this.property = property;
 			this.propertyValue = propertyValue;
-			this.wrapper = wrapper;
+			this.accessor = wrapper;
 			this.propertyType = property.getActualType();
 			this.entity = repositories.getPersistentEntity(propertyType);
 		}

@@ -22,8 +22,8 @@ import java.util.List;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimpleAssociationHandler;
-import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -121,7 +121,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(instance.getClass());
 
 		final List<EmbeddedWrapper> associationProjections = new ArrayList<EmbeddedWrapper>();
-		final BeanWrapper<Object> wrapper = BeanWrapper.create(instance, null);
+		final PersistentPropertyAccessor accessor = entity.getPropertyAccessor(instance);
 		final AssociationLinks associationLinks = new AssociationLinks(mappings);
 		final ResourceMetadata metadata = mappings.getMappingFor(instance.getClass());
 
@@ -144,7 +144,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 					return;
 				}
 
-				Object value = wrapper.getProperty(association.getInverse());
+				Object value = accessor.getProperty(association.getInverse());
 
 				if (value == null) {
 					return;
@@ -197,8 +197,8 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 					instanceType));
 		}
 
-		BeanWrapper<Object> wrapper = BeanWrapper.create(instance, null);
-		Object id = wrapper.getProperty(entity.getIdProperty());
+		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(instance);
+		Object id = accessor.getProperty(entity.getIdProperty());
 
 		Link resourceLink = entityLinks.linkToSingleResource(entity.getType(), id);
 		return new Link(resourceLink.getHref(), Link.REL_SELF);

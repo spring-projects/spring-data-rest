@@ -21,8 +21,8 @@ import java.util.Map.Entry;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -118,8 +118,9 @@ public class DomainObjectReader {
 					continue;
 				}
 
-				BeanWrapper<T> wrapper = BeanWrapper.create(existingObject, null);
-				Object nested = wrapper.getProperty(property);
+				PersistentEntity<?, ?> entity = entities.getPersistentEntity(existingObject.getClass());
+				PersistentPropertyAccessor accessor = entity.getPropertyAccessor(existingObject);
+				Object nested = accessor.getProperty(property);
 
 				if (nested != null) {
 

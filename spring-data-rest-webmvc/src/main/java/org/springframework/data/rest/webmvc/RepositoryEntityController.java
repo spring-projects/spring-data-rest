@@ -29,7 +29,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mapping.model.BeanWrapper;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.repository.invoker.RepositoryInvoker;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -314,7 +315,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		resourceInformation.verifySupportedMethod(HttpMethod.PUT, ResourceType.ITEM);
 
 		// Force ID on unmarshalled object
-		BeanWrapper<Object> incomingWrapper = BeanWrapper.create(payload.getContent(), conversionService);
+		PersistentPropertyAccessor incomingWrapper = new ConvertingPropertyAccessor(payload.getPropertyAccessor(),
+				conversionService);
 		incomingWrapper.setProperty(payload.getPersistentEntity().getIdProperty(), id);
 
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
