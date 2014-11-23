@@ -6,3 +6,7 @@ _site
 *.sw[op]
 .project
 sample-pages
+vf.*
+*.iml
+spring-data-rest-core
+spring-data-rest-webmvc
