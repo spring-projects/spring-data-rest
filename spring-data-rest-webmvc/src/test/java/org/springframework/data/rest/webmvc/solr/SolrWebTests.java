@@ -18,20 +18,14 @@ package org.springframework.data.rest.webmvc.solr;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FileUtils;
-import org.apache.solr.core.CloseHook;
-import org.apache.solr.core.CoreDescriptor;
-import org.apache.solr.core.SolrCore;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,13 +38,13 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * @author Christoph Strobl
  */
 @ContextConfiguration(classes = { SolrWebTests.MyConf.class })
 public class SolrWebTests extends CommonWebTests {
-
-	public static @ClassRule TemporaryFolder tempFoler = new TemporaryFolder();
 
 	private static final Product PLAYSTATION = new Product("1", "playstation", "electronic", "game", "media");
 	private static final Product GAMEBOY = new Product("2", "gameboy", "electronic");
@@ -61,13 +55,21 @@ public class SolrWebTests extends CommonWebTests {
 	@Configuration
 	@EnableSolrRepositories
 	@Import(value = { SolrInfrastructureConfig.class })
-	static class MyConf {
+	static class MyConf implements DisposableBean {
+
+		private TemporaryFolder folder = new TemporaryFolder();
 
 		@Bean
-		String solrHomeDir() {
-			return tempFoler.getRoot().getAbsolutePath();
+		String solrHomeDir() throws IOException {
+
+			folder.create();
+			return folder.getRoot().getAbsolutePath();
 		}
 
+		@Override
+		public void destroy() throws Exception {
+			folder.delete();
+		}
 	}
 
 	@Autowired ProductRepository repo;
@@ -77,25 +79,6 @@ public class SolrWebTests extends CommonWebTests {
 	public void setUp() {
 
 		super.setUp();
-		for (SolrCore core : solrServerFactory.getSolrServer().getCoreContainer().getCores()) {
-			core.addCloseHook(new CloseHook() {
-				@Override
-				public void preClose(SolrCore core) {}
-
-				@Override
-				public void postClose(SolrCore core) {
-					CoreDescriptor cd = core.getCoreDescriptor();
-					if (cd != null) {
-						File dataDir = new File(cd.getInstanceDir() + File.separator + "data");
-						try {
-							FileUtils.deleteDirectory(dataDir);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			});
-		}
 		repo.save(Arrays.asList(PLAYSTATION, GAMEBOY, AMIGA500));
 	}
 
