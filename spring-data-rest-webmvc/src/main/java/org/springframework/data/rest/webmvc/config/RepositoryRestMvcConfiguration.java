@@ -88,11 +88,10 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
 import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.DefaultedPageableHandlerMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.support.ETagArgumentResolver;
 import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
-import org.springframework.data.rest.webmvc.support.IfMatchHeaderArgumentResolver;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.data.rest.webmvc.support.EtagValidator;
 import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
@@ -309,9 +308,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public IfMatchHeaderArgumentResolver ifMatchHeaderArgumentResolver(){
-		return new IfMatchHeaderArgumentResolver();
+	public ETagArgumentResolver eTagArgumentResolver() {
+		return new ETagArgumentResolver();
 	}
+
 	/**
 	 * A special {@link org.springframework.hateoas.EntityLinks} implementation that takes repository and current
 	 * configuration into account when generating links.
@@ -621,11 +621,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return OrderAwarePluginRegistry.create(converters);
 	}
 
-	@Bean
-	public EtagValidator etagValidator() {
-		return new EtagValidator(defaultConversionService());
-	}
-
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
@@ -639,7 +634,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return Arrays.asList(defaultedPageableResolver, pageableResolver, sortResolver(),
 				serverHttpRequestMethodArgumentResolver(), repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
 				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE,
-				peraResolver, backendIdHandlerMethodArgumentResolver(), ifMatchHeaderArgumentResolver());
+				peraResolver, backendIdHandlerMethodArgumentResolver(), eTagArgumentResolver());
 	}
 
 	@Autowired GeoModule geoModule;

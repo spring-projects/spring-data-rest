@@ -32,6 +32,7 @@ import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
+import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -89,7 +90,8 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
 				entities.getPersistentEntity(Order.class)).build();
 
-		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler, null);
+		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler,
+				ETag.NO_ETAG);
 
 		assertThat(entity.getHeaders().getLocation().toString(), not(endsWith("{?projection}")));
 	}

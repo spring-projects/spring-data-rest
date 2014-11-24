@@ -16,8 +16,6 @@
 
 package org.springframework.data.rest.webmvc.support;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -28,8 +26,9 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * {@link HandlerMethodArgumentResolver} to resolve If-Match headers for optimistic locking handling {@link IfMatch}.
  * 
  * @author Pablo Lozano
+ * @author Oliver Gierke
  */
-public class IfMatchHeaderArgumentResolver implements HandlerMethodArgumentResolver {
+public class ETagArgumentResolver implements HandlerMethodArgumentResolver {
 
 	/* 
 	 * (non-Javadoc)
@@ -37,7 +36,7 @@ public class IfMatchHeaderArgumentResolver implements HandlerMethodArgumentResol
 	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return parameter.hasParameterAnnotation(IfMatch.class);
+		return parameter.getParameterType().equals(ETag.class);
 	}
 
 	/* 
@@ -45,16 +44,8 @@ public class IfMatchHeaderArgumentResolver implements HandlerMethodArgumentResol
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+	public ETag resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-
-		IfMatch ifMatchHeader = parameter.getParameterAnnotation(IfMatch.class);
-		HttpServletRequest httprequest = (HttpServletRequest) webRequest.getNativeRequest();
-		Object result = httprequest.getHeader("If-Match");
-
-		if (result == null) {
-			result = ifMatchHeader.defaultValue();
-		}
-		return result;
+		return ETag.from(webRequest.getHeader("If-Match"));
 	}
 }

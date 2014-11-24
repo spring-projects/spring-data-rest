@@ -611,7 +611,7 @@ public class JpaWebTests extends CommonWebTests {
 		mvc.perform(
 				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
 						.contentType(MediaType.APPLICATION_JSON).header("If-Match", "\"falseETag\"")).andExpect(
-				status().isConflict());
+				status().isPreconditionFailed());
 	}
 
 	/**

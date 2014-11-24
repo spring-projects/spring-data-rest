@@ -34,6 +34,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.support.ETagDoesntMatchException;
 import org.springframework.data.rest.webmvc.support.ExceptionMessage;
 import org.springframework.data.rest.webmvc.support.RepositoryConstraintViolationExceptionMessage;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -132,7 +133,6 @@ class AbstractRepositoryRestController implements MessageSourceAware {
 	 * @return
 	 */
 	@ExceptionHandler({ OptimisticLockingFailureException.class, DataIntegrityViolationException.class })
-	@ResponseBody
 	public ResponseEntity handleConflict(Exception ex) {
 		return errorResponse(null, ex, HttpStatus.CONFLICT);
 	}
@@ -144,13 +144,19 @@ class AbstractRepositoryRestController implements MessageSourceAware {
 	 * @return
 	 */
 	@ExceptionHandler
-	@ResponseBody
 	public ResponseEntity<Void> handle(HttpRequestMethodNotSupportedException o_O) {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAllow(o_O.getSupportedHttpMethods());
 
 		return new ResponseEntity<Void>(headers, HttpStatus.METHOD_NOT_ALLOWED);
+	}
+
+	@ExceptionHandler
+	public ResponseEntity<Void> handle(ETagDoesntMatchException o_O) {
+
+		HttpHeaders headers = o_O.getExpectedETag().addTo(new HttpHeaders());
+		return new ResponseEntity<Void>(headers, HttpStatus.PRECONDITION_FAILED);
 	}
 
 	protected <T> ResponseEntity<T> notFound() {

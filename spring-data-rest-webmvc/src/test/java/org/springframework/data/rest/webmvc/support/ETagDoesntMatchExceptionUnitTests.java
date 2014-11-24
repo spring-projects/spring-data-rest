@@ -13,25 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.rest.webmvc.support;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.springframework.web.bind.annotation.ValueConstants;
+import org.junit.Test;
 
 /**
- * Annotation to find the If-Match header of a request
- * 
- * @author Pablo Lozano
+ * Unit tests for {@link ETagDoesntMatchException}.
+ *
+ * @author Oliver Gierke
  */
+public class ETagDoesntMatchExceptionUnitTests {
 
-@Target(ElementType.PARAMETER)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface IfMatch {
+	/**
+	 * @see DATAREST-160
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullTargetBean() {
+		new ETagDoesntMatchException(null, ETag.from("1"));
+	}
 
-	String defaultValue() default ValueConstants.DEFAULT_NONE;
+	/**
+	 * @see DATAREST-160
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullExpectedETag() {
+		new ETagDoesntMatchException(new Object(), null);
+	}
 }

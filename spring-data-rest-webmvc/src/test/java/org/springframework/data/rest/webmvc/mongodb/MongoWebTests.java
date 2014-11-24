@@ -17,13 +17,12 @@ package org.springframework.data.rest.webmvc.mongodb;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,9 +33,10 @@ import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
-
-import com.jayway.jsonpath.JsonPath;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 
 /**
  * Integration tests for MongoDB repositories.
@@ -50,7 +50,7 @@ public class MongoWebTests extends CommonWebTests {
 	@Autowired ProfileRepository repository;
 	@Autowired UserRepository userRepository;
 
-    ObjectMapper mapper = new ObjectMapper();
+	ObjectMapper mapper = new ObjectMapper();
 
 	@Before
 	public void populateProfiles() {
@@ -66,7 +66,7 @@ public class MongoWebTests extends CommonWebTests {
 		repository.save(Arrays.asList(twitter, linkedIn));
 
 		Address address = new Address();
-		address.street = "Foo";
+		address.street = "ETagDoesntMatchExceptionUnitTests";
 		address.zipCode = "Bar";
 
 		User user = new User();
@@ -160,7 +160,8 @@ public class MongoWebTests extends CommonWebTests {
 	 */
 	@Test
 	public void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
-		Link receiptLink = discoverUnique("receipts");
+
+		Link receiptLink = client.discoverUnique("receipts");
 
 		Receipt receipt = new Receipt();
 		receipt.setAmount(new BigDecimal(50));
@@ -169,7 +170,7 @@ public class MongoWebTests extends CommonWebTests {
 		String stringReceipt = mapper.writeValueAsString(receipt);
 
 		MockHttpServletResponse createdReceipt = postAndGet(receiptLink, stringReceipt, MediaType.APPLICATION_JSON);
-		Link tacosLink = assertHasLinkWithRel("self", createdReceipt);
+		Link tacosLink = client.assertHasLinkWithRel("self", createdReceipt);
 		assertJsonPathEquals("$.saleItem", "Springy Tacos", createdReceipt);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(tacosLink.getHref());
@@ -183,6 +184,6 @@ public class MongoWebTests extends CommonWebTests {
 		mvc.perform(
 				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
 						.contentType(MediaType.APPLICATION_JSON).header("If-Match", concurrencyTag)).andExpect(
-				status().isConflict());
+				status().isPreconditionFailed());
 	}
 }
