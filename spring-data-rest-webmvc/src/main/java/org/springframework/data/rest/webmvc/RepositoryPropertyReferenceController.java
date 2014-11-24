@@ -33,6 +33,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -209,10 +210,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				if (prop.property.isCollectionLike()) {
 					for (Object obj : (Iterable<?>) prop.propertyValue) {
 
-						PersistentPropertyAccessor accessor = prop.entity.getPropertyAccessor(obj);
-						String sId = accessor.getProperty(prop.entity.getIdProperty()).toString();
-
-						if (propertyId.equals(sId)) {
+						IdentifierAccessor accessor = prop.entity.getIdentifierAccessor(obj);
+						if (propertyId.equals(accessor.getIdentifier().toString())) {
 
 							PersistentEntityResource resource = assembler.toResource(obj);
 							headers.set("Content-Location", resource.getId().getHref());
@@ -222,10 +221,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				} else if (prop.property.isMap()) {
 					for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) prop.propertyValue).entrySet()) {
 
-						PersistentPropertyAccessor accessor = prop.entity.getPropertyAccessor(entry.getValue());
-						String sId = accessor.getProperty(prop.entity.getIdProperty()).toString();
-
-						if (propertyId.equals(sId)) {
+						IdentifierAccessor accessor = prop.entity.getIdentifierAccessor(entry.getValue());
+						if (propertyId.equals(accessor.getIdentifier().toString())) {
 
 							PersistentEntityResource resource = assembler.toResource(entry.getValue());
 							headers.set("Content-Location", resource.getId().getHref());
@@ -401,8 +398,9 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					while (itr.hasNext()) {
 						Object obj = itr.next();
 
-						PersistentPropertyAccessor accessor = prop.entity.getPropertyAccessor(obj);
-						String s = accessor.getProperty(prop.entity.getIdProperty()).toString();
+						IdentifierAccessor accessor = prop.entity.getIdentifierAccessor(obj);
+						String s = accessor.getIdentifier().toString();
+
 						if (propertyId.equals(s)) {
 							itr.remove();
 						}
@@ -412,8 +410,10 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					Iterator<Object> itr = m.keySet().iterator();
 					while (itr.hasNext()) {
 						Object key = itr.next();
-						PersistentPropertyAccessor accessor = prop.entity.getPropertyAccessor(m.get(key));
-						String s = accessor.getProperty(prop.entity.getIdProperty()).toString();
+
+						IdentifierAccessor accessor = prop.entity.getIdentifierAccessor(m.get(key));
+						String s = accessor.getIdentifier().toString();
+
 						if (propertyId.equals(s)) {
 							itr.remove();
 						}

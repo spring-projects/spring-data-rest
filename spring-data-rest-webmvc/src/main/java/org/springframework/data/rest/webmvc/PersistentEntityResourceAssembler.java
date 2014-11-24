@@ -123,7 +123,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 		final List<EmbeddedWrapper> associationProjections = new ArrayList<EmbeddedWrapper>();
 		final PersistentPropertyAccessor accessor = entity.getPropertyAccessor(instance);
 		final AssociationLinks associationLinks = new AssociationLinks(mappings);
-		final ResourceMetadata metadata = mappings.getMappingFor(instance.getClass());
+		final ResourceMetadata metadata = mappings.getMappingFor(entity.getType());
 
 		entity.doWithAssociations(new SimpleAssociationHandler() {
 
@@ -197,8 +197,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 					instanceType));
 		}
 
-		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(instance);
-		Object id = accessor.getProperty(entity.getIdProperty());
+		Object id = entity.getIdentifierAccessor(instance).getIdentifier();
 
 		Link resourceLink = entityLinks.linkToSingleResource(entity.getType(), id);
 		return new Link(resourceLink.getHref(), Link.REL_SELF);

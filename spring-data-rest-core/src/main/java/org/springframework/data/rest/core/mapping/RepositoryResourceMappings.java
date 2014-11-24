@@ -33,6 +33,7 @@ import org.springframework.data.rest.core.support.RepositoriesUtils;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -89,7 +90,7 @@ public class RepositoryResourceMappings implements ResourceMappings {
 	public ResourceMetadata getMappingFor(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null!");
-		return cache.get(type);
+		return cache.get(ClassUtils.getUserClass(type));
 	}
 
 	private final void populateCache(Repositories repositories) {
