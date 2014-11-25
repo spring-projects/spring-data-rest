@@ -28,7 +28,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.repository.invoker.RepositoryInvoker;
+import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 

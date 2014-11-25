@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.repository.invoker.RepositoryInvoker;
+import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;

@@ -17,9 +17,9 @@ package org.springframework.data.rest.webmvc.config;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.repository.invoker.RepositoryInvoker;
-import org.springframework.data.repository.invoker.RepositoryInvokerFactory;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.util.Assert;
