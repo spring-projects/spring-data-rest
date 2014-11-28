@@ -21,6 +21,7 @@ import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -555,6 +556,37 @@ public class JpaWebTests extends CommonWebTests {
 
 		mvc.perform(delete(authorsLink.getHref().concat("/{id}"), 4711)).//
 				andExpect(status().isNotFound());
+	}
+
+	/**
+	 * @see DATAREST-160
+	 */
+	@Test
+	public void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
+		Link receiptLink = client.discoverUnique("receipts");
+
+		Receipt receipt = new Receipt();
+		receipt.setAmount(new BigDecimal(50));
+		receipt.setSaleItem("Springy Tacos");
+
+		String stringReceipt = mapper.writeValueAsString(receipt);
+
+		MockHttpServletResponse createdReceipt = postAndGet(receiptLink, stringReceipt, MediaType.APPLICATION_JSON);
+		Link tacosLink = client.assertHasLinkWithRel("self", createdReceipt);
+		assertJsonPathEquals("$.saleItem", "Springy Tacos", createdReceipt);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(tacosLink.getHref());
+		String concurrencyTag = createdReceipt.getHeader("ETag");
+
+		mvc.perform(
+				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
+						.contentType(MediaType.APPLICATION_JSON).header("If-Match", concurrencyTag)).andExpect(
+				status().isNoContent());
+
+		mvc.perform(
+				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
+						.contentType(MediaType.APPLICATION_JSON).header("If-Match", "\"falseETag\"")).andExpect(
+				status().isConflict());
 	}
 
 	/**
