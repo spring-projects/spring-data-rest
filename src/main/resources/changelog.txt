@@ -1,6 +1,20 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.3.0.M1 (2014-12-01)
+----------------------------------------
+* DATAREST-418 - Release 2.3 M1.
+* DATAREST-417 - Adapt to move of the RepositoryInvoker API to the support package.
+* DATAREST-416 - Move to IdentifierAccessor API.
+* DATAREST-415 - Move to PersistentPropertyAccessor API.
+* DATAREST-409 - Port RepositoryInvoker abstraction to Spring Data Commons.
+* DATAREST-385 - Projection doesn't work with a @MappedSuperclass.
+* DATAREST-384 - Query method do not consider Sort parameters.
+* DATAREST-381 - Controllers for Alps and repository listing get listed under the root even if a base URI is configured.
+* DATAREST-227 - Extract test functions from AbstractWebIntegrationTest for general reuse.
+* DATAREST-160 - Support for @Version based ETags.
+
+
 Changes in version 2.2.1.RELEASE (2014-10-30)
 ---------------------------------------------
 * DATAREST-401 - Release 2.2.1.
