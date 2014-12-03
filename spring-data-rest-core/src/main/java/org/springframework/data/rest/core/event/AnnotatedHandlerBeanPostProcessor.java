@@ -30,6 +30,7 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Jon Brisbin
+ * @author Saulo Medeiros de Araujo
  */
 public class AnnotatedHandlerBeanPostProcessor implements ApplicationListener<RepositoryEvent>, BeanPostProcessor {
 
@@ -65,6 +66,14 @@ public class AnnotatedHandlerBeanPostProcessor implements ApplicationListener<Re
 				handlerMethod.method.invoke(handlerMethod.handler, params.toArray());
 
 			} catch (Exception e) {
+				if (e instanceof InvocationTargetException) {
+					InvocationTargetException invocationTargetException = (InvocationTargetException) e;
+					Throwable target = invocationTargetException.getTargetException();
+					if (target instanceof RuntimeException) {
+						RuntimeException runtimeException = (RuntimeException) target;
+						throw runtimeException;
+					}
+				}
 				throw new IllegalStateException(e);
 			}
 		}
