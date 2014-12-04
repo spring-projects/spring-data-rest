@@ -5,7 +5,7 @@ package org.springframework.data.rest.core.event;
  * 
  * @author Jon Brisbin <jbrisbin@vmware.com>
  */
-public class BeforeLinkSaveEvent extends LinkSaveEvent {
+public class BeforeLinkSaveEvent extends LinkedEntityEvent {
 
 	private static final long serialVersionUID = 4836932640633578985L;
 

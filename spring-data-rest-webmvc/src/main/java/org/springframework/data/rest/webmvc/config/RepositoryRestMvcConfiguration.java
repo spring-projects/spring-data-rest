@@ -57,7 +57,7 @@ import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.Projection;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.core.event.AnnotatedHandlerBeanPostProcessor;
+import org.springframework.data.rest.core.event.AnnotatedEventHandlerInvoker;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
@@ -65,7 +65,6 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.projection.ProxyProjectionFactory;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.rest.core.support.RepositoryRelProvider;
-import org.springframework.data.rest.core.util.UUIDConverter;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.BaseUriAwareController;
 import org.springframework.data.rest.webmvc.BaseUriAwareHandlerMapping;
@@ -181,7 +180,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public DefaultFormattingConversionService defaultConversionService() {
 
 		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
-		conversionService.addConverter(UUIDConverter.INSTANCE);
 		configureConversionService(conversionService);
 
 		if (!conversionService.canConvert(String.class, Point.class)) {
@@ -259,8 +257,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @return
 	 */
 	@Bean
-	public static AnnotatedHandlerBeanPostProcessor annotatedHandlerBeanPostProcessor() {
-		return new AnnotatedHandlerBeanPostProcessor();
+	public static AnnotatedEventHandlerInvoker annotatedEventHandlerInvoker() {
+		return new AnnotatedEventHandlerInvoker();
 	}
 
 	/**

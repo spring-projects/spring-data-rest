@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,10 @@
  */
 package org.springframework.data.rest.core.domain.jpa;
 
-import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;
-
 /**
- * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public class PersonBeforeSaveHandler extends AbstractRepositoryEventListener<Person> {
+public class EventHandlerInvokedException extends RuntimeException {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onBeforeSave(java.lang.Object)
-	 */
-	@Override
-	protected void onBeforeSave(Person person) {
-		throw new EventHandlerInvokedException();
-	}
+	private static final long serialVersionUID = -7879286986960261090L;
 }

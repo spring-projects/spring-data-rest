@@ -5,7 +5,7 @@ package org.springframework.data.rest.core.event;
  * 
  * @author Jon Brisbin
  */
-public class AfterLinkDeleteEvent extends LinkSaveEvent {
+public class AfterLinkDeleteEvent extends LinkedEntityEvent {
 
 	private static final long serialVersionUID = 3887575011761146290L;
 
