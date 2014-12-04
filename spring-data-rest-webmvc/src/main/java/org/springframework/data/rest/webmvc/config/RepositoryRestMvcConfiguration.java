@@ -68,6 +68,7 @@ import org.springframework.data.rest.core.support.RepositoryRelProvider;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.BaseUriAwareController;
 import org.springframework.data.rest.webmvc.BaseUriAwareHandlerMapping;
+import org.springframework.data.rest.webmvc.GlobalExceptionHandler;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
@@ -545,6 +546,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		configureExceptionHandlerExceptionResolver(er);
 
 		return er;
+	}
+
+	@Bean
+	public GlobalExceptionHandler globalExceptionHandler() {
+		return new GlobalExceptionHandler();
 	}
 
 	@Bean
