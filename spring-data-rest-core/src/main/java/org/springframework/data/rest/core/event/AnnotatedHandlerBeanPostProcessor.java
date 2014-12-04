@@ -30,12 +30,17 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
 public class AnnotatedHandlerBeanPostProcessor implements ApplicationListener<RepositoryEvent>, BeanPostProcessor {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AnnotatedHandlerBeanPostProcessor.class);
 	private final MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = new LinkedMultiValueMap<Class<? extends RepositoryEvent>, AnnotatedHandlerBeanPostProcessor.EventHandlerMethod>();
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+	 */
 	@Override
 	public void onApplicationEvent(RepositoryEvent event) {
 		Class<? extends RepositoryEvent> eventType = event.getClass();
@@ -44,47 +49,53 @@ public class AnnotatedHandlerBeanPostProcessor implements ApplicationListener<Re
 		}
 
 		for (EventHandlerMethod handlerMethod : handlerMethods.get(eventType)) {
-			try {
-				Object src = event.getSource();
 
-				if (!ClassUtils.isAssignable(handlerMethod.targetType, src.getClass())) {
-					continue;
-				}
+			Object src = event.getSource();
 
-				List<Object> params = new ArrayList<Object>();
-				params.add(src);
-				if (event instanceof BeforeLinkSaveEvent) {
-					params.add(((BeforeLinkSaveEvent) event).getLinked());
-				} else if (event instanceof AfterLinkSaveEvent) {
-					params.add(((AfterLinkSaveEvent) event).getLinked());
-				}
-
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("Invoking " + event.getClass().getSimpleName() + " handler for " + event.getSource());
-				}
-				handlerMethod.method.invoke(handlerMethod.handler, params.toArray());
-
-			} catch (Exception e) {
-				throw new IllegalStateException(e);
+			if (!ClassUtils.isAssignable(handlerMethod.targetType, src.getClass())) {
+				continue;
 			}
+
+			List<Object> params = new ArrayList<Object>();
+			params.add(src);
+
+			if (event instanceof LinkSaveEvent) {
+				params.add(((LinkSaveEvent) event).getLinked());
+			}
+
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Invoking {} handler for {}.", event.getClass().getSimpleName(), event.getSource());
+			}
+
+			ReflectionUtils.invokeMethod(handlerMethod.method, handlerMethod.handler, params.toArray());
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessBeforeInitialization(java.lang.Object, java.lang.String)
+	 */
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		return bean;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessAfterInitialization(java.lang.Object, java.lang.String)
+	 */
 	@Override
 	public Object postProcessAfterInitialization(final Object bean, String beanName) throws BeansException {
 		final Class<?> beanType = bean.getClass();
 
 		RepositoryEventHandler typeAnno = AnnotationUtils.findAnnotation(beanType, RepositoryEventHandler.class);
+
 		if (null == typeAnno) {
 			return bean;
 		}
 
 		Class<?>[] targetTypes = typeAnno.value();
+
 		if (targetTypes.length == 0) {
 			targetTypes = new Class<?>[] { null };
 		}
@@ -130,7 +141,7 @@ public class AnnotatedHandlerBeanPostProcessor implements ApplicationListener<Re
 				for (Class<?> type : targetTypes) {
 					EventHandlerMethod m = new EventHandlerMethod(type, handler, method);
 					if (LOG.isDebugEnabled()) {
-						LOG.debug("Annotated handler method found: " + m);
+						LOG.debug("Annotated handler method found: {}", m);
 					}
 					handlerMethods.add(eventType, m);
 				}
