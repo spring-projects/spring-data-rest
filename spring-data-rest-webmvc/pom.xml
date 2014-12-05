@@ -151,6 +151,7 @@
 						<phase>test</phase>
 						<configuration>
 							<includes>
+								<include>org/springframework/data/rest/webmvc/*Test*.java</include>
 								<include>**/alps/*Test*.java</include>
 								<include>**/config/*Test*.java</include>
 								<include>**/convert/*Test*.java</include>
