@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012-2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.rest.webmvc.support;
 
 import java.util.ArrayList;
@@ -11,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
 public class RepositoryConstraintViolationExceptionMessage {
 
@@ -21,17 +37,8 @@ public class RepositoryConstraintViolationExceptionMessage {
 
 		for (FieldError fieldError : violationException.getErrors().getFieldErrors()) {
 
-			List<Object> args = new ArrayList<Object>();
-			args.add(fieldError.getObjectName());
-			args.add(fieldError.getField());
-			args.add(fieldError.getRejectedValue());
-			if (null != fieldError.getArguments()) {
-				for (Object o : fieldError.getArguments()) {
-					args.add(o);
-				}
-			}
+			String message = accessor.getMessage(fieldError);
 
-			String message = accessor.getMessage(fieldError.getCode(), args.toArray(), fieldError.getDefaultMessage());
 			this.errors.add(new ValidationError(fieldError.getObjectName(), message, String.format("%s",
 					fieldError.getRejectedValue()), fieldError.getField()));
 		}
@@ -72,5 +79,4 @@ public class RepositoryConstraintViolationExceptionMessage {
 			return property;
 		}
 	}
-
 }

@@ -15,8 +15,12 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.springframework.data.rest.webmvc.ControllerUtils.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -25,12 +29,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static org.springframework.data.rest.webmvc.ControllerUtils.EMPTY_RESOURCE_LIST;
-
 /**
  * @author Jon Brisbin
  * @author Oliver Gierke
@@ -38,8 +36,6 @@ import static org.springframework.data.rest.webmvc.ControllerUtils.EMPTY_RESOURC
  */
 @SuppressWarnings({ "rawtypes" })
 class AbstractRepositoryRestController {
-
-	private static final Logger LOG = LoggerFactory.getLogger(AbstractRepositoryRestController.class);
 
 	private final PagedResourcesAssembler<Object> pagedResourcesAssembler;
 

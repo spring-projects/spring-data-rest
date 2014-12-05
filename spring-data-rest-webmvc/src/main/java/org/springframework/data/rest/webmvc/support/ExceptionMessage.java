@@ -9,23 +9,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class ExceptionMessage {
 
-	private final Throwable exception;
+	private final Throwable throwable;
 
-	public ExceptionMessage(Throwable exception) {
-		this.exception = exception;
+	public ExceptionMessage(Throwable throwable) {
+		this.throwable = throwable;
 	}
 
 	@JsonProperty("message")
 	public String getMessage() {
-		return exception.getMessage();
+		return throwable.getMessage();
 	}
 
 	@JsonProperty("cause")
 	public ExceptionMessage getCause() {
-		if (null != exception.getCause()) {
-			return new ExceptionMessage(exception.getCause());
-		}
-		return null;
+		return throwable.getCause() != null ? new ExceptionMessage(throwable.getCause()) : null;
 	}
-
 }

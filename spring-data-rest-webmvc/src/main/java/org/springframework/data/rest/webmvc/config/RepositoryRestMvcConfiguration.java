@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactoryUtils;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -68,8 +67,8 @@ import org.springframework.data.rest.core.support.RepositoryRelProvider;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.BaseUriAwareController;
 import org.springframework.data.rest.webmvc.BaseUriAwareHandlerMapping;
-import org.springframework.data.rest.webmvc.GlobalExceptionHandler;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
@@ -146,7 +145,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private static final boolean IS_JPA_AVAILABLE = ClassUtils.isPresent("javax.persistence.EntityManager",
 			RepositoryRestMvcConfiguration.class.getClassLoader());
 
-	@Autowired ListableBeanFactory beanFactory;
+	@Autowired ApplicationContext applicationContext;
 
 	@Autowired(required = false) List<BackendIdConverter> idConverters = Collections.emptyList();
 
@@ -155,7 +154,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public Repositories repositories() {
-		return new Repositories(beanFactory);
+		return new Repositories(applicationContext);
 	}
 
 	@Bean
@@ -168,7 +167,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		List<MappingContext<?, ?>> arrayList = new ArrayList<MappingContext<?, ?>>();
 
-		for (MappingContext<?, ?> context : BeanFactoryUtils.beansOfTypeIncludingAncestors(beanFactory,
+		for (MappingContext<?, ?> context : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
 				MappingContext.class).values()) {
 			arrayList.add(context);
 		}
@@ -474,7 +473,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		List<HttpMessageConverter<?>> messageConverters = defaultMessageConverters();
 		configureHttpMessageConverters(messageConverters);
 
-		Collection<ResourceProcessor> beans = beanFactory.getBeansOfType(ResourceProcessor.class, false, false).values();
+		Collection<ResourceProcessor> beans = applicationContext.getBeansOfType(ResourceProcessor.class, false, false)
+				.values();
 		List<ResourceProcessor<?>> processors = new ArrayList<ResourceProcessor<?>>(beans.size());
 
 		for (ResourceProcessor<?> bean : beans) {
@@ -549,8 +549,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public GlobalExceptionHandler globalExceptionHandler() {
-		return new GlobalExceptionHandler();
+	public RepositoryRestExceptionHandler repositoryRestExceptionHandler() {
+		return new RepositoryRestExceptionHandler(applicationContext);
 	}
 
 	@Bean
@@ -628,8 +628,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
-				repositories(), entityLinks(), config().projectionConfiguration(), new ProxyProjectionFactory(beanFactory),
-				resourceMappings());
+				repositories(), entityLinks(), config().projectionConfiguration(), new ProxyProjectionFactory(
+						applicationContext), resourceMappings());
 
 		HateoasPageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
 		HandlerMethodArgumentResolver defaultedPageableResolver = new DefaultedPageableHandlerMethodArgumentResolver(
