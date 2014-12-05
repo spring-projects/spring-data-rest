@@ -151,13 +151,16 @@
 						<phase>test</phase>
 						<configuration>
 							<includes>
-								<include>org/springframework/data/rest/webmvc/*Test*.java</include>
-								<include>**/alps/*Test*.java</include>
-								<include>**/config/*Test*.java</include>
-								<include>**/convert/*Test*.java</include>
-								<include>**/json/*Test*.java</include>
-								<include>**/support/*Test*.java</include>
+								<include>**/*Test*.java</include>
 							</includes>
+							<!-- exclude store-specific tests from base-tests -->
+							<excludes>
+								<exclude>**/gemfire/*Test*.java</exclude>
+								<exclude>**/jpa/*Test*.java</exclude>
+								<exclude>**/mongodb/*Test*.java</exclude>
+								<exclude>**/neo4j/*Test*.java</exclude>
+								<exclude>**/solr/*Test*.java</exclude>
+							</excludes>
 						</configuration>
 					</execution>
 					<execution>
