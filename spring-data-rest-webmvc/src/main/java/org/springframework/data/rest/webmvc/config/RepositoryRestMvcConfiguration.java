@@ -114,6 +114,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.plugin.core.OrderAwarePluginRegistry;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.ClassUtils;
+import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
@@ -483,8 +484,13 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		AnnotationAwareOrderComparator.sort(processors);
 
+		// Forward conversion service to handler adapter
+		ConfigurableWebBindingInitializer initializer = new ConfigurableWebBindingInitializer();
+		initializer.setConversionService(defaultConversionService());
+
 		RepositoryRestHandlerAdapter handlerAdapter = new RepositoryRestHandlerAdapter(defaultMethodArgumentResolvers(),
 				processors);
+		handlerAdapter.setWebBindingInitializer(initializer);
 		handlerAdapter.setMessageConverters(messageConverters);
 
 		return handlerAdapter;

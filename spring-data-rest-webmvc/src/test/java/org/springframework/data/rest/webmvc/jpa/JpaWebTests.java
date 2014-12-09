@@ -552,9 +552,9 @@ public class JpaWebTests extends CommonWebTests {
 	@Test
 	public void returns404WhenTryingToDeleteANonExistingResource() throws Exception {
 
-		Link authorsLink = client.discoverUnique("authors");
+		Link receiptsLink = client.discoverUnique("receipts");
 
-		mvc.perform(delete(authorsLink.getHref().concat("/{id}"), 4711)).//
+		mvc.perform(delete(receiptsLink.getHref().concat("/{id}"), 4711)).//
 				andExpect(status().isNotFound());
 	}
 
@@ -612,6 +612,20 @@ public class JpaWebTests extends CommonWebTests {
 				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
 						.contentType(MediaType.APPLICATION_JSON).header("If-Match", "\"falseETag\"")).andExpect(
 				status().isPreconditionFailed());
+	}
+
+	/**
+	 * @see DATAREST-423
+	 */
+	@Test
+	public void invokesCustomControllerAndBindsDomainObjectCorrectly() throws Exception {
+
+		MockHttpServletResponse authorsResponse = client.request(client.discoverUnique("authors"));
+
+		String authorUri = JsonPath.read(authorsResponse.getContentAsString(), "$._embedded.authors[0]._links.self.href");
+
+		mvc.perform(delete(authorUri)).//
+				andExpect(status().isIAmATeapot());
 	}
 
 	/**
