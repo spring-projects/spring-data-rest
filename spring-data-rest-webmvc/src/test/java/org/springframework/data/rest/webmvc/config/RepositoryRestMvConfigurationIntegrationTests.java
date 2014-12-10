@@ -20,12 +20,14 @@ import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,12 +36,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
+import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.format.datetime.DateFormatter;
 import org.springframework.hateoas.LinkDiscoverers;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.core.DefaultRelProvider;
 import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -154,12 +158,46 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		}
 	}
 
+	/**
+	 * @see DATAREST-424
+	 */
+	@Test
+	public void halHttpMethodConverterIsRegisteredBeforeTheGeneralOne() {
+
+		CollectingComponent component = context.getBean(CollectingComponent.class);
+		List<HttpMessageConverter<?>> converters = component.converters;
+
+		assertThat(converters.get(0).getSupportedMediaTypes(), hasItem(MediaTypes.HAL_JSON));
+		assertThat(converters.get(1).getSupportedMediaTypes(), hasItem(RestMediaTypes.SCHEMA_JSON));
+	}
+
+	/**
+	 * @see DATAREST-424
+	 */
+	@Test
+	public void halHttpMethodConverterIsRegisteredAfterTheGeneralOneIfHalIsDisabledAsDefaultMediaType() {
+
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(NonHalConfiguration.class);
+		CollectingComponent component = context.getBean(CollectingComponent.class);
+		context.close();
+
+		List<HttpMessageConverter<?>> converters = component.converters;
+
+		assertThat(converters.get(0).getSupportedMediaTypes(), hasItem(RestMediaTypes.SCHEMA_JSON));
+		assertThat(converters.get(1).getSupportedMediaTypes(), hasItem(MediaTypes.HAL_JSON));
+	}
+
 	@Configuration
 	static class ExtendingConfiguration extends RepositoryRestMvcConfiguration {
 
 		@Bean
 		public DefaultRelProvider relProvider() {
 			return new DefaultRelProvider();
+		}
+
+		@Bean
+		public CollectingComponent collectingComponent() {
+			return new CollectingComponent();
 		}
 
 		@Override
@@ -173,8 +211,32 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		}
 	}
 
+	@Configuration
+	static class NonHalConfiguration extends RepositoryRestMvcConfiguration {
+
+		@Bean
+		public CollectingComponent collectingComponent() {
+			return new CollectingComponent();
+		}
+
+		@Override
+		protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+			config.useHalAsDefaultJsonMediaType(false);
+		}
+	}
+
 	static class Sample {
 
 		public Date date;
+	}
+
+	static class CollectingComponent {
+
+		List<HttpMessageConverter<?>> converters;
+
+		@Autowired
+		public void setConverters(List<HttpMessageConverter<?>> converters) {
+			this.converters = converters;
+		}
 	}
 }
