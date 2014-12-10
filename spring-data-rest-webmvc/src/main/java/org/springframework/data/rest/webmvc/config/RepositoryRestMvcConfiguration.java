@@ -38,6 +38,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.io.ClassPathResource;
@@ -398,17 +399,20 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public MappingJackson2HttpMessageConverter jacksonHttpMessageConverter() {
 
 		List<MediaType> mediaTypes = new ArrayList<MediaType>();
-		mediaTypes.addAll(Arrays.asList(RestMediaTypes.SCHEMA_JSON, //
-				RestMediaTypes.JSON_PATCH_JSON, RestMediaTypes.MERGE_PATCH_JSON, //
-				RestMediaTypes.SPRING_DATA_VERBOSE_JSON, RestMediaTypes.SPRING_DATA_COMPACT_JSON));
 
 		// Configure this mapper to be used if HAL is not the default media type
 		if (!config().useHalAsDefaultJsonMediaType()) {
 			mediaTypes.add(MediaType.APPLICATION_JSON);
 		}
 
-		MappingJackson2HttpMessageConverter jacksonConverter = new TypeConstrainedMappingJackson2HttpMessageConverter(
-				ResourceSupport.class);
+		int order = config().useHalAsDefaultJsonMediaType() ? Ordered.LOWEST_PRECEDENCE - 1
+				: Ordered.LOWEST_PRECEDENCE - 10;
+
+		mediaTypes.addAll(Arrays.asList(RestMediaTypes.SCHEMA_JSON, //
+				RestMediaTypes.JSON_PATCH_JSON, RestMediaTypes.MERGE_PATCH_JSON, //
+				RestMediaTypes.SPRING_DATA_VERBOSE_JSON, RestMediaTypes.SPRING_DATA_COMPACT_JSON));
+
+		MappingJackson2HttpMessageConverter jacksonConverter = new ResourceSupportHttpMessageConverter(order);
 		jacksonConverter.setObjectMapper(objectMapper());
 		jacksonConverter.setSupportedMediaTypes(mediaTypes);
 
@@ -430,8 +434,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			mediaTypes.add(MediaType.APPLICATION_JSON);
 		}
 
-		MappingJackson2HttpMessageConverter converter = new TypeConstrainedMappingJackson2HttpMessageConverter(
-				ResourceSupport.class);
+		int order = config().useHalAsDefaultJsonMediaType() ? Ordered.LOWEST_PRECEDENCE - 10
+				: Ordered.LOWEST_PRECEDENCE - 1;
+
+		MappingJackson2HttpMessageConverter converter = new ResourceSupportHttpMessageConverter(order);
 		converter.setObjectMapper(halObjectMapper());
 		converter.setSupportedMediaTypes(mediaTypes);
 
@@ -702,6 +708,31 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public AlpsResourceProcessor alpsResourceProcessor() {
 		return new AlpsResourceProcessor(config());
+	}
+
+	private static class ResourceSupportHttpMessageConverter extends TypeConstrainedMappingJackson2HttpMessageConverter
+			implements Ordered {
+
+		private final int order;
+
+		/**
+		 * Creates a new {@link ResourceSupportHttpMessageConverter} with the given order.
+		 * 
+		 * @param order the order for the {@link HttpMessageConverter}.
+		 */
+		public ResourceSupportHttpMessageConverter(int order) {
+			super(ResourceSupport.class);
+			this.order = order;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.core.Ordered#getOrder()
+		 */
+		@Override
+		public int getOrder() {
+			return order;
+		}
 	}
 
 	/**
