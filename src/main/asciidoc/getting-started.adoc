@@ -57,7 +57,7 @@ Make sure you also configure Spring Data repositories for the store you use. For
 [[getting-started.bootstrap]]
 == Starting the application
 
-As Spring Data REST is build on SpringMVC, you simply stick to the means you use to bootstrap Spring MVC. In a Servlet 3.0 environment this might look something like this:
+As Spring Data REST is built on SpringMVC, you simply stick to the means you use to bootstrap Spring MVC. In a Servlet 3.0 environment this might look something like this:
 
 [source,java]
 ----

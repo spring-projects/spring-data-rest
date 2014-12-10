@@ -47,7 +47,7 @@ protected void configureJacksonObjectMapper(ObjectMapper objectMapper) {
 }
 ----
 
-Once you have access to the `SetupContext` object in your `Module`, you can do all sorts of cool things to configure Jacskon's JSON mapping. You can read more about how `Module`s work on Jackson's wiki: http://wiki.fasterxml.com/JacksonFeatureModules[ http://wiki.fasterxml.com/JacksonFeatureModules ]
+Once you have access to the `SetupContext` object in your `Module`, you can do all sorts of cool things to configure Jackson's JSON mapping. You can read more about how ``Module``s work on Jackson's wiki: http://wiki.fasterxml.com/JacksonFeatureModules[ http://wiki.fasterxml.com/JacksonFeatureModules ]
 
 ==== Adding custom serializers for domain types
 
