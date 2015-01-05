@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
+import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DomainClassConverter;
@@ -30,7 +32,7 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
- * A {@link ConditionalGenericConverter} that can convert a {@link URI} domain entity.
+ * A {@link GenericConverter} that can convert a {@link URI} domain entity.
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
@@ -41,30 +43,36 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 	private static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
 
 	private final PersistentEntities entities;
-	private final DomainClassConverter<?> domainClassConverter;
 	private final Set<ConvertiblePair> convertiblePairs;
+	private final ConversionService conversionService;
 
 	/**
 	 * Creates a new {@link UriToEntityConverter} using the given {@link PersistentEntities} and
 	 * {@link DomainClassConverter}.
 	 * 
 	 * @param entities must not be {@literal null}.
-	 * @param domainClassConverter must not be {@literal null}.
+	 * @param conversionService must not be {@literal null}.
 	 */
-	public UriToEntityConverter(PersistentEntities entities, DomainClassConverter<?> domainClassConverter) {
+	public UriToEntityConverter(PersistentEntities entities, ConversionService conversionService) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(domainClassConverter, "DomainClassConverter must not be null!");
+		Assert.notNull(conversionService, "ConversionService must not be null!");
 
 		Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
 
 		for (TypeInformation<?> domainType : entities.getManagedTypes()) {
-			convertiblePairs.add(new ConvertiblePair(URI.class, domainType.getType()));
+
+			Class<?> rawType = domainType.getType();
+			PersistentEntity<?, ?> entity = entities.getPersistentEntity(rawType);
+
+			if (entity.hasIdProperty()) {
+				convertiblePairs.add(new ConvertiblePair(URI.class, domainType.getType()));
+			}
 		}
 
 		this.convertiblePairs = Collections.unmodifiableSet(convertiblePairs);
 		this.entities = entities;
-		this.domainClassConverter = domainClassConverter;
+		this.conversionService = conversionService;
 	}
 
 	/* 
@@ -73,7 +81,7 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 	 */
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
-		return domainClassConverter.matches(URI_TYPE, targetType);
+		return conversionService.canConvert(STRING_TYPE, targetType);
 	}
 
 	/*
@@ -107,6 +115,6 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 					"Cannot resolve URI " + uri + ". Is it local or remote? Only local URIs are resolvable."));
 		}
 
-		return domainClassConverter.convert(parts[parts.length - 1], STRING_TYPE, targetType);
+		return conversionService.convert(parts[parts.length - 1], targetType.getType());
 	}
 }

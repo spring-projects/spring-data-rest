@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,6 +35,7 @@ import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
 import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.format.support.DefaultFormattingConversionService;
+import org.springframework.format.support.FormattingConversionService;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.Jackson2HalModule;
@@ -69,27 +69,22 @@ public class RepositoryTestsConfig {
 
 		config.setResourceMappingForDomainType(Person.class).setRel("person");
 
-		// config.setResourceMappingForRepository(ConfiguredPersonRepository.class)
-		// .setRel("people")
-		// .setPath("people")
-		// .setExported(false);
-
 		config.setResourceMappingForRepository(PersonRepository.class).setRel("people").setPath("people")
 				.addResourceMappingFor("findByFirstName").setRel("firstname").setPath("firstname");
-
-		config.setBaseUri(URI.create("http://localhost:8080"));
 
 		return config;
 	}
 
 	@Bean
 	public DefaultFormattingConversionService defaultConversionService() {
-		return new DefaultFormattingConversionService();
-	}
 
-	@Bean
-	public DomainClassConverter<?> domainClassConverter() {
-		return new DomainClassConverter<DefaultFormattingConversionService>(defaultConversionService());
+		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
+
+		DomainClassConverter<FormattingConversionService> converter = new DomainClassConverter<FormattingConversionService>(
+				conversionService);
+		converter.setApplicationContext(appCtx);
+
+		return conversionService;
 	}
 
 	@Bean
@@ -98,14 +93,9 @@ public class RepositoryTestsConfig {
 	}
 
 	@Bean
-	public UriToEntityConverter uriToEntityConverter() {
-		return new UriToEntityConverter(persistentEntities(), domainClassConverter());
-	}
-
-	@Bean
 	public Module persistentEntityModule() {
 		return new PersistentEntityJackson2Module(new RepositoryResourceMappings(config(), repositories()),
-				persistentEntities(), config(), uriToEntityConverter());
+				persistentEntities(), config(), new UriToEntityConverter(persistentEntities(), defaultConversionService()));
 	}
 
 	@Bean
