@@ -159,7 +159,7 @@ public class RepositoryRestExceptionHandler {
 	}
 
 	private <T extends Exception> ResponseEntity<ExceptionMessage> badRequest(T throwable) {
-		return badRequest(null, throwable);
+		return badRequest(new HttpHeaders(), throwable);
 	}
 
 	private <T extends Exception> ResponseEntity<ExceptionMessage> badRequest(HttpHeaders headers, T throwable) {
