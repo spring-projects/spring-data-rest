@@ -32,8 +32,11 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.Point;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
@@ -185,6 +188,20 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 
 		assertThat(converters.get(0).getSupportedMediaTypes(), hasItem(RestMediaTypes.SCHEMA_JSON));
 		assertThat(converters.get(1).getSupportedMediaTypes(), hasItem(MediaTypes.HAL_JSON));
+	}
+
+	/**
+	 * @see DATAREST-431, DATACMNS-626
+	 */
+	@Test
+	public void hasConvertersForPointAndDistance() {
+
+		ConversionService service = context.getBean("defaultConversionService", ConversionService.class);
+
+		assertThat(service.canConvert(String.class, Point.class), is(true));
+		assertThat(service.canConvert(Point.class, String.class), is(true));
+		assertThat(service.canConvert(String.class, Distance.class), is(true));
+		assertThat(service.canConvert(Distance.class, String.class), is(true));
 	}
 
 	@Configuration

@@ -46,6 +46,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoModule;
 import org.springframework.data.geo.Point;
+import org.springframework.data.geo.format.DistanceFormatter;
+import org.springframework.data.geo.format.PointFormatter;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
@@ -77,8 +79,6 @@ import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResol
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.alps.AlpsResourceProcessor;
 import org.springframework.data.rest.webmvc.alps.RootResourceInformationToAlpsDescriptorConverter;
-import org.springframework.data.rest.webmvc.convert.StringToDistanceConverter;
-import org.springframework.data.rest.webmvc.convert.StringToPointConverter;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
@@ -182,15 +182,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public DefaultFormattingConversionService defaultConversionService() {
 
 		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
+
+		// Add Spring Data Commons formatters
+		addFormatters(conversionService);
+
 		configureConversionService(conversionService);
-
-		if (!conversionService.canConvert(String.class, Point.class)) {
-			conversionService.addConverter(StringToPointConverter.INSTANCE);
-		}
-
-		if (!conversionService.canConvert(String.class, Distance.class)) {
-			conversionService.addConverter(StringToDistanceConverter.INSTANCE);
-		}
 
 		return conversionService;
 	}
