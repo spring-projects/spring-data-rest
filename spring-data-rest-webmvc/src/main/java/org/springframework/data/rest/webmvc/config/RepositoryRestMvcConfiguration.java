@@ -43,15 +43,10 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoModule;
-import org.springframework.data.geo.Point;
-import org.springframework.data.geo.format.DistanceFormatter;
-import org.springframework.data.geo.format.PointFormatter;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
-import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
@@ -189,16 +184,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		configureConversionService(conversionService);
 
 		return conversionService;
-	}
-
-	@Bean
-	public DomainClassConverter<?> domainClassConverter() {
-		return new DomainClassConverter<DefaultFormattingConversionService>(defaultConversionService());
-	}
-
-	@Bean
-	public UriToEntityConverter uriToEntityConverter() {
-		return new UriToEntityConverter(persistentEntities(), domainClassConverter());
 	}
 
 	/**
@@ -534,8 +519,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @return
 	 */
 	private Module persistentEntityJackson2Module() {
-		return new PersistentEntityJackson2Module(resourceMappings(), persistentEntities(), config(),
-				uriToEntityConverter());
+
+		PersistentEntities entities = persistentEntities();
+
+		return new PersistentEntityJackson2Module(resourceMappings(), entities, config(), new UriToEntityConverter(
+				entities, defaultConversionService()));
 	}
 
 	/**
