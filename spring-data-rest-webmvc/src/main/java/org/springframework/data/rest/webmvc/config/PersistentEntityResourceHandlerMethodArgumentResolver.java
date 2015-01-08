@@ -173,8 +173,8 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 		try {
 			JsonPatchHandler handler = new JsonPatchHandler(mapper, reader);
 			return handler.apply(request, existingObject);
-		} catch (Exception e) {
-			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, existingObject.getClass()));
+		} catch (Exception o_O) {
+			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, existingObject.getClass()), o_O);
 		}
 	}
 
@@ -183,9 +183,8 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 		try {
 			return converter.read(information.getDomainType(), request.getServerHttpRequest());
-		} catch (IOException e) {
-			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, information.getDomainType()));
+		} catch (IOException o_O) {
+			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, information.getDomainType()), o_O);
 		}
 	}
-
 }
