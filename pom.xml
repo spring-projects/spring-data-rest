@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-rest-parent</artifactId>
-	<version>2.3.0.BUILD-SNAPSHOT</version>
+	<version>2.3.0.DATAREST-414-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Spring Data REST</name>
@@ -33,6 +33,7 @@
 		<springdata.neo4j>3.3.0.BUILD-SNAPSHOT</springdata.neo4j>
 		<springdata.gemfire>1.6.0.BUILD-SNAPSHOT</springdata.gemfire>
 		<springdata.solr>1.4.0.BUILD-SNAPSHOT</springdata.solr>
+		<springdata.cassandra>1.2.0.BUILD-SNAPSHOT</springdata.cassandra>
 
 		<hibernate.version>4.3.5.Final</hibernate.version>
 
@@ -114,6 +115,13 @@
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-solr</artifactId>
 			<version>${springdata.solr}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-cassandra</artifactId>
+			<version>${springdata.cassandra}</version>
 			<scope>test</scope>
 		</dependency>
 
