@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 package org.springframework.data.rest.webmvc.config;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
-import org.springframework.data.rest.core.projection.ProjectionFactory;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.support.PersistentEntityProjector;
 import org.springframework.hateoas.EntityLinks;

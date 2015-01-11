@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.rest.core.projection.ProjectionFactory;
-import org.springframework.data.rest.core.projection.ProxyProjectionFactory;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.Jackson2HalModule;
@@ -41,7 +41,7 @@ import com.jayway.jsonpath.JsonPath;
 public class ProjectionJacksonIntegrationTests {
 
 	ObjectMapper mapper;
-	ProjectionFactory factory = new ProxyProjectionFactory(null);
+	ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 
 	@Before
 	public void setUp() {
@@ -62,7 +62,7 @@ public class ProjectionJacksonIntegrationTests {
 		customer.lastname = "Matthews";
 		customer.address = new Address();
 
-		CustomerProjection projection = factory.createProjection(customer, CustomerProjection.class);
+		CustomerProjection projection = factory.createProjection(CustomerProjection.class, customer);
 
 		String result = mapper.writeValueAsString(projection);
 		assertThat(JsonPath.read(result, "$firstname"), is((Object) "Dave"));
@@ -83,7 +83,7 @@ public class ProjectionJacksonIntegrationTests {
 		customer.lastname = "Matthews";
 		customer.address = new Address();
 
-		CustomerProjection projection = factory.createProjection(customer, CustomerProjection.class);
+		CustomerProjection projection = factory.createProjection(CustomerProjection.class, customer);
 		Resources<CustomerProjection> resources = new Resources<CustomerProjection>(Arrays.asList(projection));
 
 		String result = mapper.writeValueAsString(resources);

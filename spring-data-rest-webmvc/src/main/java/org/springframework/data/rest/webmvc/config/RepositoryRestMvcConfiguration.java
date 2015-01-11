@@ -46,6 +46,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.geo.GeoModule;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
@@ -59,7 +60,6 @@ import org.springframework.data.rest.core.event.ValidatingRepositoryEventListene
 import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.core.projection.ProxyProjectionFactory;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.rest.core.support.RepositoryRelProvider;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
@@ -624,9 +624,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 
+		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
+		projectionFactory.setBeanFactory(applicationContext);
+
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
-				repositories(), entityLinks(), config().projectionConfiguration(), new ProxyProjectionFactory(
-						applicationContext), resourceMappings());
+				repositories(), entityLinks(), config().projectionConfiguration(), projectionFactory, resourceMappings());
 
 		HateoasPageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
 		HandlerMethodArgumentResolver defaultedPageableResolver = new DefaultedPageableHandlerMethodArgumentResolver(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.core.projection.ProjectionFactory;
 
 /**
  * Unit tests for {@link PersistentEntityProjector}.
@@ -69,7 +69,7 @@ public class PersistentEntityProjectorUnitTests {
 		Object source = new Object();
 		projector.project(source);
 
-		verify(factory, times(1)).createProjection(source, Sample.class);
+		verify(factory, times(1)).createProjection(Sample.class, source);
 	}
 
 	interface Sample {

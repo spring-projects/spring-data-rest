@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.MethodParameter;
-import org.springframework.data.rest.core.projection.ProxyProjectionFactory;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.ResourcesProcessorWrapper;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -233,8 +233,8 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		ProjectionProcessor projectionProcessor = new ProjectionProcessor();
 		resourceProcessors.add(projectionProcessor);
 
-		ProxyProjectionFactory factory = new ProxyProjectionFactory(new DefaultListableBeanFactory());
-		SampleProjection projection = factory.createProjection(new Sample(), SampleProjection.class);
+		ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
+		SampleProjection projection = factory.createProjection(SampleProjection.class, new Sample());
 		Resource<SampleProjection> resource = new Resource<SampleProjection>(projection);
 
 		invokeReturnValueHandler("object", is(resource), resource);
