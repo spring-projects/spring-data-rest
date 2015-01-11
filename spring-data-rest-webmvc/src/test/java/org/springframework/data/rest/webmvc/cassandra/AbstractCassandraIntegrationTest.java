@@ -17,13 +17,14 @@ package org.springframework.data.rest.webmvc.cassandra;
 
 import java.io.IOException;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.BeforeClass;
 import org.springframework.data.rest.webmvc.CommonWebTests;
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
 
 /**
  * Base class for testing with an embedded cassandra database
@@ -35,11 +36,12 @@ public abstract class AbstractCassandraIntegrationTest extends CommonWebTests {
 	/**
 	 * The session connected to the system keyspace.
 	 */
-	protected Session systemSession;
+	Session systemSession;
+
 	/**
 	 * The {@link com.datastax.driver.core.Cluster} that's connected to Cassandra.
 	 */
-	protected Cluster cluster;
+	Cluster cluster;
 
 	/**
 	 * Launch an embedded Cassandra instance
@@ -54,6 +56,7 @@ public abstract class AbstractCassandraIntegrationTest extends CommonWebTests {
 	}
 
 	public AbstractCassandraIntegrationTest() {
+
 		// check cluster
 		if (cluster == null) {
 			cluster = Cluster.builder()//
@@ -67,5 +70,4 @@ public abstract class AbstractCassandraIntegrationTest extends CommonWebTests {
 			systemSession = cluster.connect();
 		}
 	}
-
 }

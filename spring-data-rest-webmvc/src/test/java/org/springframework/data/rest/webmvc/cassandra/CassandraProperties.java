@@ -1,7 +1,7 @@
 package org.springframework.data.rest.webmvc.cassandra;
 
-public class CassandraProperties {
+class CassandraProperties {
 
-	public static final String HOSTNAME = "localhost";
-	public static final int PORT = 9142;
+	static final String HOSTNAME = "localhost";
+	static final int PORT = 9142;
 }

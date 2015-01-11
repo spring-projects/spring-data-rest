@@ -32,17 +32,20 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for Cassandra repositories
  *
  * @author Greg Turnquist
+ * @author Oliver Gierke
  */
 @ContextConfiguration(classes = CassandraRepoConfig.class)
 public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 
-	@Autowired private EmployeeRepository repository;
+	@Autowired EmployeeRepository repository;
+	ObjectMapper mapper;
 
 	@Override
 	protected Iterable<String> expectedRootLinkRels() {
@@ -50,30 +53,32 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 	}
 
 	/**
-	 * Given that Spring Data Cassandra can leave behind persistent artifacts, need to clean out ALL entities
-	 * before launching a given test case.
-	 *
-	 * @throws ConfigurationException
-	 * @throws IOException
-	 * @throws TTransportException
-	 * @throws InterruptedException
+	 * Given that Spring Data Cassandra can leave behind persistent artifacts, need to clean out ALL entities before
+	 * launching a given test case.
 	 */
 	@Before
 	public void cleanoutDatabase() throws ConfigurationException, IOException, TTransportException, InterruptedException {
 
-		repository.deleteAll();
+		this.repository.deleteAll();
+
+		this.mapper = new ObjectMapper();
+		this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 
+	/**
+	 * @see DATAREST-414
+	 */
 	@Test
 	public void create() throws Exception {
 
 		Link employeeLink = client.discoverUnique("employees");
-		ObjectMapper mapper = new ObjectMapper();
+
 		Employee employee = new Employee();
 		employee.setId("789");
 		employee.setFirstName("Bilbo");
 		employee.setLastName("Baggins");
 		employee.setTitle("burgler");
+
 		String bilboString = mapper.writeValueAsString(employee);
 
 		MockHttpServletResponse response = postAndGet(employeeLink, bilboString, MediaType.APPLICATION_JSON);
@@ -84,10 +89,11 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 	}
 
 	/**
-	 * After inserting data directly through a Spring Data Cassandra repository, verify Spring Data REST can
-	 * fetch the resources through hypermedia.
+	 * After inserting data directly through a Spring Data Cassandra repository, verify Spring Data REST can fetch the
+	 * resources through hypermedia.
 	 *
 	 * @throws Exception
+	 * @see DATAREST-414
 	 */
 	@Test
 	public void findAllEmployees() throws Exception {
@@ -97,6 +103,7 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 		employee1.setFirstName("Frodo");
 		employee1.setLastName("Baggins");
 		employee1.setTitle("ring bearer");
+
 		repository.save(employee1);
 
 		Employee employee2 = new Employee();
@@ -104,22 +111,23 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 		employee2.setFirstName("Samwise");
 		employee2.setLastName("Gamgee");
 		employee2.setTitle("ring bearer");
+
 		repository.save(employee2);
 
 		Link employeesLink = client.discoverUnique("employees");
 
-		client.follow(employeesLink)
-				.andExpect(status().isOk())
+		client.follow(employeesLink).andExpect(status().isOk())
 				.andExpect(jsonPath("$._embedded.employees[*].firstName", hasItems("Samwise", "Frodo")))
 				.andExpect(jsonPath("$._embedded.employees[*].lastName", hasItems("Gamgee", "Baggins")))
 				.andExpect(jsonPath("$._embedded.employees[*].title", hasItems("ring bearer", "ring bearer")));
 	}
 
 	/**
-	 * Verify some basic creation (POST), updating (PATH) and replacing (PUT) functionality of Spring
-	 * Data Cassandra through Spring Data REST.
+	 * Verify some basic creation (POST), updating (PATH) and replacing (PUT) functionality of Spring Data Cassandra
+	 * through Spring Data REST.
 	 *
 	 * @throws Exception
+	 * @see DATAREST-414
 	 */
 	@Test
 	public void createAnEmployee() throws Exception {
@@ -129,7 +137,7 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 		employee.setFirstName("Frodo");
 		employee.setLastName("Baggins");
 		employee.setTitle("ring bearer");
-		ObjectMapper mapper = new ObjectMapper();
+
 		String employeeString = mapper.writeValueAsString(employee);
 
 		Link employeeLink = client.discoverUnique("employees");
@@ -143,8 +151,8 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 		assertThat(newlyMintedEmployee.getLastName(), equalTo(employee.getLastName()));
 		assertThat(newlyMintedEmployee.getTitle(), equalTo(employee.getTitle()));
 
-		MockHttpServletResponse response2 = patchAndGet(
-				newlyMintedEmployeeLink, "{\"firstName\": \"Bilbo\"}", MediaType.APPLICATION_JSON);
+		MockHttpServletResponse response2 = patchAndGet(newlyMintedEmployeeLink, "{\"firstName\": \"Bilbo\"}",
+				MediaType.APPLICATION_JSON);
 
 		Link refurbishedEmployeeLink = client.assertHasLinkWithRel("self", response2);
 		Employee refurbishedEmployee = mapper.readValue(response2.getContentAsString(), Employee.class);
@@ -153,8 +161,8 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 		assertThat(refurbishedEmployee.getLastName(), equalTo(employee.getLastName()));
 		assertThat(refurbishedEmployee.getTitle(), equalTo(employee.getTitle()));
 
-		MockHttpServletResponse response3 = putAndGet(
-				refurbishedEmployeeLink, "{\"lastName\": \"Jr.\"}", MediaType.APPLICATION_JSON);
+		MockHttpServletResponse response3 = putAndGet(refurbishedEmployeeLink, "{\"lastName\": \"Jr.\"}",
+				MediaType.APPLICATION_JSON);
 
 		Employee lastEmployee = mapper.readValue(response3.getContentAsString(), Employee.class);
 
@@ -167,6 +175,7 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 	 * Verify that creating (POST) and then updating (PATCH) a resource only updates the sub-set of fields.
 	 *
 	 * @throws Exception
+	 * @see DATAREST-414
 	 */
 	@Test
 	public void createThenPatch() throws Exception {
@@ -176,7 +185,7 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 		employee.setFirstName("Frodo");
 		employee.setLastName("Baggins");
 		employee.setTitle("ring bearer");
-		ObjectMapper mapper = new ObjectMapper();
+
 		String employeeString = mapper.writeValueAsString(employee);
 
 		Link employeeLink = client.discoverUnique("employees");
@@ -190,8 +199,8 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 		assertThat(newlyMintedEmployee.getLastName(), equalTo(employee.getLastName()));
 		assertThat(newlyMintedEmployee.getTitle(), equalTo(employee.getTitle()));
 
-		MockHttpServletResponse response2 = patchAndGet(
-				newlyMintedEmployeeLink, "{\"firstName\": \"Bilbo\"}", MediaType.APPLICATION_JSON);
+		MockHttpServletResponse response2 = patchAndGet(newlyMintedEmployeeLink, "{\"firstName\": \"Bilbo\"}",
+				MediaType.APPLICATION_JSON);
 
 		Employee refurbishedEmployee = mapper.readValue(response2.getContentAsString(), Employee.class);
 
@@ -201,13 +210,12 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 	}
 
 	/**
-	 * Verify that first creating (POST) and then replacing (PUT) a resource with a subset of fields only causes
-	 * the subset of fields to be changed inside Cassandra.
-	 *
-	 * NOTE: Cassandra doesn't handle nulls like traditional databases and Spring Data Cassandra ignores
-	 * null fields.
+	 * Verify that first creating (POST) and then replacing (PUT) a resource with a subset of fields only causes the
+	 * subset of fields to be changed inside Cassandra. NOTE: Cassandra doesn't handle nulls like traditional databases
+	 * and Spring Data Cassandra ignores {@literal null} fields.
 	 *
 	 * @throws Exception
+	 * @see DATAREST-414
 	 */
 	@Test
 	public void createThenPut() throws Exception {
@@ -217,7 +225,7 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 		employee.setFirstName("Frodo");
 		employee.setLastName("Baggins");
 		employee.setTitle("ring bearer");
-		ObjectMapper mapper = new ObjectMapper();
+
 		String employeeString = mapper.writeValueAsString(employee);
 
 		Link employeeLink = client.discoverUnique("employees");
@@ -231,8 +239,8 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 		assertThat(newlyMintedEmployee.getLastName(), equalTo(employee.getLastName()));
 		assertThat(newlyMintedEmployee.getTitle(), equalTo(employee.getTitle()));
 
-		MockHttpServletResponse response2 = putAndGet(
-				newlyMintedEmployeeLink, "{\"firstName\": \"Bilbo\"}", MediaType.APPLICATION_JSON);
+		MockHttpServletResponse response2 = putAndGet(newlyMintedEmployeeLink, "{\"firstName\": \"Bilbo\"}",
+				MediaType.APPLICATION_JSON);
 
 		Employee refurbishedEmployee = mapper.readValue(response2.getContentAsString(), Employee.class);
 
@@ -243,5 +251,4 @@ public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 		assertThat(refurbishedEmployee.getLastName(), equalTo(employee.getLastName()));
 		assertThat(refurbishedEmployee.getTitle(), equalTo(employee.getTitle()));
 	}
-
 }
