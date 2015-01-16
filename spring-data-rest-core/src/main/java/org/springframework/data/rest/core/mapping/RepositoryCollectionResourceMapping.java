@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.data.rest.core.support.RepositoriesUtils;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
@@ -63,13 +62,11 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	public RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RelProvider relProvider) {
 
 		Assert.notNull(metadata, "Repository metadata must not be null!");
-		this.metadata = metadata;
+		Assert.notNull(relProvider, "RelProvider must not be null!");
 
 		Class<?> repositoryType = metadata.getRepositoryInterface();
 
-		Assert.isTrue(RepositoriesUtils.isRepositoryInterface(repositoryType), "Given type is not a repository!");
-		Assert.notNull(relProvider, "RelProvider must not be null!");
-
+		this.metadata = metadata;
 		this.annotation = AnnotationUtils.findAnnotation(repositoryType, RestResource.class);
 		this.repositoryAnnotation = AnnotationUtils.findAnnotation(repositoryType, RepositoryRestResource.class);
 		this.repositoryIsExportCandidate = Modifier.isPublic(repositoryType.getModifiers());
