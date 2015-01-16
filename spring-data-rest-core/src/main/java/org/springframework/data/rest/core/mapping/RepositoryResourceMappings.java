@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.core.support.RepositoriesUtils;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
@@ -118,15 +117,9 @@ public class RepositoryResourceMappings implements ResourceMappings {
 	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#getSearchResourceMappings(java.lang.Class)
 	 */
 	@Override
-	public SearchResourceMappings getSearchResourceMappings(Class<?> type) {
+	public SearchResourceMappings getSearchResourceMappings(Class<?> domainType) {
 
-		Assert.notNull(type, "Type must not be null!");
-
-		if (searchCache.containsKey(type)) {
-			return searchCache.get(type);
-		}
-
-		Class<?> domainType = RepositoriesUtils.getDomainType(type);
+		Assert.notNull(domainType, "Type must not be null!");
 
 		if (searchCache.containsKey(domainType)) {
 			return searchCache.get(domainType);
@@ -147,7 +140,6 @@ public class RepositoryResourceMappings implements ResourceMappings {
 		}
 
 		SearchResourceMappings searchResourceMappings = new SearchResourceMappings(mappings);
-		searchCache.put(type, searchResourceMappings);
 		searchCache.put(domainType, searchResourceMappings);
 		return searchResourceMappings;
 	}
@@ -197,10 +189,6 @@ public class RepositoryResourceMappings implements ResourceMappings {
 		}
 
 		if (repositories.hasRepositoryFor(type)) {
-			return true;
-		}
-
-		if (RepositoriesUtils.isRepositoryInterface(type) && hasMappingFor(RepositoriesUtils.getDomainType(type))) {
 			return true;
 		}
 
