@@ -91,6 +91,25 @@ public class RepositoryCollectionResourceMappingUnitTests {
 		assertThat(mapping.getItemResourceRel(), is("bar"));
 	}
 
+	/**
+	 * @see DATAREST-445
+	 */
+	@Test
+	public void usesDomainTypeFromRepositoryMetadata() {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PersonRepository.class) {
+
+			@Override
+			public Class<?> getDomainType() {
+				return Object.class;
+			}
+		};
+
+		RepositoryCollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(metadata);
+
+		assertThat(mapping.getPath(), is(new Path("/objects")));
+	}
+
 	private static CollectionResourceMapping getResourceMappingFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);

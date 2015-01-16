@@ -74,7 +74,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		this.repositoryAnnotation = AnnotationUtils.findAnnotation(repositoryType, RepositoryRestResource.class);
 		this.repositoryIsExportCandidate = Modifier.isPublic(repositoryType.getModifiers());
 
-		Class<?> domainType = RepositoriesUtils.getDomainType(repositoryType);
+		Class<?> domainType = metadata.getDomainType();
 		this.domainTypeMapping = EVO_INFLECTOR_IS_PRESENT ? new EvoInflectorTypeBasedCollectionResourceMapping(domainType,
 				relProvider) : new TypeBasedCollectionResourceMapping(domainType, relProvider);
 
