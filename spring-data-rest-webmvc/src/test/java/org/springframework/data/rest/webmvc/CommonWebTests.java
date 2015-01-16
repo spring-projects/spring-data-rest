@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +37,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import com.jayway.jsonpath.JsonPath;
 
 /**
- * This class contains a common test suite used to verify multiple data stores with the same domain space.
- * When verifying support of a new data store, it's good to start with extending this suite of tests. However,
- * if the data store doesn't map well onto this, then a good alternative would be write a new test suite
- * using {@link org.springframework.data.rest.webmvc.AbstractWebIntegrationTests AbstractWebIntegrationTests} as
- * the test harness.
+ * This class contains a common test suite used to verify multiple data stores with the same domain space. When
+ * verifying support of a new data store, it's good to start with extending this suite of tests. However, if the data
+ * store doesn't map well onto this, then a good alternative would be write a new test suite using
+ * {@link org.springframework.data.rest.webmvc.AbstractWebIntegrationTests AbstractWebIntegrationTests} as the test
+ * harness.
  *
  * @author Oliver Gierke
  * @author Greg Turnquist
@@ -198,4 +198,13 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 				andExpect(content().contentType(ALPS_MEDIA_TYPE));
 	}
 
+	/**
+	 * @see DATAREST-448
+	 */
+	@Test
+	public void returnsNotFoundForUriNotBackedByARepository() throws Exception {
+
+		mvc.perform(get("/index.html")).//
+				andExpect(status().isNotFound());
+	}
 }

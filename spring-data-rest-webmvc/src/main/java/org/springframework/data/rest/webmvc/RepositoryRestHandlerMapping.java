@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -88,7 +89,14 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 			return null;
 		}
 
-		return new BaseUri(configuration.getBaseUri()).getRepositoryLookupPath(lookupPath) == null ? null : handlerMethod;
+		String repositoryLookupPath = new BaseUri(configuration.getBaseUri()).getRepositoryLookupPath(lookupPath);
+
+		// Repository root resource
+		if (!StringUtils.hasText(repositoryLookupPath)) {
+			return handlerMethod;
+		}
+
+		return mappings.exportsTopLevelResourceFor(getRepositoryBasePath(repositoryLookupPath)) ? handlerMethod : null;
 	}
 
 	/* 
@@ -121,5 +129,17 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 				interceptors.add(o);
 			}
 		}
+	}
+
+	/**
+	 * Returns the first segment of the given repository lookup path.
+	 * 
+	 * @param repositoryLookupPath must not be {@literal null}.
+	 * @return
+	 */
+	private static String getRepositoryBasePath(String repositoryLookupPath) {
+
+		int secondSlashIndex = repositoryLookupPath.indexOf('/', repositoryLookupPath.startsWith("/") ? 1 : 0);
+		return secondSlashIndex == -1 ? repositoryLookupPath : repositoryLookupPath.substring(0, secondSlashIndex);
 	}
 }

@@ -100,7 +100,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	@Test
 	public void looksUpRepositoryEntityControllerMethodCorrectly() throws Exception {
 
-		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/people");
 
 		handlerMapping.afterPropertiesSet();
@@ -116,7 +116,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	@Test
 	public void returnsRepositoryHandlerMethodWithBaseUriConfigured() throws Exception {
 
-		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/base/people");
 
 		configuration.setBasePath("/base");
@@ -134,7 +134,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	@Test
 	public void returnsRootHandlerMethodWithBaseUriConfigured() throws Exception {
 
-		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/base");
 
 		configuration.setBasePath("/base");
@@ -153,7 +153,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	@SuppressWarnings("deprecation")
 	public void returnsRepositoryHandlerMethodForAbsoluteBaseUri() throws Exception {
 
-		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/base/people/");
 
 		configuration.setBaseUri("http://localhost/base");
@@ -172,7 +172,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	@SuppressWarnings("deprecation")
 	public void returnsRepositoryHandlerMethodForAbsoluteBaseUriWithServletMapping() throws Exception {
 
-		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/base/people");
 		mockRequest.setServletPath("/base/people");
 
@@ -192,7 +192,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	@SuppressWarnings("deprecation")
 	public void refrainsFromMappingIfTheRequestDoesNotPointIntoAbsolutelyDefinedUriSpace() throws Exception {
 
-		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/servlet-path");
 		mockRequest.setServletPath("/servlet-path");
 
@@ -213,7 +213,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 		String baseUri = "foo";
 		String uri = baseUri.concat("/people");
 
-		when(mappings.exportsTopLevelResourceFor("people")).thenReturn(true);
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", uri);
 		mockRequest.setServletPath(uri);
 
