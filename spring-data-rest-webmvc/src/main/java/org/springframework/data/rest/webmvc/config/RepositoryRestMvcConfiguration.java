@@ -214,7 +214,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
 
-		for (Class<?> projection : getProjections()) {
+		for (Class<?> projection : getProjections(repositories())) {
 			configuration.addProjection(projection);
 		}
 
@@ -429,7 +429,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public ObjectMapper halObjectMapper() {
 
-		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(getDefaultedRelProvider(), curieProvider);
+		RelProvider defaultedRelProvider = this.relProvider != null ? this.relProvider : new EvoInflectorRelProvider();
+
+		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider, curieProvider);
 
 		ObjectMapper mapper = basicObjectMapper();
 		mapper.registerModule(persistentEntityJackson2Module());
@@ -518,7 +520,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * 
 	 * @return
 	 */
-	private Module persistentEntityJackson2Module() {
+	protected Module persistentEntityJackson2Module() {
 
 		PersistentEntities entities = persistentEntities();
 
@@ -622,7 +624,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return OrderAwarePluginRegistry.create(converters);
 	}
 
-	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
+	protected List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 
 		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 		projectionFactory.setBeanFactory(applicationContext);
@@ -642,15 +644,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Autowired GeoModule geoModule;
 
-	private ObjectMapper basicObjectMapper() {
+	protected ObjectMapper basicObjectMapper() {
 
 		ObjectMapper objectMapper = new ObjectMapper();
 
 		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
 		objectMapper.registerModule(geoModule);
+
 		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
 		// Configure custom Modules
 		configureJacksonObjectMapper(objectMapper);
@@ -658,16 +660,12 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return objectMapper;
 	}
 
-	private RelProvider getDefaultedRelProvider() {
-		return this.relProvider != null ? relProvider : new EvoInflectorRelProvider();
-	}
-
 	@SuppressWarnings("unchecked")
-	private Set<Class<?>> getProjections() {
+	private Set<Class<?>> getProjections(Repositories repositories) {
 
 		Set<String> packagesToScan = new HashSet<String>();
 
-		for (Class<?> domainType : repositories()) {
+		for (Class<?> domainType : repositories) {
 			packagesToScan.add(domainType.getPackage().getName());
 		}
 
