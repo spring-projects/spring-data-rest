@@ -30,7 +30,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UrlPathHelper;
 
 /**
- * Value object to be able to extract the lookup path within a configured base URi that forms a URI namespace.
+ * Value object to be able to extract the lookup path within a configured base URI that forms a URI namespace.
  * 
  * @author Oliver Gierke
  */
