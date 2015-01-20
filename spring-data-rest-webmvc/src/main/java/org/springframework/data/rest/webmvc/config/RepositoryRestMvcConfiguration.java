@@ -221,7 +221,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
 
-		for (Class<?> projection : getProjections()) {
+		for (Class<?> projection : getProjections(repositories())) {
 			configuration.addProjection(projection);
 		}
 
@@ -336,11 +336,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public MessageSourceAccessor resourceDescriptionMessageSourceAccessor() {
 
-			ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-			messageSource.setBasename("classpath:rest-messages");
-			messageSource.setUseCodeAsDefaultMessage(true);
+		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+		messageSource.setBasename("classpath:rest-messages");
+		messageSource.setUseCodeAsDefaultMessage(true);
 
-			return new MessageSourceAccessor(messageSource);
+		return new MessageSourceAccessor(messageSource);
 	}
 
 	/**
@@ -409,7 +409,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public ObjectMapper halObjectMapper() {
 
-		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(getDefaultedRelProvider(), curieProvider);
+		RelProvider defaultedRelProvider = this.relProvider != null ? relProvider : new EvoInflectorRelProvider();
+
+		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider, curieProvider);
 
 		ObjectMapper mapper = basicObjectMapper();
 		mapper.registerModule(persistentEntityJackson2Module());
@@ -488,7 +490,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * 
 	 * @return
 	 */
-	private Module persistentEntityJackson2Module() {
+	protected Module persistentEntityJackson2Module() {
 		return new PersistentEntityJackson2Module(resourceMappings(), persistentEntities(), config(),
 				uriToEntityConverter());
 	}
@@ -580,7 +582,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return OrderAwarePluginRegistry.create(converters);
 	}
 
-	private List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
+	protected List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
 				repositories(), entityLinks(), config().projectionConfiguration(), new ProxyProjectionFactory(beanFactory));
@@ -593,7 +595,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Autowired GeoModule geoModule;
 
-	private ObjectMapper basicObjectMapper() {
+	protected ObjectMapper basicObjectMapper() {
 
 		ObjectMapper objectMapper = new ObjectMapper();
 
@@ -609,16 +611,12 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return objectMapper;
 	}
 
-	private RelProvider getDefaultedRelProvider() {
-		return this.relProvider != null ? relProvider : new EvoInflectorRelProvider();
-	}
-
 	@SuppressWarnings("unchecked")
-	private Set<Class<?>> getProjections() {
+	private Set<Class<?>> getProjections(Repositories repositories) {
 
 		Set<String> packagesToScan = new HashSet<String>();
 
-		for (Class<?> domainType : repositories()) {
+		for (Class<?> domainType : repositories) {
 			packagesToScan.add(domainType.getPackage().getName());
 		}
 
