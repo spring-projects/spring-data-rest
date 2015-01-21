@@ -25,6 +25,7 @@ import org.springframework.data.rest.webmvc.CommonWebTests;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 
 /**
  * Base class for testing with an embedded cassandra database
@@ -67,7 +68,27 @@ public abstract class AbstractCassandraIntegrationTest extends CommonWebTests {
 
 		// check system session connected
 		if (systemSession == null) {
-			systemSession = cluster.connect();
+			systemSession = tryToConnect(cluster, 3);
+		}
+	}
+
+	private static Session tryToConnect(Cluster cluster, int attempts) {
+
+		try {
+			return cluster.connect();
+		} catch (NoHostAvailableException o_O) {
+
+			if (attempts == 0) {
+				throw o_O;
+			}
+
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+
+			return tryToConnect(cluster, --attempts);
 		}
 	}
 }
