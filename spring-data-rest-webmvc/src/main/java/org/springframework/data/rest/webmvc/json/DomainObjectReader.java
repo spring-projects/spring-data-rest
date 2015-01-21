@@ -16,11 +16,15 @@
 package org.springframework.data.rest.webmvc.json;
 
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.model.BeanWrapper;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -31,7 +35,6 @@ import org.springframework.util.Assert;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.introspect.BasicClassIntrospector;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
@@ -82,9 +85,56 @@ public class DomainObjectReader {
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
 		try {
-			return merge((ObjectNode) mapper.readTree(source), target, mapper);
-		} catch (Exception e) {
-			throw new HttpMessageNotReadableException("Could not read payload!", e);
+			return doMerge((ObjectNode) mapper.readTree(source), target, mapper);
+		} catch (Exception o_O) {
+			throw new HttpMessageNotReadableException("Could not read payload!", o_O);
+		}
+	}
+
+	/**
+	 * Reads the given source node onto the given target object and applies PUT semantics, i.e. explicitly
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @param target must not be {@literal null}.
+	 * @param mapper
+	 * @return
+	 */
+	public <T> T readPut(final ObjectNode source, T target, final ObjectMapper mapper) {
+
+		Assert.notNull(source, "ObjectNode must not be null!");
+		Assert.notNull(target, "Existing object instance must not be null!");
+		Assert.notNull(mapper, "ObjectMapper must not be null!");
+
+		final PersistentEntity<?, ?> entity = entities.getPersistentEntity(target.getClass());
+		final Collection<String> properties = getJacksonProperties(entity, mapper);
+
+		entity.doWithProperties(new SimplePropertyHandler() {
+			/*
+
+			 * (non-Javadoc)
+			 * @see org.springframework.data.mapping.SimplePropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
+			 */
+			@Override
+			public void doWithPersistentProperty(PersistentProperty<?> property) {
+
+				boolean isMappedProperty = properties.contains(property.getName());
+				boolean noValueInSource = !source.has(property.getName());
+
+				if (isMappedProperty && noValueInSource) {
+					source.putNull(property.getName());
+				}
+			}
+		});
+
+		return merge(source, target, mapper);
+	}
+
+	public <T> T merge(ObjectNode source, T target, ObjectMapper mapper) {
+
+		try {
+			return doMerge(source, target, mapper);
+		} catch (Exception o_O) {
+			throw new HttpMessageNotReadableException("Could not read payload!", o_O);
 		}
 	}
 
@@ -92,16 +142,19 @@ public class DomainObjectReader {
 	 * Merges the given {@link ObjectNode} onto the given object.
 	 * 
 	 * @param root must not be {@literal null}.
-	 * @param existingObject
-	 * @param mapper
+	 * @param target must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
 	 * @return
 	 * @throws Exception
 	 */
-	public <T> T merge(ObjectNode root, T existingObject, ObjectMapper mapper) throws Exception {
+	private <T> T doMerge(ObjectNode root, T target, ObjectMapper mapper) throws Exception {
 
 		Assert.notNull(root, "Root ObjectNode must not be null!");
-		Assert.notNull(existingObject, "Existing object instance must not be null!");
+		Assert.notNull(target, "Target object instance must not be null!");
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
+
+		PersistentEntity<?, ?> entity = entities.getPersistentEntity(target.getClass());
+		Collection<String> mappedProperties = getJacksonProperties(entity, mapper);
 
 		for (Iterator<Entry<String, JsonNode>> i = root.fields(); i.hasNext();) {
 
@@ -109,61 +162,53 @@ public class DomainObjectReader {
 			JsonNode child = entry.getValue();
 
 			if (child.isArray()) {
-				// We ignore arrays so they get instantiated fresh every time
-			} else if (child.isObject()) {
+				continue;
+			}
 
-				PersistentProperty<?> property = findProperty(existingObject, entry.getKey(), mapper);
+			PersistentProperty<?> property = entity.getPersistentProperty(entry.getKey());
 
-				if (property == null || associationLinks.isLinkableAssociation(property)) {
+			if (property == null || !mappedProperties.contains(property.getName())) {
+				i.remove();
+				continue;
+			}
+
+			if (child.isObject()) {
+
+				if (associationLinks.isLinkableAssociation(property)) {
 					continue;
 				}
 
-				BeanWrapper<T> wrapper = BeanWrapper.create(existingObject, null);
+				BeanWrapper<T> wrapper = BeanWrapper.create(target, null);
 				Object nested = wrapper.getProperty(property);
 
 				if (nested != null) {
-
-					// Only remove the JsonNode if the object already exists. Otherwise it will be instantiated when the parent
-					// gets deserialized.
-
-					i.remove();
-					merge((ObjectNode) child, nested, mapper);
+					doMerge((ObjectNode) child, nested, mapper);
 				}
+
 			}
 		}
 
-		ObjectReader jsonReader = mapper.readerForUpdating(existingObject);
-		jsonReader.readValue(root);
-
-		return existingObject;
+		return mapper.readerForUpdating(target).readValue(root);
 	}
 
 	/**
-	 * Finds the {@link PersistentProperty} for the JSON field of the given name on the given object.
+	 * Returns the names of all mapped properties for the given {@link PersistentEntity}.
 	 * 
-	 * @param object must not be {@literal null}.
-	 * @param fieldName must not be {@literal null} or empty.
+	 * @param entity must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
-	 * @return the {@link PersistentProperty} for the JSON field of the given name on the given object or {@literal null}
-	 *         if either the given source object is no persistent entity or the property cannot be found.
+	 * @return the collection of mapped properties.
 	 */
-	private PersistentProperty<?> findProperty(Object object, String fieldName, ObjectMapper mapper) {
-
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(object.getClass());
-
-		if (entity == null) {
-			return null;
-		}
+	private Collection<String> getJacksonProperties(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
 
 		BeanDescription description = introspector.forDeserialization(mapper.getDeserializationConfig(),
-				mapper.constructType(object.getClass()), mapper.getDeserializationConfig());
+				mapper.constructType(entity.getType()), mapper.getDeserializationConfig());
 
-		for (BeanPropertyDefinition definition : description.findProperties()) {
-			if (definition.getName().equals(fieldName)) {
-				return entity.getPersistentProperty(definition.getInternalName());
-			}
+		Set<String> properties = new HashSet<String>();
+
+		for (BeanPropertyDefinition property : description.findProperties()) {
+			properties.add(property.getInternalName());
 		}
 
-		return null;
+		return properties;
 	}
 }

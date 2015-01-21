@@ -128,4 +128,8 @@ class JsonPatchHandler {
 	<T> T applyMergePatch(InputStream source, T existingObject) throws Exception {
 		return reader.read(source, existingObject, mapper);
 	}
+
+	<T> T applyPut(ObjectNode source, T existingObject) {
+		return reader.readPut(source, existingObject, mapper);
+	}
 }
