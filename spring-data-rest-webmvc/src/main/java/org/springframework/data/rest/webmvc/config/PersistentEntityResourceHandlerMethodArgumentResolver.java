@@ -41,7 +41,9 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Custom {@link HandlerMethodArgumentResolver} to create {@link PersistentEntityResource} instances.
@@ -136,35 +138,39 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	 * Reads the given {@link ServerHttpRequest} into an object of the type of the given {@link RootResourceInformation},
 	 * potentially applying the content to an object of the given id.
 	 * 
-	 * @param information
-	 * @param request
-	 * @param converter
-	 * @param id
+	 * @param information must not be {@literal null}.
+	 * @param request must not be {@literal null}.
+	 * @param converter must not be {@literal null}.
+	 * @param id must not be {@literal null}.
 	 * @return
-	 * @throws IOException
 	 */
 	private Object read(RootResourceInformation information, IncomingRequest request,
 			HttpMessageConverter<Object> converter, Serializable id) {
 
+		Object objectToUpdate = getObjectToUpdate(id, information);
+
+		// JSON + PATCH request
 		if (request.isPatchRequest() && converter instanceof MappingJackson2HttpMessageConverter) {
 
-			if (id == null) {
+			if (objectToUpdate == null) {
 				new ResourceNotFoundException();
 			}
 
-			RepositoryInvoker invoker = information.getInvoker();
-			Object existingObject = invoker.invokeFindOne(id);
-
-			if (existingObject == null) {
-				throw new ResourceNotFoundException();
-			}
-
 			ObjectMapper mapper = ((MappingJackson2HttpMessageConverter) converter).getObjectMapper();
-			Object result = readPatch(request, mapper, existingObject);
+			Object result = readPatch(request, mapper, objectToUpdate);
 
 			return result;
+
+			// JSON + PUT request
+		} else if (converter instanceof MappingJackson2HttpMessageConverter) {
+
+			ObjectMapper mapper = ((MappingJackson2HttpMessageConverter) converter).getObjectMapper();
+
+			return objectToUpdate == null ? read(request, converter, information) : readPutForUpdate(request, mapper,
+					objectToUpdate);
 		}
 
+		// Catch all
 		return read(request, converter, information);
 	}
 
@@ -178,6 +184,20 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 		}
 	}
 
+	private Object readPutForUpdate(IncomingRequest request, ObjectMapper mapper, Object existingObject) {
+
+		try {
+
+			JsonPatchHandler handler = new JsonPatchHandler(mapper, reader);
+			JsonNode jsonNode = mapper.readTree(request.getBody());
+
+			return handler.applyPut((ObjectNode) jsonNode, existingObject);
+
+		} catch (Exception o_O) {
+			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, existingObject.getClass()), o_O);
+		}
+	}
+
 	private Object read(IncomingRequest request, HttpMessageConverter<Object> converter,
 			RootResourceInformation information) {
 
@@ -186,5 +206,22 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 		} catch (IOException o_O) {
 			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, information.getDomainType()), o_O);
 		}
+	}
+
+	/**
+	 * Returns the object to be updated identified by the given id using the given {@link RootResourceInformation}.
+	 * 
+	 * @param id can be {@literal null}.
+	 * @param information must not be {@literal null}.
+	 * @return
+	 */
+	private static Object getObjectToUpdate(Serializable id, RootResourceInformation information) {
+
+		if (id == null) {
+			return null;
+		}
+
+		RepositoryInvoker invoker = information.getInvoker();
+		return invoker.invokeFindOne(id);
 	}
 }
