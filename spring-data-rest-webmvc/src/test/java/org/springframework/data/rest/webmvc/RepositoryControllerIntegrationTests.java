@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Integration tests for {@link RepositoryController}.
  * 
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
@@ -57,12 +58,15 @@ public class RepositoryControllerIntegrationTests extends AbstractControllerInte
 		assertThat(controller.headForRepositories().getStatusCode(), is(HttpStatus.NO_CONTENT));
 	}
 
+	/**
+	 * @see DATAREST-160, DATAREST-333, DATAREST-463
+	 */
 	@Test
 	public void exposesLinksToRepositories() {
 
 		RepositoryLinksResource resource = controller.listRepositories().getBody();
 
-		assertThat(resource.getLinks(), hasSize(6));
+		assertThat(resource.getLinks(), hasSize(7));
 
 		assertThat(resource.hasLink("people"), is(true));
 		assertThat(resource.hasLink("orders"), is(true));
@@ -70,5 +74,6 @@ public class RepositoryControllerIntegrationTests extends AbstractControllerInte
 		assertThat(resource.hasLink("books"), is(true));
 		assertThat(resource.hasLink("authors"), is(true));
 		assertThat(resource.hasLink("receipts"), is(true));
+		assertThat(resource.hasLink("items"), is(true));
 	}
 }
