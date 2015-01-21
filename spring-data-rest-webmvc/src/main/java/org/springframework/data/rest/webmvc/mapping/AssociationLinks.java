@@ -31,6 +31,7 @@ import org.springframework.util.Assert;
  * A value object to for {@link Link}s representing an association.
  * 
  * @author Oliver Gierke
+ * @author Greg Turnquist
  * @since 2.1
  */
 public class AssociationLinks {
@@ -90,6 +91,7 @@ public class AssociationLinks {
 			return false;
 		}
 
+//		ResourceMetadata metadata = mappings.getMappingFor(property.getActualType());
 		ResourceMetadata metadata = mappings.getMappingFor(property.getOwner().getType());
 
 		if (metadata != null && !metadata.isExported(property)) {
@@ -99,4 +101,5 @@ public class AssociationLinks {
 		metadata = mappings.getMappingFor(property.getActualType());
 		return metadata == null ? false : metadata.isExported();
 	}
+
 }
