@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.springframework.web.context.WebApplicationContext;
  * Integration tests for {@link AlpsController}.
  * 
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 @WebAppConfiguration
 @ContextConfiguration(classes = { JpaRepositoryConfig.class, AlpsControllerIntegrationTests.Config.class })
@@ -90,6 +91,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		assertThat(discoverUnique(profileLink.getHref(), "orders"), is(notNullValue()));
 		assertThat(discoverUnique(profileLink.getHref(), "people"), is(notNullValue()));
+		assertThat(discoverUnique(profileLink.getHref(), "items"), is(notNullValue()));
 	}
 
 	/**
@@ -107,6 +109,26 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 				andExpect(jsonPath("$.descriptors[*].name", hasItems("people", "person")));
 	}
 
+	/**
+	 * @see DATAREST-463
+	 */
+	@Test
+	public void verifyThatAttributesIgnoredDontAppearInAlps() throws Exception {
+
+		Link profileLink = discoverUnique("/", "profile");
+		Link usersLink = discoverUnique(profileLink.getHref(), "users");
+		Link itemsLink = discoverUnique(profileLink.getHref(), "items");
+
+		assertThat(usersLink, is(nullValue()));
+
+		mvc.perform(get(itemsLink.getHref())).//
+				andDo(print()).//
+				andExpect(jsonPath("$.descriptors[*].descriptors[*].name", hasItems("id", "name"))).//
+				andExpect(jsonPath("$.descriptors[*].descriptors[*].name",
+					everyItem(not(isIn(new String[]{"owner", "manager", "curator"})))));
+
+	}
+
 	private Link discoverUnique(String href, String rel) throws Exception {
 
 		MockHttpServletResponse response = mvc.perform(get(href)).//
@@ -116,4 +138,5 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		LinkDiscoverer discoverer = discoverers.getLinkDiscovererFor(MediaType.valueOf(response.getContentType()));
 		return discoverer.findLinkWithRel(rel, response.getContentAsString());
 	}
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
  * Converter to create Alps {@link Descriptor} instances for a {@link RootResourceInformation}.
  * 
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 public class RootResourceInformationToAlpsDescriptorConverter {
 
@@ -305,7 +306,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 	private List<Descriptor> buildPropertyDescriptors(Class<?> type, final String baseRel) {
 
-		PersistentEntity<?, ?> entity = persistentEntities.getPersistentEntity(type);
+		final PersistentEntity<?, ?> entity = persistentEntities.getPersistentEntity(type);
 		final List<Descriptor> propertyDescriptors = new ArrayList<Descriptor>();
 		final JacksonMetadata jackson = new JacksonMetadata(mapper, type);
 		final PropertyMappings propertyMappings = new PropertyMappings(mappings);
@@ -336,30 +337,28 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
 
 				PersistentProperty<?> property = association.getInverse();
+				final Class<?> propertyType = property.getType();
+
+				if (!jackson.isExportableProperty(property)) {
+					return;
+				}
+
+				if (!associationLinks.isLinkableAssociation(property)) {
+					return;
+				}
+
 				ResourceMapping mapping = propertyMappings.getMappingFor(property);
 
 				DescriptorBuilder builder = descriptor().//
 						name(mapping.getRel()).doc(getDocFor(mapping.getDescription()));
 
-				if (associationLinks.isLinkableAssociation(property)) {
+				ResourceMetadata targetTypeMapping = mappings.getMappingFor(property.getActualType());
+				String localPath = targetTypeMapping.getRel().concat("#").concat(targetTypeMapping.getItemResourceRel());
+				Link link = ControllerLinkBuilder.linkTo(AlpsController.class).slash(localPath).withSelfRel();
 
-					ResourceMetadata targetTypeMapping = mappings.getMappingFor(property.getActualType());
-					String localPath = targetTypeMapping.getRel().concat("#").concat(targetTypeMapping.getItemResourceRel());
-					Link link = ControllerLinkBuilder.linkTo(AlpsController.class).slash(localPath).withSelfRel();
-
-					builder.//
-							type(Type.SAFE).//
-							rt(link.getHref());
-
-				} else {
-
-					List<Descriptor> nestedDescriptors = buildPropertyDescriptors(property.getActualType(), baseRel.concat(".")
-							.concat(mapping.getRel()));
-
-					builder = builder.//
-							type(Type.SEMANTIC).//
-							descriptors(nestedDescriptors);
-				}
+				builder.//
+						type(Type.SAFE).//
+						rt(link.getHref());
 
 				propertyDescriptors.add(builder.build());
 			}

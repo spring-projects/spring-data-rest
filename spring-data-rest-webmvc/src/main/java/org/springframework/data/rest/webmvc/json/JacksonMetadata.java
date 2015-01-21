@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
  * Value object to abstract Jackson based bean metadata of a given type.
  * 
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
@@ -72,6 +73,15 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Check if a given property for a type is avaiaable to be exported, i.e. serialized via Jackson
+	 * @param property
+	 * @return
+	 */
+	public boolean isExportableProperty(PersistentProperty<?> property) {
+		return getDefinitionFor(property) != null;
 	}
 
 	/* 
