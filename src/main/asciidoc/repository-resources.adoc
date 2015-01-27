@@ -146,7 +146,7 @@ Replaces the state of the target resource with the supplied request body.
 
 ==== PATCH
 
-Similar to `PUT` but only applying values sent with the request body.
+Similar to `PUT` but partially updating the resources state.
 
 ===== Custom status codes
 
@@ -156,6 +156,8 @@ Similar to `PUT` but only applying values sent with the request body.
 
 * application/hal+json
 * application/json
+* https://tools.ietf.org/html/rfc6902[application/patch+json]
+* https://tools.ietf.org/html/rfc7386[application/merge-patch+json]
 
 ==== DELETE
 
