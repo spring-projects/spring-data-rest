@@ -1,6 +1,18 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.1.5.RELEASE (2015-01-27)
+---------------------------------------------
+* DATAREST-460 - Make sure @Bean methods of RepositoryRestMvcConfiguration are called from proxied methods.
+* DATAREST-458 - Release 2.1.5.
+* DATAREST-457 - Typo in JavaDoc of BaseUri.
+* DATAREST-446 - Remove usage of RepositoriesUtils as it potentially breaks customizations of ResourceMetadata.
+* DATAREST-445 - RepositoryCollectionResourceMapping does not obtain domain type from RepositoryMetadata.
+* DATAREST-408 - Nested projections not loading nested lists.
+* DATAREST-394 - Projections are not applied to collection attributes.
+* DATAREST-388 - Can't use controller advices if annotation based event handling is used.
+
+
 Changes in version 2.3.0.M1 (2014-12-01)
 ----------------------------------------
 * DATAREST-418 - Release 2.3 M1.
