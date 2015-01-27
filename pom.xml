@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.4.5.BUILD-SNAPSHOT</version>
+		<version>1.4.5.RELEASE</version>
 		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
 	</parent>
 
@@ -27,11 +27,11 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-rest</dist.id>
 
-		<springdata.commons>1.8.5.BUILD-SNAPSHOT</springdata.commons>
-		<springdata.jpa>1.6.5.BUILD-SNAPSHOT</springdata.jpa>
-		<springdata.mongodb>1.5.5.BUILD-SNAPSHOT</springdata.mongodb>
-		<springdata.neo4j>3.1.5.BUILD-SNAPSHOT</springdata.neo4j>
-		<springdata.gemfire>1.4.5.BUILD-SNAPSHOT</springdata.gemfire>
+		<springdata.commons>1.8.5.RELEASE</springdata.commons>
+		<springdata.jpa>1.6.5.RELEASE</springdata.jpa>
+		<springdata.mongodb>1.5.5.RELEASE</springdata.mongodb>
+		<springdata.neo4j>3.1.5.RELEASE</springdata.neo4j>
+		<springdata.gemfire>1.4.5.RELEASE</springdata.gemfire>
 
 		<hibernate.version>4.2.0.Final</hibernate.version>
 
@@ -42,9 +42,9 @@
 		<developer>
 			<id>ogierke</id>
 			<name>Oliver Gierke</name>
-			<email>ogierke at gopivotal.com</email>
+			<email>ogierke at pivotal.io</email>
 			<organization>Pivotal</organization>
-			<organizationUrl>http://www.gopivotal.com</organizationUrl>
+			<organizationUrl>http://www.pivotal.io</organizationUrl>
 			<roles>
 				<role>Project Lead</role>
 			</roles>
@@ -53,9 +53,9 @@
 		<developer>
 			<id>gturnquist</id>
 			<name>Greg Turnquist</name>
-			<email>gturnquist at gopivotal.com</email>
+			<email>gturnquist at pivotal.io</email>
 			<organization>Pivotal</organization>
-			<organizationUrl>http://www.gopivotal.com</organizationUrl>
+			<organizationUrl>http://www.pivotal.io</organizationUrl>
 			<roles>
 				<role>Developer</role>
 			</roles>
@@ -150,8 +150,8 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-snapshot</id>
-			<url>http://repo.spring.io/libs-snapshot</url>
+			<id>spring-libs-release</id>
+			<url>http://repo.spring.io/libs-release</url>
 		</repository>
 	</repositories>
 
