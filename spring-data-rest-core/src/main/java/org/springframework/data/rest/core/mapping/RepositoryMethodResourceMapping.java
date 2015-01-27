@@ -25,6 +25,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -48,6 +49,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	private final Method method;
 	private final boolean paging;
 	private final boolean sorting;
+	private final RepositoryMetadata metadata;
 
 	private final List<ParameterMetadata> parameterMetadata;
 
@@ -57,7 +59,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	 * @param method must not be {@literal null}.
 	 * @param resourceMapping must not be {@literal null}.
 	 */
-	public RepositoryMethodResourceMapping(Method method, ResourceMapping resourceMapping) {
+	public RepositoryMethodResourceMapping(Method method, ResourceMapping resourceMapping, RepositoryMetadata metadata) {
 
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notNull(resourceMapping, "ResourceMapping must not be null!");
@@ -76,6 +78,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 
 		this.paging = parameterTypes.contains(Pageable.class);
 		this.sorting = parameterTypes.contains(Sort.class);
+		this.metadata = metadata;
 	}
 
 	private static final List<ParameterMetadata> discoverParameterMetadata(Method method, String baseRel) {
@@ -161,5 +164,14 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	@Override
 	public ResourceDescription getDescription() {
 		return null;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#getProjectionSourceType()
+	 */
+	@Override
+	public Class<?> getReturnedDomainType() {
+		return metadata.getReturnedDomainClass(method);
 	}
 }

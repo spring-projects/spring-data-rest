@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	public void defaultsMappingToMethodName() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
-		ResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+		ResourceMapping mapping = getMappingFor(method);
 
 		assertThat(mapping.getPath(), is(new Path("findByLastname")));
 	}
@@ -54,7 +54,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	public void usesConfiguredNameWithLeadingSlash() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
-		ResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+		ResourceMapping mapping = getMappingFor(method);
 
 		assertThat(mapping.getPath(), is(new Path("bar")));
 	}
@@ -66,7 +66,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	public void doesNotDiscoverAnyParametersIfNotAnnotated() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
-		MethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+		MethodResourceMapping mapping = getMappingFor(method);
 
 		assertThat(mapping.getParametersMetadata().getParameterNames(), is(emptyIterable()));
 	}
@@ -78,7 +78,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	public void resolvesParameterNamesIfNotAnnotated() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
-		MethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+		MethodResourceMapping mapping = getMappingFor(method);
 
 		assertThat(mapping.getParametersMetadata().getParameterNames(), hasSize(1));
 		assertThat(mapping.getParametersMetadata().getParameterNames(), hasItem("firstname"));
@@ -91,7 +91,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	public void considersPagingFinderAPagingResource() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
-		MethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+		MethodResourceMapping mapping = getMappingFor(method);
 
 		assertThat(mapping.isPagingResource(), is(true));
 	}
@@ -100,7 +100,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	public void usesMethodNameAsRelFallbackEvenIfPathIsConfigured() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
-		MethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+		MethodResourceMapping mapping = getMappingFor(method);
 
 		assertThat(mapping.getRel(), is("findByEmailAddress"));
 	}
@@ -112,14 +112,31 @@ public class RepositoryMethodResourceMappingUnitTests {
 	public void considersResourceSortableIfSortParameterIsPresent() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Sort.class);
-		RepositoryMethodResourceMapping mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+		RepositoryMethodResourceMapping mapping = getMappingFor(method);
 
 		assertThat(mapping.isSortableResource(), is(true));
 
 		method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
-		mapping = new RepositoryMethodResourceMapping(method, resourceMapping);
+		mapping = getMappingFor(method);
 
 		assertThat(mapping.isSortableResource(), is(false));
+	}
+
+	/**
+	 * @see DATAREST-467
+	 */
+	@Test
+	@SuppressWarnings("rawtypes")
+	public void returnsDomainTypeAsProjectionSourceType() throws Exception {
+
+		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
+		MethodResourceMapping mapping = getMappingFor(method);
+
+		assertThat(mapping.getReturnedDomainType(), is(equalTo((Class) Person.class)));
+	}
+
+	private RepositoryMethodResourceMapping getMappingFor(Method method) {
+		return new RepositoryMethodResourceMapping(method, resourceMapping, metadata);
 	}
 
 	static class Person {}
@@ -138,5 +155,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Page<Person> findByEmailAddress(String email, Pageable pageable);
 
 		Page<Person> findByEmailAddress(String email, Sort pageable);
+
+		int countByLastname(String lastname);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ package org.springframework.data.rest.core.mapping;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.rest.core.Path;
 import org.springframework.util.Assert;
@@ -75,6 +77,46 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 
 		MethodResourceMapping mapping = mappings.get(new Path(path));
 		return mapping == null ? null : mapping.getMethod();
+	}
+
+	/**
+	 * Returns the mappings for all exported query methods.
+	 * 
+	 * @return
+	 * @since 2.3
+	 */
+	public Iterable<MethodResourceMapping> getExportedMappings() {
+
+		Set<MethodResourceMapping> result = new HashSet<MethodResourceMapping>(mappings.values().size());
+
+		for (MethodResourceMapping mapping : this) {
+			if (mapping.isExported()) {
+				result.add(mapping);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns the {@link MappingResourceMetadata} for the given relation name.
+	 * 
+	 * @param rel must not be {@literal null} or empty.
+	 * @return
+	 * @since 2.3
+	 */
+	public MethodResourceMapping getExportedMethodMappingForRel(String rel) {
+
+		Assert.hasText(rel, "Rel must not be null or empty!");
+
+		for (MethodResourceMapping mapping : this) {
+
+			if (mapping.isExported() && mapping.getRel().endsWith(rel)) {
+				return mapping;
+			}
+		}
+
+		return null;
 	}
 
 	/* 

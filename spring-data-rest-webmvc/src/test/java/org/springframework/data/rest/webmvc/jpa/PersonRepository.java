@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 package org.springframework.data.rest.webmvc.jpa;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
@@ -37,9 +39,12 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 public interface PersonRepository extends PagingAndSortingRepository<Person, Long> {
 
 	@RestResource(rel = "firstname", path = "firstname")
-	Page<Person> findByFirstName(@Param("firstName") String firstName, Pageable pageable);
+	Page<Person> findByFirstName(@Param("firstname") String firstName, Pageable pageable);
 
-	Person findFirstPersonByFirstName(@Param("firstName") String firstName);
+	@RestResource(rel = "lastname", path = "lastname")
+	List<Person> findByLastName(@Param("lastname") String lastName, Sort sort);
+
+	Person findFirstPersonByFirstName(@Param("firstname") String firstName);
 
 	Page<Person> findByCreatedGreaterThan(@Param("date") Date date, Pageable pageable);
 

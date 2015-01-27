@@ -132,7 +132,7 @@ public class RepositoryResourceMappings implements ResourceMappings {
 		if (resourceMapping.isExported()) {
 			for (Method queryMethod : repositoryInformation.getQueryMethods()) {
 				RepositoryMethodResourceMapping methodMapping = new RepositoryMethodResourceMapping(queryMethod,
-						resourceMapping);
+						resourceMapping, repositoryInformation);
 				if (methodMapping.isExported()) {
 					mappings.add(methodMapping);
 				}

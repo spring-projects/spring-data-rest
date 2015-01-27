@@ -26,24 +26,18 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.RepositoryInvoker;
-import org.springframework.data.rest.core.mapping.MethodResourceMapping;
-import org.springframework.data.rest.core.mapping.ParameterMetadata;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkBuilder;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.TemplateVariable;
-import org.springframework.hateoas.TemplateVariable.VariableType;
-import org.springframework.hateoas.TemplateVariables;
-import org.springframework.hateoas.UriTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -56,7 +50,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Controller to lookup and execute searches on a given repository.
@@ -70,7 +63,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	private static final String SEARCH = "/search";
 	private static final String BASE_MAPPING = "/{repository}" + SEARCH;
 
-	private final EntityLinks entityLinks;
+	private final RepositoryEntityLinks entityLinks;
 	private final ResourceMappings mappings;
 	private final PagedResourcesAssembler<Object> assembler;
 	private final HateoasSortHandlerMethodArgumentResolver sortResolver;
@@ -84,7 +77,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @param mappings must not be {@literal null}.
 	 */
 	@Autowired
-	public RepositorySearchController(PagedResourcesAssembler<Object> assembler, EntityLinks entityLinks,
+	public RepositorySearchController(PagedResourcesAssembler<Object> assembler, RepositoryEntityLinks entityLinks,
 			ResourceMappings mappings, HateoasSortHandlerMethodArgumentResolver sortResolver) {
 
 		super(assembler);
@@ -144,7 +137,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		verifySearchesExposed(resourceInformation);
 
-		Links queryMethodLinks = getSearchLinks(resourceInformation.getDomainType());
+		Links queryMethodLinks = entityLinks.linksToSearchResources(resourceInformation.getDomainType());
 
 		if (queryMethodLinks.isEmpty()) {
 			throw new ResourceNotFoundException();
@@ -289,50 +282,6 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		}
 
 		return resultToResources(result, assembler, null);
-	}
-
-	/**
-	 * Returns {@link Links} to the individual searches exposed.
-	 * 
-	 * @param domainType the domain type we want to obtain the search links for.
-	 * @return
-	 */
-	private Links getSearchLinks(Class<?> domainType) {
-
-		List<Link> links = new ArrayList<Link>();
-
-		SearchResourceMappings searchMappings = mappings.getSearchResourceMappings(domainType);
-		LinkBuilder builder = entityLinks.linkFor(domainType).slash(searchMappings.getPath());
-
-		for (MethodResourceMapping mapping : searchMappings) {
-
-			if (!mapping.isExported()) {
-				continue;
-			}
-
-			TemplateVariables variables = new TemplateVariables();
-
-			for (ParameterMetadata metadata : mapping.getParametersMetadata()) {
-				variables = variables.concat(new TemplateVariable(metadata.getName(), VariableType.REQUEST_PARAM));
-			}
-
-			String href = builder.slash(mapping.getPath()).toString().concat(variables.toString());
-
-			Link link = new Link(href, mapping.getRel());
-
-			if (mapping.isPagingResource()) {
-				link = assembler.appendPaginationParameterTemplates(link);
-			} else if (mapping.isSortableResource()) {
-
-				TemplateVariables sortVariable = sortResolver.getSortTemplateVariables(null, UriComponentsBuilder
-						.fromUriString(link.expand().getHref()).build());
-				link = new Link(new UriTemplate(link.getHref()).with(sortVariable), link.getRel());
-			}
-
-			links.add(link);
-		}
-
-		return new Links(links);
 	}
 
 	/**

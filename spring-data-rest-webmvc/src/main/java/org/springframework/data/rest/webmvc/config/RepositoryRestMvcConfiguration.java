@@ -86,6 +86,7 @@ import org.springframework.data.rest.webmvc.support.DefaultedPageableHandlerMeth
 import org.springframework.data.rest.webmvc.support.ETagArgumentResolver;
 import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
+import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
@@ -303,7 +304,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public RepositoryEntityLinks entityLinks() {
-		return new RepositoryEntityLinks(repositories(), resourceMappings(), config(), pageableResolver(),
+
+		PagingAndSortingTemplateVariables templateVariables = new ArgumentResolverPagingAndSortingTemplateVariables(
+				pageableResolver(), sortResolver());
+
+		return new RepositoryEntityLinks(repositories(), resourceMappings(), config(), templateVariables,
 				backendIdConverterRegistry());
 	}
 

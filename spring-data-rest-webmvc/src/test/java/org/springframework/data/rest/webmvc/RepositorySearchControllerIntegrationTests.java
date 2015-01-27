@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,12 +65,14 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		ResourceSupport resource = controller.listSearches(request);
 
 		ResourceTester tester = ResourceTester.of(resource);
-		tester.assertNumberOfLinks(4);
-		tester.assertHasLinkEndingWith("findFirstPersonByFirstName", "findFirstPersonByFirstName{?firstName}");
-		tester.assertHasLinkEndingWith("firstname", "firstname{?firstName,page,size,sort}");
+		tester.assertNumberOfLinks(5);
+		tester.assertHasLinkEndingWith("findFirstPersonByFirstName", "findFirstPersonByFirstName{?firstname,projection}");
+		tester.assertHasLinkEndingWith("firstname", "firstname{?firstname,page,size,sort,projection}");
+		tester.assertHasLinkEndingWith("lastname", "lastname{?lastname,sort,projection}");
 		tester.assertHasLinkEndingWith("findByCreatedUsingISO8601Date",
-				"findByCreatedUsingISO8601Date{?date,page,size,sort}");
-		tester.assertHasLinkEndingWith("findByCreatedGreaterThan", "findByCreatedGreaterThan{?date,page,size,sort}");
+				"findByCreatedUsingISO8601Date{?date,page,size,sort,projection}");
+		tester.assertHasLinkEndingWith("findByCreatedGreaterThan",
+				"findByCreatedGreaterThan{?date,page,size,sort,projection}");
 	}
 
 	@Test(expected = ResourceNotFoundException.class)
@@ -86,7 +88,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	@Test
 	public void executesSearchAgainstRepository() {
 
-		RequestParameters parameters = new RequestParameters("firstName", "John");
+		RequestParameters parameters = new RequestParameters("firstname", "John");
 		RootResourceInformation resourceInformation = getResourceInformation(Person.class);
 
 		ResponseEntity<Object> response = controller.executeSearch(resourceInformation, getRequest(parameters),

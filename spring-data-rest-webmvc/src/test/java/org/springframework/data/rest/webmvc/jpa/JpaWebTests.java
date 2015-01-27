@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -570,7 +570,7 @@ public class JpaWebTests extends CommonWebTests {
 
 		// Assert sort options advertised
 		assertThat(findBySortedLink.isTemplated(), is(true));
-		assertThat(findBySortedLink.getVariableNames(), contains("sort"));
+		assertThat(findBySortedLink.getVariableNames(), hasItems("sort", "projection"));
 
 		// Assert results returned as specified
 		client.follow(findBySortedLink.expand("title,desc")).//

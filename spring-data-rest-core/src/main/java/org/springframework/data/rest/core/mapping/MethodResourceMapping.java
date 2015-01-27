@@ -16,6 +16,9 @@
 package org.springframework.data.rest.core.mapping;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * A {@link ResourceMapping} that is backed by a {@link Method}.
@@ -44,4 +47,13 @@ public interface MethodResourceMapping extends ResourceMapping {
 	 * @return
 	 */
 	boolean isSortableResource();
+
+	/**
+	 * Returns the domain type that the query method returns. This will inspect wrapper types ({@link Collection}s,
+	 * {@link Map}s, {@link Optional}s etc.) for their elemtn or value types.
+	 * 
+	 * @return will never be {@literal null}.
+	 * @since 2.3
+	 */
+	Class<?> getReturnedDomainType();
 }
