@@ -1,6 +1,30 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.2.2.RELEASE (2015-01-28)
+---------------------------------------------
+* DATAREST-470 - Use EclipseLink provided JPA API JAR instead of the Hibernate one.
+* DATAREST-469 - Introduce dedicated resource type for search links.
+* DATAREST-468 - Documentation of item resource is missing supported media types for PATCH.
+* DATAREST-461 - @JsonIgnored properties must not be updated in PUT requests.
+* DATAREST-460 - Make sure @Bean methods of RepositoryRestMvcConfiguration are called from proxied methods.
+* DATAREST-459 - Release 2.2.2.
+* DATAREST-457 - Typo in JavaDoc of BaseUri.
+* DATAREST-446 - Remove usage of RepositoriesUtils as it potentially breaks customizations of ResourceMetadata.
+* DATAREST-445 - RepositoryCollectionResourceMapping does not obtain domain type from RepositoryMetadata.
+* DATAREST-436 - Spring Data Rest example module has no build file.
+* DATAREST-434 - PersistentEntityResourceHandlerMethodArgumentResolver's read(…) methods swallow exceptions.
+* DATAREST-430 - Fix typos in reference documentation.
+* DATAREST-427 - NullPointerException when POST/PUT entities with rels in DomainClassConverter.
+* DATAREST-424 - Make sure HAL HttpMessageConverter is ordered before the standard one.
+* DATAREST-423 - Spring Data REST registered ConversionService not used when overriding individual resources.
+* DATAREST-422 - Fix link to reference documentation in README.
+* DATAREST-408 - Nested projections not loading nested lists.
+* DATAREST-394 - Projections are not applied to collection attributes.
+* DATAREST-388 - Can't use controller advices if annotation based event handling is used.
+* DATAREST-227 - Extract test functions from AbstractWebIntegrationTest for general reuse.
+
+
 Changes in version 2.1.5.RELEASE (2015-01-27)
 ---------------------------------------------
 * DATAREST-460 - Make sure @Bean methods of RepositoryRestMvcConfiguration are called from proxied methods.
