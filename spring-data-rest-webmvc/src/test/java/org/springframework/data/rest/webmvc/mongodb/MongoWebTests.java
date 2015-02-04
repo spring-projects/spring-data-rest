@@ -186,4 +186,18 @@ public class MongoWebTests extends CommonWebTests {
 						.contentType(MediaType.APPLICATION_JSON).header("If-Match", concurrencyTag)).andExpect(
 				status().isPreconditionFailed());
 	}
+
+	/**
+	 * @see DATAREST-471
+	 */
+	@Test
+	public void auditableResourceHasLastModifiedHeaderSet() throws Exception {
+
+		Profile profile = repository.findAll().iterator().next();
+
+		String header = mvc.perform(get("/profiles/{id}", profile.getId())).//
+				andReturn().getResponse().getHeader("Last-Modified");
+
+		assertThat(header, not(isEmptyOrNullString()));
+	}
 }

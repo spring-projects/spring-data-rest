@@ -18,16 +18,22 @@ package org.springframework.data.rest.webmvc;
 import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Calendar;
 import java.util.List;
 
+import org.springframework.data.auditing.AuditableBeanWrapper;
+import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 /**
  * @author Jon Brisbin
@@ -38,16 +44,23 @@ import org.springframework.util.Assert;
 class AbstractRepositoryRestController {
 
 	private final PagedResourcesAssembler<Object> pagedResourcesAssembler;
+	private final AuditableBeanWrapperFactory auditableBeanWrapperFactory;
 
 	/**
-	 * Creates a new {@link AbstractRepositoryRestController} for the given {@link PagedResourcesAssembler}.
+	 * Creates a new {@link AbstractRepositoryRestController} for the given {@link PagedResourcesAssembler} and
+	 * {@link AuditableBeanWrapperFactory}.
 	 * 
 	 * @param pagedResourcesAssembler must not be {@literal null}.
+	 * @param auditableBeanWrapperFactory must not be {@literal null}.
 	 */
-	public AbstractRepositoryRestController(PagedResourcesAssembler<Object> pagedResourcesAssembler) {
+	public AbstractRepositoryRestController(PagedResourcesAssembler<Object> pagedResourcesAssembler,
+			AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
 
 		Assert.notNull(pagedResourcesAssembler, "PagedResourcesAssembler must not be null!");
+		Assert.notNull(auditableBeanWrapperFactory, "AuditableBeanWrapperFactory must not be null!");
+
 		this.pagedResourcesAssembler = pagedResourcesAssembler;
+		this.auditableBeanWrapperFactory = auditableBeanWrapperFactory;
 	}
 
 	protected Link resourceLink(RootResourceInformation resourceLink, Resource resource) {
@@ -61,18 +74,35 @@ class AbstractRepositoryRestController {
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	protected Resources resultToResources(Object result, PersistentEntityResourceAssembler assembler, Link baseLink) {
+	protected Resources<?> toResources(Iterable<?> source, PersistentEntityResourceAssembler assembler, Link baseLink) {
 
-		if (result instanceof Page) {
-			Page<Object> page = (Page<Object>) result;
+		if (source instanceof Page) {
+			Page<Object> page = (Page<Object>) source;
 			return entitiesToResources(page, assembler, baseLink);
-		} else if (result instanceof Iterable) {
-			return entitiesToResources((Iterable<Object>) result, assembler);
-		} else if (null == result) {
-			return new Resources(EMPTY_RESOURCE_LIST);
+		} else if (source instanceof Iterable) {
+			return entitiesToResources((Iterable<Object>) source, assembler);
 		} else {
-			Resource<Object> resource = assembler.toFullResource(result);
-			return new Resources(Collections.singletonList(resource));
+			return new Resources(EMPTY_RESOURCE_LIST);
+		}
+	}
+
+	/**
+	 * Turns the given source into a {@link ResourceSupport} if needed and possible. Uses the given
+	 * {@link PersistentEntityResourceAssembler} for the actual conversion.
+	 * 
+	 * @param source can be must not be {@literal null}.
+	 * @param assembler must not be {@literal null}.
+	 * @param baseLink can be {@literal null}.
+	 * @return
+	 */
+	protected Object toResource(Object source, PersistentEntityResourceAssembler assembler, Link baseLink) {
+
+		if (source instanceof Iterable) {
+			return toResources((Iterable<?>) source, assembler, baseLink);
+		} else if (source == null || ClassUtils.isPrimitiveOrWrapper(source.getClass())) {
+			return source;
+		} else {
+			return assembler.toFullResource(source);
 		}
 	}
 
@@ -92,5 +122,39 @@ class AbstractRepositoryRestController {
 		}
 
 		return new Resources<Resource<Object>>(resources);
+	}
+
+	/**
+	 * Returns the default headers to be returned for the given {@link PersistentEntityResource}. Will set {@link ETag}
+	 * and {@code Last-Modified} headers if applicable.
+	 * 
+	 * @param resource can be {@literal null}.
+	 * @return
+	 */
+	protected HttpHeaders prepareHeaders(PersistentEntityResource resource) {
+
+		HttpHeaders headers = new HttpHeaders();
+
+		if (resource == null) {
+			return headers;
+		}
+
+		// Add ETag
+		headers = ETag.from(resource).addTo(headers);
+
+		// Add Last-Modified
+		AuditableBeanWrapper wrapper = auditableBeanWrapperFactory.getBeanWrapperFor(resource.getContent());
+
+		if (wrapper == null) {
+			return headers;
+		}
+
+		Calendar lastModifiedDate = wrapper.getLastModifiedDate();
+
+		if (lastModifiedDate != null) {
+			headers.setLastModified(lastModifiedDate.getTimeInMillis());
+		}
+
+		return headers;
 	}
 }

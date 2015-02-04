@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
@@ -89,9 +90,10 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@Autowired
 	public RepositoryEntityController(Repositories repositories, RepositoryRestConfiguration config,
 			RepositoryEntityLinks entityLinks, PagedResourcesAssembler<Object> assembler,
-			@Qualifier("defaultConversionService") ConversionService conversionService) {
+			@Qualifier("defaultConversionService") ConversionService conversionService,
+			AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
 
-		super(assembler);
+		super(assembler, auditableBeanWrapperFactory);
 
 		this.entityLinks = entityLinks;
 		this.config = config;
@@ -193,9 +195,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		Link baseLink = entityLinks.linkToPagedResource(resourceInformation.getDomainType(), pageable.isDefault() ? null
 				: pageable.getPageable());
 
-		Resources<?> resources = resultToResources(results, assembler, baseLink);
-		resources.add(links);
-		return resources;
+		Resources<?> result = toResources(results, assembler, baseLink);
+		result.add(links);
+		return result;
 	}
 
 	@ResponseBody
@@ -268,14 +270,18 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @since 2.2
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.HEAD)
-	public ResponseEntity<?> headForItemResource(RootResourceInformation resourceInformation, @BackendId Serializable id)
-			throws HttpRequestMethodNotSupportedException {
+	public ResponseEntity<?> headForItemResource(RootResourceInformation resourceInformation, @BackendId Serializable id,
+			PersistentEntityResourceAssembler assembler) throws HttpRequestMethodNotSupportedException {
 
-		if (getItemResource(resourceInformation, id) != null) {
-			return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+		Object domainObject = getItemResource(resourceInformation, id);
+
+		if (domainObject == null) {
+			throw new ResourceNotFoundException();
 		}
 
-		throw new ResourceNotFoundException();
+		PersistentEntityResource resource = assembler.toResource(domainObject);
+
+		return new ResponseEntity<Object>(prepareHeaders(resource), HttpStatus.NO_CONTENT);
 	}
 
 	/**
@@ -298,7 +304,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		}
 
 		PersistentEntityResource resource = assembler.toFullResource(domainObj);
-		HttpHeaders headers = ETag.from(resource).addTo(new HttpHeaders());
+		HttpHeaders headers = prepareHeaders(resource);
 
 		return new ResponseEntity<Resource<?>>(resource, headers, HttpStatus.OK);
 	}
@@ -415,17 +421,14 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		Object obj = invoker.invokeSave(domainObject);
 		publisher.publishEvent(new AfterSaveEvent(domainObject));
 
-		HttpHeaders headers = new HttpHeaders();
+		PersistentEntityResource resource = assembler.toFullResource(obj);
+		HttpHeaders headers = prepareHeaders(resource);
 
 		if (PUT.equals(httpMethod)) {
 			addLocationHeader(headers, assembler, obj);
 		}
 
 		if (config.isReturnBodyOnUpdate()) {
-
-			PersistentEntityResource resource = assembler.toFullResource(obj);
-			headers = ETag.from(resource).addTo(headers);
-
 			return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, resource);
 		} else {
 			return ControllerUtils.toEmptyResponse(HttpStatus.NO_CONTENT, headers);
@@ -446,11 +449,10 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		Object savedObject = invoker.invokeSave(domainObject);
 		publisher.publishEvent(new AfterCreateEvent(savedObject));
 
-		HttpHeaders headers = new HttpHeaders();
-		addLocationHeader(headers, assembler, savedObject);
-
 		PersistentEntityResource resource = config.isReturnBodyOnCreate() ? assembler.toFullResource(savedObject) : null;
-		headers = ETag.from(resource).addTo(headers);
+
+		HttpHeaders headers = prepareHeaders(resource);
+		addLocationHeader(headers, assembler, savedObject);
 
 		return ControllerUtils.toResponseEntity(HttpStatus.CREATED, headers, resource);
 	}

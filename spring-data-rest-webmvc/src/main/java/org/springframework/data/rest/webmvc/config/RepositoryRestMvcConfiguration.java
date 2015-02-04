@@ -42,6 +42,8 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.auditing.AuditableBeanWrapperFactory;
+import org.springframework.data.auditing.MappingAuditableBeanWrapperFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.geo.GeoModule;
 import org.springframework.data.mapping.context.MappingContext;
@@ -627,6 +629,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		converters.add(DefaultIdConverter.INSTANCE);
 
 		return OrderAwarePluginRegistry.create(converters);
+	}
+
+	@Bean
+	public AuditableBeanWrapperFactory auditableBeanWrapperFactory() {
+		return new MappingAuditableBeanWrapperFactory(persistentEntities());
 	}
 
 	protected List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {

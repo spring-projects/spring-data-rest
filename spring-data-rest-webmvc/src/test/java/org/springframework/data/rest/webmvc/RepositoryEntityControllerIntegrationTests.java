@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,9 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		Address address = repository.save(new Address());
 
-		ResponseEntity<?> entity = controller.headForItemResource(getResourceInformation(Address.class), address.id);
+		ResponseEntity<?> entity = controller.headForItemResource(getResourceInformation(Address.class), address.id,
+				assembler);
+
 		assertThat(entity.getStatusCode(), is(HttpStatus.NO_CONTENT));
 	}
 
@@ -130,7 +132,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	 */
 	@Test(expected = ResourceNotFoundException.class)
 	public void doesNotExposeHeadForItemResourceIfNotExisting() throws Exception {
-		controller.headForItemResource(getResourceInformation(CreditCard.class), 1L);
+		controller.headForItemResource(getResourceInformation(CreditCard.class), 1L, assembler);
 	}
 
 	/**

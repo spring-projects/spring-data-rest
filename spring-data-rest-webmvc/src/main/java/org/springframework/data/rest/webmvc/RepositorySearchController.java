@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -44,7 +45,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -78,9 +78,10 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 */
 	@Autowired
 	public RepositorySearchController(PagedResourcesAssembler<Object> assembler, RepositoryEntityLinks entityLinks,
-			ResourceMappings mappings, HateoasSortHandlerMethodArgumentResolver sortResolver) {
+			ResourceMappings mappings, HateoasSortHandlerMethodArgumentResolver sortResolver,
+			AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
 
-		super(assembler);
+		super(assembler, auditableBeanWrapperFactory);
 
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
@@ -165,9 +166,9 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			@PathVariable String search, DefaultedPageable pageable, Sort sort, PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		Object resources = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, sort, assembler);
+		Object result = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, sort, assembler);
 
-		return new ResponseEntity<Object>(resources, HttpStatus.OK);
+		return new ResponseEntity<Object>(toResource(result, assembler, null), HttpStatus.OK);
 	}
 
 	/**
@@ -187,8 +188,8 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		Object resource = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, sort, assembler);
-
+		Object result = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, sort, assembler);
+		Object resource = toResource(result, assembler, null);
 		List<Link> links = new ArrayList<Link>();
 
 		if (resource instanceof Resources && ((Resources<?>) resource).getContent() != null) {
@@ -275,13 +276,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			DefaultedPageable pageable, Sort sort, PersistentEntityResourceAssembler assembler) {
 
 		Map<String, String[]> parameters = request.getParameterMap();
-		Object result = invoker.invokeQueryMethod(method, parameters, pageable.getPageable(), sort);
-
-		if (ClassUtils.isPrimitiveOrWrapper(method.getReturnType())) {
-			return result;
-		}
-
-		return resultToResources(result, assembler, null);
+		return invoker.invokeQueryMethod(method, parameters, pageable.getPageable(), sort);
 	}
 
 	/**

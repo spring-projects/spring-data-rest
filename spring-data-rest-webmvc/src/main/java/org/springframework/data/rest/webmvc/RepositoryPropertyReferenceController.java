@@ -33,6 +33,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -85,9 +86,9 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@Autowired
 	public RepositoryPropertyReferenceController(Repositories repositories,
 			@Qualifier("defaultConversionService") ConversionService conversionService,
-			PagedResourcesAssembler<Object> assembler) {
+			PagedResourcesAssembler<Object> assembler, AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
 
-		super(assembler);
+		super(assembler, auditableBeanWrapperFactory);
 
 		this.repositories = repositories;
 		this.conversionService = conversionService;

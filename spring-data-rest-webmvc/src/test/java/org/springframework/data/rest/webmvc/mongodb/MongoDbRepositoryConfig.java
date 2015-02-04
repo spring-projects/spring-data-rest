@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.mongodb;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import com.mongodb.Mongo;
@@ -24,9 +25,11 @@ import com.mongodb.MongoClient;
 
 /**
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
 @Configuration
 @EnableMongoRepositories
+@EnableMongoAuditing
 public class MongoDbRepositoryConfig extends AbstractMongoConfiguration {
 
 	/* 
