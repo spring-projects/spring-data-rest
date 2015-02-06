@@ -7,6 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Jon Brisbin
@@ -16,8 +17,9 @@ public class Profile {
 
 	@Id private String id;
 	private Long person;
-	private String type;
+	private @JsonProperty(required = true) String type;
 	private @LastModifiedDate Date lastModifiedDate;
+	private @JsonProperty("renamed") String aliased;
 
 	public String getId() {
 		return id;
@@ -49,5 +51,9 @@ public class Profile {
 	@JsonIgnore
 	public Date getLastModifiedDate() {
 		return lastModifiedDate;
+	}
+
+	public String getAliased() {
+		return aliased;
 	}
 }

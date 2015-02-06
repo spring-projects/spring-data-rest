@@ -16,8 +16,13 @@
 package org.springframework.data.rest.webmvc.mongodb;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * @author Oliver Gierke
@@ -25,7 +30,38 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class User {
 
+	public static enum Gender {
+		MALE, FEMALE;
+	}
+
 	public BigInteger id;
 	public String firstname, lastname;
 	public Address address;
+	public Set<Address> shippingAddresses;
+	public List<String> nicknames;
+	public Gender gender;
+	public EmailAddress email;
+	public LocalDateTime java8DateTime;
+	public org.joda.time.LocalDateTime jodaDateTime;
+	public TypeWithPattern pattern;
+
+	public static class EmailAddress {
+
+		private final String value;
+
+		/**
+		 * @param value
+		 */
+		public EmailAddress(String value) {
+			this.value = value;
+		}
+
+		@Override
+		@JsonValue
+		public String toString() {
+			return value;
+		}
+	}
+
+	public static class TypeWithPattern {}
 }

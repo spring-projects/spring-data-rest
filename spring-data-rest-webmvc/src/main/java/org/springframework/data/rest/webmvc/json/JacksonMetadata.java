@@ -19,12 +19,17 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.rest.core.annotation.Description;
+import org.springframework.data.rest.core.mapping.AnnotationBasedResourceDescription;
+import org.springframework.data.rest.core.mapping.ResourceDescription;
+import org.springframework.data.rest.core.mapping.SimpleResourceDescription;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 
 /**
@@ -35,6 +40,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 	private final List<BeanPropertyDefinition> definitions;
+	private final boolean isValue;
 
 	/**
 	 * Creates a new {@link JacksonMetadata} instance for the given {@link ObjectMapper} and type.
@@ -52,6 +58,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 		BeanDescription description = serializationConfig.introspect(javaType);
 
 		this.definitions = description.findProperties();
+		this.isValue = description.findJsonValueMethod() != null;
 	}
 
 	/**
@@ -72,6 +79,21 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 		}
 
 		return null;
+	}
+
+	public ResourceDescription getFallbackDescription(BeanPropertyDefinition definition) {
+
+		AnnotatedMember member = definition.getPrimaryMember();
+		Description description = member.getAnnotation(Description.class);
+		ResourceDescription fallback = SimpleResourceDescription.defaultFor(definition.getName());
+		return description == null ? null : new AnnotationBasedResourceDescription(description, fallback);
+	}
+
+	/**
+	 * @return the isValue
+	 */
+	public boolean isValue() {
+		return isValue;
 	}
 
 	/* 

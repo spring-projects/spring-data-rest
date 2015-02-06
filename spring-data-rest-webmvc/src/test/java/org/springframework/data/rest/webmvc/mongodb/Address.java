@@ -15,11 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.mongodb;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Oliver Gierke
  */
 public class Address {
 
-	public String street, zipCode;
+	public String street;
+	public @JsonProperty(required = true) String zipCode;
 }

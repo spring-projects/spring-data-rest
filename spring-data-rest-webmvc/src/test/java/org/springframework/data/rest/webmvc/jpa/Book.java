@@ -28,12 +28,12 @@ import javax.persistence.ManyToMany;
 public class Book {
 
 	@Id @GeneratedValue Long id;
-	String isbn;
+	public String isbn;
 
 	@ManyToMany(cascade = { CascadeType.MERGE })//
-	Set<Author> authors;
+	public Set<Author> authors;
 
-	String title;
+	public String title;
 
 	protected Book() {}
 

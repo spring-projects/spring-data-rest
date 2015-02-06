@@ -15,32 +15,41 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.springframework.util.StringUtils.*;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.rest.core.Path;
+import org.springframework.data.rest.core.config.JsonSchemaFormat;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.mapping.MappingResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
-import org.springframework.data.rest.webmvc.json.JsonSchema.ArrayProperty;
+import org.springframework.data.rest.webmvc.json.JsonSchema.Descriptors;
+import org.springframework.data.rest.webmvc.json.JsonSchema.EnumProperty;
+import org.springframework.data.rest.webmvc.json.JsonSchema.Item;
+import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.Property;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
-import org.springframework.data.rest.webmvc.mapping.LinkCollectingAssociationHandler;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.Link;
 import org.springframework.util.Assert;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 
 /**
  * @author Jon Brisbin
@@ -50,12 +59,14 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 	private static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
 	private static final TypeDescriptor SCHEMA_TYPE = TypeDescriptor.valueOf(JsonSchema.class);
+	private static final TypeInformation<?> STRING_TYPE_INFORMATION = ClassTypeInformation.from(String.class);
 
 	private final Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
 	private final ResourceMappings mappings;
-	private final PersistentEntities repositories;
+	private final PersistentEntities entities;
 	private final MessageSourceAccessor accessor;
-	private final EntityLinks entityLinks;
+	private final ObjectMapper objectMapper;
+	private final RepositoryRestConfiguration configuration;
 
 	/**
 	 * Creates a new {@link PersistentEntityToJsonSchemaConverter} for the given {@link PersistentEntities} and
@@ -64,19 +75,21 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @param entities must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
 	 * @param accessor
+	 * @param entityLinks
+	 * @param mapper
 	 */
 	public PersistentEntityToJsonSchemaConverter(PersistentEntities entities, ResourceMappings mappings,
-			MessageSourceAccessor accessor, EntityLinks entityLinks) {
+			MessageSourceAccessor accessor, ObjectMapper objectMapper, RepositoryRestConfiguration configuration) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
 		Assert.notNull(accessor, "MessageSourceAccessor must not be null!");
-		Assert.notNull(entityLinks, "EntityLinks must not be null!");
 
-		this.repositories = entities;
+		this.entities = entities;
 		this.mappings = mappings;
 		this.accessor = accessor;
-		this.entityLinks = entityLinks;
+		this.objectMapper = objectMapper;
+		this.configuration = configuration;
 
 		for (TypeInformation<?> domainType : entities.getManagedTypes()) {
 			convertiblePairs.add(new ConvertiblePair(domainType.getType(), JsonSchema.class));
@@ -113,52 +126,142 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	@Override
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		final PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity((Class<?>) source);
+		final PersistentEntity<?, ?> persistentEntity = entities.getPersistentEntity((Class<?>) source);
 		final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getType());
-		final JsonSchema jsonSchema = new JsonSchema(persistentEntity.getName(),
-				resolveMessage(metadata.getItemResourceDescription()));
 
-		persistentEntity.doWithProperties(new SimplePropertyHandler() {
+		Descriptors descriptors = new Descriptors();
+		List<JsonSchemaProperty> propertiesFor = getPropertiesFor(persistentEntity.getType(), metadata, descriptors);
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.data.mapping.PropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
-			 */
-			@Override
-			public void doWithPersistentProperty(PersistentProperty<?> persistentProperty) {
-
-				Class<?> propertyType = persistentProperty.getType();
-				String type = uncapitalize(propertyType.getSimpleName());
-
-				ResourceMapping propertyMapping = metadata.getMappingFor(persistentProperty);
-				ResourceDescription description = propertyMapping.getDescription();
-				String message = resolveMessage(description);
-
-				Property property = persistentProperty.isCollectionLike() ? //
-				new ArrayProperty("array", message, false)
-						: new Property(type, message, false);
-
-				jsonSchema.addProperty(persistentProperty.getName(), property);
-			}
-		});
-
-		Link link = entityLinks.linkToCollectionResource(persistentEntity.getType()).expand();
-
-		LinkCollectingAssociationHandler associationHandler = new LinkCollectingAssociationHandler(repositories, new Path(
-				link.getHref()), new AssociationLinks(mappings));
-		persistentEntity.doWithAssociations(associationHandler);
-
-		jsonSchema.add(associationHandler.getLinks());
-
-		return jsonSchema;
+		return new JsonSchema(persistentEntity.getName(), resolveMessage(metadata.getItemResourceDescription()),
+				propertiesFor, descriptors);
 	}
 
-	private String resolveMessage(ResourceDescription description) {
+	private List<JsonSchemaProperty> getPropertiesFor(Class<?> type, final ResourceMetadata metadata,
+			final Descriptors descriptors) {
+
+		final PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
+		final JacksonMetadata jackson = new JacksonMetadata(objectMapper, type);
+		final AssociationLinks associationLinks = new AssociationLinks(mappings);
+
+		if (entity == null) {
+			return Collections.<JsonSchemaProperty> emptyList();
+		}
+
+		final List<JsonSchemaProperty> properties = new ArrayList<JsonSchema.JsonSchemaProperty>();
+
+		for (BeanPropertyDefinition definition : jackson) {
+
+			PersistentProperty<?> persistentProperty = entity.getPersistentProperty(definition.getInternalName());
+			TypeInformation<?> propertyType = persistentProperty == null ? ClassTypeInformation.from(definition
+					.getPrimaryMember().getRawType()) : persistentProperty.getTypeInformation();
+			Class<?> rawPropertyType = propertyType.getType();
+
+			JsonSchemaFormat format = configuration.metadataConfiguration().getSchemaFormatFor(rawPropertyType);
+			ResourceDescription description = persistentProperty == null ? jackson.getFallbackDescription(definition)
+					: getDescriptionFor(persistentProperty, metadata);
+			Property property = getSchemaProperty(definition, propertyType, description);
+
+			if (format != null) {
+
+				// Types with explicitly registered format -> value object with format
+				properties.add(property.with(format));
+				continue;
+			}
+
+			Pattern pattern = configuration.metadataConfiguration().getPatternFor(rawPropertyType);
+
+			if (pattern != null) {
+				properties.add(property.with(pattern));
+				continue;
+			}
+
+			if (jackson.isValue()) {
+				properties.add(property.with(STRING_TYPE_INFORMATION));
+				continue;
+			}
+
+			if (persistentProperty == null) {
+				properties.add(property);
+				continue;
+			}
+
+			if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(rawPropertyType)) {
+				continue;
+			}
+
+			if (associationLinks.isLinkableAssociation(persistentProperty)) {
+				properties.add(property.with(JsonSchemaFormat.URI));
+			} else {
+
+				if (persistentProperty.isEntity()) {
+
+					if (!descriptors.hasDescriptorFor(propertyType)) {
+						descriptors.addDescriptor(propertyType,
+								new Item(propertyType, getNestedPropertiesFor(persistentProperty, descriptors)));
+					}
+
+					properties.add(property.with(propertyType, Descriptors.getReference(propertyType)));
+
+				} else {
+
+					properties.add(property.with(propertyType));
+				}
+			}
+		}
+
+		return properties;
+	}
+
+	private Collection<JsonSchemaProperty> getNestedPropertiesFor(PersistentProperty<?> property, Descriptors descriptors) {
+
+		if (!property.isEntity()) {
+			return Collections.emptyList();
+		}
+
+		Class<?> actualType = property.getActualType();
+		PersistentEntity<?, ?> propertyEntity = entities.getPersistentEntity(actualType);
+		MappingResourceMetadata propertyMetadata = new MappingResourceMetadata(propertyEntity);
+
+		return getPropertiesFor(actualType, propertyMetadata, descriptors);
+	}
+
+	private Property getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,
+			ResourceDescription description) {
+
+		String name = definition.getName();
+		String resolvedDescription = resolveMessage(description);
+		boolean required = definition.isRequired();
+		Class<?> rawType = type.getType();
+
+		if (!rawType.isEnum()) {
+			return new Property(name, resolvedDescription, required);
+		}
+
+		return new EnumProperty(name, rawType, description.getDefaultMessage().equals(resolvedDescription) ? null
+				: resolvedDescription, required);
+	}
+
+	private ResourceDescription getDescriptionFor(PersistentProperty<?> property, ResourceMetadata metadata) {
+
+		ResourceMapping propertyMapping = metadata.getMappingFor(property);
+		return propertyMapping.getDescription();
+	}
+
+	private String resolveMessage(MessageSourceResolvable resolvable) {
+
+		if (resolvable == null) {
+			return null;
+		}
 
 		try {
-			return accessor.getMessage(description);
+			return accessor.getMessage(resolvable);
 		} catch (NoSuchMessageException o_O) {
-			return description.getMessage();
+
+			if (configuration.metadataConfiguration().omitUnresolvableDescriptionKeys()) {
+				return null;
+			} else {
+				throw o_O;
+			}
 		}
 	}
 }

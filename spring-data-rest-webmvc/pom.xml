@@ -16,7 +16,7 @@
 	</parent>
 
 	<properties>
-		<jsonpath>0.8.1</jsonpath>
+		<jsonpath>0.9.1</jsonpath>
 		<cassandra.version>2.0.9</cassandra.version>
 		<cassandraunit.version>2.0.2.1</cassandraunit.version>
 	</properties>
