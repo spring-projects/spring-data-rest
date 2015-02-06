@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * Controller to expose a JSON schema via {@code / repository}/schema}.
+ * Controller to expose a JSON schema via {@code /repository/schema}.
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc.mongodb;
+package org.springframework.data.rest.core.config;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Locale;
+
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
+ * An enum to represent JSON Schema pre-defined formats.
+ *
  * @author Oliver Gierke
+ * @since 2.3
  */
-public class Address {
+public enum JsonSchemaFormat {
 
-	public String street;
-	public @JsonProperty(required = true) String zipCode;
+	EMAIL, DATE_TIME, HOSTNAME, IPV4, IPV6, URI;
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Enum#toString()
+	 */
+	@JsonValue
+	public String toString() {
+		return name().toLowerCase(Locale.US).replaceAll("_", "-");
+	}
 }

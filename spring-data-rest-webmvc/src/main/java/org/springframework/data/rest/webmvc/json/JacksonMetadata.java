@@ -19,12 +19,17 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.rest.core.annotation.Description;
+import org.springframework.data.rest.core.mapping.AnnotationBasedResourceDescription;
+import org.springframework.data.rest.core.mapping.ResourceDescription;
+import org.springframework.data.rest.core.mapping.SimpleResourceDescription;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 
 /**
@@ -36,6 +41,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 	private final List<BeanPropertyDefinition> definitions;
+	private final boolean isValue;
 
 	/**
 	 * Creates a new {@link JacksonMetadata} instance for the given {@link ObjectMapper} and type.
@@ -53,6 +59,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 		BeanDescription description = serializationConfig.introspect(javaType);
 
 		this.definitions = description.findProperties();
+		this.isValue = description.findJsonValueMethod() != null;
 	}
 
 	/**
@@ -76,6 +83,23 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	}
 
 	/**
+	 * Returns the fallback {@link ResourceDescription} to be used for the given {@link BeanPropertyDefinition}.
+	 * 
+	 * @param definition must not be {@literal null}.
+	 * @return
+	 */
+	public ResourceDescription getFallbackDescription(BeanPropertyDefinition definition) {
+
+		Assert.notNull(definition, "BeanPropertyDefinition must not be null!");
+
+		AnnotatedMember member = definition.getPrimaryMember();
+		Description description = member.getAnnotation(Description.class);
+		ResourceDescription fallback = SimpleResourceDescription.defaultFor(definition.getName());
+
+		return description == null ? null : new AnnotationBasedResourceDescription(description, fallback);
+	}
+
+	/**
 	 * Check if a given property for a type is available to be exported, i.e. serialized via Jackson.
 	 * 
 	 * @param property must not be {@literal null}.
@@ -83,6 +107,15 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 */
 	public boolean isExported(PersistentProperty<?> property) {
 		return getDefinitionFor(property) != null;
+	}
+
+	/**
+	 * Returns whether the backing type is considered a Jackson value type.
+	 * 
+	 * @return the isValue
+	 */
+	public boolean isValueType() {
+		return isValue;
 	}
 
 	/* 

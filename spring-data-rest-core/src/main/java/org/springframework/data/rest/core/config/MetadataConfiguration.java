@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,13 @@
  */
 package org.springframework.data.rest.core.config;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
+
+import org.springframework.util.Assert;
+
 /**
  * Configuration for metadata exposure.
  * 
@@ -22,6 +29,8 @@ package org.springframework.data.rest.core.config;
  */
 public class MetadataConfiguration {
 
+	private final Map<Class<?>, JsonSchemaFormat> schemaFormats = new HashMap<Class<?>, JsonSchemaFormat>();
+	private final Map<Class<?>, Pattern> patterns = new HashMap<Class<?>, Pattern>();
 	private boolean omitUnresolvableDescriptionKeys = true;
 	private boolean alpsEnabled = true;
 
@@ -62,5 +71,57 @@ public class MetadataConfiguration {
 	 */
 	public boolean alpsEnabled() {
 		return alpsEnabled;
+	}
+
+	public void registerJsonSchemaFormat(JsonSchemaFormat format, Class<?>... types) {
+
+		Assert.notNull(format, "JsonSchemaFormat must not be null!");
+
+		for (Class<?> type : types) {
+			schemaFormats.put(type, format);
+		}
+	}
+
+	/**
+	 * Returns the {@link JsonSchemaFormat} to be used for the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	public JsonSchemaFormat getSchemaFormatFor(Class<?> type) {
+		return schemaFormats.get(type);
+	}
+
+	/**
+	 * Registers the given formatting patter for the given value type.
+	 * 
+	 * @param pattern must not be {@literal null} or empty.
+	 * @param type must not be {@literal null}.
+	 */
+	public void registerFormattingPatternFor(String pattern, Class<?> type) {
+
+		Assert.hasText(pattern, "Pattern must not be null or empty!");
+		Assert.notNull(type, "Type must not be null!");
+
+		this.patterns.put(type, Pattern.compile(pattern));
+	}
+
+	/**
+	 * Returns the {@link Pattern} registered for the given value type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	public Pattern getPatternFor(Class<?> type) {
+
+		Assert.notNull(type, "Type must not be null!");
+
+		for (Entry<Class<?>, Pattern> entry : this.patterns.entrySet()) {
+			if (entry.getKey().isAssignableFrom(type)) {
+				return entry.getValue();
+			}
+		}
+
+		return this.patterns.get(type);
 	}
 }
