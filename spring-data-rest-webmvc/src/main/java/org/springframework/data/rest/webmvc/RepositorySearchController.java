@@ -134,7 +134,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
-	public ResourceSupport listSearches(RootResourceInformation resourceInformation) {
+	public RepositorySearchesResource listSearches(RootResourceInformation resourceInformation) {
 
 		verifySearchesExposed(resourceInformation);
 
@@ -144,7 +144,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			throw new ResourceNotFoundException();
 		}
 
-		ResourceSupport result = new ResourceSupport();
+		RepositorySearchesResource result = new RepositorySearchesResource();
 		result.add(queryMethodLinks);
 
 		return result;
