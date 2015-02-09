@@ -20,6 +20,7 @@
 	<modules>
 		<module>spring-data-rest-core</module>
 		<module>spring-data-rest-webmvc</module>
+		<module>spring-data-rest-client</module>
 		<module>spring-data-rest-distribution</module>
 	</modules>
 
