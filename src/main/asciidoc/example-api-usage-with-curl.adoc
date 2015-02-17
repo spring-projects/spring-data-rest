@@ -1,0 +1,10 @@
+[[example-api-usage-with-curl]]
+[appendix]
+= Using curl to talk to Spring Data REST
+
+This appendix contains a list of guides that demonstrate interacting with a Spring Data REST service via curl:
+
+* https://spring.io/guides/gs/accessing-data-rest/[Accessing JPA Data with REST]
+* https://spring.io/guides/gs/accessing-neo4j-data-rest/[Accessing Neo4j Data with REST]
+* https://spring.io/guides/gs/accessing-mongodb-data-rest/[Accessing MongoDB Data with REST]
+* https://spring.io/guides/gs/accessing-gemfire-data-rest/[Accessing GemFire Data with REST]

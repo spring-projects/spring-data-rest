@@ -8,16 +8,46 @@ Spring Data REST is itself a Spring MVC application and is designed in such a wa
 
 To install Spring Data REST alongside your application, simply add the required dependencies, include the stock `@Configuration` class `RepositoryRestMvcConfiguration` (or subclass it and perform any required manual configuration), and map some URLs to be managed by Spring Data REST.
 
+[[getting-started.boot]]
+== Adding Spring Data REST to a Spring Boot project
+
+The simplest way to get to started is if you are building a Spring Boot application. That's because Spring Data REST has both a starter as well as auto-configuration.
+
+.Spring Boot configuration with Gradle
+[source,groovy]
+----
+dependencies {
+  ...
+  compile("org.springframework.boot:spring-boot-starter-data-rest")
+  ...
+}
+----
+
+.Spring Boot configuration with Maven
+[source,xml]
+----
+<dependencies>
+  ...
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-rest</artifactId>
+  </dependency>
+  ...
+</dependencies>
+----
+
+NOTE: You don't have to supply the version number if you are using the http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#build-tool-plugins-gradle-plugin[Spring Boot Gradle plugin] or the http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#build-tool-plugins-maven-plugin[Spring Boot Maven plugin].
+
 [[getting-started.gradle]]
 == Adding Spring Data REST to a Gradle project
 
 To add Spring Data REST to a Gradle-based project, add the `spring-data-rest-webmvc` artifact to your compile-time dependencies: 
 
-[source,groovy]
+[source,groovy,subs="verbatim,attributes"]
 ----
 dependencies {
   … other project dependencies
-  compile "org.springframework.data:spring-data-rest-webmvc:${spring-data-rest-version}"
+  compile("org.springframework.data:spring-data-rest-webmvc:{version}")
 }
 ----
 
@@ -26,12 +56,12 @@ dependencies {
 
 To add Spring Data REST to a Maven-based project, add the `spring-data-rest-webmvc` artifact to your compile-time dependencies: 
 
-[source,xml]
+[source,xml,subs="verbatim,attributes"]
 ----
 <dependency>
   <groupId>org.springframework.data</groupId>
   <artifactId>spring-data-rest-webmvc</artifactId>
-  <version>${spring-data-rest-version}</version>
+  <version>{version}</version>
 </dependency>
 ----
 
@@ -39,6 +69,8 @@ To add Spring Data REST to a Maven-based project, add the `spring-data-rest-webm
 == Configuring Spring Data REST
 
 To install Spring Data REST alongside your existing Spring MVC application, you need to include the appropriate MVC configuration. Spring Data REST configuration is defined in a class called `RepositoryRestMvcConfiguration`. You can either import this class into your existing configuration using an `@Import` annotation or you can subclass it and override any of the `configureXXX` methods to add your own configuration to that of Spring Data REST.
+
+IMPORTANT: This step is unnecessary if you are using Spring Boot's auto-configuration. Spring Boot will automatically enable Spring Data REST when you include *spring-boot-starter-data-rest* and either in your list of dependencies, and you your app is flagged with either `@SpringBootApplication` or `@EnableAutoConfiguration`.
 
 In the following example, we'll subclass the standard `RepositoryRestMvcConfiguration` and add some `ResourceMapping` configurations for the `Person` domain object to alter how the JSON will look and how the links to related entities will be handled. 
 
@@ -57,32 +89,17 @@ Make sure you also configure Spring Data repositories for the store you use. For
 [[getting-started.bootstrap]]
 == Starting the application
 
-As Spring Data REST is built on SpringMVC, you simply stick to the means you use to bootstrap Spring MVC. In a Servlet 3.0 environment this might look something like this:
+At this point, you must also configure your key data store.
 
-[source,java]
-----
-public class RestExporterWebInitializer implements WebApplicationInitializer {
+Spring Data REST officially supports:
 
-  @Override public void onStartup(ServletContext servletContext) throws ServletException {
+* https://spring.io/guides/gs/accessing-data-rest/[Spring Data JPA]
+* https://spring.io/guides/gs/accessing-mongodb-data-rest/[Spring Data MongoDB]
+* https://spring.io/guides/gs/accessing-neo4j-data-rest/[Spring Data Neo4j]
+* https://spring.io/guides/gs/accessing-gemfire-data-rest/[Spring Data GemFire]
 
-    // Bootstrap repositories in root application context
-    AnnotationConfigWebApplicationContext rootCtx = new AnnotationConfigWebApplicationContext();
-    rootCtx.register(JpaRepositoryConfig.class); // Include JPA entities, Repositories
-    servletContext.addListener(new ContextLoaderListener(rootCtx));
+These linked guides introduce how to add dependencies for the related data store, configure domain objects, and define repositories.
 
-    // Enable Spring Data REST in the DispatcherServlet
-    AnnotationConfigWebApplicationContext webCtx = new AnnotationConfigWebApplicationContext();
-    webCtx.register(MyWebConfiguration.class);
+You can run your application as either a Spring Boot app (with links showns above) or configure it as a classic Spring MVC app.
 
-    DispatcherServlet dispatcherServlet = new DispatcherServlet(webCtx);
-    ServletRegistration.Dynamic reg = servletContext.addServlet("rest-exporter", dispatcherServlet);
-    reg.setLoadOnStartup(1);
-    reg.addMapping("/*");
-  }
-}
-----
-
-The equivalent of the above in a standard web.xml will also work identically to this configuration if you are still in a servlet 2.5 environment. When you deploy this application to your servlet container, you should be able to see what repositories are exported by accessing the root of the application.
-
-
-
+From this point, you can are free to <<customizing-sdr,customize Spring Data REST>> with various options.
