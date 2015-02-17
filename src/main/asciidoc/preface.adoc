@@ -1,0 +1,13 @@
+[[preface]]
+= Preface
+
+[[Project]]
+[preface]
+== Project metadata
+
+* Version control - https://github.com/spring-projects/spring-data-rest
+* Bugtracker - https://jira.spring.io/browse/DATAREST
+* Project page - http://projects.spring.io/spring-data-rest
+* Release repository - https://repo.spring.io/libs-release
+* Milestone repository - https://repo.spring.io/libs-milestone
+* Snapshot repository - https://repo.spring.io/libs-snapshot

@@ -1,0 +1,9 @@
+[[customizing-sdr]]
+= Customizing Spring Data REST
+
+There are many options to tailor Spring Data REST. These subsections will show how.
+
+include::configuring-the-rest-url-path.adoc[leveloffset=+1]
+include::adding-sdr-to-spring-mvc-app.adoc[leveloffset=+1]
+include::customizing-json-output.adoc[leveloffset=+1]
+include::custom-jackson-deserialization.adoc[leveloffset=+1]

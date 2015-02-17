@@ -1,4 +1,4 @@
-[[events-chapter]]
+[[events]]
 = Events
 
 There are eight different events that the REST exporter emits throughout the process of working with an entity. Those are:
@@ -12,6 +12,7 @@ There are eight different events that the REST exporter emits throughout the pro
 * `BeforeDeleteEvent`
 * `AfterDeleteEvent`
 
+[[events.application-listener]]
 == Writing an ApplicationListener
 
 There is an abstract class you can subclass which listens for these kinds of events and calls the appropriate method based on the event type. You just override the methods for the events you're interested in.
@@ -20,11 +21,13 @@ There is an abstract class you can subclass which listens for these kinds of eve
 ----
 public class BeforeSaveEventListener extends AbstractRepositoryEventListener {
 
-  @Override public void onBeforeSave(Object entity) {
+  @Override
+  public void onBeforeSave(Object entity) {
     ... logic to handle inspecting the entity before the Repository saves it
   }
 
-  @Override public void onAfterDelete(Object entity) {
+  @Override
+  public void onAfterDelete(Object entity) {
     ... send a message that this entity has been deleted
   }
 }
