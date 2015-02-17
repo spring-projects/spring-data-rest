@@ -3,13 +3,11 @@
 
 This section details the various forms of metadata provided by a Spring Data REST-based application.
 
+[[metadata.alps]]
 == Application-Level Profile Semantics (ALPS)
 
 [quote, M. Admundsen / L. Richardson / M. Foster, http://tools.ietf.org/html/draft-amundsen-richardson-foster-alps-00]
-http://alps.io/[ALPS] is a data format for defining simple descriptions of application-level semantics, similar in complexity to
-HTML microformats.  An ALPS document can be used as a profile to explain the application semantics of a document with an application-
-agnostic media type (such as HTML, HAL, Collection+JSON, Siren, etc.). This increases the reusability of profile documents across
-media types.
+http://alps.io/[ALPS] is a data format for defining simple descriptions of application-level semantics, similar in complexity to HTML microformats.  An ALPS document can be used as a profile to explain the application semantics of a document with an application-agnostic media type (such as HTML, HAL, Collection+JSON, Siren, etc.). This increases the reusability of profile documents across media types.
 
 Spring Data REST provides an ALPS document for every exported repository. It contains information about both the RESTful transitions
 as well as the attributes of each repository.
@@ -123,7 +121,8 @@ of the attributes.
 <4> The *type* is `UNSAFE` because this operation can alter the state of the system.
 <5>
 
-== Hypermedia control types
+[[metadata.alps.control-types]]
+=== Hypermedia control types
 
 ALPS displays types for each hypermedia control. They include:
 
@@ -142,7 +141,8 @@ In the representation section up above, bits of data from the application are ma
 is a link that involves a safe *GET* to retrive. Hence, it is marked *SAFE*. Hypermedia operations themselves map onto the types as
 shown the table.
 
-== ALPS with Projections
+[[metadata.alps.projections]]
+=== ALPS with Projections
 
 If you define any projections, they are also listed in the ALPS metadata. Assuming we also defined *inlineAddress* and *noAddresses*, they
 would appear inside the relevant operations, i.e. *GET* for the whole collection as well *GET* for a single resource. The following shows
@@ -200,11 +200,12 @@ Relationships rendered inside a projection result in inlining the data fields.
 With all this information, a client should be able to deduce not only the RESTful transitions avaiable, but also, to some degree, the
 data elements needed to interact.
 
-== Adding custom details to your ALPS descriptions
+[[metadata.alps.descriptions]]
+=== Adding custom details to your ALPS descriptions
 
 It's possible to create custom messages that appear in your ALPS metadata. Just create `rest-messages.properties` like this:
 
-[soruce,proeperties]
+[source,properties]
 ----
 rest.description.person=A collection of people
 rest.description.person.id=primary key used internally to store a person (not for RESTful usage)

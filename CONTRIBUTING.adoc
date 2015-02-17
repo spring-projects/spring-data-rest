@@ -1,0 +1,1 @@
+You find the contribution guidelines for Spring Data projects https://github.com/spring-projects/spring-data-build/blob/master/CONTRIBUTING.md[here].

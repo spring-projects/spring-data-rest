@@ -1,10 +1,10 @@
-[[representations-chapter]]
+[[representations]]
 = Domain Object Representations
 
-[[mapping]]
+[[representations.mapping]]
 == Object Mapping
 
-Spring Data REST returns a representation of a domain object that corresponds to the requested `Accept` type specified in the HTTP request. 
+Spring Data REST returns a representation of a domain object that corresponds to the requested `Accept` type specified in the HTTP request.
 
 Currently, only JSON representations are supported. Other representation types can be supported in the future by adding an appropriate converter and updating the controller methods with the appropriate content-type.
 
@@ -29,14 +29,14 @@ public class MyEntity {
 
 In a default configuration, Jackson has no idea what class to instantiate when POSTing new data to the exporter. This is something you'll need to tell Jackson either through an annotation, or, more cleanly, by registering a type mapping using a `Module`.
 
-To add your own Jackson configuration to the `ObjectMapper` used by Spring Data REST, override the `configureJacksonObjectMapper` method. That method will be passed an `ObjectMapper` instance that has a special module to handle serializing and deserializing `PersistentEntity`s. You can register your own modules as well, like in the following example. 
+To add your own Jackson configuration to the `ObjectMapper` used by Spring Data REST, override the `configureJacksonObjectMapper` method. That method will be passed an `ObjectMapper` instance that has a special module to handle serializing and deserializing `PersistentEntity`s. You can register your own modules as well, like in the following example.
 
 [source,java]
 ----
-@Override 
+@Override
 protected void configureJacksonObjectMapper(ObjectMapper objectMapper) {
     objectMapper.registerModule(new SimpleModule("MyCustomModule") {
-        @Override 
+        @Override
         public void setupModule(SetupContext context) {
             context.addAbstractTypeResolver(
                 new SimpleAbstractTypeResolver().addMapping(MyInterface.class,
@@ -55,7 +55,7 @@ If you want to (de)serialize a domain type in a special way, you can register yo
 
 [source,java]
 ----
-@Override 
+@Override
 public void setupModule(SetupContext context) {
   SimpleSerializers serializers = new SimpleSerializers();
   SimpleDeserializers deserializers = new SimpleDeserializers();
@@ -67,3 +67,4 @@ public void setupModule(SetupContext context) {
   context.addDeserializers(deserializers);
 }
 ----
+

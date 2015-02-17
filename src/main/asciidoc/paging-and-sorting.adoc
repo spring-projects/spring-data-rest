@@ -1,0 +1,130 @@
+[[paging-and-sorting]]
+= Paging and Sorting
+
+_This documents Spring Data REST's usage of the Spring Data Repository paging and sorting abstractions. To familiarize yourself with those features, please see the Spring Data documentation for the Repository implementation you're using._
+
+== Paging
+
+Rather than return everything from a large result set, Spring Data REST recognizes some URL parameters that will influence the page size and starting page number.
+
+If you extend `PagingAndSortingRepository<T, ID>` and access the list of all entities, you'll get links to the first 20 entities. To set the page size to any other number, add a `size` parameter:
+
+----
+http://localhost:8080/people/?size=5
+----
+
+This will set the page size to 5.
+
+To use paging in your own query methods, you need to change the method signature to accept an additional `Pageable` parameter and return a `Page` rather than a `List`. For example, the following query method will be exported to `/people/search/nameStartsWith` and will support paging:
+
+[source,java]
+----
+@RestResource(path = "nameStartsWith", rel = "nameStartsWith")
+public Page findByNameStartsWith(@Param("name") String name, Pageable p);
+----
+
+The Spring Data REST exporter will recognize the returned `Page` and give you the results in the body of the response, just as it would with a non-paged response, but additional links will be added to the resource to represent the previous and next pages of data.
+
+[[paging-and-sorting.prev-and-next-links]]
+=== Previous and Next Links
+
+Each paged response will return links to the previous and next pages of results based on the current page using the IANA defined link relations http://www.w3.org/TR/html5/links.html#link-type-prev[`prev`] and http://www.w3.org/TR/html5/links.html#link-type-next[`next`]. If you are currently at the first page of results, however, no `prev` link will be rendered. The same is true for the last page of results: no `next` link will be rendered.
+
+Look at the following example, where we set the page size to 5:
+
+----
+curl localhost:8080/people?size=5
+----
+
+[source,javascript]
+----
+{
+  "_links" : {
+    "self" : {
+      "href" : "http://localhost:8080/persons{&sort,page,size}", <1>
+      "templated" : true
+    },
+    "next" : {
+      "href" : "http://localhost:8080/persons?page=1&size=5{&sort}", <2>
+      "templated" : true
+    }
+  },
+  "_embedded" : {
+  	... data ...
+  },
+  "page" : { <3>
+    "size" : 5,
+    "totalElements" : 50,
+    "totalPages" : 10,
+    "number" : 0
+  }
+}
+----
+
+At the top, we see `_links`:
+
+<1> This `self` link serves up the whole collection with some options
+<2> This `next` link points to the next page, assuming the same page size.
+<3> At the bottom is extra data about the page settings, including the size of a page, total elements, total pages, and the page number you are currently viewing.
+
+NOTE: When using tools like *curl* on the command line, if you have a "&" in your statement, wrap the whole URI with quotes.
+
+It's also important to notice that the `self` and `next` URIs are, in fact, URI templates. They accept not only `size`, but also `page`, `sort` as optional flags.
+
+As mentioned, at the bottom of the HAL document, is a collection of details about the page. This extra information makes it very easy for you to configure UI tools like sliders or indicators to reflect overall position the user is in viewing the data. For example, the document above shows we are looking at the first page (with page numbers indexed to 0 being the first).
+
+What happens if we follow the `next` link?
+
+----
+$ curl "http://localhost:8080/persons?page=1&size=5"
+----
+
+[source,javascript]
+----
+{
+  "_links" : {
+    "self" : {
+      "href" : "http://localhost:8080/persons{&sort,projection,page,size}",
+      "templated" : true
+    },
+    "next" : {
+      "href" : "http://localhost:8080/persons?page=2&size=5{&sort,projection}", <1>
+      "templated" : true
+    },
+    "prev" : {
+      "href" : "http://localhost:8080/persons?page=0&size=5{&sort,projection}", <2>
+      "templated" : true
+    }
+  },
+  "_embedded" : {
+	... data ...
+  },
+  "page" : {
+    "size" : 5,
+    "totalElements" : 50,
+    "totalPages" : 10,
+    "number" : 1 <3>
+  }
+}
+----
+
+This looks very similar, except for the following differences:
+
+<1> The `next` link now points to yet another page, indicating it's relative perspective to the `self` link.
+<2> A `prev` link now appears, giving us a path to the previous page.
+<3> The current number is now 1 (indicating the second page).
+
+This feature makes it quite easy to map optional buttons on the screen to these hypermedia controls, hence allowing easy navigational features for the UI experience without having to hard code the URIs. In fact, the user can be empowered to pick from a list of page sizes, dynamically changing the content served, without having to rewrite the `next` and `prev controls at the top or bottom.
+
+[[paging-and-sorting.sorting]]
+== Sorting
+
+Spring Data REST recognizes sorting parameters that will use the Repository sorting support.
+
+To have your results sorted on a particular property, add a `sort` URL parameter with the name of the property you want to sort the results on. You can control the direction of the sort by appending a `,` to the the property name plus either `asc` or `desc`. The following would use the `findByNameStartsWith` query method defined on the `PersonRepository` for all `Person` entities with names starting with the letter "K" and add sort data that orders the results on the `name` property in descending order:
+
+----
+curl -v "http://localhost:8080/people/search/nameStartsWith?name=K&sort=name,desc"
+----
+
+To sort the results by more than one property, keep adding as many `sort=PROPERTY` parameters as you need. They will be added to the `Pageable` in the order they appear in the query string.

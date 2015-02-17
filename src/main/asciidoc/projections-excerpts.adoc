@@ -1,9 +1,7 @@
 [[projections-excerpts]]
 = Projections and Excerpts
 
-Spring Data REST presents a default view of the domain model you are exporting. But sometimes, you may need to
-alter the view of that model for various reasons. In this section, you will learn how to define *projections* and
-*excerpts* to serve up simplified and reduced views of resources.
+Spring Data REST presents a default view of the domain model you are exporting. But sometimes, you may need to alter the view of that model for various reasons. In this section, you will learn how to define projections and excerpts to serve up simplified and reduced views of resources.
 
 == Projections
 
@@ -14,45 +12,37 @@ Look at the following domain model:
 @Entity
 public class Person {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  private long id;
-
-  private String firstName;
-
-  private String lastName;
+  @Id @GeneratedValue
+  private Long id;
+  private String firstName, lastName;
 
   @OneToOne
   private Address address;
-  ...
+  …
 }
 ----
 
 This `Person` has several attributes:
 
-* *id* is the primary key
-* *firstName* and *lastName* are data attributes
-* *address* is a link to another domain object
+* `id` is the primary key
+* `firstName` and `lastName` are data attributes
+* `address` is a link to another domain object
 
 Now assume we create a corresponding repository as follows:
 
 [source,java]
 ----
-public interface PersonRepository extends CrudRepository<Person, Long> {}
+interface PersonRepository extends CrudRepository<Person, Long> {}
 ----
 
-By default, Spring Data REST will export this domain object including all of its attributes. *firstName* and *lastName* will be exported
-as the plain data objects that they are. There are two options regarding the *address* attribute.
-
-One option is to also define a repository for `Address` objects like this:
+By default, Spring Data REST will export this domain object including all of its attributes. `firstName` and `lastName` will be exported as the plain data objects that they are. There are two options regarding the `address` attribute. One option is to also define a repository for `Address` objects like this:
 
 [source,java]
 ----
-public interface AddressRepository extends CrudRepository<Address, Long> {}
+interface AddressRepository extends CrudRepository<Address, Long> {}
 ----
 
-In this situation, a `Person` resource will render the *address* attribute as a URI to it's corresponding `Address` resource. If we were
-to look up "Frodo" in the system, we could expect to see a HAL document like this:
+In this situation, a `Person` resource will render the `address` attribute as a URI to it's corresponding `Address` resource. If we were to look up "Frodo" in the system, we could expect to see a HAL document like this:
 
 [source,javascript]
 ----
@@ -70,8 +60,7 @@ to look up "Frodo" in the system, we could expect to see a HAL document like thi
 }
 ----
 
-There is another route. If the `Address` domain object does not have it's own repository definition, Spring Data REST will inline the data
-fields right inside the `Person` resource.
+There is another route. If the `Address` domain object does not have it's own repository definition, Spring Data REST will inline the data fields right inside the `Person` resource.
 
 [source,javascript]
 ----
@@ -91,34 +80,29 @@ fields right inside the `Person` resource.
 }
 ----
 
-But what if you don't want *address* details at all? Again, by default, Spring Data REST will export all its attributes (except the *id*).
-You can offer the consumer of your REST service an alternative by defining one or more *projections*.
+But what if you don't want `address` details at all? Again, by default, Spring Data REST will export all its attributes (except the `id`). You can offer the consumer of your REST service an alternative by defining one or more projections.
 
 [source,java]
 ----
 @Projection(name = "noAddresses", types = { Person.class }) <1>
-public interface NoAddresses { <2>
+interface NoAddresses { <2>
 
-  public String getFirstName(); <3>
+  String getFirstName(); <3>
 
-  public String getLastName(); <4>
-
+  String getLastName(); <4>
 }
 ----
 
 This projection has the following details:
 
-<1> The `@Projection` annotation flags this as a projection. The *name* atrributes provides
-the name of the projection, which you'll see how to use shortly. The *types* attributes targets this projection to only apply to
-`Person` objects.
+<1> The `@Projection` annotation flags this as a projection. The `name` atrributes provides
+the name of the projection, which you'll see how to use shortly. The `types` attributes targets this projection to only apply to `Person` objects.
+
 <2> It's a Java interface making it declarative.
-<3> It exports the *firstName*.
-<4> It exports the *lastName*.
+<3> It exports the `firstName`.
+<4> It exports the `lastName`.
 
-The `NoAddresses` projection only has getters for *firstName* and *lastName* meaning that it won't serve up any address information.
-
-Assuming you have a separate repository for `Address` resources, the default view from Spring Data REST is slightly different as
-shown below:
+The `NoAddresses` projection only has getters for `firstName` and `lastName` meaning that it won't serve up any address information. Assuming you have a separate repository for `Address` resources, the default view from Spring Data REST is slightly different as shown below:
 
 [source,javascript]
 ----
@@ -137,64 +121,57 @@ shown below:
 }
 ----
 
-<1> There is a new option listed for this resource, *{?projection}*.
-<2> The *self* URI is a URI Template.
+<1> There is a new option listed for this resource, `{?projection}`.
+<2> The `self` URI is a URI Template.
 
 To view apply the projection to the resource, look up `http://localhost:8080/persons/1/projection=noAddresses`.
 
-NOTE: The value supplied to the `projection` query parameter is the same as specified in `@Projection(name = "noAddress")`. It has
-nothing to do with the name of the projection's interface.
+NOTE: The value supplied to the `projection` query parameter is the same as specified in `@Projection(name = "noAddress")`. It has nothing to do with the name of the projection's interface.
 
 It's possible to have multiple projections.
 
 === Finding existing projections
 
-Spring Data REST provides https://spring.io/blog/2014/07/14/spring-data-rest-now-comes-with-alps-metadata[ALPS], a micro metadata format.
-To view the ALPS metadata, visit `http://localhost:8080/alps`. If you navigate down to the ALPS document for `Person` resources (which
-would be `/alps/persons`), you can find many details about `Person` resources.
-
-Projections will be listed along with the details about the *GET* REST transitions, something like this:
+Spring Data REST provides hypermedia metadata by exposing <<metadata.alps>> documents, a micro metadata format. To view the ALPS metadata, follow the `profile` link exposed by the root resource. If you navigate down to the ALPS document for `Person` resources (which would be `/alps/persons`), you can find many details about `Person` resources. Projections will be listed along with the details about the `GET` REST transitions, something like this:
 
 [source,javascript]
 ----
-...
-"id" : "get-person", <1>
- "name" : "person",
- "type" : "SAFE",
- "rt" : "#person-representation",
- "descriptors" : [ {
-   "name" : "projection", <2>
-   "doc" : {
-     "value" : "The projection that shall be applied when rendering the response. Acceptable values available in nested descriptors.",
-     "format" : "TEXT"
-   },
-   "type" : "SEMANTIC",
-   "descriptors" : [ {
-     "name" : "noAddresses", <3>
-     "type" : "SEMANTIC",
-     "descriptors" : [ {
-       "name" : "firstName", <4>
-       "type" : "SEMANTIC"
-     }, {
+{ …
+  "id" : "get-person", <1>
+  "name" : "person",
+  "type" : "SAFE",
+  "rt" : "#person-representation",
+  "descriptors" : [ {
+    "name" : "projection", <2>
+    "doc" : {
+      "value" : "The projection that shall be applied when rendering the response. Acceptable values available in nested descriptors.",
+      "format" : "TEXT"
+    },
+    "type" : "SEMANTIC",
+    "descriptors" : [ {
+      "name" : "noAddresses", <3>
+      "type" : "SEMANTIC",
+      "descriptors" : [ {
+        "name" : "firstName", <4>
+        "type" : "SEMANTIC"
+      }, {
         "name" : "lastName", <4>
         "type" : "SEMANTIC"
+      } ]
     } ]
-   } ]
- } ]
+  } ]
 },
-...
+…
 ----
 
-<1> This part of the ALPS document shows details about *GET* and `Person` resources.
-<2> Further down are the *projection* options.
-<3> Further down you can see projection *noAddresses* listed.
-<4> The actual attributes served up by this projection include *firstName* and *lastName*.
+<1> This part of the ALPS document shows details about `GET` and `Person` resources.
+<2> Further down are the `projection` options.
+<3> Further down you can see projection `noAddresses` listed.
+<4> The actual attributes served up by this projection include `firstName` and `lastName`.
 
 === Bringing in hidden data
 
-So far, you have seen how projections can be used to reduce the information that is presented to the user. Projections can also bring
-in normally unseen data. For example, Spring Data REST will ignore fields or getters that are marked up with `@JsonIgnore` annotations.
-Look at the following domain object:
+So far, you have seen how projections can be used to reduce the information that is presented to the user. Projections can also bring in normally unseen data. For example, Spring Data REST will ignore fields or getters that are marked up with `@JsonIgnore` annotations. Look at the following domain object:
 
 [source,java]
 ----
@@ -203,21 +180,17 @@ public class User {
 
 	@Id @GeneratedValue
 	private Long id;
-
 	private String name;
 
 	@JsonIgnore <1>
 	private String password;
-
 	private String[] roles;
-  ...
+  …
 ----
 
-<1> Jackson's `@JsonIgnore` is used to prevent the *password* field from getting serialized into JSON.
+<1> Jackson's `@JsonIgnore` is used to prevent the `password` field from getting serialized into JSON.
 
-This `User` class can be used to store user information as well as integration with Spring Security. If you create a `UserRepository`,
-the *password* field would normally have been exported. Not good! In this example, we prevent that from happening by applying Jackson's
-`@JsonIgnore` on the *password* field.
+This `User` class can be used to store user information as well as integration with Spring Security. If you create a `UserRepository`, the `password` field would normally have been exported. Not good! In this example, we prevent that from happening by applying Jackson's `@JsonIgnore` on the `password` field.
 
 NOTE: Jackson will also not serialize the field into JSON if `@JsonIgnore` is on the field's corresponding getter function.
 
@@ -226,17 +199,15 @@ However, projections introduce the ability to still serve this field. It's possi
 [source,java]
 ----
 @Projection(name = "passwords", types = { User.class }) <2>
-public interface PasswordProjection {
+interface PasswordProjection {
 
-  public String getPassword();
-
+  String getPassword();
 }
 ----
 
 If such a projection is created and used, it will side step the `@JsonIgnore` directive placed on `User.password`.
 
-IMPORTANT: This example may seem a bit contrived, but it's possible with a richer domain model and many projections, to accidentally
-leak such details. Since Spring Data REST cannot discern the sensitivity of such data, it is up to the developers to avoid such situations.
+IMPORTANT: This example may seem a bit contrived, but it's possible with a richer domain model and many projections, to accidentally leak such details. Since Spring Data REST cannot discern the sensitivity of such data, it is up to the developers to avoid such situations.
 
 == Excerpts
 
@@ -245,7 +216,7 @@ An excerpt is a projection that is applied to a repository automatically. For an
 [source,java]
 ----
 @RepositoryRestResource(excerptProjection = NoAddresses.class)
-public interface PersonRepository extends CrudRepository<Person, Long> {}
+interface PersonRepository extends CrudRepository<Person, Long> {}
 ----
 
 This directs Spring Data REST to use the `NoAddresses` projection when embedding `Person` resources into collections or related resources.
@@ -256,37 +227,30 @@ In addition to altering the default rendering, excerpts have additional rednerin
 
 == Excerpting commonly accessed data
 
-A common situation with REST services arises when you compose domain objects. For example, a `Person` is stored in one table and their
-related `Address` is stored in another. By default, Spring Data REST will serve up the person's *address* as a URI the client must
-navigate. But if it's common for consumers to always fetch this extra piece of data, an excerpt projection can go ahead and inline
-this extra piece of data, saving you an extra *GET*.
-
-To do so, let's define another excerpt projection:
+A common situation with REST services arises when you compose domain objects. For example, a `Person` is stored in one table and their related `Address` is stored in another. By default, Spring Data REST will serve up the person's `address` as a URI the client must navigate. But if it's common for consumers to always fetch this extra piece of data, an excerpt projection can go ahead and inline this extra piece of data, saving you an extra `GET`. To do so, let's define another excerpt projection:
 
 [source,java]
 ----
 @Projection(name = "inlineAddress", types = { Person.class }) <1>
-public interface InlineAddress {
+interface InlineAddress {
 
-  public String getFirstName();
+  String getFirstName();
 
-  public String getLastName();
+  String getLastName();
 
-  public Address getAddress(); <2>
-
+  Address getAddress(); <2>
 }
 ----
 
-<1> This projection has been named *inlineAddress*.
-<2> This projection adds in `getAddress` which returns the `Address` field. When used inside a projection, it causes the information
-to be inlined.
+<1> This projection has been named `inlineAddress`.
+<2> This projection adds in `getAddress` which returns the `Address` field. When used inside a projection, it causes the information to be inlined.
 
 We can plug it into the `PersonRepository` definition as follows:
 
 [source,java]
 ----
 @RepositoryRestResource(excerptProjection = InlineAddress.class)
-public interface PersonRepository extends CrudRepository<Person, Long> {}
+interface PersonRepository extends CrudRepository<Person, Long> {}
 ----
 
 This will cause the HAL document to appear as follows:
@@ -314,8 +278,7 @@ This will cause the HAL document to appear as follows:
 
 This should appear as a mix of what you've seen so far.
 
-<1> The *address* data is inlined directly, so you don't have to navigate to get it.
+<1> The `address` data is inlined directly, so you don't have to navigate to get it.
 <2> The link to the `Address` resource is still provided, making it still possible to navigate to its own resource.
 
-WARNING: Configuring `@RepositoryRestResource(excerptProjection=...)` for a repository alters the default behavior. This can potentially
-case breaking change to consumers of your service if you have already made a release. Use with caution.
+WARNING: Configuring `@RepositoryRestResource(excerptProjection=...)` for a repository alters the default behavior. This can potentially case breaking change to consumers of your service if you have already made a release. Use with caution.
