@@ -1,0 +1,279 @@
+[[metadata]]
+= Metadata
+
+This section details the various forms of metadata provided by a Spring Data REST-based application.
+
+== Application-Level Profile Semantics (ALPS)
+
+[quote, M. Admundsen / L. Richardson / M. Foster, http://tools.ietf.org/html/draft-amundsen-richardson-foster-alps-00]
+http://alps.io/[ALPS] is a data format for defining simple descriptions of application-level semantics, similar in complexity to
+HTML microformats.  An ALPS document can be used as a profile to explain the application semantics of a document with an application-
+agnostic media type (such as HTML, HAL, Collection+JSON, Siren, etc.). This increases the reusability of profile documents across
+media types.
+
+Spring Data REST provides an ALPS document for every exported repository. It contains information about both the RESTful transitions
+as well as the attributes of each repository.
+
+At the root of a Spring Data REST app is a *profile* link. Assuming you had an app with both *persons* and related *address*, the root
+document would look like this:
+
+[source,javascript]
+----
+{
+  "_links" : {
+    "persons" : {
+      "href" : "http://localhost:8080/persons"
+    },
+    "addresses" : {
+      "href" : "http://localhost:8080/addresses"
+    },
+    "profile" : {
+      "href" : "http://localhost:8080/alps"
+    }
+  }
+}
+----
+
+A *profile* link, as defined in https://tools.ietf.org/html/rfc6906[RFC 6906], is a place to include application level details. The
+http://tools.ietf.org/html/draft-amundsen-richardson-foster-alps-00[ALPS draft spec] is meant to define a particular profile format
+which we'll explore further down in this section.
+
+If you navigate into the *profile* link at `localhost:8080/alps`, you would see something like this:
+
+[source,javascript]
+----
+{
+  "version" : "1.0",
+  "descriptors" : [ {
+    "href" : "http://localhost:8080/alps/persons",
+    "name" : "persons"
+  }, {
+    "href" : "http://localhost:8080/alps/addresses",
+    "name" : "addresses"
+  } ]
+}
+----
+
+IMPORTANT: At the root level, *profile* is a single link and hence can't handle serving up more than one application profile. That
+is why you must navigate to `/alps` to find a link for each resource's ALPS metadata.
+
+NOTE: This JSON document has a media type of `application/alps+json`. This is different than the previous JSON document, which had
+a media type of `application/hal+json`. These formats are different and governed by different specs.
+
+Let's navigate to `/alps/persons` and look at the profile data for a `Person` resource.
+
+[source,javascript]
+----
+{
+  "version" : "1.0",
+  "descriptors" : [ {
+    "id" : "person-representation", <1>
+    "descriptors" : [ {
+      "name" : "firstName",
+      "type" : "SEMANTIC"
+    }, {
+      "name" : "lastName",
+      "type" : "SEMANTIC"
+    }, {
+      "name" : "id",
+      "type" : "SEMANTIC"
+    }, {
+      "name" : "address",
+      "type" : "SAFE",
+      "rt" : "http://localhost:8080/addresses#address"
+    } ]
+  }, {
+    "id" : "create-persons", <2>
+    "name" : "persons", <3>
+    "type" : "UNSAFE", <4>
+    "rt" : "#person-representation" <5>
+  }, {
+    "id" : "get-persons",
+    "name" : "persons",
+    "type" : "SAFE",
+    "rt" : "#person-representation"
+  }, {
+    "id" : "delete-person",
+    "name" : "person",
+    "type" : "IDEMPOTENT",
+    "rt" : "#person-representation"
+  }, {
+    "id" : "patch-person",
+    "name" : "person",
+    "type" : "UNSAFE",
+    "rt" : "#person-representation"
+  }, {
+    "id" : "update-person",
+    "name" : "person",
+    "type" : "IDEMPOTENT",
+    "rt" : "#person-representation"
+  }, {
+    "id" : "get-person",
+    "name" : "person",
+    "type" : "SAFE",
+    "rt" : "#person-representation"
+  } ]
+}
+----
+
+<1> At the top is a detailed listing of the attributes of a `Person` resource, identified as `#person-representation`. It lists the names
+of the attributes.
+<2> After the resource representation are all the supported operations. This one is how to create a new `Person`.
+<3> The name is *persons*, which indicates that a POST should be applied to the whole collection, not a single *person*.
+<4> The *type* is `UNSAFE` because this operation can alter the state of the system.
+<5>
+
+== Hypermedia control types
+
+ALPS displays types for each hypermedia control. They include:
+
+.ALPS types
+[cols="1,5". options="header"]
+|===
+| Type | Description
+
+| SEMANTIC | A state element (e.g. HTML.SPAN, HTML.INPUT, etc.).
+| SAFE | A hypermedia control that triggers a safe, idempotent state transition (e.g. *GET* or *HEAD*).
+| IDEMPOTENT | A hypermedia control that triggers an unsafe, idempotent state transition (e.g. *PUT* or *DELETE*).
+| UNSAFE | A hypermedia control that triggers an unsafe, non-idempotent state transition (e.g. *POST*).
+|===
+
+In the representation section up above, bits of data from the application are marked *SEMANTIC*. The *address* field
+is a link that involves a safe *GET* to retrive. Hence, it is marked *SAFE*. Hypermedia operations themselves map onto the types as
+shown the table.
+
+== ALPS with Projections
+
+If you define any projections, they are also listed in the ALPS metadata. Assuming we also defined *inlineAddress* and *noAddresses*, they
+would appear inside the relevant operations, i.e. *GET* for the whole collection as well *GET* for a single resource. The following shows
+the alternate version of the *get-persons* subsection:
+
+[source,javascript]
+----
+...
+  {
+    "id" : "get-persons",
+    "name" : "persons",
+    "type" : "SAFE",
+    "rt" : "#person-representation",
+    "descriptors" : [ { <1>
+      "name" : "projection",
+      "doc" : {
+        "value" : "The projection that shall be applied when rendering the response. Acceptable values available in nested descriptors.",
+        "format" : "TEXT"
+      },
+      "type" : "SEMANTIC",
+      "descriptors" : [ {
+        "name" : "inlineAddress", <2>
+        "type" : "SEMANTIC",
+        "descriptors" : [ {
+          "name" : "address",
+          "type" : "SEMANTIC"
+        }, {
+          "name" : "firstName",
+          "type" : "SEMANTIC"
+        }, {
+          "name" : "lastName",
+          "type" : "SEMANTIC"
+        } ]
+      }, {
+        "name" : "noAddresses", <3>
+        "type" : "SEMANTIC",
+        "descriptors" : [ {
+          "name" : "firstName",
+          "type" : "SEMANTIC"
+        }, {
+          "name" : "lastName",
+          "type" : "SEMANTIC"
+        } ]
+      } ]
+    } ]
+  }
+...
+----
+
+<1> A new attribute, *descriptors*, appears containing an array with one entry, *projection*.
+<2> Inside the *projection.descriptors* we can see *inLineAddress* listed. It will render *address*, *firstName*, and *lastName*.
+Relationships rendered inside a projection result in inlining the data fields.
+<3> Also found is *noAddresses*, which serves up a subset containing *firstName* and *lastName*.
+
+With all this information, a client should be able to deduce not only the RESTful transitions avaiable, but also, to some degree, the
+data elements needed to interact.
+
+== Adding custom details to your ALPS descriptions
+
+It's possible to create custom messages that appear in your ALPS metadata. Just create `rest-messages.properties` like this:
+
+[soruce,proeperties]
+----
+rest.description.person=A collection of people
+rest.description.person.id=primary key used internally to store a person (not for RESTful usage)
+rest.description.person.firstName=Person's first name
+rest.description.person.lastName=Person's last name
+rest.description.person.address=Person's address
+----
+
+As you can see, this defines details to display for a `Person` resource. They alter the ALPS format of the *person-representation* as follows:
+
+[source,javascript]
+----
+...
+  {
+    "id" : "person-representation",
+    "doc" : {
+      "value" : "A collection of people", <1>
+      "format" : "TEXT"
+    },
+    "descriptors" : [ {
+      "name" : "firstName",
+      "doc" : {
+        "value" : "Person's first name", <2>
+        "format" : "TEXT"
+      },
+      "type" : "SEMANTIC"
+    }, {
+      "name" : "lastName",
+      "doc" : {
+        "value" : "Person's last name", <3>
+        "format" : "TEXT"
+      },
+      "type" : "SEMANTIC"
+    }, {
+      "name" : "id",
+      "doc" : {
+        "value" : "primary key used internally to store a person (not for RESTful usage)", <4>
+        "format" : "TEXT"
+      },
+      "type" : "SEMANTIC"
+    }, {
+      "name" : "address",
+      "doc" : {
+        "value" : "Person's address", <5>
+        "format" : "TEXT"
+      },
+      "type" : "SAFE",
+      "rt" : "http://localhost:8080/addresses#address"
+    } ]
+  }
+...
+----
+
+By supplying these property settings, each field has an extra *doc* attribute.
+
+<1> The value of `rest.description.person` maps into the whole representation.
+<2> The value of `rest.description.person.firstName` maps to the *firstName* attribute.
+<3> The value of `rest.description.person.lastName` maps to the *lastName* attribute.
+<4> The value of `rest.description.person.id` maps to the *id* attribute, a field not normally displayed.
+<5> The value of `rest.description.person.address` maps to the *address* attribute.
+
+NOTE: Spring MVC (which is the essence of a Spring Data REST application) supports locales, meaning you can bundle up multiple
+properties files with different messages.
+
+
+//= JSON Schema
+
+//TBD
+
+//= JSON Patch
+
+//TBD

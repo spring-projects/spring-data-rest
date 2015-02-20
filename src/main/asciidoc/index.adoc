@@ -6,7 +6,7 @@ Jon Brisbin, Oliver Gierke
 
 {version}
 
-(C) 2012-2014 Original authors
+(C) 2012-2015 Original authors
 
 NOTE: _Copies of this document may be made for your own use and for distribution to others, provided that you do not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed in print or electronically._
 
@@ -17,3 +17,4 @@ include::repository-resources.adoc[]
 include::representations.adoc[]
 include::validation.adoc[]
 include::events.adoc[]
+include::metadata.adoc[]
