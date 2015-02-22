@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,11 +76,12 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	}
 
 	/**
-	 * Check if a given property for a type is avaiaable to be exported, i.e. serialized via Jackson
-	 * @param property
+	 * Check if a given property for a type is available to be exported, i.e. serialized via Jackson.
+	 * 
+	 * @param property must not be {@literal null}.
 	 * @return
 	 */
-	public boolean isExportableProperty(PersistentProperty<?> property) {
+	public boolean isExported(PersistentProperty<?> property) {
 		return getDefinitionFor(property) != null;
 	}
 

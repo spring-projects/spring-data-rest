@@ -19,7 +19,7 @@ import org.springframework.data.repository.CrudRepository;
 
 /**
  * @author Greg Turnquist
+ * @author Oliver Gierke
  * @see DATAREST-463
  */
-public interface ItemRepository extends CrudRepository<Item, Long> {
-}
+public interface ItemRepository extends CrudRepository<Item, Long> {}

@@ -16,12 +16,10 @@
 package org.springframework.data.rest.webmvc.jpa;
 
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 /**
  * @author Greg Turnquist
+ * @author Oliver Gierke
  * @see DATAREST-463
  */
-@RepositoryRestResource(exported = false)
-public interface UserRepository extends CrudRepository<User, Long> {
-}
+interface UserRepository extends CrudRepository<User, Long> {}

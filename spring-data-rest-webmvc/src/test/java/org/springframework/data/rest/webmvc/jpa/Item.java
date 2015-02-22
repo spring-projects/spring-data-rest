@@ -24,25 +24,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @author Greg Turnquist
+ * @author Oliver Gierke
  * @see DATAREST-463
  */
 @Entity
 public class Item {
 
-	@Id @GeneratedValue
-	private Long id;
-
+	private @Id @GeneratedValue Long id;
 	private String name;
-
-	@JsonIgnore
-	@OneToOne
-	private User owner;
-
-	@OneToOne
-	private User manager;
-
-	@OneToOne
-	private User curator;
+	private @JsonIgnore @OneToOne User owner;
+	private @OneToOne User manager, curator;
 
 	public Long getId() {
 		return id;

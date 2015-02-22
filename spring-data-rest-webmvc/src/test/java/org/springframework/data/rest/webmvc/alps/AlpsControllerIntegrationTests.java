@@ -138,5 +138,4 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		LinkDiscoverer discoverer = discoverers.getLinkDiscovererFor(MediaType.valueOf(response.getContentType()));
 		return discoverer.findLinkWithRel(rel, response.getContentAsString());
 	}
-
 }
