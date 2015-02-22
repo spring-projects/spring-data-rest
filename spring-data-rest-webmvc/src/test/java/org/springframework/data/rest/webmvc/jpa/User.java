@@ -23,50 +23,47 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @author Greg Turnquist
+ * @author Oliver Gierke
  * @see DATAREST-463
  */
 @Entity
 public class User {
 
-    @Id @GeneratedValue
-    private Long id;
+	private @Id @GeneratedValue Long id;
+	private String name;
+	private @JsonIgnore String password;
 
-    private String name;
+	private String[] roles;
 
-    @JsonIgnore
-    private String password;
+	public Long getId() {
+		return id;
+	}
 
-    private String[] roles;
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public Long getId() {
-        return id;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    public String getPassword() {
-        return password;
-    }
+	public String[] getRoles() {
+		return roles;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String[] getRoles() {
-        return roles;
-    }
-
-    public void setRoles(String... roles) {
-        this.roles = roles;
-    }
+	public void setRoles(String... roles) {
+		this.roles = roles;
+	}
 }

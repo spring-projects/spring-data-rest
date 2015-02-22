@@ -334,13 +334,8 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
 
 				PersistentProperty<?> property = association.getInverse();
-				final Class<?> propertyType = property.getType();
 
-				if (!jackson.isExportableProperty(property)) {
-					return;
-				}
-
-				if (!associationLinks.isLinkableAssociation(property)) {
+				if (!jackson.isExported(property) || !associationLinks.isLinkableAssociation(property)) {
 					return;
 				}
 

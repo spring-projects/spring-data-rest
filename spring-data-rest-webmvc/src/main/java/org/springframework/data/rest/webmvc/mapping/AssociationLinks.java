@@ -91,7 +91,6 @@ public class AssociationLinks {
 			return false;
 		}
 
-//		ResourceMetadata metadata = mappings.getMappingFor(property.getActualType());
 		ResourceMetadata metadata = mappings.getMappingFor(property.getOwner().getType());
 
 		if (metadata != null && !metadata.isExported(property)) {
