@@ -16,7 +16,9 @@
 package org.springframework.data.rest.webmvc.mongodb;
 
 import java.math.BigInteger;
+import java.util.List;
 
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -28,4 +30,6 @@ public class User {
 	public BigInteger id;
 	public String firstname, lastname;
 	public Address address;
+
+	public @DBRef(lazy = true) List<User> colleagues;
 }

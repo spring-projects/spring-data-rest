@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
@@ -55,6 +56,8 @@ public class MongoWebTests extends CommonWebTests {
 	@Before
 	public void populateProfiles() {
 
+		mapper.setSerializationInclusion(Include.NON_NULL);
+
 		Profile twitter = new Profile();
 		twitter.setPerson(1L);
 		twitter.setType("Twitter");
@@ -69,12 +72,22 @@ public class MongoWebTests extends CommonWebTests {
 		address.street = "ETagDoesntMatchExceptionUnitTests";
 		address.zipCode = "Bar";
 
-		User user = new User();
-		user.firstname = "Oliver";
-		user.lastname = "Gierke";
-		user.address = address;
+		User thomas = new User();
+		thomas.firstname = "Thomas";
+		thomas.lastname = "Darimont";
+		thomas.address = address;
 
-		userRepository.save(user);
+		userRepository.save(thomas);
+
+		User oliver = new User();
+		oliver.firstname = "Oliver";
+		oliver.lastname = "Gierke";
+		oliver.address = address;
+		oliver.colleagues = Arrays.asList(thomas);
+		userRepository.save(oliver);
+
+		thomas.colleagues = Arrays.asList(oliver);
+		userRepository.save(thomas);
 	}
 
 	@After
@@ -199,5 +212,48 @@ public class MongoWebTests extends CommonWebTests {
 				andReturn().getResponse().getHeader("Last-Modified");
 
 		assertThat(header, not(isEmptyOrNullString()));
+	}
+
+	/**
+	 * @see DATAREST-482
+	 */
+	@Test
+	public void putDoesNotRemoveAssociations() throws Exception {
+
+		Link usersLink = client.discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
+		Link colleaguesLink = client.assertHasLinkWithRel("colleagues", client.request(userLink));
+
+		// Expect a user returned as colleague
+		client.follow(colleaguesLink).//
+				andExpect(jsonPath("$._embedded.users").exists());
+
+		User oliver = new User();
+		oliver.firstname = "Oliver";
+		oliver.lastname = "Gierke";
+
+		putAndGet(userLink, mapper.writeValueAsString(oliver), MediaType.APPLICATION_JSON);
+
+		// Expect colleague still present but address has been wiped
+		client.follow(colleaguesLink).//
+				andExpect(jsonPath("$._embedded.users").exists()).//
+				andExpect(jsonPath("$.embedded.users[0].address").doesNotExist());
+	}
+
+	/**
+	 * @see DATAREST-482
+	 */
+	@Test
+	public void emptiesAssociationForEmptyUriList() throws Exception {
+
+		Link usersLink = client.discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
+		Link colleaguesLink = client.assertHasLinkWithRel("colleagues", client.request(userLink));
+
+		putAndGet(colleaguesLink, "", MediaType.parseMediaType("text/uri-list"));
+
+		client.follow(colleaguesLink).//
+				andExpect(status().isOk()).//
+				andExpect(jsonPath("$").exists());
 	}
 }
