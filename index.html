@@ -46,7 +46,7 @@ The goal of the Spring Data REST project is to provide a solid foundation on whi
 
 * Supports JPA, MongoDB, Gemfire, and Neo4J Repositories
 * Create new entities (auto-generated or pre-assigned IDs are both supported) using POST
-* Update existing entities using PUT
+* Update existing entities using PUT and PATCH
 * Delete entities using DELETE
 * Manage entity relationships using POST, PUT, DELETE
 * Discover services and get or list available entities using GET
@@ -56,6 +56,8 @@ The goal of the Spring Data REST project is to provide a solid foundation on whi
 * Configure path and rel values using annotations or DSL config helper
 * Page large results sets
 * Sort results
+* Use metadata (ALPS) to discover transitions and other details about the service
+* Projection alternate views of data and pick excerpt options to make certain ops more efficient
 
 <span id="quick-start"></span>
 ## Quick Start
@@ -68,8 +70,10 @@ The goal of the Spring Data REST project is to provide a solid foundation on whi
 
 ### Sample Projects
 
-* [Spring Data Book Example](https://github.com/SpringSource/spring-data-book/tree/master/rest)
+* [Spring Data Examples - REST](https://github.com/spring-projects/spring-data-examples/tree/master/rest)
+* [Spring-a-Gram](https://github.com/gregturn/spring-a-gram)
 * [Spring RESTBucks](https://github.com/olivergierke/spring-restbucks)
+* [Spring Data Book Example](https://github.com/SpringSource/spring-data-book/tree/master/rest)
 
 ### Getting Started Guides
 
@@ -80,7 +84,7 @@ The goal of the Spring Data REST project is to provide a solid foundation on whi
 
 ### Presentations
 
-* [Spring Data REST - Data Meets Hypermedia](https://speakerdeck.com/gregturn/springone2gx-2014-spring-data-rest-data-meets-hypermedia)
+* [Spring Data REST - Data Meets Hypermedia (video w/ link to slides)](https://www.youtube.com/watch?v=APk8OWtXM2s)
 * [Hypermedia APIs with Spring](https://speakerdeck.com/olivergierke/hypermedia-apis-with-spring-5)
 * [Spring RESTBucks - A Hypermedia REST WebService](https://speakerdeck.com/olivergierke/spring-restbucks-a-hypermedia-rest-web-service)
 
