@@ -37,7 +37,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Integration tests for exposed Neo4j repositories.
- * 
+ *
  * @author Oliver Gierke
  */
 @ContextConfiguration

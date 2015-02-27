@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-rest-parent</artifactId>
-	<version>2.3.0.BUILD-SNAPSHOT</version>
+	<version>2.3.0.DATAREST-397-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Spring Data REST</name>
@@ -44,9 +44,9 @@
 		<developer>
 			<id>ogierke</id>
 			<name>Oliver Gierke</name>
-			<email>ogierke at gopivotal.com</email>
+			<email>ogierke at pivotal.io</email>
 			<organization>Pivotal</organization>
-			<organizationUrl>http://www.gopivotal.com</organizationUrl>
+			<organizationUrl>http://www.pivotal.io</organizationUrl>
 			<roles>
 				<role>Project Lead</role>
 			</roles>
@@ -55,9 +55,9 @@
 		<developer>
 			<id>gturnquist</id>
 			<name>Greg Turnquist</name>
-			<email>gturnquist at gopivotal.com</email>
+			<email>gturnquist at pivotal.io</email>
 			<organization>Pivotal</organization>
-			<organizationUrl>http://www.gopivotal.com</organizationUrl>
+			<organizationUrl>http://www.pivotal.io</organizationUrl>
 			<roles>
 				<role>Developer</role>
 			</roles>
