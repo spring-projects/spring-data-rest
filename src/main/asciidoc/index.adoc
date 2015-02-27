@@ -1,21 +1,34 @@
 [[spring-data-rest-reference]]
 = Spring Data REST Reference Documentation
-Jon Brisbin, Oliver Gierke
+Jon Brisbin, Oliver Gierke, Greg Turnquist
+:revnumber: {version}
+:revdate: {localdate}
 :toc:
-:idprefix:
-
-{version}
+:toc-placement!:
 
 (C) 2012-2015 Original authors
 
 NOTE: _Copies of this document may be made for your own use and for distribution to others, provided that you do not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed in print or electronically._
 
-:leveloffset: 1
-include::intro.adoc[]
-include::getting-started.adoc[]
-include::repository-resources.adoc[]
-include::representations.adoc[]
-include::projections-excerpts.adoc[]
-include::validation.adoc[]
-include::events.adoc[]
-include::metadata.adoc[]
+toc::[]
+
+include::preface.adoc[]
+
+[[reference]]
+= Reference Documentation
+
+include::intro.adoc[leveloffset=+1]
+include::getting-started.adoc[leveloffset=+1]
+include::repository-resources.adoc[leveloffset=+1]
+include::representations.adoc[leveloffset=+1]
+include::validation.adoc[leveloffset=+1]
+include::events.adoc[leveloffset=+1]
+include::metadata.adoc[leveloffset=+1]
+include::paging-and-sorting.adoc[leveloffset=+1]
+include::customizing-sdr.adoc[leveloffset=+1]
+
+[[appendix]]
+= Appendix
+
+:numbered!:
+include::example-api-usage-with-curl.adoc[leveloffset=+1]

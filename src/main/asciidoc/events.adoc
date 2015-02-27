@@ -20,11 +20,13 @@ There is an abstract class you can subclass which listens for these kinds of eve
 ----
 public class BeforeSaveEventListener extends AbstractRepositoryEventListener {
 
-  @Override public void onBeforeSave(Object entity) {
+  @Override 
+  public void onBeforeSave(Object entity) {
     ... logic to handle inspecting the entity before the Repository saves it
   }
 
-  @Override public void onAfterDelete(Object entity) {
+  @Override 
+  public void onAfterDelete(Object entity) {
     ... send a message that this entity has been deleted
   }
 }
