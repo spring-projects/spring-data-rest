@@ -95,7 +95,7 @@ interface NoAddresses { <2>
 
 This projection has the following details:
 
-<1> The `@Projection` annotation flags this as a projection. The `name` atrributes provides
+<1> The `@Projection` annotation flags this as a projection. The `name` attributes provides
 the name of the projection, which you'll see how to use shortly. The `types` attributes targets this projection to only apply to `Person` objects.
 
 <2> It's a Java interface making it declarative.
