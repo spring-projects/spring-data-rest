@@ -21,6 +21,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -295,10 +296,11 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			consumes = { "application/json", "application/x-spring-data-compact+json", "text/uri-list" })
 	@ResponseBody
 	public ResponseEntity<? extends ResourceSupport> createPropertyReference(
-			final RootResourceInformation resourceInformation, final HttpMethod requestMethod,
-			final @RequestBody Resources<Object> incoming, @BackendId Serializable id, @PathVariable String property)
+			final RootResourceInformation resourceInformation, final HttpMethod requestMethod, final @RequestBody(
+					required = false) Resources<Object> incoming, @BackendId Serializable id, @PathVariable String property)
 			throws Exception {
 
+		final Resources<Object> source = incoming == null ? new Resources<Object>(Collections.emptyList()) : incoming;
 		final RepositoryInvoker invoker = resourceInformation.getInvoker();
 
 		Function<ReferencedProperty, ResourceSupport> handler = new Function<ReferencedProperty, ResourceSupport>() {
@@ -318,7 +320,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					}
 
 					// Add to the existing collection
-					for (Link l : incoming.getLinks()) {
+					for (Link l : source.getLinks()) {
 						Object propVal = loadPropertyValue(prop.propertyType, l);
 						coll.add(propVal);
 					}
@@ -335,7 +337,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					}
 
 					// Add to the existing collection
-					for (Link l : incoming.getLinks()) {
+					for (Link l : source.getLinks()) {
 						Object propVal = loadPropertyValue(prop.propertyType, l);
 						m.put(l.getRel(), propVal);
 					}
@@ -349,7 +351,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 								"Cannot PATCH a reference to this singular property since the property type is not a List or a Map.");
 					}
 
-					if (incoming.getLinks().size() != 1) {
+					if (source.getLinks().size() != 1) {
 						throw new IllegalArgumentException(
 								"Must send only 1 link to update a property reference that isn't a List or a Map.");
 					}
