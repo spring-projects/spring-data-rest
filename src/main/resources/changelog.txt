@@ -1,6 +1,44 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.3.0.RC1 (2015-03-05)
+-----------------------------------------
+* DATAREST-487 - Release 2.3 RC1.
+* DATAREST-485 - RepositoryPropertyReferenceController.createPropertyReference(…) does not work for empty content supplied on Spring 4.1.
+* DATAREST-484 - Fix small typo in reference docs.
+* DATAREST-483 - Upgrade to JSONPath 0.9.1.
+* DATAREST-482 - Add test cases to verify association handling on PUT for MongoDB.
+* DATAREST-471 - Auto-populate Last Modified header for audited entities.
+* DATAREST-470 - Use EclipseLink provided JPA API JAR instead of the Hibernate one.
+* DATAREST-469 - Introduce dedicated resource type for search links.
+* DATAREST-467 - Add support to lookup search resource links via RepositoryEntityLinks.
+* DATAREST-463 - ALPS metadata exposes attributes that can be marked @JsonIgnore.
+* DATAREST-461 - @JsonIgnored properties must not be updated in PUT requests.
+* DATAREST-460 - Make sure @Bean methods of RepositoryRestMvcConfiguration are called from proxied methods.
+* DATAREST-457 - Typo in JavaDoc of BaseUri.
+* DATAREST-452 - Add ALPS to reference docs.
+* DATAREST-451 - Add projections and excerpts to reference docs.
+* DATAREST-450 - Migrate wiki content into reference docs and replace with links.
+* DATAREST-448 - RepositoryRestHandlerMapping is handling non-repository requests.
+* DATAREST-446 - Remove usage of RepositoriesUtils as it potentially breaks customizations of ResourceMetadata.
+* DATAREST-445 - RepositoryCollectionResourceMapping does not obtain domain type from RepositoryMetadata.
+* DATAREST-437 - Switch to projection infrastructure in Spring Data Commons.
+* DATAREST-436 - Spring Data Rest example module has no build file.
+* DATAREST-434 - PersistentEntityResourceHandlerMethodArgumentResolver's read(…) methods swallow exceptions.
+* DATAREST-431 - Move to Formatters for Point and Distance in Spring Data Commons.
+* DATAREST-430 - Fix typos in reference documentation.
+* DATAREST-429 - Improve implementation of base URI customization.
+* DATAREST-427 - NullPointerException when POST/PUT entities with rels in DomainClassConverter.
+* DATAREST-424 - Make sure HAL HttpMessageConverter is ordered before the standard one.
+* DATAREST-423 - Spring Data REST registered ConversionService not used when overriding individual resources.
+* DATAREST-422 - Fix link to reference documentation in README.
+* DATAREST-421 - @ExceptionHandler can't be override by @ControllerAdvice.
+* DATAREST-414 - Add test cases for Spring Data Cassandra.
+* DATAREST-388 - Can't use controller advices if annotation based event handling is used.
+* DATAREST-387 - Add tests for SD Solr Repositories.
+* DATAREST-354 - Revamp JSON Schema support to current draft of the spec.
+
+
 Changes in version 2.2.2.RELEASE (2015-01-28)
 ---------------------------------------------
 * DATAREST-470 - Use EclipseLink provided JPA API JAR instead of the Hibernate one.
