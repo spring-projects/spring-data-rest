@@ -296,7 +296,8 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Whether to return a response body after creating an entity.
 	 * 
-	 * @return {@literal true} to return a body on create, {@literal false} otherwise. If null, defer to HTTP Accept header
+	 * @return {@link java.lang.Boolean#TRUE} to return a body on create, {@link java.lang.Boolean#FALSE} otherwise.
+	 * 				If {@literal null}, defer to HTTP Accept header
 	 */
 	public Boolean isReturnBodyOnCreate() {
 		return returnBodyOnCreate;
@@ -305,8 +306,8 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Set whether to return a response body after creating an entity.
 	 * 
-	 * @param returnBodyOnCreate {@literal true} to return a body on create, {@literal false} otherwise.
-	 *                            Set to null in order to defer to HTTP Accept header
+	 * @param returnBodyOnCreate {@link java.lang.Boolean#TRUE} to return a body on create, {@link java.lang.Boolean#FALSE} otherwise.
+	 * 								If {@literal null}, defer to HTTP Accept header
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setReturnBodyOnCreate(Boolean returnBodyOnCreate) {
@@ -317,18 +318,19 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Whether to return a response body after updating an entity.
 	 * 
-	 * @return {@literal true} to return a body on update, {@literal false} otherwise. If null, defer to HTTP Accept header
+	 * @return {@link java.lang.Boolean#TRUE} to return a body on update, {@link java.lang.Boolean#FALSE} otherwise.
+	 * 				If {@literal null}, defer to HTTP Accept header
 	 */
 	public Boolean isReturnBodyOnUpdate() {
 		return returnBodyOnUpdate;
 	}
 
 	/**
-	 * Sets whether to return a response body after updating an entity. Set to null in order to defer to HTTP Accept header
+	 * Set whether to return a response body after updating an entity.
+	 *
+	 * @param returnBodyOnUpdate {@link java.lang.Boolean#TRUE} to return a body on update, {@link java.lang.Boolean#FALSE} otherwise.
+	 * 								If {@literal null}, defer to HTTP Accept header
 	 * @return {@literal this}
-	 * 
-	 * @param returnBodyOnUpdate
-	 * @return
 	 */
 	public RepositoryRestConfiguration setReturnBodyOnUpdate(Boolean returnBodyOnUpdate) {
 		this.returnBodyOnUpdate = returnBodyOnUpdate;
