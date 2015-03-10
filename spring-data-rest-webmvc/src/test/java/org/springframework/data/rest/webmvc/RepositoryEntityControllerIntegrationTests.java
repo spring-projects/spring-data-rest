@@ -22,6 +22,7 @@ import static org.springframework.http.HttpMethod.*;
 
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -33,6 +34,7 @@ import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.support.ETag;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -46,6 +48,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
  * 
  * @author Oliver Gierke
  */
+@SuppressWarnings("ALL")
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
 public class RepositoryEntityControllerIntegrationTests extends AbstractControllerIntegrationTests {
@@ -76,7 +79,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		RootResourceInformation request = getResourceInformation(Address.class);
 
-		controller.postCollectionResource(request, null, null);
+		controller.postCollectionResource(request, null, null, MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	/**
@@ -91,7 +94,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 				entities.getPersistentEntity(Order.class)).build();
 
 		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler,
-				ETag.NO_ETAG);
+				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
 
 		assertThat(entity.getHeaders().getLocation().toString(), not(endsWith("{?projection}")));
 	}
@@ -180,5 +183,100 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 				RestMediaTypes.JSON_PATCH_JSON.toString(), //
 				RestMediaTypes.MERGE_PATCH_JSON.toString(), //
 				MediaType.APPLICATION_JSON_VALUE));
+	}
+
+	/**
+	 * @see DATAREST-34
+	 */
+	@Test
+	public void verifyAcceptHeaderCanControlBodyReturnOnPutItemResource() throws HttpRequestMethodNotSupportedException {
+		RootResourceInformation request = getResourceInformation(Order.class);
+
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
+				entities.getPersistentEntity(Order.class)).build();
+
+		configuration.setReturnBodyOnCreate(Boolean.FALSE);
+		configuration.setReturnBodyOnUpdate(Boolean.FALSE);
+
+		ResponseEntity<?> response = controller.putItemResource(request, persistentEntityResource, 1L, assembler,
+				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
+
+		assert(!response.hasBody());
+
+
+		configuration.setReturnBodyOnCreate(Boolean.TRUE);
+		configuration.setReturnBodyOnUpdate(Boolean.TRUE);
+
+		response = controller.putItemResource(request, persistentEntityResource, 1L, assembler,
+				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
+
+		configuration.setReturnBodyOnCreate(Boolean.FALSE);
+		configuration.setReturnBodyOnUpdate(Boolean.FALSE);
+
+		response = controller.putItemResource(request, persistentEntityResource, 1L, assembler,
+				ETag.NO_ETAG, null);
+
+		assert(!response.hasBody());
+
+		configuration.setReturnBodyOnCreate(null);
+		configuration.setReturnBodyOnUpdate(null);
+
+		response = controller.putItemResource(request, persistentEntityResource, 1L, assembler,
+				ETag.NO_ETAG, null);
+
+		assert(!response.hasBody());
+
+		configuration.setReturnBodyOnCreate(null);
+		configuration.setReturnBodyOnUpdate(null);
+
+		response = controller.putItemResource(request, persistentEntityResource, 1L, assembler,
+				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
+
+		assert(response.hasBody());
+	}
+
+	/**
+	 * @see DATAREST-34
+	 */
+	@Test
+	public void verifyAcceptHeaderCanControlBodyReturnPostCollectionResource() throws HttpRequestMethodNotSupportedException {
+		RootResourceInformation request = getResourceInformation(Order.class);
+
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
+				entities.getPersistentEntity(Order.class)).build();
+
+		configuration.setReturnBodyOnCreate(null);
+
+		ResponseEntity<ResourceSupport> response =
+				controller.postCollectionResource(request, persistentEntityResource, assembler, MediaType.APPLICATION_JSON_VALUE);
+
+
+		assert(response.hasBody());
+
+
+		response =
+				controller.postCollectionResource(request, persistentEntityResource, assembler, null);
+
+
+		assert(!response.hasBody());
+
+
+		configuration.setReturnBodyOnCreate(Boolean.FALSE);
+		response =
+				controller.postCollectionResource(request, persistentEntityResource, assembler, MediaType.APPLICATION_JSON_VALUE);
+
+		assert(!response.hasBody());
+
+		configuration.setReturnBodyOnCreate(Boolean.TRUE);
+		response =
+				controller.postCollectionResource(request, persistentEntityResource, assembler, null);
+
+		assert(response.hasBody());
+	}
+
+	@After
+	public void cleanUp() {
+		configuration.setReturnBodyOnCreate(Boolean.FALSE);
+		configuration.setReturnBodyOnUpdate(Boolean.FALSE);
 	}
 }

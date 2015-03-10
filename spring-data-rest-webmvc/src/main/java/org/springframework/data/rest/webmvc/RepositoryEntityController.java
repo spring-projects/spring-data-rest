@@ -63,6 +63,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -80,6 +81,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			RestMediaTypes.MERGE_PATCH_JSON.toString(), //
 			RestMediaTypes.JSON_PATCH_JSON.toString(), //
 			MediaType.APPLICATION_JSON_VALUE);
+
+	private static final String ACCEPT_HEADER = "Accept";
 
 	private final RepositoryEntityLinks entityLinks;
 	private final RepositoryRestConfiguration config;
@@ -227,18 +230,23 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * 
 	 * @param resourceInformation
 	 * @param payload
+	 * @param assembler
+	 * @param acceptHeader
 	 * @return
 	 * @throws HttpRequestMethodNotSupportedException
 	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.POST)
 	public ResponseEntity<ResourceSupport> postCollectionResource(RootResourceInformation resourceInformation,
-			PersistentEntityResource payload, PersistentEntityResourceAssembler assembler)
+			PersistentEntityResource payload, PersistentEntityResourceAssembler assembler,
+			@RequestHeader(value= ACCEPT_HEADER, required = false) String acceptHeader)
 			throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.POST, ResourceType.COLLECTION);
 
-		return createAndReturn(payload.getContent(), resourceInformation.getInvoker(), assembler);
+		boolean acceptHeaderPresent = acceptHeader != null;
+
+		return createAndReturn(payload.getContent(), resourceInformation.getInvoker(), assembler, acceptHeaderPresent);
 	}
 
 	/**
@@ -312,17 +320,21 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	/**
 	 * <code>PUT /{repository}/{id}</code> - Updates an existing entity or creates one at exactly that place.
 	 *
-	 * @param eTagMatch
+
 	 * @param resourceInformation
 	 * @param payload
 	 * @param id
+	 * @param assembler
+	 * @param eTag
+	 * @param acceptHeader
 	 * @return
 	 * @throws HttpRequestMethodNotSupportedException
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PUT)
 	public ResponseEntity<? extends ResourceSupport> putItemResource(RootResourceInformation resourceInformation,
 			PersistentEntityResource payload, @BackendId Serializable id, PersistentEntityResourceAssembler assembler,
-			ETag eTag) throws HttpRequestMethodNotSupportedException {
+			ETag eTag, @RequestHeader(value=ACCEPT_HEADER, required = false) String acceptHeader)
+			throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PUT, ResourceType.ITEM);
 
@@ -338,8 +350,10 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		eTag.verify(resourceInformation.getPersistentEntity(), domainObject);
 
-		return domainObject == null ? createAndReturn(objectToSave, invoker, assembler) : saveAndReturn(objectToSave,
-				invoker, PUT, assembler);
+		boolean acceptHeaderPresent = acceptHeader != null;
+
+		return domainObject == null ? createAndReturn(objectToSave, invoker, assembler, acceptHeaderPresent)
+				: saveAndReturn(objectToSave, invoker, PUT, assembler, acceptHeaderPresent);
 	}
 
 	/**
@@ -349,7 +363,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @param payload
 	 * @param id
 	 * @param assembler
-	 * @param eTag
+	 * @param eTag,
+	 * @param acceptHeader
 	 * @return
 	 * @throws HttpRequestMethodNotSupportedException
 	 * @throws ResourceNotFoundException
@@ -358,7 +373,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PATCH)
 	public ResponseEntity<ResourceSupport> patchItemResource(RootResourceInformation resourceInformation,
 			PersistentEntityResource payload, @BackendId Serializable id, PersistentEntityResourceAssembler assembler,
-			ETag eTag) throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
+			ETag eTag,@RequestHeader(value=ACCEPT_HEADER, required = false) String acceptHeader )
+			throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PATCH, ResourceType.ITEM);
 
@@ -370,7 +386,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		eTag.verify(resourceInformation.getPersistentEntity(), domainObject);
 
-		return saveAndReturn(payload.getContent(), resourceInformation.getInvoker(), PATCH, assembler);
+		boolean acceptHeaderPresent = acceptHeader != null;
+
+		return saveAndReturn(payload.getContent(), resourceInformation.getInvoker(), PATCH, assembler, acceptHeaderPresent);
 	}
 
 	/**
@@ -415,7 +433,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @return
 	 */
 	private ResponseEntity<ResourceSupport> saveAndReturn(Object domainObject, RepositoryInvoker invoker,
-			HttpMethod httpMethod, PersistentEntityResourceAssembler assembler) {
+			HttpMethod httpMethod, PersistentEntityResourceAssembler assembler, boolean acceptHeaderPresent) {
 
 		publisher.publishEvent(new BeforeSaveEvent(domainObject));
 		Object obj = invoker.invokeSave(domainObject);
@@ -428,7 +446,10 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			addLocationHeader(headers, assembler, obj);
 		}
 
-		if (config.isReturnBodyOnUpdate()) {
+		boolean returnBodyOnUpdate = (config.isReturnBodyOnUpdate() == null && acceptHeaderPresent)
+				|| Boolean.TRUE.equals(config.isReturnBodyOnUpdate());
+
+		if (returnBodyOnUpdate) {
 			return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, resource);
 		} else {
 			return ControllerUtils.toEmptyResponse(HttpStatus.NO_CONTENT, headers);
@@ -443,13 +464,17 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @return
 	 */
 	private ResponseEntity<ResourceSupport> createAndReturn(Object domainObject, RepositoryInvoker invoker,
-			PersistentEntityResourceAssembler assembler) {
+			PersistentEntityResourceAssembler assembler, boolean acceptHeaderPresent) {
 
 		publisher.publishEvent(new BeforeCreateEvent(domainObject));
 		Object savedObject = invoker.invokeSave(domainObject);
 		publisher.publishEvent(new AfterCreateEvent(savedObject));
 
-		PersistentEntityResource resource = config.isReturnBodyOnCreate() ? assembler.toFullResource(savedObject) : null;
+
+		boolean returnBodyOnCreate = (config.isReturnBodyOnCreate() == null && acceptHeaderPresent)
+				|| Boolean.TRUE.equals(config.isReturnBodyOnCreate());
+
+		PersistentEntityResource resource = returnBodyOnCreate ? assembler.toFullResource(savedObject) : null;
 
 		HttpHeaders headers = prepareHeaders(resource);
 		addLocationHeader(headers, assembler, savedObject);
