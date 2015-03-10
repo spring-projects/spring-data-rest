@@ -46,8 +46,8 @@ public class RepositoryRestConfiguration {
 	private String sortParamName = "sort";
 	private MediaType defaultMediaType = MediaTypes.HAL_JSON;
 	private boolean useHalAsDefaultJsonMediaType = true;
-	private boolean returnBodyOnCreate = false;
-	private boolean returnBodyOnUpdate = false;
+	private Boolean returnBodyOnCreate = Boolean.FALSE;
+	private Boolean returnBodyOnUpdate = Boolean.FALSE;
 	private List<Class<?>> exposeIdsFor = new ArrayList<Class<?>>();
 	private ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
@@ -296,9 +296,9 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Whether to return a response body after creating an entity.
 	 * 
-	 * @return {@literal true} to return a body on create, {@literal false} otherwise.
+	 * @return {@literal true} to return a body on create, {@literal false} otherwise. If null, defer to HTTP Accept header
 	 */
-	public boolean isReturnBodyOnCreate() {
+	public Boolean isReturnBodyOnCreate() {
 		return returnBodyOnCreate;
 	}
 
@@ -306,9 +306,10 @@ public class RepositoryRestConfiguration {
 	 * Set whether to return a response body after creating an entity.
 	 * 
 	 * @param returnBodyOnCreate {@literal true} to return a body on create, {@literal false} otherwise.
+	 *                            Set to null in order to defer to HTTP Accept header
 	 * @return {@literal this}
 	 */
-	public RepositoryRestConfiguration setReturnBodyOnCreate(boolean returnBodyOnCreate) {
+	public RepositoryRestConfiguration setReturnBodyOnCreate(Boolean returnBodyOnCreate) {
 		this.returnBodyOnCreate = returnBodyOnCreate;
 		return this;
 	}
@@ -316,19 +317,20 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Whether to return a response body after updating an entity.
 	 * 
-	 * @return {@literal true} to return a body on update, {@literal false} otherwise.
+	 * @return {@literal true} to return a body on update, {@literal false} otherwise. If null, defer to HTTP Accept header
 	 */
-	public boolean isReturnBodyOnUpdate() {
+	public Boolean isReturnBodyOnUpdate() {
 		return returnBodyOnUpdate;
 	}
 
 	/**
-	 * Sets whether to return a response body after updating an entity.
+	 * Sets whether to return a response body after updating an entity. Set to null in order to defer to HTTP Accept header
+	 * @return {@literal this}
 	 * 
 	 * @param returnBodyOnUpdate
 	 * @return
 	 */
-	public RepositoryRestConfiguration setReturnBodyOnUpdate(boolean returnBodyOnUpdate) {
+	public RepositoryRestConfiguration setReturnBodyOnUpdate(Boolean returnBodyOnUpdate) {
 		this.returnBodyOnUpdate = returnBodyOnUpdate;
 		return this;
 	}
