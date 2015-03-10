@@ -24,6 +24,8 @@ For the resources exposed, we use a set of default status codes:
 * `201 Created` - for `POST` and `PUT` requests that create new resources.
 * `204 No Content` - for `PUT`, `PATCH`, and `DELETE` requests if the configuration is set to not return response bodies for resource updates (`RepositoryRestConfiguration.returnBodyOnUpdate`). If the configuration value is set to include responses for `PUT`, `200 OK` will be returned for updates, `201 Created` will be returned for resource created through `PUT`.
 
+If the configuration values (`RepositoryRestConfiguration.returnBodyOnUpdate` and `RepositoryRestConfiguration.returnBodyCreate)` are explicitly set to null, the presence of the HTTP Accept header will be used to determine the response code.
+
 [[repository-resources.resource-discoverability]]
 === Resource discoverability
 
