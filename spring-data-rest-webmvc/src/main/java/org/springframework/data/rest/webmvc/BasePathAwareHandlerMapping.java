@@ -41,7 +41,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
-import org.springframework.core.Ordered;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
@@ -71,7 +70,6 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
 		this.configuration = configuration;
-		setOrder(Ordered.LOWEST_PRECEDENCE - 150);
 	}
 
 	/* 

@@ -21,7 +21,6 @@ import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -65,8 +64,6 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 		this.mappings = mappings;
 		this.configuration = config;
-
-		setOrder(Ordered.LOWEST_PRECEDENCE - 100);
 	}
 
 	/**

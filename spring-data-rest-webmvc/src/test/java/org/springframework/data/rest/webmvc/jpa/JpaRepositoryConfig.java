@@ -18,7 +18,12 @@ package org.springframework.data.rest.webmvc.jpa;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.rest.webmvc.BasePathAwareController;
+import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Test configuration for JPA.
@@ -39,5 +44,12 @@ public class JpaRepositoryConfig extends JpaInfrastructureConfig {
 	@Bean
 	public TestDataPopulator testDataPopulator() {
 		return new TestDataPopulator();
+	}
+
+	@BasePathAwareController
+	static class BooksHtmlController {
+
+		@RequestMapping(value = "/books/{id}", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
+		void person(@PathVariable String id) {}
 	}
 }

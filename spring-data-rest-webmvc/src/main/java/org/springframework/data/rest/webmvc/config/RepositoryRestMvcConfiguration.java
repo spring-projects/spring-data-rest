@@ -85,6 +85,7 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
 import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.DefaultedPageableHandlerMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.support.DelegatingHandlerMapping;
 import org.springframework.data.rest.webmvc.support.ETagArgumentResolver;
 import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
@@ -115,9 +116,9 @@ import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
@@ -494,23 +495,31 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	/**
-	 * Special {@link org.springframework.web.servlet.HandlerMapping} that only recognizes handler methods defined in the
-	 * provided controller classes.
+	 * The {@link HandlerMapping} to delegate requests to Spring Data REST controllers. Sets up a
+	 * {@link DelegatingHandlerMapping} to make sure manually implemented {@link BasePathAwareController} instances that
+	 * register custom handlers for certain media types don't cause the {@link RepositoryRestHandlerMapping} to be
+	 * omitted.
 	 * 
+	 * @see DATAREST-490
 	 * @return
 	 */
 	@Bean
-	public RequestMappingHandlerMapping repositoryExporterHandlerMapping() {
+	public DelegatingHandlerMapping restHandlerMapping() {
 
-		RepositoryRestHandlerMapping mapping = new RepositoryRestHandlerMapping(resourceMappings(), config());
-		mapping.setJpaHelper(jpaHelper());
+		RepositoryRestHandlerMapping repositoryMapping = new RepositoryRestHandlerMapping(resourceMappings(), config());
+		repositoryMapping.setJpaHelper(jpaHelper());
+		repositoryMapping.setApplicationContext(applicationContext);
+		repositoryMapping.afterPropertiesSet();
 
-		return mapping;
-	}
+		BasePathAwareHandlerMapping basePathMapping = new BasePathAwareHandlerMapping(config());
+		basePathMapping.setApplicationContext(applicationContext);
+		basePathMapping.afterPropertiesSet();
 
-	@Bean
-	public RequestMappingHandlerMapping fallbackMapping() {
-		return new BasePathAwareHandlerMapping(config());
+		List<HandlerMapping> mappings = new ArrayList<HandlerMapping>();
+		mappings.add(basePathMapping);
+		mappings.add(repositoryMapping);
+
+		return new DelegatingHandlerMapping(mappings);
 	}
 
 	@Bean
