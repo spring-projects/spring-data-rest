@@ -130,6 +130,8 @@ NOTE: The value supplied to the `projection` query parameter is the same as spec
 
 It's possible to have multiple projections.
 
+NOTE: Visit <<spring-data-examples.projections>> to see an example project you can experiment with.
+
 === Finding existing projections
 
 Spring Data REST provides hypermedia metadata by exposing <<metadata.alps>> documents, a micro metadata format. To view the ALPS metadata, follow the `profile` link exposed by the root resource. If you navigate down to the ALPS document for `Person` resources (which would be `/alps/persons`), you can find many details about `Person` resources. Projections will be listed along with the details about the `GET` REST transitions, something like this:
