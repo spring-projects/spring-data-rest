@@ -12,7 +12,7 @@ http://alps.io/[ALPS] is a data format for defining simple descriptions of appli
 Spring Data REST provides an ALPS document for every exported repository. It contains information about both the RESTful transitions
 as well as the attributes of each repository.
 
-At the root of a Spring Data REST app is a *profile* link. Assuming you had an app with both *persons* and related *address*, the root
+At the root of a Spring Data REST app is a *profile* link. Assuming you had an app with both *persons* and related *addresses*, the root
 document would look like this:
 
 [source,javascript]

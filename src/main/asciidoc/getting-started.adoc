@@ -6,8 +6,6 @@
 
 Spring Data REST is itself a Spring MVC application and is designed in such a way that it should integrate with your existing Spring MVC applications with very little effort. An existing (or future) layer of services can run alongside Spring Data REST with only minor considerations.
 
-To install Spring Data REST alongside your application, simply add the required dependencies, include the stock `@Configuration` class `RepositoryRestMvcConfiguration` (or subclass it and perform any required manual configuration), and map some URLs to be managed by Spring Data REST.
-
 [[getting-started.boot]]
 == Adding Spring Data REST to a Spring Boot project
 
@@ -37,6 +35,8 @@ dependencies {
 ----
 
 NOTE: You don't have to supply the version number if you are using the http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#build-tool-plugins-gradle-plugin[Spring Boot Gradle plugin] or the http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#build-tool-plugins-maven-plugin[Spring Boot Maven plugin].
+
+When using Spring Boot, Spring Data REST gets configured automatically.
 
 [[getting-started.gradle]]
 == Adding Spring Data REST to a Gradle project
@@ -72,19 +72,61 @@ To install Spring Data REST alongside your existing Spring MVC application, you 
 
 IMPORTANT: This step is unnecessary if you are using Spring Boot's auto-configuration. Spring Boot will automatically enable Spring Data REST when you include *spring-boot-starter-data-rest* and either in your list of dependencies, and you your app is flagged with either `@SpringBootApplication` or `@EnableAutoConfiguration`.
 
-In the following example, we'll subclass the standard `RepositoryRestMvcConfiguration` and add some `ResourceMapping` configurations for the `Person` domain object to alter how the JSON will look and how the links to related entities will be handled. 
+Make sure you also configure Spring Data repositories for the store you use. For details on that, please consult the reference documentation for the http://projects.spring.io/spring-data/[corresponding Spring Data module].
+
+[[getting-started.basic-settings]]
+== Basic settings for Spring Data REST
+
+=== Changing the base URI
+
+By default, Spring Data REST serves up REST resources at the root URI, "/". There are multiple ways to change the base path.
+
+With Spring Boot 1.2+, all it takes is a single property in `application.properties`:
+
+[source,properties]
+----
+spring.data.rest.basePath=/api
+----
+
+With Spring Boot 1.1 or earlier, or if you are not using Spring Boot, simply do this:
 
 [source,java]
 ----
 @Configuration
-@Import(RepositoryRestMvcConfiguration.class)
-public class MyWebConfiguration extends RepositoryRestMvcConfiguration {
+public class CustomizedRestMvcConfiguration extends RepositoryRestMvcConfiguration {
 
-  // … further configuration
+  @Override
+  public RepositoryRestConfiguration config() {
+    RepositoryRestConfiguration config = super.config();
+    config.setBasePath("/api");
+    return config;
+  }
 }
 ----
 
-Make sure you also configure Spring Data repositories for the store you use. For details on that, please consult the reference documentation for the corresponding Spring Data module.
+In your Spring application configuration, introduce this with `@Import(CustomizedRestMvcConfiguration.class)`.
+
+Both of these approaches will change the base path to `/api`. 
+
+=== Changing other Spring Data REST properties
+
+There are many properties you can alter:
+
+.Spring Boot configurable properties
+[cols="1,5". options="header"]
+|===
+| Name               | Description
+
+| basePath           | root URI for Spring Data REST
+| defaultPageSize    | change default number of items served in a single page
+| maxPageSize        | change maximum number of items in a single page
+| pageParamName      | change name of the query parameter for selecting pages
+| limitParamName     | change name of the query parameter for number of items to show in a page
+| sortParamName      | change name of the query parameter for sorting
+| defaultMediaType   | change default media type to use when none is specified
+| returnBodyOnCreate | change if a body should be returned on creating a new entity
+| returnBodyOnupdate | change if a body should be returned on updating an entity
+|===
 
 [[getting-started.bootstrap]]
 == Starting the application
@@ -92,6 +134,14 @@ Make sure you also configure Spring Data repositories for the store you use. For
 At this point, you must also configure your key data store.
 
 Spring Data REST officially supports:
+
+* http://projects.spring.io/spring-data-jpa/[Spring Data JPA]
+* http://projects.spring.io/spring-data-mongodb/[Spring Data MongoDB]
+* http://projects.spring.io/spring-data-neo4j/[Spring Data Neo4j]
+* http://projects.spring.io/spring-data-gemfire/[Spring Data GemFire]
+* http://projects.spring.io/spring-data-cassandra/[Spring Data Cassandra]
+
+Here are some Getting Started guides to help you get up and running quickly:
 
 * https://spring.io/guides/gs/accessing-data-rest/[Spring Data JPA]
 * https://spring.io/guides/gs/accessing-mongodb-data-rest/[Spring Data MongoDB]
@@ -101,5 +151,7 @@ Spring Data REST officially supports:
 These linked guides introduce how to add dependencies for the related data store, configure domain objects, and define repositories.
 
 You can run your application as either a Spring Boot app (with links showns above) or configure it as a classic Spring MVC app.
+
+NOTE: In general Spring Data REST doesn't add functionality to a given data store. This means that by definition, it should work with any Spring Data project that supports the Repository programming model. The data stores listed above are simply the ones we have written integration tests to verify.
 
 From this point, you can are free to <<customizing-sdr,customize Spring Data REST>> with various options.
