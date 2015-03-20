@@ -103,7 +103,7 @@ public abstract class AbstractWebIntegrationTests {
 		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
 		MockHttpServletResponse response = mvc.perform(put(href).content(payload.toString()).contentType(mediaType)).//
-				andExpect(status().is(both(greaterThanOrEqualTo(200)).and(lessThan(300)))).//
+				andExpect(status().is2xxSuccessful()).//
 				andReturn().getResponse();
 
 		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(link);
@@ -115,7 +115,7 @@ public abstract class AbstractWebIntegrationTests {
 
 		MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.request(HttpMethod.PATCH, href).//
 				content(payload.toString()).contentType(mediaType)).//
-				andExpect(status().isNoContent()).//
+				andExpect(status().is2xxSuccessful()).//
 				andReturn().getResponse();
 
 		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(href);

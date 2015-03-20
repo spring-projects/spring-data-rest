@@ -22,7 +22,6 @@ import static org.springframework.http.HttpMethod.*;
 
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -34,7 +33,6 @@ import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.support.ETag;
-import org.springframework.hateoas.ResourceSupport;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -47,8 +45,8 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
  * Integration tests for {@link RepositoryEntityController}.
  * 
  * @author Oliver Gierke
+ * @author Jeremy Rickard
  */
-@SuppressWarnings("ALL")
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
 public class RepositoryEntityControllerIntegrationTests extends AbstractControllerIntegrationTests {
@@ -189,94 +187,61 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	 * @see DATAREST-34
 	 */
 	@Test
-	public void verifyAcceptHeaderCanControlBodyReturnOnPutItemResource() throws HttpRequestMethodNotSupportedException {
+	public void returnsBodyOnPutForUpdateIfAcceptHeaderPresentByDefault() throws Exception {
+
 		RootResourceInformation request = getResourceInformation(Order.class);
+		Order order = request.getInvoker().invokeSave(new Order(new Person()));
 
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
 				entities.getPersistentEntity(Order.class)).build();
 
-		configuration.setReturnBodyOnCreate(Boolean.FALSE);
-		configuration.setReturnBodyOnUpdate(Boolean.FALSE);
-
-		ResponseEntity<?> response = controller.putItemResource(request, persistentEntityResource, 1L, assembler,
-				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
-
-		assert(!response.hasBody());
-
-
-		configuration.setReturnBodyOnCreate(Boolean.TRUE);
-		configuration.setReturnBodyOnUpdate(Boolean.TRUE);
-
-		response = controller.putItemResource(request, persistentEntityResource, 1L, assembler,
-				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
-
-		configuration.setReturnBodyOnCreate(Boolean.FALSE);
-		configuration.setReturnBodyOnUpdate(Boolean.FALSE);
-
-		response = controller.putItemResource(request, persistentEntityResource, 1L, assembler,
-				ETag.NO_ETAG, null);
-
-		assert(!response.hasBody());
-
-		configuration.setReturnBodyOnCreate(null);
-		configuration.setReturnBodyOnUpdate(null);
-
-		response = controller.putItemResource(request, persistentEntityResource, 1L, assembler,
-				ETag.NO_ETAG, null);
-
-		assert(!response.hasBody());
-
-		configuration.setReturnBodyOnCreate(null);
-		configuration.setReturnBodyOnUpdate(null);
-
-		response = controller.putItemResource(request, persistentEntityResource, 1L, assembler,
-				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
-
-		assert(response.hasBody());
+		assertThat(
+				controller.putItemResource(request, persistentEntityResource, order.getId(), assembler, ETag.NO_ETAG,
+						MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
 	}
 
 	/**
 	 * @see DATAREST-34
 	 */
 	@Test
-	public void verifyAcceptHeaderCanControlBodyReturnPostCollectionResource() throws HttpRequestMethodNotSupportedException {
-		RootResourceInformation request = getResourceInformation(Order.class);
+	public void returnsBodyForCreatingPutIfAcceptHeaderPresentByDefault() throws HttpRequestMethodNotSupportedException {
 
+		RootResourceInformation request = getResourceInformation(Order.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
 				entities.getPersistentEntity(Order.class)).build();
 
-		configuration.setReturnBodyOnCreate(null);
-
-		ResponseEntity<ResourceSupport> response =
-				controller.postCollectionResource(request, persistentEntityResource, assembler, MediaType.APPLICATION_JSON_VALUE);
-
-
-		assert(response.hasBody());
-
-
-		response =
-				controller.postCollectionResource(request, persistentEntityResource, assembler, null);
-
-
-		assert(!response.hasBody());
-
-
-		configuration.setReturnBodyOnCreate(Boolean.FALSE);
-		response =
-				controller.postCollectionResource(request, persistentEntityResource, assembler, MediaType.APPLICATION_JSON_VALUE);
-
-		assert(!response.hasBody());
-
-		configuration.setReturnBodyOnCreate(Boolean.TRUE);
-		response =
-				controller.postCollectionResource(request, persistentEntityResource, assembler, null);
-
-		assert(response.hasBody());
+		assertThat(
+				controller.putItemResource(request, persistentEntityResource, 1L, assembler, ETag.NO_ETAG,
+						MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
 	}
 
-	@After
-	public void cleanUp() {
-		configuration.setReturnBodyOnCreate(Boolean.FALSE);
-		configuration.setReturnBodyOnUpdate(Boolean.FALSE);
+	/**
+	 * @see DATAREST-34
+	 */
+	@Test
+	public void returnsBodyForPostIfAcceptHeaderIsPresentByDefault() throws Exception {
+
+		RootResourceInformation request = getResourceInformation(Order.class);
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
+				entities.getPersistentEntity(Order.class)).build();
+
+		assertThat(
+				controller.postCollectionResource(request, persistentEntityResource, assembler,
+						MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
+	}
+
+	/**
+	 * @see DATAREST-34
+	 */
+	@Test
+	public void doesNotReturnBodyForPostIfNoAcceptHeaderPresentByDefault() throws Exception {
+
+		RootResourceInformation request = getResourceInformation(Order.class);
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
+				entities.getPersistentEntity(Order.class)).build();
+
+		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, null).hasBody(),
+				is(false));
+		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, "").hasBody(), is(false));
 	}
 }

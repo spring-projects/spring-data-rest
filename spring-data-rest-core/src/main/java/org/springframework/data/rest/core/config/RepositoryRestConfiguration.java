@@ -28,8 +28,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
+ * Spring Data REST configuration options.
+ * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Jeremy Rickard
  */
 @SuppressWarnings("deprecation")
 public class RepositoryRestConfiguration {
@@ -46,8 +49,8 @@ public class RepositoryRestConfiguration {
 	private String sortParamName = "sort";
 	private MediaType defaultMediaType = MediaTypes.HAL_JSON;
 	private boolean useHalAsDefaultJsonMediaType = true;
-	private Boolean returnBodyOnCreate = Boolean.FALSE;
-	private Boolean returnBodyOnUpdate = Boolean.FALSE;
+	private Boolean returnBodyOnCreate = null;
+	private Boolean returnBodyOnUpdate = null;
 	private List<Class<?>> exposeIdsFor = new ArrayList<Class<?>>();
 	private ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
@@ -294,42 +297,84 @@ public class RepositoryRestConfiguration {
 	}
 
 	/**
+	 * Convenience method to activate returning response bodies for all {@code PUT} and {@code POST} requests, i.e. both
+	 * creating and updating entities.
+	 * 
+	 * @param returnBody can be {@literal null}, expressing the decision shall be derived from the presence of an
+	 *          {@code Accept} header in the request.
+	 * @return
+	 */
+	public RepositoryRestConfiguration setReturnBodyForPutAndPost(Boolean returnBody) {
+
+		setReturnBodyOnCreate(returnBody);
+		setReturnBodyOnUpdate(returnBody);
+
+		return this;
+	}
+
+	/**
 	 * Whether to return a response body after creating an entity.
 	 * 
-	 * @return {@link java.lang.Boolean#TRUE} to return a body on create, {@link java.lang.Boolean#FALSE} otherwise.
-	 * 				If {@literal null}, defer to HTTP Accept header
+	 * @return {@link java.lang.Boolean#TRUE} to enforce returning a body on create, {@link java.lang.Boolean#FALSE}
+	 *         otherwise. If {@literal null} and an {@code Accept} header present in the request will cause a body being
+	 *         returned. If the {@code Accept} header is not present, no body will be rendered.
+	 * @deprecated use {@link #returnBodyOnCreate(String)}
 	 */
+	@Deprecated
 	public Boolean isReturnBodyOnCreate() {
 		return returnBodyOnCreate;
 	}
 
 	/**
+	 * Whether to return a response body after creating an entity considering the given accept header.
+	 * 
+	 * @param acceptHeader can be {@literal null} or empty.
+	 * @return
+	 */
+	public boolean returnBodyOnCreate(String acceptHeader) {
+		return returnBodyOnCreate == null ? StringUtils.hasText(acceptHeader) : returnBodyOnCreate;
+	}
+
+	/**
 	 * Set whether to return a response body after creating an entity.
 	 * 
-	 * @param returnBodyOnCreate {@link java.lang.Boolean#TRUE} to return a body on create, {@link java.lang.Boolean#FALSE} otherwise.
-	 * 								If {@literal null}, defer to HTTP Accept header
+	 * @param returnBody can be {@literal null}, expressing the decision shall be derived from the presence of an
+	 *          {@code Accept} header in the request.
 	 * @return {@literal this}
 	 */
-	public RepositoryRestConfiguration setReturnBodyOnCreate(Boolean returnBodyOnCreate) {
-		this.returnBodyOnCreate = returnBodyOnCreate;
+	public RepositoryRestConfiguration setReturnBodyOnCreate(Boolean returnBody) {
+		this.returnBodyOnCreate = returnBody;
 		return this;
 	}
 
 	/**
 	 * Whether to return a response body after updating an entity.
 	 * 
-	 * @return {@link java.lang.Boolean#TRUE} to return a body on update, {@link java.lang.Boolean#FALSE} otherwise.
-	 * 				If {@literal null}, defer to HTTP Accept header
+	 * @return {@link java.lang.Boolean#TRUE} to enforce returning a body on create, {@link java.lang.Boolean#FALSE}
+	 *         otherwise. If {@literal null} and an {@code Accept} header present in the request will cause a body being
+	 *         returned. If the {@code Accept} header is not present, no body will be rendered.
+	 * @deprecated use {@link #returnBodyOnUpdate(String)}
 	 */
+	@Deprecated
 	public Boolean isReturnBodyOnUpdate() {
 		return returnBodyOnUpdate;
 	}
 
 	/**
+	 * Whether to return a response body after updating an entity considering the given accept header.
+	 * 
+	 * @param acceptHeader can be {@literal null} or empty.
+	 * @return
+	 */
+	public boolean returnBodyOnUpdate(String acceptHeader) {
+		return returnBodyOnUpdate == null ? StringUtils.hasText(acceptHeader) : returnBodyOnUpdate;
+	}
+
+	/**
 	 * Set whether to return a response body after updating an entity.
 	 *
-	 * @param returnBodyOnUpdate {@link java.lang.Boolean#TRUE} to return a body on update, {@link java.lang.Boolean#FALSE} otherwise.
-	 * 								If {@literal null}, defer to HTTP Accept header
+	 * @param returnBody can be {@literal null}, expressing the decision shall be derived from the presence of an
+	 *          {@code Accept} header in the request.
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setReturnBodyOnUpdate(Boolean returnBodyOnUpdate) {
