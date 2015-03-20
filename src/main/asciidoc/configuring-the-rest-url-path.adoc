@@ -16,7 +16,7 @@ To change how the repository is exported, add a `@RestResource` annotation at th
 
 [source,java]
 ----
-@RestResource(path = "people")
+@RepositoryRestResource(path = "people")
 interface PersonRepository extends CrudRepository<Person, Long> {}
 ----
 
@@ -40,7 +40,7 @@ To change the segment of the URL under which this query method is exposed, use t
 
 [source,java]
 ----
-@RestResource(path = "people")
+@RepositoryRestResource(path = "people")
 interface PersonRepository extends CrudRepository<Person, Long> {
 
   @RestResource(path = "names")
@@ -71,7 +71,7 @@ To change the rel value, use the `rel` property on the `@RestResource` annotatio
 
 [source,java]
 ----
-@RestResource(path = "people")
+@RepositoryRestResource(path = "people")
 interface PersonRepository extends CrudRepository<Person, Long> {
 
   @RestResource(path = "names", rel = "names")
@@ -97,7 +97,7 @@ NOTE: These snippets of JSON assume you are using Spring Data REST's default for
 
 [source,java]
 ----
-@RestResource(path = "people", rel = "people")
+@RepositoryRestResource(path = "people", rel = "people")
 interface PersonRepository extends CrudRepository<Person, Long> {
 
   @RestResource(path = "names", rel = "names")
@@ -153,7 +153,7 @@ For example, to skip exporting a Repository:
 
 [source,java]
 ----
-@RestResource(exported = false)
+@RepositoryRestResource(exported = false)
 interface PersonRepository extends CrudRepository<Person, Long> {}
 ----
 
@@ -161,7 +161,7 @@ To skip exporting a query method:
 
 [source,java]
 ----
-@RestResource(path = "people", rel = "people")
+@RepositoryRestResource(path = "people", rel = "people")
 interface PersonRepository extends CrudRepository<Person, Long> {
 
   @RestResource(exported = false)
@@ -184,7 +184,7 @@ public class Person {
 }
 ----
 
-WARNING: Projections provide the means to change what is exported and effectively side step these settings. If you create any projections against the same domain object, it's your responsiblity to NOT export the fields.
+WARNING: Projections provide the means to change what is exported and effectively <<projections-excerpts.hidden-data,side step these settings>>. If you create any projections against the same domain object, it's your responsiblity to NOT export the fields. See 
 
 [[customizing-sdr.hiding-repository-crud-methods]]
 == Hiding repository CRUD methods
@@ -193,7 +193,7 @@ If you don't want to expose a save or delete method on your `CrudRepository`, yo
 
 [source,java]
 ----
-@RestResource(path = "people", rel = "people")
+@RepositoryRestResource(path = "people", rel = "people")
 interface PersonRepository extends CrudRepository<Person, Long> {
 
   @Override

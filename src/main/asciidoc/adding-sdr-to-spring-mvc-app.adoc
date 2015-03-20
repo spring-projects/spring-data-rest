@@ -1,6 +1,8 @@
 [[customizing-sdr.adding-sdr-to-spring-mvc-app]]
 = Adding Spring Data REST to an existing Spring MVC Application
 
+NOTE: The following steps are unnecessary if you are using Spring Boot. Adding *spring-boot-starter-data-rest* will cause it to automatically to get added to your application.
+
 If you have an existing Spring MVC application and you'd like to integrate Spring Data REST, it's actually very easy.
 
 Somewhere in your Spring MVC configuration (most likely where you configure your MVC resources) add a bean reference to the JavaConfig class that is responsible for configuring the `RepositoryRestController`. The class name is `org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration`.
