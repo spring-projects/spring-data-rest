@@ -43,12 +43,17 @@ curl -v http://localhost:8080/
 { "_links" : {
     "orders" : {
       "href" : "http://localhost:8080/orders"
+    },
+    "profile" : {
+      "href" : "http://localhost:8080/api/alps"
     }
   }
 }
 ----
 
-The  property of the result document is an object in itself consisting of keys representing the relation type with nested link objects as specified in HAL.
+The property of the result document is an object in itself consisting of keys representing the relation type with nested link objects as specified in HAL.
+
+NOTE: For more details about the *profile* link, see <<metadata.alps>>.
 
 [[repository-resources.collection-resource]]
 == The collection resource
