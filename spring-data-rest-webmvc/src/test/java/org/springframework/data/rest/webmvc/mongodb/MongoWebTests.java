@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,6 +33,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -147,5 +149,22 @@ public class MongoWebTests extends CommonWebTests {
 
 		assertThat(JsonPath.read(response.getContentAsString(), "$.lastname"), is(nullValue()));
 		assertThat(JsonPath.read(response.getContentAsString(), "$.address.zipCode"), is((Object) "ZIP"));
+	}
+
+	/**
+	 * @see DATAREST-491
+	 */
+	@Test
+	public void updatesMapPropertyCorrectly() throws Exception {
+
+		Link profilesLink = client.discoverUnique("profiles");
+		Link profileLink = assertHasContentLinkWithRel("self", client.request(profilesLink));
+
+		Profile profile = new Profile();
+		profile.setMetadata(Collections.singletonMap("Key", "Value"));
+
+		putAndGet(profileLink, new ObjectMapper().writeValueAsString(profile), MediaType.APPLICATION_JSON);
+
+		client.follow(profileLink).andExpect(jsonPath("$.metadata.Key").value("Value"));
 	}
 }

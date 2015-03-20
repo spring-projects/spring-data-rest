@@ -181,7 +181,7 @@ public class DomainObjectReader {
 				BeanWrapper<T> wrapper = BeanWrapper.create(target, null);
 				Object nested = wrapper.getProperty(property);
 
-				if (nested != null) {
+				if (nested != null && property.isEntity()) {
 					doMerge((ObjectNode) child, nested, mapper);
 				}
 
