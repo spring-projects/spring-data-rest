@@ -45,7 +45,7 @@ Once it finds a bean with this annotation, it iterates over the exposed methods 
 
 [source,java]
 ----
-@RepositoryEventHandler
+@RepositoryEventHandler <1>
 public class PersonEventHandler {
 
   @HandleBeforeSave
@@ -60,9 +60,11 @@ public class PersonEventHandler {
 }
 ----
 
+<1> It's possible to narrow the types this handler applies against by using `@RepositoryEventHandler(Person.class)`.
+
 The domain type whose events you're interested in is determined from the type of the first parameter of the annotated methods.
 
-Just declare an instance of your annotated bean in your `ApplicationContext` and the `BeanPostProcessor` that is by default created in `RepositoryRestMvcConfiguration` will inspect the bean for handlers and wire them to the correct events.
+To register your event handler, either mark the class with one of Spring's `@Component` stereotypes so it can be picked up by `@SpringBootApplication` or `@ComponentScan`. Or declare an instance of your annotated bean in your `ApplicationContext`. Then the `BeanPostProcessor` that is created in `RepositoryRestMvcConfiguration` will inspect the bean for handlers and wire them to the correct events.
 
 [source,java]
 ----
@@ -75,3 +77,5 @@ public class RepositoryConfiguration {
   }
 }
 ----
+
+NOTE: Spring Data REST events are customized http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#context-functionality-events[Spring application events]. Spring events are synchronous by default, unless they get republished across a boundary (like issuing a WebSocket event or crossing into a thread).
