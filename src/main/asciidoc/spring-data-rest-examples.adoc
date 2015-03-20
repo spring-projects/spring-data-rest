@@ -1,0 +1,29 @@
+[[spring-data-examples]]
+[appendix]
+= Spring Data REST example projects
+
+This appendix contains a list of Spring Data REST sample applications. The exact version of each example isn't guaranteed to match the version of this reference manual.
+
+NOTE: To get them all, visit https://github.com/spring-projects/spring-data-examples and either clone or download a zipball. This will give you example apps for ALL supported Spring Data projects. Simply avigate to `spring-data-examples/rest`.
+
+[[spring-data-examples.multi-store]]
+== Multi-store example
+
+https://github.com/spring-projects/spring-data-examples/tree/master/rest/multi-store[This example] shows how to mix together several underlying Spring Data projects.
+
+[[spring-data-examples.projections]]
+== Projections
+
+https://github.com/spring-projects/spring-data-examples/tree/master/rest/projections[This example] contains more detailed code you can use to poke around with <<projections-excerpts,projections>>.
+
+[[spring-data-examples.spring-security]]
+== Spring Data REST + Spring Security
+
+https://github.com/spring-projects/spring-data-examples/tree/master/rest/security[This example] shows how to secure a http://projects.spring.io/spring-data-rest[Spring Data REST] application in multiple ways with http://projects.spring.io/spring-security[Spring Security].
+
+[[spring-data-examples.starbucks]]
+== Starbucks example
+
+https://github.com/spring-projects/spring-data-examples/tree/master/rest/starbucks[This example] exposes 10843 Starbucks coffee shops via a RESTful API that allows to access the stores in a hypermedia based way and exposes a resource to execute geo-location search for coffee shops.
+
+

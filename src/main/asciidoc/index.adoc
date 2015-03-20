@@ -33,3 +33,4 @@ include::customizing-sdr.adoc[leveloffset=+1]
 
 :numbered!:
 include::example-api-usage-with-curl.adoc[leveloffset=+1]
+include::spring-data-rest-examples.adoc[leveloffset=+1]
