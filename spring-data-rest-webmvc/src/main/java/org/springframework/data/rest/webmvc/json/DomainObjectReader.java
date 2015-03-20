@@ -181,7 +181,7 @@ public class DomainObjectReader {
 				PersistentPropertyAccessor accessor = entity.getPropertyAccessor(target);
 				Object nested = accessor.getProperty(property);
 
-				if (nested != null) {
+				if (nested != null && property.isEntity()) {
 					doMerge((ObjectNode) child, nested, mapper);
 				}
 

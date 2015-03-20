@@ -22,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.After;
 import org.junit.Before;
@@ -255,5 +256,22 @@ public class MongoWebTests extends CommonWebTests {
 		client.follow(colleaguesLink).//
 				andExpect(status().isOk()).//
 				andExpect(jsonPath("$").exists());
+	}
+
+	/**
+	 * @see DATAREST-491
+	 */
+	@Test
+	public void updatesMapPropertyCorrectly() throws Exception {
+
+		Link profilesLink = client.discoverUnique("profiles");
+		Link profileLink = assertHasContentLinkWithRel("self", client.request(profilesLink));
+
+		Profile profile = new Profile();
+		profile.setMetadata(Collections.singletonMap("Key", "Value"));
+
+		putAndGet(profileLink, mapper.writeValueAsString(profile), MediaType.APPLICATION_JSON);
+
+		client.follow(profileLink).andExpect(jsonPath("$.metadata.Key").value("Value"));
 	}
 }
