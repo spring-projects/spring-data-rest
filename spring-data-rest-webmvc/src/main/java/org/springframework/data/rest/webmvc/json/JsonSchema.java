@@ -30,6 +30,7 @@ import org.springframework.data.rest.core.config.JsonSchemaFormat;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -127,7 +128,7 @@ public class JsonSchema {
 			return "string";
 		} else if (INTEGER_TYPES.contains(type)) {
 			return "integer";
-		} else if (Number.class.isAssignableFrom(type)) {
+		} else if (ClassUtils.isAssignable(Number.class, type)) {
 			return "number";
 		} else {
 			return "object";
