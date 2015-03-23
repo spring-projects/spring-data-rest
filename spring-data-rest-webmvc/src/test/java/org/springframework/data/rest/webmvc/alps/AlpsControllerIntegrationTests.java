@@ -18,7 +18,6 @@ package org.springframework.data.rest.webmvc.alps;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.Before;
@@ -37,6 +36,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -104,7 +104,6 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link peopleLink = discoverUnique(profileLink.getHref(), "people");
 
 		mvc.perform(get(peopleLink.getHref())).//
-				andDo(print()).//
 				andExpect(jsonPath("$.version").value("1.0")).//
 				andExpect(jsonPath("$.descriptors[*].name", hasItems("people", "person")));
 	}
@@ -121,12 +120,26 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		assertThat(usersLink, is(nullValue()));
 
-		mvc.perform(get(itemsLink.getHref())).//
-				andDo(print()).//
-				andExpect(jsonPath("$.descriptors[*].descriptors[*].name", hasItems("id", "name"))).//
-				andExpect(jsonPath("$.descriptors[*].descriptors[*].name",
-					everyItem(not(isIn(new String[]{"owner", "manager", "curator"})))));
+		mvc.perform(get(itemsLink.getHref()))
+				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", hasItems("id", "name")))
+				.andExpect(
+						jsonPath("$.descriptors[*].descriptors[*].name", everyItem(not(isIn(new String[] { "owner", "manager",
+								"curator" })))));
+	}
 
+	/**
+	 * @see DATAREST-494
+	 */
+	@Test
+	public void linksToJsonSchemaFromRepresentationDescriptor() throws Exception {
+
+		Link profileLink = discoverUnique("/", "profile");
+		Link usersLink = discoverUnique(profileLink.getHref(), "items");
+
+		assertThat(usersLink, is(notNullValue()));
+
+		mvc.perform(get(usersLink.getHref())).andDo(MockMvcResultHandlers.print())
+				.andExpect(jsonPath("$.descriptors[?(@.id == 'item-representation')].href", is(notNullValue())));
 	}
 
 	private Link discoverUnique(String href, String rel) throws Exception {

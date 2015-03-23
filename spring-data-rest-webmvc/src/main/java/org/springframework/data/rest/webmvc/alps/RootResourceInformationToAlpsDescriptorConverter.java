@@ -150,6 +150,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 		return descriptor().//
 				id(metadata.getItemResourceRel().concat("-representation")).//
+				href(entityLinks.linkFor(type).slash("schema").toString()).//
 				doc(getDocFor(metadata.getItemResourceDescription())).//
 				descriptors(buildPropertyDescriptors(type, metadata.getItemResourceRel())).//
 				build();
