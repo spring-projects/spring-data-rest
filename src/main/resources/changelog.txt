@@ -1,6 +1,19 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.3.0.RELEASE (2015-03-23)
+---------------------------------------------
+* DATAREST-494 - Link to JSON Schema resource from ALPS resources.
+* DATAREST-493 - Release 2.3 GA.
+* DATAREST-492 - JSON Schema reports primitive numbers as object.
+* DATAREST-491 - PersistentEntityResourceHandlerMethodArgumentResolver dump in PUT requests with HashMap.
+* DATAREST-490 - Repository controllers not invoked if resource is handled manually in dedicated media type.
+* DATAREST-478 - Update reference docs to use HAL and remove deprecated annotations.
+* DATAREST-453 - Add links to Spring Data Examples inside reference docs.
+* DATAREST-449 - Skim through reference docs and clean up obvious deficiencies.
+* DATAREST-34 - Support response body negotiation for PUT and POST requests via Accept header.
+
+
 Changes in version 2.3.0.RC1 (2015-03-05)
 -----------------------------------------
 * DATAREST-487 - Release 2.3 RC1.
