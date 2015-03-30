@@ -62,7 +62,11 @@ public class Jackson2DatatypeHelper {
 	private static class Hibernate4ModuleRegistrar {
 
 		public static void registerModule(ObjectMapper mapper) {
-			mapper.registerModule(new Hibernate4Module());
+
+			Hibernate4Module module = new Hibernate4Module();
+			module.enable(Hibernate4Module.Feature.FORCE_LAZY_LOADING);
+
+			mapper.registerModule(module);
 		}
 	}
 
