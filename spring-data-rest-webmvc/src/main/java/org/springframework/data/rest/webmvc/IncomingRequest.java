@@ -62,7 +62,7 @@ public class IncomingRequest {
 	 * @return
 	 */
 	public boolean isJsonPatchRequest() {
-		return isPatchRequest() && RestMediaTypes.JSON_PATCH_JSON.equals(contentType);
+		return isPatchRequest() && RestMediaTypes.JSON_PATCH_JSON.isCompatibleWith(contentType);
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class IncomingRequest {
 	 * @return
 	 */
 	public boolean isJsonMergePatchRequest() {
-		return isPatchRequest() && RestMediaTypes.MERGE_PATCH_JSON.equals(contentType);
+		return isPatchRequest() && RestMediaTypes.MERGE_PATCH_JSON.isCompatibleWith(contentType);
 	}
 
 	/**

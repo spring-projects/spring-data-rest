@@ -35,7 +35,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
  * 
  * @author Oliver Gierke
  */
-public class AugmentingHandlerMappingUnitTest {
+public class AugmentingHandlerMappingUnitTests {
 
 	@Configuration
 	static class Config {
