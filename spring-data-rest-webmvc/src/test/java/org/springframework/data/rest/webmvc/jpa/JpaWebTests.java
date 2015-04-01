@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import com.jayway.jsonpath.JsonPath;
  * 
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Evgeniy Zakharchenko
  */
 @Transactional
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
@@ -536,6 +537,8 @@ public class JpaWebTests extends CommonWebTests {
 
 		// Embeddes content of related entity but no link to it
 		assertHasJsonPathValue(firstAuthorPath.concat("._embedded.books[0].title"), response);
+		// Each embedded item has to have its links
+		assertHasJsonPathValue(firstAuthorPath.concat("._embedded.books[0]._links"), response);
 		assertJsonPathDoesntExist(firstAuthorPath.concat("._links.books"), response);
 
 		// Access item resource and expect link to related resource present

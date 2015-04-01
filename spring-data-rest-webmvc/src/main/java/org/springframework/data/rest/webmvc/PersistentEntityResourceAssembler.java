@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.springframework.util.Assert;
  * {@link ResourceAssembler} to create {@link PersistentEntityResource}s for arbitrary domain objects.
  * 
  * @author Oliver Gierke
+ * @author Evgeniy Zakharchenko
  */
 public class PersistentEntityResourceAssembler implements ResourceAssembler<Object, PersistentEntityResource> {
 
@@ -98,12 +99,32 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 				renderAllAssociationLinks().build();
 	}
 
+	/**
+	 * Prepares a builder instance. Honors embedded associations.
+	 * @param instance projection of the entity
+	 * @param source entity itself
+	 * @return
+	 */
 	private Builder wrap(Object instance, Object source) {
 
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(source.getClass());
 
 		return PersistentEntityResource.build(instance, entity).//
 				withEmbedded(getEmbeddedResources(source)).//
+				withLink(getSelfLinkFor(source));
+	}
+
+	/**
+	 * Prepares a builder instance. Doesn't honor embedded associations.
+	 * Used for inlining of associations in order to prevent recursion.
+	 * @param instance projection of the entity
+	 * @param source entity itself
+	 * @return
+	 */
+	private Builder wrapWithoutEmbedded(Object instance, Object source) {
+		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(source.getClass());
+
+		return PersistentEntityResource.build(instance, entity).//
 				withLink(getSelfLinkFor(source));
 	}
 
@@ -164,14 +185,16 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 					for (Object element : collection) {
 						if (element != null) {
-							nestedCollection.add(projector.projectExcerpt(element));
+							PersistentEntityResource resource = wrapWithoutEmbedded(projector.projectExcerpt(element), element).build();
+							nestedCollection.add(resource);
 						}
 					}
 
 					associationProjections.add(wrappers.wrap(nestedCollection, rel));
 
 				} else {
-					associationProjections.add(wrappers.wrap(projector.projectExcerpt(value), rel));
+					PersistentEntityResource resource = wrapWithoutEmbedded(projector.projectExcerpt(value), value).build();
+					associationProjections.add(wrappers.wrap(resource, rel));
 				}
 			}
 		});
