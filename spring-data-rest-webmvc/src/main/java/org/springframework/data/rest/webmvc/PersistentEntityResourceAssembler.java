@@ -32,6 +32,7 @@ import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.support.Projector;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
@@ -164,14 +165,14 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 					for (Object element : collection) {
 						if (element != null) {
-							nestedCollection.add(projector.projectExcerpt(element));
+							nestedCollection.add(getExcerptResource(element));
 						}
 					}
 
 					associationProjections.add(wrappers.wrap(nestedCollection, rel));
 
 				} else {
-					associationProjections.add(wrappers.wrap(projector.projectExcerpt(value), rel));
+					associationProjections.add(wrappers.wrap(getExcerptResource(value), rel));
 				}
 			}
 		});
@@ -202,5 +203,15 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 		Link resourceLink = entityLinks.linkToSingleResource(entity.getType(), id);
 		return new Link(resourceLink.getHref(), Link.REL_SELF);
+	}
+
+	/**
+	 * Returns a {@link Resource} instance for the excerpt of the given source entity.
+	 * 
+	 * @param entity must not be {@literal null}.
+	 * @return
+	 */
+	private Resource<Object> getExcerptResource(Object entity) {
+		return new Resource<Object>(projector.projectExcerpt(entity), getSelfLinkFor(entity));
 	}
 }

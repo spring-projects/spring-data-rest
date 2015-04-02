@@ -165,9 +165,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			resource.getPersistentEntity().doWithAssociations(associationHandler);
 
 			for (Link link : associationHandler.getLinks()) {
-				if (resource.shouldRenderLink(link)) {
-					links.add(link);
-				}
+				links.add(link);
 			}
 
 			Resource<Object> resourceToRender = new Resource<Object>(resource.getContent(), links) {

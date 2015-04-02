@@ -86,29 +86,6 @@ public class PersistentEntityResource extends Resource<Object> {
 	}
 
 	/**
-	 * Returns whether the given {@link Link} shall be rendered for the resource.
-	 * 
-	 * @param link must not be {@literal null}.
-	 * @return
-	 */
-	public boolean shouldRenderLink(Link link) {
-
-		Assert.notNull(link, "Link must not be null!");
-
-		if (enforceAssociationLinks) {
-			return true;
-		}
-
-		for (EmbeddedWrapper wrapper : embeddeds) {
-			if (wrapper.hasRel(link.getRel())) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
 	 * Creates a new {@link Builder} to create {@link PersistentEntityResource}s eventually.
 	 * 
 	 * @param content must not be {@literal null}.

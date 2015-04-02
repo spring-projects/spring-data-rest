@@ -534,9 +534,10 @@ public class JpaWebTests extends CommonWebTests {
 		// Has main content
 		assertHasJsonPathValue(firstAuthorPath.concat(".name"), response);
 
-		// Embeddes content of related entity but no link to it
+		// Embeddes content of related entity, self link and keeps relation link
 		assertHasJsonPathValue(firstAuthorPath.concat("._embedded.books[0].title"), response);
-		assertJsonPathDoesntExist(firstAuthorPath.concat("._links.books"), response);
+		assertHasJsonPathValue(firstAuthorPath.concat("._embedded.books[0]._links.self"), response);
+		assertHasJsonPathValue(firstAuthorPath.concat("._links.books"), response);
 
 		// Access item resource and expect link to related resource present
 		String content = response.getContentAsString();
