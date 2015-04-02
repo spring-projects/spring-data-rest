@@ -4,7 +4,7 @@
 
 This appendix contains a list of Spring Data REST sample applications. The exact version of each example isn't guaranteed to match the version of this reference manual.
 
-NOTE: To get them all, visit https://github.com/spring-projects/spring-data-examples and either clone or download a zipball. This will give you example apps for ALL supported Spring Data projects. Simply avigate to `spring-data-examples/rest`.
+NOTE: To get them all, visit https://github.com/spring-projects/spring-data-examples and either clone or download a zipball. This will give you example apps for ALL supported Spring Data projects. Simply navigate to `spring-data-examples/rest`.
 
 [[spring-data-examples.multi-store]]
 == Multi-store example
