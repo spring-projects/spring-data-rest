@@ -80,38 +80,4 @@ public class PersistentEntityResourceUnitTests {
 		assertThat(resource.getEmbeddeds(), is(notNullValue()));
 		assertThat(resource.getEmbeddeds(), is(emptyIterable()));
 	}
-
-	/**
-	 * @see DATAREST-317
-	 */
-	@Test
-	public void doesNotRenderAssociationLinksIfEmbeddedWithRelPresent() {
-
-		PersistentEntityResource resource = PersistentEntityResource.build(payload, entity).//
-				withEmbedded(resources).build();
-
-		assertThat(resource.shouldRenderLink(link), is(false));
-	}
-
-	/**
-	 * @see DATAREST-317
-	 */
-	@Test
-	public void rendersAssociationLinksIfEvenIfEmbeddedWithRelPresentButLinksEnforced() {
-
-		PersistentEntityResource resource = PersistentEntityResource.build(payload, entity).//
-				withEmbedded(resources).renderAllAssociationLinks().build();
-
-		assertThat(resource.shouldRenderLink(link), is(true));
-	}
-
-	/**
-	 * @see DATAREST-317
-	 */
-	@Test
-	public void rendersAssociationIfNoEmbeddedPresent() {
-
-		PersistentEntityResource resource = PersistentEntityResource.build(payload, entity).build();
-		assertThat(resource.shouldRenderLink(link), is(true));
-	}
 }
