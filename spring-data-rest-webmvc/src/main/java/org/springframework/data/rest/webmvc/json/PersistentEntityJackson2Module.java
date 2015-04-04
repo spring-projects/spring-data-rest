@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.json;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -246,10 +247,18 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					continue;
 				}
 
+				// Skip anything not in the active view (if we're using a view)
+				if (config.getActiveView() != null) {
+					if (writer.getViews() == null || !Arrays.asList(writer.getViews()).contains(config.getActiveView())) {
+						continue;
+					}
+				}
+
 				result.add(writer);
 			}
 
 			builder.setProperties(result);
+			builder.setFilteredProperties(result.toArray(new BeanPropertyWriter[result.size()]));
 
 			return builder;
 		}
