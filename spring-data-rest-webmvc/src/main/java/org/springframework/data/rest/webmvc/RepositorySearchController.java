@@ -18,16 +18,21 @@ package org.springframework.data.rest.webmvc;
 import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.MethodParameter;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
@@ -39,17 +44,21 @@ import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.core.AnnotationAttribute;
+import org.springframework.hateoas.core.MethodParameters;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.context.request.WebRequest;
 
 /**
  * Controller to lookup and execute searches on a given repository.
@@ -153,20 +162,23 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	/**
 	 * Executes the search with the given name.
 	 * 
-	 * @param request
-	 * @param repository
+	 * @param resourceInformation
+	 * @param parameters
 	 * @param search
 	 * @param pageable
+	 * @param sort
+	 * @param assembler
 	 * @return
 	 * @throws ResourceNotFoundException
 	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET)
-	public ResponseEntity<Object> executeSearch(RootResourceInformation resourceInformation, WebRequest request,
-			@PathVariable String search, DefaultedPageable pageable, Sort sort, PersistentEntityResourceAssembler assembler) {
+	public ResponseEntity<Object> executeSearch(RootResourceInformation resourceInformation,
+			@RequestParam MultiValueMap<String, Object> parameters, @PathVariable String search, DefaultedPageable pageable,
+			Sort sort, PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		Object result = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, sort, assembler);
+		Object result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort, assembler);
 
 		return new ResponseEntity<Object>(toResource(result, assembler, null), HttpStatus.OK);
 	}
@@ -175,20 +187,23 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * Executes a query method and exposes the results in compact form.
 	 * 
 	 * @param resourceInformation
+	 * @param parameters
 	 * @param repository
-	 * @param method
+	 * @param searcg
 	 * @param pageable
+	 * @param sort
+	 * @param assembler
 	 * @return
 	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET, //
 			produces = { "application/x-spring-data-compact+json" })
-	public ResourceSupport executeSearchCompact(RootResourceInformation resourceInformation, WebRequest request,
-			@PathVariable String repository, @PathVariable String search, DefaultedPageable pageable, Sort sort,
-			PersistentEntityResourceAssembler assembler) {
+	public ResourceSupport executeSearchCompact(RootResourceInformation resourceInformation,
+			@RequestParam MultiValueMap<String, Object> parameters, @PathVariable String repository,
+			@PathVariable String search, DefaultedPageable pageable, Sort sort, PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		Object result = executeQueryMethod(resourceInformation.getInvoker(), request, method, pageable, sort, assembler);
+		Object result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort, assembler);
 		Object resource = toResource(result, assembler, null);
 		List<Link> links = new ArrayList<Link>();
 
@@ -272,11 +287,29 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @param pageable
 	 * @return
 	 */
-	private Object executeQueryMethod(final RepositoryInvoker invoker, WebRequest request, Method method,
-			DefaultedPageable pageable, Sort sort, PersistentEntityResourceAssembler assembler) {
+	private Object executeQueryMethod(final RepositoryInvoker invoker,
+			@RequestParam MultiValueMap<String, Object> parameters, Method method, DefaultedPageable pageable, Sort sort,
+			PersistentEntityResourceAssembler assembler) {
 
-		Map<String, String[]> parameters = request.getParameterMap();
-		return invoker.invokeQueryMethod(method, parameters, pageable.getPageable(), sort);
+		MultiValueMap<String, Object> result = new LinkedMultiValueMap<String, Object>(parameters);
+		MethodParameters methodParameters = new MethodParameters(method, new AnnotationAttribute(Param.class));
+
+		for (Entry<String, List<Object>> entry : parameters.entrySet()) {
+
+			MethodParameter parameter = methodParameters.getParameter(entry.getKey());
+
+			if (parameter == null) {
+				continue;
+			}
+
+			ResourceMetadata metadata = mappings.getMappingFor(parameter.getParameterType());
+
+			if (metadata != null && metadata.isExported()) {
+				result.put(parameter.getParameterName(), prepareUris(entry.getValue()));
+			}
+		}
+
+		return invoker.invokeQueryMethod(method, result, pageable.getPageable(), sort);
 	}
 
 	/**
@@ -284,7 +317,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * 
 	 * @param resourceInformation
 	 */
-	private SearchResourceMappings verifySearchesExposed(RootResourceInformation resourceInformation) {
+	private static SearchResourceMappings verifySearchesExposed(RootResourceInformation resourceInformation) {
 
 		SearchResourceMappings resourceMappings = resourceInformation.getSearchMappings();
 
@@ -293,5 +326,32 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		}
 
 		return resourceMappings;
+	}
+
+	/**
+	 * Tries to turn all elements of the given {@link List} into URIs and falls back to keeping the original element if
+	 * the conversion fails.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @return
+	 */
+	private static List<Object> prepareUris(List<Object> source) {
+
+		if (source == null || source.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<Object> result = new ArrayList<Object>(source.size());
+
+		for (Object element : source) {
+
+			try {
+				result.add(new URI(element.toString()));
+			} catch (URISyntaxException o_O) {
+				result.add(element);
+			}
+		}
+
+		return result;
 	}
 }

@@ -81,7 +81,7 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 	 */
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
-		return conversionService.canConvert(STRING_TYPE, targetType);
+		return !sourceType.equals(URI_TYPE) ? false : conversionService.canConvert(STRING_TYPE, targetType);
 	}
 
 	/*

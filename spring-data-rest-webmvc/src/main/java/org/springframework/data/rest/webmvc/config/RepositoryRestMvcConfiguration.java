@@ -40,6 +40,7 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
@@ -181,8 +182,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public DefaultFormattingConversionService defaultConversionService() {
 
 		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
-
 		// Add Spring Data Commons formatters
+		conversionService.addConverter(uriToEntityConverter(conversionService));
 		addFormatters(conversionService);
 
 		configureConversionService(conversionService);
@@ -540,8 +541,16 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		PersistentEntities entities = persistentEntities();
 
-		return new PersistentEntityJackson2Module(resourceMappings(), entities, config(), new UriToEntityConverter(
-				entities, defaultConversionService()));
+		return new PersistentEntityJackson2Module(resourceMappings(), entities, config(),
+				uriToEntityConverter(defaultConversionService()));
+	}
+
+	/**
+	 * @param entities
+	 * @return
+	 */
+	protected UriToEntityConverter uriToEntityConverter(ConversionService conversionService) {
+		return new UriToEntityConverter(persistentEntities(), conversionService);
 	}
 
 	/**

@@ -132,8 +132,6 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 
 		String writeSchemaFor = writeSchemaFor(type);
 
-		System.out.println(writeSchemaFor);
-
 		for (Constraint constraint : constraints) {
 
 			try {

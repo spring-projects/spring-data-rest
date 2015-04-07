@@ -27,6 +27,7 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.ResourceTester.HasSelfLink;
 import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.Author;
+import org.springframework.data.rest.webmvc.jpa.Book;
 import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Person;
@@ -34,11 +35,14 @@ import org.springframework.data.rest.webmvc.jpa.TestDataPopulator;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 /**
  * Integration tests for the {@link RepositorySearchController}.
@@ -48,6 +52,8 @@ import org.springframework.transaction.annotation.Transactional;
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
 public class RepositorySearchControllerIntegrationTests extends AbstractControllerIntegrationTests {
+
+	static final DefaultedPageable PAGEABLE = new DefaultedPageable(new PageRequest(0, 10), true);
 
 	@Autowired TestDataPopulator loader;
 	@Autowired RepositorySearchController controller;
@@ -88,11 +94,12 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	@Test
 	public void executesSearchAgainstRepository() {
 
-		RequestParameters parameters = new RequestParameters("firstname", "John");
 		RootResourceInformation resourceInformation = getResourceInformation(Person.class);
+		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>(1);
+		parameters.add("firstname", "John");
 
-		ResponseEntity<Object> response = controller.executeSearch(resourceInformation, getRequest(parameters),
-				"firstname", new DefaultedPageable(new PageRequest(0, 10), true), null, assembler);
+		ResponseEntity<Object> response = controller.executeSearch(resourceInformation, parameters, "firstname", PAGEABLE,
+				null, assembler);
 
 		ResourceTester tester = ResourceTester.of(response.getBody());
 		PagedResources<Object> pagedResources = tester.assertIsPage();
@@ -168,5 +175,22 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		HttpEntity<Object> response = controller.optionsForSearch(resourceInformation, "firstname");
 
 		assertAllowHeaders(response, HttpMethod.GET);
+	}
+
+	/**
+	 * @see DATAREST-502
+	 */
+	@Test
+	public void interpretsUriAsReferenceToRelatedEntity() {
+
+		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>(1);
+		parameters.add("author", "/author/1");
+
+		RootResourceInformation resourceInformation = getResourceInformation(Book.class);
+
+		ResponseEntity<Object> result = controller.executeSearch(resourceInformation, parameters, "findByAuthorsContains",
+				PAGEABLE, null, assembler);
+
+		assertThat(result.getBody(), is(instanceOf(Resources.class)));
 	}
 }
