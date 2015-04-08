@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.auditing.AuditableBeanWrapper;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -62,6 +63,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -301,8 +303,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Resource<?>> getItemResource(RootResourceInformation resourceInformation,
-			@BackendId Serializable id, PersistentEntityResourceAssembler assembler)
-			throws HttpRequestMethodNotSupportedException {
+			@BackendId Serializable id, PersistentEntityResourceAssembler assembler,
+			@RequestHeader MultiValueMap<String, String> rawHeaders) throws HttpRequestMethodNotSupportedException {
 
 		Object domainObj = getItemResource(resourceInformation, id);
 
@@ -310,10 +312,32 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND);
 		}
 
-		PersistentEntityResource resource = assembler.toFullResource(domainObj);
-		HttpHeaders headers = prepareHeaders(resource);
+		HttpHeaders headers = new HttpHeaders();
+		headers.putAll(rawHeaders);
 
-		return new ResponseEntity<Resource<?>>(resource, headers, HttpStatus.OK);
+		// Check ETag for If-Non-Match
+
+		List<String> ifNoneMatch = headers.getIfNoneMatch();
+		ETag eTag = ifNoneMatch.isEmpty() ? ETag.NO_ETAG : ETag.from(ifNoneMatch.get(0));
+
+		if (eTag.matches(resourceInformation.getPersistentEntity(), domainObj)) {
+			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_MODIFIED);
+		}
+
+		// Check last modification for If-Modfied-Since
+
+		if (headers.getIfModifiedSince() != -1) {
+
+			AuditableBeanWrapper wrapper = getAuditableBeanWrapper(domainObj);
+			long current = wrapper.getLastModifiedDate().getTimeInMillis() / 1000 * 1000;
+
+			if (current <= headers.getIfModifiedSince()) {
+				return new ResponseEntity<Resource<?>>(HttpStatus.NOT_MODIFIED);
+			}
+		}
+
+		PersistentEntityResource resource = assembler.toFullResource(domainObj);
+		return new ResponseEntity<Resource<?>>(resource, prepareHeaders(resource), HttpStatus.OK);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,6 +83,23 @@ public final class ETag {
 		if (!this.equals(from(entity, target))) {
 			throw new ETagDoesntMatchException(target, this);
 		}
+	}
+
+	/**
+	 * Returns whether the {@link ETag} matches the given {@link PersistentEntity} and target. A more dissenting way of
+	 * checking matches as it does not match if the ETag is {@link #NO_ETAG}.
+	 * 
+	 * @param entity must not be {@literal null}.
+	 * @param target can be {@literal null}.
+	 * @return
+	 */
+	public boolean matches(PersistentEntity<?, ?> entity, Object target) {
+
+		if (this == NO_ETAG || target == null) {
+			return false;
+		}
+
+		return this.equals(from(entity, target));
 	}
 
 	/**

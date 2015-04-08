@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ class AbstractRepositoryRestController {
 		headers = ETag.from(resource).addTo(headers);
 
 		// Add Last-Modified
-		AuditableBeanWrapper wrapper = auditableBeanWrapperFactory.getBeanWrapperFor(resource.getContent());
+		AuditableBeanWrapper wrapper = getAuditableBeanWrapper(resource.getContent());
 
 		if (wrapper == null) {
 			return headers;
@@ -156,5 +156,15 @@ class AbstractRepositoryRestController {
 		}
 
 		return headers;
+	}
+
+	/**
+	 * Returns the {@link AuditableBeanWrapper} for the given source.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @return
+	 */
+	protected AuditableBeanWrapper getAuditableBeanWrapper(Object source) {
+		return auditableBeanWrapperFactory.getBeanWrapperFor(source);
 	}
 }

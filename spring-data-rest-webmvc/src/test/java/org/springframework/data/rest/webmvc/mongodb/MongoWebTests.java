@@ -178,8 +178,8 @@ public class MongoWebTests extends CommonWebTests {
 		Link receiptLink = client.discoverUnique("receipts");
 
 		Receipt receipt = new Receipt();
-		receipt.setAmount(new BigDecimal(50));
-		receipt.setSaleItem("Springy Tacos");
+		receipt.amount = new BigDecimal(50);
+		receipt.saleItem = "Springy Tacos";
 
 		String stringReceipt = mapper.writeValueAsString(receipt);
 
@@ -273,5 +273,29 @@ public class MongoWebTests extends CommonWebTests {
 		putAndGet(profileLink, mapper.writeValueAsString(profile), MediaType.APPLICATION_JSON);
 
 		client.follow(profileLink).andExpect(jsonPath("$.metadata.Key").value("Value"));
+	}
+
+	/**
+	 * @see DATAREST-506
+	 */
+	@Test
+	public void supportsConditionalGetsOnItemResource() throws Exception {
+
+		Receipt receipt = new Receipt();
+		receipt.amount = new BigDecimal(50);
+		receipt.saleItem = "Springy Tacos";
+
+		Link receiptsLink = client.discoverUnique("receipts");
+
+		MockHttpServletResponse response = postAndGet(receiptsLink, mapper.writeValueAsString(receipt),
+				MediaType.APPLICATION_JSON);
+
+		Link receiptLink = client.getDiscoverer(response).findLinkWithRel("self", response.getContentAsString());
+
+		mvc.perform(get(receiptLink.getHref()).header("If-Modified-Since", response.getHeader("Last-Modified"))).//
+				andExpect(status().isNotModified());
+
+		mvc.perform(get(receiptLink.getHref()).header("If-None-Match", response.getHeader("ETag"))).//
+				andExpect(status().isNotModified());
 	}
 }

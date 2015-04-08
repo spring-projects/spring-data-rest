@@ -246,6 +246,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					continue;
 				}
 
+				if (persistentProperty.isVersionProperty()) {
+					continue;
+				}
+
 				result.add(writer);
 			}
 
