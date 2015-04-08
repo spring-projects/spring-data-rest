@@ -125,7 +125,7 @@ The `NoAddresses` projection only has getters for `firstName` and `lastName` mea
 <1> There is a new option listed for this resource, `{?projection}`.
 <2> The `self` URI is a URI Template.
 
-To view apply the projection to the resource, look up `http://localhost:8080/persons/1/projection=noAddresses`.
+To view apply the projection to the resource, look up `http://localhost:8080/persons/1?projection=noAddresses`.
 
 NOTE: The value supplied to the `projection` query parameter is the same as specified in `@Projection(name = "noAddress")`. It has nothing to do with the name of the projection's interface.
 
