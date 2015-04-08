@@ -16,13 +16,13 @@
 
 package org.springframework.data.rest.webmvc.mongodb;
 
+import java.math.BigDecimal;
+import java.util.Date;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.math.BigDecimal;
-
 
 /**
  * @author Pablo Lozano
@@ -30,45 +30,11 @@ import java.math.BigDecimal;
 @Document
 public class Receipt {
 
-    @Id
-    public String id;
+	public @Id String id;
+	public @Version Long version;
+	public @LastModifiedDate Date date;
 
-    private String saleItem;
+	public String saleItem;
+	public BigDecimal amount;
 
-    private BigDecimal amount;
-
-    @Version
-    private Long version;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getSaleItem() {
-        return saleItem;
-    }
-
-    public void setSaleItem(String saleItem) {
-        this.saleItem = saleItem;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public Long getVersion() {
-        return version;
-    }
-
-    public void setVersion(Long version) {
-        this.version = version;
-    }
 }
