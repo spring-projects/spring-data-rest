@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public class RepositoryRestExceptionHandler {
 	 */
 	@ExceptionHandler
 	ResponseEntity<?> handleNotFound(ResourceNotFoundException o_O) {
-		return notFound();
+		return notFound(new HttpHeaders());
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class RepositoryRestExceptionHandler {
 	 */
 	@ExceptionHandler
 	ResponseEntity<ExceptionMessage> handleNotReadable(HttpMessageNotReadableException o_O) {
-		return badRequest(o_O);
+		return badRequest(new HttpHeaders(), o_O);
 	}
 
 	/**
@@ -93,7 +93,8 @@ public class RepositoryRestExceptionHandler {
 	@ExceptionHandler({ InvocationTargetException.class, IllegalArgumentException.class, ClassCastException.class,
 			ConversionFailedException.class, NullPointerException.class })
 	ResponseEntity<ExceptionMessage> handleMiscFailures(Exception o_O) {
-		return errorResponse(null, HttpStatus.INTERNAL_SERVER_ERROR);
+
+		return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, new HttpHeaders(), null);
 	}
 
 	/**
@@ -105,9 +106,8 @@ public class RepositoryRestExceptionHandler {
 	@ExceptionHandler
 	ResponseEntity<RepositoryConstraintViolationExceptionMessage> handleRepositoryConstraintViolationException(
 			RepositoryConstraintViolationException o_O) {
-
-		return response(new HttpHeaders(), new RepositoryConstraintViolationExceptionMessage(o_O, messageSourceAccessor),
-				HttpStatus.BAD_REQUEST);
+		return response(HttpStatus.BAD_REQUEST, new HttpHeaders(), new RepositoryConstraintViolationExceptionMessage(o_O,
+				messageSourceAccessor));
 	}
 
 	/**
@@ -118,7 +118,7 @@ public class RepositoryRestExceptionHandler {
 	 */
 	@ExceptionHandler({ OptimisticLockingFailureException.class, DataIntegrityViolationException.class })
 	ResponseEntity<ExceptionMessage> handleConflict(Exception o_O) {
-		return errorResponse(null, o_O, HttpStatus.CONFLICT);
+		return errorResponse(HttpStatus.CONFLICT, new HttpHeaders(), o_O);
 	}
 
 	/**
@@ -134,7 +134,7 @@ public class RepositoryRestExceptionHandler {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAllow(o_O.getSupportedHttpMethods());
 
-		return new ResponseEntity<Void>(headers, HttpStatus.METHOD_NOT_ALLOWED);
+		return response(HttpStatus.METHOD_NOT_ALLOWED, headers);
 	}
 
 	/**
@@ -147,45 +147,37 @@ public class RepositoryRestExceptionHandler {
 	ResponseEntity<Void> handle(ETagDoesntMatchException o_O) {
 
 		HttpHeaders headers = o_O.getExpectedETag().addTo(new HttpHeaders());
-		return new ResponseEntity<Void>(headers, HttpStatus.PRECONDITION_FAILED);
+		return response(HttpStatus.PRECONDITION_FAILED, headers);
 	}
 
-	private <T> ResponseEntity<T> notFound() {
-		return notFound(new HttpHeaders(), null);
+	private static ResponseEntity<?> notFound(HttpHeaders headers) {
+		return response(HttpStatus.NOT_FOUND, headers, null);
 	}
 
-	private <T> ResponseEntity<T> notFound(HttpHeaders headers, T body) {
-		return response(headers, body, HttpStatus.NOT_FOUND);
+	private static ResponseEntity<ExceptionMessage> badRequest(HttpHeaders headers, Exception throwable) {
+		return errorResponse(HttpStatus.BAD_REQUEST, headers, throwable);
 	}
 
-	private <T extends Exception> ResponseEntity<ExceptionMessage> badRequest(T throwable) {
-		return badRequest(new HttpHeaders(), throwable);
-	}
-
-	private <T extends Exception> ResponseEntity<ExceptionMessage> badRequest(HttpHeaders headers, T throwable) {
-		return errorResponse(headers, throwable, HttpStatus.BAD_REQUEST);
-	}
-
-	private <T extends Exception> ResponseEntity<ExceptionMessage> errorResponse(T throwable, HttpStatus status) {
-		return errorResponse(new HttpHeaders(), throwable, status);
-	}
-
-	private <T extends Exception> ResponseEntity<ExceptionMessage> errorResponse(HttpHeaders headers,
-			Exception exception, HttpStatus status) {
+	private static ResponseEntity<ExceptionMessage> errorResponse(HttpStatus status, HttpHeaders headers,
+			Exception exception) {
 
 		if (null != exception && null != exception.getMessage()) {
 
 			LOG.error(exception.getMessage(), exception);
 
-			return response(headers, new ExceptionMessage(exception), status);
+			return response(status, headers, new ExceptionMessage(exception));
 
 		} else {
 
-			return response(headers, null, status);
+			return response(status, headers, null);
 		}
 	}
 
-	public <T> ResponseEntity<T> response(HttpHeaders headers, T body, HttpStatus status) {
+	private static <T> ResponseEntity<T> response(HttpStatus status, HttpHeaders headers) {
+		return response(status, headers, null);
+	}
+
+	private static <T> ResponseEntity<T> response(HttpStatus status, HttpHeaders headers, T body) {
 
 		Assert.notNull(headers, "Headers must not be null!");
 		Assert.notNull(status, "HttpStatus must not be null!");
