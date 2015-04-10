@@ -79,7 +79,7 @@ public class PersistentEntityProjector implements Projector {
 
 		Assert.notNull(source, "Projection source must not be null!");
 
-		ResourceMetadata metadata = mappings.getMappingFor(source.getClass());
+		ResourceMetadata metadata = mappings.getMetadataFor(source.getClass());
 		Class<?> projection = metadata == null ? null : metadata.getExcerptProjection();
 
 		if (projection == null) {
@@ -96,7 +96,7 @@ public class PersistentEntityProjector implements Projector {
 	@Override
 	public boolean hasExcerptProjection(Class<?> type) {
 
-		ResourceMetadata metadata = mappings.getMappingFor(type);
+		ResourceMetadata metadata = mappings.getMetadataFor(type);
 		return metadata == null ? false : metadata.getExcerptProjection() != null;
 	}
 }

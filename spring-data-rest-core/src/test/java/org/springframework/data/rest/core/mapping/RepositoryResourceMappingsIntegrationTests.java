@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.Matchers;
@@ -27,11 +28,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.domain.jpa.Author;
 import org.springframework.data.rest.core.domain.jpa.CreditCard;
 import org.springframework.data.rest.core.domain.jpa.JpaRepositoryConfig;
@@ -41,7 +43,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Integration tests for {@link ResourceMappings}.
+ * Integration tests for {@link RepositoryResourceMappings}.
  * 
  * @author Oliver Gierke
  * @author Greg Trunquist
@@ -49,9 +51,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
-public class ResourceMappingsIntegrationTests {
+public class RepositoryResourceMappingsIntegrationTests {
 
 	@Autowired ListableBeanFactory factory;
+	@Autowired JpaMetamodelMappingContext mappingContext;
 
 	ResourceMappings mappings;
 
@@ -59,18 +62,18 @@ public class ResourceMappingsIntegrationTests {
 	public void setUp() {
 
 		Repositories repositories = new Repositories(factory);
-		this.mappings = new RepositoryResourceMappings(new RepositoryRestConfiguration(), repositories);
+		this.mappings = new RepositoryResourceMappings(repositories, new PersistentEntities(Arrays.asList(mappingContext)));
 	}
 
 	@Test
 	public void detectsAllMappings() {
-		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(8)));
+		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(4)));
 	}
 
 	@Test
 	public void exportsResourceAndSearchesForPersons() {
 
-		ResourceMetadata personMappings = mappings.getMappingFor(Person.class);
+		ResourceMetadata personMappings = mappings.getMetadataFor(Person.class);
 
 		assertThat(personMappings.isExported(), is(true));
 		assertThat(personMappings.getSearchResourceMappings().isExported(), is(true));
@@ -79,7 +82,7 @@ public class ResourceMappingsIntegrationTests {
 	@Test
 	public void doesNotExportAnyMappingsForHiddenRepository() {
 
-		ResourceMetadata creditCardMapping = mappings.getMappingFor(CreditCard.class);
+		ResourceMetadata creditCardMapping = mappings.getMetadataFor(CreditCard.class);
 
 		assertThat(creditCardMapping.isExported(), is(false));
 		assertThat(creditCardMapping.getSearchResourceMappings().isExported(), is(false));
@@ -95,7 +98,7 @@ public class ResourceMappingsIntegrationTests {
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(Person.class);
 		PersistentProperty<?> property = entity.getPersistentProperty("siblings");
 
-		ResourceMetadata metadata = mappings.getMappingFor(Person.class);
+		ResourceMetadata metadata = mappings.getMetadataFor(Person.class);
 		ResourceMapping mapping = metadata.getMappingFor(property);
 
 		assertThat(mapping.getRel(), is("siblings"));
@@ -112,7 +115,7 @@ public class ResourceMappingsIntegrationTests {
 		assertThat(mappings.exportsTopLevelResourceFor("people"), is(true));
 		assertThat(mappings.exportsTopLevelResourceFor("orders"), is(true));
 
-		ResourceMetadata creditCardMapping = mappings.getMappingFor(CreditCard.class);
+		ResourceMetadata creditCardMapping = mappings.getMetadataFor(CreditCard.class);
 		assertThat(creditCardMapping, is(notNullValue()));
 		assertThat(creditCardMapping.getPath(), is(new Path("creditCards")));
 		assertThat(creditCardMapping.isExported(), is(false));
@@ -125,12 +128,12 @@ public class ResourceMappingsIntegrationTests {
 	@Test
 	public void skipsSearchMethodsNotExported() {
 
-		ResourceMetadata creditCardMetadata = mappings.getMappingFor(CreditCard.class);
+		ResourceMetadata creditCardMetadata = mappings.getMetadataFor(CreditCard.class);
 		SearchResourceMappings searchResourceMappings = creditCardMetadata.getSearchResourceMappings();
 
 		assertThat(searchResourceMappings, is(Matchers.<MethodResourceMapping> iterableWithSize(0)));
 
-		ResourceMetadata personMetadata = mappings.getMappingFor(Person.class);
+		ResourceMetadata personMetadata = mappings.getMetadataFor(Person.class);
 		List<String> methodNames = new ArrayList<String>();
 
 		for (MethodResourceMapping method : personMetadata.getSearchResourceMappings()) {
@@ -147,7 +150,7 @@ public class ResourceMappingsIntegrationTests {
 	@Test
 	public void exposesMethodResourceMappingInPackageProtectedButExportedRepo() {
 
-		ResourceMetadata metadata = mappings.getMappingFor(Author.class);
+		ResourceMetadata metadata = mappings.getMetadataFor(Author.class);
 		assertThat(metadata.isExported(), is(true));
 
 		SearchResourceMappings searchMappings = metadata.getSearchResourceMappings();
@@ -160,5 +163,16 @@ public class ResourceMappingsIntegrationTests {
 			System.out.println(methodMapping.getMethod().getName());
 			assertThat(methodMapping.isExported(), is(true));
 		}
+	}
+
+	@Test
+	public void testname() {
+
+		ResourceMetadata metadata = mappings.getMetadataFor(Person.class);
+
+		PropertyAwareResourceMapping propertyMapping = metadata.getProperty("father-mapped");
+
+		assertThat(propertyMapping.getRel(), is("father"));
+		assertThat(propertyMapping.getPath(), is(new Path("father-mapped")));
 	}
 }

@@ -79,7 +79,7 @@ public abstract class AbstractControllerIntegrationTests {
 
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(domainType);
 
-		return new RootResourceInformation(mappings.getMappingFor(domainType), entity,
+		return new RootResourceInformation(mappings.getMetadataFor(domainType), entity,
 				invokerFactory.getInvokerFor(domainType));
 	}
 
@@ -95,7 +95,7 @@ public abstract class AbstractControllerIntegrationTests {
 	}
 
 	protected ResourceMetadata getMetadata(Class<?> domainType) {
-		return mappings.getMappingFor(domainType);
+		return mappings.getMetadataFor(domainType);
 	}
 
 	private static enum StubProjector implements Projector {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,20 +33,20 @@ public interface ResourceMetadata extends CollectionResourceMapping {
 	Class<?> getDomainType();
 
 	/**
-	 * Returns whether the type of the given {@link PersistentProperty} is exposed as resource itself.
-	 * 
-	 * @param property must not be {@literal null}.
-	 * @return
-	 */
-	boolean isManagedResource(PersistentProperty<?> property);
-
-	/**
 	 * Returns whether the given {@link PersistentProperty} is a managed resource and in fact exported.
 	 * 
 	 * @param property must not be {@literal null}.
 	 * @return
 	 */
 	boolean isExported(PersistentProperty<?> property);
+
+	/**
+	 * Returns the {@link PropertyAwareResourceMapping} for the given mapped path.
+	 * 
+	 * @param mappedPath must not be {@literal null} or empty.
+	 * @return the {@link PropertyAwareResourceMapping} for the given path or {@literal null} if none found.
+	 */
+	PropertyAwareResourceMapping getProperty(String mappedPath);
 
 	/**
 	 * Returns the {@link ResourceMapping} for the given {@link PersistentProperty} or {@literal null} if not managed.

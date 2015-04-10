@@ -49,7 +49,7 @@ public class RepositoryRelProvider implements RelProvider {
 	 */
 	@Override
 	public String getCollectionResourceRelFor(Class<?> type) {
-		return mappings.getObject().getMappingFor(type).getRel();
+		return mappings.getObject().getMetadataFor(type).getRel();
 	}
 
 	/* 
@@ -58,7 +58,7 @@ public class RepositoryRelProvider implements RelProvider {
 	 */
 	@Override
 	public String getItemResourceRelFor(Class<?> type) {
-		return mappings.getObject().getMappingFor(type).getItemResourceRel();
+		return mappings.getObject().getMetadataFor(type).getItemResourceRel();
 	}
 
 	/* 

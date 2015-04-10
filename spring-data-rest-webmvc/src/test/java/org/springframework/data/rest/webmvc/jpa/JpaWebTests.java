@@ -120,7 +120,7 @@ public class JpaWebTests extends CommonWebTests {
 
 		mvc.perform(get("/")). //
 				andExpect(status().isOk()). //
-				andExpect(doesNotHaveLinkWithRel(mappings.getMappingFor(CreditCard.class).getRel()));
+				andExpect(doesNotHaveLinkWithRel(mappings.getMetadataFor(CreditCard.class).getRel()));
 	}
 
 	@Test

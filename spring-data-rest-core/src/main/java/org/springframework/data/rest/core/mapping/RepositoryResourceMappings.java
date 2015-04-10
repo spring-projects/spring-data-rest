@@ -18,22 +18,18 @@ package org.springframework.data.rest.core.mapping;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.core.Path;
-import org.springframework.data.rest.core.annotation.Description;
-import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Central abstraction obtain {@link ResourceMetadata} and {@link ResourceMapping} instances for domain types and
@@ -41,73 +37,56 @@ import org.springframework.util.StringUtils;
  * 
  * @author Oliver Gierke
  */
-public class RepositoryResourceMappings implements ResourceMappings {
+public class RepositoryResourceMappings extends PersistentEntitiesResourceMappings {
 
 	private final Repositories repositories;
-	private final RelProvider relProvider;
-
-	private final Map<Class<?>, ResourceMetadata> cache = new HashMap<Class<?>, ResourceMetadata>();
 	private final Map<Class<?>, SearchResourceMappings> searchCache = new HashMap<Class<?>, SearchResourceMappings>();
-	private final Map<PersistentProperty<?>, ResourceMapping> propertyCache = new HashMap<PersistentProperty<?>, ResourceMapping>();
 
 	/**
-	 * Creates a new {@link RepositoryResourceMappings} using the given {@link RepositoryRestConfiguration} and
-	 * {@link Repositories} .
+	 * Creates a new {@link RepositoryResourceMappings} using the given {@link Repositories} and
+	 * {@link PersistentEntities}.
 	 * 
-	 * @param config
-	 * @param repositories
+	 * @param repositories must not be {@literal null}.
+	 * @param entities must not be {@literal null}.
 	 */
-	public RepositoryResourceMappings(RepositoryRestConfiguration config, Repositories repositories) {
-		this(config, repositories, new EvoInflectorRelProvider());
+	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities) {
+		this(repositories, entities, new EvoInflectorRelProvider());
 	}
 
 	/**
 	 * Creates a new {@link RepositoryResourceMappings} from the given {@link RepositoryRestConfiguration},
 	 * {@link Repositories} and {@link RelProvider}.
 	 * 
-	 * @param config must not be {@literal null}.
 	 * @param repositories must not be {@literal null}.
+	 * @param entities must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
 	 */
-	public RepositoryResourceMappings(RepositoryRestConfiguration config, Repositories repositories,
-			RelProvider relProvider) {
+	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities, RelProvider relProvider) {
+
+		super(entities);
 
 		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(relProvider, "RelProvider must not be null!");
 
 		this.repositories = repositories;
-		this.relProvider = relProvider;
-
-		this.populateCache(repositories);
+		this.populateCache(repositories, relProvider);
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#getMappingFor(java.lang.Class)
-	 */
-	@Override
-	public ResourceMetadata getMappingFor(Class<?> type) {
-
-		Assert.notNull(type, "Type must not be null!");
-		return cache.get(ClassUtils.getUserClass(type));
-	}
-
-	private final void populateCache(Repositories repositories) {
+	private final void populateCache(Repositories repositories, RelProvider provider) {
 
 		for (Class<?> type : repositories) {
 
 			RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(type);
 			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
+			PersistentEntity<?, ?> entity = repositories.getPersistentEntity(type);
 
-			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInformation, relProvider);
+			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInformation, provider);
+			RepositoryAwareResourceMetadata information = new RepositoryAwareResourceMetadata(entity, mapping, this,
+					repositoryInformation);
 
-			RepositoryAwareResourceInformation information = new RepositoryAwareResourceInformation(repositories, mapping,
-					this, repositoryInformation);
+			addToCache(repositoryInterface, information);
 
-			cache.put(repositoryInterface, information);
-
-			if (!cache.containsKey(type) || information.isPrimary()) {
-				cache.put(type, information);
+			if (!hasMetadataFor(type) || information.isPrimary()) {
+				addToCache(type, information);
 			}
 		}
 	}
@@ -127,7 +106,7 @@ public class RepositoryResourceMappings implements ResourceMappings {
 
 		RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(domainType);
 		List<MethodResourceMapping> mappings = new ArrayList<MethodResourceMapping>();
-		ResourceMetadata resourceMapping = getMappingFor(domainType);
+		ResourceMetadata resourceMapping = getMetadataFor(domainType);
 
 		if (resourceMapping.isExported()) {
 			for (Method queryMethod : repositoryInformation.getQueryMethods()) {
@@ -146,45 +125,12 @@ public class RepositoryResourceMappings implements ResourceMappings {
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#exportsMappingFor(java.lang.Class)
-	 */
-	@Override
-	public boolean exportsMappingFor(Class<?> type) {
-
-		if (!hasMappingFor(type)) {
-			return false;
-		}
-
-		ResourceMetadata metadata = getMappingFor(type);
-		return metadata.isExported();
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#exportsTopLevelResourceFor(java.lang.String)
-	 */
-	@Override
-	public boolean exportsTopLevelResourceFor(String path) {
-
-		Assert.hasText(path);
-
-		for (ResourceMetadata metadata : cache.values()) {
-			if (metadata.getPath().matches(path)) {
-				return metadata.isExported();
-			}
-		}
-
-		return false;
-	}
-
-	/* 
-	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#hasMappingFor(java.lang.Class)
 	 */
 	@Override
 	public boolean hasMappingFor(Class<?> type) {
 
-		if (cache.containsKey(type)) {
+		if (super.hasMappingFor(type)) {
 			return true;
 		}
 
@@ -197,132 +143,10 @@ public class RepositoryResourceMappings implements ResourceMappings {
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#getMappingFor(org.springframework.data.mapping.PersistentProperty)
-	 */
-	public ResourceMapping getMappingFor(PersistentProperty<?> property) {
-
-		ResourceMapping propertyMapping = propertyCache.get(property);
-
-		if (propertyMapping != null) {
-			return propertyMapping;
-		}
-
-		ResourceMetadata propertyTypeMapping = getMappingFor(property.getActualType());
-		ResourceMetadata ownerTypeMapping = getMappingFor(property.getOwner().getType());
-		propertyMapping = new PersistentPropertyResourceMapping(property, propertyTypeMapping, ownerTypeMapping);
-
-		propertyCache.put(property, propertyMapping);
-
-		return propertyMapping;
-	}
-
-	public boolean isMapped(PersistentProperty<?> property) {
-
-		ResourceMapping metadata = getMappingFor(property);
-		return metadata != null && metadata.isExported();
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
+	 * @see org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings#isMapped(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@Override
-	public Iterator<ResourceMetadata> iterator() {
-		return cache.values().iterator();
-	}
-
-	/**
-	 * Special resource mapping for {@link PersistentProperty} instances.
-	 * 
-	 * @author Oliver Gierke
-	 */
-	static class PersistentPropertyResourceMapping implements ResourceMapping {
-
-		private final PersistentProperty<?> property;
-		private final ResourceMapping typeMapping;
-		private final CollectionResourceMapping ownerTypeMapping;
-		private final RestResource annotation;
-		private final Description description;
-
-		/**
-		 * Creates a new {@link PersistentPropertyResourceMapping}.
-		 * 
-		 * @param property must not be {@literal null}.
-		 * @param exported whether the property is exported or not.
-		 */
-		public PersistentPropertyResourceMapping(PersistentProperty<?> property, ResourceMapping typeMapping,
-				CollectionResourceMapping ownerTypeMapping) {
-
-			Assert.notNull(property, "PersistentProperty must not be null!");
-
-			this.property = property;
-			this.typeMapping = typeMapping;
-			this.ownerTypeMapping = ownerTypeMapping;
-			this.annotation = property.isAssociation() ? property.findAnnotation(RestResource.class) : null;
-			this.description = property.findAnnotation(Description.class);
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getPath()
-		 */
-		@Override
-		public Path getPath() {
-			return annotation != null && StringUtils.hasText(annotation.path()) ? new Path(annotation.path()) : new Path(
-					property.getName());
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
-		 */
-		@Override
-		public String getRel() {
-			return annotation != null && StringUtils.hasText(annotation.rel()) ? annotation.rel() : property.getName();
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
-		 */
-		@Override
-		public boolean isExported() {
-
-			if (typeMapping == null) {
-				return false;
-			}
-
-			return !typeMapping.isExported() ? false : annotation == null ? true : annotation.exported();
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isPagingResource()
-		 */
-		@Override
-		public boolean isPagingResource() {
-			return false;
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
-		 */
-		@Override
-		public ResourceDescription getDescription() {
-
-			ResourceDescription fallback = TypedResourceDescription.defaultFor(ownerTypeMapping.getItemResourceRel(),
-					property);
-
-			if (description != null) {
-				return new AnnotationBasedResourceDescription(description, fallback);
-			}
-
-			if (annotation != null) {
-				return new AnnotationBasedResourceDescription(annotation.description(), fallback);
-			}
-
-			return fallback;
-		}
+	public boolean isMapped(PersistentProperty<?> property) {
+		return repositories.hasRepositoryFor(property.getActualType()) && super.isMapped(property);
 	}
 }

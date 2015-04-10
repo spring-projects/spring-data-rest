@@ -37,7 +37,6 @@ import org.springframework.util.Assert;
 public class AssociationLinks {
 
 	private final ResourceMappings mappings;
-	private final PropertyMappings propertyMappings;
 
 	/**
 	 * Creates a new {@link AssociationLinks} using the given {@link ResourceMappings}.
@@ -48,7 +47,6 @@ public class AssociationLinks {
 
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
 
-		this.propertyMappings = new PropertyMappings(mappings);
 		this.mappings = mappings;
 	}
 
@@ -68,7 +66,8 @@ public class AssociationLinks {
 
 		if (isLinkableAssociation(property)) {
 
-			ResourceMapping propertyMapping = propertyMappings.getMappingFor(property);
+			ResourceMetadata metadata = mappings.getMetadataFor(property.getOwner().getType());
+			ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 			String href = path.slash(propertyMapping.getPath()).toString();
 			String rel = propertyMapping.getRel();
@@ -91,13 +90,13 @@ public class AssociationLinks {
 			return false;
 		}
 
-		ResourceMetadata metadata = mappings.getMappingFor(property.getOwner().getType());
+		ResourceMetadata metadata = mappings.getMetadataFor(property.getOwner().getType());
 
 		if (metadata != null && !metadata.isExported(property)) {
 			return false;
 		}
 
-		metadata = mappings.getMappingFor(property.getActualType());
+		metadata = mappings.getMetadataFor(property.getActualType());
 		return metadata == null ? false : metadata.isExported();
 	}
 

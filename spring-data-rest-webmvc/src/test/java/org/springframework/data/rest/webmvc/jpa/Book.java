@@ -24,6 +24,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 
+import org.springframework.data.rest.core.annotation.RestResource;
+
 /**
  * @author Oliver Gierke
  */
@@ -34,7 +36,7 @@ public class Book {
 	public String isbn;
 
 	@ManyToMany(cascade = { CascadeType.MERGE })//
-	public Set<Author> authors;
+	@RestResource(path = "creators") public Set<Author> authors;
 
 	public String title;
 

@@ -302,7 +302,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 				continue;
 			}
 
-			ResourceMetadata metadata = mappings.getMappingFor(parameter.getParameterType());
+			ResourceMetadata metadata = mappings.getMetadataFor(parameter.getParameterType());
 
 			if (metadata != null && metadata.isExported()) {
 				result.put(parameter.getParameterName(), prepareUris(entry.getValue()));

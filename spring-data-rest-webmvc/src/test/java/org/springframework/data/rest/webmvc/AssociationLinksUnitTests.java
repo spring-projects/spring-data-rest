@@ -17,23 +17,23 @@ package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.data.rest.core.mapping.MappingResourceMetadata;
+import org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
@@ -47,7 +47,7 @@ public class AssociationLinksUnitTests {
 
 	AssociationLinks links;
 
-	@Mock ResourceMappings mappings;
+	ResourceMappings mappings;
 
 	MongoMappingContext mappingContext;
 	MongoPersistentEntity<?> entity;
@@ -56,13 +56,10 @@ public class AssociationLinksUnitTests {
 	@Before
 	public void setUp() {
 
-		this.links = new AssociationLinks(mappings);
-
 		this.mappingContext = new MongoMappingContext();
 		this.entity = mappingContext.getPersistentEntity(Sample.class);
-		this.sampleResourceMetadata = new MappingResourceMetadata(entity);
-
-		when(mappings.getMappingFor(Sample.class)).thenReturn(sampleResourceMetadata);
+		this.mappings = new PersistentEntitiesResourceMappings(new PersistentEntities(Arrays.asList(mappingContext)));
+		this.links = new AssociationLinks(mappings);
 	}
 
 	/**
@@ -85,16 +82,8 @@ public class AssociationLinksUnitTests {
 	 * @see DATAREST-262
 	 */
 	@Test
-	public void consideredExportedPropertyLinkable() {
-		assertThat(links.isLinkableAssociation(exposeProperty("property")), is(true));
-	}
-
-	/**
-	 * @see DATAREST-262
-	 */
-	@Test
 	public void consideredHiddenPropertyUnlinkable() {
-		assertThat(links.isLinkableAssociation(exposeProperty("hiddenProperty")), is(false));
+		assertThat(links.isLinkableAssociation(entity.getPersistentProperty("hiddenProperty")), is(false));
 	}
 
 	/**
@@ -113,7 +102,7 @@ public class AssociationLinksUnitTests {
 	@Test
 	public void createsLinkToAssociationProperty() {
 
-		PersistentProperty<?> property = exposeProperty("property");
+		PersistentProperty<?> property = entity.getPersistentProperty("property");
 		List<Link> associationLinks = links.getLinksFor(property.getAssociation(), new Path("/base"));
 
 		assertThat(associationLinks, hasSize(1));
@@ -126,42 +115,17 @@ public class AssociationLinksUnitTests {
 	@Test
 	public void doesNotCreateLinksForHiddenProperty() {
 
-		PersistentProperty<?> property = exposeProperty("hiddenProperty");
+		PersistentProperty<?> property = entity.getPersistentProperty("hiddenProperty");
 		assertThat(links.getLinksFor(property.getAssociation(), new Path("/sample")), hasSize(0));
-	}
-
-	/**
-	 * @see DATAREST-262
-	 */
-	@Test
-	public void doesNotCreateLinksForUnexportedProperty() {
-
-		PersistentProperty<?> property = entity.getPersistentProperty("unexportedProperty");
-		assertThat(links.getLinksFor(property.getAssociation(), new Path("/sample")), hasSize(0));
-	}
-
-	private PersistentProperty<?> exposeProperty(String name) {
-
-		MongoPersistentProperty property = entity.getPersistentProperty(name);
-		ResourceMetadata metadata = new MappingResourceMetadata(mappingContext.getPersistentEntity(property));
-
-		when(mappings.getMappingFor(property.getActualType())).thenReturn(metadata);
-
-		return property;
 	}
 
 	public static class Sample {
 
 		@Reference Property property;
 		@RestResource(exported = false) @Reference Property hiddenProperty;
-		@Reference UnexportedProperty unexportedProperty;
 	}
 
 	public static class Property {
-
-	}
-
-	public static class UnexportedProperty {
 
 	}
 }

@@ -109,7 +109,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 
 		for (Class<?> domainType : repositories) {
 
-			ResourceMetadata metadata = mappings.getMappingFor(domainType);
+			ResourceMetadata metadata = mappings.getMetadataFor(domainType);
 			if (metadata.isExported()) {
 				resource.add(entityLinks.linkToCollectionResource(domainType));
 			}

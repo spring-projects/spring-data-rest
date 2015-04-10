@@ -74,14 +74,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 	}
 
 	public RepositoryLinkBuilder slash(PersistentProperty<?> property) {
-
-		String propName = property.getName();
-
-		if (metadata.isManagedResource(property)) {
-			return slash(metadata.getMappingFor(property).getPath());
-		} else {
-			return slash(propName);
-		}
+		return slash(metadata.getMappingFor(property).getPath());
 	}
 
 	public Link withResourceRel() {

@@ -18,11 +18,13 @@ package org.springframework.data.rest.webmvc.support;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+
 import org.junit.Test;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
-import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
-import org.springframework.data.rest.core.mapping.MappingResourceMetadata;
-import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings;
+import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.TestMvcClient;
 import org.springframework.data.rest.webmvc.mongodb.Profile;
@@ -58,10 +60,11 @@ public class RepositoryLinkBuildUnitTests {
 
 	private void assertRootUriFor(String baseUri, String expectedUri) {
 
-		MongoPersistentEntity<?> entity = context.getPersistentEntity(Profile.class);
-		ResourceMetadata metadata = new MappingResourceMetadata(entity);
+		context.getPersistentEntity(Profile.class);
+		ResourceMappings mappings = new PersistentEntitiesResourceMappings(new PersistentEntities(Arrays.asList(context)));
 
-		RepositoryLinkBuilder builder = new RepositoryLinkBuilder(metadata, new BaseUri(baseUri));
+		RepositoryLinkBuilder builder = new RepositoryLinkBuilder(mappings.getMetadataFor(Profile.class), new BaseUri(
+				baseUri));
 		Link link = builder.withSelfRel();
 
 		assertThat(link.getHref(), is(expectedUri));

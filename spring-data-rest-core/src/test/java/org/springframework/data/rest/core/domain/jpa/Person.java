@@ -24,8 +24,11 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
+
+import org.springframework.data.rest.core.annotation.RestResource;
 
 /**
  * An entity that represents a person.
@@ -40,6 +43,7 @@ public class Person {
 	private String firstName;
 	private String lastName;
 	@OneToMany private List<Person> siblings = Collections.emptyList();
+	private @RestResource(path = "father-mapped") @ManyToOne Person father;
 	private Date created;
 
 	public Person() {}

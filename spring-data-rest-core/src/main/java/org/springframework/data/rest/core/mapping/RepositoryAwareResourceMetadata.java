@@ -17,9 +17,9 @@ package org.springframework.data.rest.core.mapping;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
 import org.springframework.util.Assert;
 
@@ -28,46 +28,46 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
-class RepositoryAwareResourceInformation implements ResourceMetadata {
+class RepositoryAwareResourceMetadata implements ResourceMetadata {
 
-	private final Repositories repositories;
 	private final CollectionResourceMapping mapping;
-	private final RepositoryResourceMappings provider;
-	private final RepositoryMetadata repositoryInterface;
+	private final PersistentEntitiesResourceMappings provider;
+	private final RepositoryMetadata repositoryMetadata;
 	private final SupportedHttpMethods crudMethodsSupportedHttpMethods;
 
+	private MappingResourceMetadata mappingMetadata;
+
 	/**
-	 * Creates a new {@link RepositoryAwareResourceInformation} for the given {@link Repositories},
-	 * {@link CollectionResourceMapping}, {@link ResourceMappings} and {@link RepositoryMetadata}.
+	 * Creates a new {@link RepositoryAwareResourceMetadata} for the given {@link CollectionResourceMapping},
+	 * {@link ResourceMappings} and {@link RepositoryMetadata}.
 	 * 
-	 * @param repositories must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
 	 * @param mapping must not be {@literal null}.
 	 * @param provider must not be {@literal null}.
 	 * @param repositoryMetadata must not be {@literal null}.
 	 */
-	public RepositoryAwareResourceInformation(Repositories repositories, CollectionResourceMapping mapping,
+	public RepositoryAwareResourceMetadata(PersistentEntity<?, ?> entity, CollectionResourceMapping mapping,
 			RepositoryResourceMappings provider, RepositoryMetadata repositoryMetadata) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(entity, "PersistentEntity must not be null!");
 		Assert.notNull(mapping, "CollectionResourceMapping must not be null!");
 		Assert.notNull(provider, "ResourceMetadataProvider must not be null!");
 		Assert.notNull(repositoryMetadata, "RepositoryMetadata must not be null!");
 
-		this.repositories = repositories;
 		this.mapping = mapping;
 		this.provider = provider;
-		this.repositoryInterface = repositoryMetadata;
+		this.repositoryMetadata = repositoryMetadata;
 		this.crudMethodsSupportedHttpMethods = new CrudMethodsSupportedHttpMethods(repositoryMetadata.getCrudMethods());
 	}
 
 	/**
-	 * Returns whether the current {@link ResourceMetadata} instance for the repository is the primary one to be used.
+	 * Returns whether the current {@link RootResourceMetadata} instance for the repository is the primary one to be used.
 	 * Reflects to the primary state of the bean definition.
 	 * 
 	 * @return
 	 */
 	public boolean isPrimary() {
-		return AnnotationUtils.findAnnotation(repositoryInterface.getRepositoryInterface(), Primary.class) != null;
+		return AnnotationUtils.findAnnotation(repositoryMetadata.getRepositoryInterface(), Primary.class) != null;
 	}
 
 	/* 
@@ -76,18 +76,21 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	 */
 	@Override
 	public Class<?> getDomainType() {
-		return repositoryInterface.getDomainType();
+		return repositoryMetadata.getDomainType();
 	}
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.DelegatingResourceInformation#isManaged(org.springframework.data.mapping.PersistentProperty)
+	 * @see org.springframework.data.rest.core.mapping.RootResourceMetadata#getProperty(java.lang.String)
 	 */
 	@Override
-	public boolean isManagedResource(PersistentProperty<?> property) {
+	public PropertyAwareResourceMapping getProperty(String mappedPath) {
 
-		Assert.notNull(property, "PersistentProperty must not be null!");
-		return repositories.hasRepositoryFor(property.getActualType());
+		if (this.mappingMetadata == null) {
+			this.mappingMetadata = provider.getMappingMetadataFor(getDomainType());
+		}
+
+		return mappingMetadata.getProperty(mappedPath);
 	}
 
 	/* 
@@ -186,7 +189,7 @@ class RepositoryAwareResourceInformation implements ResourceMetadata {
 	 */
 	@Override
 	public SearchResourceMappings getSearchResourceMappings() {
-		return provider.getSearchResourceMappings(repositoryInterface.getDomainType());
+		return provider.getSearchResourceMappings(repositoryMetadata.getDomainType());
 	}
 
 	/* 

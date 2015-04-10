@@ -88,7 +88,7 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 		}
 
 		for (Class<?> domainType : repositories) {
-			ResourceMetadata mapping = mappings.getMappingFor(domainType);
+			ResourceMetadata mapping = mappings.getMetadataFor(domainType);
 			if (mapping.getPath().matches(repositoryKey) && mapping.isExported()) {
 				return mapping;
 			}

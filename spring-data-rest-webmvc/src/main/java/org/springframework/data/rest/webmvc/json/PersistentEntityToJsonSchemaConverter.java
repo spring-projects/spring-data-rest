@@ -33,7 +33,6 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.config.JsonSchemaFormat;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.core.mapping.MappingResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -137,7 +136,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	public JsonSchema convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 		final PersistentEntity<?, ?> persistentEntity = entities.getPersistentEntity((Class<?>) source);
-		final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getType());
+		final ResourceMetadata metadata = mappings.getMetadataFor(persistentEntity.getType());
 
 		Descriptors descriptors = new Descriptors();
 		List<JsonSchemaProperty> propertiesFor = getPropertiesFor(persistentEntity.getType(), metadata, descriptors);
@@ -228,11 +227,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			return Collections.emptyList();
 		}
 
-		Class<?> actualType = property.getActualType();
-		PersistentEntity<?, ?> propertyEntity = entities.getPersistentEntity(actualType);
-		MappingResourceMetadata propertyMetadata = new MappingResourceMetadata(propertyEntity);
-
-		return getPropertiesFor(actualType, propertyMetadata, descriptors);
+		return getPropertiesFor(property.getActualType(), mappings.getMetadataFor(property.getActualType()), descriptors);
 	}
 
 	private Property getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,

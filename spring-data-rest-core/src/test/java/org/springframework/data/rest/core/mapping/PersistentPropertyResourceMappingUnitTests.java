@@ -18,11 +18,13 @@ package org.springframework.data.rest.core.mapping;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
@@ -30,7 +32,6 @@ import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.data.rest.core.mapping.RepositoryResourceMappings.PersistentPropertyResourceMapping;
 
 /**
  * Unit tests for {@link PersistentPropertyResourceMapping}.
@@ -113,10 +114,10 @@ public class PersistentPropertyResourceMappingUnitTests {
 		MongoPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(entity);
 		MongoPersistentProperty property = persistentEntity.getPersistentProperty(propertyName);
 
-		CollectionResourceMapping entityResourceMapping = new TypeBasedCollectionResourceMapping(entity);
-		ResourceMapping propertyTypeMapping = new TypeBasedCollectionResourceMapping(property.getType());
+		ResourceMappings resourceMappings = new PersistentEntitiesResourceMappings(new PersistentEntities(
+				Arrays.asList(mappingContext)));
 
-		return new PersistentPropertyResourceMapping(property, propertyTypeMapping, entityResourceMapping);
+		return new PersistentPropertyResourceMapping(property, resourceMappings);
 	}
 
 	public static class Entity {

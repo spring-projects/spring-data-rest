@@ -15,7 +15,6 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-
 /**
  * @author Oliver Gierke
  */
@@ -25,15 +24,15 @@ public interface ResourceMappings extends Iterable<ResourceMetadata> {
 	 * Returns a {@link ResourceMetadata} for the given type if available.
 	 * 
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return the {@link ResourceMetadata} if available or {@literal null} otherwise.
 	 */
-	ResourceMetadata getMappingFor(Class<?> type);
+	ResourceMetadata getMetadataFor(Class<?> type);
 
 	/**
 	 * Returns the {@link ResourceMapping}s for the search resources of the given type.
 	 * 
 	 * @param type must not be {@literal null}.
-	 * @return
+	 * @return will never be {@literal null}.
 	 */
 	SearchResourceMappings getSearchResourceMappings(Class<?> type);
 

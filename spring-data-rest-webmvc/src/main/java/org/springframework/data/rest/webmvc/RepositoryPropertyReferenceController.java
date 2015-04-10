@@ -45,6 +45,7 @@ import org.springframework.data.rest.core.event.AfterLinkDeleteEvent;
 import org.springframework.data.rest.core.event.AfterLinkSaveEvent;
 import org.springframework.data.rest.core.event.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.core.event.BeforeLinkSaveEvent;
+import org.springframework.data.rest.core.mapping.PropertyAwareResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceType;
@@ -445,13 +446,20 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		return conversionService.convert(id, type);
 	}
 
-	private ResourceSupport doWithReferencedProperty(RootResourceInformation repoRequest, Serializable id,
+	private ResourceSupport doWithReferencedProperty(RootResourceInformation resourceInformation, Serializable id,
 			String propertyPath, Function<ReferencedProperty, ResourceSupport> handler, HttpMethod method) throws Exception {
 
-		RepositoryInvoker invoker = repoRequest.getInvoker();
+		RepositoryInvoker invoker = resourceInformation.getInvoker();
 
-		if (!repoRequest.getSupportedMethods().supports(method, ResourceType.ITEM)) {
+		if (!resourceInformation.getSupportedMethods().supports(method, ResourceType.ITEM)) {
 			throw new HttpRequestMethodNotSupportedException(method.name());
+		}
+
+		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
+		PropertyAwareResourceMapping mapping = metadata.getProperty(propertyPath);
+
+		if (mapping == null || !mapping.isExported()) {
+			throw new ResourceNotFoundException();
 		}
 
 		Object domainObj = invoker.invokeFindOne(id);
@@ -460,17 +468,9 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			throw new ResourceNotFoundException();
 		}
 
-		PersistentEntity<?, ?> persistentEntity = repoRequest.getPersistentEntity();
-		PersistentProperty<?> prop = persistentEntity.getPersistentProperty(propertyPath);
-
-		if (null == prop) {
-			throw new ResourceNotFoundException();
-		}
-
-		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(domainObj);
-		Object propVal = accessor.getProperty(prop);
-
-		return handler.apply(new ReferencedProperty(prop, propVal, accessor));
+		PersistentProperty<?> property = mapping.getProperty();
+		PersistentPropertyAccessor accessor = property.getOwner().getPropertyAccessor(domainObj);
+		return handler.apply(new ReferencedProperty(property, accessor.getProperty(property), accessor));
 	}
 
 	private class ReferencedProperty {
@@ -490,4 +490,5 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			this.entity = repositories.getPersistentEntity(propertyType);
 		}
 	}
+
 }

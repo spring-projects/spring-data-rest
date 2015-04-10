@@ -124,7 +124,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 		final List<EmbeddedWrapper> associationProjections = new ArrayList<EmbeddedWrapper>();
 		final PersistentPropertyAccessor accessor = entity.getPropertyAccessor(instance);
 		final AssociationLinks associationLinks = new AssociationLinks(mappings);
-		final ResourceMetadata metadata = mappings.getMappingFor(entity.getType());
+		final ResourceMetadata metadata = mappings.getMetadataFor(entity.getType());
 
 		entity.doWithAssociations(new SimpleAssociationHandler() {
 

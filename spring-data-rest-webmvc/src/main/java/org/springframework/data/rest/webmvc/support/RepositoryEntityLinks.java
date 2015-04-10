@@ -108,7 +108,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	@Override
 	public LinkBuilder linkFor(Class<?> type) {
 
-		ResourceMetadata metadata = mappings.getMappingFor(type);
+		ResourceMetadata metadata = mappings.getMetadataFor(type);
 		return new RepositoryLinkBuilder(metadata, new BaseUri(config.getBaseUri()));
 	}
 
@@ -130,7 +130,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 */
 	public Link linkToPagedResource(Class<?> type, Pageable pageable) {
 
-		ResourceMetadata metadata = mappings.getMappingFor(type);
+		ResourceMetadata metadata = mappings.getMetadataFor(type);
 		String href = linkFor(type).toString();
 		UriComponents components = prepareUri(href, metadata, pageable);
 
@@ -158,7 +158,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 		Assert.isInstanceOf(Serializable.class, id, "Id must be assignable to Serializable!");
 
-		ResourceMetadata metadata = mappings.getMappingFor(type);
+		ResourceMetadata metadata = mappings.getMetadataFor(type);
 		String mappedId = idConverters.getPluginFor(type, DefaultIdConverter.INSTANCE).toRequestId((Serializable) id, type);
 
 		Link link = linkFor(type).slash(mappedId).withRel(metadata.getItemResourceRel());

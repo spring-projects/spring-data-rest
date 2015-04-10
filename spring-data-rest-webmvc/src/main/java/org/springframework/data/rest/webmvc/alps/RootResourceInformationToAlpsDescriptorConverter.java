@@ -51,7 +51,6 @@ import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.JacksonMetadata;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
-import org.springframework.data.rest.webmvc.mapping.PropertyMappings;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.TemplateVariable;
@@ -146,7 +145,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 	private Descriptor buildRepresentationDescriptor(Class<?> type) {
 
-		ResourceMetadata metadata = mappings.getMappingFor(type);
+		ResourceMetadata metadata = mappings.getMetadataFor(type);
 
 		return descriptor().//
 				id(metadata.getItemResourceRel().concat("-representation")).//
@@ -159,7 +158,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 	private Descriptor buildCollectionResourceDescriptor(Class<?> type, RootResourceInformation resourceInformation,
 			Descriptor representationDescriptor, HttpMethod method) {
 
-		ResourceMetadata metadata = mappings.getMappingFor(type);
+		ResourceMetadata metadata = mappings.getMetadataFor(type);
 
 		List<Descriptor> nestedDescriptors = new ArrayList<Descriptor>();
 		nestedDescriptors.addAll(getPaginationDescriptors(type, method));
@@ -241,7 +240,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 			Descriptor representationDescriptor, HttpMethod method) {
 
 		PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
-		ResourceMetadata metadata = mappings.getMappingFor(entity.getType());
+		ResourceMetadata metadata = mappings.getMetadataFor(entity.getType());
 
 		return descriptor().//
 				id(prefix(method).concat(metadata.getItemResourceRel())).//
@@ -262,7 +261,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		ProjectionDefinitionConfiguration projectionConfiguration = configuration.projectionConfiguration();
 
 		return projectionConfiguration.hasProjectionFor(type) ? Arrays.asList(buildProjectionDescriptor(mappings
-				.getMappingFor(type))) : Collections.<Descriptor> emptyList();
+				.getMetadataFor(type))) : Collections.<Descriptor> emptyList();
 	}
 
 	/**
@@ -310,8 +309,8 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		final PersistentEntity<?, ?> entity = persistentEntities.getPersistentEntity(type);
 		final List<Descriptor> propertyDescriptors = new ArrayList<Descriptor>();
 		final JacksonMetadata jackson = new JacksonMetadata(mapper, type);
-		final PropertyMappings propertyMappings = new PropertyMappings(mappings);
 		final AssociationLinks associationLinks = new AssociationLinks(mappings);
+		final ResourceMetadata metadata = mappings.getMetadataFor(entity.getType());
 
 		entity.doWithProperties(new SimplePropertyHandler() {
 
@@ -319,7 +318,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 			public void doWithPersistentProperty(PersistentProperty<?> property) {
 
 				BeanPropertyDefinition propertyDefinition = jackson.getDefinitionFor(property);
-				ResourceMapping propertyMapping = propertyMappings.getMappingFor(property);
+				ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 				if (propertyDefinition != null) {
 					propertyDescriptors.add(//
@@ -343,12 +342,12 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 					return;
 				}
 
-				ResourceMapping mapping = propertyMappings.getMappingFor(property);
+				ResourceMapping mapping = metadata.getMappingFor(property);
 
 				DescriptorBuilder builder = descriptor().//
 						name(mapping.getRel()).doc(getDocFor(mapping.getDescription()));
 
-				ResourceMetadata targetTypeMapping = mappings.getMappingFor(property.getActualType());
+				ResourceMetadata targetTypeMapping = mappings.getMetadataFor(property.getActualType());
 				String localPath = targetTypeMapping.getRel().concat("#").concat(targetTypeMapping.getItemResourceRel());
 				Link link = ControllerLinkBuilder.linkTo(AlpsController.class).slash(localPath).withSelfRel();
 
@@ -365,7 +364,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 	private Collection<Descriptor> buildSearchResourceDescriptors(PersistentEntity<?, ?> entity) {
 
-		ResourceMetadata metadata = mappings.getMappingFor(entity.getType());
+		ResourceMetadata metadata = mappings.getMetadataFor(entity.getType());
 		List<Descriptor> descriptors = new ArrayList<Descriptor>();
 
 		for (MethodResourceMapping methodMapping : metadata.getSearchResourceMappings()) {
