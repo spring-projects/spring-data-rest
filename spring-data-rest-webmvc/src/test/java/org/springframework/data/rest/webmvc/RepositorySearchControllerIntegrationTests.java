@@ -169,4 +169,15 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 
 		assertAllowHeaders(response, HttpMethod.GET);
 	}
+
+	/**
+	 * @see DATAREST-515
+	 */
+	@Test
+	public void repositorySearchResourceExposesDomainType() {
+
+		RepositorySearchesResource searches = controller.listSearches(getResourceInformation(Person.class));
+
+		assertThat(searches.getDomainType(), is(typeCompatibleWith(Person.class)));
+	}
 }
