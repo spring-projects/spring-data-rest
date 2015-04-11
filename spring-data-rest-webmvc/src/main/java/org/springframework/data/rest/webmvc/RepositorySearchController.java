@@ -153,7 +153,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			throw new ResourceNotFoundException();
 		}
 
-		RepositorySearchesResource result = new RepositorySearchesResource();
+		RepositorySearchesResource result = new RepositorySearchesResource(resourceInformation.getDomainType());
 		result.add(queryMethodLinks);
 
 		return result;

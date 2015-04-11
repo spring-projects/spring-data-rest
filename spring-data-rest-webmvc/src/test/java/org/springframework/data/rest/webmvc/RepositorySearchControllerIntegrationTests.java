@@ -193,4 +193,15 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 
 		assertThat(result.getBody(), is(instanceOf(Resources.class)));
 	}
+
+	/**
+	 * @see DATAREST-515
+	 */
+	@Test
+	public void repositorySearchResourceExposesDomainType() {
+
+		RepositorySearchesResource searches = controller.listSearches(getResourceInformation(Person.class));
+
+		assertThat(searches.getDomainType(), is(typeCompatibleWith(Person.class)));
+	}
 }

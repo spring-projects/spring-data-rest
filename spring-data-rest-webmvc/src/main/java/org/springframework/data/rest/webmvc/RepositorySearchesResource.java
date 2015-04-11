@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc;
 
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.util.Assert;
 
 /**
  * A custom {@link ResourceSupport} type to be able to write custom {@link ResourceProcessor}s to add additional links
@@ -24,4 +25,27 @@ import org.springframework.hateoas.ResourceSupport;
  * 
  * @author Oliver Gierke
  */
-public class RepositorySearchesResource extends ResourceSupport {}
+public class RepositorySearchesResource extends ResourceSupport {
+
+	private final Class<?> domainType;
+
+	/**
+	 * Creates a new {@link RepositorySearchesResource} for the given domain type.
+	 * 
+	 * @param domainType must not be {@literal null}.
+	 */
+	RepositorySearchesResource(Class<?> domainType) {
+
+		Assert.notNull(domainType, "Domain type must not be null!");
+		this.domainType = domainType;
+	}
+
+	/**
+	 * Returns the domain type for which the resource lists searches.
+	 * 
+	 * @return
+	 */
+	public Class<?> getDomainType() {
+		return domainType;
+	}
+}
