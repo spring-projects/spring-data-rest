@@ -66,6 +66,17 @@ public final class ETag {
 	}
 
 	/**
+	 * Creates a new {@link ETag} from the given {@link PersistentEntity} and target bean.
+	 * 
+	 * @param entity must not be {@literal null}.
+	 * @param bean must not be {@literal null}.
+	 * @return
+	 */
+	public static ETag from(PersistentEntity<?, ?> entity, Object bean) {
+		return from(getVersionInformation(entity, bean));
+	}
+
+	/**
 	 * Verifies the ETag to be created for the given target bean with the current one and raises a
 	 * {@link ETagDoesntMatchException} in case they don't match.
 	 * 
@@ -158,17 +169,6 @@ public final class ETag {
 	@Override
 	public int hashCode() {
 		return value.hashCode();
-	}
-
-	/**
-	 * Creates a new {@link ETag} from the given {@link PersistentEntity} and target bean.
-	 * 
-	 * @param entity
-	 * @param bean
-	 * @return
-	 */
-	private static ETag from(PersistentEntity<?, ?> entity, Object bean) {
-		return from(getVersionInformation(entity, bean));
 	}
 
 	/**

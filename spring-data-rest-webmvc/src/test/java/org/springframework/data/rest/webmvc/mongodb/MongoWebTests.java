@@ -293,9 +293,11 @@ public class MongoWebTests extends CommonWebTests {
 		Link receiptLink = client.getDiscoverer(response).findLinkWithRel("self", response.getContentAsString());
 
 		mvc.perform(get(receiptLink.getHref()).header("If-Modified-Since", response.getHeader("Last-Modified"))).//
-				andExpect(status().isNotModified());
+				andExpect(status().isNotModified()).//
+				andExpect(header().string("ETag", is(notNullValue())));
 
 		mvc.perform(get(receiptLink.getHref()).header("If-None-Match", response.getHeader("ETag"))).//
-				andExpect(status().isNotModified());
+				andExpect(status().isNotModified()).//
+				andExpect(header().string("ETag", is(notNullValue())));
 	}
 }
