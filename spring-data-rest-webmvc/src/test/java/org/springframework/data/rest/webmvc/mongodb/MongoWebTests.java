@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.mongodb;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -292,10 +293,12 @@ public class MongoWebTests extends CommonWebTests {
 
 		Link receiptLink = client.getDiscoverer(response).findLinkWithRel("self", response.getContentAsString());
 
-		mvc.perform(get(receiptLink.getHref()).header("If-Modified-Since", response.getHeader("Last-Modified"))).//
-				andExpect(status().isNotModified());
+		mvc.perform(get(receiptLink.getHref()).header(IF_MODIFIED_SINCE, response.getHeader(LAST_MODIFIED))).//
+				andExpect(status().isNotModified()).//
+				andExpect(header().string(ETAG, is(notNullValue())));
 
-		mvc.perform(get(receiptLink.getHref()).header("If-None-Match", response.getHeader("ETag"))).//
-				andExpect(status().isNotModified());
+		mvc.perform(get(receiptLink.getHref()).header(IF_NONE_MATCH, response.getHeader(ETAG))).//
+				andExpect(status().isNotModified()).//
+				andExpect(header().string(ETAG, is(notNullValue())));
 	}
 }

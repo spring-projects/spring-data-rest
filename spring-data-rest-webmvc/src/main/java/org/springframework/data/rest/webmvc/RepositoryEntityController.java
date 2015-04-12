@@ -31,6 +31,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.auditing.AuditableBeanWrapper;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.repository.support.Repositories;
@@ -319,9 +320,10 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		List<String> ifNoneMatch = headers.getIfNoneMatch();
 		ETag eTag = ifNoneMatch.isEmpty() ? ETag.NO_ETAG : ETag.from(ifNoneMatch.get(0));
+		PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
 
-		if (eTag.matches(resourceInformation.getPersistentEntity(), domainObj)) {
-			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_MODIFIED);
+		if (eTag.matches(entity, domainObj)) {
+			return new ResponseEntity<Resource<?>>(prepareHeaders(entity, domainObj), HttpStatus.NOT_MODIFIED);
 		}
 
 		// Check last modification for If-Modfied-Since
@@ -332,7 +334,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			long current = wrapper.getLastModifiedDate().getTimeInMillis() / 1000 * 1000;
 
 			if (current <= headers.getIfModifiedSince()) {
-				return new ResponseEntity<Resource<?>>(HttpStatus.NOT_MODIFIED);
+				return new ResponseEntity<Resource<?>>(prepareHeaders(entity, domainObj), HttpStatus.NOT_MODIFIED);
 			}
 		}
 

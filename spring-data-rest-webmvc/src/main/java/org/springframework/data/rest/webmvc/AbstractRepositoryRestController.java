@@ -24,6 +24,7 @@ import java.util.List;
 import org.springframework.data.auditing.AuditableBeanWrapper;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -132,18 +133,24 @@ class AbstractRepositoryRestController {
 	 * @return
 	 */
 	protected HttpHeaders prepareHeaders(PersistentEntityResource resource) {
+		return resource == null ? new HttpHeaders() : prepareHeaders(resource.getPersistentEntity(), resource.getContent());
+	}
 
-		HttpHeaders headers = new HttpHeaders();
-
-		if (resource == null) {
-			return headers;
-		}
+	/**
+	 * Retruns the default headers to be returned for the given {@link PersistentEntity} and value. Will set {@link ETag}
+	 * and {@code Last-Modified} headers if applicable.
+	 * 
+	 * @param entity must not be {@literal null}.
+	 * @param value must not be {@literal null}.
+	 * @return
+	 */
+	protected HttpHeaders prepareHeaders(PersistentEntity<?, ?> entity, Object value) {
 
 		// Add ETag
-		headers = ETag.from(resource).addTo(headers);
+		HttpHeaders headers = ETag.from(entity, value).addTo(new HttpHeaders());
 
 		// Add Last-Modified
-		AuditableBeanWrapper wrapper = getAuditableBeanWrapper(resource.getContent());
+		AuditableBeanWrapper wrapper = getAuditableBeanWrapper(value);
 
 		if (wrapper == null) {
 			return headers;
