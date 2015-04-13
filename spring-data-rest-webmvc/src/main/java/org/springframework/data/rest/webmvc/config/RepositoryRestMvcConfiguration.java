@@ -65,6 +65,7 @@ import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.rest.core.support.RepositoryRelProvider;
+import org.springframework.data.rest.core.support.UnwrappingRepositoryInvokerFactory;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping;
 import org.springframework.data.rest.webmvc.BaseUri;
@@ -575,7 +576,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public RepositoryInvokerFactory repositoryInvokerFactory() {
-		return new DefaultRepositoryInvokerFactory(repositories(), defaultConversionService());
+		return new UnwrappingRepositoryInvokerFactory(new DefaultRepositoryInvokerFactory(repositories(),
+				defaultConversionService()));
 	}
 
 	@Bean
