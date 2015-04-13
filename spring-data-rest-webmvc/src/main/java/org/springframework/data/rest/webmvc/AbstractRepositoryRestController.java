@@ -100,11 +100,13 @@ class AbstractRepositoryRestController {
 
 		if (source instanceof Iterable) {
 			return toResources((Iterable<?>) source, assembler, baseLink);
-		} else if (source == null || ClassUtils.isPrimitiveOrWrapper(source.getClass())) {
+		} else if (source == null) {
+			throw new ResourceNotFoundException();
+		} else if (ClassUtils.isPrimitiveOrWrapper(source.getClass())) {
 			return source;
-		} else {
-			return assembler.toFullResource(source);
 		}
+
+		return assembler.toFullResource(source);
 	}
 
 	protected Resources<? extends Resource<Object>> entitiesToResources(Page<Object> page,

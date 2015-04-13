@@ -315,4 +315,16 @@ public class MongoWebTests extends CommonWebTests {
 		mvc.perform(get(link.expand(profile.getId()).getHref())).//
 				andExpect(status().isOk());
 	}
+
+	/**
+	 * @see DATAREST-517
+	 */
+	@Test
+	public void returnsNotFoundIfQueryExecutionDoesNotReturnResult() throws Exception {
+
+		Link link = client.discoverUnique("profiles", "search", "findById");
+
+		mvc.perform(get(link.expand("").getHref())).//
+				andExpect(status().isNotFound());
+	}
 }
