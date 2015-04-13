@@ -36,7 +36,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -138,8 +137,26 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		assertThat(usersLink, is(notNullValue()));
 
-		mvc.perform(get(usersLink.getHref())).andDo(MockMvcResultHandlers.print())
-				.andExpect(jsonPath("$.descriptors[?(@.id == 'item-representation')].href", is(notNullValue())));
+		mvc.perform(get(usersLink.getHref())).andExpect(
+				jsonPath("$.descriptors[?(@.id == 'item-representation')].href", is(notNullValue())));
+	}
+
+	/**
+	 * @see DATAREST-516
+	 */
+	@Test
+	public void referenceToAssociatedEntityDesciptorPointsToRepresentationDescriptor() throws Exception {
+
+		Link profileLink = discoverUnique("/", "profile");
+		Link usersLink = discoverUnique(profileLink.getHref(), "people");
+
+		String jsonPath = "$."; // Root
+		jsonPath += "descriptors[?(@.id == 'person-representation')]."; // Representation descriptor
+		jsonPath += "descriptors[?(@.name == 'father')][0]."; // First father descriptor
+		jsonPath += "rt"; // Return type
+
+		mvc.perform(get(usersLink.getHref())).andExpect(
+				jsonPath(jsonPath, allOf(containsString("alps"), endsWith("-representation"))));
 	}
 
 	private Link discoverUnique(String href, String rel) throws Exception {
