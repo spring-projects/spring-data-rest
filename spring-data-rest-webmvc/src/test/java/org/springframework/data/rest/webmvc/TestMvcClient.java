@@ -20,6 +20,8 @@ import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.hateoas.Link;
@@ -182,6 +184,27 @@ public class TestMvcClient {
 		List<Link> discover = discover(rel);
 		assertThat(discover, hasSize(1));
 		return discover.get(0);
+	}
+
+	/**
+	 * Traverses the given link relations from the root.
+	 * 
+	 * @param rels
+	 * @return
+	 * @throws Exception
+	 */
+	public Link discoverUnique(String... rels) throws Exception {
+
+		Iterator<String> toTraverse = Arrays.asList(rels).iterator();
+		Link lastLink = null;
+
+		while (toTraverse.hasNext()) {
+
+			String rel = toTraverse.next();
+			lastLink = lastLink == null ? discoverUnique(rel) : discoverUnique(lastLink, rel);
+		}
+
+		return lastLink;
 	}
 
 	/**

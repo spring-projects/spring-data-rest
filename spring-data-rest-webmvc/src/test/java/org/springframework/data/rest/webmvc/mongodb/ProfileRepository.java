@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.rest.webmvc.mongodb;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
@@ -32,4 +33,9 @@ public interface ProfileRepository extends PagingAndSortingRepository<Profile, S
 	 * @see DATAREST-247
 	 */
 	long countByType(@Param("type") String type);
+
+	/**
+	 * @see DATAREST-511
+	 */
+	Optional<Profile> findById(@Param("id") String id);
 }

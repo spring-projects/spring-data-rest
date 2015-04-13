@@ -300,4 +300,18 @@ public class MongoWebTests extends CommonWebTests {
 				andExpect(status().isNotModified()).//
 				andExpect(header().string("ETag", is(notNullValue())));
 	}
+
+	/**
+	 * @see DATAREST-511
+	 */
+	@Test
+	public void invokesQueryResourceReturningAnOptional() throws Exception {
+
+		Profile profile = repository.findAll().iterator().next();
+
+		Link link = client.discoverUnique("profiles", "search", "findById");
+
+		mvc.perform(get(link.expand(profile.getId()).getHref())).//
+				andExpect(status().isOk());
+	}
 }
