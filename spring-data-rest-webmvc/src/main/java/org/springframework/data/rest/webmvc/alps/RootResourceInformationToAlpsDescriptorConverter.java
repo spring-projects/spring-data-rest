@@ -148,7 +148,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		ResourceMetadata metadata = mappings.getMetadataFor(type);
 
 		return descriptor().//
-				id(metadata.getItemResourceRel().concat("-representation")).//
+				id(getRepresentationDescriptorId(metadata)).//
 				href(entityLinks.linkFor(type).slash("schema").toString()).//
 				doc(getDocFor(metadata.getItemResourceDescription())).//
 				descriptors(buildPropertyDescriptors(type, metadata.getItemResourceRel())).//
@@ -347,9 +347,11 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				DescriptorBuilder builder = descriptor().//
 						name(mapping.getRel()).doc(getDocFor(mapping.getDescription()));
 
-				ResourceMetadata targetTypeMapping = mappings.getMetadataFor(property.getActualType());
-				String localPath = targetTypeMapping.getRel().concat("#").concat(targetTypeMapping.getItemResourceRel());
-				Link link = ControllerLinkBuilder.linkTo(AlpsController.class).slash(localPath).withSelfRel();
+				ResourceMetadata targetTypeMetadata = mappings.getMetadataFor(property.getActualType());
+				String localPath = targetTypeMetadata.getRel().concat("#")
+						.concat(getRepresentationDescriptorId(targetTypeMetadata));
+				Link link = ControllerLinkBuilder.linkTo(AlpsController.class).slash(AlpsController.ALPS_ROOT_MAPPING)
+						.slash(localPath).withSelfRel();
 
 				builder.//
 						type(Type.SAFE).//
@@ -412,6 +414,10 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		} catch (NoSuchMessageException o_O) {
 			return configuration.metadataConfiguration().omitUnresolvableDescriptionKeys() ? null : description.getMessage();
 		}
+	}
+
+	private static String getRepresentationDescriptorId(ResourceMetadata metadata) {
+		return metadata.getItemResourceRel().concat("-representation");
 	}
 
 	private static String prefix(HttpMethod method) {
