@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Integration tests for {@link RepositoryEntityLinks}.
@@ -127,6 +129,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 	/**
 	 * @see DATAREST-467
+	 * @see DATAREST-519
 	 */
 	@Test
 	public void prepopulatesPaginationInformationForSearchResourceLink() {
@@ -137,6 +140,9 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(link.isTemplated(), is(true));
 		assertThat(link.getVariableNames(), hasItem("firstname"));
 		assertThat(link.getVariableNames(), not(hasItems("page", "size")));
+
+		UriComponents components = UriComponentsBuilder.fromUriString(link.getHref()).build();
+		assertThat(components.getQueryParams(), allOf(hasKey("page"), hasKey("size")));
 	}
 
 	/**
@@ -153,6 +159,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 	/**
 	 * @see DATAREST-467
+	 * @see DATAREST-519
 	 */
 	@Test
 	public void prepopulatesSortInformationForSearchResourceLink() {
@@ -163,5 +170,8 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(link.isTemplated(), is(true));
 		assertThat(link.getVariableNames(), hasItem("lastname"));
 		assertThat(link.getVariableNames(), not(hasItems("sort")));
+
+		UriComponents components = UriComponentsBuilder.fromUriString(link.getHref()).build();
+		assertThat(components.getQueryParams(), hasKey("sort"));
 	}
 }

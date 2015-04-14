@@ -286,14 +286,17 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 			return null;
 		}
 
-		LinkBuilder builder = linkFor(type).slash(mappings.getSearchResourceMappings(type).getPath());
+		LinkBuilder builder = linkFor(type).//
+				slash(mappings.getSearchResourceMappings(type).getPath()).//
+				slash(mapping.getPath());
+
 		UriComponents uriComponents = prepareUri(builder.toString(), mapping, pageable, sort);
 
 		TemplateVariables variables = getParameterVariables(mapping).//
 				concat(getTemplateVariables(uriComponents, mapping, pageable, sort)).//
 				concat(getProjectionVariable(mapping.getReturnedDomainType()));
 
-		return new Link(new UriTemplate(builder.slash(mapping.getPath()).toString(), variables), mapping.getRel());
+		return new Link(new UriTemplate(uriComponents.toString(), variables), mapping.getRel());
 	}
 
 	/**
