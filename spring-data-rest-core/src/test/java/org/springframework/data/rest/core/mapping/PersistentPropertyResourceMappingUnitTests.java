@@ -54,7 +54,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 		assertThat(mapping, is(notNullValue()));
 		assertThat(mapping.getPath(), is(new Path("first")));
 		assertThat(mapping.getRel(), is("first"));
-		assertThat(mapping.isExported(), is(true));
+		assertThat(mapping.isExported(), is(false));
 	}
 
 	/**
@@ -85,6 +85,9 @@ public class PersistentPropertyResourceMappingUnitTests {
 		assertThat(mapping.isExported(), is(false));
 	}
 
+	/**
+	 * @see DATAREST-233
+	 */
 	@Test
 	public void returnsDefaultDescriptionKey() {
 
@@ -97,7 +100,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 	}
 
 	/**
-	 * @see DATAREST-???
+	 * @see DATAREST-233
 	 */
 	@Test
 	public void considersAtDescription() {

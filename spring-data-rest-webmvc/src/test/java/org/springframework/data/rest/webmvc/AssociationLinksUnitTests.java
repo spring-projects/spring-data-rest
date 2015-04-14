@@ -125,6 +125,7 @@ public class AssociationLinksUnitTests {
 		@RestResource(exported = false) @Reference Property hiddenProperty;
 	}
 
+	@RestResource
 	public static class Property {
 
 	}

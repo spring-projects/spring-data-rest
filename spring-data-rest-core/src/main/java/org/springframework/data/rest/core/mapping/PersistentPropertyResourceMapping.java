@@ -76,6 +76,10 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 	@Override
 	public boolean isExported() {
 
+		if (!property.isAssociation()) {
+			return false;
+		}
+
 		ResourceMapping typeMapping = mappings.getMetadataFor(property.getActualType());
 		return !typeMapping.isExported() ? false : annotation == null ? true : annotation.exported();
 	}

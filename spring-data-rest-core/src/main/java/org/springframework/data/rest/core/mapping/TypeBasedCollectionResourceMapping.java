@@ -83,7 +83,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public boolean isExported() {
-		return annotation == null ? Modifier.isPublic(type.getModifiers()) : annotation.exported();
+		return annotation != null ? annotation.exported() : Modifier.isPublic(type.getModifiers());
 	}
 
 	/* 

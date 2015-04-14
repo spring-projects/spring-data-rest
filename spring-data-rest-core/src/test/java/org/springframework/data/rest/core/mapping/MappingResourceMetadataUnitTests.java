@@ -31,6 +31,8 @@ import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 /**
+ * Unit tests for {@link MappingResourceMetadata}.
+ * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -38,16 +40,18 @@ public class MappingResourceMetadataUnitTests {
 
 	MongoMappingContext context = new MongoMappingContext();
 
+	MongoPersistentEntity<?> entity = context.getPersistentEntity(Entity.class);
+	ResourceMappings resourceMappings = new PersistentEntitiesResourceMappings(new PersistentEntities(
+			Arrays.asList(context)));
+	MappingResourceMetadata metadata = new MappingResourceMetadata(entity, resourceMappings).init();
+
+	/**
+	 * @see DATAREST-514
+	 */
 	@Test
 	public void allowsLookupOfPropertyByMappedName() {
 
-		ResourceMappings resourceMappings = new PersistentEntitiesResourceMappings(new PersistentEntities(
-				Arrays.asList(context)));
-
-		MongoPersistentEntity<?> entity = context.getPersistentEntity(Entity.class);
 		MongoPersistentProperty property = entity.getPersistentProperty("related");
-
-		MappingResourceMetadata metadata = new MappingResourceMetadata(entity, resourceMappings).init();
 
 		PropertyAwareResourceMapping propertyMapping = metadata.getProperty("foo");
 
@@ -56,10 +60,31 @@ public class MappingResourceMetadataUnitTests {
 		assertThat(metadata.getMappingFor(property).getPath().matches("foo"), is(true));
 	}
 
+	/**
+	 * @see DATAREST-518
+	 */
+	@Test
+	public void isNotExportedByDefault() {
+
+		assertThat(metadata.isExported(), is(false));
+	}
+
+	/**
+	 * @see DATAREST-518
+	 */
+	@Test
+	public void isExportedIfExplicitlyAnnotated() {
+
+		MappingResourceMetadata metadata = new MappingResourceMetadata(context.getPersistentEntity(Related.class),
+				resourceMappings).init();
+		assertThat(metadata.isExported(), is(true));
+	}
+
 	static class Entity {
 		@DBRef @RestResource(rel = "foo", path = "foo") private Related related;
 	}
 
+	@RestResource
 	static class Related {
 
 	}

@@ -24,6 +24,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods.NoSupportedMethods;
 import org.springframework.util.Assert;
 
@@ -37,6 +38,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 
 	private final PersistentEntity<?, ?> entity;
 	private final PropertyMappings propertyMappings;
+	private final boolean explicitlyExported;
 
 	/**
 	 * Creates a new {@link MappingResourceMetadata} for the given {@link PersistentEntity}.
@@ -49,6 +51,9 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 
 		this.entity = entity;
 		this.propertyMappings = new PropertyMappings(resourceMappings);
+
+		RestResource annotation = entity.findAnnotation(RestResource.class);
+		this.explicitlyExported = annotation != null && annotation.exported();
 	}
 
 	public MappingResourceMetadata init() {
@@ -111,6 +116,15 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 	@Override
 	public PropertyAwareResourceMapping getProperty(String mappedPath) {
 		return propertyMappings.getMappingFor(mappedPath);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.TypeBasedCollectionResourceMapping#isExported()
+	 */
+	@Override
+	public boolean isExported() {
+		return explicitlyExported;
 	}
 
 	/**
