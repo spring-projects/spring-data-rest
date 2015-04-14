@@ -119,6 +119,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
@@ -721,6 +722,28 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public AlpsResourceProcessor alpsResourceProcessor() {
 		return new AlpsResourceProcessor(config());
+	}
+
+	//
+	// HAL Browser
+	//
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry)
+	 */
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+
+		// Register HAL browser if present
+
+		if (ClassUtils.isPresent("org.springframework.data.rest.webmvc.halbrowser.HalBrowser", getClass().getClassLoader())) {
+
+			String basePath = config().getBasePath().toString().concat("/browser");
+			String rootLocation = "classpath:META-INF/spring-data-rest/hal-browser/";
+
+			registry.addResourceHandler(basePath.concat("/**")).addResourceLocations(rootLocation);
+		}
 	}
 
 	private static class ResourceSupportHttpMessageConverter extends TypeConstrainedMappingJackson2HttpMessageConverter

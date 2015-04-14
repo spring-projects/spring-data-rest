@@ -21,8 +21,10 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -37,12 +39,17 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -70,6 +77,36 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
 		this.configuration = configuration;
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#lookupHandlerMethod(java.lang.String, javax.servlet.http.HttpServletRequest)
+	 */
+	@Override
+	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
+
+		List<MediaType> mediaTypes = new ArrayList<MediaType>();
+		boolean defaultFound = false;
+
+		for (MediaType mediaType : MediaType.parseMediaTypes(request.getHeader(HttpHeaders.ACCEPT))) {
+
+			MediaType rawtype = mediaType.removeQualityValue();
+
+			if (rawtype.equals(configuration.getDefaultMediaType())) {
+				defaultFound = true;
+			}
+
+			if (!rawtype.equals(MediaType.ALL)) {
+				mediaTypes.add(mediaType);
+			}
+		}
+
+		if (!defaultFound) {
+			mediaTypes.add(configuration.getDefaultMediaType());
+		}
+
+		return super.lookupHandlerMethod(lookupPath, new CustomAcceptHeaderHttpServletRequest(request, mediaTypes));
 	}
 
 	/* 
@@ -493,6 +530,46 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		@Override
 		public Part getPart(String name) throws IOException, ServletException {
 			throw new UnsupportedOperationException();
+		}
+	}
+
+	/**
+	 * {@link HttpServletRequest} that exposes the given media types for the {@code Accept} header.
+	 *
+	 * @author Oliver Gierke
+	 */
+	static class CustomAcceptHeaderHttpServletRequest extends HttpServletRequestWrapper {
+
+		private final List<MediaType> acceptMediaTypes;
+
+		/**
+		 * Creates a new {@link CustomAcceptHeaderHttpServletRequest} for the given delegate {@link HttpServletRequest} and
+		 * the list of {@link MediaType}.
+		 * 
+		 * @param request must not be {@literal null}.
+		 * @param acceptMediaTypes must not be {@literal null} or empty.
+		 */
+		public CustomAcceptHeaderHttpServletRequest(HttpServletRequest request, List<MediaType> acceptMediaTypes) {
+
+			super(request);
+
+			Assert.notEmpty(acceptMediaTypes, "MediaTypes must not be empty!");
+
+			this.acceptMediaTypes = acceptMediaTypes;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see javax.servlet.http.HttpServletRequestWrapper#getHeader(java.lang.String)
+		 */
+		@Override
+		public String getHeader(String name) {
+
+			if (HttpHeaders.ACCEPT.equalsIgnoreCase(name) && acceptMediaTypes != null) {
+				return StringUtils.collectionToCommaDelimitedString(acceptMediaTypes);
+			}
+
+			return super.getHeader(name);
 		}
 	}
 }

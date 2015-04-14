@@ -21,6 +21,7 @@
 		<module>spring-data-rest-core</module>
 		<module>spring-data-rest-webmvc</module>
 		<module>spring-data-rest-distribution</module>
+		<module>spring-data-rest-hal-browser</module>
 	</modules>
 
 	<properties>
