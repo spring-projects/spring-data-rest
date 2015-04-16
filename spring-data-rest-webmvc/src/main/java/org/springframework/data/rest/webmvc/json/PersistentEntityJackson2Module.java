@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.json;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,9 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.UriToEntityConverter;
@@ -36,7 +39,9 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.mapping.LinkCollectingAssociationHandler;
+import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.UriTemplate;
@@ -68,6 +73,7 @@ import com.fasterxml.jackson.databind.ser.BeanSerializerBuilder;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.databind.type.CollectionLikeType;
+import com.fasterxml.jackson.databind.util.NameTransformer;
 
 /**
  * Jackson 2 module to serialize and deserialize {@link PersistentEntityResource}s.
@@ -92,7 +98,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * @param converter must not be {@literal null}.
 	 */
 	public PersistentEntityJackson2Module(ResourceMappings mappings, PersistentEntities entities,
-			RepositoryRestConfiguration config, UriToEntityConverter converter) {
+			RepositoryRestConfiguration config, UriToEntityConverter converter, EntityLinks entityLinks) {
 
 		super(new Version(2, 0, 0, null, "org.springframework.data.rest", "jackson-module"));
 
@@ -102,8 +108,12 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		Assert.notNull(converter, "UriToEntityConverter must not be null!");
 
 		AssociationLinks associationLinks = new AssociationLinks(mappings);
+		LinkCollector collector = new LinkCollector(entities, entityLinks, associationLinks);
 
-		addSerializer(new PersistentEntityResourceSerializer(entities, associationLinks));
+		addSerializer(new PersistentEntityResourceSerializer(collector));
+		addSerializer(new ProjectionSerializer(collector, mappings));
+		addSerializer(new ProjectionResourceContentSerializer());
+
 		setSerializerModifier(new AssociationOmittingSerializerModifier(entities, associationLinks, config));
 		setDeserializerModifier(new AssociationUriResolvingDeserializerModifier(entities, converter, associationLinks));
 	}
@@ -114,10 +124,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * 
 	 * @author Oliver Gierke
 	 */
+	@SuppressWarnings("serial")
 	private static class PersistentEntityResourceSerializer extends StdSerializer<PersistentEntityResource> {
 
-		private final PersistentEntities entities;
-		private final AssociationLinks associationLinks;
+		private final LinkCollector collector;
 
 		/**
 		 * Creates a new {@link PersistentEntityResourceSerializer} using the given {@link PersistentEntities} and
@@ -127,15 +137,11 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @param links must not be {@literal null}.
 		 */
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		private PersistentEntityResourceSerializer(PersistentEntities entities, AssociationLinks links) {
+		private PersistentEntityResourceSerializer(LinkCollector collector) {
 
 			super((Class) PersistentEntityResource.class);
 
-			Assert.notNull(entities, "PersistentEntities must not be null!");
-			Assert.notNull(links, "AssociationLinks must not be null!");
-
-			this.associationLinks = links;
-			this.entities = entities;
+			this.collector = collector;
 		}
 
 		/*
@@ -150,23 +156,17 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				LOG.debug("Serializing PersistentEntity " + resource.getPersistentEntity());
 			}
 
-			final Link id = resource.getId();
+			Object content = resource.getContent();
 
-			if (id == null) {
-				throw new JsonGenerationException(String.format("No self link found resource %s!", resource));
+			if (TargetAware.class.isInstance(content)) {
+
+				TargetAware targetAware = (TargetAware) content;
+				Links links = collector.getLinksFor(targetAware.getTarget(), resource.getLinks());
+				provider.defaultSerializeValue(new ProjectionResource(targetAware, links), jgen);
+				return;
 			}
 
-			List<Link> links = new ArrayList<Link>();
-			links.addAll(resource.getLinks());
-
-			Path basePath = new Path(id.expand().getHref());
-			LinkCollectingAssociationHandler associationHandler = new LinkCollectingAssociationHandler(entities, basePath,
-					associationLinks);
-			resource.getPersistentEntity().doWithAssociations(associationHandler);
-
-			for (Link link : associationHandler.getLinks()) {
-				links.add(link);
-			}
+			Links links = collector.getLinksFor(resource.getContent(), resource.getLinks());
 
 			Resource<Object> resourceToRender = new Resource<Object>(resource.getContent(), links) {
 
@@ -236,6 +236,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					result.add(writer);
 					continue;
 				}
+
+				// Is there a default projection?
 
 				if (associationLinks.isLinkableAssociation(persistentProperty)) {
 					continue;
@@ -397,6 +399,222 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			TypeDescriptor typeDescriptor = TypeDescriptor.valueOf(property.getActualType());
 
 			return converter.convert(uri, URI_DESCRIPTOR, typeDescriptor);
+		}
+	}
+
+	@SuppressWarnings("serial")
+	static class ProjectionSerializer extends StdSerializer<TargetAware> {
+
+		private final LinkCollector collector;
+		private final ResourceMappings mappings;
+		private boolean unwrapping;
+
+		/**
+		 * Creates a new {@link ProjectionSerializer} for the given {@link LinkCollector}.
+		 * 
+		 * @param collector
+		 */
+		public ProjectionSerializer(LinkCollector collector, ResourceMappings mappings) {
+
+			super(TargetAware.class);
+
+			this.collector = collector;
+			this.mappings = mappings;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
+		 */
+		@Override
+		public void serialize(TargetAware value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
+				JsonGenerationException {
+
+			Object target = value.getTarget();
+			Links links = mappings.getMetadataFor(value.getTargetClass()).isExported() ? collector.getLinksFor(target)
+					: new Links();
+
+			jgen.writeStartObject();
+
+			provider.//
+					findValueSerializer(ProjectionResource.class, null).//
+					unwrappingSerializer(null).//
+					serialize(new ProjectionResource(value, links), jgen, provider);
+
+			jgen.writeEndObject();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.JsonSerializer#isUnwrappingSerializer()
+		 */
+		@Override
+		public boolean isUnwrappingSerializer() {
+			return unwrapping;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.JsonSerializer#unwrappingSerializer(com.fasterxml.jackson.databind.util.NameTransformer)
+		 */
+		@Override
+		public JsonSerializer<TargetAware> unwrappingSerializer(NameTransformer unwrapper) {
+			this.unwrapping = true;
+			return this;
+		}
+	}
+
+	static class ProjectionResource extends Resource<ProjectionResourceContent> {
+
+		ProjectionResource(TargetAware projection, Iterable<Link> links) {
+			super(new ProjectionResourceContent(projection, projection.getClass().getInterfaces()[0]), links);
+		}
+	}
+
+	static class ProjectionResourceContent {
+
+		private final Object projection;
+		private final Class<?> projectionInterface;
+
+		/**
+		 * @param projection
+		 * @param projectionInterface
+		 */
+		public ProjectionResourceContent(Object projection, Class<?> projectionInterface) {
+			this.projection = projection;
+			this.projectionInterface = projectionInterface;
+		}
+
+		public Object getProjection() {
+			return projection;
+		}
+
+		public Class<?> getProjectionInterface() {
+			return projectionInterface;
+		}
+	}
+
+	@SuppressWarnings("serial")
+	private static class ProjectionResourceContentSerializer extends StdSerializer<ProjectionResourceContent> {
+
+		private boolean unwrapping;
+
+		/**
+		 * Creates a new {@link ProjectionResourceContentSerializer}.
+		 */
+		public ProjectionResourceContentSerializer() {
+			super(ProjectionResourceContent.class);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
+		 */
+		@Override
+		public void serialize(ProjectionResourceContent value, JsonGenerator jgen, SerializerProvider provider)
+				throws IOException, JsonGenerationException {
+
+			provider.//
+					findValueSerializer(value.getProjectionInterface(), null).//
+					unwrappingSerializer(null).//
+					serialize(value.getProjection(), jgen, provider);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.JsonSerializer#isUnwrappingSerializer()
+		 */
+		@Override
+		public boolean isUnwrappingSerializer() {
+			return unwrapping;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.JsonSerializer#unwrappingSerializer(com.fasterxml.jackson.databind.util.NameTransformer)
+		 */
+		@Override
+		public JsonSerializer<ProjectionResourceContent> unwrappingSerializer(NameTransformer unwrapper) {
+
+			this.unwrapping = true;
+			return this;
+		}
+	}
+
+	/**
+	 * A service to collect all standard links that need to be added to a certain object.
+	 *
+	 * @author Oliver Gierke
+	 */
+	private static class LinkCollector {
+
+		private final PersistentEntities entities;
+		private final AssociationLinks associationLinks;
+		private final EntityLinks links;
+
+		/**
+		 * Creates a new {@link PersistentEntities}, {@link EntityLinks} and {@link AssociationLinks}.
+		 * 
+		 * @param entities must not be {@literal null}.
+		 * @param entityLinks must not be {@literal null}.
+		 * @param associationLinks must not be {@literal null}.
+		 */
+		public LinkCollector(PersistentEntities entities, EntityLinks entityLinks, AssociationLinks associationLinks) {
+
+			Assert.notNull(entities, "PersistentEntities must not be null!");
+			Assert.notNull(entityLinks, "EntityLinks must not be null!");
+			Assert.notNull(associationLinks, "AssociationLinks must not be null!");
+
+			this.links = entityLinks;
+			this.entities = entities;
+			this.associationLinks = associationLinks;
+		}
+
+		/**
+		 * Returns all {@link Links} for the given object.
+		 * 
+		 * @param object must not be {@literal null}.
+		 * @return
+		 */
+		public Links getLinksFor(Object object) {
+			return getLinksFor(object, Collections.<Link> emptyList());
+		}
+
+		/**
+		 * Returns all {@link Links} for the given object and already existing {@link Link}.
+		 * 
+		 * @param object must not be {@literal null}.
+		 * @param existingLinks must not be {@literal null}.
+		 * @return
+		 */
+		public Links getLinksFor(Object object, List<Link> existingLinks) {
+
+			Assert.notNull(object, "Object must not be null!");
+			Assert.notNull(existingLinks, "Existing links must not be null!");
+
+			PersistentEntity<?, ?> entity = entities.getPersistentEntity(object.getClass());
+
+			Link selfLink = getSelfLink(object, entity, new Links(existingLinks));
+			Path path = new Path(selfLink.expand().getHref());
+
+			LinkCollectingAssociationHandler handler = new LinkCollectingAssociationHandler(entities, path, associationLinks);
+			entity.doWithAssociations(handler);
+
+			List<Link> result = new ArrayList<Link>();
+			result.add(getSelfLink(object, entity, new Links(existingLinks)));
+			result.addAll(handler.getLinks());
+
+			return new Links(result);
+		}
+
+		private Link getSelfLink(Object object, PersistentEntity<?, ?> entity, Links existing) {
+
+			if (existing.hasLink(Link.REL_SELF)) {
+				return existing.getLink(Link.REL_SELF);
+			}
+
+			IdentifierAccessor accessor = entity.getIdentifierAccessor(object);
+			return links.linkToSingleResource(entity.getType(), accessor.getIdentifier()).withSelfRel();
 		}
 	}
 

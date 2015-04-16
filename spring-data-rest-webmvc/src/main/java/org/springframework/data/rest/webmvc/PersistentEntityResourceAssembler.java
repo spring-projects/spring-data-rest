@@ -32,7 +32,6 @@ import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.support.Projector;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
@@ -81,9 +80,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 	public PersistentEntityResource toResource(Object instance) {
 
 		Assert.notNull(instance, "Entity instance must not be null!");
-
 		return wrap(projector.projectExcerpt(instance), instance).build();
-
 	}
 
 	/**
@@ -95,8 +92,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 	public PersistentEntityResource toFullResource(Object instance) {
 
 		Assert.notNull(instance, "Entity instance must not be null!");
-		return wrap(projector.project(instance), instance).//
-				renderAllAssociationLinks().build();
+		return wrap(projector.project(instance), instance).build();
 	}
 
 	private Builder wrap(Object instance, Object source) {
@@ -165,14 +161,14 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 					for (Object element : collection) {
 						if (element != null) {
-							nestedCollection.add(getExcerptResource(element));
+							nestedCollection.add(projector.projectExcerpt(element));
 						}
 					}
 
 					associationProjections.add(wrappers.wrap(nestedCollection, rel));
 
 				} else {
-					associationProjections.add(wrappers.wrap(getExcerptResource(value), rel));
+					associationProjections.add(wrappers.wrap(projector.projectExcerpt(value), rel));
 				}
 			}
 		});
@@ -202,15 +198,5 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 		Link resourceLink = entityLinks.linkToSingleResource(entity.getType(), id);
 		return new Link(resourceLink.getHref(), Link.REL_SELF);
-	}
-
-	/**
-	 * Returns a {@link Resource} instance for the excerpt of the given source entity.
-	 * 
-	 * @param entity must not be {@literal null}.
-	 * @return
-	 */
-	private Resource<Object> getExcerptResource(Object entity) {
-		return new Resource<Object>(projector.projectExcerpt(entity), getSelfLinkFor(entity));
 	}
 }

@@ -15,9 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+
 import java.util.Collections;
 import java.util.List;
 
+import org.mockito.Matchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +40,8 @@ import org.springframework.data.rest.webmvc.jpa.PersonRepository;
 import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
+import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.Jackson2HalModule;
@@ -94,8 +100,13 @@ public class RepositoryTestsConfig {
 
 	@Bean
 	public Module persistentEntityModule() {
+
+		EntityLinks entityLinks = mock(EntityLinks.class);
+		when(entityLinks.linkToSingleResource(Matchers.<Class<?>> any(), anyObject())).thenReturn(new Link("/mock/1"));
+
 		return new PersistentEntityJackson2Module(new RepositoryResourceMappings(repositories(), persistentEntities()),
-				persistentEntities(), config(), new UriToEntityConverter(persistentEntities(), defaultConversionService()));
+				persistentEntities(), config(), new UriToEntityConverter(persistentEntities(), defaultConversionService()),
+				entityLinks);
 	}
 
 	@Bean

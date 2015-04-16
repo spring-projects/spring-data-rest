@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ public class PersistentEntityResource extends Resource<Object> {
 
 	private final PersistentEntity<?, ?> entity;
 	private final Resources<EmbeddedWrapper> embeddeds;
-	private final boolean enforceAssociationLinks;
 
 	/**
 	 * Creates a new {@link PersistentEntityResource} for the given {@link PersistentEntity}, content, embedded
@@ -52,11 +51,10 @@ public class PersistentEntityResource extends Resource<Object> {
 	 * @param entity must not be {@literal null}.
 	 * @param content must not be {@literal null}.
 	 * @param links must not be {@literal null}.
-	 * @param renderAllAssociations
 	 * @param embeddeds can be {@literal null}.
 	 */
 	private PersistentEntityResource(PersistentEntity<?, ?> entity, Object content, Iterable<Link> links,
-			boolean renderAllAssociations, Resources<EmbeddedWrapper> embeddeds) {
+			Resources<EmbeddedWrapper> embeddeds) {
 
 		super(content, links);
 
@@ -64,7 +62,6 @@ public class PersistentEntityResource extends Resource<Object> {
 
 		this.entity = entity;
 		this.embeddeds = embeddeds == null ? NO_EMBEDDEDS : embeddeds;
-		this.enforceAssociationLinks = renderAllAssociations;
 	}
 
 	/**
@@ -118,7 +115,6 @@ public class PersistentEntityResource extends Resource<Object> {
 		private final List<Link> links = new ArrayList<Link>();
 
 		private Resources<EmbeddedWrapper> embeddeds;
-		private boolean renderAllAssociationLinks = false;
 
 		/**
 		 * Creates a new {@link Builder} instance for the given content and {@link PersistentEntity}.
@@ -148,17 +144,6 @@ public class PersistentEntityResource extends Resource<Object> {
 		}
 
 		/**
-		 * Configures the builder to render all association links independently of the embedded resources added.
-		 * 
-		 * @return the builder
-		 */
-		public Builder renderAllAssociationLinks() {
-
-			this.renderAllAssociationLinks = true;
-			return this;
-		}
-
-		/**
 		 * Adds the given {@link Link} to the {@link PersistentEntityResource}.
 		 * 
 		 * @param link must not be {@literal null}.
@@ -178,7 +163,7 @@ public class PersistentEntityResource extends Resource<Object> {
 		 * @return
 		 */
 		public PersistentEntityResource build() {
-			return new PersistentEntityResource(entity, content, links, renderAllAssociationLinks, embeddeds);
+			return new PersistentEntityResource(entity, content, links, embeddeds);
 		}
 	}
 }
