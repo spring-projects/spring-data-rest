@@ -200,8 +200,6 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
 
-		System.out.println(result);
-
 		assertThat(JsonPath.read(result, "$_embedded.users[*].address"), is(notNullValue()));
 	}
 
