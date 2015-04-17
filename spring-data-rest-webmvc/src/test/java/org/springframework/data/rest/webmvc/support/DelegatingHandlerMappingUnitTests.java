@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -27,6 +28,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.HandlerMapping;
 
 /**
@@ -42,23 +45,34 @@ public class DelegatingHandlerMappingUnitTests {
 	@Mock HttpServletRequest request;
 
 	/**
-	 * @see DATAREST-490
+	 * @see DATAREST-490, DATAREST-522
 	 */
 	@Test
+	public void consultsAllHandlerMappingsAndThrowsExceptionEventually() throws Exception {
+
+		DelegatingHandlerMapping mapping = new DelegatingHandlerMapping(Arrays.asList(first, second));
+
+		assertHandlerTriedButExceptionThrown(mapping, HttpMediaTypeNotAcceptableException.class);
+		assertHandlerTriedButExceptionThrown(mapping, HttpRequestMethodNotSupportedException.class);
+		assertHandlerTriedButExceptionThrown(mapping, UnsatisfiedServletRequestParameterException.class);
+	}
+
 	@SuppressWarnings("unchecked")
-	public void testname() throws Exception {
+	private final void assertHandlerTriedButExceptionThrown(HandlerMapping mapping, Class<? extends Exception> type)
+			throws Exception {
 
-		HandlerMapping handlerMapping = new DelegatingHandlerMapping(Arrays.asList(first, second));
-
-		when(first.getHandler(request)).thenThrow(HttpMediaTypeNotAcceptableException.class);
+		when(first.getHandler(request)).thenThrow(type);
 
 		try {
 
-			handlerMapping.getHandler(request);
-			fail(String.format("Expected %s!", HttpMediaTypeNotAcceptableException.class.getSimpleName()));
+			mapping.getHandler(request);
+			fail(String.format("Expected %s!", type.getSimpleName()));
 
-		} catch (HttpMediaTypeNotAcceptableException o_O) {
+		} catch (Exception o_O) {
+			assertThat(o_O, is(instanceOf(type)));
 			verify(second, times(1)).getHandler(request);
+		} finally {
+			reset(first, second);
 		}
 	}
 }

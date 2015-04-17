@@ -21,8 +21,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.Ordered;
 import org.springframework.util.Assert;
-import org.springframework.web.HttpMediaTypeException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerMapping;
 
@@ -65,7 +66,7 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
 	@Override
 	public HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
 
-		HttpMediaTypeException exception = null;
+		Exception exception = null;
 
 		for (HandlerMapping delegate : delegates) {
 
@@ -78,6 +79,10 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
 				}
 
 			} catch (HttpMediaTypeNotAcceptableException o_O) {
+				exception = o_O;
+			} catch (HttpRequestMethodNotSupportedException o_O) {
+				exception = o_O;
+			} catch (UnsatisfiedServletRequestParameterException o_O) {
 				exception = o_O;
 			}
 		}
