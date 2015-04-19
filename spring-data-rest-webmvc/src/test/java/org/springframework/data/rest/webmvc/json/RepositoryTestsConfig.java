@@ -15,13 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.mockito.Matchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -38,13 +37,17 @@ import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
 import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
+import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
+import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
+import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.Jackson2HalModule;
+import org.springframework.plugin.core.OrderAwarePluginRegistry;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -101,12 +104,13 @@ public class RepositoryTestsConfig {
 	@Bean
 	public Module persistentEntityModule() {
 
-		EntityLinks entityLinks = mock(EntityLinks.class);
-		when(entityLinks.linkToSingleResource(Matchers.<Class<?>> any(), anyObject())).thenReturn(new Link("/mock/1"));
+		RepositoryResourceMappings mappings = new RepositoryResourceMappings(repositories(), persistentEntities());
+		EntityLinks entityLinks = new RepositoryEntityLinks(repositories(), mappings, config(),
+				mock(PagingAndSortingTemplateVariables.class),
+				OrderAwarePluginRegistry.<Class<?>, BackendIdConverter> create(Arrays.asList(DefaultIdConverter.INSTANCE)));
 
-		return new PersistentEntityJackson2Module(new RepositoryResourceMappings(repositories(), persistentEntities()),
-				persistentEntities(), config(), new UriToEntityConverter(persistentEntities(), defaultConversionService()),
-				entityLinks);
+		return new PersistentEntityJackson2Module(mappings, persistentEntities(), config(), new UriToEntityConverter(
+				persistentEntities(), defaultConversionService()), entityLinks);
 	}
 
 	@Bean

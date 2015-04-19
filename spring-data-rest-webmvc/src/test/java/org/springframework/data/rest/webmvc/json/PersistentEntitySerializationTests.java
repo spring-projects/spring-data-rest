@@ -48,13 +48,15 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.hateoas.hal.HalLinkDiscoverer;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.util.UriTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -81,6 +83,8 @@ public class PersistentEntitySerializationTests {
 
 	@Before
 	public void setUp() {
+
+		RequestContextHolder.setRequestAttributes(new ServletWebRequest(new MockHttpServletRequest()));
 
 		this.linkDiscoverer = new HalLinkDiscoverer();
 		this.projectionFactory = new SpelAwareProxyProjectionFactory();
@@ -234,9 +238,11 @@ public class PersistentEntitySerializationTests {
 	@Test
 	public void serializesLinksForExcerpts() throws Exception {
 
-		Person oliver = new Person("Oliver August", "Matthews");
-
 		Person dave = new Person("Dave", "Matthews");
+		dave.setId(1L);
+
+		Person oliver = new Person("Oliver August", "Matthews");
+		oliver.setId(2L);
 		oliver.setFather(dave);
 
 		UserExcerpt daveExcerpt = projectionFactory.createProjection(UserExcerpt.class, dave);
@@ -248,9 +254,27 @@ public class PersistentEntitySerializationTests {
 				withEmbedded(Arrays.asList(wrapper)).//
 				build();
 
-		mapper.enable(SerializationFeature.INDENT_OUTPUT);
 		String result = mapper.writeValueAsString(resource);
 
 		assertThat(JsonPath.read(result, "$_embedded.father[*]._links.self"), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATAREST-521
+	 */
+	@Test
+	public void rendersAdditionalLinksRegisteredWithResource() throws Exception {
+
+		Person dave = new Person("Dave", "Matthews");
+
+		PersistentEntityResource resource = PersistentEntityResource.//
+				build(dave, repositories.getPersistentEntity(Person.class)).//
+				withLink(new Link("/people/1")).//
+				withLink(new Link("/aditional", "processed")).//
+				build();
+
+		String result = mapper.writeValueAsString(resource);
+
+		assertThat(JsonPath.read(result, "$_links.processed"), is(notNullValue()));
 	}
 }

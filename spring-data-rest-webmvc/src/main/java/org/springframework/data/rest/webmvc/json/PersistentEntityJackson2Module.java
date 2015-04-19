@@ -594,27 +594,53 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			PersistentEntity<?, ?> entity = entities.getPersistentEntity(object.getClass());
 
-			Link selfLink = getSelfLink(object, entity, new Links(existingLinks));
+			Links links = new Links(existingLinks);
+			Link selfLink = createSelfLink(object, entity, links);
+
+			if (selfLink == null) {
+				return links;
+			}
+
 			Path path = new Path(selfLink.expand().getHref());
 
 			LinkCollectingAssociationHandler handler = new LinkCollectingAssociationHandler(entities, path, associationLinks);
 			entity.doWithAssociations(handler);
 
-			List<Link> result = new ArrayList<Link>();
-			result.add(getSelfLink(object, entity, new Links(existingLinks)));
+			List<Link> result = new ArrayList<Link>(existingLinks);
 			result.addAll(handler.getLinks());
 
-			return new Links(result);
+			return addSelfLinkIfNecessary(object, entity, result);
 		}
 
-		private Link getSelfLink(Object object, PersistentEntity<?, ?> entity, Links existing) {
+		private Links addSelfLinkIfNecessary(Object object, PersistentEntity<?, ?> entity, List<Link> existing) {
+
+			Links result = new Links(existing);
+
+			if (result.hasLink(Link.REL_SELF)) {
+				return result;
+			}
+
+			List<Link> list = new ArrayList<Link>();
+			list.add(createSelfLink(object, entity, result));
+			list.addAll(existing);
+
+			return new Links(list);
+		}
+
+		private Link createSelfLink(Object object, PersistentEntity<?, ?> entity, Links existing) {
 
 			if (existing.hasLink(Link.REL_SELF)) {
 				return existing.getLink(Link.REL_SELF);
 			}
 
 			IdentifierAccessor accessor = entity.getIdentifierAccessor(object);
-			return links.linkToSingleResource(entity.getType(), accessor.getIdentifier()).withSelfRel();
+			Object identifier = accessor.getIdentifier();
+
+			if (identifier == null) {
+				return null;
+			}
+
+			return links.linkToSingleResource(entity.getType(), identifier).withSelfRel();
 		}
 	}
 
