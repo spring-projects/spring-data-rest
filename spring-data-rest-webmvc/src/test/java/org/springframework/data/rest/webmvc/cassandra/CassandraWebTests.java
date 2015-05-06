@@ -42,6 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Greg Turnquist
  * @author Oliver Gierke
  */
+@Ignore
 @ContextConfiguration(classes = CassandraRepoConfig.class)
 public class CassandraWebTests extends AbstractCassandraIntegrationTest {
 
