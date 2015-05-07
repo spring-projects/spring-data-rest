@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -41,7 +42,7 @@ public class User {
 	public Set<Address> shippingAddresses;
 	public List<String> nicknames;
 	public Gender gender;
-	public EmailAddress email;
+	public @ReadOnlyProperty EmailAddress email;
 	public LocalDateTime java8DateTime;
 	public org.joda.time.LocalDateTime jodaDateTime;
 	public TypeWithPattern pattern;
@@ -57,8 +58,8 @@ public class User {
 		public EmailAddress(String value) {
 			this.value = value;
 		}
-		@Override
 
+		@Override
 		@JsonValue
 		public String toString() {
 			return value;
