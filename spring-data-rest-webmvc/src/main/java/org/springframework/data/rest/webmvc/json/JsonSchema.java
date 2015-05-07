@@ -65,7 +65,8 @@ public class JsonSchema {
 	 * @param properties must not be {@literal null}.
 	 * @param descriptors must not be {@literal null}.
 	 */
-	public JsonSchema(String title, String description, Collection<JsonSchemaProperty> properties, Descriptors descriptors) {
+	public JsonSchema(String title, String description, Collection<JsonSchemaProperty<?>> properties,
+			Descriptors descriptors) {
 
 		Assert.hasText(title, "Title must not be null or empty!");
 		Assert.notNull(properties, "JsonSchemaProperties must not be null!");
@@ -174,7 +175,7 @@ public class JsonSchema {
 		 * @param type must not be {@literal null}.
 		 * @param properties must not be {@literal null}.
 		 */
-		public Item(TypeInformation<?> type, Collection<JsonSchemaProperty> properties) {
+		public Item(TypeInformation<?> type, Collection<JsonSchemaProperty<?>> properties) {
 
 			this.type = toJsonSchemaType(type);
 			this.properties = new PropertiesContainer(properties);
@@ -199,7 +200,7 @@ public class JsonSchema {
 	@JsonInclude(Include.NON_EMPTY)
 	static class PropertiesContainer {
 
-		public final Map<String, JsonSchemaProperty> properties;
+		public final Map<String, JsonSchemaProperty<?>> properties;
 		public final Collection<String> requiredProperties;
 
 		/**
@@ -207,14 +208,14 @@ public class JsonSchema {
 		 * 
 		 * @param properties must not be {@literal null}.
 		 */
-		public PropertiesContainer(Collection<JsonSchemaProperty> properties) {
+		public PropertiesContainer(Collection<JsonSchemaProperty<?>> properties) {
 
 			Assert.notNull(properties, "JsonSchemaPropertys must not be null!");
 
-			this.properties = new HashMap<String, JsonSchema.JsonSchemaProperty>();
+			this.properties = new HashMap<String, JsonSchema.JsonSchemaProperty<?>>();
 			this.requiredProperties = new ArrayList<String>();
 
-			for (JsonSchemaProperty property : properties) {
+			for (JsonSchemaProperty<?> property : properties) {
 				this.properties.put(property.getName(), property);
 
 				if (property.isRequired()) {
@@ -272,14 +273,18 @@ public class JsonSchema {
 	 * @since 2.3
 	 */
 	@JsonInclude(Include.NON_EMPTY)
-	abstract static class JsonSchemaProperty {
+	abstract static class JsonSchemaProperty<T extends JsonSchemaProperty<T>> {
 
 		private final String name;
 		private final boolean required;
 
+		private boolean readOnly;
+
 		protected JsonSchemaProperty(String name, boolean required) {
+
 			this.name = name;
 			this.required = required;
+			this.readOnly = false;
 		}
 
 		@JsonIgnore
@@ -290,6 +295,16 @@ public class JsonSchema {
 		private boolean isRequired() {
 			return required;
 		}
+
+		public boolean isReadOnly() {
+			return readOnly;
+		}
+
+		@SuppressWarnings("unchecked")
+		protected T withReadOnly() {
+			this.readOnly = true;
+			return (T) this;
+		}
 	}
 
 	/**
@@ -298,7 +313,7 @@ public class JsonSchema {
 	 * @author Oliver Gierke
 	 * @since 2.3
 	 */
-	static class Property extends JsonSchemaProperty {
+	static class Property extends JsonSchemaProperty<Property> {
 
 		private static final TypeInformation<?> STRING_TYPE_INFORMATION = ClassTypeInformation.from(String.class);
 

@@ -140,13 +140,13 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		final ResourceMetadata metadata = mappings.getMappingFor(persistentEntity.getType());
 
 		Descriptors descriptors = new Descriptors();
-		List<JsonSchemaProperty> propertiesFor = getPropertiesFor(persistentEntity.getType(), metadata, descriptors);
+		List<JsonSchemaProperty<?>> propertiesFor = getPropertiesFor(persistentEntity.getType(), metadata, descriptors);
 
 		return new JsonSchema(persistentEntity.getName(), resolveMessage(metadata.getItemResourceDescription()),
 				propertiesFor, descriptors);
 	}
 
-	private List<JsonSchemaProperty> getPropertiesFor(Class<?> type, final ResourceMetadata metadata,
+	private List<JsonSchemaProperty<?>> getPropertiesFor(Class<?> type, final ResourceMetadata metadata,
 			final Descriptors descriptors) {
 
 		final PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
@@ -154,10 +154,10 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		final AssociationLinks associationLinks = new AssociationLinks(mappings);
 
 		if (entity == null) {
-			return Collections.<JsonSchemaProperty> emptyList();
+			return Collections.<JsonSchemaProperty<?>> emptyList();
 		}
 
-		final List<JsonSchemaProperty> properties = new ArrayList<JsonSchema.JsonSchemaProperty>();
+		final List<JsonSchemaProperty<?>> properties = new ArrayList<JsonSchema.JsonSchemaProperty<?>>();
 
 		for (BeanPropertyDefinition definition : jackson) {
 
@@ -170,6 +170,10 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			ResourceDescription description = persistentProperty == null ? jackson.getFallbackDescription(definition)
 					: getDescriptionFor(persistentProperty, metadata);
 			Property property = getSchemaProperty(definition, propertyType, description);
+
+			if (persistentProperty != null && !persistentProperty.isWritable()) {
+				property = property.withReadOnly();
+			}
 
 			if (format != null) {
 
@@ -222,7 +226,8 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		return properties;
 	}
 
-	private Collection<JsonSchemaProperty> getNestedPropertiesFor(PersistentProperty<?> property, Descriptors descriptors) {
+	private Collection<JsonSchemaProperty<?>> getNestedPropertiesFor(PersistentProperty<?> property,
+			Descriptors descriptors) {
 
 		if (!property.isEntity()) {
 			return Collections.emptyList();

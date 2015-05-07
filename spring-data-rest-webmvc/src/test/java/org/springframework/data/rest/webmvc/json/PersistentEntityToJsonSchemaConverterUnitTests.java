@@ -124,6 +124,9 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		constraints.add(new Constraint("$.properties.shippingAddresses.items['$ref']", is("#/descriptors/address"),
 				"References descriptor of complex element type."));
 
+		// DATAREST-531
+		constraints.add(new Constraint("$.properties.email.readOnly", is(true), "Email is read-only property"));
+
 		assertConstraints(User.class, constraints);
 	}
 
