@@ -57,7 +57,7 @@ class RepositorySchemaController {
 	 * @param resourceInformation will never be {@literal null}.
 	 * @return
 	 */
-	@RequestMapping(value = BASE_MAPPING + "/schema", method = GET, produces = { "application/schema+json" })
+	@RequestMapping(value = BASE_MAPPING + "/schema", method = GET)
 	public HttpEntity<JsonSchema> schema(RootResourceInformation resourceInformation) {
 
 		JsonSchema schema = jsonSchemaConverter.convert(resourceInformation.getDomainType());
