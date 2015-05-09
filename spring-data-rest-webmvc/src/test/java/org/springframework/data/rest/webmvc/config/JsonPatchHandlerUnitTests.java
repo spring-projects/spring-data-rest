@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 
@@ -95,5 +95,27 @@ public class JsonPatchHandlerUnitTests {
 
 		assertThat(result.lastname, is(nullValue()));
 		assertThat(result.address.zipCode, is("ZIP"));
+	}
+
+	/**
+	 * DATAREST-537
+	 */
+	@Test
+	public void removesArrayItemCorrectly() throws Exception {
+
+		User thomas = new User();
+		thomas.firstname = "Thomas";
+
+		User christoph = new User();
+		christoph.firstname = "Christoph";
+
+		this.user.colleagues = Arrays.asList(thomas, christoph);
+
+		String input = "[{ \"op\": \"remove\", \"path\": \"/colleagues/0\" }]";
+
+		handler.applyPatch(asStream(input), user);
+
+		assertThat(user.colleagues, hasSize(1));
+		assertThat(user.colleagues.get(0).firstname, is(christoph.firstname));
 	}
 }
