@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,8 @@ class JsonPatchHandler {
 
 				// Replace remove operation with replace operation and a value of null.
 				JsonPointer path = (JsonPointer) ReflectionUtils.getField(PATH_FIELD, operation);
-				patchedNode = new ReplaceOperation(path, NullNode.getInstance()).apply(patchedNode);
+				patchedNode = isCollectionElementReference(path) ? operation.apply(patchedNode) : new ReplaceOperation(path,
+						NullNode.getInstance()).apply(patchedNode);
 
 			} else {
 				patchedNode = operation.apply(patchedNode);
@@ -131,5 +132,29 @@ class JsonPatchHandler {
 
 	<T> T applyPut(ObjectNode source, T existingObject) {
 		return reader.readPut(source, existingObject, mapper);
+	}
+
+	/**
+	 * Returns whether the trailing element of the given {@link JsonPointer} is a pointer into an array or collection.
+	 * 
+	 * @param pointer must not be {@literal null}.
+	 * @return
+	 */
+	private static boolean isCollectionElementReference(JsonPointer pointer) {
+
+		String[] segments = pointer.toString().split("/");
+
+		if (segments.length == 0) {
+			return false;
+		}
+
+		String trailing = segments[segments.length - 1];
+
+		try {
+			Integer.parseInt(trailing);
+			return true;
+		} catch (NumberFormatException o_O) {
+			return false;
+		}
 	}
 }
