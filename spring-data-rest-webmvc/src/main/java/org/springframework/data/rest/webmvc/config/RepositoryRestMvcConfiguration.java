@@ -389,7 +389,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @return
 	 */
 	@Bean
-	public MappingJackson2HttpMessageConverter jacksonHttpMessageConverter() {
+	public TypeConstrainedMappingJackson2HttpMessageConverter jacksonHttpMessageConverter() {
 
 		List<MediaType> mediaTypes = new ArrayList<MediaType>();
 
@@ -405,7 +405,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				RestMediaTypes.JSON_PATCH_JSON, RestMediaTypes.MERGE_PATCH_JSON, //
 				RestMediaTypes.SPRING_DATA_VERBOSE_JSON, RestMediaTypes.SPRING_DATA_COMPACT_JSON));
 
-		MappingJackson2HttpMessageConverter jacksonConverter = new ResourceSupportHttpMessageConverter(order);
+		TypeConstrainedMappingJackson2HttpMessageConverter jacksonConverter = new ResourceSupportHttpMessageConverter(order);
 		jacksonConverter.setObjectMapper(objectMapper());
 		jacksonConverter.setSupportedMediaTypes(mediaTypes);
 
@@ -417,7 +417,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	//
 
 	@Bean
-	public MappingJackson2HttpMessageConverter halJacksonHttpMessageConverter() {
+	public TypeConstrainedMappingJackson2HttpMessageConverter halJacksonHttpMessageConverter() {
 
 		ArrayList<MediaType> mediaTypes = new ArrayList<MediaType>();
 		mediaTypes.add(MediaTypes.HAL_JSON);
@@ -430,7 +430,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		int order = config().useHalAsDefaultJsonMediaType() ? Ordered.LOWEST_PRECEDENCE - 10
 				: Ordered.LOWEST_PRECEDENCE - 1;
 
-		MappingJackson2HttpMessageConverter converter = new ResourceSupportHttpMessageConverter(order);
+		TypeConstrainedMappingJackson2HttpMessageConverter converter = new ResourceSupportHttpMessageConverter(order);
 		converter.setObjectMapper(halObjectMapper());
 		converter.setSupportedMediaTypes(mediaTypes);
 
