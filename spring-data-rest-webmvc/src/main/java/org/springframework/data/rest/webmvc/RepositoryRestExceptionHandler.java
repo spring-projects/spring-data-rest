@@ -33,6 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -161,16 +162,17 @@ public class RepositoryRestExceptionHandler {
 	private static ResponseEntity<ExceptionMessage> errorResponse(HttpStatus status, HttpHeaders headers,
 			Exception exception) {
 
-		if (null != exception && null != exception.getMessage()) {
+		if (exception != null) {
 
-			LOG.error(exception.getMessage(), exception);
+			String message = exception.getMessage();
+			LOG.error(message, exception);
 
-			return response(status, headers, new ExceptionMessage(exception));
-
-		} else {
-
-			return response(status, headers, null);
+			if (StringUtils.hasText(message)) {
+				return response(status, headers, new ExceptionMessage(exception));
+			}
 		}
+
+		return response(status, headers, null);
 	}
 
 	private static <T> ResponseEntity<T> response(HttpStatus status, HttpHeaders headers) {
