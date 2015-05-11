@@ -161,16 +161,18 @@ public class RepositoryRestExceptionHandler {
 	private static ResponseEntity<ExceptionMessage> errorResponse(HttpStatus status, HttpHeaders headers,
 			Exception exception) {
 
-		if (null != exception && null != exception.getMessage()) {
+		if (null != exception) {
 
-			LOG.error(exception.getMessage(), exception);
+			String message = exception.getMessage();
+			LOG.error(message, exception);
 
-			return response(status, headers, new ExceptionMessage(exception));
+			if (null != message) {
+				return response(status, headers, new ExceptionMessage(exception));
+			}
 
-		} else {
-
-			return response(status, headers, null);
 		}
+
+		return response(status, headers, null);
 	}
 
 	private static <T> ResponseEntity<T> response(HttpStatus status, HttpHeaders headers) {
