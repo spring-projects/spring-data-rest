@@ -19,6 +19,8 @@ import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * A custom {@link ResourceSupport} type to be able to write custom {@link ResourceProcessor}s to add additional links
  * to ones automatically exposed for Spring Data repository query methods.
@@ -45,6 +47,7 @@ public class RepositorySearchesResource extends ResourceSupport {
 	 * 
 	 * @return
 	 */
+	@JsonIgnore
 	public Class<?> getDomainType() {
 		return domainType;
 	}

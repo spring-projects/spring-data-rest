@@ -119,7 +119,9 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 			Link searchLink = client.getDiscoverer(response).findLinkWithRel("search", rootResourceRepresentation);
 
 			if (searchLink != null) {
-				client.follow(searchLink).andExpect(client.hasLinkWithRel("self"));
+				client.follow(searchLink).//
+						andExpect(client.hasLinkWithRel("self")).//
+						andExpect(jsonPath("$.domainType", is(nullValue()))); // DATAREST-549
 			}
 		}
 	}
