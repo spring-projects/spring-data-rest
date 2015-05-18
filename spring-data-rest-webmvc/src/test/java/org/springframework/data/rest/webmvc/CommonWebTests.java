@@ -119,7 +119,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 			Link searchLink = client.getDiscoverer(response).findLinkWithRel("search", rootResourceRepresentation);
 
 			if (searchLink != null) {
-				client.request(searchLink);
+				client.follow(searchLink).andExpect(client.hasLinkWithRel("self"));
 			}
 		}
 	}

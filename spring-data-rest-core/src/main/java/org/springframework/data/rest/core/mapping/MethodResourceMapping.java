@@ -50,7 +50,7 @@ public interface MethodResourceMapping extends ResourceMapping {
 
 	/**
 	 * Returns the domain type that the query method returns. This will inspect wrapper types ({@link Collection}s,
-	 * {@link Map}s, {@link Optional}s etc.) for their elemtn or value types.
+	 * {@link Map}s, {@link Optional}s etc.) for their element or value types.
 	 * 
 	 * @return will never be {@literal null}.
 	 * @since 2.3

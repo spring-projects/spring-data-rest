@@ -170,9 +170,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
-	public Resources<?> getCollectionResource(final RootResourceInformation resourceInformation,
-			DefaultedPageable pageable, Sort sort, PersistentEntityResourceAssembler assembler)
-			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
+	public Resources<?> getCollectionResource(RootResourceInformation resourceInformation, DefaultedPageable pageable,
+			Sort sort, PersistentEntityResourceAssembler assembler) throws ResourceNotFoundException,
+			HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.COLLECTION);
 
@@ -202,7 +202,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		Link baseLink = entityLinks.linkToPagedResource(resourceInformation.getDomainType(), pageable.isDefault() ? null
 				: pageable.getPageable());
 
-		Resources<?> result = toResources(results, assembler, baseLink);
+		Resources<?> result = toResources(results, assembler, metadata.getDomainType(), baseLink);
 		result.add(links);
 		return result;
 	}

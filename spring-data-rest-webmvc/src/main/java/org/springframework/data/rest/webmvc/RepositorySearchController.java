@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@ import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.rest.core.mapping.MethodResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
@@ -74,8 +74,6 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	private final RepositoryEntityLinks entityLinks;
 	private final ResourceMappings mappings;
-	private final PagedResourcesAssembler<Object> assembler;
-	private final HateoasSortHandlerMethodArgumentResolver sortResolver;
 
 	/**
 	 * Creates a new {@link RepositorySearchController} using the given {@link PagedResourcesAssembler},
@@ -84,22 +82,19 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @param assembler must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
+	 * @param auditableBeanWrapperFactory must not be {@literal null}.
 	 */
 	@Autowired
 	public RepositorySearchController(PagedResourcesAssembler<Object> assembler, RepositoryEntityLinks entityLinks,
-			ResourceMappings mappings, HateoasSortHandlerMethodArgumentResolver sortResolver,
-			AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
+			ResourceMappings mappings, AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
 
 		super(assembler, auditableBeanWrapperFactory);
 
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
-		Assert.notNull(sortResolver, "HateoasSortHandlerMethodArgumentResolver must not be null!");
 
 		this.entityLinks = entityLinks;
 		this.mappings = mappings;
-		this.assembler = assembler;
-		this.sortResolver = sortResolver;
 	}
 
 	/**
@@ -155,6 +150,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		RepositorySearchesResource result = new RepositorySearchesResource(resourceInformation.getDomainType());
 		result.add(queryMethodLinks);
+		result.add(getDefaultSelfLink());
 
 		return result;
 	}
@@ -180,7 +176,11 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		Method method = checkExecutability(resourceInformation, search);
 		Object result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort, assembler);
 
-		return new ResponseEntity<Object>(toResource(result, assembler, null), HttpStatus.OK);
+		SearchResourceMappings searchMappings = resourceInformation.getSearchMappings();
+		MethodResourceMapping methodMapping = searchMappings.getExportedMethodMappingForPath(search);
+		Class<?> domainType = methodMapping.getReturnedDomainType();
+
+		return new ResponseEntity<Object>(toResource(result, assembler, domainType, null), HttpStatus.OK);
 	}
 
 	/**
@@ -189,7 +189,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @param resourceInformation
 	 * @param parameters
 	 * @param repository
-	 * @param searcg
+	 * @param search
 	 * @param pageable
 	 * @param sort
 	 * @param assembler
@@ -204,7 +204,8 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		Method method = checkExecutability(resourceInformation, search);
 		Object result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort, assembler);
-		Object resource = toResource(result, assembler, null);
+		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
+		Object resource = toResource(result, assembler, metadata.getDomainType(), null);
 		List<Link> links = new ArrayList<Link>();
 
 		if (resource instanceof Resources && ((Resources<?>) resource).getContent() != null) {

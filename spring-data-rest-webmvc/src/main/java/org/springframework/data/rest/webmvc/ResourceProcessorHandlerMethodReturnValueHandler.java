@@ -19,6 +19,7 @@ import static org.springframework.data.util.ClassTypeInformation.*;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.mvc.HeaderLinksResponseEntity;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
@@ -292,7 +294,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		 */
 		@Override
 		public boolean supports(TypeInformation<?> typeInformation, Object value) {
-			return targetType.isAssignableFrom(typeInformation);
+			return targetType.getType().isAssignableFrom(typeInformation.getType());
 		}
 
 		/* 
@@ -352,7 +354,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 				return false;
 			}
 
-			return super.supports(typeInformation, value) || isValueTypeMatch((Resource<?>) value, getTargetType());
+			return super.supports(typeInformation, value) && isValueTypeMatch((Resource<?>) value, getTargetType());
 		}
 
 		/**
@@ -408,7 +410,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 				return false;
 			}
 
-			return super.supports(typeInformation, value) || isValueTypeMatch((Resources<?>) value, getTargetType());
+			return super.supports(typeInformation, value) && isValueTypeMatch((Resources<?>) value, getTargetType());
 		}
 
 		/**
@@ -431,22 +433,31 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 				return false;
 			}
 
-			Object element = content.iterator().next();
+			TypeInformation<?> superTypeInformation = null;
 
-			if (!(element instanceof Resource)) {
-				return false;
+			for (Class<?> resourcesType : Arrays.<Class<?>> asList(resources.getClass(), Resources.class)) {
+
+				superTypeInformation = target.getSuperTypeInformation(resourcesType);
+
+				if (superTypeInformation != null) {
+					break;
+				}
 			}
-
-			Class<?> resourcesType = resources.getClass();
-
-			TypeInformation<?> superTypeInformation = target.getSuperTypeInformation(resourcesType);
 
 			if (superTypeInformation == null) {
 				return false;
 			}
 
+			Object element = content.iterator().next();
 			TypeInformation<?> resourceTypeInformation = superTypeInformation.getComponentType();
-			return ResourceProcessorWrapper.isValueTypeMatch((Resource<?>) element, resourceTypeInformation);
+
+			if (element instanceof Resource) {
+				return ResourceProcessorWrapper.isValueTypeMatch((Resource<?>) element, resourceTypeInformation);
+			} else if (element instanceof EmbeddedWrapper) {
+				return resourceTypeInformation.getType().isAssignableFrom(((EmbeddedWrapper) element).getRelTargetType());
+			}
+
+			return false;
 		}
 	}
 

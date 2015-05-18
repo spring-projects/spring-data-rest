@@ -107,7 +107,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
 	public ResponseEntity<ResourceSupport> followPropertyReference(final RootResourceInformation repoRequest,
-			@BackendId Serializable id, @PathVariable String property, final PersistentEntityResourceAssembler assembler)
+			@BackendId Serializable id, final @PathVariable String property, final PersistentEntityResourceAssembler assembler)
 			throws Exception {
 
 		final HttpHeaders headers = new HttpHeaders();
@@ -123,13 +123,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 				if (prop.property.isCollectionLike()) {
 
-					List<Resource<?>> resources = new ArrayList<Resource<?>>();
-
-					for (Object obj : (Iterable<Object>) prop.propertyValue) {
-						resources.add(assembler.toResource(obj));
-					}
-
-					return new Resources<Resource<?>>(resources);
+					return toResources((Iterable<?>) prop.propertyValue, assembler, prop.propertyType, null);
 
 				} else if (prop.property.isMap()) {
 

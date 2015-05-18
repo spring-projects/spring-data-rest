@@ -71,7 +71,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		ResourceSupport resource = controller.listSearches(request);
 
 		ResourceTester tester = ResourceTester.of(resource);
-		tester.assertNumberOfLinks(5);
+		tester.assertNumberOfLinks(6); // Self link included
 		tester.assertHasLinkEndingWith("findFirstPersonByFirstName", "findFirstPersonByFirstName{?firstname,projection}");
 		tester.assertHasLinkEndingWith("firstname", "firstname{?firstname,page,size,sort,projection}");
 		tester.assertHasLinkEndingWith("lastname", "lastname{?lastname,sort,projection}");

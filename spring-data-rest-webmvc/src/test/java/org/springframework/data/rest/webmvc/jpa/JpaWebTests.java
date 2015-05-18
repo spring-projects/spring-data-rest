@@ -576,11 +576,13 @@ public class JpaWebTests extends CommonWebTests {
 		// Assert results returned as specified
 		client.follow(findBySortedLink.expand("title,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
-				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data"));
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
+				andExpect(client.hasLinkWithRel("self"));
 
 		client.follow(findBySortedLink.expand("title,asc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
-				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)"));
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
+				andExpect(client.hasLinkWithRel("self"));
 	}
 
 	/**

@@ -111,7 +111,28 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 
 		for (MethodResourceMapping mapping : this) {
 
-			if (mapping.isExported() && mapping.getRel().endsWith(rel)) {
+			if (mapping.isExported() && mapping.getRel().equals(rel)) {
+				return mapping;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the {@link MethodResourceMapping} for the given path.
+	 * 
+	 * @param path must not be {@literal null} or empty.
+	 * @return
+	 * @since 2.4
+	 */
+	public MethodResourceMapping getExportedMethodMappingForPath(String path) {
+
+		Assert.hasText(path, "Path must not be null or empty!");
+
+		for (MethodResourceMapping mapping : this) {
+
+			if (mapping.isExported() && mapping.getPath().matches(path)) {
 				return mapping;
 			}
 		}

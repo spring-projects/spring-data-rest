@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc;
 import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -32,9 +33,11 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * @author Jon Brisbin
@@ -43,6 +46,8 @@ import org.springframework.util.ClassUtils;
  */
 @SuppressWarnings({ "rawtypes" })
 class AbstractRepositoryRestController {
+
+	private static final EmbeddedWrappers WRAPPERS = new EmbeddedWrappers(false);
 
 	private final PagedResourcesAssembler<Object> pagedResourcesAssembler;
 	private final AuditableBeanWrapperFactory auditableBeanWrapperFactory;
@@ -75,13 +80,14 @@ class AbstractRepositoryRestController {
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	protected Resources<?> toResources(Iterable<?> source, PersistentEntityResourceAssembler assembler, Link baseLink) {
+	protected Resources<?> toResources(Iterable<?> source, PersistentEntityResourceAssembler assembler,
+			Class<?> domainType, Link baseLink) {
 
 		if (source instanceof Page) {
 			Page<Object> page = (Page<Object>) source;
-			return entitiesToResources(page, assembler, baseLink);
+			return entitiesToResources(page, assembler, domainType, baseLink);
 		} else if (source instanceof Iterable) {
-			return entitiesToResources((Iterable<Object>) source, assembler);
+			return entitiesToResources((Iterable<Object>) source, assembler, domainType);
 		} else {
 			return new Resources(EMPTY_RESOURCE_LIST);
 		}
@@ -93,13 +99,15 @@ class AbstractRepositoryRestController {
 	 * 
 	 * @param source can be must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
+	 * @param domainType the domain type in case the source is an empty iterable, must not be {@literal null}.
 	 * @param baseLink can be {@literal null}.
 	 * @return
 	 */
-	protected Object toResource(Object source, PersistentEntityResourceAssembler assembler, Link baseLink) {
+	protected Object toResource(Object source, PersistentEntityResourceAssembler assembler, Class<?> domainType,
+			Link baseLink) {
 
 		if (source instanceof Iterable) {
-			return toResources((Iterable<?>) source, assembler, baseLink);
+			return toResources((Iterable<?>) source, assembler, domainType, baseLink);
 		} else if (source == null) {
 			throw new ResourceNotFoundException();
 		} else if (ClassUtils.isPrimitiveOrWrapper(source.getClass())) {
@@ -109,14 +117,25 @@ class AbstractRepositoryRestController {
 		return assembler.toFullResource(source);
 	}
 
-	protected Resources<? extends Resource<Object>> entitiesToResources(Page<Object> page,
-			PersistentEntityResourceAssembler assembler, Link baseLink) {
+	protected Resources<?> entitiesToResources(Page<Object> page, PersistentEntityResourceAssembler assembler,
+			Class<?> domainType, Link baseLink) {
+
+		if (page.getContent().isEmpty()) {
+			return pagedResourcesAssembler.toEmptyResource(page, domainType, baseLink);
+		}
+
 		return baseLink == null ? pagedResourcesAssembler.toResource(page, assembler) : pagedResourcesAssembler.toResource(
 				page, assembler, baseLink);
 	}
 
-	protected Resources<Resource<Object>> entitiesToResources(Iterable<Object> entities,
-			PersistentEntityResourceAssembler assembler) {
+	protected Resources<?> entitiesToResources(Iterable<Object> entities, PersistentEntityResourceAssembler assembler,
+			Class<?> domainType) {
+
+		if (!entities.iterator().hasNext()) {
+
+			List<Object> content = Arrays.<Object> asList(WRAPPERS.emptyCollectionOf(domainType));
+			return new Resources<Object>(content, getDefaultSelfLink());
+		}
 
 		List<Resource<Object>> resources = new ArrayList<Resource<Object>>();
 
@@ -124,7 +143,7 @@ class AbstractRepositoryRestController {
 			resources.add(obj == null ? null : assembler.toResource(obj));
 		}
 
-		return new Resources<Resource<Object>>(resources);
+		return new Resources<Resource<Object>>(resources, getDefaultSelfLink());
 	}
 
 	/**
@@ -175,5 +194,9 @@ class AbstractRepositoryRestController {
 	 */
 	protected AuditableBeanWrapper getAuditableBeanWrapper(Object source) {
 		return auditableBeanWrapperFactory.getBeanWrapperFor(source);
+	}
+
+	protected Link getDefaultSelfLink() {
+		return new Link(ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString());
 	}
 }

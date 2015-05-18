@@ -48,6 +48,7 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.hateoas.mvc.HeaderLinksResponseEntity;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -255,6 +256,23 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		assertThat(ResourcesProcessorWrapper.isValueTypeMatch(pagedResources, type), is(false));
 	}
 
+	/**
+	 * @see DATAREST-479
+	 */
+	@Test
+	public void doesNotInvokeAProcessorForASpecializedType() throws Exception {
+
+		EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+		Resources<Object> value = new Resources<Object>(Collections.<Object> singleton(wrappers
+				.emptyCollectionOf(Object.class)));
+		ResourcesProcessorWrapper wrapper = new ResourcesProcessorWrapper(new SpecialResourcesProcessor());
+
+		TypeInformation<Object> typeInformation = ClassTypeInformation.fromReturnTypeOf(Controller.class
+				.getMethod("resourcesOfObject"));
+
+		assertThat(wrapper.supports(typeInformation, value), is(false));
+	}
+
 	// Helpers ---------------------------------------------------------//
 	private void invokeReturnValueHandler(String method, final Matcher<?> matcher, Object returnValue) throws Exception {
 		final MethodParameter methodParam = METHOD_PARAMS.get(method);
@@ -353,6 +371,8 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		ResponseEntity<Resource<?>> resourceResponseEntity();
 
 		ResponseEntity<Resources<?>> resourcesResponseEntity();
+
+		Resources<Object> resourcesOfObject();
 	}
 
 	static class StringResource extends Resource<String> {
@@ -383,7 +403,23 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 		@Override
 		public Resource<SampleProjection> process(Resource<SampleProjection> resource) {
+			this.invoked = true;
+			return resource;
+		}
+	}
 
+	static class SpecialResources extends Resources<Object> {
+		public SpecialResources() {
+			super(Collections.emptyList());
+		}
+	}
+
+	static class SpecialResourcesProcessor implements ResourceProcessor<SpecialResources> {
+
+		boolean invoked = false;
+
+		@Override
+		public SpecialResources process(SpecialResources resource) {
 			this.invoked = true;
 			return resource;
 		}
