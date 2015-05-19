@@ -415,26 +415,6 @@ public class JpaWebTests extends CommonWebTests {
 		assertJsonPathEquals("$.firstName", "Bilbo", overwrittenResponse);
 	}
 
-	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
-
-		Link peopleLink = client.discoverUnique("people");
-		List<Link> links = new ArrayList<Link>();
-
-		MockHttpServletResponse primaryResponse = postAndGet(peopleLink, mapper.writeValueAsString(primary),
-				MediaType.APPLICATION_JSON);
-		links.add(client.assertHasLinkWithRel("siblings", primaryResponse));
-
-		for (Person person : persons) {
-
-			String payload = mapper.writeValueAsString(person);
-			MockHttpServletResponse response = postAndGet(peopleLink, payload, MediaType.APPLICATION_JSON);
-
-			links.add(client.assertHasLinkWithRel(Link.REL_SELF, response));
-		}
-
-		return links;
-	}
-
 	/**
 	 * @see DATAREST-217
 	 */
@@ -629,6 +609,50 @@ public class JpaWebTests extends CommonWebTests {
 
 		mvc.perform(delete(authorUri)).//
 				andExpect(status().isIAmATeapot());
+	}
+
+	/**
+	 * @see DATAREST-523
+	 */
+	@Test
+	public void augmentsCollectionAssociationUsingPost() throws Exception {
+
+		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
+				new Person("Bilbo", "Baggins"));
+
+		Link frodosSiblingsLink = links.get(0).expand();
+		Link bilboLink = links.get(1);
+
+		for (int i = 1; i <= 2; i++) {
+
+			mvc.perform(post(frodosSiblingsLink.getHref()).//
+					content(bilboLink.getHref()).//
+					contentType(TEXT_URI_LIST)).//
+					andExpect(status().isNoContent());
+
+			mvc.perform(get(frodosSiblingsLink.getHref())).//
+					andExpect(jsonPath("$._embedded.people", hasSize(i)));
+		}
+	}
+
+	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
+
+		Link peopleLink = client.discoverUnique("people");
+		List<Link> links = new ArrayList<Link>();
+
+		MockHttpServletResponse primaryResponse = postAndGet(peopleLink, mapper.writeValueAsString(primary),
+				MediaType.APPLICATION_JSON);
+		links.add(client.assertHasLinkWithRel("siblings", primaryResponse));
+
+		for (Person person : persons) {
+
+			String payload = mapper.writeValueAsString(person);
+			MockHttpServletResponse response = postAndGet(peopleLink, payload, MediaType.APPLICATION_JSON);
+
+			links.add(client.assertHasLinkWithRel(Link.REL_SELF, response));
+		}
+
+		return links;
 	}
 
 	/**

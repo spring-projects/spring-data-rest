@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,21 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
-import org.hamcrest.Matcher;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Reference;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.CrudMethods;
@@ -91,6 +97,30 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 		assertMethodsSupported(supportedHttpMethods, ITEM, false, DELETE);
 	}
 
+	/**
+	 * @see DATAREST-523
+	 */
+	@Test
+	public void exposesMethodsForProperties() {
+
+		MongoMappingContext context = new MongoMappingContext();
+		MongoPersistentEntity<?> entity = context.getPersistentEntity(Entity.class);
+
+		SupportedHttpMethods methods = getSupportedHttpMethodsFor(EntityRepository.class);
+
+		assertThat(methods.getMethodsFor(entity.getPersistentProperty("embedded")), is(empty()));
+		assertThat(methods.getMethodsFor(entity.getPersistentProperty("embeddedCollection")), is(empty()));
+
+		assertThat(methods.getMethodsFor(entity.getPersistentProperty("related")),
+				allOf(hasItems(GET, DELETE, PATCH, PUT), not(hasItem(POST))));
+
+		assertThat(methods.getMethodsFor(entity.getPersistentProperty("relatedCollection")),
+				hasItems(GET, DELETE, PATCH, PUT, POST));
+
+		assertThat(methods.getMethodsFor(entity.getPersistentProperty("readOnlyReference")),
+				allOf(hasItem(GET), not(hasItems(DELETE, PATCH, PUT, POST))));
+	}
+
 	private static SupportedHttpMethods getSupportedHttpMethodsFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
@@ -102,12 +132,12 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 	private static void assertMethodsSupported(SupportedHttpMethods methods, ResourceType type, boolean supported,
 			HttpMethod... httpMethods) {
 
-		Matcher<Iterable<HttpMethod>> isSupported = supported ? hasItems(httpMethods) : not(hasItems(httpMethods));
+		Set<HttpMethod> result = methods.getMethodsFor(type);
 
-		assertThat(methods.getMethodsFor(type), isSupported);
+		assertThat(result, supported ? hasItems(httpMethods) : not(hasItems(httpMethods)));
 
-		for (HttpMethod method : httpMethods) {
-			assertThat(methods.supports(method, type), is(supported));
+		if (supported) {
+			assertThat(result, hasSize(httpMethods.length));
 		}
 	}
 
@@ -119,5 +149,16 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 
 		@RestResource(exported = false)
 		void delete(Object id);
+	}
+
+	interface EntityRepository extends CrudRepository<Entity, Long> {}
+
+	class Entity {
+
+		Entity embedded;
+		@Reference Entity related;
+		List<Entity> embeddedCollection;
+		@Reference List<Entity> relatedCollection;
+		@ReadOnlyProperty @Reference Entity readOnlyReference;
 	}
 }
