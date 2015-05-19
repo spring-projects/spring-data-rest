@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@ import org.springframework.http.MediaType;
  */
 public class RestMediaTypes {
 
+	public static final String SPRING_DATA_COMPACT_JSON_VALUE = "application/x-spring-data-compact+json";
+	public static final String TEXT_URI_LIST_VALUE = "text/uri-list";
+
 	public static final MediaType HAL_JSON = MediaTypes.HAL_JSON;
 
 	public static final MediaType JSON_PATCH_JSON = MediaType.valueOf("application/json-patch+json");
@@ -33,5 +36,7 @@ public class RestMediaTypes {
 	public static final MediaType SCHEMA_JSON = MediaType.valueOf("application/schema+json");
 
 	public static final MediaType SPRING_DATA_VERBOSE_JSON = MediaType.valueOf("application/x-spring-data-verbose+json");
-	public static final MediaType SPRING_DATA_COMPACT_JSON = MediaType.valueOf("application/x-spring-data-compact+json");
+	public static final MediaType SPRING_DATA_COMPACT_JSON = MediaType.valueOf(SPRING_DATA_COMPACT_JSON_VALUE);
+
+	public static final MediaType TEXT_URI_LIST = MediaType.valueOf(TEXT_URI_LIST_VALUE);
 }

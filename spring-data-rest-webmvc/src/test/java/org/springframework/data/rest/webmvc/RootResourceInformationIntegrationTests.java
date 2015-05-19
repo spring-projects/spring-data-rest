@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@ package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.data.rest.core.mapping.ResourceType.*;
+import static org.springframework.http.HttpMethod.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
-import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +46,7 @@ public class RootResourceInformationIntegrationTests extends AbstractControllerI
 	public void getIsNotSupportedIfFindAllIsNotExported() {
 
 		SupportedHttpMethods supportedMethods = getResourceInformation(Address.class).getSupportedMethods();
-		assertThat(supportedMethods.supports(HttpMethod.GET, ResourceType.COLLECTION), is(false));
+		assertThat(supportedMethods.getMethodsFor(COLLECTION), not(hasItem(GET)));
 	}
 
 	/**
@@ -56,6 +56,6 @@ public class RootResourceInformationIntegrationTests extends AbstractControllerI
 	public void postIsNotSupportedIfSaveIsNotExported() {
 
 		SupportedHttpMethods supportedMethods = getResourceInformation(Address.class).getSupportedMethods();
-		assertThat(supportedMethods.supports(HttpMethod.POST, ResourceType.COLLECTION), is(false));
+		assertThat(supportedMethods.getMethodsFor(COLLECTION), not(hasItem(POST)));
 	}
 }

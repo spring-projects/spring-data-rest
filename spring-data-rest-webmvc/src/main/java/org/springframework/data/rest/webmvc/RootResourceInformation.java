@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceType;
@@ -92,25 +93,57 @@ public class RootResourceInformation {
 	public void verifySupportedMethod(HttpMethod httpMethod, ResourceType resourceType)
 			throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
 
+		Assert.notNull(httpMethod, "HTTP method must not be null!");
+		Assert.notNull(resourceType, "Resource type must not be null!");
+
 		if (!resourceMetadata.isExported()) {
 			throw new ResourceNotFoundException();
 		}
-
-		Assert.notNull(httpMethod, "HTTP method must not be null!");
-		Assert.notNull(resourceType, "Resource type must not be null!");
 
 		SupportedHttpMethods httpMethods = resourceMetadata.getSupportedHttpMethods();
 		Collection<HttpMethod> supportedMethods = httpMethods.getMethodsFor(resourceType);
 
 		if (!supportedMethods.contains(httpMethod)) {
-
-			Set<String> stringMethods = new HashSet<String>();
-
-			for (HttpMethod supportedMethod : supportedMethods) {
-				stringMethods.add(supportedMethod.name());
-			}
-
-			throw new HttpRequestMethodNotSupportedException(httpMethod.name(), stringMethods);
+			reject(httpMethod, supportedMethods);
 		}
+	}
+
+	/**
+	 * Verifies that the given {@link HttpMethod} is supported for the given {@link PersistentProperty}.
+	 * 
+	 * @param httpMethod must not be {@literal null}.
+	 * @param property must not be {@literal null}.
+	 * @throws ResourceNotFoundException if the repository is not exported at all.
+	 * @throws HttpRequestMethodNotSupportedException if the {@link PersistentProperty} does not support the given
+	 *           {@link HttpMethod}. Will contain all supported methods as indicators for clients.
+	 */
+	public void verifySupportedMethod(HttpMethod httpMethod, PersistentProperty<?> property)
+			throws HttpRequestMethodNotSupportedException {
+
+		Assert.notNull(httpMethod, "HTTP method must not be null!");
+		Assert.notNull(property, "Resource type must not be null!");
+
+		if (!resourceMetadata.isExported()) {
+			throw new ResourceNotFoundException();
+		}
+
+		SupportedHttpMethods httpMethods = resourceMetadata.getSupportedHttpMethods();
+		Collection<HttpMethod> supportedMethods = httpMethods.getMethodsFor(property);
+
+		if (!supportedMethods.contains(httpMethod)) {
+			reject(httpMethod, supportedMethods);
+		}
+	}
+
+	private static void reject(HttpMethod method, Collection<HttpMethod> supported)
+			throws HttpRequestMethodNotSupportedException {
+
+		Set<String> stringMethods = new HashSet<String>(supported.size());
+
+		for (HttpMethod supportedMethod : supported) {
+			stringMethods.add(supportedMethod.name());
+		}
+
+		throw new HttpRequestMethodNotSupportedException(method.name(), stringMethods);
 	}
 }

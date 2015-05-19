@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,16 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import static org.springframework.data.rest.core.mapping.ResourceType.*;
+import static org.springframework.http.HttpMethod.*;
+
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.http.HttpMethod;
@@ -50,19 +54,6 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#supports(org.springframework.http.HttpMethod, org.springframework.data.rest.core.mapping.ResourceType)
-	 */
-	@Override
-	public boolean supports(HttpMethod method, ResourceType type) {
-
-		Assert.notNull(method, "HTTP method must not be null!");
-		Assert.notNull(type, "Resource type must not be null!");
-
-		return getMethodsFor(type).contains(method);
-	}
-
-	/* 
-	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getSupportedHttpMethods(org.springframework.data.rest.core.mapping.ResourceType)
 	 */
 	@Override
@@ -71,18 +62,18 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 		Assert.notNull(resourcType, "Resource type must not be null!");
 
 		Set<HttpMethod> methods = new HashSet<HttpMethod>();
-		methods.add(HttpMethod.OPTIONS);
+		methods.add(OPTIONS);
 
 		switch (resourcType) {
 			case COLLECTION:
 
 				if (exposedMethods.exposesFindAll()) {
-					methods.add(HttpMethod.GET);
-					methods.add(HttpMethod.HEAD);
+					methods.add(GET);
+					methods.add(HEAD);
 				}
 
 				if (exposedMethods.exposesSave()) {
-					methods.add(HttpMethod.POST);
+					methods.add(POST);
 				}
 
 				break;
@@ -90,17 +81,17 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 			case ITEM:
 
 				if (exposedMethods.exposesDelete() && exposedMethods.exposesFindOne()) {
-					methods.add(HttpMethod.DELETE);
+					methods.add(DELETE);
 				}
 
 				if (exposedMethods.exposesFindOne()) {
-					methods.add(HttpMethod.GET);
-					methods.add(HttpMethod.HEAD);
+					methods.add(GET);
+					methods.add(HEAD);
 				}
 
 				if (exposedMethods.exposesSave()) {
-					methods.add(HttpMethod.PUT);
-					methods.add(HttpMethod.PATCH);
+					methods.add(PUT);
+					methods.add(PATCH);
 				}
 
 				break;
@@ -110,6 +101,34 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 		}
 
 		return Collections.unmodifiableSet(methods);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getMethodsFor(org.springframework.data.mapping.PersistentProperty)
+	 */
+	@Override
+	public Set<HttpMethod> getMethodsFor(PersistentProperty<?> property) {
+
+		if (!property.isAssociation()) {
+			return Collections.emptySet();
+		}
+
+		Set<HttpMethod> methods = new HashSet<HttpMethod>();
+
+		methods.add(GET);
+
+		if (property.isWritable() && getMethodsFor(ITEM).contains(PUT)) {
+			methods.add(PUT);
+			methods.add(PATCH);
+			methods.add(DELETE);
+		}
+
+		if (property.isCollectionLike() && property.isWritable()) {
+			methods.add(POST);
+		}
+
+		return methods;
 	}
 
 	/**
