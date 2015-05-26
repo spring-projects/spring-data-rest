@@ -34,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -52,7 +53,8 @@ public class DomainObjectReaderUnitTests {
 	public void setUp() {
 
 		MongoMappingContext mappingContext = new MongoMappingContext();
-		mappingContext.setInitialEntitySet(Collections.singleton(SampleUser.class));
+		mappingContext.getPersistentEntity(SampleUser.class);
+		mappingContext.getPersistentEntity(Person.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -75,6 +77,23 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.password, is("password"));
 	}
 
+	/**
+	 * @see DATAREST-556
+	 */
+	@Test
+	public void considersMappedFieldNamesWhenApplyingNodeToDomainObject() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.setPropertyNamingStrategy(PropertyNamingStrategy.PASCAL_CASE_TO_CAMEL_CASE);
+
+		JsonNode node = new ObjectMapper().readTree("{\"FirstName\":\"Carter\",\"LastName\":\"Beauford\"}");
+
+		Person result = reader.readPut((ObjectNode) node, new Person("Dave", "Matthews"), mapper);
+
+		assertThat(result.firstName, is("Carter"));
+		assertThat(result.lastName, is("Beauford"));
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class SampleUser {
 
@@ -84,6 +103,20 @@ public class DomainObjectReaderUnitTests {
 		public SampleUser(String name, String password) {
 			this.name = name;
 			this.password = password;
+		}
+	}
+
+	/**
+	 * @see DATAREST-556
+	 */
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Person {
+
+		String firstName, lastName;
+
+		public Person(String firstName, String lastName) {
+			this.firstName = firstName;
+			this.lastName = lastName;
 		}
 	}
 }
