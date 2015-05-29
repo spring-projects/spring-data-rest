@@ -33,6 +33,7 @@ import org.springframework.util.StringUtils;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Jeremy Rickard
+ * @author Greg Turnquist
  */
 @SuppressWarnings("deprecation")
 public class RepositoryRestConfiguration {
@@ -99,46 +100,13 @@ public class RepositoryRestConfiguration {
 	}
 
 	/**
-	 * The base URI against which the exporter should calculate its links.
-	 * 
-	 * @param baseUri must not be {@literal null}.
-	 * @deprecated use {@link #setBasePath(String)} instead.
-	 */
-	@Deprecated
-	public RepositoryRestConfiguration setBaseUri(URI baseUri) {
-
-		Assert.notNull(baseUri, "The base URI cannot be null.");
-
-		LOGGER.warn("Configuring a base URI has been deprecated. Use basePath property instead!");
-
-		if (baseUri.isAbsolute()) {
-			LOGGER
-					.warn("Using absolute base URIs will not be supported as of Spring Data REST 2.3! Be sure to switch to configuring a base path!");
-		}
-
-		this.baseUri = baseUri;
-		return this;
-	}
-
-	/**
-	 * The base URI against which the exporter should calculate its links.
-	 * 
-	 * @param baseUri must not be {@literal null}.
-	 * @deprecated use {@link #setBasePath(String)} instead.
-	 */
-	@Deprecated
-	public RepositoryRestConfiguration setBaseUri(String baseUri) {
-		Assert.notNull(baseUri, "The base URI cannot be null.");
-		return setBaseUri(URI.create(baseUri));
-	}
-
-	/**
 	 * Configures the base path to be used by Spring Data REST to expose repository resources.
 	 * 
 	 * @param basePath the basePath to set
 	 */
 	public void setBasePath(String basePath) {
 
+		Assert.isTrue(!basePath.startsWith("http"), "Use a path not a URI");
 		basePath = StringUtils.trimTrailingCharacter(basePath, '/');
 		this.basePath = URI.create(basePath.startsWith("/") ? basePath : "/".concat(basePath));
 
