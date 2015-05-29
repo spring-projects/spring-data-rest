@@ -173,6 +173,14 @@ Spring Data REST exposes <<metadata.alps>> documents, a micro metadata format. T
 <3> Further down you can see projection `noAddresses` listed.
 <4> The actual attributes served up by this projection include `firstName` and `lastName`.
 
+[NOTE]
+====
+Projection definitions will be picked up and made available for clients if they are:
+
+* Flagged with the `@Projection` annotation and located in the same package (or sub-package) of the domain type, OR
+* Manually registered via `RepositoryRestConfiguration.projectionConfiguration().addProjection(…)`.
+====
+
 [[projections-excerpts.hidden-data]]
 === Bringing in hidden data
 
@@ -257,7 +265,7 @@ interface PersonRepository extends CrudRepository<Person, Long> {}
 
 This directs Spring Data REST to use the `NoAddresses` projection when embedding `Person` resources into collections or related resources.
 
-NOTE: Excerpt projections to a single resource automatically. They have to be applied deliberately.
+NOTE: Excerpt projections are *NOT* applied to _single resources_ automatically. They have to be applied deliberately. Excerpt projections are meant to provide a default preview of collection data, but not when fetching individual resources. See http://stackoverflow.com/questions/30220333/why-is-an-excerpt-projection-not-applied-automatically-for-a-spring-data-rest-it[Why is an excerpt projection not applied automatically for a Spring Data REST item resource?] for a discussion on the subject.
 
 In addition to altering the default rendering, excerpts have additional rendering options as shown below.
 
