@@ -1,0 +1,42 @@
+[[customizing-sdr.overriding-sdr-response-handlers]]
+= Overriding Spring Data REST Response Handlers
+
+Sometimes you may want to write a custom handler for a specific resource. To take advantage of Spring Data REST's settings, message converters, exception handling, and more, use the `@RepositoryRestController` annotation instead of a standard Spring MVC `@Controller` or `@RestController`:
+
+[source,java]
+----
+@RepositoryRestController
+public class ScannerController {
+
+    private final ScannerRepository repository;
+
+    @Autowired
+    public ScannerController(ScannerRepository repo) { // <1>
+        repository = repo;
+    }
+
+    @RequestMapping(method = GET, value = "/scanners/search/listProducers") // <2>
+    public @ResponseBody List<String> getProducers() {
+        List<String> producers = repository.listProducers(); // <3>
+
+        //
+        // do some intermediate processing, logging, etc. with the producers
+        //
+
+        return producers; // or some filtered/altered/mapped version
+    }
+
+}
+----
+
+This controller will be served from the same API base path defined in `RepositoryRestConfiguration.setBasePath` that is used by all other RESTful endpoints (e.g. */api*). It also has these characteristics:
+
+<1> This example uses constructor injection.
+<2> This handler plugs in a custom handler for a Spring Data finder method.
+<3> This handler is using the underlying repository to fetch data, but will tehn do some form of post processing before returning the final data set to the client.
+
+IMPORTANT: In this example, the combined path will be `RepositoryRestConfiguration.getBasePath()` + `/scanners/search/listProducers`.  
+
+If you're NOT interested in entity-specific operations but still want to build custom operations underneath `basePath`, such as Spring MVC views, resources, etc. use `@BasePathAwareController`.
+
+WARNING: If you use `@Controller` or `@RestController` for anything, that code will be totally outside the scope of Spring Data REST. This extends to request handling, message converters, exception handling, etc.
