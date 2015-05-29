@@ -40,6 +40,7 @@ import org.springframework.web.method.HandlerMethod;
  * Unit tests for {@link RepositoryRestHandlerMapping}.
  * 
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryRestHandlerMappingUnitTests {
@@ -150,13 +151,12 @@ public class RepositoryRestHandlerMappingUnitTests {
 	 * @see DATAREST-276
 	 */
 	@Test
-	@SuppressWarnings("deprecation")
 	public void returnsRepositoryHandlerMethodForAbsoluteBaseUri() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/base/people/");
 
-		configuration.setBaseUri("http://localhost/base");
+		configuration.setBasePath("/base");
 		handlerMapping.afterPropertiesSet();
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base/people/", mockRequest);
@@ -169,14 +169,13 @@ public class RepositoryRestHandlerMappingUnitTests {
 	 * @see DATAREST-276
 	 */
 	@Test
-	@SuppressWarnings("deprecation")
 	public void returnsRepositoryHandlerMethodForAbsoluteBaseUriWithServletMapping() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/base/people");
 		mockRequest.setServletPath("/base/people");
 
-		configuration.setBaseUri("http://localhost/base");
+		configuration.setBasePath("/base");
 		handlerMapping.afterPropertiesSet();
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base/people", mockRequest);
@@ -189,14 +188,13 @@ public class RepositoryRestHandlerMappingUnitTests {
 	 * @see DATAREST-276
 	 */
 	@Test
-	@SuppressWarnings("deprecation")
 	public void refrainsFromMappingIfTheRequestDoesNotPointIntoAbsolutelyDefinedUriSpace() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/servlet-path");
 		mockRequest.setServletPath("/servlet-path");
 
-		configuration.setBaseUri("http://localhost/base");
+		configuration.setBasePath("/base");
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/servlet-path", mockRequest);
 
@@ -207,7 +205,6 @@ public class RepositoryRestHandlerMappingUnitTests {
 	 * @see DATAREST-276
 	 */
 	@Test
-	@SuppressWarnings("deprecation")
 	public void refrainsFromMappingWhenUrisDontMatch() throws Exception {
 
 		String baseUri = "foo";
@@ -217,7 +214,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 		mockRequest = new MockHttpServletRequest("GET", uri);
 		mockRequest.setServletPath(uri);
 
-		configuration.setBaseUri(baseUri);
+		configuration.setBasePath(baseUri);
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/people", mockRequest);
 

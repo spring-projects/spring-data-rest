@@ -34,6 +34,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
  * Unit tests for {@link BasePathAwareHandlerMapping}.
  * 
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 public class AugmentingHandlerMappingUnitTests {
 
@@ -47,11 +48,10 @@ public class AugmentingHandlerMappingUnitTests {
 	}
 
 	@Test
-	@SuppressWarnings("deprecation")
 	public void augmentsRequestMappingsWithBaseUriFromConfiguration() {
 
 		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration();
-		configuration.setBaseUri("api");
+		configuration.setBasePath("api");
 
 		BasePathAwareHandlerMapping mapping = new BasePathAwareHandlerMapping(configuration);
 		mapping.setApplicationContext(new AnnotationConfigApplicationContext(Config.class));
