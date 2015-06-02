@@ -1,6 +1,43 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.4.0.M1 (2015-06-02)
+----------------------------------------
+* DATAREST-563 - Release 2.4 M1 (Gosling).
+* DATAREST-556 - PUT/PATCH does not consider custom Jackson field naming strategy.
+* DATAREST-553 - Remove deprecated support for RepositoryRestConfiguration.setBaseUri(…).
+* DATAREST-551 - Re-enable Cassandra integration tests.
+* DATAREST-550 - Improve reference documentation excerpt projections.
+* DATAREST-549 - RepositorySearchesResource shouldn't expose domain type.
+* DATAREST-542 - ResourceProcessor not invoked for empty collections.
+* DATAREST-538 - Update RepositoryRestMvcConfiguration so that the bean factory knows that Jackson converter beans are type constrained.
+* DATAREST-537 - Cannot remove an element of an array using JSON Patch request.
+* DATAREST-535 - Document how to override Spring Data REST exposed resources using manual controller implementations.
+* DATAREST-534 - JSON Schema not rendered anymore after changes in default media type handling.
+* DATAREST-532 - Disable Cassandra tests until it has kept up with changes in Spring Data Commons.
+* DATAREST-531 - JSON Schema should expose read-only fields based on PersistentProperty.isWritable().
+* DATAREST-523 - Unable to augment collection association using POST.
+* DATAREST-522 - GET on RestRepository not possible, if a RestController for the same path is available.
+* DATAREST-521 - Projection fields should contain links if the projection target points to a managed resource.
+* DATAREST-519 - RepositoryEntityLinks does not populate search resource URIs with Pageable and Sorts.
+* DATAREST-518 - MappingResourceMetadata must not be exported.
+* DATAREST-517 - Accessing a query resource should return 404 Not Found if the query returns null.
+* DATAREST-516 - Fix links to ALPS representation descriptors for associations.
+* DATAREST-515 - RepositorySearchesResource should expose the domain type it lists searches for.
+* DATAREST-514 - Custom @RestResource path shows up as link href, but doesn't load data.
+* DATAREST-511 - Support Optionals in repository methods.
+* DATAREST-509 - Reference documentation typo.
+* DATAREST-507 - RepositoryRestExceptionHandler throws IllegalArgumentException.
+* DATAREST-506 - GETting an item resource should consider If-None-Match and If-Modified-Since headers.
+* DATAREST-503 - Fix one word typo in reference docs.
+* DATAREST-502 - Not convenient to search a repository by a related entity using links.
+* DATAREST-500 - Rendering of lazy-loading proxies fails.
+* DATAREST-498 - JSON Patch request not recognized if Content-Type header contains media type parameters.
+* DATAREST-479 - Render empty _embedded content for empty collections.
+* DATAREST-302 - Handle resource links of resources inlined using @Projection.
+* DATAREST-293 - Create new module that provides the HAL Browser.
+
+
 Changes in version 2.3.0.RELEASE (2015-03-23)
 ---------------------------------------------
 * DATAREST-494 - Link to JSON Schema resource from ALPS resources.
