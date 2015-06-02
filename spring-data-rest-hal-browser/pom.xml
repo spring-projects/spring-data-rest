@@ -1,11 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-rest-parent</artifactId>
-		<version>2.4.0.BUILD-SNAPSHOT</version>
+		<version>2.4.0.M1</version>
 	</parent>
 	<artifactId>spring-data-rest-hal-browser</artifactId>
 
@@ -82,8 +82,7 @@
 								<move todir="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser">
 									<fileset dir="${project.build.directory}/hal-browser/META-INF/resources/webjars/hal-browser/${browser.version}" />
 								</move>
-								<move file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/browser.html"
-									tofile="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/index.html" />
+								<move file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/browser.html" tofile="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/index.html" />
 							</target>
 						</configuration>
 					</execution>
