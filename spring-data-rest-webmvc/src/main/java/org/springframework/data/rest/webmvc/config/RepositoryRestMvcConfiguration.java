@@ -219,8 +219,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public RepositoryRestConfiguration config() {
 
-		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
+		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration(resourceMappings());
 
+		// Register projections found in packages
 		for (Class<?> projection : getProjections(repositories())) {
 			configuration.addProjection(projection);
 		}

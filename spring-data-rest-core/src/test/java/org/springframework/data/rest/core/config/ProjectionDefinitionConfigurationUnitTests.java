@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,14 @@ package org.springframework.data.rest.core.config;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
+
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration.ProjectionDefinitionKey;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 
 /**
  * Unit tests for {@link ProjectionDefinitionConfiguration}.
@@ -150,10 +155,21 @@ public class ProjectionDefinitionConfigurationUnitTests {
 				is(typeCompatibleWith(ParentProjection.class)));
 	}
 
-	@Projection(name = "name", types = Integer.class)
-	interface SampleProjection {
+	/**
+	 * @see DATAREST-577
+	 */
+	@Test
+	public void registersExcerptProjectionsByDefault() {
 
+		ResourceMetadata metadata = mock(ResourceMetadata.class);
+		doReturn(SampleProjection.class).when(metadata).getExcerptProjection();
+
+		assertThat(new ProjectionDefinitionConfiguration(Arrays.asList(metadata)).getProjectionsFor(Integer.class),
+				Matchers.<String, Class<?>> hasEntry("name", SampleProjection.class));
 	}
+
+	@Projection(name = "name", types = Integer.class)
+	interface SampleProjection {}
 
 	@Projection(types = Integer.class)
 	interface Default {
