@@ -37,10 +37,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.config.Projection;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
+import org.springframework.data.rest.webmvc.mongodb.Receipt;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -153,8 +157,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	@Test
 	public void registeredHttpMessageConvertersAreTypeConstrained() {
 
-		Collection<MappingJackson2HttpMessageConverter> converters = context.getBeansOfType(
-				MappingJackson2HttpMessageConverter.class).values();
+		Collection<MappingJackson2HttpMessageConverter> converters = context
+				.getBeansOfType(MappingJackson2HttpMessageConverter.class).values();
 
 		for (HttpMessageConverter<?> converter : converters) {
 			assertThat(converter, is(instanceOf(TypeConstrainedMappingJackson2HttpMessageConverter.class)));
@@ -256,4 +260,10 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 			this.converters = converters;
 		}
 	}
+
+	@RepositoryRestResource(excerptProjection = SampleProjection.class)
+	interface SampleRepository extends Repository<Receipt, Long> {}
+
+	@Projection(types = Receipt.class)
+	interface SampleProjection {}
 }

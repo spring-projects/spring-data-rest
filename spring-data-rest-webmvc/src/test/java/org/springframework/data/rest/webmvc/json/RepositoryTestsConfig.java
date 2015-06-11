@@ -109,8 +109,8 @@ public class RepositoryTestsConfig {
 				mock(PagingAndSortingTemplateVariables.class),
 				OrderAwarePluginRegistry.<Class<?>, BackendIdConverter> create(Arrays.asList(DefaultIdConverter.INSTANCE)));
 
-		return new PersistentEntityJackson2Module(mappings, persistentEntities(), config(), new UriToEntityConverter(
-				persistentEntities(), defaultConversionService()), entityLinks);
+		return new PersistentEntityJackson2Module(mappings, persistentEntities(), config(),
+				new UriToEntityConverter(persistentEntities(), defaultConversionService()), entityLinks);
 	}
 
 	@Bean
