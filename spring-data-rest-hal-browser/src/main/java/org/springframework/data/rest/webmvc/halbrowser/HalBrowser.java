@@ -71,6 +71,6 @@ public class HalBrowser {
 	public View browser() {
 
 		String basePath = configuration.getBasePath().toString();
-		return new RedirectView(basePath.concat(BROWSER_INDEX).concat("#").concat(basePath));
+		return new RedirectView(basePath.concat(BROWSER_INDEX).concat("#").concat(basePath), true);
 	}
 }
