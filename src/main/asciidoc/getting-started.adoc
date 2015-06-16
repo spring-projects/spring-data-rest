@@ -85,7 +85,7 @@ With Spring Boot 1.2+, all it takes is a single property in `application.propert
 
 [source,properties]
 ----
-spring.data.rest.basePath=/api
+spring.data.rest.base-path=/api
 ----
 
 With Spring Boot 1.1 or earlier, or if you are not using Spring Boot, simply do this:
