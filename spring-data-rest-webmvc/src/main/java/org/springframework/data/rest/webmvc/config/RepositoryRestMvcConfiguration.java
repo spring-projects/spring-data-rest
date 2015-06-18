@@ -699,7 +699,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			packagesToScan.add(domainType.getPackage().getName());
 		}
 
-		return new AnnotatedTypeScanner(Projection.class).findTypes(packagesToScan);
+		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(Projection.class);
+		scanner.setEnvironment(applicationContext.getEnvironment());
+		scanner.setResourceLoader(applicationContext);
+
+		return scanner.findTypes(packagesToScan);
 	}
 
 	//
