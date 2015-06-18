@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.jpa;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Version;
 
 /**
  * @author Oliver Gierke
@@ -26,4 +27,5 @@ import javax.persistence.Id;
 public class Address {
 
 	public @Id @GeneratedValue Long id;
+	public @Version Long version;
 }

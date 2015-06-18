@@ -23,8 +23,10 @@ import static org.springframework.http.HttpMethod.*;
 import java.util.List;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.AddressRepository;
@@ -33,12 +35,14 @@ import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.support.ETag;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 /**
@@ -244,4 +248,29 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 				is(false));
 		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, "").hasBody(), is(false));
 	}
+
+	/**
+	 * @see DATAREST-581
+	 */
+	@Test
+	public void createsEtagForProjectedEntityCorrectly() throws Exception {
+
+		Address address = repository.save(new Address());
+
+		PersistentEntityResourceAssembler assembler = Mockito.mock(PersistentEntityResourceAssembler.class);
+		AddressProjection addressProjection = new SpelAwareProxyProjectionFactory()
+				.createProjection(AddressProjection.class);
+
+		PersistentEntityResource resource = PersistentEntityResource
+				.build(addressProjection, entities.getPersistentEntity(Address.class)).build();
+
+		Mockito.when(assembler.toFullResource(Mockito.any(Object.class))).thenReturn(resource);
+
+		ResponseEntity<Resource<?>> entity = controller.getItemResource(getResourceInformation(Address.class), address.id,
+				assembler, new LinkedMultiValueMap<String, String>());
+
+		assertThat(entity.getHeaders().getETag(), is(notNullValue()));
+	}
+
+	interface AddressProjection {}
 }
