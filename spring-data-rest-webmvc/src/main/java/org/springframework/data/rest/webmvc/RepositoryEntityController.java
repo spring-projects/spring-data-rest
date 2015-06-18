@@ -321,12 +321,13 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		List<String> ifNoneMatch = headers.getIfNoneMatch();
 		ETag eTag = ifNoneMatch.isEmpty() ? ETag.NO_ETAG : ETag.from(ifNoneMatch.get(0));
 		PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
+		HttpHeaders responseHeaders = prepareHeaders(entity, domainObj);
 
 		if (eTag.matches(entity, domainObj)) {
-			return new ResponseEntity<Resource<?>>(prepareHeaders(entity, domainObj), HttpStatus.NOT_MODIFIED);
+			return new ResponseEntity<Resource<?>>(responseHeaders, HttpStatus.NOT_MODIFIED);
 		}
 
-		// Check last modification for If-Modfied-Since
+		// Check last modification for If-Modified-Since
 
 		if (headers.getIfModifiedSince() != -1) {
 
@@ -334,12 +335,12 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			long current = wrapper.getLastModifiedDate().getTimeInMillis() / 1000 * 1000;
 
 			if (current <= headers.getIfModifiedSince()) {
-				return new ResponseEntity<Resource<?>>(prepareHeaders(entity, domainObj), HttpStatus.NOT_MODIFIED);
+				return new ResponseEntity<Resource<?>>(responseHeaders, HttpStatus.NOT_MODIFIED);
 			}
 		}
 
 		PersistentEntityResource resource = assembler.toFullResource(domainObj);
-		return new ResponseEntity<Resource<?>>(resource, prepareHeaders(resource), HttpStatus.OK);
+		return new ResponseEntity<Resource<?>>(resource, responseHeaders, HttpStatus.OK);
 	}
 
 	/**
