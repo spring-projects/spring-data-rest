@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.security;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,35 +26,29 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
 import org.springframework.data.rest.webmvc.TestMvcClient;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.util.NestedServletException;
 
 /**
  * Test Spring Data REST in the context of being locked down by Spring Security. Uses MockMvc to simulate HTTP-based
- * interactions. Testing is possible on the repository level, but that doesn't align with the mission
- * of Spring Data REST.
+ * interactions. Testing is possible on the repository level, but that doesn't align with the mission of Spring Data
+ * REST.
  *
  * @author Greg Turnquist
  * @author Rob Winch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {SecureJpaConfiguration.class, SecurityConfiguration.class})
+@ContextConfiguration(classes = { SecureJpaConfiguration.class, SecurityConfiguration.class })
 @Transactional
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
@@ -100,8 +90,9 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				build();
 	}
 
-	//=================================================================
-
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void deletePersonAccessDeniedForNoCredentials() throws Exception {
 
@@ -116,12 +107,12 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 		// Clear any side effects of logging in to get the URI from security.
 		SecurityContextHolder.clearContext();
 
-		MockHttpServletResponse deleteResponse = mvc.perform(delete(href)).//
-				andExpect(status().isUnauthorized()).//
-				andReturn().getResponse();
-		assertThat(deleteResponse.getErrorMessage(), is("Full authentication is required to access this resource"));
+		mvc.perform(delete(href)).andExpect(status().isUnauthorized());
 	}
 
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void deletePersonAccessDeniedForUsers() throws Exception {
 
@@ -133,13 +124,13 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 		// Clear any side effects of logging in to get the URI from security.
 		SecurityContextHolder.clearContext();
 
-		MockHttpServletResponse deleteResponse = mvc.perform(delete(href).//
-				with(user("user").roles("USER"))).//
-				andExpect(status().isForbidden()).//
-				andReturn().getResponse();
-		assertThat(deleteResponse.getErrorMessage(), is("Access is denied"));
+		mvc.perform(delete(href).with(user("user").roles("USER"))).//
+				andExpect(status().isForbidden());
 	}
 
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void deletePersonAccessGrantedForAdmins() throws Exception {
 
@@ -155,17 +146,19 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 			.andExpect(status().is(HttpStatus.NO_CONTENT.value()));
 	}
 
-	//=================================================================
-
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void findAllPeopleAccessDeniedForNoCredentials() throws Throwable {
 
-		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("people").expand().getHref())).//
-				andExpect(status().isUnauthorized()).//
-				andReturn().getResponse();
-		assertThat(response.getErrorMessage(), is("Full authentication is required to access this resource"));
+		mvc.perform(get(client.discoverUnique("people").expand().getHref())).//
+				andExpect(status().isUnauthorized());
 	}
 
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void findAllPeopleAccessGrantedForUsers() throws Throwable {
 
@@ -174,6 +167,9 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				andExpect(status().isOk());
 	}
 
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void findAllPeopleAccessGrantedForAdmins() throws Throwable {
 
@@ -182,9 +178,9 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				andExpect(status().isOk());
 	}
 
-	//=================================================================
-
-
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void deleteOrderAccessDeniedForNoCredentials() throws Exception {
 
@@ -197,12 +193,12 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 		// Clear any side effects of logging in to get the URI from security.
 		SecurityContextHolder.clearContext();
 
-		MockHttpServletResponse deleteResponse = mvc.perform(delete(href)).//
-				andExpect(status().isUnauthorized()).//
-				andReturn().getResponse();
-		assertThat(deleteResponse.getErrorMessage(), is("Full authentication is required to access this resource"));
+		mvc.perform(delete(href)).andExpect(status().isUnauthorized());
 	}
 
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void deleteOrderAccessDeniedForUsers() throws Exception {
 
@@ -211,12 +207,13 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				andReturn().getResponse();
 		String href = assertHasJsonPathValue("$._embedded.orders[0]._links.self.href", response);
 
-		MockHttpServletResponse deleteResponse = mvc.perform(delete(href).with(user("user").roles("USER"))).//
-				andExpect(status().isForbidden()).//
-				andReturn().getResponse();
-		assertThat(deleteResponse.getErrorMessage(), is("Access is denied"));
+		mvc.perform(delete(href).with(user("user").roles("USER"))).//
+				andExpect(status().isForbidden());
 	}
 
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void deleteOrderAccessGrantedForAdmins() throws Exception {
 
@@ -232,17 +229,19 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				.andExpect(status().is(HttpStatus.NO_CONTENT.value()));
 	}
 
-	//=================================================================
-
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void findAllOrdersAccessDeniedForNoCredentials() throws Throwable {
 
-		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("orders").expand().getHref())).//
-			andExpect(status().isUnauthorized()).//
-			andReturn().getResponse();
-		assertThat(response.getErrorMessage(), is("Full authentication is required to access this resource"));
+		mvc.perform(get(client.discoverUnique("orders").expand().getHref())).//
+				andExpect(status().isUnauthorized());
 	}
 
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void findAllOrdersAccessGrantedForUsers() throws Throwable {
 
@@ -251,6 +250,9 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				andExpect(status().isOk());
 	}
 
+	/**
+	 * @see DATAREST-327
+	 */
 	@Test
 	public void findAllOrdersAccessGrantedForAdmins() throws Throwable {
 
@@ -258,5 +260,4 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				with(user("user").roles("USER", "ADMIN"))).//
 				andExpect(status().isOk());
 	}
-
 }
