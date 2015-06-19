@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -704,6 +705,16 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		public ResourceSupportHttpMessageConverter(int order) {
 			super(ResourceSupport.class);
 			this.order = order;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter#canRead(java.lang.reflect.Type, java.lang.Class, org.springframework.http.MediaType)
+		 */
+		@Override
+		public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
+			return ResourceSupport.class.isAssignableFrom(getJavaType(type, contextClass).getRawClass())
+					&& super.canRead(type, contextClass, mediaType);
 		}
 
 		/* 
