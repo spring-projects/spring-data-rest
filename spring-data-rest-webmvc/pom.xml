@@ -113,58 +113,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.apache.solr</groupId>
-			<artifactId>solr-core</artifactId>
-			<version>4.10.1</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jdk.tools</artifactId>
-					<groupId>jdk.tools</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-core</artifactId>
-			<version>${spring-security.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-config</artifactId>
-			<version>${spring-security.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-web</artifactId>
-			<version>${spring-security.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
-			<version>${spring-security.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.6</version>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 	<profiles>
@@ -348,6 +296,47 @@
 
 			</dependencies>
 
+		</profile>
+
+		<profile>
+
+			<id>spring-security</id>
+
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+
+			<dependencies>
+
+				<dependency>
+					<groupId>org.springframework.security</groupId>
+					<artifactId>spring-security-core</artifactId>
+					<version>${spring-security.version}</version>
+					<scope>test</scope>
+				</dependency>
+
+				<dependency>
+					<groupId>org.springframework.security</groupId>
+					<artifactId>spring-security-config</artifactId>
+					<version>${spring-security.version}</version>
+					<scope>test</scope>
+				</dependency>
+
+				<dependency>
+					<groupId>org.springframework.security</groupId>
+					<artifactId>spring-security-web</artifactId>
+					<version>${spring-security.version}</version>
+					<scope>test</scope>
+				</dependency>
+
+				<dependency>
+					<groupId>org.springframework.security</groupId>
+					<artifactId>spring-security-test</artifactId>
+					<version>${spring-security.version}</version>
+					<scope>test</scope>
+				</dependency>
+
+			</dependencies>
 		</profile>
 
 	</profiles>

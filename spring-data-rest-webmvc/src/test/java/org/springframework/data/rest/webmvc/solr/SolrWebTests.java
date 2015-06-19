@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.rest.webmvc.AbstractWebIntegrationTests;
+import org.springframework.data.rest.webmvc.CommonWebTests;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
 import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
@@ -42,7 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Christoph Strobl
  */
 @ContextConfiguration(classes = { SolrWebTests.MyConf.class })
-public class SolrWebTests extends AbstractWebIntegrationTests {
+public class SolrWebTests extends CommonWebTests {
 
 	public static @ClassRule TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
 
