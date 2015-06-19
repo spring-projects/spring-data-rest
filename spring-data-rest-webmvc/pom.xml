@@ -117,6 +117,25 @@
 	<profiles>
 
 		<profile>
+			<id>unifying</id>
+
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+
+			<dependencies>
+				<!-- Neo4j VS. Solr -->
+				<dependency>
+					<groupId>commons-io</groupId>
+					<artifactId>commons-io</artifactId>
+					<version>2.3</version>
+					<scope>test</scope>
+				</dependency>
+			</dependencies>
+
+		</profile>
+
+		<profile>
 			<id>neo4j</id>
 
 			<activation>
@@ -130,8 +149,8 @@
 					<version>${springdata.neo4j}</version>
 					<scope>test</scope>
 				</dependency>
-
 			</dependencies>
+
 		</profile>
 
 		<profile>
@@ -223,7 +242,7 @@
 				<dependency>
 					<groupId>com.google.guava</groupId>
 					<artifactId>guava</artifactId>
-					<version>15.0</version>
+					<version>${guava}</version>
 					<scope>test</scope>
 				</dependency>
 
