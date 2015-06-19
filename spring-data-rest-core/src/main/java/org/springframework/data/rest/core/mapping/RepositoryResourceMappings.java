@@ -54,11 +54,10 @@ public class RepositoryResourceMappings implements ResourceMappings {
 	 * Creates a new {@link RepositoryResourceMappings} using the given {@link RepositoryRestConfiguration} and
 	 * {@link Repositories} .
 	 * 
-	 * @param config
-	 * @param repositories
+	 * @param repositories must not be {@literal null}.
 	 */
-	public RepositoryResourceMappings(RepositoryRestConfiguration config, Repositories repositories) {
-		this(config, repositories, new EvoInflectorRelProvider());
+	public RepositoryResourceMappings(Repositories repositories) {
+		this(repositories, new EvoInflectorRelProvider());
 	}
 
 	/**
@@ -69,8 +68,7 @@ public class RepositoryResourceMappings implements ResourceMappings {
 	 * @param repositories must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
 	 */
-	public RepositoryResourceMappings(RepositoryRestConfiguration config, Repositories repositories,
-			RelProvider relProvider) {
+	public RepositoryResourceMappings(Repositories repositories, RelProvider relProvider) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(relProvider, "RelProvider must not be null!");

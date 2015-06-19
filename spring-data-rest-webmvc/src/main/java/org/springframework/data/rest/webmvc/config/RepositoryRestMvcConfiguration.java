@@ -526,11 +526,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public ResourceMappings resourceMappings() {
-
-		Repositories repositories = repositories();
-		RepositoryRestConfiguration config = config();
-
-		return new RepositoryResourceMappings(config, repositories);
+		return new RepositoryResourceMappings(repositories());
 	}
 
 	/**

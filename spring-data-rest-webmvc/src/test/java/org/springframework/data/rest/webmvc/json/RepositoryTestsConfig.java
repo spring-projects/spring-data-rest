@@ -94,7 +94,7 @@ public class RepositoryTestsConfig {
 
 	@Bean
 	public Module persistentEntityModule() {
-		return new PersistentEntityJackson2Module(new RepositoryResourceMappings(config(), repositories()),
+		return new PersistentEntityJackson2Module(new RepositoryResourceMappings(repositories()),
 				persistentEntities(), config(), new UriToEntityConverter(persistentEntities(), defaultConversionService()));
 	}
 

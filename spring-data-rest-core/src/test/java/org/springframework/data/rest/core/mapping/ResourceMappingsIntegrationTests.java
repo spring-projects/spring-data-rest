@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.domain.jpa.Author;
 import org.springframework.data.rest.core.domain.jpa.CreditCard;
 import org.springframework.data.rest.core.domain.jpa.JpaRepositoryConfig;
@@ -59,7 +58,7 @@ public class ResourceMappingsIntegrationTests {
 	public void setUp() {
 
 		Repositories repositories = new Repositories(factory);
-		this.mappings = new RepositoryResourceMappings(new RepositoryRestConfiguration(), repositories);
+		this.mappings = new RepositoryResourceMappings(repositories);
 	}
 
 	@Test
