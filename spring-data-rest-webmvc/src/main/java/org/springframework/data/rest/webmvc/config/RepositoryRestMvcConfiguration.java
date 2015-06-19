@@ -658,6 +658,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 		projectionFactory.setBeanFactory(applicationContext);
+		projectionFactory.setResourceLoader(applicationContext);
 
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
 				repositories(), entityLinks(), config().projectionConfiguration(), projectionFactory, resourceMappings());
