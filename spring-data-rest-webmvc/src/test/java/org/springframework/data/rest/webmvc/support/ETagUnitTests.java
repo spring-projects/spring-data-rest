@@ -175,14 +175,16 @@ public class ETagUnitTests {
 		assertThat(headers.containsKey("ETag"), is(false));
 	}
 
+	// tag::versioned-sample[]
 	public class Sample {
 
-		@Version Long version;
+		@Version Long version; // <1>
 
 		Sample(Long version) {
 			this.version = version;
 		}
 	}
+	// end::versioned-sample[]
 
 	public class SampleWithoutVersion {}
 }

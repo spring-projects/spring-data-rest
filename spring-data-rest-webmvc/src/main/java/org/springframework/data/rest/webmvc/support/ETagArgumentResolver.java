@@ -16,6 +16,8 @@
 
 package org.springframework.data.rest.webmvc.support;
 
+import static org.springframework.http.HttpHeaders.*;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -46,6 +48,6 @@ public class ETagArgumentResolver implements HandlerMethodArgumentResolver {
 	@Override
 	public ETag resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-		return ETag.from(webRequest.getHeader("If-Match"));
+		return ETag.from(webRequest.getHeader(IF_MATCH));
 	}
 }
