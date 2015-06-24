@@ -27,14 +27,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * @author Pablo Lozano
  */
+// tag::code[]
 @Document
 public class Receipt {
 
 	public @Id String id;
 	public @Version Long version;
-	public @LastModifiedDate Date date;
+	public @LastModifiedDate Date date;  // <1>
 
 	public String saleItem;
 	public BigDecimal amount;
 
 }
+// end::code[]

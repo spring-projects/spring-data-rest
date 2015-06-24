@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.math.BigDecimal;
@@ -193,12 +194,12 @@ public class MongoWebTests extends CommonWebTests {
 
 		mvc.perform(
 				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
-						.contentType(MediaType.APPLICATION_JSON).header("If-Match", concurrencyTag)).andExpect(
+						.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag)).andExpect(
 				status().is2xxSuccessful());
 
 		mvc.perform(
 				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
-						.contentType(MediaType.APPLICATION_JSON).header("If-Match", concurrencyTag)).andExpect(
+						.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag)).andExpect(
 				status().isPreconditionFailed());
 	}
 
@@ -294,6 +295,7 @@ public class MongoWebTests extends CommonWebTests {
 		Link receiptLink = client.getDiscoverer(response).findLinkWithRel("self", response.getContentAsString());
 
 		mvc.perform(get(receiptLink.getHref()).header(IF_MODIFIED_SINCE, response.getHeader(LAST_MODIFIED))).//
+				andDo(print()).//
 				andExpect(status().isNotModified()).//
 				andExpect(header().string(ETAG, is(notNullValue())));
 
