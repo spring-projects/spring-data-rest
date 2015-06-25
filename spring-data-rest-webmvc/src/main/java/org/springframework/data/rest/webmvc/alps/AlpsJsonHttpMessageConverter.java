@@ -15,19 +15,20 @@
  */
 package org.springframework.data.rest.webmvc.alps;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
+import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.hateoas.alps.Alps;
-import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.util.Assert;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +39,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @author Oliver Gierke
  */
-public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConverter {
+public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConverter
+		implements ResponseBodyAdvice<Object> {
 
 	private static final MediaType ALPS_MEDIA_TYPE = MediaType.parseMediaType("application/alps+json");
 
@@ -83,15 +85,22 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 
 	/* 
 	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter#writeInternal(java.lang.Object, org.springframework.http.HttpOutputMessage)
+	 * @see org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice#beforeBodyWrite(java.lang.Object, org.springframework.core.MethodParameter, org.springframework.http.MediaType, java.lang.Class, org.springframework.http.server.ServerHttpRequest, org.springframework.http.server.ServerHttpResponse)
 	 */
 	@Override
-	protected void writeInternal(Object object, HttpOutputMessage outputMessage) throws IOException,
-			HttpMessageNotWritableException {
+	public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
+			Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request,
+			ServerHttpResponse response) {
 
-		Object toWrite = object instanceof RootResourceInformation ? converter.convert((RootResourceInformation) object)
-				: object;
+		return body instanceof RootResourceInformation ? converter.convert((RootResourceInformation) body) : body;
+	}
 
-		super.writeInternal(toWrite, outputMessage);
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice#supports(org.springframework.core.MethodParameter, java.lang.Class)
+	 */
+	@Override
+	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+		return converterType.equals(AlpsJsonHttpMessageConverter.class);
 	}
 }
