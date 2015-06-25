@@ -40,6 +40,7 @@ import org.springframework.data.geo.Point;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
+import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -153,11 +154,12 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	@Test
 	public void registeredHttpMessageConvertersAreTypeConstrained() {
 
-		Collection<MappingJackson2HttpMessageConverter> converters = context.getBeansOfType(
-				MappingJackson2HttpMessageConverter.class).values();
+		Collection<MappingJackson2HttpMessageConverter> converters = context
+				.getBeansOfType(MappingJackson2HttpMessageConverter.class).values();
 
 		for (HttpMessageConverter<?> converter : converters) {
-			assertThat(converter, is(instanceOf(TypeConstrainedMappingJackson2HttpMessageConverter.class)));
+			assertThat(converter, is(anyOf(instanceOf(TypeConstrainedMappingJackson2HttpMessageConverter.class),
+					instanceOf(AlpsJsonHttpMessageConverter.class))));
 		}
 	}
 

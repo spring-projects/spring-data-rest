@@ -122,6 +122,7 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
@@ -496,6 +497,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		handlerAdapter.setWebBindingInitializer(initializer);
 		handlerAdapter.setMessageConverters(messageConverters);
 
+		if (config().metadataConfiguration().alpsEnabled()) {
+			handlerAdapter.setResponseBodyAdvice(Arrays.<ResponseBodyAdvice<?>> asList(alpsJsonHttpMessageConverter()));
+		}
+
 		return handlerAdapter;
 	}
 
@@ -589,7 +594,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
 
 		if (config().metadataConfiguration().alpsEnabled()) {
-			messageConverters.add(new AlpsJsonHttpMessageConverter(alpsConverter()));
+			messageConverters.add(alpsJsonHttpMessageConverter());
 		}
 
 		if (config().getDefaultMediaType().equals(MediaTypes.HAL_JSON)) {
@@ -607,6 +612,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		messageConverters.add(uriListHttpMessageConverter());
 
 		return messageConverters;
+	}
+
+	@Bean
+	public AlpsJsonHttpMessageConverter alpsJsonHttpMessageConverter() {
+		return new AlpsJsonHttpMessageConverter(alpsConverter());
 	}
 
 	/* 
