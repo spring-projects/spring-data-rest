@@ -270,6 +270,8 @@ public class MongoWebTests extends CommonWebTests {
 
 		Profile profile = new Profile();
 		profile.setMetadata(Collections.singletonMap("Key", "Value"));
+		profile.setMetadataComplex(Collections.singletonMap("Key", new Value(
+				"Value")));
 
 		putAndGet(profileLink, mapper.writeValueAsString(profile), MediaType.APPLICATION_JSON);
 
