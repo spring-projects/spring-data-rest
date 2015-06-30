@@ -1,6 +1,37 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.3.1.RELEASE (2015-06-30)
+---------------------------------------------
+* DATAREST-603 - Release 2.3.1 (Fowler).
+* DATAREST-588 - ResourceSupportHttpMessageConverter does not reject generic type requests.
+* DATAREST-585 - Forward ResourceLoader into ProjectionFactory created for the PersistentEntityResourceAssembler.
+* DATAREST-584 - Polish dependency setup.
+* DATAREST-577 - Make sure excerpt projections get registered automatically.
+* DATAREST-576 - Remove markdown versions of README and CONTRIBUTING.
+* DATAREST-556 - PUT/PATCH does not consider custom Jackson field naming strategy.
+* DATAREST-550 - Improve reference documentation excerpt projections.
+* DATAREST-549 - RepositorySearchesResource shouldn't expose domain type.
+* DATAREST-538 - Update RepositoryRestMvcConfiguration so that the bean factory knows that Jackson converter beans are type constrained.
+* DATAREST-537 - Cannot remove an element of an array using JSON Patch request.
+* DATAREST-535 - Document how to override Spring Data REST exposed resources using manual controller implementations.
+* DATAREST-531 - JSON Schema should expose read-only fields based on PersistentProperty.isWritable().
+* DATAREST-523 - Unable to augment collection association using POST.
+* DATAREST-522 - GET on RestRepository not possible, if a RestController for the same path is available.
+* DATAREST-519 - RepositoryEntityLinks does not populate search resource URIs with Pageable and Sorts.
+* DATAREST-515 - RepositorySearchesResource should expose the domain type it lists searches for.
+* DATAREST-511 - Support Optionals in repository methods.
+* DATAREST-509 - Reference documentation typo.
+* DATAREST-508 - Reference documentation should be more clear about how projection interfaces are found.
+* DATAREST-507 - RepositoryRestExceptionHandler throws IllegalArgumentException.
+* DATAREST-506 - GETting an item resource should consider If-None-Match and If-Modified-Since headers.
+* DATAREST-503 - Fix one word typo in reference docs.
+* DATAREST-500 - Rendering of lazy-loading proxies fails.
+* DATAREST-498 - JSON Patch request not recognized if Content-Type header contains media type parameters.
+* DATAREST-454 - Add section documenting conditional operations.
+* DATAREST-302 - Handle resource links of resources inlined using @Projection.
+
+
 Changes in version 2.4.0.M1 (2015-06-02)
 ----------------------------------------
 * DATAREST-563 - Release 2.4 M1 (Gosling).
