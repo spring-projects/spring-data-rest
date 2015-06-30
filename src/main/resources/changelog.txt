@@ -1,6 +1,28 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.2.3.RELEASE (2015-07-01)
+---------------------------------------------
+* DATAREST-602 - Release 2.2.3 (Evans).
+* DATAREST-588 - ResourceSupportHttpMessageConverter does not reject generic type requests.
+* DATAREST-576 - Remove markdown versions of README and CONTRIBUTING.
+* DATAREST-556 - PUT/PATCH does not consider custom Jackson field naming strategy.
+* DATAREST-538 - Update RepositoryRestMvcConfiguration so that the bean factory knows that Jackson converter beans are type constrained.
+* DATAREST-537 - Cannot remove an element of an array using JSON Patch request.
+* DATAREST-516 - Fix links to ALPS representation descriptors for associations.
+* DATAREST-500 - Rendering of lazy-loading proxies fails.
+* DATAREST-498 - JSON Patch request not recognized if Content-Type header contains media type parameters.
+* DATAREST-491 - PersistentEntityResourceHandlerMethodArgumentResolver dump in PUT requests with HashMap.
+* DATAREST-485 - RepositoryPropertyReferenceController.createPropertyReference(…) does not work for empty content supplied on Spring 4.1.
+* DATAREST-478 - Update reference docs to use HAL and remove deprecated annotations.
+* DATAREST-463 - ALPS metadata exposes attributes that can be marked @JsonIgnore.
+* DATAREST-453 - Add links to Spring Data Examples inside reference docs.
+* DATAREST-452 - Add ALPS to reference docs.
+* DATAREST-451 - Add projections and excerpts to reference docs.
+* DATAREST-450 - Migrate wiki content into reference docs and replace with links.
+* DATAREST-302 - Handle resource links of resources inlined using @Projection.
+
+
 Changes in version 2.3.1.RELEASE (2015-06-30)
 ---------------------------------------------
 * DATAREST-603 - Release 2.3.1 (Fowler).
