@@ -193,12 +193,12 @@ public class MongoWebTests extends CommonWebTests {
 
 		mvc.perform(
 				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
-						.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag)).andExpect(
+						.contentType(MediaType.APPLICATION_JSON).header("If-Match", concurrencyTag)).andExpect(
 				status().is2xxSuccessful());
 
 		mvc.perform(
 				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
-						.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag)).andExpect(
+						.contentType(MediaType.APPLICATION_JSON).header("If-Match", concurrencyTag)).andExpect(
 				status().isPreconditionFailed());
 	}
 
