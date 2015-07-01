@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration;
 
 @Configuration
-@Import(RepositoryRestMvConfiguration.class)
+@Import(RepositoryRestMvcConfiguration.class)
 public class MyApplicationConfiguration {
 
   …
