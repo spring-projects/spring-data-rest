@@ -108,8 +108,8 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 	 */
 	@Override
 	public Object postProcessAfterInitialization(final Object bean, String beanName) throws BeansException {
-		final Class<?> beanType = bean.getClass();
-
+		
+		Class<?> beanType = ClassUtils.getUserClass(bean);
 		RepositoryEventHandler typeAnno = AnnotationUtils.findAnnotation(beanType, RepositoryEventHandler.class);
 
 		if (typeAnno == null) {
@@ -174,13 +174,14 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		handlerMethods.add(eventType, handlerMethod);
 	}
 
-	private static class EventHandlerMethod {
+	static class EventHandlerMethod {
 
 		final Class<?> targetType;
 		final Method method;
 		final Object handler;
 
 		private EventHandlerMethod(Class<?> targetType, Object handler, Method method) {
+			
 			this.targetType = targetType;
 			this.method = method;
 			this.handler = handler;
