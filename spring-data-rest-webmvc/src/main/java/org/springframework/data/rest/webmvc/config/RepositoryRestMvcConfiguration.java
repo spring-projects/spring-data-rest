@@ -141,7 +141,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @Configuration
 @EnableHypermediaSupport(type = HypermediaType.HAL)
 @ComponentScan(basePackageClasses = RepositoryRestController.class,
-		includeFilters = @Filter(BasePathAwareController.class), useDefaultFilters = false)
+		includeFilters = @Filter(BasePathAwareController.class) , useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 @Import(SpringDataJacksonConfiguration.class)
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration {
@@ -171,8 +171,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		List<MappingContext<?, ?>> arrayList = new ArrayList<MappingContext<?, ?>>();
 
-		for (MappingContext<?, ?> context : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
-				MappingContext.class).values()) {
+		for (MappingContext<?, ?> context : BeanFactoryUtils
+				.beansOfTypeIncludingAncestors(applicationContext, MappingContext.class).values()) {
 			arrayList.add(context);
 		}
 
@@ -406,7 +406,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				RestMediaTypes.JSON_PATCH_JSON, RestMediaTypes.MERGE_PATCH_JSON, //
 				RestMediaTypes.SPRING_DATA_VERBOSE_JSON, RestMediaTypes.SPRING_DATA_COMPACT_JSON));
 
-		TypeConstrainedMappingJackson2HttpMessageConverter jacksonConverter = new ResourceSupportHttpMessageConverter(order);
+		TypeConstrainedMappingJackson2HttpMessageConverter jacksonConverter = new ResourceSupportHttpMessageConverter(
+				order);
 		jacksonConverter.setObjectMapper(objectMapper());
 		jacksonConverter.setSupportedMediaTypes(mediaTypes);
 
@@ -578,8 +579,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public RepositoryInvokerFactory repositoryInvokerFactory() {
-		return new UnwrappingRepositoryInvokerFactory(new DefaultRepositoryInvokerFactory(repositories(),
-				defaultConversionService()));
+		return new UnwrappingRepositoryInvokerFactory(
+				new DefaultRepositoryInvokerFactory(repositories(), defaultConversionService()));
 	}
 
 	@Bean
@@ -661,7 +662,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		projectionFactory.setResourceLoader(applicationContext);
 
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
-				repositories(), entityLinks(), config().projectionConfiguration(), projectionFactory, resourceMappings());
+				persistentEntities(), entityLinks(), config().projectionConfiguration(), projectionFactory, resourceMappings());
 
 		HateoasPageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
 		HandlerMethodArgumentResolver defaultedPageableResolver = new DefaultedPageableHandlerMethodArgumentResolver(
@@ -669,8 +670,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		return Arrays.asList(defaultedPageableResolver, pageableResolver, sortResolver(),
 				serverHttpRequestMethodArgumentResolver(), repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
-				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE,
-				peraResolver, backendIdHandlerMethodArgumentResolver(), eTagArgumentResolver());
+				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE, peraResolver,
+				backendIdHandlerMethodArgumentResolver(), eTagArgumentResolver());
 	}
 
 	@Autowired GeoModule geoModule;

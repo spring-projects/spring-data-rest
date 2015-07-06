@@ -16,6 +16,7 @@
 package org.springframework.data.rest.webmvc.config;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -36,7 +37,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  */
 public class PersistentEntityResourceAssemblerArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private final Repositories repositories;
+	private final PersistentEntities entities;
 	private final EntityLinks entityLinks;
 	private final ProjectionDefinitions projectionDefinitions;
 	private final ProjectionFactory projectionFactory;
@@ -46,20 +47,20 @@ public class PersistentEntityResourceAssemblerArgumentResolver implements Handle
 	 * Creates a new {@link PersistentEntityResourceAssemblerArgumentResolver} for the given {@link Repositories},
 	 * {@link EntityLinks}, {@link ProjectionDefinitions} and {@link ProjectionFactory}.
 	 * 
-	 * @param repositories must not be {@literal null}.
+	 * @param entities must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param projectionDefinitions must not be {@literal null}.
 	 * @param projectionFactory must not be {@literal null}.
 	 */
-	public PersistentEntityResourceAssemblerArgumentResolver(Repositories repositories, EntityLinks entityLinks,
+	public PersistentEntityResourceAssemblerArgumentResolver(PersistentEntities entities, EntityLinks entityLinks,
 			ProjectionDefinitions projectionDefinitions, ProjectionFactory projectionFactory, ResourceMappings mappings) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null!");
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
 		Assert.notNull(projectionDefinitions, "ProjectionDefinitions must not be null!");
 		Assert.notNull(projectionFactory, "ProjectionFactory must not be null!");
 
-		this.repositories = repositories;
+		this.entities = entities;
 		this.entityLinks = entityLinks;
 		this.projectionDefinitions = projectionDefinitions;
 		this.projectionFactory = projectionFactory;
@@ -87,6 +88,6 @@ public class PersistentEntityResourceAssemblerArgumentResolver implements Handle
 		PersistentEntityProjector projector = new PersistentEntityProjector(projectionDefinitions, projectionFactory,
 				projectionParameter, mappings);
 
-		return new PersistentEntityResourceAssembler(repositories, entityLinks, projector, mappings);
+		return new PersistentEntityResourceAssembler(entities, entityLinks, projector, mappings);
 	}
 }

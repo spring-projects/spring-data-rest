@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,24 +39,10 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Oliver Gierke
  */
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
-public class BackendIdConverterHandlerMethodArgumentResolverIntegrationTests extends AbstractControllerIntegrationTests {
+public class BackendIdConverterHandlerMethodArgumentResolverIntegrationTests
+		extends AbstractControllerIntegrationTests {
 
 	@Autowired BackendIdHandlerMethodArgumentResolver resolver;
-
-	/**
-	 * @see DATAREST-267, DATAREST-268
-	 */
-	@Test
-	public void stripsUriTemplateVariablesFromUri() throws Exception {
-
-		Method method = ReflectionUtils.findMethod(SampleController.class, "resolveId", Serializable.class);
-		MethodParameter parameter = new MethodParameter(method, 0);
-		NativeWebRequest request = new ServletWebRequest(new MockHttpServletRequest("GET", "/orders/5{?projection}"));
-
-		Object resolvedId = resolver.resolveArgument(parameter, null, request, null);
-
-		assertThat(resolvedId, is((Object) "5"));
-	}
 
 	/**
 	 * @see DATAREST-155

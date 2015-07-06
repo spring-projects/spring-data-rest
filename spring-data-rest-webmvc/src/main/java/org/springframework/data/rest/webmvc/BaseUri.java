@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,6 @@ public class BaseUri {
 
 		Assert.notNull(lookupPath, "Lookup path must not be null!");
 
-		lookupPath = lookupPath.contains("{") ? lookupPath.substring(0, lookupPath.indexOf('{')) : lookupPath;
 		lookupPath = trimTrailingCharacter(lookupPath, '/');
 
 		if (!baseUri.isAbsolute()) {

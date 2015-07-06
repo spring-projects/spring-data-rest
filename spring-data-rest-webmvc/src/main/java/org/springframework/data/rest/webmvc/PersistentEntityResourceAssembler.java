@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimpleAssociationHandler;
-import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
@@ -44,7 +44,7 @@ import org.springframework.util.Assert;
  */
 public class PersistentEntityResourceAssembler implements ResourceAssembler<Object, PersistentEntityResource> {
 
-	private final Repositories repositories;
+	private final PersistentEntities entities;
 	private final EntityLinks entityLinks;
 	private final Projector projector;
 	private final ResourceMappings mappings;
@@ -53,20 +53,20 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 	/**
 	 * Creates a new {@link PersistentEntityResourceAssembler}.
 	 * 
-	 * @param repositories must not be {@literal null}.
+	 * @param entities must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param projector must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
 	 */
-	public PersistentEntityResourceAssembler(Repositories repositories, EntityLinks entityLinks, Projector projector,
+	public PersistentEntityResourceAssembler(PersistentEntities entities, EntityLinks entityLinks, Projector projector,
 			ResourceMappings mappings) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null!");
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
 		Assert.notNull(projector, "PersistentEntityProjector must not be be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
 
-		this.repositories = repositories;
+		this.entities = entities;
 		this.entityLinks = entityLinks;
 		this.projector = projector;
 		this.mappings = mappings;
@@ -97,11 +97,12 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 	private Builder wrap(Object instance, Object source) {
 
-		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(source.getClass());
+		PersistentEntity<?, ?> entity = entities.getPersistentEntity(source.getClass());
 
 		return PersistentEntityResource.build(instance, entity).//
 				withEmbedded(getEmbeddedResources(source)).//
-				withLink(getSelfLinkFor(source));
+				withLink(getSelfLinkFor(source)).//
+				withLink(getSingleResourceLinkTo(source));
 	}
 
 	/**
@@ -115,7 +116,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 		Assert.notNull(instance, "Entity instance must not be null!");
 
-		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(instance.getClass());
+		PersistentEntity<?, ?> entity = entities.getPersistentEntity(instance.getClass());
 
 		final List<EmbeddedWrapper> associationProjections = new ArrayList<EmbeddedWrapper>();
 		final PersistentPropertyAccessor accessor = entity.getPropertyAccessor(instance);
@@ -183,20 +184,23 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 	 * @return
 	 */
 	public Link getSelfLinkFor(Object instance) {
+		return new Link(getSingleResourceLinkTo(instance).expand().getHref(), Link.REL_SELF);
+	}
+
+	private Link getSingleResourceLinkTo(Object instance) {
 
 		Assert.notNull(instance, "Domain object must not be null!");
 
 		Class<? extends Object> instanceType = instance.getClass();
-		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(instanceType);
+		PersistentEntity<?, ?> entity = entities.getPersistentEntity(instanceType);
 
 		if (entity == null) {
-			throw new IllegalArgumentException(String.format("Cannot create self link for %s! No persistent entity found!",
-					instanceType));
+			throw new IllegalArgumentException(
+					String.format("Cannot create self link for %s! No persistent entity found!", instanceType));
 		}
 
 		Object id = entity.getIdentifierAccessor(instance).getIdentifier();
 
-		Link resourceLink = entityLinks.linkToSingleResource(entity.getType(), id);
-		return new Link(resourceLink.getHref(), Link.REL_SELF);
+		return entityLinks.linkToSingleResource(entity.getType(), id);
 	}
 }
