@@ -41,6 +41,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -367,6 +368,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	static class UriStringDeserializer extends StdDeserializer<Object> {
 
 		private static final long serialVersionUID = -2175900204153350125L;
+		private static final String UNEXPECTED_VALUE = "Expected URI cause property %s points to the managed domain type!";
 
 		private final PersistentProperty<?> property;
 		private final UriToEntityConverter converter;
@@ -393,10 +395,20 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		@Override
 		public Object deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
-			URI uri = new UriTemplate(jp.getValueAsString()).expand();
-			TypeDescriptor typeDescriptor = TypeDescriptor.valueOf(property.getActualType());
+			String source = jp.getValueAsString();
 
-			return converter.convert(uri, URI_DESCRIPTOR, typeDescriptor);
+			if (!StringUtils.hasText(source)) {
+				return null;
+			}
+
+			try {
+				URI uri = new UriTemplate(source).expand();
+				TypeDescriptor typeDescriptor = TypeDescriptor.valueOf(property.getActualType());
+
+				return converter.convert(uri, URI_DESCRIPTOR, typeDescriptor);
+			} catch (IllegalArgumentException o_O) {
+				throw ctxt.weirdStringException(source, URI.class, String.format(UNEXPECTED_VALUE, property));
+			}
 		}
 	}
 
