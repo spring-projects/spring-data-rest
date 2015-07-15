@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.springframework.data.rest.webmvc.config;
+
+import java.util.Map;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.mapping.PersistentEntity;
@@ -86,6 +88,21 @@ public class RootResourceInformationHandlerMethodArgumentResolver implements Han
 		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(domainType);
 
 		// TODO reject if ResourceMetadata cannot be resolved
-		return new RootResourceInformation(resourceMetadata, persistentEntity, repositoryInvoker);
+		return new RootResourceInformation(resourceMetadata, persistentEntity,
+				postProcess(repositoryInvoker, domainType, webRequest.getParameterMap()));
+	}
+
+	/**
+	 * Potentially customize the given {@link RepositoryInvoker} for the given domain type. Default implementations simply
+	 * returns the given invoker as is.
+	 * 
+	 * @param invoker will never be {@literal null}.
+	 * @param domainType will never be {@literal null}.
+	 * @param parameters will never be {@literal null}.
+	 * @return
+	 */
+	protected RepositoryInvoker postProcess(RepositoryInvoker invoker, Class<?> domainType,
+			Map<String, String[]> parameters) {
+		return invoker;
 	}
 }

@@ -50,6 +50,7 @@ import org.springframework.data.geo.GeoModule;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.querydsl.QueryDslUtils;
 import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
@@ -98,6 +99,7 @@ import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration;
+import org.springframework.data.web.querydsl.QuerydslPredicateBuilder;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.RelProvider;
@@ -283,6 +285,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public RootResourceInformationHandlerMethodArgumentResolver repoRequestArgumentResolver() {
+
+		if (QueryDslUtils.QUERY_DSL_PRESENT) {
+
+			QuerydslPredicateBuilder predicateBuilder = new QuerydslPredicateBuilder(defaultConversionService());
+
+			return new QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver(repositories(),
+					repositoryInvokerFactory(), resourceMetadataHandlerMethodArgumentResolver(), predicateBuilder);
+		}
+
 		return new RootResourceInformationHandlerMethodArgumentResolver(repositories(), repositoryInvokerFactory(),
 				resourceMetadataHandlerMethodArgumentResolver());
 	}
