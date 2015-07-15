@@ -51,6 +51,9 @@ import org.springframework.data.geo.GeoModule;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.querydsl.QueryDslUtils;
+import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
+import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
@@ -97,6 +100,7 @@ import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration;
 import org.springframework.format.support.DefaultFormattingConversionService;
@@ -145,7 +149,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @ComponentScan(basePackageClasses = RepositoryRestController.class,
 		includeFilters = @Filter(BasePathAwareController.class) , useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
-@Import(SpringDataJacksonConfiguration.class)
+@Import({ SpringDataJacksonConfiguration.class, EnableSpringDataWebSupport.QuerydslActivator.class })
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration implements InitializingBean {
 
 	private static final boolean IS_JPA_AVAILABLE = ClassUtils.isPresent("javax.persistence.EntityManager",
@@ -301,6 +305,17 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public RootResourceInformationHandlerMethodArgumentResolver repoRequestArgumentResolver() {
+
+		if (QueryDslUtils.QUERY_DSL_PRESENT) {
+
+			QuerydslBindingsFactory factory = applicationContext.getBean(QuerydslBindingsFactory.class);
+			QuerydslPredicateBuilder predicateBuilder = new QuerydslPredicateBuilder(defaultConversionService(),
+					factory.getEntityPathResolver());
+
+			return new QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver(repositories(),
+					repositoryInvokerFactory(), resourceMetadataHandlerMethodArgumentResolver(), predicateBuilder, factory);
+		}
+
 		return new RootResourceInformationHandlerMethodArgumentResolver(repositories(), repositoryInvokerFactory(),
 				resourceMetadataHandlerMethodArgumentResolver());
 	}
