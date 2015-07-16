@@ -19,9 +19,13 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -34,6 +38,7 @@ import org.springframework.test.context.ContextConfiguration;
 public class LegacyRepresentationConfigIntegrationTests extends AbstractRepositoryRestMvcConfigurationIntegrationTests {
 
 	@Configuration
+	@Import(MongoDbRepositoryConfig.class)
 	static class Config extends RepositoryRestMvcConfiguration {
 
 		@Override
@@ -44,22 +49,28 @@ public class LegacyRepresentationConfigIntegrationTests extends AbstractReposito
 	}
 
 	/**
-	 * @see DATAREST-213
+	 * @see DATAREST-213, DATAREST-617
 	 */
 	@Test
 	public void returnsJsonIfConfiguredAndRequested() throws Exception {
 
-		mvc.perform(get("/").accept(MediaType.APPLICATION_JSON)). //
-				andExpect(jsonPath("links", is(notNullValue())));
+		for (String resource : Arrays.asList("/", "/users")) {
+
+			mvc.perform(get(resource).accept(MediaType.APPLICATION_JSON)). //
+					andExpect(jsonPath("links", is(notNullValue())));
+		}
 	}
 
 	/**
-	 * @see DATAREST-213
+	 * @see DATAREST-213, DATAREST-617
 	 */
 	@Test
 	public void returnsJsonIfConfigured() throws Exception {
 
-		mvc.perform(get("/").accept(MediaType.ALL)). //
-				andExpect(jsonPath("links", is(notNullValue())));
+		for (String resource : Arrays.asList("/", "/users")) {
+
+			mvc.perform(get(resource).accept(MediaType.ALL)). //
+					andExpect(jsonPath("links", is(notNullValue())));
+		}
 	}
 }

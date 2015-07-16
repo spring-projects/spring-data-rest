@@ -51,6 +51,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
+import org.springframework.web.servlet.mvc.condition.ProducesRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.util.UrlPathHelper;
@@ -122,9 +123,23 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 			return null;
 		}
 
-		PatternsRequestCondition patternsCondition = info.getPatternsCondition();
+		PatternsRequestCondition patternsCondition = customize(info.getPatternsCondition(), prefix);
+		ProducesRequestCondition producesCondition = customize(info.getProducesCondition());
 
-		Set<String> patterns = patternsCondition.getPatterns();
+		return new RequestMappingInfo(patternsCondition, info.getMethodsCondition(), info.getParamsCondition(),
+				info.getHeadersCondition(), info.getConsumesCondition(), producesCondition, info.getCustomCondition());
+	}
+
+	/**
+	 * Customize the given {@link PatternsRequestCondition} and prefix.
+	 * 
+	 * @param condition will never be {@literal null}.
+	 * @param prefix will never be {@literal null}.
+	 * @return
+	 */
+	protected PatternsRequestCondition customize(PatternsRequestCondition condition, String prefix) {
+
+		Set<String> patterns = condition.getPatterns();
 		String[] augmentedPatterns = new String[patterns.size()];
 		int count = 0;
 
@@ -132,11 +147,18 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 			augmentedPatterns[count++] = prefix.concat(pattern);
 		}
 
-		PatternsRequestCondition condition = new PatternsRequestCondition(augmentedPatterns, getUrlPathHelper(),
-				getPathMatcher(), useSuffixPatternMatch(), useTrailingSlashMatch(), getFileExtensions());
+		return new PatternsRequestCondition(augmentedPatterns, getUrlPathHelper(), getPathMatcher(),
+				useSuffixPatternMatch(), useTrailingSlashMatch(), getFileExtensions());
+	}
 
-		return new RequestMappingInfo(condition, info.getMethodsCondition(), info.getParamsCondition(),
-				info.getHeadersCondition(), info.getConsumesCondition(), info.getProducesCondition(), info.getCustomCondition());
+	/**
+	 * Customize the given {@link ProducesRequestCondition}. Default implementation returns the condition as is.
+	 * 
+	 * @param condition will never be {@literal null}.
+	 * @return
+	 */
+	protected ProducesRequestCondition customize(ProducesRequestCondition condition) {
+		return condition;
 	}
 
 	/* 
