@@ -381,7 +381,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	/**
-	 * <code>PUT /{repository}/{id}</code> - Updates an existing entity or creates one at exactly that place.
+	 * <code>PATCH /{repository}/{id}</code> - Updates an existing entity or creates one at exactly that place.
 	 *
 	 * @param resourceInformation
 	 * @param payload
