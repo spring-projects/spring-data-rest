@@ -22,13 +22,14 @@ import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
+import org.springframework.data.rest.core.domain.jpa.Person;
 import org.springframework.data.rest.core.event.AnnotatedEventHandlerInvoker.EventHandlerMethod;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
 
 /**
  * Unit tests for {@link AnnotatedEventHandlerInvoker}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class AnnotatedEventHandlerInvokerUnitTests {
@@ -53,10 +54,40 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 		assertThat(methods.get(BeforeCreateEvent.class), hasSize(1));
 	}
 
+	/**
+	 * @see DATAREST-606
+	 */
+	@Test
+	public void canInvokePrivateEventHandlerMethods() {
+		SampleWithPrivateHandler sampleHandler = new SampleWithPrivateHandler();
+		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
+		invoker.postProcessAfterInitialization(sampleHandler, "sampleHandler");
+		BeforeCreateEvent beforeCreateEvent = new BeforeCreateEvent(new Person());
+
+		invoker.onApplicationEvent(beforeCreateEvent);
+
+		assertThat(sampleHandler.wasCalled(), is(true));
+	}
+
 	@RepositoryEventHandler
 	static class Sample {
 
 		@HandleBeforeCreate
 		public void method(Sample sample) {}
+	}
+
+	@RepositoryEventHandler
+	static class SampleWithPrivateHandler {
+
+		private boolean wasCalled = false;
+
+		@HandleBeforeCreate
+		private void method(Person sample) {
+			wasCalled = true;
+		}
+
+		public boolean wasCalled() {
+			return wasCalled;
+		}
 	}
 }
