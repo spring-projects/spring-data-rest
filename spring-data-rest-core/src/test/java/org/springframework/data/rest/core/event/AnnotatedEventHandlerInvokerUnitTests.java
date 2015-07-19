@@ -31,6 +31,7 @@ import org.springframework.util.MultiValueMap;
  * Unit tests for {@link AnnotatedEventHandlerInvoker}.
  *
  * @author Oliver Gierke
+ * @author Fabian Trampusch
  */
 public class AnnotatedEventHandlerInvokerUnitTests {
 
@@ -58,15 +59,16 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 	 * @see DATAREST-606
 	 */
 	@Test
-	public void canInvokePrivateEventHandlerMethods() {
+	public void invokesPrivateEventHandlerMethods() {
+
 		SampleWithPrivateHandler sampleHandler = new SampleWithPrivateHandler();
+
 		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
 		invoker.postProcessAfterInitialization(sampleHandler, "sampleHandler");
-		BeforeCreateEvent beforeCreateEvent = new BeforeCreateEvent(new Person());
 
-		invoker.onApplicationEvent(beforeCreateEvent);
+		invoker.onApplicationEvent(new BeforeCreateEvent(new Person()));
 
-		assertThat(sampleHandler.wasCalled(), is(true));
+		assertThat(sampleHandler.wasCalled, is(true));
 	}
 
 	@RepositoryEventHandler
@@ -79,15 +81,11 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 	@RepositoryEventHandler
 	static class SampleWithPrivateHandler {
 
-		private boolean wasCalled = false;
+		boolean wasCalled = false;
 
 		@HandleBeforeCreate
 		private void method(Person sample) {
 			wasCalled = true;
-		}
-
-		public boolean wasCalled() {
-			return wasCalled;
 		}
 	}
 }
