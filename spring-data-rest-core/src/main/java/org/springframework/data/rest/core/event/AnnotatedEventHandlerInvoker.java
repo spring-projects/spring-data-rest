@@ -89,7 +89,6 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 				LOG.debug("Invoking {} handler for {}.", event.getClass().getSimpleName(), event.getSource());
 			}
 
-			ReflectionUtils.makeAccessible(handlerMethod.method);
 			ReflectionUtils.invokeMethod(handlerMethod.method, handlerMethod.handler, parameters.toArray());
 		}
 	}
@@ -109,7 +108,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 	 */
 	@Override
 	public Object postProcessAfterInitialization(final Object bean, String beanName) throws BeansException {
-		
+
 		Class<?> beanType = ClassUtils.getUserClass(bean);
 		RepositoryEventHandler typeAnno = AnnotationUtils.findAnnotation(beanType, RepositoryEventHandler.class);
 
@@ -182,10 +181,12 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		final Object handler;
 
 		private EventHandlerMethod(Class<?> targetType, Object handler, Method method) {
-			
+
 			this.targetType = targetType;
 			this.method = method;
 			this.handler = handler;
+
+			ReflectionUtils.makeAccessible(this.method);
 		}
 
 		/*
