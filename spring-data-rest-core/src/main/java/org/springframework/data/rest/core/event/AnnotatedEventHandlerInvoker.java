@@ -89,6 +89,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 				LOG.debug("Invoking {} handler for {}.", event.getClass().getSimpleName(), event.getSource());
 			}
 
+			ReflectionUtils.makeAccessible(handlerMethod.method);
 			ReflectionUtils.invokeMethod(handlerMethod.method, handlerMethod.handler, parameters.toArray());
 		}
 	}
