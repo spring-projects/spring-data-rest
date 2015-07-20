@@ -22,14 +22,14 @@ import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
+import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
+import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.web.querydsl.QuerydslBinderCustomizer;
-import org.springframework.data.web.querydsl.QuerydslBindings;
-import org.springframework.data.web.querydsl.QuerydslPredicateBuilder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -90,8 +90,8 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 			((QuerydslBinderCustomizer) repository).customize(bindings, entityPathResolver.createPath(domainType));
 		}
 
-		Predicate predicate = predicateBuilder.getPredicate(toMultiValueMap(parameters), bindings,
-				ClassTypeInformation.from(domainType));
+		Predicate predicate = predicateBuilder.getPredicate(ClassTypeInformation.from(domainType),
+				toMultiValueMap(parameters), bindings);
 
 		return new QuerydslRepositoryInvokerAdapter(invoker, (QueryDslPredicateExecutor<Object>) repository, predicate);
 	}

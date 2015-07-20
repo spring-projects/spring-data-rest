@@ -51,6 +51,8 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.querydsl.QueryDslUtils;
+import org.springframework.data.querydsl.SimpleEntityPathResolver;
+import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
@@ -99,7 +101,6 @@ import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration;
-import org.springframework.data.web.querydsl.QuerydslPredicateBuilder;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.RelProvider;
@@ -288,7 +289,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		if (QueryDslUtils.QUERY_DSL_PRESENT) {
 
-			QuerydslPredicateBuilder predicateBuilder = new QuerydslPredicateBuilder(defaultConversionService());
+			QuerydslPredicateBuilder predicateBuilder = new QuerydslPredicateBuilder(defaultConversionService(),
+					SimpleEntityPathResolver.INSTANCE);
 
 			return new QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver(repositories(),
 					repositoryInvokerFactory(), resourceMetadataHandlerMethodArgumentResolver(), predicateBuilder);

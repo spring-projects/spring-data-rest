@@ -31,15 +31,16 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter;
+import org.springframework.data.querydsl.SimpleEntityPathResolver;
+import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
+import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.webmvc.mongodb.QUser;
 import org.springframework.data.rest.webmvc.mongodb.User;
 import org.springframework.data.rest.webmvc.mongodb.UserRepository;
-import org.springframework.data.web.querydsl.QuerydslBinderCustomizer;
-import org.springframework.data.web.querydsl.QuerydslBindings;
-import org.springframework.data.web.querydsl.QuerydslPredicateBuilder;
 
 /**
  * Unit tests for {@link QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver}.
@@ -62,7 +63,8 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 	@Before
 	public void setUp() {
 
-		QuerydslPredicateBuilder builder = new QuerydslPredicateBuilder(new DefaultConversionService());
+		QuerydslPredicateBuilder builder = new QuerydslPredicateBuilder(new DefaultConversionService(),
+				SimpleEntityPathResolver.INSTANCE);
 		this.resolver = new QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver(repositories, factory,
 				resourceMetadataResolver, builder);
 	}
