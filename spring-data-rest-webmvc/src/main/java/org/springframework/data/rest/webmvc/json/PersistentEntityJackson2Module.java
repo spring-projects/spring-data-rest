@@ -38,7 +38,6 @@ import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.mapping.LinkCollectingAssociationHandler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -172,7 +171,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			Resource<Object> resourceToRender = new Resource<Object>(resource.getContent(), links) {
 
 				@JsonUnwrapped
-				public Resources<?> getEmbedded() {
+				public Iterable<?> getEmbedded() {
 					return resource.getEmbeddeds();
 				}
 			};
