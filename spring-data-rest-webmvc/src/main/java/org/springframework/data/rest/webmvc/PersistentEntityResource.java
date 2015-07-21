@@ -28,8 +28,6 @@ import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.util.Assert;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-
 /**
  * A Spring HATEOAS {@link Resource} subclass that holds a reference to the entity's {@link PersistentEntity} metadata.
  * 
@@ -38,11 +36,10 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
  */
 public class PersistentEntityResource extends Resource<Object> {
 
-	private static final Resources<EmbeddedWrapper> NO_EMBEDDEDS = new Resources<EmbeddedWrapper>(
-			Collections.<EmbeddedWrapper> emptyList());
+	private static final Iterable<EmbeddedWrapper> NO_EMBEDDEDS = Collections.emptyList();
 
 	private final PersistentEntity<?, ?> entity;
-	private final Resources<EmbeddedWrapper> embeddeds;
+	private final Iterable<EmbeddedWrapper> embeddeds;
 
 	/**
 	 * Creates a new {@link PersistentEntityResource} for the given {@link PersistentEntity}, content, embedded
@@ -54,7 +51,7 @@ public class PersistentEntityResource extends Resource<Object> {
 	 * @param embeddeds can be {@literal null}.
 	 */
 	private PersistentEntityResource(PersistentEntity<?, ?> entity, Object content, Iterable<Link> links,
-			Resources<EmbeddedWrapper> embeddeds) {
+			Iterable<EmbeddedWrapper> embeddeds) {
 
 		super(content, links);
 
@@ -87,8 +84,7 @@ public class PersistentEntityResource extends Resource<Object> {
 	 * 
 	 * @return the embeddeds
 	 */
-	@JsonUnwrapped
-	public Resources<EmbeddedWrapper> getEmbeddeds() {
+	public Iterable<EmbeddedWrapper> getEmbeddeds() {
 		return embeddeds;
 	}
 
