@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
@@ -207,7 +208,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	}
 
 	@Configuration
-	static class ExtendingConfiguration extends RepositoryRestMvcConfiguration {
+	@Import(RepositoryRestMvcConfiguration.class)
+	static class ExtendingConfiguration extends RepositoryRestConfigurerAdapter {
 
 		@Bean
 		public DefaultRelProvider relProvider() {
@@ -220,7 +222,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		}
 
 		@Override
-		protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 
 			config.setDefaultPageSize(45);
 			config.setMaxPageSize(7000);
@@ -231,7 +233,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	}
 
 	@Configuration
-	static class NonHalConfiguration extends RepositoryRestMvcConfiguration {
+	@Import(RepositoryRestMvcConfiguration.class)
+	static class NonHalConfiguration extends RepositoryRestConfigurerAdapter {
 
 		@Bean
 		public CollectingComponent collectingComponent() {
@@ -239,7 +242,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		}
 
 		@Override
-		protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 			config.useHalAsDefaultJsonMediaType(false);
 		}
 	}
