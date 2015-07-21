@@ -38,11 +38,11 @@ import org.springframework.test.context.ContextConfiguration;
 public class LegacyRepresentationConfigIntegrationTests extends AbstractRepositoryRestMvcConfigurationIntegrationTests {
 
 	@Configuration
-	@Import(MongoDbRepositoryConfig.class)
-	static class Config extends RepositoryRestMvcConfiguration {
+	@Import({ MongoDbRepositoryConfig.class, RepositoryRestMvcConfiguration.class })
+	static class Config extends RepositoryRestConfigurerAdapter {
 
 		@Override
-		protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 			config.setDefaultMediaType(MediaType.APPLICATION_JSON);
 			config.useHalAsDefaultJsonMediaType(false);
 		}
