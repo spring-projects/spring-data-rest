@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
-import org.springframework.data.mapping.model.BeanWrapper;
+import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -70,11 +71,14 @@ public class DomainObjectMerger {
 			return;
 		}
 
-		final BeanWrapper<Object> fromWrapper = BeanWrapper.create(from, conversionService);
-		final BeanWrapper<Object> targetWrapper = BeanWrapper.create(target, conversionService);
-		final PersistentEntity<?, ?> entity = repositories.getPersistentEntity(target.getClass());
+		final PersistentEntity<?, ?> sourceEntity = repositories.getPersistentEntity(from.getClass());
+		final PersistentPropertyAccessor sourceWrapper = new ConvertingPropertyAccessor(
+				sourceEntity.getPropertyAccessor(from), conversionService);
+		final PersistentEntity<?, ?> targetEntity = repositories.getPersistentEntity(from.getClass());
+		final PersistentPropertyAccessor targetWrapper = new ConvertingPropertyAccessor(
+				targetEntity.getPropertyAccessor(target), conversionService);
 
-		entity.doWithProperties(new SimplePropertyHandler() {
+		targetEntity.doWithProperties(new SimplePropertyHandler() {
 
 			/*
 			 * (non-Javadoc)
@@ -83,10 +87,10 @@ public class DomainObjectMerger {
 			@Override
 			public void doWithPersistentProperty(PersistentProperty<?> persistentProperty) {
 
-				Object sourceValue = fromWrapper.getProperty(persistentProperty);
+				Object sourceValue = sourceWrapper.getProperty(persistentProperty);
 				Object targetValue = targetWrapper.getProperty(persistentProperty);
 
-				if (entity.isIdProperty(persistentProperty)) {
+				if (targetEntity.isIdProperty(persistentProperty)) {
 					return;
 				}
 
@@ -100,7 +104,7 @@ public class DomainObjectMerger {
 			}
 		});
 
-		entity.doWithAssociations(new SimpleAssociationHandler() {
+		targetEntity.doWithAssociations(new SimpleAssociationHandler() {
 
 			/*
 			 * (non-Javadoc)
@@ -110,7 +114,7 @@ public class DomainObjectMerger {
 			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
 
 				PersistentProperty<?> persistentProperty = association.getInverse();
-				Object fromVal = fromWrapper.getProperty(persistentProperty);
+				Object fromVal = sourceWrapper.getProperty(persistentProperty);
 
 				if (!isNullOrEmpty(fromVal) && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
 					targetWrapper.setProperty(persistentProperty, fromVal);
