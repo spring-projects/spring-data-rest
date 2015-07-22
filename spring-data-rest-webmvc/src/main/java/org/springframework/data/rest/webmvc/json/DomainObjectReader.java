@@ -184,14 +184,61 @@ public class DomainObjectReader {
 				PersistentPropertyAccessor accessor = entity.getPropertyAccessor(target);
 				Object nested = accessor.getProperty(property);
 
-				if (nested != null && property.isEntity()) {
-					doMerge((ObjectNode) child, nested, mapper);
+				ObjectNode objectNode = (ObjectNode) child;
+
+				if (property.isMap()) {
+
+					// Keep empty Map to wipe it as expected
+					if (!objectNode.fieldNames().hasNext()) {
+						continue;
+					}
+
+					doMergeNestedMap((Map<String, Object>) nested, objectNode, mapper);
+
+					// Remove potentially emptied Map as values have been handled recursively
+					if (!objectNode.fieldNames().hasNext()) {
+						i.remove();
+					}
+
+					continue;
 				}
 
+				if (nested != null && property.isEntity()) {
+					doMerge(objectNode, nested, mapper);
+				}
 			}
 		}
 
 		return mapper.readerForUpdating(target).readValue(root);
+	}
+
+	/**
+	 * Merges nested {@link Map} values for the given source {@link Map}, the {@link ObjectNode} and {@link ObjectMapper}.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @param node must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 * @throws Exception
+	 */
+	private void doMergeNestedMap(Map<String, Object> source, ObjectNode node, ObjectMapper mapper) throws Exception {
+
+		if (source == null) {
+			return;
+		}
+
+		Iterator<Entry<String, JsonNode>> fields = node.fields();
+
+		while (fields.hasNext()) {
+
+			Entry<String, JsonNode> entry = fields.next();
+			JsonNode child = entry.getValue();
+			Object sourceValue = source.get(entry.getKey());
+
+			if (child instanceof ObjectNode && sourceValue != null) {
+				doMerge((ObjectNode) child, sourceValue, mapper);
+				fields.remove();
+			}
+		}
 	}
 
 	/**

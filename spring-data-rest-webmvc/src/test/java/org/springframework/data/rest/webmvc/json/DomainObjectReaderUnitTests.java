@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Collections;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -94,11 +95,31 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.lastName, is("Beauford"));
 	}
 
+	/**
+	 * @see DATAREST-605
+	 */
+	@Test
+	public void mergesMapCorrectly() throws Exception {
+
+		SampleUser user = new SampleUser("firstname", "password");
+		user.relatedUsers = Collections.singletonMap("parent", new SampleUser("firstname", "password"));
+
+		JsonNode node = new ObjectMapper()
+				.readTree("{ \"relatedUsers\" : { \"parent\" : { \"password\" : \"sneeky\", \"name\" : \"Oliver\" } } }");
+
+		SampleUser result = reader.readPut((ObjectNode) node, user, new ObjectMapper());
+
+		// Assert that the nested Map values also consider ignored properties
+		assertThat(result.relatedUsers.get("parent").password, is("password"));
+		assertThat(result.relatedUsers.get("parent").name, is("Oliver"));
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class SampleUser {
 
 		String name;
 		@JsonIgnore String password;
+		Map<String, SampleUser> relatedUsers;
 
 		public SampleUser(String name, String password) {
 			this.name = name;
