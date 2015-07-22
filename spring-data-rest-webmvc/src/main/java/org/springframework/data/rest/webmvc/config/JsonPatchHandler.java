@@ -20,7 +20,9 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import org.springframework.data.rest.webmvc.IncomingRequest;
+import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -102,9 +104,7 @@ class JsonPatchHandler {
 
 	<T> T applyPatch(InputStream source, T target) throws Exception {
 
-		CollectionType listOfOperationsType = mapper.getTypeFactory().constructCollectionType(List.class,
-				JsonPatchOperation.class);
-		List<JsonPatchOperation> readValue = mapper.readValue(source, listOfOperationsType);
+		List<JsonPatchOperation> readValue = getPatchOperations(source);
 
 		JsonNode existingAsNode = mapper.readTree(sourceMapper.writeValueAsBytes(target));
 		JsonNode patchedNode = existingAsNode;
@@ -115,8 +115,8 @@ class JsonPatchHandler {
 
 				// Replace remove operation with replace operation and a value of null.
 				JsonPointer path = (JsonPointer) ReflectionUtils.getField(PATH_FIELD, operation);
-				patchedNode = isCollectionElementReference(path) ? operation.apply(patchedNode) : new ReplaceOperation(path,
-						NullNode.getInstance()).apply(patchedNode);
+				patchedNode = isCollectionElementReference(path) ? operation.apply(patchedNode)
+						: new ReplaceOperation(path, NullNode.getInstance()).apply(patchedNode);
 
 			} else {
 				patchedNode = operation.apply(patchedNode);
@@ -132,6 +132,26 @@ class JsonPatchHandler {
 
 	<T> T applyPut(ObjectNode source, T existingObject) {
 		return reader.readPut(source, existingObject, mapper);
+	}
+
+	/**
+	 * Returns all {@link JsonPatchOperation}s to be applied.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @return
+	 * @throws HttpMessageNotReadableException in case the payload can't be read.
+	 */
+	private List<JsonPatchOperation> getPatchOperations(InputStream source) {
+
+		CollectionType listOfOperationsType = mapper.getTypeFactory().constructCollectionType(List.class,
+				JsonPatchOperation.class);
+
+		try {
+			return mapper.readValue(source, listOfOperationsType);
+		} catch (Exception o_O) {
+			throw new HttpMessageNotReadableException(
+					String.format("Could not read PATCH operations! Expected %s!", RestMediaTypes.JSON_PATCH_JSON), o_O);
+		}
 	}
 
 	/**

@@ -166,8 +166,8 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 			ObjectMapper mapper = ((MappingJackson2HttpMessageConverter) converter).getObjectMapper();
 
-			return objectToUpdate == null ? read(request, converter, information) : readPutForUpdate(request, mapper,
-					objectToUpdate);
+			return objectToUpdate == null ? read(request, converter, information)
+					: readPutForUpdate(request, mapper, objectToUpdate);
 		}
 
 		// Catch all
@@ -177,9 +177,16 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	private Object readPatch(IncomingRequest request, ObjectMapper mapper, Object existingObject) {
 
 		try {
+
 			JsonPatchHandler handler = new JsonPatchHandler(mapper, reader);
 			return handler.apply(request, existingObject);
+
 		} catch (Exception o_O) {
+
+			if (o_O instanceof HttpMessageNotReadableException) {
+				throw (HttpMessageNotReadableException) o_O;
+			}
+
 			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, existingObject.getClass()), o_O);
 		}
 	}

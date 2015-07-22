@@ -22,16 +22,20 @@ import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 import java.util.Arrays;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
 import org.springframework.data.rest.webmvc.mongodb.Address;
 import org.springframework.data.rest.webmvc.mongodb.User;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -47,6 +51,7 @@ public class JsonPatchHandlerUnitTests {
 	User user;
 
 	@Mock ResourceMappings mappings;
+	public @Rule ExpectedException exception = ExpectedException.none();
 
 	@Before
 	public void setUp() {
@@ -117,5 +122,17 @@ public class JsonPatchHandlerUnitTests {
 
 		assertThat(user.colleagues, hasSize(1));
 		assertThat(user.colleagues.get(0).firstname, is(christoph.firstname));
+	}
+
+	/**
+	 * @see DATAREST-609
+	 */
+	@Test
+	public void hintsToMediaTypeIfBodyCantBeRead() throws Exception {
+
+		exception.expect(HttpMessageNotReadableException.class);
+		exception.expectMessage(RestMediaTypes.JSON_PATCH_JSON.toString());
+
+		handler.applyPatch(asStream("{ \"foo\" : \"bar\" }"), new User());
 	}
 }
