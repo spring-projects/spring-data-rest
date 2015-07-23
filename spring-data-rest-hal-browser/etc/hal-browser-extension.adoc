@@ -1,0 +1,26 @@
+= HAL Browser extension
+
+== Overall process
+
+1. Meta-data resource discovery
+2. Inspect metadata resource until we find a suitable representation (Content negotiation ftw!)
+   - `GET $metdata-resource Accept: application/schema+json, application/alps+json`
+3. From the returned representation -> build a form.
+
+== Metadata resource discovery
+
+=== Curie based meta data discovery -> bound to HAL, but avoids need to understand the profile relation
+
+Prerequisites:
+
+- only works if curies are used at all
+
+Process:
+
+- Expand curie to find out about metadata resource
+- Start metadata evaluation
+
+=== Profile link relation based meta data discovery -> independent of HAL
+
+Root level: profile -> /_profile
+Collection resource level: profile -> /_profile/customers
