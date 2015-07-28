@@ -1,6 +1,20 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.3.2.RELEASE (2015-07-28)
+---------------------------------------------
+* DATAREST-628 - Release 2.3.2 (Fowler).
+* DATAREST-622 - Remove obsolete wrapping of embeddeds into Resources.
+* DATAREST-619 - Typo in docs of RepositoryEntityController::patchItemResource, Docs mention PUT.
+* DATAREST-617 - Requests with Accept header of application/*+json return the compact representation.
+* DATAREST-609 - For @RepositoryRestController, appending %7B to URL passes security check.
+* DATAREST-606 - Non-public @RepositoryEventHandler are not made accessible prior to reflective invocation.
+* DATAREST-605 - NullPointerExceptions when issuing PATCH requests on entities containing Map properties.
+* DATAREST-596 - Fix small typo in reference docs.
+* DATAREST-539 - RepositoryRestExceptionHandler does not log the exception if it has no message.
+* DATAREST-377 - UriStringDeserializer fails with "Could not read JSON: Template must not be null or empty!".
+
+
 Changes in version 2.1.6.RELEASE (2015-07-01)
 ---------------------------------------------
 * DATAREST-601 - Release 2.1.6 (Dijkstra).
