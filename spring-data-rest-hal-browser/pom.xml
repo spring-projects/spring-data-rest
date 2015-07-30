@@ -12,7 +12,8 @@
 	<name>Spring Data REST - HAL Browser</name>
 
 	<properties>
-		<browser.version>b7669f1-1</browser.version>
+		<browser.version>9f96c74</browser.version>
+		<json-editor.version>0.7.21</json-editor.version>
 	</properties>
 
 	<dependencies>
@@ -33,7 +34,14 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>hal-browser</artifactId>
-			<version>b7669f1-1</version>
+			<version>${browser.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>json-editor</artifactId>
+			<version>${json-editor.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -49,7 +57,7 @@
 				<version>2.10</version>
 				<executions>
 					<execution>
-						<id>unpack</id>
+						<id>unpack-hal-browser</id>
 						<phase>process-resources</phase>
 						<goals>
 							<goal>unpack</goal>
@@ -62,6 +70,22 @@
 								</artifactItem>
 							</artifactItems>
 							<outputDirectory>${project.build.directory}/hal-browser</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-json-editor</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.webjars</groupId>
+									<artifactId>json-editor</artifactId>
+								</artifactItem>
+							</artifactItems>
+							<outputDirectory>${project.build.directory}/json-editor</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -82,7 +106,10 @@
 								<move todir="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser">
 									<fileset dir="${project.build.directory}/hal-browser/META-INF/resources/webjars/hal-browser/${browser.version}" />
 								</move>
-								<move file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/browser.html" tofile="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/index.html" />
+								<move todir="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/vendor/js">
+									<fileset dir="${project.build.directory}/json-editor/META-INF/resources/webjars/json-editor/${json-editor.version}" />
+								</move>
+								<delete file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/browser.html" />
 							</target>
 						</configuration>
 					</execution>
