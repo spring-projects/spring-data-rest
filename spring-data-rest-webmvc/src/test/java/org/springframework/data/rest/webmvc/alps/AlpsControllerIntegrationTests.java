@@ -25,7 +25,12 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.AbstractControllerIntegrationTests;
+import org.springframework.data.rest.webmvc.TestMvcClient;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
+import org.springframework.data.rest.webmvc.jpa.Item;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverer;
@@ -33,6 +38,7 @@ import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.hateoas.core.JsonPathLinkDiscoverer;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -120,10 +126,11 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		assertThat(usersLink, is(nullValue()));
 
 		mvc.perform(get(itemsLink.getHref()))
-				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", hasItems("id", "name")))
+				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", hasItems("name")))
+				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", not(hasItems("id"))))
 				.andExpect(
-						jsonPath("$.descriptors[*].descriptors[*].name", everyItem(not(isIn(new String[] { "owner", "manager",
-								"curator" })))));
+						jsonPath("$.descriptors[*].descriptors[*].name", everyItem(not(isIn(new String[]{"owner", "manager",
+								"curator"})))));
 	}
 
 	/**
@@ -159,6 +166,9 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 				jsonPath(jsonPath, allOf(containsString("alps"), endsWith("-representation"))));
 	}
 
+	/**
+	 * TODO: Switch to {@link TestMvcClient#discoverUnique(String)}
+	 */
 	private Link discoverUnique(String href, String rel) throws Exception {
 
 		MockHttpServletResponse response = mvc.perform(get(href)).//
