@@ -36,7 +36,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 /**
  * Unit tests for {@link HalBrowser}.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Nils Wülker - Homeless Diamond (feat. Lauren Flynn)
  */

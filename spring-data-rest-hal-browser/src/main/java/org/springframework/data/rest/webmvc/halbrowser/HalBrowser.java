@@ -27,7 +27,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 /**
  * Controller with a few convenience redirects to expose the HAL browser shipped as static content.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Miles Davis - So what (Kind of blue)
  */
@@ -41,7 +41,7 @@ public class HalBrowser {
 
 	/**
 	 * Creates a new {@link HalBrowser} for the given {@link RepositoryRestConfiguration}.
-	 * 
+	 *
 	 * @param configuration must not be {@literal null}.
 	 */
 	@Autowired
@@ -54,7 +54,7 @@ public class HalBrowser {
 
 	/**
 	 * Redirects requests to the API root asking for HTML to the HAL browser.
-	 * 
+	 *
 	 * @return
 	 */
 	@RequestMapping(value = { "/", "" }, method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
@@ -64,7 +64,7 @@ public class HalBrowser {
 
 	/**
 	 * Redirects to the actual {@code index.html}.
-	 * 
+	 *
 	 * @return
 	 */
 	@RequestMapping(value = "/browser", method = RequestMethod.GET)
