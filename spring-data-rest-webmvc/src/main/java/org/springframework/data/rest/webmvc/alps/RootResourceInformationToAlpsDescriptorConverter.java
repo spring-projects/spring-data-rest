@@ -50,7 +50,10 @@ import org.springframework.data.rest.core.mapping.SimpleResourceDescription;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.JacksonMetadata;
+import org.springframework.data.rest.webmvc.json.JsonSchema;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.TemplateVariable;
@@ -304,7 +307,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		return descriptors;
 	}
 
-	private List<Descriptor> buildPropertyDescriptors(Class<?> type, final String baseRel) {
+	private List<Descriptor> buildPropertyDescriptors(final Class<?> type, String baseRel) {
 
 		final PersistentEntity<?, ?> entity = persistentEntities.getPersistentEntity(type);
 		final List<Descriptor> propertyDescriptors = new ArrayList<Descriptor>();
@@ -321,6 +324,15 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 				if (propertyDefinition != null) {
+					PersistentProperty<?> persistentProperty = entity.getPersistentProperty(propertyDefinition.getInternalName());
+					TypeInformation<?> propertyType = persistentProperty == null ? ClassTypeInformation.from(propertyDefinition
+							.getPrimaryMember().getRawType()) : persistentProperty.getTypeInformation();
+					Class<?> rawEntityType = entity.getTypeInformation().getType();
+
+					if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(type)) {
+						return;
+					}
+
 					propertyDescriptors.add(//
 							descriptor(). //
 									type(Type.SEMANTIC).//
