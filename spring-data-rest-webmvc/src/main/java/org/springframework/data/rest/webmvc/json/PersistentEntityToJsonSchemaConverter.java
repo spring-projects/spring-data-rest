@@ -198,7 +198,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 				continue;
 			}
 
-			if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(rawPropertyType)) {
+			if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(type)) {
 				continue;
 			}
 
