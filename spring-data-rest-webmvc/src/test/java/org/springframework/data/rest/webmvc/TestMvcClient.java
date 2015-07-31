@@ -235,11 +235,26 @@ public class TestMvcClient {
 	 * @throws Exception
 	 */
 	public Link discoverUnique(Link root, String rel) throws Exception {
+		return discoverUnique(root, rel, DEFAULT_MEDIA_TYPE);
+	}
 
-		MockHttpServletResponse response = mvc.perform(get(root.expand().getHref()).accept(DEFAULT_MEDIA_TYPE)).//
-				andExpect(status().isOk()).//
-				andExpect(hasLinkWithRel(rel)).//
-				andReturn().getResponse();
+	/**
+	 * Given a URI (root), discover the unique URI for a given rel. NOTE: Assumes there is only one URI
+	 *
+	 * @param root the link to the resource to access.
+	 * @param rel the link relation to discover in the response.
+	 * @param mediaType the {@link MediaType} to request.
+	 * @return {@link org.springframework.hateoas.Link Link} tied to a given rel
+	 * @throws Exception
+	 */
+	public Link discoverUnique(Link root, String rel, MediaType mediaType) throws Exception {
+
+		MockHttpServletResponse response = mvc
+				.perform(get(root.expand().getHref())//
+						.accept(mediaType))
+				.andExpect(status().isOk())//
+				.andExpect(hasLinkWithRel(rel))//
+				.andReturn().getResponse();
 
 		return assertHasLinkWithRel(rel, response);
 	}

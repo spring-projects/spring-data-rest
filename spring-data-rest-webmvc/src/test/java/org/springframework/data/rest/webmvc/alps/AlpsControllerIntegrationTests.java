@@ -17,7 +17,6 @@ package org.springframework.data.rest.webmvc.alps;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.Before;
@@ -36,8 +35,6 @@ import org.springframework.hateoas.LinkDiscoverer;
 import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.hateoas.core.JsonPathLinkDiscoverer;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -51,7 +48,8 @@ import org.springframework.web.context.WebApplicationContext;
  * @author Greg Turnquist
  */
 @WebAppConfiguration
-@ContextConfiguration(classes = { JpaRepositoryConfig.class, AlpsControllerIntegrationTests.Config.class })
+@ContextConfiguration(classes = { JpaRepositoryConfig.class, AlpsControllerIntegrationTests.Config.class },
+		inheritLocations = false)
 public class AlpsControllerIntegrationTests extends AbstractControllerIntegrationTests {
 
 	@Autowired WebApplicationContext context;
@@ -65,13 +63,20 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 			return new JsonPathLinkDiscoverer("$.descriptors[?(@.name == '%s')].href",
 					MediaType.valueOf("application/alps+json"));
 		}
+
+		@Override
+		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+			config.exposeIdsFor(Item.class);
+		}
 	}
 
-	protected MockMvc mvc;
+	TestMvcClient client;
 
 	@Before
 	public void setUp() {
-		mvc = MockMvcBuilders.webAppContextSetup(context).build();
+
+		MockMvc mvc = MockMvcBuilders.webAppContextSetup(context).build();
+		this.client = new TestMvcClient(mvc, this.discoverers);
 	}
 
 	/**
@@ -80,9 +85,9 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test
 	public void exposesProfileLink() throws Exception {
 
-		mvc.perform(get("/")).//
-				andExpect(status().is2xxSuccessful()).//
-				andExpect(jsonPath("$._links.profile.href", endsWith(AlpsController.ALPS_ROOT_MAPPING)));
+		client.follow("/")//
+				.andExpect(status().is2xxSuccessful())//
+				.andExpect(jsonPath("$._links.profile.href", endsWith(AlpsController.ALPS_ROOT_MAPPING)));
 	}
 
 	/**
@@ -91,11 +96,11 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test
 	public void alpsResourceExposesResourcePerCollectionResource() throws Exception {
 
-		Link profileLink = discoverUnique("/", "profile");
+		Link profileLink = client.discoverUnique("profile");
 
-		assertThat(discoverUnique(profileLink.getHref(), "orders"), is(notNullValue()));
-		assertThat(discoverUnique(profileLink.getHref(), "people"), is(notNullValue()));
-		assertThat(discoverUnique(profileLink.getHref(), "items"), is(notNullValue()));
+		assertThat(client.discoverUnique(profileLink, "orders", MediaType.ALL), is(notNullValue()));
+		assertThat(client.discoverUnique(profileLink, "people", MediaType.ALL), is(notNullValue()));
+		assertThat(client.discoverUnique(profileLink, "items", MediaType.ALL), is(notNullValue()));
 	}
 
 	/**
@@ -104,12 +109,12 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test
 	public void exposesAlpsCollectionResources() throws Exception {
 
-		Link profileLink = discoverUnique("/", "profile");
-		Link peopleLink = discoverUnique(profileLink.getHref(), "people");
+		Link profileLink = client.discoverUnique("profile");
+		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
-		mvc.perform(get(peopleLink.getHref())).//
-				andExpect(jsonPath("$.version").value("1.0")).//
-				andExpect(jsonPath("$.descriptors[*].name", hasItems("people", "person")));
+		client.follow(peopleLink)//
+				.andExpect(jsonPath("$.version").value("1.0"))//
+				.andExpect(jsonPath("$.descriptors[*].name", hasItems("people", "person")));
 	}
 
 	/**
@@ -118,18 +123,16 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test
 	public void verifyThatAttributesIgnoredDontAppearInAlps() throws Exception {
 
-		Link profileLink = discoverUnique("/", "profile");
-		Link usersLink = discoverUnique(profileLink.getHref(), "users");
-		Link itemsLink = discoverUnique(profileLink.getHref(), "items");
+		Link profileLink = client.discoverUnique("profile");
+		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
+		client.follow(itemsLink)//
 
-		assertThat(usersLink, is(nullValue()));
-
-		mvc.perform(get(itemsLink.getHref()))
+				// Exposes standard property
 				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", hasItems("name")))
-				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", not(hasItems("id"))))
-				.andExpect(
-						jsonPath("$.descriptors[*].descriptors[*].name", everyItem(not(isIn(new String[]{"owner", "manager",
-								"curator"})))));
+				// Does not expose explicitly @JsonIgnored property
+				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", not(hasItems("owner"))))
+				// Does not expose properties pointing to non exposed types
+				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", not(hasItems("manager", "curator"))));
 	}
 
 	/**
@@ -138,13 +141,13 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test
 	public void linksToJsonSchemaFromRepresentationDescriptor() throws Exception {
 
-		Link profileLink = discoverUnique("/", "profile");
-		Link usersLink = discoverUnique(profileLink.getHref(), "items");
+		Link profileLink = client.discoverUnique("profile");
+		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
 
-		assertThat(usersLink, is(notNullValue()));
+		assertThat(itemsLink, is(notNullValue()));
 
-		mvc.perform(get(usersLink.getHref())).andExpect(
-				jsonPath("$.descriptors[?(@.id == 'item-representation')].href", is(notNullValue())));
+		client.follow(itemsLink)//
+				.andExpect(jsonPath("$.descriptors[?(@.id == 'item-representation')].href", is(notNullValue())));
 	}
 
 	/**
@@ -153,28 +156,29 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test
 	public void referenceToAssociatedEntityDesciptorPointsToRepresentationDescriptor() throws Exception {
 
-		Link profileLink = discoverUnique("/", "profile");
-		Link usersLink = discoverUnique(profileLink.getHref(), "people");
+		Link profileLink = client.discoverUnique("profile");
+		Link usersLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
 		String jsonPath = "$."; // Root
 		jsonPath += "descriptors[?(@.id == 'person-representation')]."; // Representation descriptor
 		jsonPath += "descriptors[?(@.name == 'father')][0]."; // First father descriptor
 		jsonPath += "rt"; // Return type
 
-		mvc.perform(get(usersLink.getHref())).andExpect(
-				jsonPath(jsonPath, allOf(containsString("alps"), endsWith("-representation"))));
+		client.follow(usersLink)//
+				.andExpect(jsonPath(jsonPath, allOf(containsString("alps"), endsWith("-representation"))));
 	}
 
 	/**
-	 * TODO: Switch to {@link TestMvcClient#discoverUnique(String)}
+	 * @see DATAREST-630
 	 */
-	private Link discoverUnique(String href, String rel) throws Exception {
+	@Test
+	public void onlyExposesIdAttributesWhenExposedInTheConfiguration() throws Exception {
 
-		MockHttpServletResponse response = mvc.perform(get(href)).//
-				andExpect(status().is2xxSuccessful()).//
-				andReturn().getResponse();
+		Link profileLink = client.discoverUnique("profile");
+		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
 
-		LinkDiscoverer discoverer = discoverers.getLinkDiscovererFor(MediaType.valueOf(response.getContentType()));
-		return discoverer.findLinkWithRel(rel, response.getContentAsString());
+		client.follow(itemsLink)//
+				// Exposes identifier if configured to
+				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", hasItems("id", "name")));
 	}
 }
