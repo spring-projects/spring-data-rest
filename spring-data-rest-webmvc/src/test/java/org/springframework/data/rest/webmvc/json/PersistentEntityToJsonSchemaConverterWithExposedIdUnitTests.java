@@ -32,18 +32,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.rest.core.config.JsonSchemaFormat;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.webmvc.TestMvcClient;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
-import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.TestConfiguration;
+import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterWithExposedIdUnitTests.TestConfiguration;
 import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.data.rest.webmvc.mongodb.Profile;
-import org.springframework.data.rest.webmvc.mongodb.User;
-import org.springframework.data.rest.webmvc.mongodb.User.EmailAddress;
-import org.springframework.data.rest.webmvc.mongodb.User.TypeWithPattern;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -52,11 +48,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 /**
- * @author Oliver Gierke
+ * Separate test case for {@link PersistentEntityToJsonSchemaConverter} where ids are exposed via
+ * {@link RepositoryRestConfigurerAdapter}
+ * 
+ * @author Greg Turnquist
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { MongoDbRepositoryConfig.class, TestConfiguration.class })
-public class PersistentEntityToJsonSchemaConverterUnitTests {
+public class PersistentEntityToJsonSchemaConverterWithExposedIdUnitTests {
 
 	@Autowired MessageSourceAccessor accessor;
 	@Autowired RepositoryResourceMappings mappings;
@@ -70,15 +69,13 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 
 		@Override
 		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-
-			config.metadataConfiguration().registerJsonSchemaFormat(JsonSchemaFormat.EMAIL, EmailAddress.class);
-			config.metadataConfiguration().registerFormattingPatternFor("[A-Z]+", TypeWithPattern.class);
-
-			config.exposeIdsFor(Profile.class);
+			config.exposeIdsFor(clazzForTesting);
 		}
 	}
 
 	PersistentEntityToJsonSchemaConverter converter;
+
+	private static Class<?> clazzForTesting = Profile.class;
 
 	@Before
 	public void setUp() {
@@ -89,64 +86,12 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 	}
 
 	@Test
-	public void fulfillsConstraintsForProfile() {
-
-		List<Constraint> constraints = new ArrayList<Constraint>();
-		constraints.add(new Constraint("$.description", is("Profile description"), "Adds description to schema root"));
-		constraints.add(new Constraint("$.properties.renamed", is(notNullValue()), "Has descriptor for renamed property"));
-		constraints.add(
-				new Constraint("$.properties.aliased", is(nullValue()), "No descriptor for original name of renamed property"));
-
-		assertConstraints(Profile.class, constraints);
-	}
-
-	@Test
-	public void fulfilsConstraintsForUser() throws Exception {
-
-		List<Constraint> constraints = new ArrayList<Constraint>();
-		constraints.add(new Constraint("$.properties.firstname.type", is("string"), "Exposes firstname as String"));
-		constraints
-				.add(new Constraint("$.descriptors.address", is(notNullValue()), "Exposes nested objects as descriptors."));
-		constraints.add(new Constraint("$.descriptors.address.type", is("object"), "Nested entity is of type 'object'"));
-		constraints.add(
-				new Constraint("$.descriptors.address.properties.zipCode", is(notNullValue()), "Exposes nested properties"));
-		constraints.add(
-				new Constraint("$.descriptors.address.requiredProperties[0]", is("zipCode"), "Lists nested required property"));
-		constraints.add(new Constraint("$.properties.gender.type", is("string"), "Enums are strings."));
-		constraints.add(new Constraint("$.properties.gender.enum", is(notNullValue()), "Exposes enum values."));
-		constraints
-				.add(new Constraint("$.properties.jodaDateTime.format", is("date-time"), "Exposes JodaTime dates in format."));
-		constraints
-				.add(new Constraint("$.properties.java8DateTime.format", is("date-time"), "Exposes Java 8 dates in format."));
-		constraints.add(new Constraint("$.properties.nicknames.type", is("array"), "Exposes collection of simple types."));
-		constraints.add(new Constraint("$.properties.nicknames.items.type", is("string"),
-				"Exposes element type of collection of simple types."));
-		constraints.add(new Constraint("$.properties.email.format", is("email"), "Uses manually configured format."));
-		constraints.add(new Constraint("$.properties.email.type", is("string"), "Treats types with format as String."));
-
-		constraints.add(
-				new Constraint("$.properties.shippingAddresses.type", is("array"), "Exposes collection of complex types."));
-		constraints
-				.add(new Constraint("$.properties.shippingAddresses.uniqueItems", is(true), "Exposes uniqueness for Sets."));
-		constraints.add(new Constraint("$.properties.shippingAddresses.items['$ref']", is("#/descriptors/address"),
-				"References descriptor of complex element type."));
-
-		// DATAREST-531
-		constraints.add(new Constraint("$.properties.email.readOnly", is(true), "Email is read-only property"));
-
-		assertConstraints(User.class, constraints);
-	}
-
-	/**
-	 * @see DATAREST-631
-	 */
-	@Test
 	public void fulfilsConstraintsForProfile() {
 
 		List<Constraint> constraints = new ArrayList<Constraint>();
 		constraints.add(new Constraint("$.properties.id", is(notNullValue()), "Has descriptor for id property"));
 
-		assertConstraints(Profile.class, constraints);
+		assertConstraints(clazzForTesting, constraints);
 	}
 
 	@SuppressWarnings("unchecked")
