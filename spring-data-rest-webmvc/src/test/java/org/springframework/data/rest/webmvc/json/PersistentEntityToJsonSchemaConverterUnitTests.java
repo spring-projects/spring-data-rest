@@ -25,7 +25,6 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
@@ -70,8 +69,11 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 
 		@Override
 		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+
 			config.metadataConfiguration().registerJsonSchemaFormat(JsonSchemaFormat.EMAIL, EmailAddress.class);
 			config.metadataConfiguration().registerFormattingPatternFor("[A-Z]+", TypeWithPattern.class);
+
+			config.exposeIdsFor(Profile.class);
 		}
 	}
 
@@ -132,6 +134,18 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		constraints.add(new Constraint("$.properties.email.readOnly", is(true), "Email is read-only property"));
 
 		assertConstraints(User.class, constraints);
+	}
+
+	/**
+	 * @see DATAREST-631
+	 */
+	@Test
+	public void fulfilsConstraintsForProfile() {
+
+		List<Constraint> constraints = new ArrayList<Constraint>();
+		constraints.add(new Constraint("$.properties.id", is(notNullValue()), "Has descriptor for id property"));
+
+		assertConstraints(Profile.class, constraints);
 	}
 
 	@SuppressWarnings("unchecked")
