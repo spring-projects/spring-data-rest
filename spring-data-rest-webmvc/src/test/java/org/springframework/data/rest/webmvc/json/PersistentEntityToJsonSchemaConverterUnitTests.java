@@ -52,6 +52,7 @@ import com.jayway.jsonpath.JsonPath;
 
 /**
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { MongoDbRepositoryConfig.class, TestConfiguration.class })
@@ -87,10 +88,14 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		converter = new PersistentEntityToJsonSchemaConverter(entities, mappings, accessor, objectMapper, configuration);
 	}
 
+	/**
+	 * @see DATAREST-631, DATAREST-632
+	 */
 	@Test
 	public void fulfillsConstraintsForProfile() {
 
 		List<Constraint> constraints = new ArrayList<Constraint>();
+		constraints.add(new Constraint("$.properties.id", is(notNullValue()), "Has descriptor for id property"));
 		constraints.add(new Constraint("$.description", is("Profile description"), "Adds description to schema root"));
 		constraints.add(new Constraint("$.properties.renamed", is(notNullValue()), "Has descriptor for renamed property"));
 		constraints.add(
@@ -99,10 +104,14 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		assertConstraints(Profile.class, constraints);
 	}
 
+	/**
+	 * @see DATAREST-632
+	 */
 	@Test
-	public void fulfilsConstraintsForUser() throws Exception {
+	public void fulfillsConstraintsForUser() throws Exception {
 
 		List<Constraint> constraints = new ArrayList<Constraint>();
+		constraints.add(new Constraint("$.properties.id", is(nullValue()), "Does NOT have descriptor for id property"));
 		constraints.add(new Constraint("$.properties.firstname.type", is("string"), "Exposes firstname as String"));
 		constraints
 				.add(new Constraint("$.descriptors.address", is(notNullValue()), "Exposes nested objects as descriptors."));
@@ -134,18 +143,6 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		constraints.add(new Constraint("$.properties.email.readOnly", is(true), "Email is read-only property"));
 
 		assertConstraints(User.class, constraints);
-	}
-
-	/**
-	 * @see DATAREST-631
-	 */
-	@Test
-	public void fulfilsConstraintsForProfile() {
-
-		List<Constraint> constraints = new ArrayList<Constraint>();
-		constraints.add(new Constraint("$.properties.id", is(notNullValue()), "Has descriptor for id property"));
-
-		assertConstraints(Profile.class, constraints);
 	}
 
 	@SuppressWarnings("unchecked")
