@@ -36,7 +36,7 @@
 		<springdata.solr>1.5.0.BUILD-SNAPSHOT</springdata.solr>
 		<springdata.cassandra>1.3.0.BUILD-SNAPSHOT</springdata.cassandra>
 
-		<hibernate.version>4.3.5.Final</hibernate.version>
+		<hibernate.version>4.3.10.Final</hibernate.version>
 
 		<bundlor.enabled>false</bundlor.enabled>
 	</properties>
