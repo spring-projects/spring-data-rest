@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.7.0.BUILD-SNAPSHOT</version>
+		<version>1.7.0.RC1</version>
 		<relativePath>../spring-data-build/parent/pom.xml</relativePath>
 	</parent>
 
@@ -28,13 +28,13 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-rest</dist.id>
 
-		<springdata.commons>1.11.0.BUILD-SNAPSHOT</springdata.commons>
-		<springdata.jpa>1.9.0.BUILD-SNAPSHOT</springdata.jpa>
-		<springdata.mongodb>1.8.0.BUILD-SNAPSHOT</springdata.mongodb>
-		<springdata.neo4j>3.4.0.BUILD-SNAPSHOT</springdata.neo4j>
-		<springdata.gemfire>1.7.0.BUILD-SNAPSHOT</springdata.gemfire>
-		<springdata.solr>1.5.0.BUILD-SNAPSHOT</springdata.solr>
-		<springdata.cassandra>1.3.0.BUILD-SNAPSHOT</springdata.cassandra>
+		<springdata.commons>1.11.0.RC1</springdata.commons>
+		<springdata.jpa>1.9.0.RC1</springdata.jpa>
+		<springdata.mongodb>1.8.0.RC1</springdata.mongodb>
+		<springdata.neo4j>3.4.0.RC1</springdata.neo4j>
+		<springdata.gemfire>1.7.0.RC1</springdata.gemfire>
+		<springdata.solr>1.5.0.RC1</springdata.solr>
+		<springdata.cassandra>1.3.0.RC1</springdata.cassandra>
 
 		<hibernate.version>4.3.10.Final</hibernate.version>
 
@@ -155,8 +155,8 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-snapshot</id>
-			<url>https://repo.spring.io/libs-snapshot</url>
+			<id>spring-libs-milestone</id>
+			<url>https://repo.spring.io/libs-milestone</url>
 		</repository>
 	</repositories>
 
