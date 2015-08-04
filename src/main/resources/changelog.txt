@@ -1,6 +1,39 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.4.0.RC1 (2015-08-04)
+-----------------------------------------
+* DATAREST-634 - Release 2.4 RC1 (Gosling).
+* DATAREST-632 - Fix gap in JSON Schema unit tests.
+* DATAREST-631 - JSON Schema doesn't show id fields when they are exposed.
+* DATAREST-630 - ALPS metadata should NOT show an id field unless its exposed in the configuration.
+* DATAREST-625 - Remove references to BeanWrapper.
+* DATAREST-624 - Add ref docs for HAL Browser.
+* DATAREST-622 - Remove obsolete wrapping of embeddeds into Resources.
+* DATAREST-619 - Typo in docs of RepositoryEntityController::patchItemResource, Docs mention PUT.
+* DATAREST-617 - Requests with Accept header of application/*+json return the compact representation.
+* DATAREST-616 - Provide support for dynamic filtering with Querydsl.
+* DATAREST-609 - For @RepositoryRestController, appending %7B to URL passes security check.
+* DATAREST-606 - Non-public @RepositoryEventHandler are not made accessible prior to reflective invocation.
+* DATAREST-605 - NullPointerExceptions when issuing PATCH requests on entities containing Map properties.
+* DATAREST-597 - AlpsController not working on Spring 4.2.
+* DATAREST-596 - Fix small typo in reference docs.
+* DATAREST-588 - ResourceSupportHttpMessageConverter does not reject generic type requests.
+* DATAREST-585 - Forward ResourceLoader into ProjectionFactory created for the PersistentEntityResourceAssembler.
+* DATAREST-584 - Polish dependency setup.
+* DATAREST-583 - RepositoryRestMvcConfiguration should set Environment and ResourceLoader on AnnotatedTypeScanner.
+* DATAREST-582 - Secured event handler method invoked twice.
+* DATAREST-581 - ETag getVersionInformation fails with proxied Entities for projections.
+* DATAREST-577 - Make sure excerpt projections get registered automatically.
+* DATAREST-576 - Remove markdown versions of README and CONTRIBUTING.
+* DATAREST-565 - Hal Browser does not seem to work with spring boot with a non-default context-path.
+* DATAREST-539 - RepositoryRestExceptionHandler does not log the exception if it has no message.
+* DATAREST-508 - Reference documentation should be more clear about how projection interfaces are found.
+* DATAREST-454 - Add section documenting conditional operations.
+* DATAREST-397 - Write tests verifying proper integration with Spring Security.
+* DATAREST-377 - UriStringDeserializer fails with "Could not read JSON: Template must not be null or empty!".
+
+
 Changes in version 2.3.2.RELEASE (2015-07-28)
 ---------------------------------------------
 * DATAREST-628 - Release 2.3.2 (Fowler).
