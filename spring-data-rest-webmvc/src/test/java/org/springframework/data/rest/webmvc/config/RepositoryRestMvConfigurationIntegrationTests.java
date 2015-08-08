@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.config;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Locale;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -54,6 +56,8 @@ import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessage
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -207,6 +211,23 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(service.canConvert(Distance.class, String.class), is(true));
 	}
 
+	/**
+	 * @see DATAREST-637
+	 */
+	@Test
+	public void assertOptionsEnabledInTheDispatcherServlet() throws IllegalAccessException {
+
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+		context.register(ConfigurationWithDispatcherServlet.class);
+		context.refresh();
+		DispatcherServlet dispatcherServlet = context.getBean(DispatcherServlet.class);
+		context.close();
+
+		Field dispatchOptionsRequest = ReflectionUtils.findField(DispatcherServlet.class, "dispatchOptionsRequest");
+		ReflectionUtils.makeAccessible(dispatchOptionsRequest);
+		assertThat((Boolean) dispatchOptionsRequest.get(dispatcherServlet), equalTo(true));
+	}
+
 	@Configuration
 	@Import(RepositoryRestMvcConfiguration.class)
 	static class ExtendingConfiguration extends RepositoryRestConfigurerAdapter {
@@ -247,6 +268,17 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		}
 	}
 
+	@Configuration
+	@Import(RepositoryRestMvcConfiguration.class)
+	static class ConfigurationWithDispatcherServlet {
+
+		@Bean
+		DispatcherServlet dispatcherServlet() {
+			return new DispatcherServlet();
+		}
+
+	}
+
 	static class Sample {
 
 		public Date date;
@@ -261,4 +293,5 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 			this.converters = converters;
 		}
 	}
+
 }
