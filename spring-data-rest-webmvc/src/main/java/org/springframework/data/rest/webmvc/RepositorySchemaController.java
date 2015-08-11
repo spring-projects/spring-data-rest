@@ -31,11 +31,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Greg Turnquist
+ * @see http://json-schema.org/
  */
-@RepositoryRestController
+@BasePathAwareController
 class RepositorySchemaController {
-
-	private static final String BASE_MAPPING = "/{repository}";
 
 	private final PersistentEntityToJsonSchemaConverter jsonSchemaConverter;
 
@@ -48,6 +48,7 @@ class RepositorySchemaController {
 	public RepositorySchemaController(PersistentEntityToJsonSchemaConverter jsonSchemaConverter) {
 
 		Assert.notNull(jsonSchemaConverter, "PersistentEntityToJsonSchemaConverter must not be null!");
+
 		this.jsonSchemaConverter = jsonSchemaConverter;
 	}
 
@@ -57,7 +58,8 @@ class RepositorySchemaController {
 	 * @param resourceInformation will never be {@literal null}.
 	 * @return
 	 */
-	@RequestMapping(value = BASE_MAPPING + "/schema", method = GET)
+	@RequestMapping(value = ProfileController.RESOURCE_PROFILE_MAPPING, method = GET,
+			produces = RestMediaTypes.SCHEMA_JSON_VALUE)
 	public HttpEntity<JsonSchema> schema(RootResourceInformation resourceInformation) {
 
 		JsonSchema schema = jsonSchemaConverter.convert(resourceInformation.getDomainType());

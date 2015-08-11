@@ -17,42 +17,36 @@ package org.springframework.data.rest.webmvc.alps;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
-import org.springframework.data.rest.webmvc.BaseUri;
+import org.springframework.data.rest.webmvc.ProfileController;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
-import org.springframework.hateoas.alps.Alps;
-import org.springframework.hateoas.alps.Descriptor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Controller exposing semantic documentation for the resources exposed using the Application Level Profile Semantics
  * format.
  * 
  * @author Oliver Gierke
+ * @author Greg Turnquist
  * @see http://alps.io
  */
 @BasePathAwareController
 public class AlpsController {
-
-	static final String ALPS_ROOT_MAPPING = "/alps";
-	static final String ALPS_RESOURCE_MAPPING = ALPS_ROOT_MAPPING + "/{repository}";
 
 	private final Repositories repositories;
 	private final ResourceMappings mappings;
@@ -83,7 +77,7 @@ public class AlpsController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = { ALPS_ROOT_MAPPING, ALPS_RESOURCE_MAPPING }, method = OPTIONS)
+	@RequestMapping(value = ProfileController.RESOURCE_PROFILE_MAPPING, method = OPTIONS, produces = RestMediaTypes.ALPS_JSON_VALUE)
 	HttpEntity<?> alpsOptions() {
 
 		verifyAlpsEnabled();
@@ -95,44 +89,13 @@ public class AlpsController {
 	}
 
 	/**
-	 * Exposes a resource to contain descriptors pointing to the discriptors for individual resources.
-	 * 
-	 * @return
-	 */
-	@RequestMapping(value = ALPS_ROOT_MAPPING, method = GET)
-	HttpEntity<Alps> alps() {
-
-		verifyAlpsEnabled();
-
-		List<Descriptor> descriptors = new ArrayList<Descriptor>();
-
-		for (Class<?> domainType : repositories) {
-
-			ResourceMetadata mapping = mappings.getMetadataFor(domainType);
-
-			if (mapping.isExported()) {
-
-				BaseUri baseUri = new BaseUri(configuration.getBaseUri());
-				UriComponentsBuilder builder = baseUri.getUriComponentsBuilder().path(ALPS_ROOT_MAPPING);
-				String href = builder.path(mapping.getPath().toString()).build().toUriString();
-				descriptors.add(Alps.descriptor().name(mapping.getRel()).href(href).build());
-			}
-		}
-
-		Alps alps = Alps.alps().//
-				descriptors(descriptors).//
-				build();
-
-		return new ResponseEntity<Alps>(alps, HttpStatus.OK);
-	}
-
-	/**
 	 * Exposes an ALPS resource to describe an individual repository resource.
 	 * 
 	 * @param information
 	 * @return
 	 */
-	@RequestMapping(value = ALPS_RESOURCE_MAPPING, method = GET)
+	@RequestMapping(value = ProfileController.RESOURCE_PROFILE_MAPPING, method = GET,
+			produces = { MediaType.ALL_VALUE, RestMediaTypes.ALPS_JSON_VALUE })
 	HttpEntity<RootResourceInformation> descriptor(RootResourceInformation information) {
 
 		verifyAlpsEnabled();

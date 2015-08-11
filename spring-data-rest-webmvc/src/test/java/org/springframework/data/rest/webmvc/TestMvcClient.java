@@ -174,7 +174,30 @@ public class TestMvcClient {
 	 * @throws Exception
 	 */
 	public ResultActions follow(String href) throws Exception {
-		return mvc.perform(get(href));
+		return follow(href, MediaType.ALL);
+	}
+
+	/**
+	 * Folow Link with a specific Accept header (media type).
+	 *
+	 * @param link
+	 * @param accept
+	 * @return
+	 * @throws Exception
+	 */
+	public ResultActions follow(Link link, MediaType accept) throws Exception {
+		return follow(link.expand().getHref(), accept);
+	}
+
+	/**
+	 * Follow URL supplied as a string with a specific Accept header.
+	 * @param href
+	 * @param accept
+	 * @return
+	 * @throws Exception
+	 */
+	public ResultActions follow(String href, MediaType accept) throws Exception {
+		return mvc.perform(get(href).header(HttpHeaders.ACCEPT, accept.toString()));
 	}
 
 	/**

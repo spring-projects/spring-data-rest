@@ -17,15 +17,19 @@ package org.springframework.data.rest.webmvc.alps;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.AbstractControllerIntegrationTests;
+import org.springframework.data.rest.webmvc.ProfileController;
+import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.TestMvcClient;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.data.rest.webmvc.jpa.Item;
@@ -82,31 +86,21 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	 * @see DATAREST-230
 	 */
 	@Test
-	public void exposesProfileLink() throws Exception {
-
-		client.follow("/")//
-				.andExpect(status().is2xxSuccessful())//
-				.andExpect(jsonPath("$._links.profile.href", endsWith(AlpsController.ALPS_ROOT_MAPPING)));
-	}
-
-	/**
-	 * @see DATAREST-230
-	 */
-	@Test
-	public void alpsResourceExposesResourcePerCollectionResource() throws Exception {
+	public void exposesAlpsCollectionResources() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
+		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
-		assertThat(client.discoverUnique(profileLink, "orders", MediaType.ALL), is(notNullValue()));
-		assertThat(client.discoverUnique(profileLink, "people", MediaType.ALL), is(notNullValue()));
-		assertThat(client.discoverUnique(profileLink, "items", MediaType.ALL), is(notNullValue()));
+		client.follow(peopleLink, RestMediaTypes.ALPS_JSON)//
+				.andExpect(jsonPath("$.version").value("1.0"))//
+				.andExpect(jsonPath("$.descriptors[*].name", hasItems("people", "person")));
 	}
 
 	/**
-	 * @see DATAREST-230
+	 * @see DATAREST-638
 	 */
 	@Test
-	public void exposesAlpsCollectionResources() throws Exception {
+	public void verifyThatAlpsIsDefaultProfileFormat() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
 		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
@@ -114,6 +108,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		client.follow(peopleLink)//
 				.andExpect(jsonPath("$.version").value("1.0"))//
 				.andExpect(jsonPath("$.descriptors[*].name", hasItems("people", "person")));
+
 	}
 
 	/**
@@ -125,7 +120,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link profileLink = client.discoverUnique("profile");
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
 
-		client.follow(itemsLink)//
+		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
 				// Exposes standard property
 				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", hasItems("name")))
 				// Does not expose explicitly @JsonIgnored property
@@ -145,8 +140,8 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		assertThat(itemsLink, is(notNullValue()));
 
-		client.follow(itemsLink)//
-				.andExpect(jsonPath("$.descriptors[?(@.id == 'item-representation')].href", is(notNullValue())));
+		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
+				.andExpect(jsonPath("$.descriptors[?(@.id == 'item-representation')][0].href", endsWith("/profile/items")));
 	}
 
 	/**
@@ -163,8 +158,9 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		jsonPath += "descriptors[?(@.name == 'father')][0]."; // First father descriptor
 		jsonPath += "rt"; // Return type
 
-		client.follow(usersLink)//
-				.andExpect(jsonPath(jsonPath, allOf(containsString("alps"), endsWith("-representation"))));
+		client.follow(usersLink, RestMediaTypes.ALPS_JSON)//
+				.andExpect(jsonPath(jsonPath,
+						allOf(containsString(ProfileController.PROFILE_ROOT_MAPPING), endsWith("-representation"))));
 	}
 
 	/**
@@ -176,7 +172,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link profileLink = client.discoverUnique("profile");
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
 
-		client.follow(itemsLink)//
+		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
 				// Exposes identifier if configured to
 				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", hasItems("id", "name")));
 	}

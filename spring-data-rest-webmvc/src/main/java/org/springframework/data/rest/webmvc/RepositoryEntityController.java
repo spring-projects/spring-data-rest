@@ -202,6 +202,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		Link baseLink = entityLinks.linkToPagedResource(resourceInformation.getDomainType(), pageable.isDefault() ? null
 				: pageable.getPageable());
 
+		links.add(new Link(ProfileController.getPath(this.config, metadata), ProfileResourceProcessor.PROFILE_REL));
+
 		Resources<?> result = toResources(results, assembler, metadata.getDomainType(), baseLink);
 		result.add(links);
 		return result;

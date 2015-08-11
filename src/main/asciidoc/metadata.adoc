@@ -26,7 +26,7 @@ document would look like this:
       "href" : "http://localhost:8080/addresses"
     },
     "profile" : {
-      "href" : "http://localhost:8080/alps"
+      "href" : "http://localhost:8080/profile"
     }
   }
 }
@@ -36,29 +36,29 @@ A *profile* link, as defined in https://tools.ietf.org/html/rfc6906[RFC 6906], i
 http://tools.ietf.org/html/draft-amundsen-richardson-foster-alps-00[ALPS draft spec] is meant to define a particular profile format
 which we'll explore further down in this section.
 
-If you navigate into the *profile* link at `localhost:8080/alps`, you would see something like this:
+If you navigate into the *profile* link at `localhost:8080/profile`, you would see something like this:
 
 [source,javascript]
 ----
 {
-  "version" : "1.0",
-  "descriptors" : [ {
-    "href" : "http://localhost:8080/alps/persons",
-    "name" : "persons"
-  }, {
-    "href" : "http://localhost:8080/alps/addresses",
-    "name" : "addresses"
-  } ]
+  "_links" : {
+    "self" : {
+      "href" : "http://localhost:8080/profile"
+    },
+    "persons" : {
+      "href" : "http://localhost:8080/profile/persons"
+    },
+    "addresses" : {
+      "href" : "http://localhost:8080/profile/addresses"
+    }
+  }
 }
 ----
 
 IMPORTANT: At the root level, *profile* is a single link and hence can't handle serving up more than one application profile. That
-is why you must navigate to `/alps` to find a link for each resource's ALPS metadata.
+is why you must navigate to `/profile` to find a link for each resource's metadata.
 
-NOTE: This JSON document has a media type of `application/alps+json`. This is different than the previous JSON document, which had
-a media type of `application/hal+json`. These formats are different and governed by different specs.
-
-Let's navigate to `/alps/persons` and look at the profile data for a `Person` resource.
+Let's navigate to `/profile/persons` and look at the profile data for a `Person` resource.
 
 [source,javascript]
 ----
@@ -78,7 +78,7 @@ Let's navigate to `/alps/persons` and look at the profile data for a `Person` re
     }, {
       "name" : "address",
       "type" : "SAFE",
-      "rt" : "http://localhost:8080/addresses#address"
+      "rt" : "http://localhost:8080/profile/addresses#address"
     } ]
   }, {
     "id" : "create-persons", <2>
@@ -119,7 +119,32 @@ of the attributes.
 <2> After the resource representation are all the supported operations. This one is how to create a new `Person`.
 <3> The name is *persons*, which indicates that a POST should be applied to the whole collection, not a single *person*.
 <4> The *type* is `UNSAFE` because this operation can alter the state of the system.
-<5>
+
+NOTE: This JSON document has a media type of `application/alps+json`. This is different than the previous JSON document, which had
+a media type of `application/hal+json`. These formats are different and governed by different specs.
+
+You will also find a "profile" link shown in the collection of *_links* when you are looking at a collection resource.
+
+[source,javascript]
+----
+{
+  "_links" : {
+    "self" : {
+      "href" : "http://localhost:8080/persons" <1>
+    },
+    ... other links ...
+    "profile" : {
+      "href" : "http://localhost:8080/profile/persons" <2>
+    }
+  },
+  ...
+}
+----
+
+<1> This HAL document respresents the `Person` collection.
+<2> It has a *profile* link to the same URI for metadata.
+
+The *profile* link, again, will serve up ALPS by default or if you use an http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[Accept header] of *application/alps+json*.
 
 [[metadata.alps.control-types]]
 === Hypermedia control types
@@ -253,7 +278,7 @@ As you can see, this defines details to display for a `Person` resource. They al
         "format" : "TEXT"
       },
       "type" : "SAFE",
-      "rt" : "http://localhost:8080/addresses#address"
+      "rt" : "http://localhost:8080/profile/addresses#address"
     } ]
   }
 ...
@@ -271,9 +296,108 @@ NOTE: Spring MVC (which is the essence of a Spring Data REST application) suppor
 properties files with different messages.
 
 
-//= JSON Schema
+[[metadata.json-schema]]
+== JSON Schema
 
-//TBD
+http://json-schema.org/[JSON Schema] is another form of metadata supported by Spring Data REST. Per their website, JSON Schema has the following advantages:
+
+* describes your existing data format
+* clear, human- and machine-readable documentation
+* complete structural validation, useful for automated testing and validating client-submitted data
+
+As shown in the <<metadata.alps,previous section>>, you can reach this data by navigating from the root URI to the "profile" link.
+
+[source,javascript]
+----
+{
+  "_links" : {
+    "self" : {
+      "href" : "http://localhost:8080/profile"
+    },
+    "persons" : {
+      "href" : "http://localhost:8080/profile/persons"
+    },
+    "addresses" : {
+      "href" : "http://localhost:8080/profile/addresses"
+    }
+  }
+}
+----
+
+These links are the same as shown earlier. To retrieve JSON Schema you invoke them with Accept header *application/schema+json*.
+
+In this case, if you executed `curl -H 'Accept:application/schema+json' http://localhost:8080/profile/persons`, you would see something like this:
+
+[source,javascript]
+----
+{
+  "title" : "org.springframework.data.rest.webmvc.jpa.Person", <1>
+  "properties" : { <2>
+    "firstName" : {
+      "readOnly" : false,
+      "type" : "string"
+    },
+    "lastName" : {
+      "readOnly" : false,
+      "type" : "string"
+    },
+    "siblings" : {
+      "readOnly" : false,
+      "type" : "string",
+      "format" : "uri"
+    },
+    "created" : {
+      "readOnly" : false,
+      "type" : "string",
+      "format" : "date-time"
+    },
+    "father" : {
+      "readOnly" : false,
+      "type" : "string",
+      "format" : "uri"
+    },
+    "weight" : {
+      "readOnly" : false,
+      "type" : "integer"
+    },
+    "height" : {
+      "readOnly" : false,
+      "type" : "integer"
+    }
+  },
+  "descriptors" : { },
+  "type" : "object",
+  "$schema" : "http://json-schema.org/draft-04/schema#"
+}
+----
+
+<1> The type that was exported
+<2> A listing of properties
+
+There are more details if your resources have links to other resources.
+
+You will also find a "profile" link shown in the collection of *_links* when you are looking at a collection resource.
+
+[source,javascript]
+----
+{
+  "_links" : {
+    "self" : {
+      "href" : "http://localhost:8080/persons" <1>
+    },
+    ... other links ...
+    "profile" : {
+      "href" : "http://localhost:8080/profile/persons" <2>
+    }
+  },
+  ...
+}
+----
+
+<1> This HAL document respresents the `Person` collection.
+<2> It has a *profile* link to the same URI for metadata.
+
+The *profile* link, again, will serve up <<metadata.alps,ALPS>> by default. If you supply it with an http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[Accept header] of *application/schema+json*, it will render the JSON Schema representation.
 
 //= JSON Patch
 

@@ -48,6 +48,7 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SimpleResourceDescription;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
+import org.springframework.data.rest.webmvc.ProfileController;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.JacksonMetadata;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
@@ -60,7 +61,6 @@ import org.springframework.hateoas.alps.Descriptor.DescriptorBuilder;
 import org.springframework.hateoas.alps.Doc;
 import org.springframework.hateoas.alps.Format;
 import org.springframework.hateoas.alps.Type;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpMethod;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -147,9 +147,11 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 		ResourceMetadata metadata = mappings.getMetadataFor(type);
 
+		String href = ProfileController.getPath(this.configuration, metadata);
+
 		return descriptor().//
 				id(getRepresentationDescriptorId(metadata)).//
-				href(entityLinks.linkFor(type).slash("schema").toString()).//
+				href(href).//
 				doc(getDocFor(metadata.getItemResourceDescription())).//
 				descriptors(buildPropertyDescriptors(type, metadata.getItemResourceRel())).//
 				build();
@@ -178,7 +180,6 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 	 * Builds a descriptor for the projection parameter of the given resource.
 	 * 
 	 * @param metadata
-	 * @param projectionConfiguration
 	 * @return
 	 */
 	private Descriptor buildProjectionDescriptor(ResourceMetadata metadata) {
@@ -353,10 +354,11 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 						name(mapping.getRel()).doc(getDocFor(mapping.getDescription()));
 
 				ResourceMetadata targetTypeMetadata = mappings.getMetadataFor(property.getActualType());
-				String localPath = targetTypeMetadata.getRel().concat("#")
-						.concat(getRepresentationDescriptorId(targetTypeMetadata));
-				Link link = ControllerLinkBuilder.linkTo(AlpsController.class).slash(AlpsController.ALPS_ROOT_MAPPING)
-						.slash(localPath).withSelfRel();
+
+				String href = ProfileController.getPath(configuration, targetTypeMetadata) +
+						"#" + getRepresentationDescriptorId(targetTypeMetadata);
+
+				Link link = new Link(href).withSelfRel();
 
 				builder.//
 						type(Type.SAFE).//

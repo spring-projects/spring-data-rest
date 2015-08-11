@@ -27,6 +27,7 @@ import java.util.Map;
 import net.minidev.json.JSONArray;
 
 import org.junit.Test;
+
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
@@ -64,6 +65,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 	/**
 	 * @see DATAREST-113
+	 * @see DATAREST-638
 	 */
 	@Test
 	public void exposesSchemasForResourcesExposed() throws Exception {
@@ -75,12 +77,18 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 			Link link = client.assertHasLinkWithRel(rel, response);
 
 			// Resource
-			client.request(link);
+			client.follow(link).andExpect(status().is2xxSuccessful());
 
-			// Schema - TODO:Improve by using hypermedia
-			mvc.perform(get(link.expand().getHref() + "/schema").//
-					accept(MediaType.parseMediaType("application/schema+json"))).//
-					andExpect(status().isOk());
+			Link profileLink = client.discoverUnique(link, "profile");
+
+			// Default metadata
+			client.follow(profileLink).andExpect(status().is2xxSuccessful());
+
+			// JSON Schema
+			client.follow(profileLink, RestMediaTypes.SCHEMA_JSON).andExpect(status().is2xxSuccessful());
+
+			// ALPS
+			client.follow(profileLink, RestMediaTypes.ALPS_JSON).andExpect(status().is2xxSuccessful());
 		}
 	}
 

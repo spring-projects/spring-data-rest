@@ -22,21 +22,27 @@ import org.springframework.http.MediaType;
  * Constants to refer to supported media types.
  * 
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 public class RestMediaTypes {
 
-	public static final String SPRING_DATA_COMPACT_JSON_VALUE = "application/x-spring-data-compact+json";
-	public static final String TEXT_URI_LIST_VALUE = "text/uri-list";
 
 	public static final MediaType HAL_JSON = MediaTypes.HAL_JSON;
 
 	public static final MediaType JSON_PATCH_JSON = MediaType.valueOf("application/json-patch+json");
 	public static final MediaType MERGE_PATCH_JSON = MediaType.valueOf("application/merge-patch+json");
 
-	public static final MediaType SCHEMA_JSON = MediaType.valueOf("application/schema+json");
+	public static final String ALPS_JSON_VALUE = "application/alps+json";
+	public static final MediaType ALPS_JSON = MediaType.parseMediaType(ALPS_JSON_VALUE);
+
+	public static final String SCHEMA_JSON_VALUE = "application/schema+json";
+	public static final MediaType SCHEMA_JSON = MediaType.valueOf(SCHEMA_JSON_VALUE);
 
 	public static final MediaType SPRING_DATA_VERBOSE_JSON = MediaType.valueOf("application/x-spring-data-verbose+json");
+
+	public static final String SPRING_DATA_COMPACT_JSON_VALUE = "application/x-spring-data-compact+json";
 	public static final MediaType SPRING_DATA_COMPACT_JSON = MediaType.valueOf(SPRING_DATA_COMPACT_JSON_VALUE);
 
+	public static final String TEXT_URI_LIST_VALUE = "text/uri-list";
 	public static final MediaType TEXT_URI_LIST = MediaType.valueOf(TEXT_URI_LIST_VALUE);
 }
