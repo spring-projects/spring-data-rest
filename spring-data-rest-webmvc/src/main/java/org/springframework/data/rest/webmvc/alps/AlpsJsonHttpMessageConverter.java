@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.hateoas.alps.Alps;
 import org.springframework.http.MediaType;
@@ -42,8 +43,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConverter
 		implements ResponseBodyAdvice<Object> {
 
-	private static final MediaType ALPS_MEDIA_TYPE = MediaType.parseMediaType("application/alps+json");
-
 	private final RootResourceInformationToAlpsDescriptorConverter converter;
 
 	/**
@@ -61,7 +60,7 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 		mapper.setSerializationInclusion(Include.NON_EMPTY);
 
 		setPrettyPrint(true);
-		setSupportedMediaTypes(Arrays.asList(ALPS_MEDIA_TYPE, MediaType.APPLICATION_JSON, MediaType.ALL));
+		setSupportedMediaTypes(Arrays.asList(RestMediaTypes.ALPS_JSON, MediaType.APPLICATION_JSON, MediaType.ALL));
 	}
 
 	/* 

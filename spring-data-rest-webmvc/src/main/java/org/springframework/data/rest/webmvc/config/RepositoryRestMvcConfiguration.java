@@ -73,6 +73,7 @@ import org.springframework.data.rest.core.support.UnwrappingRepositoryInvokerFac
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping;
 import org.springframework.data.rest.webmvc.BaseUri;
+import org.springframework.data.rest.webmvc.ProfileResourceProcessor;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
@@ -80,7 +81,6 @@ import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
-import org.springframework.data.rest.webmvc.alps.AlpsResourceProcessor;
 import org.springframework.data.rest.webmvc.alps.RootResourceInformationToAlpsDescriptorConverter;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
@@ -143,6 +143,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * 
  * @author Oliver Gierke
  * @author Jon Brisbin
+ * @author Greg Turnquist
  */
 @Configuration
 @EnableHypermediaSupport(type = HypermediaType.HAL)
@@ -769,8 +770,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public AlpsResourceProcessor alpsResourceProcessor() {
-		return new AlpsResourceProcessor(config());
+	public ProfileResourceProcessor profileResourceProcessor(RepositoryRestConfiguration config) {
+		return new ProfileResourceProcessor(config);
 	}
 
 	//

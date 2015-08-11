@@ -31,23 +31,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Greg Turnquist
+ * @see http://json-schema.org/
  */
 @RepositoryRestController
 class RepositorySchemaController {
 
-	private static final String BASE_MAPPING = "/{repository}";
-
 	private final PersistentEntityToJsonSchemaConverter jsonSchemaConverter;
 
 	/**
-	 * Creates a new {@link RepositorySchemaController} using the given {@link PersistentEntityToJsonSchemaConverter}.
-	 * 
+	 * Creates a new {@link RepositorySchemaController} using the given
+	 * {@link PersistentEntityToJsonSchemaConverter}.
+	 *
 	 * @param jsonSchemaConverter must not be {@literal null}.
 	 */
 	@Autowired
 	public RepositorySchemaController(PersistentEntityToJsonSchemaConverter jsonSchemaConverter) {
 
 		Assert.notNull(jsonSchemaConverter, "PersistentEntityToJsonSchemaConverter must not be null!");
+
 		this.jsonSchemaConverter = jsonSchemaConverter;
 	}
 
@@ -57,10 +59,11 @@ class RepositorySchemaController {
 	 * @param resourceInformation will never be {@literal null}.
 	 * @return
 	 */
-	@RequestMapping(value = BASE_MAPPING + "/schema", method = GET)
+	@RequestMapping(value = ProfileController.RESOURCE_PROFILE_MAPPING, method = GET, produces = RestMediaTypes.SCHEMA_JSON_VALUE)
 	public HttpEntity<JsonSchema> schema(RootResourceInformation resourceInformation) {
 
 		JsonSchema schema = jsonSchemaConverter.convert(resourceInformation.getDomainType());
 		return new ResponseEntity<JsonSchema>(schema, HttpStatus.OK);
 	}
+
 }
