@@ -14,12 +14,12 @@ Sometimes you need to add links to exported resources in your own custom built S
 
 The first suggestion is terrible and should be avoided at all costs. It makes your code brittle and high risk. The second is handy when creating links to other hand written Spring MVC controllers. The last one, which you'll see in a moment, is good for looking up resource links that are exported by Spring Data REST.
 
-Assuming you have configured your code to use Spring's autowiring, 
+Assuming you have configured your code to use Spring's autowiring,
 
 [source,java]
 ----
 public class MyWebApp {
-	
+
 	private RepositoryEntityLinks entityLinks;
 
 	@Autowired
