@@ -24,7 +24,7 @@ import org.springframework.util.StringUtils;
  */
 public class SimpleResourceDescription extends ResolvableResourceDescriptionSupport {
 
-	protected static final String DEFAULT_KEY_PREFIX = "rest.description";
+	public static final String DEFAULT_KEY_PREFIX = "rest.description";
 	protected static final MediaType DEFAULT_MEDIA_TYPE = MediaType.TEXT_PLAIN;
 
 	private final String message;

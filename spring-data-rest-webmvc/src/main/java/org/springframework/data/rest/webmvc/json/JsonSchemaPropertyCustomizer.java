@@ -15,35 +15,24 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
-import org.junit.Test;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 /**
- * Unit tests for {@link JsonSchema}.
+ * Callback interface to customize the {@link JsonSchemaProperty} created by default for a given type.
  * 
  * @author Oliver Gierke
+ * @since 2.4
+ * @soundtrack Superflight - Four Sided Cube (Bellyjam)
  */
-public class JsonSchemaUnitTests {
-
-	static final TypeInformation<?> type = ClassTypeInformation.from(Sample.class);
+public interface JsonSchemaPropertyCustomizer {
 
 	/**
-	 * @see DATAREST-492
+	 * Returns the customized {@link JsonSchemaProperty} based on the given one and the given type.
+	 * 
+	 * @param property will never be {@literal null}.
+	 * @param type will never be {@literal null}.
+	 * @return
 	 */
-	@Test
-	public void considersNumberPrimitivesJsonSchemaNumbers() {
-
-		JsonSchemaProperty property = new JsonSchemaProperty("foo", null, "bar", false);
-
-		assertThat(property.with(type.getProperty("foo")).type, is("number"));
-	}
-
-	static class Sample {
-		double foo;
-	}
+	JsonSchemaProperty customize(JsonSchemaProperty property, TypeInformation<?> type);
 }

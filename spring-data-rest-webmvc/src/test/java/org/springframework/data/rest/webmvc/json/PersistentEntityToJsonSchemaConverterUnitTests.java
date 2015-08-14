@@ -114,12 +114,12 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		constraints.add(new Constraint("$.properties.id", is(nullValue()), "Does NOT have descriptor for id property"));
 		constraints.add(new Constraint("$.properties.firstname.type", is("string"), "Exposes firstname as String"));
 		constraints
-				.add(new Constraint("$.descriptors.address", is(notNullValue()), "Exposes nested objects as descriptors."));
-		constraints.add(new Constraint("$.descriptors.address.type", is("object"), "Nested entity is of type 'object'"));
+				.add(new Constraint("$.definitions.address", is(notNullValue()), "Exposes nested objects as definitions."));
+		constraints.add(new Constraint("$.definitions.address.type", is("object"), "Nested entity is of type 'object'"));
 		constraints.add(
-				new Constraint("$.descriptors.address.properties.zipCode", is(notNullValue()), "Exposes nested properties"));
+				new Constraint("$.definitions.address.properties.zipCode", is(notNullValue()), "Exposes nested properties"));
 		constraints.add(
-				new Constraint("$.descriptors.address.requiredProperties[0]", is("zipCode"), "Lists nested required property"));
+				new Constraint("$.definitions.address.requiredProperties[0]", is("zipCode"), "Lists nested required property"));
 		constraints.add(new Constraint("$.properties.gender.type", is("string"), "Enums are strings."));
 		constraints.add(new Constraint("$.properties.gender.enum", is(notNullValue()), "Exposes enum values."));
 		constraints
@@ -136,11 +136,15 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 				new Constraint("$.properties.shippingAddresses.type", is("array"), "Exposes collection of complex types."));
 		constraints
 				.add(new Constraint("$.properties.shippingAddresses.uniqueItems", is(true), "Exposes uniqueness for Sets."));
-		constraints.add(new Constraint("$.properties.shippingAddresses.items['$ref']", is("#/descriptors/address"),
-				"References descriptor of complex element type."));
+		constraints.add(new Constraint("$.properties.shippingAddresses.items['$ref']", is("#/definitions/address"),
+				"References definition of complex element type."));
 
 		// DATAREST-531
 		constraints.add(new Constraint("$.properties.email.readOnly", is(true), "Email is read-only property"));
+
+		// DATAREST-644
+		constraints.add(new Constraint("$.properties.shippingAddresses.title", is("Shipping addresses"),
+				"Defaults titles correctly (split at camel case)"));
 
 		assertConstraints(User.class, constraints);
 	}

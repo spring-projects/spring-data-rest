@@ -16,15 +16,18 @@
 package org.springframework.data.rest.webmvc.json;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
@@ -37,16 +40,19 @@ import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
-import org.springframework.data.rest.webmvc.json.JsonSchema.Descriptors;
+import org.springframework.data.rest.core.mapping.SimpleResourceDescription;
+import org.springframework.data.rest.webmvc.json.JsonSchema.AbstractJsonSchemaProperty;
+import org.springframework.data.rest.webmvc.json.JsonSchema.Definitions;
 import org.springframework.data.rest.webmvc.json.JsonSchema.EnumProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.Item;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
-import org.springframework.data.rest.webmvc.json.JsonSchema.Property;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 
@@ -138,95 +144,115 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		final PersistentEntity<?, ?> persistentEntity = entities.getPersistentEntity((Class<?>) source);
 		final ResourceMetadata metadata = mappings.getMetadataFor(persistentEntity.getType());
 
-		Descriptors descriptors = new Descriptors();
-		List<JsonSchemaProperty<?>> propertiesFor = getPropertiesFor(persistentEntity.getType(), metadata, descriptors);
+		Definitions descriptors = new Definitions();
+		List<AbstractJsonSchemaProperty<?>> propertiesFor = getPropertiesFor(persistentEntity.getType(), metadata,
+				descriptors);
 
-		return new JsonSchema(persistentEntity.getName(), resolveMessage(metadata.getItemResourceDescription()),
-				propertiesFor, descriptors);
+		String title = resolveMessageWithDefault(new DefaultMessageSourceResolvable(
+				SimpleResourceDescription.DEFAULT_KEY_PREFIX.concat(".").concat(persistentEntity.getType().getSimpleName())));
+
+		return new JsonSchema(title, resolveMessage(metadata.getItemResourceDescription()), propertiesFor, descriptors);
 	}
 
-	private List<JsonSchemaProperty<?>> getPropertiesFor(Class<?> type, final ResourceMetadata metadata,
-			final Descriptors descriptors) {
+	private List<AbstractJsonSchemaProperty<?>> getPropertiesFor(Class<?> type, final ResourceMetadata metadata,
+			final Definitions descriptors) {
 
 		final PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
 		final JacksonMetadata jackson = new JacksonMetadata(objectMapper, type);
 		final AssociationLinks associationLinks = new AssociationLinks(mappings);
 
 		if (entity == null) {
-			return Collections.<JsonSchemaProperty<?>> emptyList();
+			return Collections.<AbstractJsonSchemaProperty<?>> emptyList();
 		}
 
-		final List<JsonSchemaProperty<?>> properties = new ArrayList<JsonSchema.JsonSchemaProperty<?>>();
+		JsonSchemaPropertyRegistrar registrar = new JsonSchemaPropertyRegistrar(jackson);
+
+		// final List<JsonSchemaProperty<?>> properties = new ArrayList<JsonSchema.JsonSchemaProperty<?>>();
 
 		for (BeanPropertyDefinition definition : jackson) {
 
 			PersistentProperty<?> persistentProperty = entity.getPersistentProperty(definition.getInternalName());
-			TypeInformation<?> propertyType = persistentProperty == null ? ClassTypeInformation.from(definition
-					.getPrimaryMember().getRawType()) : persistentProperty.getTypeInformation();
+
+			// First pass, early drops to avoid unnecessary calculation
+			if (persistentProperty != null) {
+
+				if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(type)) {
+					continue;
+				}
+
+				if (persistentProperty.isVersionProperty()) {
+					continue;
+				}
+			}
+
+			TypeInformation<?> propertyType = persistentProperty == null
+					? ClassTypeInformation.from(definition.getPrimaryMember().getRawType())
+					: persistentProperty.getTypeInformation();
+			TypeInformation<?> actualPropertyType = propertyType.getActualType();
 			Class<?> rawPropertyType = propertyType.getType();
 
 			JsonSchemaFormat format = configuration.metadataConfiguration().getSchemaFormatFor(rawPropertyType);
-			ResourceDescription description = persistentProperty == null ? jackson.getFallbackDescription(definition)
-					: getDescriptionFor(persistentProperty, metadata);
-			Property property = getSchemaProperty(definition, propertyType, description);
+			ResourceDescription description = persistentProperty == null
+					? jackson.getFallbackDescription(metadata, definition) : getDescriptionFor(persistentProperty, metadata);
+			JsonSchemaProperty property = getSchemaProperty(definition, propertyType, description);
 
-			if (persistentProperty != null && !persistentProperty.isWritable()) {
+			boolean isSyntheticProperty = persistentProperty == null;
+			boolean isNotWritable = !isSyntheticProperty && !persistentProperty.isWritable();
+			boolean isJacksonReadOnly = !isSyntheticProperty && jackson.isReadOnly(persistentProperty);
+
+			if (isSyntheticProperty || isNotWritable || isJacksonReadOnly) {
 				property = property.withReadOnly();
 			}
 
 			if (format != null) {
 
 				// Types with explicitly registered format -> value object with format
-				properties.add(property.with(format));
+				registrar.register(property.withFormat(format), actualPropertyType);
 				continue;
 			}
 
 			Pattern pattern = configuration.metadataConfiguration().getPatternFor(rawPropertyType);
 
 			if (pattern != null) {
-				properties.add(property.with(pattern));
+				registrar.register(property.withPattern(pattern), actualPropertyType);
 				continue;
 			}
 
 			if (jackson.isValueType()) {
-				properties.add(property.with(STRING_TYPE_INFORMATION));
+				registrar.register(property.with(STRING_TYPE_INFORMATION), actualPropertyType);
 				continue;
 			}
 
 			if (persistentProperty == null) {
-				properties.add(property);
-				continue;
-			}
-
-			if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(type)) {
+				registrar.register(property, actualPropertyType);
 				continue;
 			}
 
 			if (associationLinks.isLinkableAssociation(persistentProperty)) {
-				properties.add(property.with(JsonSchemaFormat.URI));
+				registrar.register(property.withFormat(JsonSchemaFormat.URI), null);
 			} else {
 
 				if (persistentProperty.isEntity()) {
 
-					if (!descriptors.hasDescriptorFor(propertyType)) {
-						descriptors.addDescriptor(propertyType,
+					if (!descriptors.hasDefinitionFor(propertyType)) {
+						descriptors.addDefinition(propertyType,
 								new Item(propertyType, getNestedPropertiesFor(persistentProperty, descriptors)));
 					}
 
-					properties.add(property.with(propertyType, Descriptors.getReference(propertyType)));
+					registrar.register(property.with(propertyType, Definitions.getReference(propertyType)), actualPropertyType);
 
 				} else {
 
-					properties.add(property.with(propertyType));
+					registrar.register(property.with(propertyType), actualPropertyType);
 				}
 			}
 		}
 
-		return properties;
+		return registrar.getProperties();
 	}
 
-	private Collection<JsonSchemaProperty<?>> getNestedPropertiesFor(PersistentProperty<?> property,
-			Descriptors descriptors) {
+	private Collection<AbstractJsonSchemaProperty<?>> getNestedPropertiesFor(PersistentProperty<?> property,
+			Definitions descriptors) {
 
 		if (!property.isEntity()) {
 			return Collections.emptyList();
@@ -235,26 +261,34 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		return getPropertiesFor(property.getActualType(), mappings.getMetadataFor(property.getActualType()), descriptors);
 	}
 
-	private Property getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,
+	private JsonSchemaProperty getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,
 			ResourceDescription description) {
 
 		String name = definition.getName();
+		String title = resolveMessageWithDefault(
+				new DefaultMessageSourceResolvable(description.getMessage().concat("._title")));
 		String resolvedDescription = resolveMessage(description);
 		boolean required = definition.isRequired();
 		Class<?> rawType = type.getType();
 
 		if (!rawType.isEnum()) {
-			return new Property(name, resolvedDescription, required);
+			return new JsonSchemaProperty(name, title, resolvedDescription, required).with(type);
 		}
 
-		return new EnumProperty(name, rawType, description.getDefaultMessage().equals(resolvedDescription) ? null
-				: resolvedDescription, required);
+		String message = resolveMessage(new DefaultMessageSourceResolvable(description.getMessage()));
+
+		return new EnumProperty(name, title, rawType,
+				description.getDefaultMessage().equals(resolvedDescription) ? message : resolvedDescription, required);
 	}
 
 	private ResourceDescription getDescriptionFor(PersistentProperty<?> property, ResourceMetadata metadata) {
 
 		ResourceMapping propertyMapping = metadata.getMappingFor(property);
 		return propertyMapping.getDescription();
+	}
+
+	private String resolveMessageWithDefault(MessageSourceResolvable resolvable) {
+		return resolveMessage(new DefaultingMessageSourceResolvable(resolvable));
 	}
 
 	private String resolveMessage(MessageSourceResolvable resolvable) {
@@ -272,6 +306,114 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			} else {
 				throw o_O;
 			}
+		}
+	}
+
+	/**
+	 * Helper to register {@link JsonSchemaProperty} instances after post-processing them.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.4
+	 */
+	private static class JsonSchemaPropertyRegistrar {
+
+		private final JacksonMetadata metadata;
+		private final List<AbstractJsonSchemaProperty<?>> properties;
+
+		/**
+		 * Creates a new {@link JsonSchemaPropertyRegistrar} using the given {@link JacksonMetadata}.
+		 * 
+		 * @param metadata must not be {@literal null}.
+		 */
+		public JsonSchemaPropertyRegistrar(JacksonMetadata metadata) {
+
+			Assert.notNull(metadata, "Metadata must not be null!");
+
+			this.metadata = metadata;
+			this.properties = new ArrayList<AbstractJsonSchemaProperty<?>>();
+		}
+
+		public void register(JsonSchemaProperty property, TypeInformation<?> type) {
+
+			if (type == null) {
+				properties.add(property);
+				return;
+			}
+
+			JsonSerializer<?> serializer = metadata.getTypeSerializer(type.getType());
+
+			if (!(serializer instanceof JsonSchemaPropertyCustomizer)) {
+				properties.add(property);
+				return;
+			}
+
+			properties.add(((JsonSchemaPropertyCustomizer) serializer).customize(property, type));
+		}
+
+		public List<AbstractJsonSchemaProperty<?>> getProperties() {
+			return properties;
+		}
+	}
+
+	/**
+	 * Message source resolvable that defaults the messages to the last segment of the dot-separated code in case the
+	 * configured delegate doesn't return a default message itself.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.4
+	 */
+	private static class DefaultingMessageSourceResolvable implements MessageSourceResolvable {
+
+		private static Pattern SPLIT_CAMEL_CASE = Pattern.compile("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])");
+
+		private final MessageSourceResolvable delegate;
+
+		/**
+		 * Creates a new {@link DefaultingMessageSourceResolvable} for the given delegate {@link MessageSourceResolvable}.
+		 * 
+		 * @param delegate must not be {@literal null}.
+		 */
+		public DefaultingMessageSourceResolvable(MessageSourceResolvable delegate) {
+			this.delegate = delegate;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.context.MessageSourceResolvable#getArguments()
+		 */
+		@Override
+		public Object[] getArguments() {
+			return delegate.getArguments();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.context.MessageSourceResolvable#getCodes()
+		 */
+		@Override
+		public String[] getCodes() {
+			return delegate.getCodes();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.context.MessageSourceResolvable#getDefaultMessage()
+		 */
+		@Override
+		public String getDefaultMessage() {
+
+			String defaultMessage = delegate.getDefaultMessage();
+
+			if (defaultMessage != null) {
+				return defaultMessage;
+			}
+
+			String[] split = getCodes()[0].split("\\.");
+			String tail = split[split.length - 1];
+			tail = "_title".equals(tail) ? split[split.length - 2] : tail;
+
+			return StringUtils.capitalize(StringUtils
+					.collectionToDelimitedString(Arrays.asList(SPLIT_CAMEL_CASE.split(tail)), " ").toLowerCase(Locale.US));
 		}
 	}
 }

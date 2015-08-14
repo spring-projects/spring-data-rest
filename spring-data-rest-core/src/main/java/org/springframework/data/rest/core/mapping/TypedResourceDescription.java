@@ -47,9 +47,13 @@ public class TypedResourceDescription extends SimpleResourceDescription {
 	}
 
 	public static ResourceDescription defaultFor(String rel, PersistentProperty<?> property) {
+		return defaultFor(rel, property.getName(), property.getType());
+	}
 
-		String message = String.format("%s.%s.%s", DEFAULT_KEY_PREFIX, rel, property.getName());
-		return new TypedResourceDescription(message, DEFAULT_MEDIA_TYPE, property.getType());
+	public static ResourceDescription defaultFor(String rel, String name, Class<?> type) {
+
+		String message = String.format("%s.%s.%s", DEFAULT_KEY_PREFIX, rel, name);
+		return new TypedResourceDescription(message, DEFAULT_MEDIA_TYPE, type);
 	}
 
 	public static ResourceDescription defaultFor(String rel, Class<?> type) {

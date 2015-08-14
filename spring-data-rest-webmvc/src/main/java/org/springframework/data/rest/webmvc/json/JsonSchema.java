@@ -54,28 +54,28 @@ public class JsonSchema {
 	private final String title;
 	private final String description;
 	private final PropertiesContainer container;
-	private final Descriptors descriptors;
+	private final Definitions definitions;
 
 	/**
-	 * Creates a new {@link JsonSchema} instance for the given title, description, {@link JsonSchemaProperty}s and
-	 * {@link Descriptors}.
+	 * Creates a new {@link JsonSchema} instance for the given title, description, {@link AbstractJsonSchemaProperty}s and
+	 * {@link Definitions}.
 	 * 
 	 * @param title must not be {@literal null} or empty.
 	 * @param description can be {@literal null}.
 	 * @param properties must not be {@literal null}.
-	 * @param descriptors must not be {@literal null}.
+	 * @param definitions must not be {@literal null}.
 	 */
-	public JsonSchema(String title, String description, Collection<JsonSchemaProperty<?>> properties,
-			Descriptors descriptors) {
+	public JsonSchema(String title, String description, Collection<AbstractJsonSchemaProperty<?>> properties,
+			Definitions definitions) {
 
 		Assert.hasText(title, "Title must not be null or empty!");
 		Assert.notNull(properties, "JsonSchemaProperties must not be null!");
-		Assert.notNull(descriptors, "Desciptors must not be null!");
+		Assert.notNull(definitions, "Definitions must not be null!");
 
 		this.title = title;
 		this.description = description;
 		this.container = new PropertiesContainer(properties);
-		this.descriptors = descriptors;
+		this.definitions = definitions;
 	}
 
 	@JsonProperty("$schema")
@@ -100,12 +100,9 @@ public class JsonSchema {
 		return container;
 	}
 
-	/**
-	 * @return the descriptors
-	 */
 	@JsonUnwrapped
-	public Descriptors getDescriptors() {
-		return descriptors;
+	public Definitions getDefinitions() {
+		return definitions;
 	}
 
 	/**
@@ -175,9 +172,9 @@ public class JsonSchema {
 		 * @param type must not be {@literal null}.
 		 * @param properties must not be {@literal null}.
 		 */
-		public Item(TypeInformation<?> type, Collection<JsonSchemaProperty<?>> properties) {
+		public Item(TypeInformation<?> type, Collection<AbstractJsonSchemaProperty<?>> properties) {
 
-			this.type = toJsonSchemaType(type);
+			this.type = toJsonSchemaType(type.getActualType());
 			this.properties = new PropertiesContainer(properties);
 		}
 
@@ -200,22 +197,22 @@ public class JsonSchema {
 	@JsonInclude(Include.NON_EMPTY)
 	static class PropertiesContainer {
 
-		public final Map<String, JsonSchemaProperty<?>> properties;
+		public final Map<String, AbstractJsonSchemaProperty<?>> properties;
 		public final Collection<String> requiredProperties;
 
 		/**
-		 * Creates a new {@link PropertiesContainer} for the given {@link JsonSchemaProperty}s.
+		 * Creates a new {@link PropertiesContainer} for the given {@link AbstractJsonSchemaProperty}s.
 		 * 
 		 * @param properties must not be {@literal null}.
 		 */
-		public PropertiesContainer(Collection<JsonSchemaProperty<?>> properties) {
+		public PropertiesContainer(Collection<AbstractJsonSchemaProperty<?>> properties) {
 
 			Assert.notNull(properties, "JsonSchemaPropertys must not be null!");
 
-			this.properties = new HashMap<String, JsonSchema.JsonSchemaProperty<?>>();
+			this.properties = new HashMap<String, JsonSchema.AbstractJsonSchemaProperty<?>>();
 			this.requiredProperties = new ArrayList<String>();
 
-			for (JsonSchemaProperty<?> property : properties) {
+			for (AbstractJsonSchemaProperty<?> property : properties) {
 				this.properties.put(property.getName(), property);
 
 				if (property.isRequired()) {
@@ -226,39 +223,39 @@ public class JsonSchema {
 	}
 
 	/**
-	 * Value object to abstract a {@link Map} of JSON Schema descriptors.
+	 * Value object to abstract a {@link Map} of JSON Schema definitions.
 	 *
 	 * @author Oliver Gierke
 	 */
-	static class Descriptors {
+	public static class Definitions {
 
-		private final Map<String, Item> descriptors;
+		private final Map<String, Item> definitions;
 
-		public Descriptors() {
-			this.descriptors = new HashMap<String, Item>();
+		public Definitions() {
+			this.definitions = new HashMap<String, Item>();
 		}
 
 		/**
 		 * @return the descriptors
 		 */
-		public Map<String, Item> getDescriptors() {
-			return descriptors;
+		public Map<String, Item> getDefinitions() {
+			return definitions;
 		}
 
-		boolean hasDescriptorFor(TypeInformation<?> type) {
-			return this.descriptors.containsKey(typeKey(type));
+		boolean hasDefinitionFor(TypeInformation<?> type) {
+			return this.definitions.containsKey(typeKey(type));
 		}
 
-		String addDescriptor(TypeInformation<?> type, Item item) {
+		String addDefinition(TypeInformation<?> type, Item item) {
 
 			String reference = typeKey(type);
-			this.descriptors.put(reference, item);
+			this.definitions.put(reference, item);
 
 			return reference;
 		}
 
 		static String getReference(TypeInformation<?> type) {
-			return String.format("#/descriptors/%s", typeKey(type));
+			return String.format("#/definitions/%s", typeKey(type));
 		}
 
 		static String typeKey(TypeInformation<?> type) {
@@ -273,16 +270,22 @@ public class JsonSchema {
 	 * @since 2.3
 	 */
 	@JsonInclude(Include.NON_EMPTY)
-	abstract static class JsonSchemaProperty<T extends JsonSchemaProperty<T>> {
+	abstract static class AbstractJsonSchemaProperty<T extends AbstractJsonSchemaProperty<T>> {
 
 		private final String name;
+		private final String title;
 		private final boolean required;
 
 		private boolean readOnly;
 
-		protected JsonSchemaProperty(String name, boolean required) {
+		protected AbstractJsonSchemaProperty(String name, boolean required) {
+			this(name, null, required);
+		}
+
+		protected AbstractJsonSchemaProperty(String name, String title, boolean required) {
 
 			this.name = name;
+			this.title = title;
 			this.required = required;
 			this.readOnly = false;
 		}
@@ -290,6 +293,10 @@ public class JsonSchema {
 		@JsonIgnore
 		public String getName() {
 			return name;
+		}
+
+		public String getTitle() {
+			return title;
 		}
 
 		private boolean isRequired() {
@@ -313,7 +320,7 @@ public class JsonSchema {
 	 * @author Oliver Gierke
 	 * @since 2.3
 	 */
-	static class Property extends JsonSchemaProperty<Property> {
+	public static class JsonSchemaProperty extends AbstractJsonSchemaProperty<JsonSchemaProperty> {
 
 		private static final TypeInformation<?> STRING_TYPE_INFORMATION = ClassTypeInformation.from(String.class);
 
@@ -325,19 +332,38 @@ public class JsonSchema {
 		public @JsonProperty("$ref") String reference;
 		public Map<String, String> items;
 
-		public Property(String name, String description, boolean required) {
+		JsonSchemaProperty(String name, String title, String description, boolean required) {
 
-			super(name, required);
+			super(name, title, required);
 
 			this.description = description;
 		}
 
-		Property with(TypeInformation<?> type) {
+		/**
+		 * Configures the {@link JsonSchemaProperty} to reflect the given type.
+		 * 
+		 * @param type must not be {@literal null}.
+		 * @return
+		 */
+		public JsonSchemaProperty withType(Class<?> type) {
 
+			Assert.notNull(type, "Type must not be null!");
+			return with(ClassTypeInformation.from(type));
+		}
+
+		/**
+		 * Configures the {@link JsonSchemaProperty} to reflect the given type.
+		 * 
+		 * @param type must not be {@literal null}.
+		 * @return
+		 */
+		public JsonSchemaProperty with(TypeInformation<?> type) {
+
+			Assert.notNull(type, "Type must not be null!");
 			this.type = toJsonSchemaType(type);
 
 			if (isDate(type)) {
-				return with(JsonSchemaFormat.DATE_TIME);
+				return withFormat(JsonSchemaFormat.DATE_TIME);
 			}
 
 			if (type.isCollectionLike()) {
@@ -352,17 +378,47 @@ public class JsonSchema {
 			return this;
 		}
 
-		Property with(JsonSchemaFormat format) {
+		/**
+		 * Configures the given {@link JsonSchemaFormat} to be exposed on the current {@link JsonSchemaProperty}.
+		 * 
+		 * @param format must not be {@literal null}.
+		 * @return
+		 */
+		public JsonSchemaProperty withFormat(JsonSchemaFormat format) {
+
+			Assert.notNull(format, "Format must not be null!");
+
 			this.format = format;
 			return with(STRING_TYPE_INFORMATION);
 		}
 
-		Property with(Pattern pattern) {
+		/**
+		 * Configures the {@link JsonSchemaProperty} to require the given regular expression as pattern.
+		 * 
+		 * @param regex must not be {@literal null}.
+		 * @return
+		 */
+		public JsonSchemaProperty withRegex(String regex) {
+
+			Assert.hasText(regex, "Regular expression must not be null or empty!");
+			return withPattern(Pattern.compile(regex));
+		}
+
+		/**
+		 * Configures the {@link JsonSchemaProperty} to require the given {@link Pattern}.
+		 * 
+		 * @param pattern must not be {@literal null}.
+		 * @return
+		 */
+		public JsonSchemaProperty withPattern(Pattern pattern) {
+
+			Assert.notNull(pattern, "Pattern must not be null!");
+
 			this.pattern = pattern.toString();
 			return with(STRING_TYPE_INFORMATION);
 		}
 
-		Property with(TypeInformation<?> type, String reference) {
+		JsonSchemaProperty with(TypeInformation<?> type, String reference) {
 
 			if (type.isCollectionLike()) {
 
@@ -383,19 +439,19 @@ public class JsonSchema {
 	}
 
 	/**
-	 * A {@link Property} representing enumerations. Will cause all valid values to be rendered in a nested
+	 * A {@link JsonSchemaProperty} representing enumerations. Will cause all valid values to be rendered in a nested
 	 * {@literal enum} property.
 	 *
 	 * @author Oliver Gierke
 	 * @since 2.3
 	 */
-	static class EnumProperty extends Property {
+	static class EnumProperty extends JsonSchemaProperty {
 
 		private final List<String> values;
 
-		public EnumProperty(String name, Class<?> type, String description, boolean required) {
+		public EnumProperty(String name, String title, Class<?> type, String description, boolean required) {
 
-			super(name, description, required);
+			super(name, title, description, required);
 
 			this.values = new ArrayList<String>();
 

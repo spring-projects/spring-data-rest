@@ -22,15 +22,21 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.mapping.AnnotationBasedResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
-import org.springframework.data.rest.core.mapping.SimpleResourceDescription;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.mapping.TypedResourceDescription;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 
 /**
  * Value object to abstract Jackson based bean metadata of a given type.
@@ -40,7 +46,9 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
  */
 public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
+	private final ObjectMapper mapper;
 	private final List<BeanPropertyDefinition> definitions;
+	private final List<BeanPropertyDefinition> deserializationDefinitions;
 	private final boolean isValue;
 
 	/**
@@ -54,12 +62,19 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 		Assert.notNull(type, "Type must not be null!");
 
+		this.mapper = mapper;
+
 		SerializationConfig serializationConfig = mapper.getSerializationConfig();
 		JavaType javaType = serializationConfig.constructType(type);
 		BeanDescription description = serializationConfig.introspect(javaType);
 
 		this.definitions = description.findProperties();
 		this.isValue = description.findJsonValueMethod() != null;
+
+		DeserializationConfig deserializationConfig = mapper.getDeserializationConfig();
+		JavaType deserializationType = deserializationConfig.constructType(type);
+
+		this.deserializationDefinitions = deserializationConfig.introspect(deserializationType).findProperties();
 	}
 
 	/**
@@ -73,30 +88,27 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 
-		for (BeanPropertyDefinition definition : definitions) {
-			if (definition.getInternalName().equals(property.getName())) {
-				return definition;
-			}
-		}
-
-		return null;
+		return getDefinitionFor(property, definitions);
 	}
 
 	/**
 	 * Returns the fallback {@link ResourceDescription} to be used for the given {@link BeanPropertyDefinition}.
 	 * 
+	 * @param ownerMetadata must not be {@literal null}.
 	 * @param definition must not be {@literal null}.
 	 * @return
 	 */
-	public ResourceDescription getFallbackDescription(BeanPropertyDefinition definition) {
+	public ResourceDescription getFallbackDescription(ResourceMetadata ownerMetadata, BeanPropertyDefinition definition) {
 
+		Assert.notNull(ownerMetadata, "Owner's resource metadata must not be null!");
 		Assert.notNull(definition, "BeanPropertyDefinition must not be null!");
 
 		AnnotatedMember member = definition.getPrimaryMember();
 		Description description = member.getAnnotation(Description.class);
-		ResourceDescription fallback = SimpleResourceDescription.defaultFor(definition.getName());
+		ResourceDescription fallback = TypedResourceDescription.defaultFor(ownerMetadata.getItemResourceRel(),
+				definition.getInternalName(), definition.getPrimaryMember().getRawType());
 
-		return description == null ? null : new AnnotationBasedResourceDescription(description, fallback);
+		return description == null ? fallback : new AnnotationBasedResourceDescription(description, fallback);
 	}
 
 	/**
@@ -106,6 +118,9 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 * @return
 	 */
 	public boolean isExported(PersistentProperty<?> property) {
+
+		Assert.notNull(property, "PersistentProperty must not be null!");
+
 		return getDefinitionFor(property) != null;
 	}
 
@@ -118,6 +133,46 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 		return isValue;
 	}
 
+	/**
+	 * Returns whether the given {@link PersistentProperty} is considered read-only by Jackson.
+	 * 
+	 * @param property must not be {@literal null}.
+	 * @return
+	 */
+	public boolean isReadOnly(PersistentProperty<?> property) {
+
+		BeanPropertyDefinition definition = getDefinitionFor(property, deserializationDefinitions);
+		return definition == null ? false : !definition.couldDeserialize();
+	}
+
+	/**
+	 * Returns the {@link JsonSerializer} for the given type, or {@literal null} if none available.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	public JsonSerializer<?> getTypeSerializer(Class<?> type) {
+
+		Assert.notNull(type, "Type must not be null!");
+
+		try {
+
+			SerializerProvider provider = mapper.getSerializerProvider();
+
+			if (!(provider instanceof DefaultSerializerProvider)) {
+				return null;
+			}
+
+			provider = ((DefaultSerializerProvider) provider).createInstance(mapper.getSerializationConfig(),
+					mapper.getSerializerFactory());
+
+			return provider.findValueSerializer(type);
+
+		} catch (JsonMappingException o_O) {
+			return null;
+		}
+	}
+
 	/* 
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
@@ -125,5 +180,24 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	@Override
 	public Iterator<BeanPropertyDefinition> iterator() {
 		return definitions.iterator();
+	}
+
+	/**
+	 * Finds the {@link BeanPropertyDefinition} for the given {@link PersistentProperty} within the given definitions.
+	 * 
+	 * @param property must not be {@literal null}.
+	 * @param definitions must not be {@literal null}.
+	 * @return
+	 */
+	private static BeanPropertyDefinition getDefinitionFor(PersistentProperty<?> property,
+			Iterable<BeanPropertyDefinition> definitions) {
+
+		for (BeanPropertyDefinition definition : definitions) {
+			if (definition.getInternalName().equals(property.getName())) {
+				return definition;
+			}
+		}
+
+		return null;
 	}
 }
