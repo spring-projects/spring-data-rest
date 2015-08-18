@@ -371,13 +371,12 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
 		Object objectToSave = incomingWrapper.getBean();
 
-		Object domainObject = invoker.invokeFindOne(id);
+		Object domainObject = payload.getContent();
 
 		eTag.verify(resourceInformation.getPersistentEntity(), domainObject);
 
-		return domainObject == null ? createAndReturn(objectToSave, invoker, assembler,
-				config.returnBodyOnCreate(acceptHeader)) : saveAndReturn(objectToSave, invoker, PUT, assembler,
-				config.returnBodyOnUpdate(acceptHeader));
+		return payload.isNew() ? createAndReturn(objectToSave, invoker, assembler, config.returnBodyOnCreate(acceptHeader))
+				: saveAndReturn(objectToSave, invoker, PUT, assembler, config.returnBodyOnUpdate(acceptHeader));
 	}
 
 	/**
@@ -402,15 +401,11 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PATCH, ResourceType.ITEM);
 
-		Object domainObject = resourceInformation.getInvoker().invokeFindOne(id);
-
-		if (domainObject == null) {
-			throw new ResourceNotFoundException();
-		}
+		Object domainObject = payload.getContent();
 
 		eTag.verify(resourceInformation.getPersistentEntity(), domainObject);
 
-		return saveAndReturn(payload.getContent(), resourceInformation.getInvoker(), PATCH, assembler,
+		return saveAndReturn(domainObject, resourceInformation.getInvoker(), PATCH, assembler,
 				config.returnBodyOnUpdate(acceptHeader));
 	}
 

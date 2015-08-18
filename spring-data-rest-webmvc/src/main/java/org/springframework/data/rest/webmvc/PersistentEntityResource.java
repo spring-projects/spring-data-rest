@@ -41,6 +41,7 @@ public class PersistentEntityResource extends Resource<Object> {
 	private final PersistentEntity<?, ?> entity;
 	private final Iterable<EmbeddedWrapper> embeddeds;
 	private final boolean enforceAssociationLinks;
+	private final boolean isNew;
 
 	/**
 	 * Creates a new {@link PersistentEntityResource} for the given {@link PersistentEntity}, content, embedded
@@ -53,7 +54,7 @@ public class PersistentEntityResource extends Resource<Object> {
 	 * @param embeddeds can be {@literal null}.
 	 */
 	private PersistentEntityResource(PersistentEntity<?, ?> entity, Object content, Iterable<Link> links,
-			boolean renderAllAssociations, Iterable<EmbeddedWrapper> embeddeds) {
+			boolean renderAllAssociations, Iterable<EmbeddedWrapper> embeddeds, boolean isNew) {
 
 		super(content, links);
 
@@ -62,6 +63,7 @@ public class PersistentEntityResource extends Resource<Object> {
 		this.entity = entity;
 		this.embeddeds = embeddeds == null ? NO_EMBEDDEDS : embeddeds;
 		this.enforceAssociationLinks = renderAllAssociations;
+		this.isNew = isNew;
 	}
 
 	/**
@@ -89,6 +91,16 @@ public class PersistentEntityResource extends Resource<Object> {
 	 */
 	public Iterable<EmbeddedWrapper> getEmbeddeds() {
 		return embeddeds;
+	}
+
+	/**
+	 * Returns whether the content of the resource is a new entity about to be created. Used to distinguish between
+	 * creation and updates for incoming requests.
+	 * 
+	 * @return
+	 */
+	public boolean isNew() {
+		return isNew;
 	}
 
 	/**
@@ -174,7 +186,17 @@ public class PersistentEntityResource extends Resource<Object> {
 		 * @return
 		 */
 		public PersistentEntityResource build() {
-			return new PersistentEntityResource(entity, content, links, renderAllAssociationLinks, embeddeds);
+			return new PersistentEntityResource(entity, content, links, renderAllAssociationLinks, embeddeds, false);
+		}
+
+		/**
+		 * Finally creates the {@link PersistentEntityResource} instance to symbolize the contained entity is about to be
+		 * created.
+		 * 
+		 * @return
+		 */
+		public PersistentEntityResource forCreation() {
+			return new PersistentEntityResource(entity, content, links, renderAllAssociationLinks, embeddeds, true);
 		}
 	}
 }
