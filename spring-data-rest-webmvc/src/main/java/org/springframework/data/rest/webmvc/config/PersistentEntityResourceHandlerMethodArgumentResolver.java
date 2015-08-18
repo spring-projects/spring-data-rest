@@ -25,6 +25,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.webmvc.IncomingRequest;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
+import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
@@ -122,13 +123,16 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 			}
 
 			Serializable id = idResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
-			Object obj = read(resourceInformation, incoming, converter, id);
+			Object objectToUpdate = getObjectToUpdate(id, resourceInformation);
+			boolean forUpdate = objectToUpdate != null;
+			Object obj = read(resourceInformation, incoming, converter, objectToUpdate);
 
 			if (obj == null) {
 				throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType));
 			}
 
-			return PersistentEntityResource.build(obj, resourceInformation.getPersistentEntity()).build();
+			Builder build = PersistentEntityResource.build(obj, resourceInformation.getPersistentEntity());
+			return forUpdate ? build.build() : build.forCreation();
 		}
 
 		throw new HttpMessageNotReadableException(String.format(NO_CONVERTER_FOUND, domainType, contentType));
@@ -145,9 +149,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	 * @return
 	 */
 	private Object read(RootResourceInformation information, IncomingRequest request,
-			HttpMessageConverter<Object> converter, Serializable id) {
-
-		Object objectToUpdate = getObjectToUpdate(id, information);
+			HttpMessageConverter<Object> converter, Object objectToUpdate) {
 
 		// JSON + PATCH request
 		if (request.isPatchRequest() && converter instanceof MappingJackson2HttpMessageConverter) {
