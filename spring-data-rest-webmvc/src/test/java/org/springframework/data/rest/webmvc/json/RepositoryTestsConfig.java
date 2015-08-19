@@ -109,8 +109,8 @@ public class RepositoryTestsConfig {
 				mock(PagingAndSortingTemplateVariables.class),
 				OrderAwarePluginRegistry.<Class<?>, BackendIdConverter> create(Arrays.asList(DefaultIdConverter.INSTANCE)));
 
-		return new PersistentEntityJackson2Module(mappings, persistentEntities(), config(), new UriToEntityConverter(
-				persistentEntities(), defaultConversionService()), entityLinks);
+		return new PersistentEntityJackson2Module(mappings, persistentEntities(), config(),
+				new UriToEntityConverter(persistentEntities(), defaultConversionService()), entityLinks);
 	}
 
 	@Bean
@@ -121,7 +121,7 @@ public class RepositoryTestsConfig {
 
 		mapper.registerModule(new Jackson2HalModule());
 		mapper.registerModule(persistentEntityModule());
-		mapper.setHandlerInstantiator(new Jackson2HalModule.HalHandlerInstantiator(relProvider, null));
+		mapper.setHandlerInstantiator(new Jackson2HalModule.HalHandlerInstantiator(relProvider, null, null));
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.setSerializationInclusion(Include.NON_EMPTY);
 

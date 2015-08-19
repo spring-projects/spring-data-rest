@@ -58,7 +58,7 @@ import com.jayway.jsonpath.JsonPath;
 @ContextConfiguration(classes = { MongoDbRepositoryConfig.class, TestConfiguration.class })
 public class PersistentEntityToJsonSchemaConverterUnitTests {
 
-	@Autowired MessageSourceAccessor accessor;
+	@Autowired @Qualifier("resourceDescriptionMessageSourceAccessor") MessageSourceAccessor accessor;
 	@Autowired RepositoryResourceMappings mappings;
 	@Autowired RepositoryRestConfiguration configuration;
 	@Autowired PersistentEntities entities;

@@ -48,7 +48,7 @@ public class ProjectionJacksonIntegrationTests {
 
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(new Jackson2HalModule());
-		this.mapper.setHandlerInstantiator(new HalHandlerInstantiator(new EvoInflectorRelProvider(), null));
+		this.mapper.setHandlerInstantiator(new HalHandlerInstantiator(new EvoInflectorRelProvider(), null, null));
 	}
 
 	/**
@@ -76,7 +76,8 @@ public class ProjectionJacksonIntegrationTests {
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new Jackson2HalModule());
-		mapper.setHandlerInstantiator(new Jackson2HalModule.HalHandlerInstantiator(new EvoInflectorRelProvider(), null));
+		mapper.setHandlerInstantiator(
+				new Jackson2HalModule.HalHandlerInstantiator(new EvoInflectorRelProvider(), null, null));
 
 		Customer customer = new Customer();
 		customer.firstname = "Dave";
