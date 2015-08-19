@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import org.springframework.util.Assert;
 /**
  * {@link ResourceProcessor} to add a {@code profile} link to the root resource to point to multiple forms of metadata.
  *
+ * @author Oliver Gierke
  * @author Greg Turnquist
- * @see DATAREST-638
  * @since 2.4
  */
 public class ProfileResourceProcessor implements ResourceProcessor<RepositoryLinksResource> {
@@ -43,7 +43,6 @@ public class ProfileResourceProcessor implements ResourceProcessor<RepositoryLin
 	public ProfileResourceProcessor(RepositoryRestConfiguration configuration) {
 
 		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
-
 		this.configuration = configuration;
 	}
 

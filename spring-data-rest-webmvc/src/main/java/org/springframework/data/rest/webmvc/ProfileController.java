@@ -21,7 +21,6 @@ import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
@@ -41,7 +40,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * Profile-based controller exposing multiple forms of metadata.
  *
  * @author Greg Turnquist
- * @see DATAREST-638
+ * @author Oliver Gierke
  * @since 2.4
  */
 @BasePathAwareController
@@ -63,7 +62,7 @@ public class ProfileController {
 	 */
 	@Autowired
 	public ProfileController(RepositoryRestConfiguration configuration, RepositoryResourceMappings mappings,
-							 Repositories repositories) {
+			Repositories repositories) {
 
 		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
 		Assert.notNull(mappings, "RepositoryResourceMappings must not be null!");
@@ -113,7 +112,7 @@ public class ProfileController {
 	}
 
 	/**
-	 * Return href for the profile root link of a given baseUri.
+	 * Return the href for the profile root link of a given baseUri.
 	 *
 	 * @param configuration is the source of the app's baseUri.
 	 * @return
@@ -125,7 +124,7 @@ public class ProfileController {
 	}
 
 	/**
-	 * Return href for the profile link of a given baseUri and domain type mapping.
+	 * Return the href for the profile link of a given baseUri and domain type mapping.
 	 *
 	 * @param configuration is the source of the app's baseUri.
 	 * @param mapping provides the resource's path.
@@ -133,10 +132,7 @@ public class ProfileController {
 	 */
 	public static String getPath(RepositoryRestConfiguration configuration, ResourceMapping mapping) {
 
-		if (mapping == null) {
-			return getRootPath(configuration);
-		} else {
-			return getRootPath(configuration) + mapping.getPath();
-		}
+		String path = getRootPath(configuration);
+		return mapping == null ? path : path + mapping.getPath();
 	}
 }

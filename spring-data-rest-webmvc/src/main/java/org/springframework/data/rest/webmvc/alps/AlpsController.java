@@ -20,7 +20,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
@@ -48,27 +47,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @BasePathAwareController
 public class AlpsController {
 
-	private final Repositories repositories;
-	private final ResourceMappings mappings;
 	private final RepositoryRestConfiguration configuration;
 
 	/**
-	 * Creates a new {@link AlpsController} for the given {@link Repositories},
-	 * {@link RootResourceInformationToAlpsDescriptorConverter} and {@link ResourceMappings}.
+	 * Creates a new {@link AlpsController} for the given {@link ResourceMappings}.
 	 * 
-	 * @param repositories must not be {@literal null}.
-	 * @param mappings must not be {@literal null}.
 	 * @param configuration must not be {@literal null}.
 	 */
 	@Autowired
-	public AlpsController(Repositories repositories, ResourceMappings mappings, RepositoryRestConfiguration configuration) {
+	public AlpsController(RepositoryRestConfiguration configuration) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
 		Assert.notNull(configuration, "MetadataConfiguration must not be null!");
 
-		this.repositories = repositories;
-		this.mappings = mappings;
 		this.configuration = configuration;
 	}
 
@@ -77,7 +67,8 @@ public class AlpsController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = ProfileController.RESOURCE_PROFILE_MAPPING, method = OPTIONS, produces = RestMediaTypes.ALPS_JSON_VALUE)
+	@RequestMapping(value = ProfileController.RESOURCE_PROFILE_MAPPING, method = OPTIONS,
+			produces = RestMediaTypes.ALPS_JSON_VALUE)
 	HttpEntity<?> alpsOptions() {
 
 		verifyAlpsEnabled();
