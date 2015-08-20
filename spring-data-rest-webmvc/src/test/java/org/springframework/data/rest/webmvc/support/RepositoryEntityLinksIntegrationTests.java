@@ -73,7 +73,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		Link link = entityLinks.linkToSingleResource(Order.class, 1);
 
 		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItem(configuration.projectionConfiguration().getParameterName()));
+		assertThat(link.getVariableNames(), hasItem(configuration.getProjectionConfiguration().getParameterName()));
 	}
 
 	/**

@@ -445,23 +445,49 @@ public class JsonSchema {
 	 * @author Oliver Gierke
 	 * @since 2.3
 	 */
-	static class EnumProperty extends JsonSchemaProperty {
+	public static class EnumProperty extends JsonSchemaProperty {
 
-		private final List<String> values;
+		private List<String> values;
 
 		public EnumProperty(String name, String title, Class<?> type, String description, boolean required) {
 
+			this(name, title, toValues(type), description, required);
+		}
+
+		public EnumProperty(String name, String title, List<String> values, String description, boolean required) {
+
 			super(name, title, description, required);
 
-			this.values = new ArrayList<String>();
-
-			for (Object value : type.getEnumConstants()) {
-				this.values.add(value.toString());
-			}
+			this.values = Collections.unmodifiableList(values);
 		}
 
 		@JsonProperty("enum")
 		public List<String> getValues() {
+			return values;
+		}
+
+		/**
+		 * Returns the current {@link EnumProperty} exposing the given values.
+		 * 
+		 * @param values must not be {@literal null}.
+		 * @return
+		 */
+		public EnumProperty withValues(List<String> values) {
+
+			Assert.notNull(values, "Values must not be null!");
+
+			this.values = Collections.unmodifiableList(values);
+			return this;
+		}
+
+		private static List<String> toValues(Class<?> type) {
+
+			List<String> values = new ArrayList<String>();
+
+			for (Object value : type.getEnumConstants()) {
+				values.add(value.toString());
+			}
+
 			return values;
 		}
 	}

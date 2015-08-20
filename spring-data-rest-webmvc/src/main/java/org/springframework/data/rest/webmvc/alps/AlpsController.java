@@ -96,7 +96,7 @@ public class AlpsController {
 
 	private void verifyAlpsEnabled() {
 
-		if (!configuration.metadataConfiguration().alpsEnabled()) {
+		if (!configuration.getMetadataConfiguration().alpsEnabled()) {
 			throw new ResourceNotFoundException();
 		}
 	}

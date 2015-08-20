@@ -55,12 +55,8 @@ public class RepositoryRestConfiguration {
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
 	private final MetadataConfiguration metadataConfiguration;
 
-	/**
-	 * Creates a new default {@link RepositoryRestConfiguration}.
-	 */
-	public RepositoryRestConfiguration() {
-		this(new ProjectionDefinitionConfiguration(), new MetadataConfiguration());
-	}
+	private final EnumTranslationConfiguration enumSerializationConfiguration;
+	private boolean enableEnumTranslation = false;
 
 	/**
 	 * Creates a new {@link RepositoryRestConfiguration} with the given {@link ProjectionDefinitionConfiguration}.
@@ -69,13 +65,15 @@ public class RepositoryRestConfiguration {
 	 * @param metadataConfiguration must not be {@literal null}.
 	 */
 	public RepositoryRestConfiguration(ProjectionDefinitionConfiguration projectionConfiguration,
-			MetadataConfiguration metadataConfiguration) {
+			MetadataConfiguration metadataConfiguration, EnumTranslationConfiguration enumTranslationConfiguration) {
 
 		Assert.notNull(projectionConfiguration, "ProjectionDefinitionConfiguration must not be null!");
 		Assert.notNull(metadataConfiguration, "MetadataConfiguration must not be null!");
+		Assert.notNull(enumTranslationConfiguration, " must not be null!");
 
 		this.projectionConfiguration = projectionConfiguration;
 		this.metadataConfiguration = metadataConfiguration;
+		this.enumSerializationConfiguration = enumTranslationConfiguration;
 	}
 
 	/**
@@ -449,8 +447,19 @@ public class RepositoryRestConfiguration {
 	 * Returns the {@link ProjectionDefinitionConfiguration} to register addition projections.
 	 * 
 	 * @return
+	 * @deprecated since 2.4, use {@link #getProjectionConfiguration()} instead.
 	 */
+	@Deprecated
 	public ProjectionDefinitionConfiguration projectionConfiguration() {
+		return getProjectionConfiguration();
+	}
+
+	/**
+	 * Returns the {@link ProjectionDefinitionConfiguration} to register addition projections.
+	 * 
+	 * @return
+	 */
+	public ProjectionDefinitionConfiguration getProjectionConfiguration() {
 		return projectionConfiguration;
 	}
 
@@ -458,8 +467,49 @@ public class RepositoryRestConfiguration {
 	 * Returns the {@link MetadataConfiguration} to customize metadata exposure.
 	 * 
 	 * @return
+	 * @deprecated since 2.4, use {@link #getMetadataConfiguration()} instead.
 	 */
+	@Deprecated
 	public MetadataConfiguration metadataConfiguration() {
 		return metadataConfiguration;
+	}
+
+	/**
+	 * Returns the {@link MetadataConfiguration} to customize metadata exposure.
+	 * 
+	 * @return
+	 */
+	public MetadataConfiguration getMetadataConfiguration() {
+		return metadataConfiguration;
+	}
+
+	/**
+	 * Configures whether to enable enum value translation via the Spring Data REST default resource bundle. Defaults to
+	 * {@literal false} for backwards compatibility reasons. Will use the fully qualified enum name as key. For further
+	 * details see {@link EnumTranslator}.
+	 * 
+	 * @param enableEnumTranslation
+	 * @see #getEnumSerializationConfiguration()
+	 */
+	public void setEnableEnumTranslation(boolean enableEnumTranslation) {
+		this.enableEnumTranslation = enableEnumTranslation;
+	}
+
+	/**
+	 * Returns whether enum value translation is enabled.
+	 * 
+	 * @return
+	 */
+	public boolean isEnableEnumTranslation() {
+		return this.enableEnumTranslation;
+	}
+
+	/**
+	 * Returns the {@link EnumTranslator} for
+	 * 
+	 * @return
+	 */
+	public EnumTranslationConfiguration getEnumSerializationConfiguration() {
+		return this.enumSerializationConfiguration;
 	}
 }

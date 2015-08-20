@@ -20,15 +20,18 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
-import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
-import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -38,27 +41,49 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
  * Unit tests for {@link JacksonMetadata}.
  * 
  * @author Oliver Gierke
- * @soundtrack Four Sided Cube - Bad Day's Rememberance (Bunch of Sides)
+ * @soundtrack Four Sided Cube - Bad Day's Remembrance (Bunch of Sides)
  */
 public class JacksonMetadataUnitTests {
+
+	MappingContext<?, ?> context;
+	ObjectMapper mapper;
+
+	@Before
+	public void setUp() {
+
+		this.context = new MongoMappingContext();
+
+		this.mapper = new ObjectMapper();
+		this.mapper.disable(MapperFeature.INFER_PROPERTY_MUTATORS);
+	}
 
 	/**
 	 * @see DATAREST-644
 	 */
 	@Test
-	public void testname() {
-
-		MongoMappingContext context = new MongoMappingContext();
-		MongoPersistentEntity<?> entity = context.getPersistentEntity(User.class);
-
-		ObjectMapper mapper = new ObjectMapper();
+	public void detectsReadOnlyProperty() {
 
 		JacksonMetadata metadata = new JacksonMetadata(mapper, User.class);
 
-		MongoPersistentProperty property = entity.getPersistentProperty("username");
+		PersistentEntity<?, ?> entity = context.getPersistentEntity(User.class);
+		PersistentProperty<?> property = entity.getPersistentProperty("username");
 
 		assertThat(metadata.isExported(property), is(true));
 		assertThat(metadata.isReadOnly(property), is(true));
+	}
+
+	/**
+	 * @see DATAREST-644
+	 */
+	@Test
+	public void reportsConstructorArgumentAsJacksonWritable() {
+
+		JacksonMetadata metadata = new JacksonMetadata(mapper, Value.class);
+
+		PersistentEntity<?, ?> entity = context.getPersistentEntity(Value.class);
+		PersistentProperty<?> property = entity.getPersistentProperty("value");
+
+		assertThat(metadata.isReadOnly(property), is(false));
 	}
 
 	/**
@@ -77,9 +102,22 @@ public class JacksonMetadataUnitTests {
 
 		private String username;
 
-		@JsonProperty(access = Access.READ_ONLY)
 		public String getUsername() {
 			return username;
+		}
+	}
+
+	static class Value {
+
+		private String value;
+
+		@JsonCreator
+		public Value(@JsonProperty("value") String value) {
+			this.value = value;
+		}
+
+		public String getValue() {
+			return value;
 		}
 	}
 

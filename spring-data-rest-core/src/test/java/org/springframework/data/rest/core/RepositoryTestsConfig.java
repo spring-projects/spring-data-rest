@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.core;
 
+import static org.mockito.Mockito.*;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -26,6 +28,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
+import org.springframework.data.rest.core.config.MetadataConfiguration;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.domain.jpa.ConfiguredPersonRepository;
 import org.springframework.data.rest.core.domain.jpa.JpaRepositoryConfig;
@@ -52,7 +57,8 @@ public class RepositoryTestsConfig {
 	@SuppressWarnings("deprecation")
 	@Bean
 	public RepositoryRestConfiguration config() {
-		RepositoryRestConfiguration config = new RepositoryRestConfiguration();
+		RepositoryRestConfiguration config = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
+				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
 
 		config.setResourceMappingForDomainType(Person.class).setRel("person");
 

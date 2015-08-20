@@ -31,6 +31,9 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.UriToEntityConverter;
+import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
+import org.springframework.data.rest.core.config.MetadataConfiguration;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
@@ -74,7 +77,8 @@ public class RepositoryTestsConfig {
 
 	@Bean
 	public RepositoryRestConfiguration config() {
-		RepositoryRestConfiguration config = new RepositoryRestConfiguration();
+		RepositoryRestConfiguration config = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
+				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
 
 		config.setResourceMappingForDomainType(Person.class).setRel("person");
 

@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 
@@ -27,6 +28,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
+import org.springframework.data.rest.core.config.MetadataConfiguration;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 
@@ -58,7 +62,8 @@ public class PersistentEntityJackson2ModuleUnitTests {
 
 		SimpleModule module = new SimpleModule();
 		module.setSerializerModifier(new PersistentEntityJackson2Module.AssociationOmittingSerializerModifier(
-				persistentEntities, associationLinks, new RepositoryRestConfiguration()));
+				persistentEntities, associationLinks, new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
+						new MetadataConfiguration(), mock(EnumTranslationConfiguration.class))));
 
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(module);

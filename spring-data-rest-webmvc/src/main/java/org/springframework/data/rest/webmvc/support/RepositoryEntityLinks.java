@@ -75,9 +75,8 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 * @param idConverters must not be {@literal null}.
 	 */
 	@Autowired
-	public RepositoryEntityLinks(Repositories repositories, ResourceMappings mappings,
-			RepositoryRestConfiguration config, PagingAndSortingTemplateVariables templateVariables,
-			PluginRegistry<BackendIdConverter, Class<?>> idConverters) {
+	public RepositoryEntityLinks(Repositories repositories, ResourceMappings mappings, RepositoryRestConfiguration config,
+			PagingAndSortingTemplateVariables templateVariables, PluginRegistry<BackendIdConverter, Class<?>> idConverters) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
@@ -346,7 +345,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 */
 	private TemplateVariables getProjectionVariable(Class<?> type) {
 
-		ProjectionDefinitionConfiguration projectionConfiguration = config.projectionConfiguration();
+		ProjectionDefinitionConfiguration projectionConfiguration = config.getProjectionConfiguration();
 
 		if (projectionConfiguration.hasProjectionFor(type)) {
 			return new TemplateVariables(new TemplateVariable(projectionConfiguration.getParameterName(), REQUEST_PARAM));

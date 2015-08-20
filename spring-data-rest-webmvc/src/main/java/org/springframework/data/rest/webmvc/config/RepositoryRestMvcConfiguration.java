@@ -84,7 +84,9 @@ import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.alps.RootResourceInformationToAlpsDescriptorConverter;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
+import org.springframework.data.rest.webmvc.json.EnumTranslator;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
+import org.springframework.data.rest.webmvc.json.JacksonSerializers;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
@@ -249,7 +251,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			configuration.addProjection(projection);
 		}
 
-		RepositoryRestConfiguration config = new RepositoryRestConfiguration(configuration, metadataConfiguration());
+		RepositoryRestConfiguration config = new RepositoryRestConfiguration(configuration, metadataConfiguration(),
+				enumTranslator());
 		configurerDelegate.configureRepositoryRestConfiguration(config);
 		configureRepositoryRestConfiguration(config);
 
@@ -528,7 +531,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		handlerAdapter.setWebBindingInitializer(initializer);
 		handlerAdapter.setMessageConverters(defaultMessageConverters());
 
-		if (config().metadataConfiguration().alpsEnabled()) {
+		if (config().getMetadataConfiguration().alpsEnabled()) {
 			handlerAdapter.setResponseBodyAdvice(Arrays.<ResponseBodyAdvice<?>> asList(alpsJsonHttpMessageConverter()));
 		}
 
@@ -623,7 +626,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
 
-		if (config().metadataConfiguration().alpsEnabled()) {
+		if (config().getMetadataConfiguration().alpsEnabled()) {
 			messageConverters.add(alpsJsonHttpMessageConverter());
 		}
 
@@ -705,7 +708,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		projectionFactory.setResourceLoader(applicationContext);
 
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
-				persistentEntities(), entityLinks(), config().projectionConfiguration(), projectionFactory, resourceMappings());
+				persistentEntities(), entityLinks(), config().getProjectionConfiguration(), projectionFactory,
+				resourceMappings());
 
 		HateoasPageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
 		HandlerMethodArgumentResolver defaultedPageableResolver = new DefaultedPageableHandlerMethodArgumentResolver(
@@ -728,12 +732,21 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		objectMapper.registerModule(geoModule);
 
+		if (config().isEnableEnumTranslation()) {
+			objectMapper.registerModule(new JacksonSerializers(enumTranslator()));
+		}
+
 		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
 		// Configure custom Modules
 		configurerDelegate.configureJacksonObjectMapper(objectMapper);
 		configureJacksonObjectMapper(objectMapper);
 
 		return objectMapper;
+	}
+
+	@Bean
+	public EnumTranslator enumTranslator() {
+		return new EnumTranslator(resourceDescriptionMessageSourceAccessor());
 	}
 
 	@SuppressWarnings("unchecked")

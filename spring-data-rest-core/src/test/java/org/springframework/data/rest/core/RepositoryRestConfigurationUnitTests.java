@@ -17,8 +17,13 @@ package org.springframework.data.rest.core;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
+import org.springframework.data.rest.core.config.MetadataConfiguration;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.http.MediaType;
 
@@ -30,13 +35,20 @@ import org.springframework.http.MediaType;
  */
 public class RepositoryRestConfigurationUnitTests {
 
+	RepositoryRestConfiguration configuration;
+
+	@Before
+	public void setUp() {
+
+		this.configuration = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
+				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
+	}
+
 	/**
 	 * @see DATAREST-34
 	 */
 	@Test
 	public void returnsBodiesIfAcceptHeaderPresentByDefault() {
-
-		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration();
 
 		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE), is(true));
 		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE), is(true));
@@ -48,8 +60,6 @@ public class RepositoryRestConfigurationUnitTests {
 	@Test
 	public void doesNotReturnBodiesIfNoAcceptHeaderPresentByDefault() {
 
-		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration();
-
 		assertThat(configuration.returnBodyOnCreate(null), is(false));
 		assertThat(configuration.returnBodyOnUpdate(null), is(false));
 	}
@@ -59,8 +69,6 @@ public class RepositoryRestConfigurationUnitTests {
 	 */
 	@Test
 	public void doesNotReturnBodiesIfEmptyAcceptHeaderPresentByDefault() {
-
-		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration();
 
 		assertThat(configuration.returnBodyOnCreate(""), is(false));
 		assertThat(configuration.returnBodyOnUpdate(""), is(false));
@@ -72,7 +80,6 @@ public class RepositoryRestConfigurationUnitTests {
 	@Test
 	public void doesNotReturnBodyForUpdateIfExplicitlyDeactivated() {
 
-		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration();
 		configuration.setReturnBodyOnUpdate(false);
 
 		assertThat(configuration.returnBodyOnUpdate(null), is(false));
@@ -86,7 +93,6 @@ public class RepositoryRestConfigurationUnitTests {
 	@Test
 	public void doesNotReturnBodyForCreateIfExplicitlyDeactivated() {
 
-		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration();
 		configuration.setReturnBodyOnCreate(false);
 
 		assertThat(configuration.returnBodyOnCreate(null), is(false));
@@ -100,7 +106,6 @@ public class RepositoryRestConfigurationUnitTests {
 	@Test
 	public void returnsBodyForUpdateIfExplicitlyActivated() {
 
-		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration();
 		configuration.setReturnBodyOnUpdate(true);
 
 		assertThat(configuration.returnBodyOnUpdate(null), is(true));
@@ -114,7 +119,6 @@ public class RepositoryRestConfigurationUnitTests {
 	@Test
 	public void returnsBodyForCreateIfExplicitlyActivated() {
 
-		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration();
 		configuration.setReturnBodyOnCreate(true);
 
 		assertThat(configuration.returnBodyOnCreate(null), is(true));

@@ -71,8 +71,8 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		@Override
 		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 
-			config.metadataConfiguration().registerJsonSchemaFormat(JsonSchemaFormat.EMAIL, EmailAddress.class);
-			config.metadataConfiguration().registerFormattingPatternFor("[A-Z]+", TypeWithPattern.class);
+			config.getMetadataConfiguration().registerJsonSchemaFormat(JsonSchemaFormat.EMAIL, EmailAddress.class);
+			config.getMetadataConfiguration().registerFormattingPatternFor("[A-Z]+", TypeWithPattern.class);
 
 			config.exposeIdsFor(Profile.class);
 		}

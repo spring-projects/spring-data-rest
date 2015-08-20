@@ -184,7 +184,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 	 */
 	private Descriptor buildProjectionDescriptor(ResourceMetadata metadata) {
 
-		ProjectionDefinitionConfiguration projectionConfiguration = configuration.projectionConfiguration();
+		ProjectionDefinitionConfiguration projectionConfiguration = configuration.getProjectionConfiguration();
 		String projectionParameterName = projectionConfiguration.getParameterName();
 
 		Map<String, Class<?>> projections = projectionConfiguration.getProjectionsFor(metadata.getDomainType());
@@ -221,10 +221,10 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 			AnnotatedMethod getter = definition.getGetter();
 			Description description = getter.getAnnotation(Description.class);
-			ResourceDescription fallback = SimpleResourceDescription.defaultFor(String.format("%s.%s", name,
-					definition.getName()));
-			ResourceDescription resourceDescription = description == null ? null : new AnnotationBasedResourceDescription(
-					description, fallback);
+			ResourceDescription fallback = SimpleResourceDescription
+					.defaultFor(String.format("%s.%s", name, definition.getName()));
+			ResourceDescription resourceDescription = description == null ? null
+					: new AnnotationBasedResourceDescription(description, fallback);
 
 			descriptors.add(//
 					descriptor().//
@@ -259,10 +259,11 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 			return Collections.emptyList();
 		}
 
-		ProjectionDefinitionConfiguration projectionConfiguration = configuration.projectionConfiguration();
+		ProjectionDefinitionConfiguration projectionConfiguration = configuration.getProjectionConfiguration();
 
-		return projectionConfiguration.hasProjectionFor(type) ? Arrays.asList(buildProjectionDescriptor(mappings
-				.getMetadataFor(type))) : Collections.<Descriptor> emptyList();
+		return projectionConfiguration.hasProjectionFor(type)
+				? Arrays.asList(buildProjectionDescriptor(mappings.getMetadataFor(type)))
+				: Collections.<Descriptor> emptyList();
 	}
 
 	/**
@@ -283,7 +284,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		List<TemplateVariable> variables = linkToCollectionResource.getVariables();
 		List<Descriptor> descriptors = new ArrayList<Descriptor>(variables.size());
 
-		ProjectionDefinitionConfiguration projectionConfiguration = configuration.projectionConfiguration();
+		ProjectionDefinitionConfiguration projectionConfiguration = configuration.getProjectionConfiguration();
 
 		for (TemplateVariable variable : variables) {
 
@@ -355,8 +356,8 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 				ResourceMetadata targetTypeMetadata = mappings.getMetadataFor(property.getActualType());
 
-				String href = ProfileController.getPath(configuration, targetTypeMetadata) +
-						"#" + getRepresentationDescriptorId(targetTypeMetadata);
+				String href = ProfileController.getPath(configuration, targetTypeMetadata) + "#"
+						+ getRepresentationDescriptorId(targetTypeMetadata);
 
 				Link link = new Link(href).withSelfRel();
 
@@ -419,7 +420,8 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		try {
 			return messageSource.getMessage(description);
 		} catch (NoSuchMessageException o_O) {
-			return configuration.metadataConfiguration().omitUnresolvableDescriptionKeys() ? null : description.getMessage();
+			return configuration.getMetadataConfiguration().omitUnresolvableDescriptionKeys() ? null
+					: description.getMessage();
 		}
 	}
 

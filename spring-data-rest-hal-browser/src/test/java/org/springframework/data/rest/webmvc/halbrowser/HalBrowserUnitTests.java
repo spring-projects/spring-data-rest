@@ -17,10 +17,15 @@ package org.springframework.data.rest.webmvc.halbrowser;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
+import org.springframework.data.rest.core.config.MetadataConfiguration;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -43,7 +48,9 @@ public class HalBrowserUnitTests {
 	@Test
 	public void createsContextRelativeRedirectForBrowser() throws Exception {
 
-		View view = new HalBrowser(new RepositoryRestConfiguration()).browser();
+		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
+				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
+		View view = new HalBrowser(configuration).browser();
 
 		assertThat(view, is(instanceOf(RedirectView.class)));
 
@@ -53,6 +60,6 @@ public class HalBrowserUnitTests {
 
 		((AbstractView) view).render(Collections.<String, Object> emptyMap(), request, response);
 
-		assertThat(response.getHeader(HttpHeaders.LOCATION), startsWith("/context"));
+		assertThat(response.getHeader(HttpHeaders.LOCATION), Matchers.startsWith("/context"));
 	}
 }

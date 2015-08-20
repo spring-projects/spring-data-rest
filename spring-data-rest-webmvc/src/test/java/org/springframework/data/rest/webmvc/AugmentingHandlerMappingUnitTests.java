@@ -17,13 +17,18 @@ package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
+import org.springframework.data.rest.core.config.MetadataConfiguration;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,7 +55,8 @@ public class AugmentingHandlerMappingUnitTests {
 	@Test
 	public void augmentsRequestMappingsWithBaseUriFromConfiguration() {
 
-		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration();
+		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
+				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
 		configuration.setBasePath("api");
 
 		BasePathAwareHandlerMapping mapping = new BasePathAwareHandlerMapping(configuration);
@@ -60,7 +66,7 @@ public class AugmentingHandlerMappingUnitTests {
 		Map<RequestMappingInfo, HandlerMethod> handlerMethods = mapping.getHandlerMethods();
 
 		for (RequestMappingInfo info : handlerMethods.keySet()) {
-			assertThat(info.getPatternsCondition().getPatterns(), hasItem(startsWith("/api")));
+			assertThat(info.getPatternsCondition().getPatterns(), hasItem(Matchers.startsWith("/api")));
 		}
 	}
 

@@ -191,7 +191,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			TypeInformation<?> actualPropertyType = propertyType.getActualType();
 			Class<?> rawPropertyType = propertyType.getType();
 
-			JsonSchemaFormat format = configuration.metadataConfiguration().getSchemaFormatFor(rawPropertyType);
+			JsonSchemaFormat format = configuration.getMetadataConfiguration().getSchemaFormatFor(rawPropertyType);
 			ResourceDescription description = persistentProperty == null
 					? jackson.getFallbackDescription(metadata, definition) : getDescriptionFor(persistentProperty, metadata);
 			JsonSchemaProperty property = getSchemaProperty(definition, propertyType, description);
@@ -211,7 +211,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 				continue;
 			}
 
-			Pattern pattern = configuration.metadataConfiguration().getPatternFor(rawPropertyType);
+			Pattern pattern = configuration.getMetadataConfiguration().getPatternFor(rawPropertyType);
 
 			if (pattern != null) {
 				registrar.register(property.withPattern(pattern), actualPropertyType);
@@ -261,6 +261,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		return getPropertiesFor(property.getActualType(), mappings.getMetadataFor(property.getActualType()), descriptors);
 	}
 
+	@SuppressWarnings("unchecked")
 	private JsonSchemaProperty getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,
 			ResourceDescription description) {
 
@@ -301,7 +302,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			return accessor.getMessage(resolvable);
 		} catch (NoSuchMessageException o_O) {
 
-			if (configuration.metadataConfiguration().omitUnresolvableDescriptionKeys()) {
+			if (configuration.getMetadataConfiguration().omitUnresolvableDescriptionKeys()) {
 				return null;
 			} else {
 				throw o_O;
