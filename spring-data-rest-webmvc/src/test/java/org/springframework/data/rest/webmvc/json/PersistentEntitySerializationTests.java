@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -40,6 +44,7 @@ import org.springframework.data.rest.webmvc.jpa.PersonRepository;
 import org.springframework.data.rest.webmvc.jpa.UserExcerpt;
 import org.springframework.data.rest.webmvc.mongodb.Address;
 import org.springframework.data.rest.webmvc.mongodb.User;
+import org.springframework.data.rest.webmvc.mongodb.User.Gender;
 import org.springframework.data.rest.webmvc.util.TestUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverer;
@@ -67,7 +72,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Gierke
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = RepositoryTestsConfig.class)
+@ContextConfiguration(classes = { RepositoryTestsConfig.class, PersistentEntitySerializationTests.TestConfig.class })
 @Transactional
 public class PersistentEntitySerializationTests {
 
@@ -77,6 +82,20 @@ public class PersistentEntitySerializationTests {
 	@Autowired Repositories repositories;
 	@Autowired PersonRepository people;
 	@Autowired OrderRepository orders;
+
+	@Configuration
+	static class TestConfig extends RepositoryTestsConfig {
+
+		@Bean
+		@Override
+		public ObjectMapper objectMapper() {
+
+			ObjectMapper objectMapper = super.objectMapper();
+			objectMapper.registerModule(
+					new JacksonSerializers(new EnumTranslator(new MessageSourceAccessor(new StaticMessageSource()))));
+			return objectMapper;
+		}
+	}
 
 	LinkDiscoverer linkDiscoverer;
 	ProjectionFactory projectionFactory;
@@ -276,5 +295,13 @@ public class PersistentEntitySerializationTests {
 		String result = mapper.writeValueAsString(resource);
 
 		assertThat(JsonPath.read(result, "$_links.processed"), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATAREST-654
+	 */
+	@Test
+	public void deserializesTranslatedEnumProperty() throws Exception {
+		assertThat(mapper.readValue("{ \"gender\" : \"Male\" }", User.class).gender, is(Gender.MALE));
 	}
 }

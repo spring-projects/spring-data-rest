@@ -27,8 +27,12 @@ import org.springframework.util.Assert;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -122,11 +126,12 @@ public class JacksonSerializers extends SimpleModule {
 	 * @author Oliver Gierke
 	 */
 	@SuppressWarnings("rawtypes")
-	public static class EnumTranslatingDeserializer extends StdDeserializer<Enum> {
+	public static class EnumTranslatingDeserializer extends StdDeserializer<Enum>implements ContextualDeserializer {
 
 		private static final long serialVersionUID = 5305284644923180079L;
 
 		private final EnumTranslator translator;
+		private final BeanProperty property;
 
 		/**
 		 * Creates a new {@link EnumTranslatingDeserializer} using the given {@link EnumTranslator}.
@@ -134,11 +139,34 @@ public class JacksonSerializers extends SimpleModule {
 		 * @param translator must not be {@literal null}.
 		 */
 		public EnumTranslatingDeserializer(EnumTranslator translator) {
+			this(translator, null);
+		}
+
+		/**
+		 * Creates a new {@link EnumTranslatingDeserializer} using the given {@link EnumTranslator} and {@link BeanProperty}
+		 * .
+		 * 
+		 * @param translator must not be {@literal null}.
+		 * @param property can be {@literal null}.
+		 */
+		public EnumTranslatingDeserializer(EnumTranslator translator, BeanProperty property) {
 
 			super(Enum.class);
 
 			Assert.notNull(translator, "EnumTranslator must not be null!");
+
 			this.translator = translator;
+			this.property = property;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.deser.ContextualDeserializer#createContextual(com.fasterxml.jackson.databind.DeserializationContext, com.fasterxml.jackson.databind.BeanProperty)
+		 */
+		@Override
+		public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property)
+				throws JsonMappingException {
+			return new EnumTranslatingDeserializer(translator, property);
 		}
 
 		/* 
@@ -148,7 +176,12 @@ public class JacksonSerializers extends SimpleModule {
 		@Override
 		@SuppressWarnings("unchecked")
 		public Enum deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-			return translator.fromText((Class<? extends Enum<?>>) ctxt.getContextualType().getRawClass(), p.getText());
+
+			if (property == null) {
+				throw new IllegalStateException("Can only translate enum with property information!");
+			}
+
+			return translator.fromText((Class<? extends Enum<?>>) property.getType().getRawClass(), p.getText());
 		}
 	}
 }
