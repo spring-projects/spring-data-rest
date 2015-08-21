@@ -39,7 +39,7 @@ public final class ParameterMetadata {
 
 		this.name = parameter.getParameterName();
 
-		Assert.hasText(name, "Parameter must not be null or empty!");
+		Assert.hasText(name, "Parameter name must not be null or empty!");
 		Assert.hasText(baseRel, "Method rel must not be null!");
 
 		ResourceDescription fallback = TypedResourceDescription.defaultFor(baseRel.concat(".").concat(name),
