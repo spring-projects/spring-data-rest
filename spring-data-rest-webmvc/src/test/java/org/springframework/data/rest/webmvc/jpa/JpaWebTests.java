@@ -22,6 +22,8 @@ import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import net.minidev.json.JSONArray;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,16 +31,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import net.minidev.json.JSONArray;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.CommonWebTests;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Links;
 import org.springframework.hateoas.RelProvider;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -240,8 +240,8 @@ public class JpaWebTests extends CommonWebTests {
 
 		Link peopleLink = client.discoverUnique("people");
 
-		MockHttpServletResponse bilbo = postAndGet(peopleLink,//
-				"{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }",//
+		MockHttpServletResponse bilbo = postAndGet(peopleLink, //
+				"{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }", //
 				MediaType.APPLICATION_JSON);
 
 		Link bilboLink = client.assertHasLinkWithRel("self", bilbo);
@@ -249,8 +249,8 @@ public class JpaWebTests extends CommonWebTests {
 		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName"), equalTo("Bilbo"));
 		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName"), equalTo("Baggins"));
 
-		MockHttpServletResponse frodo = putAndGet(bilboLink,//
-				"{ \"firstName\" : \"Frodo\" }",//
+		MockHttpServletResponse frodo = putAndGet(bilboLink, //
+				"{ \"firstName\" : \"Frodo\" }", //
 				MediaType.APPLICATION_JSON);
 
 		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), equalTo("Frodo"));
@@ -411,7 +411,8 @@ public class JpaWebTests extends CommonWebTests {
 
 		String bilboWithFrodosLinks = createdPerson.getContentAsString().replace("Frodo", "Bilbo");
 
-		MockHttpServletResponse overwrittenResponse = putAndGet(frodoLink, bilboWithFrodosLinks, MediaType.APPLICATION_JSON);
+		MockHttpServletResponse overwrittenResponse = putAndGet(frodoLink, bilboWithFrodosLinks,
+				MediaType.APPLICATION_JSON);
 
 		client.assertHasLinkWithRel("self", overwrittenResponse);
 		assertJsonPathEquals("$.firstName", "Bilbo", overwrittenResponse);
@@ -588,15 +589,13 @@ public class JpaWebTests extends CommonWebTests {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(tacosLink.getHref());
 		String concurrencyTag = createdReceipt.getHeader("ETag");
 
-		mvc.perform(
-				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
-						.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag)).andExpect(
-				status().is2xxSuccessful());
+		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
+				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag))
+				.andExpect(status().is2xxSuccessful());
 
-		mvc.perform(
-				patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
-						.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, "\"falseETag\"")).andExpect(
-				status().isPreconditionFailed());
+		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
+				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, "\"falseETag\""))
+				.andExpect(status().isPreconditionFailed());
 	}
 
 	/**
@@ -635,6 +634,24 @@ public class JpaWebTests extends CommonWebTests {
 			mvc.perform(get(frodosSiblingsLink.getHref())).//
 					andExpect(jsonPath("$._embedded.people", hasSize(i)));
 		}
+	}
+
+	/**
+	 * @see DATAREST-658
+	 */
+	@Test
+	public void returnsLinkHeadersForHeadRequestToItemResource() throws Exception {
+
+		MockHttpServletResponse response = client.request(client.discoverUnique("people"));
+		String personHref = JsonPath.read(response.getContentAsString(), "$._embedded.people[0]._links.self.href");
+
+		response = mvc.perform(head(personHref))//
+				.andExpect(status().isNoContent())//
+				.andReturn().getResponse();
+
+		Links links = Links.valueOf(response.getHeader("Link"));
+		assertThat(links.hasLink("self"), is(true));
+		assertThat(links.hasLink("person"), is(true));
 	}
 
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {

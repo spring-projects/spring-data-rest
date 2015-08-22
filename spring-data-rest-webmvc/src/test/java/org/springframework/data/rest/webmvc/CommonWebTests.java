@@ -17,18 +17,19 @@
 package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import net.minidev.json.JSONArray;
+
 import java.util.List;
 import java.util.Map;
 
-import net.minidev.json.JSONArray;
-
 import org.junit.Test;
-
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Links;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -205,7 +206,8 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 		mvc.perform(//
 				get(profileLink.expand().getHref()).//
-						accept(ALPS_MEDIA_TYPE)).//
+						accept(ALPS_MEDIA_TYPE))
+				.//
 				andExpect(status().isOk()).//
 				andExpect(content().contentType(ALPS_MEDIA_TYPE));
 	}
@@ -218,5 +220,26 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 		mvc.perform(get("/index.html")).//
 				andExpect(status().isNotFound());
+	}
+
+	/**
+	 * @see DATAREST-658
+	 */
+	@Test
+	public void collectionResourcesExposeLinksAsHeadersForHeadRequest() throws Exception {
+
+		for (String rel : expectedRootLinkRels()) {
+
+			Link link = client.discoverUnique(rel);
+
+			MockHttpServletResponse response = mvc.perform(head(link.expand().getHref()))//
+					.andExpect(status().isNoContent())//
+					.andReturn().getResponse();
+
+			Links links = Links.valueOf(response.getHeader("Link"));
+
+			assertThat(links.hasLink(Link.REL_SELF), is(true));
+			assertThat(links.hasLink("profile"), is(true));
+		}
 	}
 }

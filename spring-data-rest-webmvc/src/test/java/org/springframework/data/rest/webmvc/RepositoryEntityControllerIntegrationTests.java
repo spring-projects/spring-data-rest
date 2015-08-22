@@ -34,6 +34,7 @@ import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
+import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
@@ -92,8 +93,8 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		RootResourceInformation information = getResourceInformation(Order.class);
 
-		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
-				entities.getPersistentEntity(Order.class)).build();
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource
+				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
 
 		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler,
 				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
@@ -106,7 +107,8 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	 */
 	@Test
 	public void exposesHeadForCollectionResourceIfExported() throws Exception {
-		ResponseEntity<?> entity = controller.headCollectionResource(getResourceInformation(Person.class));
+		ResponseEntity<?> entity = controller.headCollectionResource(getResourceInformation(Person.class),
+				new DefaultedPageable(null, false));
 		assertThat(entity.getStatusCode(), is(HttpStatus.NO_CONTENT));
 	}
 
@@ -115,7 +117,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	 */
 	@Test(expected = ResourceNotFoundException.class)
 	public void doesNotExposeHeadForCollectionResourceIfNotExported() throws Exception {
-		controller.headCollectionResource(getResourceInformation(CreditCard.class));
+		controller.headCollectionResource(getResourceInformation(CreditCard.class), new DefaultedPageable(null, false));
 	}
 
 	/**
@@ -181,10 +183,11 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		List<String> value = entity.getHeaders().get("Accept-Patch");
 
 		assertThat(value, hasSize(3));
-		assertThat(value, hasItems(//
-				RestMediaTypes.JSON_PATCH_JSON.toString(), //
-				RestMediaTypes.MERGE_PATCH_JSON.toString(), //
-				MediaType.APPLICATION_JSON_VALUE));
+		assertThat(value,
+				hasItems(//
+						RestMediaTypes.JSON_PATCH_JSON.toString(), //
+						RestMediaTypes.MERGE_PATCH_JSON.toString(), //
+						MediaType.APPLICATION_JSON_VALUE));
 	}
 
 	/**
@@ -196,12 +199,11 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		RootResourceInformation request = getResourceInformation(Order.class);
 		Order order = request.getInvoker().invokeSave(new Order(new Person()));
 
-		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
-				entities.getPersistentEntity(Order.class)).build();
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource
+				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
 
-		assertThat(
-				controller.putItemResource(request, persistentEntityResource, order.getId(), assembler, ETag.NO_ETAG,
-						MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
+		assertThat(controller.putItemResource(request, persistentEntityResource, order.getId(), assembler, ETag.NO_ETAG,
+				MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
 	}
 
 	/**
@@ -211,12 +213,11 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	public void returnsBodyForCreatingPutIfAcceptHeaderPresentByDefault() throws HttpRequestMethodNotSupportedException {
 
 		RootResourceInformation request = getResourceInformation(Order.class);
-		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
-				entities.getPersistentEntity(Order.class)).build();
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource
+				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
 
-		assertThat(
-				controller.putItemResource(request, persistentEntityResource, 1L, assembler, ETag.NO_ETAG,
-						MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
+		assertThat(controller.putItemResource(request, persistentEntityResource, 1L, assembler, ETag.NO_ETAG,
+				MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
 	}
 
 	/**
@@ -226,12 +227,12 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	public void returnsBodyForPostIfAcceptHeaderIsPresentByDefault() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Order.class);
-		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
-				entities.getPersistentEntity(Order.class)).build();
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource
+				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
 
-		assertThat(
-				controller.postCollectionResource(request, persistentEntityResource, assembler,
-						MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
+		assertThat(controller
+				.postCollectionResource(request, persistentEntityResource, assembler, MediaType.APPLICATION_JSON_VALUE)
+				.hasBody(), is(true));
 	}
 
 	/**
@@ -241,12 +242,13 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	public void doesNotReturnBodyForPostIfNoAcceptHeaderPresentByDefault() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Order.class);
-		PersistentEntityResource persistentEntityResource = PersistentEntityResource.build(new Order(new Person()),
-				entities.getPersistentEntity(Order.class)).build();
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource
+				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
 
 		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, null).hasBody(),
 				is(false));
-		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, "").hasBody(), is(false));
+		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, "").hasBody(),
+				is(false));
 	}
 
 	/**

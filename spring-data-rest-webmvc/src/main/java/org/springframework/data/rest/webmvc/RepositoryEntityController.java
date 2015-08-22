@@ -54,6 +54,7 @@ import org.springframework.data.rest.webmvc.support.ETagDoesntMatchException;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Links;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
@@ -87,6 +88,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			MediaType.APPLICATION_JSON_VALUE);
 
 	private static final String ACCEPT_HEADER = "Accept";
+	private static final String LINK_HEADER = "Link";
 
 	private final RepositoryEntityLinks entityLinks;
 	private final RepositoryRestConfiguration config;
@@ -94,6 +96,18 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	private ApplicationEventPublisher publisher;
 
+	/**
+	 * Creates a new {@link RepositoryEntityController} for the given {@link Repositories},
+	 * {@link RepositoryRestConfiguration}, {@link RepositoryEntityLinks}, {@link PagedResourcesAssembler},
+	 * {@link ConversionService} and {@link AuditableBeanWrapperFactory}.
+	 * 
+	 * @param repositories must not be {@literal null}.
+	 * @param config must not be {@literal null}.
+	 * @param entityLinks must not be {@literal null}.
+	 * @param assembler must not be {@literal null}.
+	 * @param conversionService must not be {@literal null}.
+	 * @param auditableBeanWrapperFactory must not be {@literal null}.
+	 */
 	@Autowired
 	public RepositoryEntityController(Repositories repositories, RepositoryRestConfiguration config,
 			RepositoryEntityLinks entityLinks, PagedResourcesAssembler<Object> assembler,
@@ -143,8 +157,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @since 2.2
 	 */
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.HEAD)
-	public ResponseEntity<?> headCollectionResource(RootResourceInformation resourceInformation)
-			throws HttpRequestMethodNotSupportedException {
+	public ResponseEntity<?> headCollectionResource(RootResourceInformation resourceInformation,
+			DefaultedPageable pageable) throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.HEAD, ResourceType.COLLECTION);
 
@@ -154,7 +168,13 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throw new ResourceNotFoundException();
 		}
 
-		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+		List<Link> links = getCollectionResourceLinks(resourceInformation, pageable);
+		links.add(0, getDefaultSelfLink());
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(LINK_HEADER, new Links(links).toString());
+
+		return new ResponseEntity<Object>(headers, HttpStatus.NO_CONTENT);
 	}
 
 	/**
@@ -171,8 +191,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
 	public Resources<?> getCollectionResource(RootResourceInformation resourceInformation, DefaultedPageable pageable,
-			Sort sort, PersistentEntityResourceAssembler assembler) throws ResourceNotFoundException,
-			HttpRequestMethodNotSupportedException {
+			Sort sort, PersistentEntityResourceAssembler assembler)
+					throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.COLLECTION);
 
@@ -191,31 +211,39 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		}
 
 		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
+		Link baseLink = entityLinks.linkToPagedResource(resourceInformation.getDomainType(),
+				pageable.isDefault() ? null : pageable.getPageable());
+
+		Resources<?> result = toResources(results, assembler, metadata.getDomainType(), baseLink);
+		result.add(getCollectionResourceLinks(resourceInformation, pageable));
+		return result;
+	}
+
+	private List<Link> getCollectionResourceLinks(RootResourceInformation resourceInformation,
+			DefaultedPageable pageable) {
+
+		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
 		SearchResourceMappings searchMappings = metadata.getSearchResourceMappings();
+
 		List<Link> links = new ArrayList<Link>();
+
+		links.add(new Link(ProfileController.getPath(this.config, metadata), ProfileResourceProcessor.PROFILE_REL));
 
 		if (searchMappings.isExported()) {
 			links.add(entityLinks.linkFor(metadata.getDomainType()).slash(searchMappings.getPath())
 					.withRel(searchMappings.getRel()));
 		}
 
-		Link baseLink = entityLinks.linkToPagedResource(resourceInformation.getDomainType(), pageable.isDefault() ? null
-				: pageable.getPageable());
-
-		links.add(new Link(ProfileController.getPath(this.config, metadata), ProfileResourceProcessor.PROFILE_REL));
-
-		Resources<?> result = toResources(results, assembler, metadata.getDomainType(), baseLink);
-		result.add(links);
-		return result;
+		return links;
 	}
 
 	@ResponseBody
 	@SuppressWarnings({ "unchecked" })
-	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET, produces = {
-			"application/x-spring-data-compact+json", "text/uri-list" })
+	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET,
+			produces = { "application/x-spring-data-compact+json", "text/uri-list" })
 	public Resources<?> getCollectionResourceCompact(RootResourceInformation repoRequest, DefaultedPageable pageable,
-			Sort sort, PersistentEntityResourceAssembler assembler) throws ResourceNotFoundException,
-			HttpRequestMethodNotSupportedException {
+			Sort sort, PersistentEntityResourceAssembler assembler)
+					throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 
 		Resources<?> resources = getCollectionResource(repoRequest, pageable, sort, assembler);
 		List<Link> links = new ArrayList<Link>(resources.getLinks());
@@ -244,8 +272,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.POST)
 	public ResponseEntity<ResourceSupport> postCollectionResource(RootResourceInformation resourceInformation,
-			PersistentEntityResource payload, PersistentEntityResourceAssembler assembler, @RequestHeader(
-					value = ACCEPT_HEADER, required = false) String acceptHeader) throws HttpRequestMethodNotSupportedException {
+			PersistentEntityResource payload, PersistentEntityResourceAssembler assembler,
+			@RequestHeader(value = ACCEPT_HEADER, required = false) String acceptHeader)
+					throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.POST, ResourceType.COLLECTION);
 
@@ -291,9 +320,12 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throw new ResourceNotFoundException();
 		}
 
-		PersistentEntityResource resource = assembler.toResource(domainObject);
+		Links links = new Links(assembler.toResource(domainObject).getLinks());
 
-		return new ResponseEntity<Object>(prepareHeaders(resource), HttpStatus.NO_CONTENT);
+		HttpHeaders headers = prepareHeaders(resourceInformation.getPersistentEntity(), domainObject);
+		headers.add(LINK_HEADER, links.toString());
+
+		return new ResponseEntity<Object>(headers, HttpStatus.NO_CONTENT);
 	}
 
 	/**
@@ -361,7 +393,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	public ResponseEntity<? extends ResourceSupport> putItemResource(RootResourceInformation resourceInformation,
 			PersistentEntityResource payload, @BackendId Serializable id, PersistentEntityResourceAssembler assembler,
 			ETag eTag, @RequestHeader(value = ACCEPT_HEADER, required = false) String acceptHeader)
-			throws HttpRequestMethodNotSupportedException {
+					throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PUT, ResourceType.ITEM);
 
@@ -399,7 +431,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	public ResponseEntity<ResourceSupport> patchItemResource(RootResourceInformation resourceInformation,
 			PersistentEntityResource payload, @BackendId Serializable id, PersistentEntityResourceAssembler assembler,
 			ETag eTag, @RequestHeader(value = ACCEPT_HEADER, required = false) String acceptHeader)
-			throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
+					throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PATCH, ResourceType.ITEM);
 
