@@ -789,6 +789,19 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	//
+	// Customize the DispatcherServlet
+	//
+
+	/**
+	 * Configure the {@link org.springframework.web.servlet.DispatcherServlet} to dispatch OPTIONS requests
+	 * to the app instead of the container.
+	 */
+	@Bean
+	public DispatcherServletOptionsEnablingBeanPostProcessor dispatcherServletOptionsEnablingBeanPostProcessor() {
+		return new DispatcherServletOptionsEnablingBeanPostProcessor();
+	}
+
+	//
 	// HAL Browser
 	//
 
