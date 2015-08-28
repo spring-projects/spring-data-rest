@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * A Spring HATEOAS {@link Resource} subclass that holds a reference to the entity's {@link PersistentEntity} metadata.
  * 
@@ -36,7 +38,8 @@ import org.springframework.util.Assert;
  */
 public class PersistentEntityResource extends Resource<Object> {
 
-	private static final Iterable<EmbeddedWrapper> NO_EMBEDDEDS = Collections.emptyList();
+	private static final Iterable<EmbeddedWrapper> NO_EMBEDDEDS = new NoLinksResources<EmbeddedWrapper>(
+			Collections.<EmbeddedWrapper> emptyList());
 
 	private final PersistentEntity<?, ?> entity;
 	private final Iterable<EmbeddedWrapper> embeddeds;
@@ -125,7 +128,7 @@ public class PersistentEntityResource extends Resource<Object> {
 		private final PersistentEntity<?, ?> entity;
 		private final List<Link> links = new ArrayList<Link>();
 
-		private Resources<EmbeddedWrapper> embeddeds;
+		private Iterable<EmbeddedWrapper> embeddeds;
 		private boolean renderAllAssociationLinks = false;
 
 		/**
@@ -144,14 +147,15 @@ public class PersistentEntityResource extends Resource<Object> {
 		}
 
 		/**
-		 * Configures the builder to embedd the given E
+		 * Configures the builder to embed the given {@link EmbeddedWrapper} instances. Creates a {@link Resources} instance
+		 * to make sure the {@link EmbeddedWrapper} handling gets applied to the serialization output ignoring the links.
 		 * 
 		 * @param resources can be {@literal null}.
 		 * @return the builder
 		 */
 		public Builder withEmbedded(Iterable<EmbeddedWrapper> resources) {
 
-			this.embeddeds = resources == null ? null : new Resources<EmbeddedWrapper>(resources);
+			this.embeddeds = resources == null ? null : new NoLinksResources<EmbeddedWrapper>(resources);
 			return this;
 		}
 
@@ -197,6 +201,23 @@ public class PersistentEntityResource extends Resource<Object> {
 		 */
 		public PersistentEntityResource forCreation() {
 			return new PersistentEntityResource(entity, content, links, renderAllAssociationLinks, embeddeds, true);
+		}
+	}
+
+	private static class NoLinksResources<T> extends Resources<T> {
+
+		public NoLinksResources(Iterable<T> content) {
+			super(content);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.hateoas.ResourceSupport#getLinks()
+		 */
+		@Override
+		@JsonIgnore
+		public List<Link> getLinks() {
+			return super.getLinks();
 		}
 	}
 }

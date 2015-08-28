@@ -15,14 +15,13 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,37 +43,34 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
+ * Integration tests for DATAREST-363.
+ * 
  * @author Greg Turnquist
+ * @author Oliver Gierke
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = {JpaRepositoryConfig.class, DuplicateLinkListingTests.ClassicConfiguration.class,
-		DuplicateLinkListingTests.Config.class })
+@ContextConfiguration(classes = { JpaRepositoryConfig.class, DuplicateLinkListingTests.Config.class })
 public class DuplicateLinkListingTests {
+
+	private static MediaType MEDIA_TYPE = MediaType.APPLICATION_JSON;
 
 	@Autowired WebApplicationContext context;
 	@Autowired LinkDiscoverers discoverers;
 	@Autowired PersonRepository personRepository;
 
-	private static MediaType MEDIA_TYPE = MediaType.APPLICATION_JSON;
-
-	protected TestMvcClient testMvcClient;
-	protected MockMvc mvc;
+	TestMvcClient testMvcClient;
 
 	@Configuration
-	static class Config {
+	static class Config extends RepositoryRestMvcConfiguration {
 
 		@Bean
 		public LinkDiscoverer classicLinkDiscover() {
 			return new JsonPathLinkDiscoverer("$.links[?(@.rel == '%s')].href", MEDIA_TYPE);
 		}
-	}
-
-	@Configuration
-	static class ClassicConfiguration extends RepositoryRestMvcConfiguration {
 
 		@Override
-		protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 			config.setDefaultMediaType(MEDIA_TYPE).useHalAsDefaultJsonMediaType(false);
 		}
 	}
@@ -82,18 +78,21 @@ public class DuplicateLinkListingTests {
 	@Before
 	public void setUp() {
 
-		mvc = MockMvcBuilders.webAppContextSetup(context).//
+		MockMvc mvc = MockMvcBuilders.webAppContextSetup(context).//
 				defaultRequest(get("/")).build();
 		testMvcClient = new TestMvcClient(mvc, discoverers);
 
 		personRepository.save(new Person("Frodo", "Baggins"));
 	}
 
+	/**
+	 * @see DATAREST-363
+	 */
 	@Test
 	public void testBasics() throws Exception {
 
 		ResultActions frodoActions = testMvcClient.follow("/people/1");
 
-		frodoActions.andExpect(jsonPath("$.links").value(hasSize(1)));
+		frodoActions.andExpect(jsonPath("$.links").value(hasSize(3)));
 	}
 }
