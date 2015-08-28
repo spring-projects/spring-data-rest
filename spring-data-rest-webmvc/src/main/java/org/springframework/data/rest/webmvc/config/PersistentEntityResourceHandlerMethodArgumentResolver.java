@@ -155,7 +155,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 		if (request.isPatchRequest() && converter instanceof MappingJackson2HttpMessageConverter) {
 
 			if (objectToUpdate == null) {
-				new ResourceNotFoundException();
+				throw new ResourceNotFoundException();
 			}
 
 			ObjectMapper mapper = ((MappingJackson2HttpMessageConverter) converter).getObjectMapper();
