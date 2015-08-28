@@ -21,6 +21,9 @@ import static org.junit.Assume.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import net.minidev.json.JSONArray;
+
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +32,7 @@ import net.minidev.json.JSONArray;
 import org.junit.Test;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.ResultActions;
@@ -206,5 +210,28 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 		mvc.perform(get("/index.html")).//
 				andExpect(status().isNotFound());
+	}
+
+	/**
+	 * @see DATAREST-661
+	 */
+	@Test
+	public void patchToNonExistingResourceReturnsNotFound() throws Exception {
+
+		String rel = expectedRootLinkRels().iterator().next();
+		String uri = client.discoverUnique(rel).expand().getHref().concat("/");
+		String id = "4711";
+		Integer status = null;
+
+		do {
+
+			// Try to find non existing resource
+			uri = uri.concat(id);
+			status = mvc.perform(get(URI.create(uri))).andReturn().getResponse().getStatus();
+
+		} while (status != HttpStatus.NOT_FOUND.value());
+
+		// PATCH to non-existing resource
+		mvc.perform(patch(URI.create(uri))).andExpect(status().isNotFound());
 	}
 }
