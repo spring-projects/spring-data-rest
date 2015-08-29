@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.CollectionFactory;
@@ -68,6 +67,7 @@ import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.deser.std.CollectionDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerBuilder;
@@ -366,6 +366,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * {@link UriToEntityConverter}.
 	 * 
 	 * @author Oliver Gierke
+	 * @author Valentin Rentschler
 	 */
 	static class UriStringDeserializer extends StdDeserializer<Object> {
 
@@ -414,10 +415,16 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		/**
-		 * Deserialize by ignoring typeDeserializer, as URI will either resolve to null or concrete instance
+		 * Deserialize by ignoring the {@link TypeDeserializer}, as URIs will either resolve to {@literal null} or a
+		 * concrete instance anyway.
+		 * 
+		 * @see com.fasterxml.jackson.databind.deser.std.StdDeserializer#deserializeWithType(com.fasterxml.jackson.core.JsonParser,
+		 *      com.fasterxml.jackson.databind.DeserializationContext,
+		 *      com.fasterxml.jackson.databind.jsontype.TypeDeserializer)
 		 */
 		@Override
-		public Object deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+		public Object deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer typeDeserializer)
+				throws IOException {
 			return deserialize(jp, ctxt);
 		}
 	}
