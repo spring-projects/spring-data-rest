@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
+import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 
 import org.junit.Before;
@@ -25,12 +28,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.hateoas.UriTemplate;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.jayway.jsonpath.JsonPath;
@@ -44,6 +53,8 @@ import com.jayway.jsonpath.JsonPath;
 public class PersistentEntityJackson2ModuleUnitTests {
 
 	@Mock AssociationLinks associationLinks;
+	@Mock PersistentEntities repositories;
+	@Mock UriToEntityConverter converter;
 
 	ObjectMapper mapper;
 
@@ -88,6 +99,46 @@ public class PersistentEntityJackson2ModuleUnitTests {
 
 		String result = mapper.writeValueAsString(sample);
 		assertThat(JsonPath.read(result, "$.number"), is((Object) 5));
+	}
+
+	/**
+	 * @see DATAREST-662
+	 */
+	@Test
+	public void isAbleToResolveSubclassedProperty() throws IOException {
+		PersistentEntity petOwnerPersistentEntity = mock(PersistentEntity.class);
+		PersistentProperty petProperty = mock(PersistentProperty.class);
+		when(petProperty.isCollectionLike()).thenReturn(false);
+		when(petProperty.getActualType()).thenReturn(Pet.class);
+		when(petOwnerPersistentEntity.getPersistentProperty("pet")).thenReturn(petProperty);
+		when(repositories.getPersistentEntity(PetOwner.class)).thenReturn(petOwnerPersistentEntity);
+		when(associationLinks.isLinkableAssociation(petProperty)).thenReturn(true);
+		when(converter.convert(new UriTemplate("/pets/1").expand(), TypeDescriptor.valueOf(URI.class),
+				TypeDescriptor.valueOf(Pet.class))).thenReturn(new Cat());
+
+		PetOwner petOwner = mapper.readValue("{\"pet\":\"/pets/1\"}", PetOwner.class);
+
+		assertNotNull(petOwner);
+		assertNotNull(petOwner.getPet());
+	}
+
+	static class PetOwner {
+
+		private Pet pet;
+
+		public Pet getPet() {
+			return pet;
+		}
+
+	}
+
+	@JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.MINIMAL_CLASS)
+	static class Pet {
+
+	}
+
+	static class Cat extends Pet {
+
 	}
 
 	static class Sample {

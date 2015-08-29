@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.CollectionFactory;
@@ -408,6 +409,14 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			} catch (IllegalArgumentException o_O) {
 				throw ctxt.weirdStringException(source, URI.class, String.format(UNEXPECTED_VALUE, property));
 			}
+		}
+
+		/**
+		 * Deserialize by ignoring typeDeserializer, as URI will either resolve to null or concrete instance
+		 */
+		@Override
+		public Object deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+			return deserialize(jp, ctxt);
 		}
 	}
 
