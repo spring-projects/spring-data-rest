@@ -29,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
@@ -48,14 +47,15 @@ import com.jayway.jsonpath.JsonPath;
  * Unit tests for {@link PersistentEntityJackson2Module}.
  * 
  * @author Oliver Gierke
+ * @author Valentin Rentschler
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PersistentEntityJackson2ModuleUnitTests {
 
 	@Mock AssociationLinks associationLinks;
-	@Mock PersistentEntities repositories;
 	@Mock UriToEntityConverter converter;
 
+	PersistentEntities persistentEntities;
 	ObjectMapper mapper;
 
 	@Before
@@ -64,15 +64,20 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		MongoMappingContext mappingContext = new MongoMappingContext();
 		mappingContext.getPersistentEntity(Sample.class);
 		mappingContext.getPersistentEntity(SampleWithAdditionalGetters.class);
+		mappingContext.getPersistentEntity(PersistentEntityJackson2ModuleUnitTests.PetOwner.class);
 
-		PersistentEntities persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
+		this.persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
 
 		SimpleModule module = new SimpleModule();
 		module.setSerializerModifier(new PersistentEntityJackson2Module.AssociationOmittingSerializerModifier(
 				persistentEntities, associationLinks, new RepositoryRestConfiguration()));
 
+		module.setDeserializerModifier(new PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier(
+				persistentEntities, converter, associationLinks));
+
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(module);
+
 	}
 
 	/**
@@ -105,41 +110,34 @@ public class PersistentEntityJackson2ModuleUnitTests {
 	 * @see DATAREST-662
 	 */
 	@Test
-	public void isAbleToResolveSubclassedProperty() throws IOException {
-		PersistentEntity petOwnerPersistentEntity = mock(PersistentEntity.class);
-		PersistentProperty petProperty = mock(PersistentProperty.class);
-		when(petProperty.isCollectionLike()).thenReturn(false);
-		when(petProperty.getActualType()).thenReturn(Pet.class);
-		when(petOwnerPersistentEntity.getPersistentProperty("pet")).thenReturn(petProperty);
-		when(repositories.getPersistentEntity(PetOwner.class)).thenReturn(petOwnerPersistentEntity);
-		when(associationLinks.isLinkableAssociation(petProperty)).thenReturn(true);
+	public void resolvesReferenceToSubtypeCorrectly() throws IOException {
+
+		PersistentProperty<?> property = persistentEntities.getPersistentEntity(PetOwner.class)
+				.getPersistentProperty("pet");
+
+		when(associationLinks.isLinkableAssociation(property)).thenReturn(true);
 		when(converter.convert(new UriTemplate("/pets/1").expand(), TypeDescriptor.valueOf(URI.class),
 				TypeDescriptor.valueOf(Pet.class))).thenReturn(new Cat());
 
 		PetOwner petOwner = mapper.readValue("{\"pet\":\"/pets/1\"}", PetOwner.class);
 
-		assertNotNull(petOwner);
-		assertNotNull(petOwner.getPet());
+		assertThat(petOwner, is(notNullValue()));
+		assertThat(petOwner.getPet(), is(notNullValue()));
 	}
 
 	static class PetOwner {
 
-		private Pet pet;
+		Pet pet;
 
 		public Pet getPet() {
 			return pet;
 		}
-
 	}
 
 	@JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.MINIMAL_CLASS)
-	static class Pet {
+	static class Pet {}
 
-	}
-
-	static class Cat extends Pet {
-
-	}
+	static class Cat extends Pet {}
 
 	static class Sample {
 		public @JsonProperty("foo") String name;

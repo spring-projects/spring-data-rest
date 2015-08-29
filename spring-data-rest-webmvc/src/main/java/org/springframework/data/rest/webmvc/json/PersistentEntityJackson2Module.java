@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.CollectionFactory;
@@ -63,6 +62,7 @@ import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.deser.std.CollectionDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerBuilder;
@@ -364,6 +364,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * {@link UriToEntityConverter}.
 	 * 
 	 * @author Oliver Gierke
+	 * @author Valentin Rentschler
 	 */
 	static class UriStringDeserializer extends StdDeserializer<Object> {
 
@@ -412,10 +413,16 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		/**
-		 * Deserialize by ignoring typeDeserializer, as URI will either resolve to null or concrete instance
+		 * Deserialize by ignoring the {@link TypeDeserializer}, as URIs will either resolve to {@literal null} or a
+		 * concrete instance anyway.
+		 * 
+		 * @see com.fasterxml.jackson.databind.deser.std.StdDeserializer#deserializeWithType(com.fasterxml.jackson.core.JsonParser,
+		 *      com.fasterxml.jackson.databind.DeserializationContext,
+		 *      com.fasterxml.jackson.databind.jsontype.TypeDeserializer)
 		 */
 		@Override
-		public Object deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+		public Object deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer typeDeserializer)
+				throws IOException {
 			return deserialize(jp, ctxt);
 		}
 	}
