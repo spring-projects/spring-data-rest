@@ -19,15 +19,22 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
@@ -38,6 +45,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.jayway.jsonpath.JsonPath;
+import org.springframework.hateoas.UriTemplate;
 
 /**
  * Unit tests for {@link PersistentEntityJackson2Module}.
@@ -48,6 +56,8 @@ import com.jayway.jsonpath.JsonPath;
 public class PersistentEntityJackson2ModuleUnitTests {
 
 	@Mock AssociationLinks associationLinks;
+	@Mock PersistentEntities repositories;
+	@Mock UriToEntityConverter converter;
 
 	ObjectMapper mapper;
 
@@ -64,6 +74,9 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		module.setSerializerModifier(new PersistentEntityJackson2Module.AssociationOmittingSerializerModifier(
 				persistentEntities, associationLinks, new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
 						new MetadataConfiguration(), mock(EnumTranslationConfiguration.class))));
+
+		module.setDeserializerModifier(new PersistentEntityJackson2Module.
+				AssociationUriResolvingDeserializerModifier(repositories, converter, associationLinks));
 
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(module);
@@ -93,6 +106,46 @@ public class PersistentEntityJackson2ModuleUnitTests {
 
 		String result = mapper.writeValueAsString(sample);
 		assertThat(JsonPath.read(result, "$.number"), is((Object) 5));
+	}
+
+	/**
+	 * @see DATAREST-662
+	 */
+	@Test
+	public void isAbleToResolveSubclassedProperty() throws IOException {
+		PersistentEntity petOwnerPersistentEntity = mock(PersistentEntity.class);
+		PersistentProperty petProperty = mock(PersistentProperty.class);
+		when(petProperty.isCollectionLike()).thenReturn(false);
+		when(petProperty.getActualType()).thenReturn(Pet.class);
+		when(petOwnerPersistentEntity.getPersistentProperty("pet")).thenReturn(petProperty);
+		when(repositories.getPersistentEntity(PetOwner.class)).thenReturn(petOwnerPersistentEntity);
+		when(associationLinks.isLinkableAssociation(petProperty)).thenReturn(true);
+		when(converter.convert(new UriTemplate("/pets/1").expand(), TypeDescriptor.valueOf(URI.class),
+				TypeDescriptor.valueOf(Pet.class))).thenReturn(new Cat());
+
+		PetOwner petOwner = mapper.readValue("{\"pet\":\"/pets/1\"}", PetOwner.class);
+
+		assertNotNull(petOwner);
+		assertNotNull(petOwner.getPet());
+	}
+
+	static class PetOwner {
+
+		private Pet pet;
+
+		public Pet getPet() {
+			return pet;
+		}
+
+	}
+
+	@JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.MINIMAL_CLASS)
+	static class Pet {
+
+	}
+
+	static class Cat extends Pet {
+
 	}
 
 	static class Sample {
