@@ -16,7 +16,6 @@
 	</parent>
 
 	<properties>
-		<spring.hateoas>0.19.0.BUILD-SNAPSHOT</spring.hateoas>
 		<springplugin>1.2.0.RELEASE</springplugin>
 		<evoinflector>1.2.1</evoinflector>
 	</properties>
@@ -31,7 +30,7 @@
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
-			<version>${spring.hateoas}</version>
+			<version>${spring-hateoas}</version>
 		</dependency>
 
 		<dependency>
