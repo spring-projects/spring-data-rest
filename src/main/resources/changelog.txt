@@ -1,6 +1,22 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.4.0.RELEASE (2015-09-01)
+---------------------------------------------
+* DATAREST-663 - Release 2.4 GA (Gosling).
+* DATAREST-662 - Unable to post entity with subclassed property (JPA).
+* DATAREST-658 - Return resource links as headers for HEAD requests.
+* DATAREST-655 - Typo in exception message in parameter checks for ParameterMetadata.
+* DATAREST-654 - Add support for enum value serialization.
+* DATAREST-651 - Upgrade to Spring HATOEAS 0.19.
+* DATAREST-647 - Remove unnecessary loading of the entity in RepositoryEntityController.patchItemResource(…) / putItemResource(…).
+* DATAREST-644 - Improve JSON Schema output.
+* DATAREST-627 - Extend Spring Data shipped HAL browser to use resource metadata.
+* DATAREST-626 - _embedded resource with curie namespace not rendering in HAL browser.
+* DATAREST-623 - Extend reference documentation to show how to programmatically link to endpoints.
+* DATAREST-363 - Latest SNAPSHOT return multiple links attribute.
+
+
 Changes in version 2.4.0.RC1 (2015-08-04)
 -----------------------------------------
 * DATAREST-634 - Release 2.4 RC1 (Gosling).
