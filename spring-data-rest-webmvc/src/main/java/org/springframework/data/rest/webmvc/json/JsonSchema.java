@@ -38,6 +38,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 /**
  * Model class to render JSON schema documents.
@@ -326,7 +328,7 @@ public class JsonSchema {
 
 		public String description;
 		public String type;
-		public JsonSchemaFormat format;
+		public @JsonSerialize(using = ToStringSerializer.class) JsonSchemaFormat format;
 		public String pattern;
 		public Boolean uniqueItems;
 		public @JsonProperty("$ref") String reference;
