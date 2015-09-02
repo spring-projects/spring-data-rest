@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -40,7 +41,6 @@ import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
-import org.springframework.data.rest.core.mapping.SimpleResourceDescription;
 import org.springframework.data.rest.webmvc.json.JsonSchema.AbstractJsonSchemaProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.Definitions;
 import org.springframework.data.rest.webmvc.json.JsonSchema.EnumProperty;
@@ -148,8 +148,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		List<AbstractJsonSchemaProperty<?>> propertiesFor = getPropertiesFor(persistentEntity.getType(), metadata,
 				descriptors);
 
-		String title = resolveMessageWithDefault(new DefaultMessageSourceResolvable(
-				SimpleResourceDescription.DEFAULT_KEY_PREFIX.concat(".").concat(persistentEntity.getType().getSimpleName())));
+		String title = resolveMessageWithDefault(new ResolvableType(persistentEntity.getType()));
 
 		return new JsonSchema(title, resolveMessage(metadata.getItemResourceDescription()), propertiesFor, descriptors);
 	}
@@ -261,13 +260,11 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		return getPropertiesFor(property.getActualType(), mappings.getMetadataFor(property.getActualType()), descriptors);
 	}
 
-	@SuppressWarnings("unchecked")
 	private JsonSchemaProperty getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,
 			ResourceDescription description) {
 
 		String name = definition.getName();
-		String title = resolveMessageWithDefault(
-				new DefaultMessageSourceResolvable(description.getMessage().concat("._title")));
+		String title = resolveMessageWithDefault(new ResolvableProperty(definition));
 		String resolvedDescription = resolveMessage(description);
 		boolean required = definition.isRequired();
 		Class<?> rawType = type.getType();
@@ -415,6 +412,66 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 			return StringUtils.capitalize(StringUtils
 					.collectionToDelimitedString(Arrays.asList(SPLIT_CAMEL_CASE.split(tail)), " ").toLowerCase(Locale.US));
+		}
+	}
+
+	/**
+	 * A {@link BeanPropertyDefinition} that can be resolved via a {@link MessageSource}.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.4.1
+	 */
+	private static class ResolvableProperty extends DefaultMessageSourceResolvable {
+
+		private static final long serialVersionUID = -5603381674553244480L;
+
+		/**
+		 * Creates a new {@link ResolvableProperty} for the given {@link BeanPropertyDefinition}.
+		 * 
+		 * @param property must not be {@literal null}.
+		 */
+		public ResolvableProperty(BeanPropertyDefinition property) {
+			super(getCodes(property));
+		}
+
+		private static String[] getCodes(BeanPropertyDefinition property) {
+
+			Assert.notNull(property, "BeanPropertyDefinition must not be null!");
+
+			Class<?> owner = property.getPrimaryMember().getDeclaringClass();
+
+			String propertyTitle = property.getInternalName().concat("._title");
+			String localName = owner.getSimpleName().concat(".").concat(propertyTitle);
+			String fullName = owner.getName().concat(".").concat(propertyTitle);
+
+			return new String[] { fullName, localName, propertyTitle };
+		}
+	}
+
+	/**
+	 * A type whose title can be resolved through a {@link MessageSource}.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.4.1
+	 */
+	private static class ResolvableType extends DefaultMessageSourceResolvable {
+
+		private static final long serialVersionUID = -7199875272753949857L;
+
+		/**
+		 * Creates a new {@link ResolvableType} for the given type.
+		 * 
+		 * @param type must not be {@literal null}.
+		 */
+		public ResolvableType(Class<?> type) {
+			super(getTitleCodes(type));
+		}
+
+		private static String[] getTitleCodes(Class<?> type) {
+
+			Assert.notNull(type, "Type must not be null!");
+
+			return new String[] { type.getName().concat("._title"), type.getSimpleName().concat("._title") };
 		}
 	}
 }

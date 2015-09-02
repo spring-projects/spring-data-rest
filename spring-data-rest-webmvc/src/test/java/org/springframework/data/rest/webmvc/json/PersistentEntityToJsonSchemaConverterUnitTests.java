@@ -146,6 +146,12 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		constraints.add(new Constraint("$.properties.shippingAddresses.title", is("Shipping addresses"),
 				"Defaults titles correctly (split at camel case)"));
 
+		// DATAREST-665
+		constraints.add(new Constraint("$.properties.address.title", is("Adresse"), "I18n from simple property"));
+		constraints.add(new Constraint("$.properties.gender.title", is("Geschlecht"), "I18n from property on local type"));
+		constraints.add(
+				new Constraint("$.properties.firstname.title", is("Vorname"), "I18n from property on fully-qualified type"));
+
 		assertConstraints(User.class, constraints);
 	}
 
