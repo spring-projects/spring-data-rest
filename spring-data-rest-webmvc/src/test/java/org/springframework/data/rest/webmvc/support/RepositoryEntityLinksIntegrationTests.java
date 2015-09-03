@@ -174,4 +174,17 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		UriComponents components = UriComponentsBuilder.fromUriString(link.getHref()).build();
 		assertThat(components.getQueryParams(), hasKey("sort"));
 	}
+
+	/**
+	 * @see DATAREST-668
+	 * @see DATAREST-519
+	 * @see DATAREST-467
+	 */
+	@Test
+	public void addsProjectVariableToSearchResourceIfAvailable() {
+
+		for (Link link : entityLinks.linksToSearchResources(Book.class)) {
+			assertThat(link.getVariableNames(), hasItem("projection"));
+		}
+	}
 }
