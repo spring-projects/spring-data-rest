@@ -1,10 +1,11 @@
 [[spring-data-rest-reference]]
-= Spring Data REST Reference Documentation
+= Spring Data REST - Reference Documentation
 Jon Brisbin, Oliver Gierke, Greg Turnquist
 :revnumber: {version}
 :revdate: {localdate}
 :toc:
 :toc-placement!:
+:spring-data-commons-docs: ../../../../spring-data-commons/src/main/asciidoc
 
 (C) 2012-2015 Original authors
 
@@ -13,6 +14,9 @@ NOTE: _Copies of this document may be made for your own use and for distribution
 toc::[]
 
 include::preface.adoc[]
+:leveloffset: +1
+include::{spring-data-commons-docs}/dependencies.adoc[]
+:leveloffset: -1
 
 [[reference]]
 = Reference Documentation
