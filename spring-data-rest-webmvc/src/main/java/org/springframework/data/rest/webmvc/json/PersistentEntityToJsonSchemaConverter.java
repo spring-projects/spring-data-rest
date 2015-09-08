@@ -166,8 +166,6 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		JsonSchemaPropertyRegistrar registrar = new JsonSchemaPropertyRegistrar(jackson);
 
-		// final List<JsonSchemaProperty<?>> properties = new ArrayList<JsonSchema.JsonSchemaProperty<?>>();
-
 		for (BeanPropertyDefinition definition : jackson) {
 
 			PersistentProperty<?> persistentProperty = entity.getPersistentProperty(definition.getInternalName());
@@ -180,6 +178,10 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 				}
 
 				if (persistentProperty.isVersionProperty()) {
+					continue;
+				}
+
+				if (!definition.couldSerialize()) {
 					continue;
 				}
 			}
