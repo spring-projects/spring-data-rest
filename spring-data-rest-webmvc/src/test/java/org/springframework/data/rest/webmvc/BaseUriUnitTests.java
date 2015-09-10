@@ -87,4 +87,13 @@ public class BaseUriUnitTests {
 		assertThat(uri.getRepositoryLookupPath("/foo/people"), is("/people"));
 		assertThat(uri.getRepositoryLookupPath("/foo/people/"), is("/people"));
 	}
+
+	/**
+	 * @see DATAREST-674
+	 * @see SPR-13455
+	 */
+	@Test
+	public void repositoryLookupPathHandlesDoubleSlashes() {
+		assertThat(BaseUri.NONE.getRepositoryLookupPath("/books//1"), is("/books/1"));
+	}
 }
