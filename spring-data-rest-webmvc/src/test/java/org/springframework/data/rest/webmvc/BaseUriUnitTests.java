@@ -111,4 +111,13 @@ public class BaseUriUnitTests {
 		ServletWebRequest request = new ServletWebRequest(new MockHttpServletRequest("GET", "/foo/bar{?projection}"));
 		assertThat(uri.getRepositoryLookupPath(request), is("/bar"));
 	}
+
+	/**
+	 * @see DATAREST-674
+	 * @see SPR-13455
+	 */
+	@Test
+	public void repositoryLookupPathHandlesDoubleSlashes() {
+		assertThat(BaseUri.NONE.getRepositoryLookupPath("/books//1"), is("/books/1"));
+	}
 }
