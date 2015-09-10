@@ -111,6 +111,9 @@ public class BaseUri {
 
 		Assert.notNull(lookupPath, "Lookup path must not be null!");
 
+		// Temporary fix for SPR-13455
+		lookupPath = lookupPath.replaceAll("//", "/");
+		
 		lookupPath = trimTrailingCharacter(lookupPath, '/');
 
 		if (!baseUri.isAbsolute()) {
