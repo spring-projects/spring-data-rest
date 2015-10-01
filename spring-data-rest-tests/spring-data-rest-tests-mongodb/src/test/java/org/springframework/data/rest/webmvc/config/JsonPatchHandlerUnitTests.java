@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.tests.mongodb.TestUtils.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.junit.Before;
@@ -119,7 +120,7 @@ public class JsonPatchHandlerUnitTests {
 		User christoph = new User();
 		christoph.firstname = "Christoph";
 
-		this.user.colleagues = Arrays.asList(thomas, christoph);
+		this.user.colleagues = new ArrayList<User>(Arrays.asList(thomas, christoph));
 
 		String input = "[{ \"op\": \"remove\", \"path\": \"/colleagues/0\" }]";
 

@@ -16,26 +16,18 @@
 package org.springframework.data.rest.webmvc.config;
 
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.util.List;
 
 import org.springframework.data.rest.webmvc.IncomingRequest;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
+import org.springframework.data.rest.webmvc.json.patch.JsonPatchPatchConverter;
+import org.springframework.data.rest.webmvc.json.patch.Patch;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.type.CollectionType;
-import com.github.fge.jackson.jsonpointer.JsonPointer;
-import com.github.fge.jsonpatch.JsonPatchOperation;
-import com.github.fge.jsonpatch.RemoveOperation;
-import com.github.fge.jsonpatch.ReplaceOperation;
 
 /**
  * Component to apply JSON Patch and JSON Merge Patch payloads to existing domain objects. The implementation uses the
@@ -48,16 +40,6 @@ import com.github.fge.jsonpatch.ReplaceOperation;
  * @see http://tools.ietf.org/html/draft-ietf-appsawg-json-merge-patch-02
  */
 class JsonPatchHandler {
-
-	private static final Field PATH_FIELD;
-
-	static {
-
-		Field field = ReflectionUtils.findField(JsonPatchOperation.class, "path");
-		ReflectionUtils.makeAccessible(field);
-
-		PATH_FIELD = field;
-	}
 
 	private final ObjectMapper mapper;
 	private final ObjectMapper sourceMapper;
@@ -104,26 +86,7 @@ class JsonPatchHandler {
 
 	<T> T applyPatch(InputStream source, T target) throws Exception {
 
-		List<JsonPatchOperation> readValue = getPatchOperations(source);
-
-		JsonNode existingAsNode = mapper.readTree(sourceMapper.writeValueAsBytes(target));
-		JsonNode patchedNode = existingAsNode;
-
-		for (JsonPatchOperation operation : readValue) {
-
-			if (operation instanceof RemoveOperation) {
-
-				// Replace remove operation with replace operation and a value of null.
-				JsonPointer path = (JsonPointer) ReflectionUtils.getField(PATH_FIELD, operation);
-				patchedNode = isCollectionElementReference(path) ? operation.apply(patchedNode)
-						: new ReplaceOperation(path, NullNode.getInstance()).apply(patchedNode);
-
-			} else {
-				patchedNode = operation.apply(patchedNode);
-			}
-		}
-
-		return reader.merge((ObjectNode) patchedNode, target, mapper);
+		return getPatchOperations(source).apply(target, (Class<T>) target.getClass());
 	}
 
 	<T> T applyMergePatch(InputStream source, T existingObject) throws Exception {
@@ -141,40 +104,13 @@ class JsonPatchHandler {
 	 * @return
 	 * @throws HttpMessageNotReadableException in case the payload can't be read.
 	 */
-	private List<JsonPatchOperation> getPatchOperations(InputStream source) {
-
-		CollectionType listOfOperationsType = mapper.getTypeFactory().constructCollectionType(List.class,
-				JsonPatchOperation.class);
+	private Patch getPatchOperations(InputStream source) {
 
 		try {
-			return mapper.readValue(source, listOfOperationsType);
+			return new JsonPatchPatchConverter().convert(mapper.readTree(source));
 		} catch (Exception o_O) {
 			throw new HttpMessageNotReadableException(
 					String.format("Could not read PATCH operations! Expected %s!", RestMediaTypes.JSON_PATCH_JSON), o_O);
-		}
-	}
-
-	/**
-	 * Returns whether the trailing element of the given {@link JsonPointer} is a pointer into an array or collection.
-	 * 
-	 * @param pointer must not be {@literal null}.
-	 * @return
-	 */
-	private static boolean isCollectionElementReference(JsonPointer pointer) {
-
-		String[] segments = pointer.toString().split("/");
-
-		if (segments.length == 0) {
-			return false;
-		}
-
-		String trailing = segments[segments.length - 1];
-
-		try {
-			Integer.parseInt(trailing);
-			return true;
-		} catch (NumberFormatException o_O) {
-			return false;
 		}
 	}
 }

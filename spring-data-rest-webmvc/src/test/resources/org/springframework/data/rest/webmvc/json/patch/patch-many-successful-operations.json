@@ -1,0 +1,8 @@
+[
+	{"op":"test", "path":"/0", "value":{"id":1,"description":"A","complete":true}},
+	{"op":"test", "path":"/5/description", "value":"F"},
+	{"op":"remove", "path":"/5"},
+	{"op":"replace", "path":"/1/complete", "value":true},
+	{"op":"copy", "path":"/3/description", "from":"/2/description"},
+	{"op":"copy", "path":"/4", "from":"/0"}
+]
