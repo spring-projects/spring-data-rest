@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.2.4.RELEASE (2015-10-14)
+---------------------------------------------
+* DATAREST-693 - Release 2.2.4 (Evans).
+
+
 Changes in version 2.4.0.RELEASE (2015-09-01)
 ---------------------------------------------
 * DATAREST-663 - Release 2.4 GA (Gosling).
