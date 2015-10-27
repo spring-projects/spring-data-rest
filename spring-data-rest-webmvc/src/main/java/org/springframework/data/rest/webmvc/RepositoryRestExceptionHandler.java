@@ -95,7 +95,7 @@ public class RepositoryRestExceptionHandler {
 			ConversionFailedException.class, NullPointerException.class })
 	ResponseEntity<ExceptionMessage> handleMiscFailures(Exception o_O) {
 
-		return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, new HttpHeaders(), null);
+		return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, new HttpHeaders(), o_O);
 	}
 
 	/**
