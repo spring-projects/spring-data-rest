@@ -398,6 +398,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
 			messageSource.setBasename("classpath:rest-messages");
 			messageSource.setCommonMessages(propertiesFactoryBean.getObject());
+			messageSource.setDefaultEncoding("UTF-8");
 
 			return new MessageSourceAccessor(messageSource);
 
