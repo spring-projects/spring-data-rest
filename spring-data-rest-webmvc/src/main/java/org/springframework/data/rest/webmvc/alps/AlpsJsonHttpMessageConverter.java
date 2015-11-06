@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.alps;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.converter.Converter;
@@ -91,7 +92,8 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 			Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request,
 			ServerHttpResponse response) {
 
-		return body instanceof RootResourceInformation ? converter.convert((RootResourceInformation) body) : body;
+		return body instanceof RootResourceInformation
+				? Collections.singletonMap("alps", converter.convert((RootResourceInformation) body)) : body;
 	}
 
 	/* 

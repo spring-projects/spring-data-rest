@@ -92,8 +92,8 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
 		client.follow(peopleLink, RestMediaTypes.ALPS_JSON)//
-				.andExpect(jsonPath("$.version").value("1.0"))//
-				.andExpect(jsonPath("$.descriptors[*].name", hasItems("people", "person")));
+				.andExpect(jsonPath("$.alps.version").value("1.0"))//
+				.andExpect(jsonPath("$.alps.descriptors[*].name", hasItems("people", "person")));
 	}
 
 	/**
@@ -106,8 +106,8 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
 		client.follow(peopleLink)//
-				.andExpect(jsonPath("$.version").value("1.0"))//
-				.andExpect(jsonPath("$.descriptors[*].name", hasItems("people", "person")));
+				.andExpect(jsonPath("$.alps.version").value("1.0"))//
+				.andExpect(jsonPath("$.alps.descriptors[*].name", hasItems("people", "person")));
 
 	}
 
@@ -122,11 +122,11 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
 				// Exposes standard property
-				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", hasItems("name")))
+				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", hasItems("name")))
 				// Does not expose explicitly @JsonIgnored property
-				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", not(hasItems("owner"))))
+				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", not(hasItems("owner"))))
 				// Does not expose properties pointing to non exposed types
-				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", not(hasItems("manager", "curator"))));
+				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", not(hasItems("manager", "curator"))));
 	}
 
 	/**
@@ -141,7 +141,8 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		assertThat(itemsLink, is(notNullValue()));
 
 		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
-				.andExpect(jsonPath("$.descriptors[?(@.id == 'item-representation')][0].href", endsWith("/profile/items")));
+				.andExpect(
+						jsonPath("$.alps.descriptors[?(@.id == 'item-representation')][0].href", endsWith("/profile/items")));
 	}
 
 	/**
@@ -153,7 +154,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link profileLink = client.discoverUnique("profile");
 		Link usersLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
-		String jsonPath = "$."; // Root
+		String jsonPath = "$.alps."; // Root
 		jsonPath += "descriptors[?(@.id == 'person-representation')]."; // Representation descriptor
 		jsonPath += "descriptors[?(@.name == 'father')][0]."; // First father descriptor
 		jsonPath += "rt"; // Return type
@@ -174,6 +175,6 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
 				// Exposes identifier if configured to
-				.andExpect(jsonPath("$.descriptors[*].descriptors[*].name", hasItems("id", "name")));
+				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", hasItems("id", "name")));
 	}
 }
