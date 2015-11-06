@@ -50,6 +50,7 @@ public class Person {
 	private Person father;
 	@Description("Timestamp this person object was created") private Date created;
 	private int age, height, weight;
+	private Gender gender;
 
 	public Person() {}
 
@@ -145,5 +146,17 @@ public class Person {
 
 	public void setWeight(int weight) {
 		this.weight = weight;
+	}
+
+	public Gender getGender() {
+		return gender;
+	}
+
+	public void setGender(Gender gender) {
+		this.gender = gender;
+	}
+
+	public static enum Gender {
+		MALE, FEMALE, UNDEFINED;
 	}
 }
