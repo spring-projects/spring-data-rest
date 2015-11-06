@@ -135,6 +135,18 @@ public class RepositoryMethodResourceMappingUnitTests {
 		assertThat(mapping.getReturnedDomainType(), is(equalTo((Class) Person.class)));
 	}
 
+	/**
+	 * @see DATAREST-699
+	 */
+	@Test
+	public void doesNotIncludePageableAsParameter() throws Exception {
+
+		Method method = PersonRepository.class.getMethod("findByLastname", String.class, Pageable.class);
+		RepositoryMethodResourceMapping mapping = getMappingFor(method);
+
+		assertThat(mapping.getParametersMetadata().getParameterNames(), not(hasItem("pageable")));
+	}
+
 	private RepositoryMethodResourceMapping getMappingFor(Method method) {
 		return new RepositoryMethodResourceMapping(method, resourceMapping, metadata);
 	}
@@ -157,5 +169,8 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Page<Person> findByEmailAddress(String email, Sort pageable);
 
 		int countByLastname(String lastname);
+
+		// Simulate pageable detected as name on Java 8
+		Page<Person> findByLastname(@Param("lastname") String lastname, @Param("pageable") Pageable pageable);
 	}
 }
