@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.rest.core.mapping;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,6 +42,8 @@ import org.springframework.util.StringUtils;
  */
 class RepositoryMethodResourceMapping implements MethodResourceMapping {
 
+	@SuppressWarnings("unchecked") //
+	private static final Collection<Class<?>> IMPLICIT_PARAMETER_TYPES = Arrays.asList(Pageable.class, Sort.class);
 	private static final AnnotationAttribute PARAM_VALUE = new AnnotationAttribute(Param.class);
 
 	private final boolean isExported;
@@ -69,8 +72,8 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 
 		this.isExported = annotation != null ? annotation.exported() : true;
 		this.rel = annotation == null || !StringUtils.hasText(annotation.rel()) ? method.getName() : annotation.rel();
-		this.path = annotation == null || !StringUtils.hasText(annotation.path()) ? new Path(method.getName()) : new Path(
-				annotation.path());
+		this.path = annotation == null || !StringUtils.hasText(annotation.path()) ? new Path(method.getName())
+				: new Path(annotation.path());
 		this.method = method;
 		this.parameterMetadata = discoverParameterMetadata(method, resourceRel.concat(".").concat(rel));
 
@@ -86,7 +89,8 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		List<ParameterMetadata> result = new ArrayList<ParameterMetadata>();
 
 		for (MethodParameter parameter : new MethodParameters(method, PARAM_VALUE).getParameters()) {
-			if (StringUtils.hasText(parameter.getParameterName())) {
+			if (!IMPLICIT_PARAMETER_TYPES.contains(parameter.getParameterType())
+					&& StringUtils.hasText(parameter.getParameterName())) {
 				result.add(new ParameterMetadata(parameter, baseRel));
 			}
 		}
