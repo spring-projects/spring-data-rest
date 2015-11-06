@@ -50,6 +50,7 @@ import org.springframework.data.rest.core.mapping.SimpleResourceDescription;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.data.rest.webmvc.ProfileController;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
+import org.springframework.data.rest.webmvc.json.EnumTranslator;
 import org.springframework.data.rest.webmvc.json.JacksonMetadata;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.hateoas.EntityLinks;
@@ -62,6 +63,7 @@ import org.springframework.hateoas.alps.Doc;
 import org.springframework.hateoas.alps.Format;
 import org.springframework.hateoas.alps.Type;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
@@ -84,6 +86,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 	private final MessageSourceAccessor messageSource;
 	private final RepositoryRestConfiguration configuration;
 	private final ObjectMapper mapper;
+	private final EnumTranslator translator;
 
 	/**
 	 * Creates a new {@link RootResourceInformationToAlpsDescriptorConverter} instance.
@@ -95,10 +98,11 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 	 * @param messageSource must not be {@literal null}.
 	 * @param configuration must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
+	 * @param translator must not be {@literal null}.
 	 */
 	public RootResourceInformationToAlpsDescriptorConverter(ResourceMappings mappings, Repositories repositories,
 			PersistentEntities entities, EntityLinks entityLinks, MessageSourceAccessor messageSource,
-			RepositoryRestConfiguration configuration, ObjectMapper mapper) {
+			RepositoryRestConfiguration configuration, ObjectMapper mapper, EnumTranslator translator) {
 
 		this.mappings = mappings;
 		this.persistentEntities = entities;
@@ -107,6 +111,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		this.messageSource = messageSource;
 		this.configuration = configuration;
 		this.mapper = mapper;
+		this.translator = translator;
 	}
 
 	/*
@@ -332,7 +337,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 							descriptor(). //
 									type(Type.SEMANTIC).//
 									name(propertyDefinition.getName()).//
-									doc(getDocFor(propertyMapping.getDescription())).//
+									doc(getDocFor(propertyMapping.getDescription(), property)).//
 									build());
 				}
 			}
@@ -402,12 +407,25 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 	}
 
 	private Doc getDocFor(ResourceDescription description) {
+		return getDocFor(description, null);
+	}
+
+	private Doc getDocFor(ResourceDescription description, PersistentProperty<?> property) {
 
 		if (description == null) {
 			return null;
 		}
 
 		String message = resolveMessage(description);
+
+		// Manually post process the default message for enumerations if needed
+		if (configuration.isEnableEnumTranslation() && property != null && property.getType().isEnum()) {
+			if (description.isDefault()) {
+				return new Doc(StringUtils.collectionToDelimitedString(
+						translator.getValues((Class<? extends Enum<?>>) property.getType()), ", "), Format.TEXT);
+			}
+		}
+
 		return message == null ? null : new Doc(message, Format.TEXT);
 	}
 

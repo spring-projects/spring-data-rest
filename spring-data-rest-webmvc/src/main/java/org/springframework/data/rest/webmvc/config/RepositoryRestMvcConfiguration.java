@@ -781,7 +781,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		ResourceMappings resourceMappings = resourceMappings();
 
 		return new RootResourceInformationToAlpsDescriptorConverter(resourceMappings, repositories, persistentEntities,
-				entityLinks, messageSourceAccessor, config, objectMapper());
+				entityLinks, messageSourceAccessor, config, objectMapper(), enumTranslator());
 	}
 
 	@Bean
