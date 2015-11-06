@@ -17,12 +17,11 @@ package org.springframework.data.rest.webmvc.alps;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,6 +56,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 	@Autowired WebApplicationContext context;
 	@Autowired LinkDiscoverers discoverers;
+	@Autowired RepositoryRestConfiguration configuration;
 
 	@Configuration
 	static class Config extends RepositoryRestConfigurerAdapter {
@@ -80,6 +80,11 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(context).build();
 		this.client = new TestMvcClient(mvc, this.discoverers);
+	}
+
+	@After
+	public void tearDown() {
+		configuration.setEnableEnumTranslation(false);
 	}
 
 	/**
@@ -176,5 +181,22 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
 				// Exposes identifier if configured to
 				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", hasItems("id", "name")));
+	}
+
+	/**
+	 * @see DATAREST-683
+	 */
+	@Test
+	public void enumValueListingsAreTranslatedIfEnabled() throws Exception {
+
+		configuration.setEnableEnumTranslation(true);
+
+		Link profileLink = client.discoverUnique("profile");
+		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
+
+		client.follow(peopleLink)//
+				.andExpect(jsonPath(
+						"$.alps.descriptors[?(@.id == 'person-representation')].descriptors[?(@.name == 'gender')][0].doc.value",
+						is("Male, Female, Undefined")));
 	}
 }
