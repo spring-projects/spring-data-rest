@@ -420,6 +420,19 @@ public class JsonSchema {
 			return with(STRING_TYPE_INFORMATION);
 		}
 
+		/**
+		 * Turns the current {@link JsonSchemaProperty} into an association.
+		 * 
+		 * @return
+		 */
+		public JsonSchemaProperty asAssociation() {
+
+			this.items = null;
+			this.uniqueItems = null;
+
+			return withFormat(JsonSchemaFormat.URI);
+		}
+
 		JsonSchemaProperty with(TypeInformation<?> type, String reference) {
 
 			if (type.isCollectionLike()) {

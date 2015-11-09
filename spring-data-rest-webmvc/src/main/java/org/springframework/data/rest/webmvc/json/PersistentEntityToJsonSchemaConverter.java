@@ -230,7 +230,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			}
 
 			if (associationLinks.isLinkableAssociation(persistentProperty)) {
-				registrar.register(property.withFormat(JsonSchemaFormat.URI), null);
+				registrar.register(property.asAssociation(), null);
 			} else {
 
 				if (persistentProperty.isEntity()) {

@@ -152,6 +152,10 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		constraints.add(
 				new Constraint("$.properties.firstname.title", is("Vorname"), "I18n from property on fully-qualified type"));
 
+		// DATAREST-690
+		constraints.add(new Constraint("$.properties.colleagues.items", is(nullValue()),
+				"Items must not appear for collection associations."));
+
 		assertConstraints(User.class, constraints);
 	}
 
