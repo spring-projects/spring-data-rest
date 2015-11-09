@@ -139,6 +139,10 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		// DATAREST-531
 		constraints.add(new Constraint("$.properties.email.readOnly", is(true), "Email is read-only property"));
 
+		// DATAREST-690
+		constraints.add(new Constraint("$.properties.colleagues.items", is(nullValue()),
+				"Items must not appear for collection associations."));
+
 		assertConstraints(User.class, constraints);
 	}
 

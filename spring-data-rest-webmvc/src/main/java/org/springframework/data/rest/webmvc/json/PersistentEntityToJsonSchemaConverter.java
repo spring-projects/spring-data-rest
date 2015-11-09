@@ -162,8 +162,9 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		for (BeanPropertyDefinition definition : jackson) {
 
 			PersistentProperty<?> persistentProperty = entity.getPersistentProperty(definition.getInternalName());
-			TypeInformation<?> propertyType = persistentProperty == null ? ClassTypeInformation.from(definition
-					.getPrimaryMember().getRawType()) : persistentProperty.getTypeInformation();
+			TypeInformation<?> propertyType = persistentProperty == null
+					? ClassTypeInformation.from(definition.getPrimaryMember().getRawType())
+					: persistentProperty.getTypeInformation();
 			Class<?> rawPropertyType = propertyType.getType();
 
 			JsonSchemaFormat format = configuration.metadataConfiguration().getSchemaFormatFor(rawPropertyType);
@@ -204,7 +205,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			}
 
 			if (associationLinks.isLinkableAssociation(persistentProperty)) {
-				properties.add(property.with(JsonSchemaFormat.URI));
+				properties.add(property.asAssociation());
 			} else {
 
 				if (persistentProperty.isEntity()) {
@@ -252,8 +253,8 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			return new Property(name, resolvedDescription, required);
 		}
 
-		return new EnumProperty(name, rawType, description.getDefaultMessage().equals(resolvedDescription) ? null
-				: resolvedDescription, required);
+		return new EnumProperty(name, rawType,
+				description.getDefaultMessage().equals(resolvedDescription) ? null : resolvedDescription, required);
 	}
 
 	private ResourceDescription getDescriptionFor(PersistentProperty<?> property, ResourceMetadata metadata) {

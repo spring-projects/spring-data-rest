@@ -340,7 +340,7 @@ public class JsonSchema {
 				return with(JsonSchemaFormat.DATE_TIME);
 			}
 
-			if (type.isCollectionLike()) {
+			if (type.isCollectionLike() && !JsonSchemaFormat.URI.equals(format)) {
 
 				if (Set.class.equals(type.getType())) {
 					this.uniqueItems = true;
@@ -353,8 +353,17 @@ public class JsonSchema {
 		}
 
 		Property with(JsonSchemaFormat format) {
+
 			this.format = format;
 			return with(STRING_TYPE_INFORMATION);
+		}
+
+		Property asAssociation() {
+
+			this.items = null;
+			this.uniqueItems = null;
+
+			return with(JsonSchemaFormat.URI);
 		}
 
 		Property with(Pattern pattern) {
