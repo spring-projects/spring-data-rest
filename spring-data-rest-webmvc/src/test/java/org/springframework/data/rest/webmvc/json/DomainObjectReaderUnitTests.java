@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Before;
@@ -56,6 +57,7 @@ public class DomainObjectReaderUnitTests {
 		MongoMappingContext mappingContext = new MongoMappingContext();
 		mappingContext.getPersistentEntity(SampleUser.class);
 		mappingContext.getPersistentEntity(Person.class);
+		mappingContext.getPersistentEntity(TypeWithGenericMap.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -114,6 +116,34 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.relatedUsers.get("parent").name, is("Oliver"));
 	}
 
+	/**
+	 * @see DATAREST-701
+	 */
+	@Test
+	public void mergesNestedMapWithoutTypeInformation() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = mapper.readTree("{\"map\" : {\"a\": \"1\", \"b\": {\"c\": \"2\"}}}");
+
+		TypeWithGenericMap target = new TypeWithGenericMap();
+		target.map = new HashMap<String, Object>();
+		target.map.put("b", new HashMap<String, Object>());
+
+		reader.readPut((ObjectNode) node, target, mapper);
+	}
+
+	/**
+	 * @see DATAREST-701
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsMergingUnknownDomainObject() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = (ObjectNode) mapper.readTree("{}");
+
+		reader.readPut(node, "", mapper);
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class SampleUser {
 
@@ -139,5 +169,11 @@ public class DomainObjectReaderUnitTests {
 			this.firstName = firstName;
 			this.lastName = lastName;
 		}
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class TypeWithGenericMap {
+
+		Map<String, Object> map;
 	}
 }

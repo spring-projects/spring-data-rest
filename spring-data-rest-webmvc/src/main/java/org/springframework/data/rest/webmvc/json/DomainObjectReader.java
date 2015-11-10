@@ -104,7 +104,12 @@ public class DomainObjectReader {
 		Assert.notNull(target, "Existing object instance must not be null!");
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
-		final PersistentEntity<?, ?> entity = entities.getPersistentEntity(target.getClass());
+		Class<? extends Object> type = target.getClass();
+
+		final PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
+
+		Assert.notNull(entity, "No PersistentEntity found for ".concat(type.getName()).concat("!"));
+
 		final MappedProperties properties = getJacksonProperties(entity, mapper);
 
 		entity.doWithProperties(new SimplePropertyHandler() {
@@ -155,6 +160,11 @@ public class DomainObjectReader {
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
 		PersistentEntity<?, ?> entity = entities.getPersistentEntity(target.getClass());
+
+		if (entity == null) {
+			return mapper.readerForUpdating(target).readValue(root);
+		}
+
 		MappedProperties mappedProperties = getJacksonProperties(entity, mapper);
 
 		for (Iterator<Entry<String, JsonNode>> i = root.fields(); i.hasNext();) {
