@@ -96,4 +96,14 @@ public class BaseUriUnitTests {
 	public void repositoryLookupPathHandlesDoubleSlashes() {
 		assertThat(BaseUri.NONE.getRepositoryLookupPath("/books//1"), is("/books/1"));
 	}
+
+	/**
+	 * @see DATAREST-564
+	 */
+	@Test
+	public void repositoryLookupPathHandlesEmptyString() {
+		assertThat(BaseUri.NONE.getRepositoryLookupPath(""), isEmptyString());
+		assertThat(new BaseUri(URI.create("/foo")).getRepositoryLookupPath(""), is(nullValue()));
+		assertThat(new BaseUri(URI.create("http://localhost:8080/foo/")).getRepositoryLookupPath(""), is(nullValue()));
+	}
 }

@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc;
 import static org.springframework.util.StringUtils.*;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -128,7 +129,7 @@ public class BaseUri {
 			return lookupPath.startsWith(uri) ? lookupPath.substring(uri.length(), lookupPath.length()) : null;
 		}
 
-		List<String> baseUriSegments = UriComponentsBuilder.fromUri(baseUri).build().getPathSegments();
+		List<String> baseUriSegments = new ArrayList<String>(UriComponentsBuilder.fromUri(baseUri).build().getPathSegments());
 		Collections.reverse(baseUriSegments);
 		String tail = "";
 
