@@ -18,6 +18,9 @@ package org.springframework.data.rest.webmvc;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,9 +31,6 @@ import org.springframework.data.rest.webmvc.support.ExceptionMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 
 /**
  * Unit tests for {@link RepositoryRestExceptionHandler}.
@@ -78,5 +78,19 @@ public class RepositoryRestExceptionHandlerUnitTests {
 		ResponseEntity<ExceptionMessage> result = HANDLER.handleConflict(new DataIntegrityViolationException("Message!"));
 
 		assertThat(result.getStatusCode(), is(HttpStatus.CONFLICT));
+	}
+
+	/**
+	 * @see DATAREST-706
+	 */
+	@Test
+	public void forwardsExceptionForMiscellaneousFailure() {
+
+		String message = "My Message!";
+
+		ResponseEntity<ExceptionMessage> result = HANDLER.handleMiscFailures(new Exception(message));
+
+		assertThat(result.getBody(), is(notNullValue()));
+		assertThat(result.getBody().getMessage(), is(message));
 	}
 }
