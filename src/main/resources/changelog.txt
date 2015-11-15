@@ -1,6 +1,22 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.4.1.RELEASE (2015-11-15)
+---------------------------------------------
+* DATAREST-707 - Release 2.4.1 (Gosling).
+* DATAREST-706 - RepositoryExceptionHandler passes null instead of exception.
+* DATAREST-701 - NPE when updating resource via PUT.
+* DATAREST-699 - On Java 8, link templates to search resources using pagination contain pageable variable.
+* DATAREST-698 - Returned size is the -1 from the parameter that is given.
+* DATAREST-690 - Invalid JSON Schema for properties pointing to association resources.
+* DATAREST-686 - resourceDescriptionMessageSource does not support UTF-8 property files.
+* DATAREST-684 - Edit reference documents to show proper steps in return HAL from custom endpoint.
+* DATAREST-683 - ALPS profile does not reflect jackson customization (e.g. enableEnumTranslation=true).
+* DATAREST-674 - Guard against regression in UrlPathHelper in Spring 4.2.
+* DATAREST-669 - Include section on dependency management from Spring Data Commons into reference documentation.
+* DATAREST-665 - Use consistent scheme for property titles in JSON Schema.
+
+
 Changes in version 2.2.4.RELEASE (2015-10-14)
 ---------------------------------------------
 * DATAREST-693 - Release 2.2.4 (Evans).
