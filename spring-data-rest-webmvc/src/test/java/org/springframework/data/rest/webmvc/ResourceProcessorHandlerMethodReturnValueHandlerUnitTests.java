@@ -37,11 +37,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.ResourcesProcessorWrapper;
-import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.PagedResources.PageMetadata;
@@ -122,6 +121,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	@Test
 	public void postProcessesStringResource() throws Exception {
+
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
@@ -130,6 +130,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	@Test
 	public void postProcessesStringResourceInResponseEntity() throws Exception {
+
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
@@ -138,6 +139,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	@Test
 	public void postProcessesStringResourceInWildcardResponseEntity() throws Exception {
+
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
@@ -146,6 +148,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	@Test
 	public void postProcessesStringResources() throws Exception {
+
 		resourceProcessors.add(StringResourcesProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
@@ -154,6 +157,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	@Test
 	public void postProcessesSpecializedStringResource() throws Exception {
+
 		resourceProcessors.add(SpecializedStringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
@@ -162,6 +166,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	@Test
 	public void postProcessesSpecializedStringUsingStringResourceProcessor() throws Exception {
+
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
@@ -170,6 +175,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	@Test
 	public void postProcessesLongResource() throws Exception {
+
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
@@ -178,6 +184,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	@Test
 	public void postProcessesSpecializedLongResource() throws Exception {
+
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(SpecializedLongResourceProcessor.INSTANCE);
 
@@ -186,6 +193,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	@Test
 	public void doesNotPostProcesseLongResourceWithSpecializedLongResourceProcessor() throws Exception {
+
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(SpecializedLongResourceProcessor.INSTANCE);
 
@@ -194,6 +202,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 	@Test
 	public void postProcessesSpecializedLongResourceUsingLongResourceProcessor() throws Exception {
+
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
@@ -221,7 +230,8 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 	@Test
 	public void resourcesProcessorMatchesValueSubTypes() {
 
-		TypeInformation<?> type = ClassTypeInformation.from(PagedStringResources.class);
+		ResolvableType type = ResolvableType.forClass(PagedStringResources.class);
+
 		assertThat(ResourcesProcessorWrapper.isValueTypeMatch(FOO_PAGE, type), is(true));
 	}
 
@@ -252,7 +262,8 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		PagedResources<Resource<Object>> pagedResources = new PagedResources<Resource<Object>>(
 				Collections.singleton(resource), new PageMetadata(1, 0, 10));
 
-		TypeInformation<?> type = ClassTypeInformation.from(RepositoryLinksResource.class);
+		ResolvableType type = ResolvableType.forClass(RepositoryLinksResource.class);
+
 		assertThat(ResourcesProcessorWrapper.isValueTypeMatch(pagedResources, type), is(false));
 	}
 
@@ -263,14 +274,13 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 	public void doesNotInvokeAProcessorForASpecializedType() throws Exception {
 
 		EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
-		Resources<Object> value = new Resources<Object>(Collections.<Object> singleton(wrappers
-				.emptyCollectionOf(Object.class)));
+		Resources<Object> value = new Resources<Object>(
+				Collections.<Object> singleton(wrappers.emptyCollectionOf(Object.class)));
 		ResourcesProcessorWrapper wrapper = new ResourcesProcessorWrapper(new SpecialResourcesProcessor());
 
-		TypeInformation<Object> typeInformation = ClassTypeInformation.fromReturnTypeOf(Controller.class
-				.getMethod("resourcesOfObject"));
+		ResolvableType type = ResolvableType.forMethodReturnType(Controller.class.getMethod("resourcesOfObject"));
 
-		assertThat(wrapper.supports(typeInformation, value), is(false));
+		assertThat(wrapper.supports(type, value), is(false));
 	}
 
 	// Helpers ---------------------------------------------------------//

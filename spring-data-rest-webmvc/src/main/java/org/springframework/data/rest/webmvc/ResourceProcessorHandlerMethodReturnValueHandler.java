@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.util.ClassTypeInformation.*;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,9 +24,8 @@ import java.util.List;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.ResourceSupport;
@@ -51,8 +48,10 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  */
 public class ResourceProcessorHandlerMethodReturnValueHandler implements HandlerMethodReturnValueHandler {
 
-	private static final TypeInformation<?> RESOURCE_TYPE = from(Resource.class);
-	private static final TypeInformation<?> RESOURCES_TYPE = from(Resources.class);
+	private static final ResolvableType RESOURCE_TYPE = ResolvableType.forClass(Resource.class);
+	private static final ResolvableType RESOURCES_TYPE = ResolvableType.forClass(Resources.class);
+	private static final ResolvableType HTTP_ENTITY_TYPE = ResolvableType.forClass(HttpEntity.class);
+
 	private static final Field CONTENT_FIELD = ReflectionUtils.findField(Resources.class, "content");
 
 	static {
@@ -61,6 +60,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 
 	private final HandlerMethodReturnValueHandler delegate;
 	private final List<ProcessorWrapper> processors;
+
 	private boolean rootLinksAsHeaders = false;
 
 	/**
@@ -84,9 +84,9 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 
 		for (ResourceProcessor<?> processor : processors) {
 
-			TypeInformation<?> componentType = from(processor.getClass()).getSuperTypeInformation(ResourceProcessor.class)
-					.getComponentType();
-			Class<?> rawType = componentType.getType();
+			ResolvableType processorType = ResolvableType.forClass(ResourceProcessor.class, processor.getClass());
+			ResolvableType componentType = processorType.getGeneric(0);
+			Class<?> rawType = getRawType(componentType);
 
 			if (Resource.class.isAssignableFrom(rawType)) {
 				this.processors.add(new ResourceProcessorWrapper(processor));
@@ -131,37 +131,40 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		}
 
 		// No post-processable type found - proceed with delegate
-		if (!isResourceType(value)) {
+		if (!ResourceSupport.class.isInstance(value)) {
 			delegate.handleReturnValue(returnValue, returnType, mavContainer, webRequest);
 			return;
 		}
 
 		// We have a Resource or Resources - find suitable processors
-		TypeInformation<?> targetType = ClassTypeInformation.fromReturnTypeOf(returnType.getMethod());
+		ResolvableType targetType = ResolvableType.forMethodReturnType(returnType.getMethod());
 
 		// Unbox HttpEntity
-		if (HttpEntity.class.isAssignableFrom(targetType.getType())) {
-			targetType = targetType.getTypeArguments().get(0);
+		if (HTTP_ENTITY_TYPE.isAssignableFrom(targetType)) {
+			targetType = targetType.getGeneric(0);
 		}
 
-		TypeInformation<? extends Object> returnValueTypeInformation = ClassTypeInformation.from(value.getClass());
+		ResolvableType returnValueType = ResolvableType.forClass(value.getClass());
+
 		// Returned value is actually of a more specific type, use this type information
-		if (!targetType.getType().equals(returnValueTypeInformation.getType())) {
-			targetType = returnValueTypeInformation;
+		if (!getRawType(targetType).equals(getRawType(returnValueType))) {
+			targetType = returnValueType;
 		}
 
 		// For Resources implementations, process elements first
 		if (RESOURCES_TYPE.isAssignableFrom(targetType)) {
 
 			Resources<?> resources = (Resources<?>) value;
-			TypeInformation<?> elementTargetType = targetType.getSuperTypeInformation(Resources.class).getComponentType();
+			ResolvableType elementTargetType = ResolvableType.forClass(Resources.class, targetType.getRawClass())
+					.getGeneric(0);
 			List<Object> result = new ArrayList<Object>(resources.getContent().size());
 
 			for (Object element : resources) {
 
-				TypeInformation<?> elementTypeInformation = from(element.getClass());
-				if (!elementTargetType.getType().equals(elementTypeInformation.getType())) {
-					elementTargetType = elementTypeInformation;
+				ResolvableType elementType = ResolvableType.forClass(element.getClass());
+
+				if (!getRawType(elementTargetType).equals(elementType.getRawClass())) {
+					elementTargetType = elementType;
 				}
 
 				result.add(invokeProcessorsFor(element, elementTargetType));
@@ -175,19 +178,19 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	}
 
 	/**
-	 * Invokes all registered {@link ResourceProcessor}s registered for the given {@link TypeInformation}.
+	 * Invokes all registered {@link ResourceProcessor}s registered for the given {@link ResolvableType}.
 	 * 
 	 * @param value the object to process
-	 * @param targetType
+	 * @param type
 	 * @return
 	 */
-	private Object invokeProcessorsFor(Object value, TypeInformation<?> targetType) {
+	private Object invokeProcessorsFor(Object value, ResolvableType type) {
 
 		Object currentValue = value;
 
 		// Process actual value
 		for (ProcessorWrapper wrapper : this.processors) {
-			if (wrapper.supports(targetType, currentValue)) {
+			if (wrapper.supports(type, currentValue)) {
 				currentValue = wrapper.invokeProcessor(currentValue);
 			}
 		}
@@ -224,18 +227,32 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	}
 
 	private HttpEntity<?> addLinksToHeaderWrapper(HttpEntity<ResourceSupport> entity) {
-
 		return rootLinksAsHeaders ? HeaderLinksResponseEntity.wrap(entity) : entity;
 	}
 
-	/**
-	 * Returns whether the given value is a resource (i.e. implements {@link Resource) or {@link Resources}).
-	 * 
-	 * @param value
-	 * @return
-	 */
-	private boolean isResourceType(Object value) {
-		return value instanceof ResourceSupport;
+	private static boolean isRawTypeAssignable(ResolvableType left, Class<?> right) {
+		return getRawType(left).isAssignableFrom(right);
+	}
+
+	private static Class<?> getRawType(ResolvableType type) {
+
+		Class<?> rawType = type.getRawClass();
+		return rawType == null ? Object.class : rawType;
+	}
+
+	private static ResolvableType findGenericType(ResolvableType source, Class<?> type) {
+
+		Class<?> rawType = getRawType(source);
+
+		if (Object.class.equals(rawType)) {
+			return null;
+		}
+
+		if (rawType.equals(type)) {
+			return source;
+		}
+
+		return findGenericType(source.getSuperType(), type);
 	}
 
 	/**
@@ -247,18 +264,18 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	private interface ProcessorWrapper extends Ordered {
 
 		/**
-		 * Returns whether the underlying processor supports the given {@link TypeInformation}. It might also aditionally
+		 * Returns whether the underlying processor supports the given {@link ResolvableType}. It might also additionally
 		 * inspect the object that would eventually be handed to the processor.
 		 * 
-		 * @param typeInformation the type of object to be post processed, will never be {@literal null}.
+		 * @param type the type of object to be post processed, will never be {@literal null}.
 		 * @param value the object that would be passed into the processor eventually, can be {@literal null}.
 		 * @return
 		 */
-		boolean supports(TypeInformation<?> typeInformation, Object value);
+		boolean supports(ResolvableType type, Object value);
 
 		/**
 		 * Performs the actual invocation of the processor. Implementations can be sure
-		 * {@link #supports(TypeInformation, Object)} has been called before and returned {@literal true}.
+		 * {@link #supports(ResolvableType, Object)} has been called before and returned {@literal true}.
 		 * 
 		 * @param object
 		 */
@@ -273,10 +290,10 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	private static class DefaultProcessorWrapper implements ProcessorWrapper {
 
 		private final ResourceProcessor<?> processor;
-		private final TypeInformation<?> targetType;
+		private final ResolvableType targetType;
 
 		/**
-		 * Creates a ne {@link DefaultProcessorWrapper} with the given {@link ResourceProcessor}.
+		 * Creates a new {@link DefaultProcessorWrapper} with the given {@link ResourceProcessor}.
 		 * 
 		 * @param processor must not be {@literal null}.
 		 */
@@ -285,16 +302,16 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 			Assert.notNull(processor);
 
 			this.processor = processor;
-			this.targetType = from(processor.getClass()).getSuperTypeInformation(ResourceProcessor.class).getComponentType();
+			this.targetType = ResolvableType.forClass(ResourceProcessor.class, processor.getClass()).getGeneric(0);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.PostProcessorWrapper#supports(org.springframework.data.util.TypeInformation, java.lang.Object)
+		 * @see org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.ProcessorWrapper#supports(org.springframework.core.ResolvableType, java.lang.Object)
 		 */
 		@Override
-		public boolean supports(TypeInformation<?> typeInformation, Object value) {
-			return targetType.getType().isAssignableFrom(typeInformation.getType());
+		public boolean supports(ResolvableType type, Object value) {
+			return isRawTypeAssignable(targetType, getRawType(type));
 		}
 
 		/* 
@@ -321,7 +338,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		 * 
 		 * @return the targetType
 		 */
-		public TypeInformation<?> getTargetType() {
+		public ResolvableType getTargetType() {
 			return targetType;
 		}
 	}
@@ -345,29 +362,29 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.PostProcessorWrapper#supports(org.springframework.data.util.TypeInformation, java.lang.Object)
+		 * @see org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.DefaultProcessorWrapper#supports(org.springframework.core.ResolvableType, java.lang.Object)
 		 */
 		@Override
-		public boolean supports(TypeInformation<?> typeInformation, Object value) {
+		public boolean supports(ResolvableType type, Object value) {
 
-			if (!RESOURCE_TYPE.isAssignableFrom(typeInformation)) {
+			if (!RESOURCE_TYPE.isAssignableFrom(type)) {
 				return false;
 			}
 
-			return super.supports(typeInformation, value) && isValueTypeMatch((Resource<?>) value, getTargetType());
+			return super.supports(type, value) && isValueTypeMatch((Resource<?>) value, getTargetType());
 		}
 
 		/**
-		 * Returns whether the given {@link Resource} matches the given target {@link TypeInformation}. We inspect the
+		 * Returns whether the given {@link Resource} matches the given target {@link ResolvableType}. We inspect the
 		 * {@link Resource}'s value to determine the match.
 		 * 
 		 * @param resource
 		 * @param target must not be {@literal null}.
-		 * @return whether the given {@link Resource} can be assigned to the given target {@link TypeInformation}
+		 * @return whether the given {@link Resource} can be assigned to the given target {@link ResolvableType}
 		 */
-		private static boolean isValueTypeMatch(Resource<?> resource, TypeInformation<?> target) {
+		private static boolean isValueTypeMatch(Resource<?> resource, ResolvableType target) {
 
-			if (resource == null || !target.getType().isAssignableFrom(resource.getClass())) {
+			if (resource == null || !isRawTypeAssignable(target, resource.getClass())) {
 				return false;
 			}
 
@@ -377,8 +394,8 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 				return false;
 			}
 
-			TypeInformation<?> typeInfo = target.getSuperTypeInformation(Resource.class);
-			return null != typeInfo && typeInfo.getComponentType().getType().isAssignableFrom(content.getClass());
+			ResolvableType type = findGenericType(target, Resource.class);
+			return type != null && type.getGeneric(0).isAssignableFrom(ResolvableType.forClass(content.getClass()));
 		}
 	}
 
@@ -399,29 +416,29 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 			super(processor);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.PostProcessorWrapper#supports(org.springframework.data.util.TypeInformation, java.lang.Object)
+		 * @see org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.DefaultProcessorWrapper#supports(org.springframework.core.ResolvableType, java.lang.Object)
 		 */
 		@Override
-		public boolean supports(TypeInformation<?> typeInformation, Object value) {
+		public boolean supports(ResolvableType type, Object value) {
 
-			if (!RESOURCES_TYPE.isAssignableFrom(typeInformation)) {
+			if (!RESOURCES_TYPE.isAssignableFrom(type)) {
 				return false;
 			}
 
-			return super.supports(typeInformation, value) && isValueTypeMatch((Resources<?>) value, getTargetType());
+			return super.supports(type, value) && isValueTypeMatch((Resources<?>) value, getTargetType());
 		}
 
 		/**
-		 * Returns whether the given {@link Resources} instance matches the given {@link TypeInformation}. We predict this
-		 * by inspecting the first element of the content of the {@link Resources}.
+		 * Returns whether the given {@link Resources} instance matches the given {@link ResolvableType}. We predict this by
+		 * inspecting the first element of the content of the {@link Resources}.
 		 * 
 		 * @param resources the {@link Resources} to inspect.
-		 * @param target that target {@link TypeInformation}.
+		 * @param target that target {@link ResolvableType}.
 		 * @return
 		 */
-		static boolean isValueTypeMatch(Resources<?> resources, TypeInformation<?> target) {
+		static boolean isValueTypeMatch(Resources<?> resources, ResolvableType target) {
 
 			if (resources == null) {
 				return false;
@@ -433,28 +450,28 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 				return false;
 			}
 
-			TypeInformation<?> superTypeInformation = null;
+			ResolvableType superType = null;
 
 			for (Class<?> resourcesType : Arrays.<Class<?>> asList(resources.getClass(), Resources.class)) {
 
-				superTypeInformation = target.getSuperTypeInformation(resourcesType);
+				superType = ResolvableType.forClass(resourcesType, getRawType(target));
 
-				if (superTypeInformation != null) {
+				if (superType != null) {
 					break;
 				}
 			}
 
-			if (superTypeInformation == null) {
+			if (superType == null) {
 				return false;
 			}
 
 			Object element = content.iterator().next();
-			TypeInformation<?> resourceTypeInformation = superTypeInformation.getComponentType();
+			ResolvableType resourceType = superType.getGeneric(0);
 
 			if (element instanceof Resource) {
-				return ResourceProcessorWrapper.isValueTypeMatch((Resource<?>) element, resourceTypeInformation);
+				return ResourceProcessorWrapper.isValueTypeMatch((Resource<?>) element, resourceType);
 			} else if (element instanceof EmbeddedWrapper) {
-				return resourceTypeInformation.getType().isAssignableFrom(((EmbeddedWrapper) element).getRelTargetType());
+				return isRawTypeAssignable(resourceType, ((EmbeddedWrapper) element).getRelTargetType());
 			}
 
 			return false;
