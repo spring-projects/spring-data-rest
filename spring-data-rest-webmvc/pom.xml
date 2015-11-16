@@ -20,6 +20,7 @@
 		<cassandra.version>2.0.9</cassandra.version>
 		<cassandraunit.version>2.0.2.1</cassandraunit.version>
 		<spring-security.version>4.0.1.RELEASE</spring-security.version>
+		<querydsl>4.0.6</querydsl>
 	</properties>
 
 	<dependencies>
@@ -88,11 +89,11 @@
 			<artifactId>json-patch</artifactId>
 			<version>1.7</version>
 		</dependency>
-		
+
 		<!-- Querydsl -->
-		
+
 		<dependency>
-			<groupId>com.mysema.querydsl</groupId>
+			<groupId>com.querydsl</groupId>
 			<artifactId>querydsl-core</artifactId>
 			<version>${querydsl}</version>
 			<optional>true</optional>
@@ -466,7 +467,7 @@
 				<version>${apt}</version>
 				<dependencies>
 					<dependency>
-						<groupId>com.mysema.querydsl</groupId>
+						<groupId>com.querydsl</groupId>
 						<artifactId>querydsl-apt</artifactId>
 						<version>${querydsl}</version>
 					</dependency>
