@@ -88,11 +88,11 @@
 			<artifactId>json-patch</artifactId>
 			<version>1.7</version>
 		</dependency>
-		
+
 		<!-- Querydsl -->
-		
+
 		<dependency>
-			<groupId>com.mysema.querydsl</groupId>
+			<groupId>com.querydsl</groupId>
 			<artifactId>querydsl-core</artifactId>
 			<version>${querydsl}</version>
 			<optional>true</optional>
@@ -466,7 +466,7 @@
 				<version>${apt}</version>
 				<dependencies>
 					<dependency>
-						<groupId>com.mysema.querydsl</groupId>
+						<groupId>com.querydsl</groupId>
 						<artifactId>querydsl-apt</artifactId>
 						<version>${querydsl}</version>
 					</dependency>
