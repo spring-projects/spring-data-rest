@@ -121,6 +121,10 @@ public class DomainObjectReader {
 			@Override
 			public void doWithPersistentProperty(PersistentProperty<?> property) {
 
+				if (property.isIdProperty() || property.isVersionProperty()) {
+					return;
+				}
+
 				String mappedName = properties.getMappedName(property);
 
 				boolean isMappedProperty = mappedName != null;

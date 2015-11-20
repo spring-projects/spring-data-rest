@@ -27,6 +27,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -58,6 +60,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(SampleUser.class);
 		mappingContext.getPersistentEntity(Person.class);
 		mappingContext.getPersistentEntity(TypeWithGenericMap.class);
+		mappingContext.getPersistentEntity(VersionedType.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -144,6 +147,28 @@ public class DomainObjectReaderUnitTests {
 		reader.readPut(node, "", mapper);
 	}
 
+	/**
+	 * @see DATAREST-705
+	 */
+	@Test
+	public void doesNotWipeIdAndVersionPropertyForPut() throws Exception {
+
+		VersionedType type = new VersionedType();
+		type.id = 1L;
+		type.version = 1L;
+		type.firstname = "Dave";
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = (ObjectNode) mapper.readTree("{ \"lastname\" : \"Matthews\" }");
+
+		VersionedType result = reader.readPut(node, type, mapper);
+
+		assertThat(result.lastname, is("Matthews"));
+		assertThat(result.firstname, is(nullValue()));
+		assertThat(result.id, is(1L));
+		assertThat(result.version, is(1L));
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class SampleUser {
 
@@ -175,5 +200,14 @@ public class DomainObjectReaderUnitTests {
 	static class TypeWithGenericMap {
 
 		Map<String, Object> map;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class VersionedType {
+
+		@Id Long id;
+		@Version Long version;
+
+		String firstname, lastname;
 	}
 }
