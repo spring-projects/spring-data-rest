@@ -133,12 +133,12 @@ It's possible to have multiple projections.
 
 NOTE: Visit <<spring-data-examples.projections>> to see an example project you can experiment with.
 
-How does Spring Data REST finds projection defintions?
+How does Spring Data REST finds projection definitions?
 
 * Any `@Projection` interface found in the same package as your entity definitions (or one of it's sub-packages) is registered.
-* You can manually register via `RepositoryRestConfiguration.projectionConfiguration().addProjection(…)`.
+* You can manually register via `RepositoryRestConfiguration.getProjectionConfiguration().addProjection(…)`.
 
-In either situtation, the interface with your projection MUST have the `@Projection` annotation.
+In either situation, the interface with your projection MUST have the `@Projection` annotation.
 
 [[projections-excerpts.finding-projections]]
 === Finding existing projections
@@ -185,7 +185,7 @@ Spring Data REST exposes <<metadata.alps>> documents, a micro metadata format. T
 Projection definitions will be picked up and made available for clients if they are:
 
 * Flagged with the `@Projection` annotation and located in the same package (or sub-package) of the domain type, OR
-* Manually registered via `RepositoryRestConfiguration.projectionConfiguration().addProjection(…)`.
+* Manually registered via `RepositoryRestConfiguration.getProjectionConfiguration().addProjection(…)`.
 ====
 
 [[projections-excerpts.projections.hidden-data]]
