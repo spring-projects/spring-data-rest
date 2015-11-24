@@ -114,6 +114,13 @@
 					<version>${springdata.mongodb}</version>
 					<scope>test</scope>
 				</dependency>
+
+				<dependency>
+					<groupId>com.querydsl</groupId>
+					<artifactId>querydsl-mongodb</artifactId>
+					<version>${querydsl}</version>
+					<scope>test</scope>
+				</dependency>
 			</dependencies>
 		</profile>
 

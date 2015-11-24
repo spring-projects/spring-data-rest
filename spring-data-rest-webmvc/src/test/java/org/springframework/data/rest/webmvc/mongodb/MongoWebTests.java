@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.CommonWebTests;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -52,6 +53,7 @@ public class MongoWebTests extends CommonWebTests {
 
 	@Autowired ProfileRepository repository;
 	@Autowired UserRepository userRepository;
+	@Autowired RepositoryEntityLinks entityLinks;
 
 	ObjectMapper mapper = new ObjectMapper();
 
@@ -326,5 +328,21 @@ public class MongoWebTests extends CommonWebTests {
 
 		mvc.perform(get(link.expand("").getHref())).//
 				andExpect(status().isNotFound());
+	}
+
+	/**
+	 * @see DATAREST-712
+	 */
+	@Test
+	public void invokesQueryMethodTakingAReferenceCorrectly() throws Exception {
+
+		Link link = client.discoverUnique("users", "search", "findByColleaguesContains");
+
+		User thomas = userRepository.findAll(QUser.user.firstname.eq("Thomas")).iterator().next();
+		Link thomasUri = entityLinks.linkToSingleResource(User.class, thomas.id).expand();
+
+		String href = link.expand(thomasUri.getHref()).getHref();
+
+		mvc.perform(get(href)).andExpect(status().isOk());
 	}
 }

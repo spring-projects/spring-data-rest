@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter;
@@ -35,13 +36,15 @@ import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.webmvc.mongodb.QUser;
+import org.springframework.data.rest.webmvc.mongodb.Receipt;
+import org.springframework.data.rest.webmvc.mongodb.ReceiptRepository;
 import org.springframework.data.rest.webmvc.mongodb.User;
-import org.springframework.data.rest.webmvc.mongodb.UserRepository;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -59,6 +62,7 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 	@Mock ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver;
 
 	@Mock RepositoryInvoker invoker;
+	@Mock MethodParameter parameter;
 
 	QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver resolver;
 
@@ -72,6 +76,8 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 
 		this.resolver = new QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver(repositories, invokerFactory,
 				resourceMetadataResolver, builder, factory);
+
+		when(parameter.hasParameterAnnotation(QuerydslPredicate.class)).thenReturn(true);
 	}
 
 	/**
@@ -80,10 +86,10 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 	@Test
 	public void returnsInvokerIfRepositoryIsNotQuerydslAware() {
 
-		UserRepository repository = mock(UserRepository.class);
-		when(repositories.getRepositoryFor(User.class)).thenReturn(repository);
+		ReceiptRepository repository = mock(ReceiptRepository.class);
+		when(repositories.getRepositoryFor(Receipt.class)).thenReturn(repository);
 
-		RepositoryInvoker result = resolver.postProcess(invoker, User.class, NO_PARAMETERS);
+		RepositoryInvoker result = resolver.postProcess(parameter, invoker, Receipt.class, NO_PARAMETERS);
 
 		assertThat(result, is(invoker));
 	}
@@ -97,7 +103,7 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 		Object repository = mock(QuerydslUserRepository.class);
 		when(repositories.getRepositoryFor(User.class)).thenReturn(repository);
 
-		RepositoryInvoker result = resolver.postProcess(invoker, User.class, NO_PARAMETERS);
+		RepositoryInvoker result = resolver.postProcess(parameter, invoker, User.class, NO_PARAMETERS);
 
 		assertThat(result, is(instanceOf(QuerydslRepositoryInvokerAdapter.class)));
 	}
@@ -112,7 +118,7 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 		when(repositories.hasRepositoryFor(User.class)).thenReturn(true);
 		when(repositories.getRepositoryFor(User.class)).thenReturn(repository);
 
-		RepositoryInvoker result = resolver.postProcess(invoker, User.class, NO_PARAMETERS);
+		RepositoryInvoker result = resolver.postProcess(parameter, invoker, User.class, NO_PARAMETERS);
 
 		assertThat(result, is(instanceOf(QuerydslRepositoryInvokerAdapter.class)));
 		verify(repository, times(1)).customize(Mockito.any(QuerydslBindings.class), Mockito.any(QUser.class));

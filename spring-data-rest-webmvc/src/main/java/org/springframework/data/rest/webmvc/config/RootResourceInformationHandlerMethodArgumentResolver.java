@@ -89,19 +89,20 @@ public class RootResourceInformationHandlerMethodArgumentResolver implements Han
 
 		// TODO reject if ResourceMetadata cannot be resolved
 		return new RootResourceInformation(resourceMetadata, persistentEntity,
-				postProcess(repositoryInvoker, domainType, webRequest.getParameterMap()));
+				postProcess(parameter, repositoryInvoker, domainType, webRequest.getParameterMap()));
 	}
 
 	/**
 	 * Potentially customize the given {@link RepositoryInvoker} for the given domain type. Default implementations simply
 	 * returns the given invoker as is.
 	 * 
+	 * @param parameter must not be {@literal null}.
 	 * @param invoker will never be {@literal null}.
 	 * @param domainType will never be {@literal null}.
 	 * @param parameters will never be {@literal null}.
-	 * @return
+	 * @return the post-processed {@link RepositoryInvoker}.
 	 */
-	protected RepositoryInvoker postProcess(RepositoryInvoker invoker, Class<?> domainType,
+	protected RepositoryInvoker postProcess(MethodParameter parameter, RepositoryInvoker invoker, Class<?> domainType,
 			Map<String, String[]> parameters) {
 		return invoker;
 	}
