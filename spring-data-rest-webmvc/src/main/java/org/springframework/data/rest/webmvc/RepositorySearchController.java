@@ -37,6 +37,8 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
@@ -294,6 +296,9 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		MultiValueMap<String, Object> result = new LinkedMultiValueMap<String, Object>(parameters);
 		MethodParameters methodParameters = new MethodParameters(method, new AnnotationAttribute(Param.class));
+		List<MethodParameter> parameterList = methodParameters.getParameters();
+		List<TypeInformation<?>> parameterTypeInformations = ClassTypeInformation.from(method.getDeclaringClass())
+				.getParameterTypes(method);
 
 		for (Entry<String, List<Object>> entry : parameters.entrySet()) {
 
@@ -303,7 +308,10 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 				continue;
 			}
 
-			ResourceMetadata metadata = mappings.getMetadataFor(parameter.getParameterType());
+			int parameterIndex = parameterList.indexOf(parameter);
+			TypeInformation<?> domainType = parameterTypeInformations.get(parameterIndex).getActualType();
+
+			ResourceMetadata metadata = mappings.getMetadataFor(domainType.getType());
 
 			if (metadata != null && metadata.isExported()) {
 				result.put(parameter.getParameterName(), prepareUris(entry.getValue()));

@@ -18,10 +18,12 @@ package org.springframework.data.rest.webmvc.config;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.springframework.core.MethodParameter;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
@@ -73,12 +75,13 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 	 */
 	@Override
 	@SuppressWarnings({ "unchecked" })
-	protected RepositoryInvoker postProcess(RepositoryInvoker invoker, Class<?> domainType,
-			Map<String, String[]> parameters) {
+	protected RepositoryInvoker postProcess(MethodParameter parameter, RepositoryInvoker invoker,
+			Class<?> domainType, Map<String, String[]> parameters) {
 
 		Object repository = repositories.getRepositoryFor(domainType);
 
-		if (!QueryDslPredicateExecutor.class.isInstance(repository)) {
+		if (!QueryDslPredicateExecutor.class.isInstance(repository)
+				|| !parameter.hasParameterAnnotation(QuerydslPredicate.class)) {
 			return invoker;
 		}
 

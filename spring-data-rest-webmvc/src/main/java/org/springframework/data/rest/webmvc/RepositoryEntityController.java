@@ -34,6 +34,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -190,8 +191,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET)
-	public Resources<?> getCollectionResource(RootResourceInformation resourceInformation, DefaultedPageable pageable,
-			Sort sort, PersistentEntityResourceAssembler assembler)
+	public Resources<?> getCollectionResource(@QuerydslPredicate RootResourceInformation resourceInformation,
+			DefaultedPageable pageable, Sort sort, PersistentEntityResourceAssembler assembler)
 					throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.COLLECTION);
@@ -202,13 +203,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throw new ResourceNotFoundException();
 		}
 
-		Iterable<?> results;
-
-		if (pageable.getPageable() != null) {
-			results = invoker.invokeFindAll(pageable.getPageable());
-		} else {
-			results = invoker.invokeFindAll(sort);
-		}
+		Iterable<?> results = pageable.getPageable() != null ? invoker.invokeFindAll(pageable.getPageable())
+				: invoker.invokeFindAll(sort);
 
 		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
 		Link baseLink = entityLinks.linkToPagedResource(resourceInformation.getDomainType(),
@@ -226,7 +222,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		SearchResourceMappings searchMappings = metadata.getSearchResourceMappings();
 
 		List<Link> links = new ArrayList<Link>();
-
 		links.add(new Link(ProfileController.getPath(this.config, metadata), ProfileResourceProcessor.PROFILE_REL));
 
 		if (searchMappings.isExported()) {
@@ -241,16 +236,16 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	@SuppressWarnings({ "unchecked" })
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET,
 			produces = { "application/x-spring-data-compact+json", "text/uri-list" })
-	public Resources<?> getCollectionResourceCompact(RootResourceInformation repoRequest, DefaultedPageable pageable,
-			Sort sort, PersistentEntityResourceAssembler assembler)
+	public Resources<?> getCollectionResourceCompact(@QuerydslPredicate RootResourceInformation resourceinformation,
+			DefaultedPageable pageable, Sort sort, PersistentEntityResourceAssembler assembler)
 					throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 
-		Resources<?> resources = getCollectionResource(repoRequest, pageable, sort, assembler);
+		Resources<?> resources = getCollectionResource(resourceinformation, pageable, sort, assembler);
 		List<Link> links = new ArrayList<Link>(resources.getLinks());
 
 		for (Resource<?> resource : ((Resources<Resource<?>>) resources).getContent()) {
 			PersistentEntityResource persistentEntityResource = (PersistentEntityResource) resource;
-			links.add(resourceLink(repoRequest, persistentEntityResource));
+			links.add(resourceLink(resourceinformation, persistentEntityResource));
 		}
 		if (resources instanceof PagedResources) {
 			return new PagedResources<Object>(Collections.emptyList(), ((PagedResources<?>) resources).getMetadata(), links);
