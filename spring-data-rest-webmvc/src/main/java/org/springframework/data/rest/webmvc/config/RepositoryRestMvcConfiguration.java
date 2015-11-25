@@ -244,7 +244,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public RepositoryRestConfiguration config() {
 
-		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration(resourceMappings());
+		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
 
 		// Register projections found in packages
 		for (Class<?> projection : getProjections(repositories())) {
@@ -257,6 +257,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		configureRepositoryRestConfiguration(config);
 
 		return config;
+	}
+
+	@Bean
+	public ProjectionDefinitionRegistar projectionDefinitionRegistrar(ObjectFactory<RepositoryRestConfiguration> config) {
+		return new ProjectionDefinitionRegistar(config);
 	}
 
 	@Bean
@@ -568,8 +573,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public ResourceMappings resourceMappings() {
-		return new RepositoryResourceMappings(repositories(), persistentEntities());
+	public RepositoryResourceMappings resourceMappings() {
+		return new RepositoryResourceMappings(repositories(), persistentEntities(),
+				config().getRepositoryDetectionStrategy());
 	}
 
 	/**

@@ -38,6 +38,8 @@ import org.springframework.data.rest.core.domain.jpa.Author;
 import org.springframework.data.rest.core.domain.jpa.CreditCard;
 import org.springframework.data.rest.core.domain.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.core.domain.jpa.Person;
+import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
+import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,7 +64,8 @@ public class RepositoryResourceMappingsIntegrationTests {
 	public void setUp() {
 
 		Repositories repositories = new Repositories(factory);
-		this.mappings = new RepositoryResourceMappings(repositories, new PersistentEntities(Arrays.asList(mappingContext)));
+		this.mappings = new RepositoryResourceMappings(repositories, new PersistentEntities(Arrays.asList(mappingContext)),
+				new EvoInflectorRelProvider(), RepositoryDetectionStrategies.DEFAULT);
 	}
 
 	@Test

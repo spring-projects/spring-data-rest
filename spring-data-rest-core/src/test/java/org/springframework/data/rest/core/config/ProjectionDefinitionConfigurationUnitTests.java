@@ -17,14 +17,9 @@ package org.springframework.data.rest.core.config;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
-
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration.ProjectionDefinitionKey;
-import org.springframework.data.rest.core.mapping.ResourceMetadata;
 
 /**
  * Unit tests for {@link ProjectionDefinitionConfiguration}.
@@ -153,19 +148,6 @@ public class ProjectionDefinitionConfigurationUnitTests {
 		assertThat(configuration.getProjectionsFor(Child.class).values(), hasItem(ParentProjection.class));
 		assertThat(configuration.getProjectionType(Child.class, "parentProjection"),
 				is(typeCompatibleWith(ParentProjection.class)));
-	}
-
-	/**
-	 * @see DATAREST-577
-	 */
-	@Test
-	public void registersExcerptProjectionsByDefault() {
-
-		ResourceMetadata metadata = mock(ResourceMetadata.class);
-		doReturn(SampleProjection.class).when(metadata).getExcerptProjection();
-
-		assertThat(new ProjectionDefinitionConfiguration(Arrays.asList(metadata)).getProjectionsFor(Integer.class),
-				Matchers.<String, Class<?>> hasEntry("name", SampleProjection.class));
 	}
 
 	@Projection(name = "name", types = Integer.class)

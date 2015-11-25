@@ -30,6 +30,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 
 /**
  * Unit tests for {@link RepositoryMethodResourceMapping}.
@@ -39,7 +40,8 @@ import org.springframework.data.rest.core.annotation.RestResource;
 public class RepositoryMethodResourceMappingUnitTests {
 
 	RepositoryMetadata metadata = new DefaultRepositoryMetadata(PersonRepository.class);
-	RepositoryCollectionResourceMapping resourceMapping = new RepositoryCollectionResourceMapping(metadata);
+	RepositoryCollectionResourceMapping resourceMapping = new RepositoryCollectionResourceMapping(metadata,
+			RepositoryDetectionStrategies.DEFAULT);
 
 	@Test
 	public void defaultsMappingToMethodName() throws Exception {

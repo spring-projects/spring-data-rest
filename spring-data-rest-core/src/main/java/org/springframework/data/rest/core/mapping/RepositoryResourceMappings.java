@@ -48,9 +48,11 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 	 * 
 	 * @param repositories must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
+	 * @param strategy must not be {@literal null}.
 	 */
-	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities) {
-		this(repositories, entities, new EvoInflectorRelProvider());
+	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities,
+			RepositoryDetectionStrategy strategy) {
+		this(repositories, entities, new EvoInflectorRelProvider(), strategy);
 	}
 
 	/**
@@ -60,18 +62,22 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 	 * @param repositories must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
+	 * @param strategy must not be {@literal null}.
 	 */
-	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities, RelProvider relProvider) {
+	RepositoryResourceMappings(Repositories repositories, PersistentEntities entities, RelProvider relProvider,
+			RepositoryDetectionStrategy strategy) {
 
 		super(entities);
 
 		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(strategy, "RepositoryDetectionStrategy must not be null!");
 
 		this.repositories = repositories;
-		this.populateCache(repositories, relProvider);
+		this.populateCache(repositories, relProvider, strategy);
 	}
 
-	private final void populateCache(Repositories repositories, RelProvider provider) {
+	private final void populateCache(Repositories repositories, RelProvider provider,
+			RepositoryDetectionStrategy strategy) {
 
 		for (Class<?> type : repositories) {
 
@@ -79,7 +85,8 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
 			PersistentEntity<?, ?> entity = repositories.getPersistentEntity(type);
 
-			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInformation, provider);
+			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInformation, provider,
+					strategy);
 			RepositoryAwareResourceMetadata information = new RepositoryAwareResourceMetadata(entity, mapping, this,
 					repositoryInformation);
 

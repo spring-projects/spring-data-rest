@@ -27,6 +27,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 
 /**
  * Unit tests for {@link RepositoryCollectionResourceMapping}.
@@ -105,7 +106,8 @@ public class RepositoryCollectionResourceMappingUnitTests {
 			}
 		};
 
-		RepositoryCollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(metadata);
+		RepositoryCollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(metadata,
+				RepositoryDetectionStrategies.DEFAULT);
 
 		assertThat(mapping.getPath(), is(new Path("/objects")));
 	}
@@ -113,7 +115,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 	private static CollectionResourceMapping getResourceMappingFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
-		return new RepositoryCollectionResourceMapping(metadata);
+		return new RepositoryCollectionResourceMapping(metadata, RepositoryDetectionStrategies.DEFAULT);
 	}
 
 	public static class Person {}

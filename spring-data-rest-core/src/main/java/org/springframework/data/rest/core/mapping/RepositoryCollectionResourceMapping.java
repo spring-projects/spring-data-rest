@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import java.lang.reflect.Modifier;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -45,11 +43,11 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	private final RestResource annotation;
 	private final RepositoryRestResource repositoryAnnotation;
 	private final CollectionResourceMapping domainTypeMapping;
-	private final boolean repositoryIsExportCandidate;
+	private final boolean repositoryExported;
 	private final RepositoryMetadata metadata;
 
-	public RepositoryCollectionResourceMapping(RepositoryMetadata metadata) {
-		this(metadata, new EvoInflectorRelProvider());
+	public RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RepositoryDetectionStrategy strategy) {
+		this(metadata, new EvoInflectorRelProvider(), strategy);
 	}
 
 	/**
@@ -58,22 +56,26 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 * 
 	 * @param repositoryType must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
+	 * @param strategy must not be {@literal null}.
 	 */
-	public RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RelProvider relProvider) {
+	RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RelProvider relProvider,
+			RepositoryDetectionStrategy strategy) {
 
 		Assert.notNull(metadata, "Repository metadata must not be null!");
 		Assert.notNull(relProvider, "RelProvider must not be null!");
+		Assert.notNull(strategy, "RepositoryDetectionStrategy must not be null!");
 
 		Class<?> repositoryType = metadata.getRepositoryInterface();
 
 		this.metadata = metadata;
 		this.annotation = AnnotationUtils.findAnnotation(repositoryType, RestResource.class);
 		this.repositoryAnnotation = AnnotationUtils.findAnnotation(repositoryType, RepositoryRestResource.class);
-		this.repositoryIsExportCandidate = Modifier.isPublic(repositoryType.getModifiers());
+		this.repositoryExported = strategy.isExported(metadata);
 
 		Class<?> domainType = metadata.getDomainType();
-		this.domainTypeMapping = EVO_INFLECTOR_IS_PRESENT ? new EvoInflectorTypeBasedCollectionResourceMapping(domainType,
-				relProvider) : new TypeBasedCollectionResourceMapping(domainType, relProvider);
+		this.domainTypeMapping = EVO_INFLECTOR_IS_PRESENT
+				? new EvoInflectorTypeBasedCollectionResourceMapping(domainType, relProvider)
+				: new TypeBasedCollectionResourceMapping(domainType, relProvider);
 
 		if (annotation != null) {
 			LOGGER.warn(
@@ -149,16 +151,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public boolean isExported() {
-
-		if (repositoryAnnotation != null) {
-			return repositoryAnnotation.exported();
-		}
-
-		if (annotation != null) {
-			return annotation.exported();
-		}
-
-		return repositoryIsExportCandidate && domainTypeMapping.isExported();
+		return repositoryExported;
 	}
 
 	/* 

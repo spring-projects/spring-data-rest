@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
+import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -52,10 +54,12 @@ public class RepositoryRestConfiguration {
 	private List<Class<?>> exposeIdsFor = new ArrayList<Class<?>>();
 	private ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
+	private RepositoryDetectionStrategy repositoryDetectionStrategy = RepositoryDetectionStrategies.DEFAULT;
+
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
 	private final MetadataConfiguration metadataConfiguration;
 
-	private final EnumTranslationConfiguration enumSerializationConfiguration;
+	private final EnumTranslationConfiguration enumTranslationConfiguration;
 	private boolean enableEnumTranslation = false;
 
 	/**
@@ -63,17 +67,18 @@ public class RepositoryRestConfiguration {
 	 * 
 	 * @param projectionConfiguration must not be {@literal null}.
 	 * @param metadataConfiguration must not be {@literal null}.
+	 * @param enumTranslationConfiguration must not be {@literal null}.
 	 */
 	public RepositoryRestConfiguration(ProjectionDefinitionConfiguration projectionConfiguration,
 			MetadataConfiguration metadataConfiguration, EnumTranslationConfiguration enumTranslationConfiguration) {
 
 		Assert.notNull(projectionConfiguration, "ProjectionDefinitionConfiguration must not be null!");
 		Assert.notNull(metadataConfiguration, "MetadataConfiguration must not be null!");
-		Assert.notNull(enumTranslationConfiguration, " must not be null!");
+		Assert.notNull(enumTranslationConfiguration, "EnumTranslationConfiguration must not be null!");
 
 		this.projectionConfiguration = projectionConfiguration;
 		this.metadataConfiguration = metadataConfiguration;
-		this.enumSerializationConfiguration = enumTranslationConfiguration;
+		this.enumTranslationConfiguration = enumTranslationConfiguration;
 	}
 
 	/**
@@ -489,7 +494,7 @@ public class RepositoryRestConfiguration {
 	 * details see {@link EnumTranslator}.
 	 * 
 	 * @param enableEnumTranslation
-	 * @see #getEnumSerializationConfiguration()
+	 * @see #getEnumTranslationConfiguration()
 	 */
 	public void setEnableEnumTranslation(boolean enableEnumTranslation) {
 		this.enableEnumTranslation = enableEnumTranslation;
@@ -499,17 +504,43 @@ public class RepositoryRestConfiguration {
 	 * Returns whether enum value translation is enabled.
 	 * 
 	 * @return
+	 * @since 2.4
 	 */
 	public boolean isEnableEnumTranslation() {
 		return this.enableEnumTranslation;
 	}
 
 	/**
-	 * Returns the {@link EnumTranslator} for
+	 * Returns the {@link EnumTranslationConfiguration} to be used.
 	 * 
-	 * @return
+	 * @return must not be {@literal null}.
+	 * @since 2.4
 	 */
-	public EnumTranslationConfiguration getEnumSerializationConfiguration() {
-		return this.enumSerializationConfiguration;
+	public EnumTranslationConfiguration getEnumTranslationConfiguration() {
+		return this.enumTranslationConfiguration;
+	}
+
+	/**
+	 * Returns the {@link RepositoryDetectionStrategy} to be used to decide which repositories get exposed. Will be
+	 * {@link RepositoryDetectionStrategies#DEFAULT} by default.
+	 * 
+	 * @return will never be {@literal null}.
+	 * @see RepositoryDetectionStrategies
+	 * @since 2.5
+	 */
+	public RepositoryDetectionStrategy getRepositoryDetectionStrategy() {
+		return repositoryDetectionStrategy;
+	}
+
+	/**
+	 * Configures the {@link RepositoryDetectionStrategy} to be used to determine which repositories get exposed. Defaults
+	 * to {@link RepositoryDetectionStrategies#DEFAULT}.
+	 * 
+	 * @param repositoryDetectionStrategy can be {@literal null}.
+	 * @since 2.5
+	 */
+	public void setRepositoryDetectionStrategy(RepositoryDetectionStrategy repositoryDetectionStrategy) {
+		this.repositoryDetectionStrategy = repositoryDetectionStrategy == null ? RepositoryDetectionStrategies.DEFAULT
+				: repositoryDetectionStrategy;
 	}
 }

@@ -15,13 +15,11 @@
  */
 package org.springframework.data.rest.core.config;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -44,28 +42,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	 * Creates a new {@link ProjectionDefinitionConfiguration}.
 	 */
 	public ProjectionDefinitionConfiguration() {
-		this(Collections.<ResourceMetadata> emptySet());
-	}
-
-	/**
-	 * Creates a new {@link ProjectionDefinitionConfiguration} from the given {@link ResourceMetadata} instances.
-	 * 
-	 * @param resourceMetadata must not be {@literal null}.
-	 */
-	public ProjectionDefinitionConfiguration(Iterable<ResourceMetadata> resourceMetadata) {
-
-		Assert.notNull(resourceMetadata, "ResourceMetadata must not be null!");
-
 		this.projectionDefinitions = new HashMap<ProjectionDefinitionKey, Class<?>>();
-
-		for (ResourceMetadata metadata : resourceMetadata) {
-
-			Class<?> projection = metadata.getExcerptProjection();
-
-			if (projection != null) {
-				addProjection(projection);
-			}
-		}
 	}
 
 	/*
@@ -106,8 +83,8 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		String name = annotation.name();
 		Class<?>[] sourceTypes = annotation.types();
 
-		return StringUtils.hasText(name) ? addProjection(projectionType, name, sourceTypes) : addProjection(projectionType,
-				sourceTypes);
+		return StringUtils.hasText(name) ? addProjection(projectionType, name, sourceTypes)
+				: addProjection(projectionType, sourceTypes);
 	}
 
 	/**
@@ -132,7 +109,8 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	 * @param sourceTypes must not be {@literal null} or empty.
 	 * @return
 	 */
-	public ProjectionDefinitionConfiguration addProjection(Class<?> projectionType, String name, Class<?>... sourceTypes) {
+	public ProjectionDefinitionConfiguration addProjection(Class<?> projectionType, String name,
+			Class<?>... sourceTypes) {
 
 		Assert.notNull(projectionType, "Projection type must not be null!");
 		Assert.hasText(name, "Name must not be null or empty!");
