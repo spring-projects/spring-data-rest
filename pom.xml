@@ -116,7 +116,7 @@
 				</dependency>
 
 				<dependency>
-					<groupId>com.querydsl</groupId>
+					<groupId>com.mysema.querydsl</groupId>
 					<artifactId>querydsl-mongodb</artifactId>
 					<version>${querydsl}</version>
 					<scope>test</scope>
