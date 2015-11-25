@@ -41,7 +41,7 @@ When using Spring Boot, Spring Data REST gets configured automatically.
 [[getting-started.gradle]]
 == Adding Spring Data REST to a Gradle project
 
-To add Spring Data REST to a Gradle-based project, add the `spring-data-rest-webmvc` artifact to your compile-time dependencies: 
+To add Spring Data REST to a Gradle-based project, add the `spring-data-rest-webmvc` artifact to your compile-time dependencies:
 
 [source,groovy,subs="verbatim,attributes"]
 ----
@@ -54,7 +54,7 @@ dependencies {
 [[getting-started.maven]]
 == Adding Spring Data REST to a Maven project
 
-To add Spring Data REST to a Maven-based project, add the `spring-data-rest-webmvc` artifact to your compile-time dependencies: 
+To add Spring Data REST to a Maven-based project, add the `spring-data-rest-webmvc` artifact to your compile-time dependencies:
 
 [source,xml,subs="verbatim,attributes"]
 ----
@@ -68,9 +68,12 @@ To add Spring Data REST to a Maven-based project, add the `spring-data-rest-webm
 [[getting-started.configuration]]
 == Configuring Spring Data REST
 
-To install Spring Data REST alongside your existing Spring MVC application, you need to include the appropriate MVC configuration. Spring Data REST configuration is defined in a class called `RepositoryRestMvcConfiguration`. You can either import this class into your existing configuration using an `@Import` annotation or you can subclass it and override any of the `configureXXX` methods to add your own configuration to that of Spring Data REST.
+To install Spring Data REST alongside your existing Spring MVC application, you need to include the appropriate MVC configuration.
+Spring Data REST configuration is defined in a class called `RepositoryRestMvcConfiguration` and that class can just be imported into your applications configuration.
 
 IMPORTANT: This step is unnecessary if you are using Spring Boot's auto-configuration. Spring Boot will automatically enable Spring Data REST when you include *spring-boot-starter-data-rest* and either in your list of dependencies, and you your app is flagged with either `@SpringBootApplication` or `@EnableAutoConfiguration`.
+
+To customize the configuration, register a `RepositoryRestConfigurer` (or extend `RepositoryRestConfigurerAdapter`) and implement or override the `configure…`-methods relevant to your use case.
 
 Make sure you also configure Spring Data repositories for the store you use. For details on that, please consult the reference documentation for the http://projects.spring.io/spring-data/[corresponding Spring Data module].
 
@@ -93,20 +96,37 @@ With Spring Boot 1.1 or earlier, or if you are not using Spring Boot, simply do 
 [source,java]
 ----
 @Configuration
-public class CustomizedRestMvcConfiguration extends RepositoryRestMvcConfiguration {
+class CustomRestMvcConfiguration {
 
-  @Override
-  public RepositoryRestConfiguration config() {
-    RepositoryRestConfiguration config = super.config();
-    config.setBasePath("/api");
-    return config;
+  @Bean
+  public RepositoryRestConfigurer repositoryRestConfigurer() {
+
+    return new RepositoryRestConfigurerAdapter() {
+
+      @Override
+      public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+        configuration.setBasePath("/api")
+      }
+    };
   }
 }
 ----
 
-In your Spring application configuration, introduce this with `@Import(CustomizedRestMvcConfiguration.class)`.
+Alternatively just register a custom implementation of `RepositoryRestConfigurer` as Spring bean and make sure it gets picked up by component scanning:
 
-Both of these approaches will change the base path to `/api`. 
+[source,java]
+----
+@Component
+public class CustomizedRestMvcConfiguration extends RepositoryRestConfigurerAdapter {
+
+  @Override
+  public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+    configuration.setBasePath("/api")
+  }
+}
+----
+
+Both of these approaches will change the base path to `/api`.
 
 === Changing other Spring Data REST properties
 
