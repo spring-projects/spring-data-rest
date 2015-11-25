@@ -77,6 +77,21 @@ Make sure you also configure Spring Data repositories for the store you use. For
 [[getting-started.basic-settings]]
 == Basic settings for Spring Data REST
 
+=== Which repositories get exposed by defaults?
+
+Spring Data REST uses a `RepositoryDetectionStrategy` to determine if a repository will be exported as REST resource or not. The following strategies (enumeration values of `RepositoryDiscoveryStrategies`) are available:
+
+.Repository detection strategies
+[cols="1,5". options="header"]
+|===
+| Name         | Description
+
+| `DEFAULT`    | Exposes all public repository interfaces but considers `@(Repository)RestResource`'s `exported` flag.
+| `ALL`        | Exposes all repositories independently of type visibility and annotations.
+| `ANNOTATION` | Only repositories annotated with `@(Repository)RestResource` are exposed, unless their `exported` flag is set to `false`.
+| `VISIBILITY` | Only public repositories annotated are exposed.
+|===
+
 === Changing the base URI
 
 By default, Spring Data REST serves up REST resources at the root URI, "/". There are multiple ways to change the base path.
