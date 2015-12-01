@@ -36,28 +36,25 @@ badges:
 
 
 {% capture billboard_description %}
-Spring Data REST is part of the umbrella [Spring Data](#) project that makes it easy to expose JPA based repositories as RESTful endpoints.
+Spring Data REST is part of the umbrella [Spring Data](#) project and makes it easy to build hypermedia-driven REST web services on top of Spring Data repositories.
 {% endcapture %}
 
 {% capture main_content %}
-The goal of the Spring Data REST project is to provide a solid foundation on which to expose CRUD operations to your JPA Repository-managed entities using plain HTTP REST semantics. The first implementation of this exporter uses Spring MVC and the standard Servlet architecture to make it easy to deploy a WAR file that becomes a full-blown CRUD application simply by including your domain classes and their corresponding Repository definitions. Future implementations will allow you to export your repositories in non-Servlet HTTP environments using high-throughput non-blocking IO, and will provide enhanced HTML5 capabilities.
+Spring Data REST builds on top of Spring Data repositories, analyzes your application's domain model and exposes hypermedia-driven HTTP resources for aggregates contained in the model.
 
 ## Features
 
-* Supports JPA, MongoDB, Gemfire, and Neo4J Repositories
-* Create new entities (auto-generated or pre-assigned IDs are both supported) using POST
-* Update existing entities using PUT and PATCH
-* Delete entities using DELETE
-* Manage entity relationships using POST, PUT, DELETE
-* Discover services and get or list available entities using GET
-* Search entities through Repository query methods using GET
-* Validate entities with JSR-303 or Spring Validator beans
-* Extend the REST exporter's functionality by capturing ApplicationEvents
-* Configure path and rel values using annotations or DSL config helper
-* Page large results sets
-* Sort results
-* Use metadata (ALPS) to discover transitions and other details about the service
-* Projection alternate views of data and pick excerpt options to make certain ops more efficient
+* Exposes a discoverable REST API for your domain model using HAL as media type.
+* Exposes [collection, item and association resources](http://docs.spring.io/spring-data/rest/docs/current/reference/html/#repository-resources) representing your model.
+* Supports pagination via [navigational links](http://docs.spring.io/spring-data/rest/docs/current/reference/html/#paging-and-sorting).
+* Allows to dynamically filter collection resources.
+* Exposes dedicated [search resources for query methods](http://docs.spring.io/spring-data/rest/docs/current/reference/html/#repository-resources.query-method-resource) defined in your repositories.
+* Allows to [hook into the handling of REST requests](http://docs.spring.io/spring-data/rest/docs/current/reference/html/#events) by handling Spring `ApplicationEvent`s.
+* [Exposes metadata](http://docs.spring.io/spring-data/rest/docs/current/reference/html/#metadata) about the model discovered as ALPS and JSON Schema.
+* Allows to define client specific representations through [projections](http://docs.spring.io/spring-data/rest/docs/current/reference/html/#projections-excerpts).
+* Ships a customized variant of the [HAL Browser](http://docs.spring.io/spring-data/rest/docs/current/reference/html/#_the_hal_browser) to leverage the exposed metadata.
+* Currently supports JPA, MongoDB, Neo4j, Solr, Cassandra, Gemfire.
+* Allows [advanced customizations](http://docs.spring.io/spring-data/rest/docs/current/reference/html/#customizing-sdr) of the default resources exposed.
 
 <span id="quick-start"></span>
 ## Quick Start
@@ -84,7 +81,7 @@ The goal of the Spring Data REST project is to provide a solid foundation on whi
 
 ### Presentations
 
-* [Spring Data REST - Data Meets Hypermedia (video w/ link to slides)](https://www.youtube.com/watch?v=APk8OWtXM2s)
+* [Spring Data REST - Repositories meet hypermedia](https://speakerdeck.com/olivergierke/spring-data-rest-repositories-meet-hypermedia)
 * [Hypermedia APIs with Spring](https://speakerdeck.com/olivergierke/hypermedia-apis-with-spring-5)
 * [Spring RESTBucks - A Hypermedia REST WebService](https://speakerdeck.com/olivergierke/spring-restbucks-a-hypermedia-rest-web-service)
 
