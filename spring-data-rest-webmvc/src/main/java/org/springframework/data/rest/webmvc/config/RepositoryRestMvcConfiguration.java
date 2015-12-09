@@ -630,7 +630,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public RepositoryInvokerFactory repositoryInvokerFactory() {
 
 		return new UnwrappingRepositoryInvokerFactory(
-				new DefaultRepositoryInvokerFactory(repositories(), defaultConversionService()), lookups);
+				new DefaultRepositoryInvokerFactory(repositories(), defaultConversionService()), getEntityLookups());
 	}
 
 	@Bean
@@ -715,7 +715,16 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public SelfLinkProvider selfLinkProvider() {
-		return new DefaultSelfLinkProvider(persistentEntities(), entityLinks(), lookups);
+		return new DefaultSelfLinkProvider(persistentEntities(), entityLinks(), getEntityLookups());
+	}
+
+	protected List<EntityLookup<?>> getEntityLookups() {
+
+		List<EntityLookup<?>> lookups = new ArrayList<EntityLookup<?>>();
+		lookups.addAll(config().getEntityLookups(repositories()));
+		lookups.addAll(this.lookups);
+
+		return lookups;
 	}
 
 	protected List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {

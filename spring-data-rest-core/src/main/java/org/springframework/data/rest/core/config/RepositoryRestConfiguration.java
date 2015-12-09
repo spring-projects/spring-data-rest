@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
+import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -58,6 +60,7 @@ public class RepositoryRestConfiguration {
 
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
 	private final MetadataConfiguration metadataConfiguration;
+	private final EntityLookupConfiguration entityLookupConfiguration;
 
 	private final EnumTranslationConfiguration enumTranslationConfiguration;
 	private boolean enableEnumTranslation = false;
@@ -79,6 +82,7 @@ public class RepositoryRestConfiguration {
 		this.projectionConfiguration = projectionConfiguration;
 		this.metadataConfiguration = metadataConfiguration;
 		this.enumTranslationConfiguration = enumTranslationConfiguration;
+		this.entityLookupConfiguration = new EntityLookupConfiguration();
 	}
 
 	/**
@@ -542,5 +546,29 @@ public class RepositoryRestConfiguration {
 	public void setRepositoryDetectionStrategy(RepositoryDetectionStrategy repositoryDetectionStrategy) {
 		this.repositoryDetectionStrategy = repositoryDetectionStrategy == null ? RepositoryDetectionStrategies.DEFAULT
 				: repositoryDetectionStrategy;
+	}
+
+	/**
+	 * Returns the {@link EntityLookupRegistrar} to create custom {@link EntityLookup} instances registered in the
+	 * configuration.
+	 * 
+	 * @return the {@link EntityLookupRegistrar} to build custom {@link EntityLookup}s.
+	 * @since 2.5
+	 */
+	public EntityLookupRegistrar withCustomEntityLookup() {
+		return entityLookupConfiguration;
+	}
+
+	/**
+	 * Returns all {@link EntityLookup}s considering the customizations made to the configuration.
+	 * 
+	 * @param repositories must not be {@literal null}.
+	 * @return
+	 */
+	public List<EntityLookup<?>> getEntityLookups(Repositories repositories) {
+
+		Assert.notNull(repositories, "Repositories must not be null!");
+
+		return entityLookupConfiguration.getEntityLookups(repositories);
 	}
 }
