@@ -36,6 +36,9 @@ import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
+import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
+import org.springframework.data.rest.core.support.EntityLookup;
+import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
@@ -113,9 +116,11 @@ public class RepositoryTestsConfig {
 		EntityLinks entityLinks = new RepositoryEntityLinks(repositories(), mappings, config(),
 				mock(PagingAndSortingTemplateVariables.class),
 				OrderAwarePluginRegistry.<Class<?>, BackendIdConverter> create(Arrays.asList(DefaultIdConverter.INSTANCE)));
+		SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks,
+				Collections.<EntityLookup<?>> emptyList());
 
 		return new PersistentEntityJackson2Module(mappings, persistentEntities(), config(),
-				new UriToEntityConverter(persistentEntities(), defaultConversionService()), entityLinks);
+				new UriToEntityConverter(persistentEntities(), defaultConversionService()), selfLinkProvider);
 	}
 
 	@Bean

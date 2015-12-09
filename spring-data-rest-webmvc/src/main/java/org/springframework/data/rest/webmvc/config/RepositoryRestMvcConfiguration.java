@@ -67,8 +67,11 @@ import org.springframework.data.rest.core.event.ValidatingRepositoryEventListene
 import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
+import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.RepositoryRelProvider;
+import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.core.support.UnwrappingRepositoryInvokerFactory;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping;
@@ -162,6 +165,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Autowired(required = false) List<BackendIdConverter> idConverters = Collections.emptyList();
 	@Autowired(required = false) List<RepositoryRestConfigurer> configurers = Collections.emptyList();
+	@Autowired(required = false) List<EntityLookup<?>> lookups = Collections.emptyList();
 
 	@Autowired(required = false) RelProvider relProvider;
 	@Autowired(required = false) CurieProvider curieProvider;
@@ -588,7 +592,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		PersistentEntities entities = persistentEntities();
 
 		return new PersistentEntityJackson2Module(resourceMappings(), entities, config(),
-				uriToEntityConverter(defaultConversionService()), entityLinks());
+				uriToEntityConverter(defaultConversionService()), selfLinkProvider());
 	}
 
 	/**
@@ -624,8 +628,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public RepositoryInvokerFactory repositoryInvokerFactory() {
+
 		return new UnwrappingRepositoryInvokerFactory(
-				new DefaultRepositoryInvokerFactory(repositories(), defaultConversionService()));
+				new DefaultRepositoryInvokerFactory(repositories(), defaultConversionService()), lookups);
 	}
 
 	@Bean
@@ -708,6 +713,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new MappingAuditableBeanWrapperFactory(persistentEntities());
 	}
 
+	@Bean
+	public SelfLinkProvider selfLinkProvider() {
+		return new DefaultSelfLinkProvider(persistentEntities(), entityLinks(), lookups);
+	}
+
 	protected List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 
 		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
@@ -715,7 +725,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		projectionFactory.setResourceLoader(applicationContext);
 
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
-				persistentEntities(), entityLinks(), config().getProjectionConfiguration(), projectionFactory,
+				persistentEntities(), selfLinkProvider(), config().getProjectionConfiguration(), projectionFactory,
 				resourceMappings());
 
 		HateoasPageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();

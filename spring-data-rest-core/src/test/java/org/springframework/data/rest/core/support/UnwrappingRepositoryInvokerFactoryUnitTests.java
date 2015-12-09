@@ -17,11 +17,13 @@ package org.springframework.data.rest.core.support;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 import org.hamcrest.Matcher;
@@ -33,6 +35,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
+import org.springframework.data.rest.core.domain.mongodb.Profile;
 import org.springframework.util.LinkedMultiValueMap;
 
 /**
@@ -59,7 +62,7 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 
 		when(delegate.getInvokerFor(Object.class)).thenReturn(invoker);
 
-		this.factory = new UnwrappingRepositoryInvokerFactory(delegate);
+		this.factory = new UnwrappingRepositoryInvokerFactory(delegate, Collections.<EntityLookup<?>> emptyList());
 		this.method = Object.class.getMethod("toString");
 	}
 
@@ -67,10 +70,10 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] { //
 				{ Optional.empty(), is(nullValue()) }, //
-						{ Optional.of(REFERENCE), is(REFERENCE) }, //
-						{ com.google.common.base.Optional.absent(), is(nullValue()) }, //
-						{ com.google.common.base.Optional.of(REFERENCE), is(REFERENCE) } //
-				});
+				{ Optional.of(REFERENCE), is(REFERENCE) }, //
+				{ com.google.common.base.Optional.absent(), is(nullValue()) }, //
+				{ com.google.common.base.Optional.of(REFERENCE), is(REFERENCE) } //
+		});
 	}
 
 	/**
@@ -89,6 +92,24 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 		assertQueryValueForSource(source, value);
 	}
 
+	/**
+	 * @see DATAREST-724
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void usesRegisteredEntityLookup() {
+
+		EntityLookup<Object> lookup = mock(EntityLookup.class);
+		when(lookup.supports(Profile.class)).thenReturn(true);
+
+		when(delegate.getInvokerFor(Profile.class)).thenReturn(invoker);
+
+		factory = new UnwrappingRepositoryInvokerFactory(delegate, Arrays.asList(lookup));
+		factory.getInvokerFor(Profile.class).invokeFindOne(1L);
+
+		verify(lookup, times(1)).lookupEntity(eq(1L));
+	}
+
 	private void assertFindOneValueForSource(Object source, Matcher<Object> value) {
 
 		when(invoker.invokeFindOne(1L)).thenReturn(source);
@@ -98,8 +119,7 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 	private void assertQueryValueForSource(Object source, Matcher<Object> value) {
 
 		when(invoker.invokeQueryMethod(method, new LinkedMultiValueMap<String, Object>(), null, null)).thenReturn(source);
-		assertThat(
-				factory.getInvokerFor(Object.class).invokeQueryMethod(method, new LinkedMultiValueMap<String, Object>(), null,
-						null), value);
+		assertThat(factory.getInvokerFor(Object.class).invokeQueryMethod(method, new LinkedMultiValueMap<String, Object>(),
+				null, null), value);
 	}
 }

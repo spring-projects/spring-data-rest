@@ -21,12 +21,15 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
+import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.webmvc.AbstractControllerIntegrationTests.TestConfiguration;
 import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.data.rest.webmvc.mongodb.User;
@@ -57,8 +60,9 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 
 		when(projector.projectExcerpt(anyObject())).thenAnswer(new ReturnsArgumentAt(0));
 
-		PersistentEntityResourceAssembler assembler = new PersistentEntityResourceAssembler(entities, entityLinks,
-				projector, mappings);
+		PersistentEntityResourceAssembler assembler = new PersistentEntityResourceAssembler(entities,
+				new DefaultSelfLinkProvider(entities, entityLinks, Collections.<EntityLookup<?>> emptyList()), projector,
+				mappings);
 
 		User user = new User();
 		user.id = BigInteger.valueOf(4711);
@@ -69,5 +73,4 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 		assertThat(links.getLink("self").getVariables(), is(Matchers.empty()));
 		assertThat(links.getLink("user").getVariableNames(), is(hasItem("projection")));
 	}
-
 }

@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -36,10 +35,10 @@ import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.mapping.LinkCollectingAssociationHandler;
-import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
@@ -91,15 +90,16 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 	/**
 	 * Creates a new {@link PersistentEntityJackson2Module} using the given {@link ResourceMappings}, {@link Repositories}
-	 * , {@link RepositoryRestConfiguration} and {@link UriToEntityConverter}.
+	 * , {@link RepositoryRestConfiguration}, {@link UriToEntityConverter} and {@link SelfLinkProvider}.
 	 * 
 	 * @param mappings must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
 	 * @param config must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
+	 * @param linkProvider must not be {@literal null}.
 	 */
 	public PersistentEntityJackson2Module(ResourceMappings mappings, PersistentEntities entities,
-			RepositoryRestConfiguration config, UriToEntityConverter converter, EntityLinks entityLinks) {
+			RepositoryRestConfiguration config, UriToEntityConverter converter, SelfLinkProvider linkProvider) {
 
 		super(new Version(2, 0, 0, null, "org.springframework.data.rest", "jackson-module"));
 
@@ -107,9 +107,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		Assert.notNull(entities, "Repositories must not be null!");
 		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
 		Assert.notNull(converter, "UriToEntityConverter must not be null!");
+		Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
 
 		AssociationLinks associationLinks = new AssociationLinks(mappings);
-		LinkCollector collector = new LinkCollector(entities, entityLinks, associationLinks);
+		LinkCollector collector = new LinkCollector(entities, linkProvider, associationLinks);
 
 		addSerializer(new PersistentEntityResourceSerializer(collector));
 		addSerializer(new ProjectionSerializer(collector, mappings));
@@ -344,8 +345,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 				if (persistentProperty.isCollectionLike()) {
 
-					CollectionLikeType collectionType = config.getTypeFactory().constructCollectionLikeType(
-							persistentProperty.getType(), persistentProperty.getActualType());
+					CollectionLikeType collectionType = config.getTypeFactory()
+							.constructCollectionLikeType(persistentProperty.getType(), persistentProperty.getActualType());
 					CollectionValueInstantiator instantiator = new CollectionValueInstantiator(persistentProperty);
 					CollectionDeserializer collectionDeserializer = new CollectionDeserializer(collectionType,
 							uriStringDeserializer, null, instantiator);
@@ -454,8 +455,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
 		 */
 		@Override
-		public void serialize(TargetAware value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
-				JsonGenerationException {
+		public void serialize(TargetAware value, JsonGenerator jgen, SerializerProvider provider)
+				throws IOException, JsonGenerationException {
 
 			Object target = value.getTarget();
 			Links links = mappings.getMetadataFor(value.getTargetClass()).isExported() ? collector.getLinksFor(target)
@@ -577,22 +578,23 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		private final PersistentEntities entities;
 		private final AssociationLinks associationLinks;
-		private final EntityLinks links;
+		private final SelfLinkProvider links;
 
 		/**
-		 * Creates a new {@link PersistentEntities}, {@link EntityLinks} and {@link AssociationLinks}.
+		 * Creates a new {@link PersistentEntities}, {@link SelfLinkProvider} and {@link AssociationLinks}.
 		 * 
 		 * @param entities must not be {@literal null}.
-		 * @param entityLinks must not be {@literal null}.
+		 * @param linkProvider must not be {@literal null}.
 		 * @param associationLinks must not be {@literal null}.
 		 */
-		public LinkCollector(PersistentEntities entities, EntityLinks entityLinks, AssociationLinks associationLinks) {
+		public LinkCollector(PersistentEntities entities, SelfLinkProvider linkProvider,
+				AssociationLinks associationLinks) {
 
 			Assert.notNull(entities, "PersistentEntities must not be null!");
-			Assert.notNull(entityLinks, "EntityLinks must not be null!");
+			Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
 			Assert.notNull(associationLinks, "AssociationLinks must not be null!");
 
-			this.links = entityLinks;
+			this.links = linkProvider;
 			this.entities = entities;
 			this.associationLinks = associationLinks;
 		}
@@ -622,7 +624,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			PersistentEntity<?, ?> entity = entities.getPersistentEntity(object.getClass());
 
 			Links links = new Links(existingLinks);
-			Link selfLink = createSelfLink(object, entity, links);
+			Link selfLink = createSelfLink(object, links);
 
 			if (selfLink == null) {
 				return links;
@@ -636,10 +638,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			List<Link> result = new ArrayList<Link>(existingLinks);
 			result.addAll(handler.getLinks());
 
-			return addSelfLinkIfNecessary(object, entity, result);
+			return addSelfLinkIfNecessary(object, result);
 		}
 
-		private Links addSelfLinkIfNecessary(Object object, PersistentEntity<?, ?> entity, List<Link> existing) {
+		private Links addSelfLinkIfNecessary(Object object, List<Link> existing) {
 
 			Links result = new Links(existing);
 
@@ -648,26 +650,19 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 
 			List<Link> list = new ArrayList<Link>();
-			list.add(createSelfLink(object, entity, result));
+			list.add(createSelfLink(object, result));
 			list.addAll(existing);
 
 			return new Links(list);
 		}
 
-		private Link createSelfLink(Object object, PersistentEntity<?, ?> entity, Links existing) {
+		private Link createSelfLink(Object object, Links existing) {
 
 			if (existing.hasLink(Link.REL_SELF)) {
 				return existing.getLink(Link.REL_SELF);
 			}
 
-			IdentifierAccessor accessor = entity.getIdentifierAccessor(object);
-			Object identifier = accessor.getIdentifier();
-
-			if (identifier == null) {
-				return null;
-			}
-
-			return links.linkToSingleResource(entity.getType(), identifier).withSelfRel();
+			return links.createSelfLinkFor(object).withSelfRel();
 		}
 	}
 
@@ -712,8 +707,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			Class<?> collectionOrMapType = property.getType();
 
-			return property.isMap() ? CollectionFactory.createMap(collectionOrMapType, 0) : CollectionFactory
-					.createCollection(collectionOrMapType, 0);
+			return property.isMap() ? CollectionFactory.createMap(collectionOrMapType, 0)
+					: CollectionFactory.createCollection(collectionOrMapType, 0);
 		}
 	}
 }

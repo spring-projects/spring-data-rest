@@ -269,7 +269,6 @@ public class PersistentEntitySerializationTests {
 
 		PersistentEntityResource resource = PersistentEntityResource.//
 				build(oliver, repositories.getPersistentEntity(Person.class)).//
-				withLink(new Link("/people/1")).//
 				withEmbedded(Arrays.asList(wrapper)).//
 				build();
 

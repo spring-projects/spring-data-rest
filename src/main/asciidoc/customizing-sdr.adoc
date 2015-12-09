@@ -3,6 +3,43 @@
 
 There are many options to tailor Spring Data REST. These subsections show how.
 
+== Customizing item resource URIs
+
+By default the URI for item resources are comprised of the path segment used for the collection resource with the database identifier appended.
+That allows us to use the repository's `findOne(…)` method to lookup entity instances.
+As of Spring Data REST 2.5 this can be customized by registering an implementation of `EntityLookup` as Spring bean in your application.
+Spring Data REST will pick those up and tweak the URI generation according to their implementation.
+
+Assume a `User` with a `username` property that uniquely identifies it.
+Also, assume we have a method `Optional<User> findByUsername(String username)` on the according repository.
+This would allow us to implement a `UserEntityLookup` looking like this:
+
+[source, java]
+----
+@Component
+public class UserEntityLookup extends EntityLookupSupport<User> {
+
+    private final UserRepository repository;
+
+    public UserEntityLookup(UserRepository repository) {
+        this.repository = repository;
+    }
+
+    @Override
+    public Serializable getResourceIdentifier(User entity) {
+        return entity.getUsername();
+    }
+
+    @Override
+    public Object lookupEntity(Serializable id) {
+        return repository.findByUsername(id.toString());
+    }
+}
+----
+
+Note, how `getResourceIdentifier(…)` returns the username to be used by the URI creation. To load entity instances by the value returned from that method we now implement `lookupEntity(…)` using the query method available on the `UserRepository`.
+
+
 include::configuring-the-rest-url-path.adoc[leveloffset=+1]
 include::adding-sdr-to-spring-mvc-app.adoc[leveloffset=+1]
 include::overriding-sdr-response-handlers.adoc[leveloffset=+1]

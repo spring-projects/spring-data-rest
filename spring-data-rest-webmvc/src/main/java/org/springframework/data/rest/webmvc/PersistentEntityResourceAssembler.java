@@ -27,10 +27,10 @@ import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.support.Projector;
-import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.core.EmbeddedWrapper;
@@ -45,29 +45,29 @@ import org.springframework.util.Assert;
 public class PersistentEntityResourceAssembler implements ResourceAssembler<Object, PersistentEntityResource> {
 
 	private final PersistentEntities entities;
-	private final EntityLinks entityLinks;
 	private final Projector projector;
 	private final ResourceMappings mappings;
 	private final EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+	private final SelfLinkProvider linkProvider;
 
 	/**
 	 * Creates a new {@link PersistentEntityResourceAssembler}.
 	 * 
 	 * @param entities must not be {@literal null}.
-	 * @param entityLinks must not be {@literal null}.
+	 * @param linkProvider must not be {@literal null}.
 	 * @param projector must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
 	 */
-	public PersistentEntityResourceAssembler(PersistentEntities entities, EntityLinks entityLinks, Projector projector,
-			ResourceMappings mappings) {
+	public PersistentEntityResourceAssembler(PersistentEntities entities, SelfLinkProvider linkProvider,
+			Projector projector, ResourceMappings mappings) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(entityLinks, "EntityLinks must not be null!");
+		Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
 		Assert.notNull(projector, "PersistentEntityProjector must not be be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
 
 		this.entities = entities;
-		this.entityLinks = entityLinks;
+		this.linkProvider = linkProvider;
 		this.projector = projector;
 		this.mappings = mappings;
 	}
@@ -102,7 +102,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 		return PersistentEntityResource.build(instance, entity).//
 				withEmbedded(getEmbeddedResources(source)).//
 				withLink(getSelfLinkFor(source)).//
-				withLink(getSingleResourceLinkTo(source));
+				withLink(linkProvider.createSelfLinkFor(source));
 	}
 
 	/**
@@ -184,23 +184,8 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 	 * @return
 	 */
 	public Link getSelfLinkFor(Object instance) {
-		return new Link(getSingleResourceLinkTo(instance).expand().getHref(), Link.REL_SELF);
-	}
 
-	private Link getSingleResourceLinkTo(Object instance) {
-
-		Assert.notNull(instance, "Domain object must not be null!");
-
-		Class<? extends Object> instanceType = instance.getClass();
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(instanceType);
-
-		if (entity == null) {
-			throw new IllegalArgumentException(
-					String.format("Cannot create self link for %s! No persistent entity found!", instanceType));
-		}
-
-		Object id = entity.getIdentifierAccessor(instance).getIdentifier();
-
-		return entityLinks.linkToSingleResource(entity.getType(), id);
+		Link link = linkProvider.createSelfLinkFor(instance);
+		return new Link(link.expand().getHref(), Link.REL_SELF);
 	}
 }

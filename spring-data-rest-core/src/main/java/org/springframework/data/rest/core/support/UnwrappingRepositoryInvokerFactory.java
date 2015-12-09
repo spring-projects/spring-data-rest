@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.core.support;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,6 +32,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
+import org.springframework.plugin.core.OrderAwarePluginRegistry;
+import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MultiValueMap;
@@ -66,8 +71,8 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 			converters.add(new Converter<Object, Object>() {
 				@Override
 				public Object convert(Object source) {
-					return source instanceof com.google.common.base.Optional ? ((com.google.common.base.Optional<?>) source)
-							.orNull() : source;
+					return source instanceof com.google.common.base.Optional
+							? ((com.google.common.base.Optional<?>) source).orNull() : source;
 				}
 			});
 		}
@@ -76,17 +81,20 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 	}
 
 	private final RepositoryInvokerFactory delegate;
+	private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
 
 	/**
-	 * Creates a new {@link UnwrappingRepositoryInvokerFactory}.
-	 * 
 	 * @param delegate must not be {@literal null}.
+	 * @param lookups must not be {@literal null}.
 	 */
-	public UnwrappingRepositoryInvokerFactory(RepositoryInvokerFactory delegate) {
+	public UnwrappingRepositoryInvokerFactory(RepositoryInvokerFactory delegate,
+			List<? extends EntityLookup<?>> lookups) {
 
 		Assert.notNull(delegate, "Delegate RepositoryInvokerFactory must not be null!");
+		Assert.notNull(lookups, "EntityLookups must not be null!");
 
 		this.delegate = delegate;
+		this.lookups = OrderAwarePluginRegistry.create(lookups);
 	}
 
 	/* 
@@ -95,7 +103,10 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 	 */
 	@Override
 	public RepositoryInvoker getInvokerFor(Class<?> domainType) {
-		return new UnwrappingRepositoryInvoker(delegate.getInvokerFor(domainType), CONVERTERS);
+
+		EntityLookup<?> lookup = lookups.getPluginFor(domainType);
+
+		return new UnwrappingRepositoryInvoker(delegate.getInvokerFor(domainType), CONVERTERS, lookup);
 	}
 
 	/**
@@ -104,33 +115,20 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 	 * 
 	 * @author Oliver Gierke
 	 */
+	@RequiredArgsConstructor
 	private static class UnwrappingRepositoryInvoker implements RepositoryInvoker {
 
-		private final RepositoryInvoker delegate;
-		private final Collection<Converter<Object, Object>> converters;
-
-		/**
-		 * Creates a new {@link UnwrappingRepositoryInvoker} for the given delegate and {@link Converter}s.
-		 * 
-		 * @param delegate must not be {@literal null}.
-		 * @param converters must not be {@literal null}.
-		 */
-		public UnwrappingRepositoryInvoker(RepositoryInvoker delegate, Collection<Converter<Object, Object>> converters) {
-
-			Assert.notNull(delegate, "Delegate RepositoryInvoker must not be null!");
-			Assert.notNull(converters, "Converters must not be null!");
-
-			this.delegate = delegate;
-			this.converters = converters;
-		}
+		private final @NonNull RepositoryInvoker delegate;
+		private final @NonNull Collection<Converter<Object, Object>> converters;
+		private final EntityLookup<?> lookup;
 
 		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 		 */
-		@SuppressWarnings("unchecked")
+
 		public <T> T invokeFindOne(Serializable id) {
-			return (T) postProcess(delegate.invokeFindOne(id));
+			return postProcess(lookup != null ? lookup.lookupEntity(id) : delegate.invokeFindOne(id));
 		}
 
 		/* 
@@ -231,13 +229,14 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 		 * @param result can be {@literal null}.
 		 * @return
 		 */
-		private Object postProcess(Object result) {
+		@SuppressWarnings("unchecked")
+		private <T> T postProcess(Object result) {
 
 			for (Converter<Object, Object> converter : converters) {
 				result = converter.convert(result);
 			}
 
-			return result;
+			return (T) result;
 		}
 	}
 }

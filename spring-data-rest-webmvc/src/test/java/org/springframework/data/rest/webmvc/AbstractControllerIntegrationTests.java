@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,9 @@ import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
+import org.springframework.data.rest.core.support.EntityLookup;
+import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.data.rest.webmvc.support.Projector;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -53,7 +58,11 @@ public abstract class AbstractControllerIntegrationTests {
 
 		@Bean
 		public PersistentEntityResourceAssembler persistentEntityResourceAssembler() {
-			return new PersistentEntityResourceAssembler(persistentEntities(), entityLinks(), StubProjector.INSTANCE,
+
+			SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks(),
+					Collections.<EntityLookup<?>> emptyList());
+
+			return new PersistentEntityResourceAssembler(persistentEntities(), selfLinkProvider, StubProjector.INSTANCE,
 					resourceMappings());
 		}
 	}
