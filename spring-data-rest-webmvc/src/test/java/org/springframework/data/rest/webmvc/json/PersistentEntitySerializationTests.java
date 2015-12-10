@@ -41,6 +41,7 @@ import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.OrderRepository;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
+import org.springframework.data.rest.webmvc.jpa.PersonSummary;
 import org.springframework.data.rest.webmvc.jpa.UserExcerpt;
 import org.springframework.data.rest.webmvc.mongodb.Address;
 import org.springframework.data.rest.webmvc.mongodb.User;
@@ -50,6 +51,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverer;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.PagedResources.PageMetadata;
+import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.hateoas.hal.HalLinkDiscoverer;
@@ -302,5 +304,22 @@ public class PersistentEntitySerializationTests {
 	@Test
 	public void deserializesTranslatedEnumProperty() throws Exception {
 		assertThat(mapper.readValue("{ \"gender\" : \"Male\" }", User.class).gender, is(Gender.MALE));
+	}
+
+	/**
+	 * @see DATAREST-697
+	 */
+	@Test
+	public void rendersProjectionWithinSimpleResourceCorrectly() throws Exception {
+
+		Person person = new Person("Dave", "Matthews");
+		person.setId(1L);
+
+		ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
+		PersonSummary projection = factory.createProjection(PersonSummary.class, person);
+
+		String result = mapper.writeValueAsString(new Resource<PersonSummary>(projection));
+
+		assertThat(JsonPath.read(result, "$._links.self"), is(notNullValue()));
 	}
 }
