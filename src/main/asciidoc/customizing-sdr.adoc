@@ -7,12 +7,32 @@ There are many options to tailor Spring Data REST. These subsections show how.
 
 By default the URI for item resources are comprised of the path segment used for the collection resource with the database identifier appended.
 That allows us to use the repository's `findOne(…)` method to lookup entity instances.
-As of Spring Data REST 2.5 this can be customized by registering an implementation of `EntityLookup` as Spring bean in your application.
+As of Spring Data REST 2.5 this can be customized by using configuration API on `RepositoryRestConfiguration` (preferred on Java 8) or by registering an implementation of `EntityLookup` as Spring bean in your application.
 Spring Data REST will pick those up and tweak the URI generation according to their implementation.
 
 Assume a `User` with a `username` property that uniquely identifies it.
 Also, assume we have a method `Optional<User> findByUsername(String username)` on the according repository.
-This would allow us to implement a `UserEntityLookup` looking like this:
+
+On Java 8 we can simply register the mapping methods as method references to weak the URI creation as follows:
+
+[source, java]
+----
+@Component
+public class SpringDataRestCustomization extends RepositoryRestConfigurerAdapter {
+
+  @Override
+  public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+
+    config.withCustomEntityLookup().//
+      forRepository(UserRepository.class, User::getUsername, UserRepository::findByUsername);
+  }
+}
+----
+
+`forRepository(…)` takes the repository type as first argument a method reference mapping the repositories domain type to some target type, as well as another method reference to map that value back using the repository mentioned as first argument.
+
+If you're not running Java 8 or better, you could use the method but it would require a few quite verbose anonymous inner classes to be use.
+That's why on older Java versions you probably prefer implementing a `UserEntityLookup` looking like this:
 
 [source, java]
 ----
