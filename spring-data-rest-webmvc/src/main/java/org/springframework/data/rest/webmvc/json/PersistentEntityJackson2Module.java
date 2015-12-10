@@ -434,19 +434,33 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		private final LinkCollector collector;
 		private final ResourceMappings mappings;
-		private boolean unwrapping;
+		private final boolean unwrapping;
 
 		/**
-		 * Creates a new {@link ProjectionSerializer} for the given {@link LinkCollector}.
+		 * Creates a new {@link ProjectionSerializer} for the given {@link LinkCollector} and {@link ResourceMappings}.
 		 * 
-		 * @param collector
+		 * @param collector must not be {@literal null}.
+		 * @param mappings must not be {@literal null}.
 		 */
 		public ProjectionSerializer(LinkCollector collector, ResourceMappings mappings) {
+			this(collector, mappings, false);
+		}
+
+		/**
+		 * Creates a new {@link ProjectionSerializer} for the given {@link LinkCollector}, {@link ResourceMappings} whether
+		 * to be in unwrapping mode or not.
+		 * 
+		 * @param collector must not be {@literal null}.
+		 * @param mappings must not be {@literal null}.
+		 * @param unwrapping
+		 */
+		private ProjectionSerializer(LinkCollector collector, ResourceMappings mappings, boolean unwrapping) {
 
 			super(TargetAware.class);
 
 			this.collector = collector;
 			this.mappings = mappings;
+			this.unwrapping = unwrapping;
 		}
 
 		/* 
@@ -461,14 +475,18 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			Links links = mappings.getMetadataFor(value.getTargetClass()).isExported() ? collector.getLinksFor(target)
 					: new Links();
 
-			jgen.writeStartObject();
+			if (!unwrapping) {
+				jgen.writeStartObject();
+			}
 
 			provider.//
 					findValueSerializer(ProjectionResource.class, null).//
 					unwrappingSerializer(null).//
 					serialize(new ProjectionResource(value, links), jgen, provider);
 
-			jgen.writeEndObject();
+			if (!unwrapping) {
+				jgen.writeEndObject();
+			}
 		}
 
 		/* 
@@ -486,8 +504,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 */
 		@Override
 		public JsonSerializer<TargetAware> unwrappingSerializer(NameTransformer unwrapper) {
-			this.unwrapping = true;
-			return this;
+			return new ProjectionSerializer(collector, mappings, true);
 		}
 	}
 
