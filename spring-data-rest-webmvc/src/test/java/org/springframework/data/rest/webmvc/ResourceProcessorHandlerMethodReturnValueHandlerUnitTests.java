@@ -36,6 +36,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
@@ -281,6 +282,20 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		ResolvableType type = ResolvableType.forMethodReturnType(Controller.class.getMethod("resourcesOfObject"));
 
 		assertThat(wrapper.supports(type, value), is(false));
+	}
+
+	/**
+	 * @see DATAREST-702
+	 */
+	@Test
+	public void registersProcessorForProxyType() {
+
+		ProjectionProcessor processor = new ProjectionProcessor();
+		ProxyFactory factory = new ProxyFactory(processor);
+
+		resourceProcessors.add((ResourceProcessor<?>) factory.getProxy());
+
+		new ResourceProcessorHandlerMethodReturnValueHandler(delegate, resourceProcessors);
 	}
 
 	// Helpers ---------------------------------------------------------//

@@ -85,8 +85,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 		for (ResourceProcessor<?> processor : processors) {
 
 			ResolvableType processorType = ResolvableType.forClass(ResourceProcessor.class, processor.getClass());
-			ResolvableType componentType = processorType.getGeneric(0);
-			Class<?> rawType = getRawType(componentType);
+			Class<?> rawType = processorType.getGeneric(0).resolve();
 
 			if (Resource.class.isAssignableFrom(rawType)) {
 				this.processors.add(new ResourceProcessorWrapper(processor));
