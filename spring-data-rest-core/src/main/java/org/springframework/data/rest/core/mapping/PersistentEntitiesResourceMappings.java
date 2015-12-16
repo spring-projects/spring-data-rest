@@ -99,8 +99,6 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 
 		mappingMetadata = new MappingResourceMetadata(entity, this);
 		mappingCache.put(type, mappingMetadata);
-		mappingMetadata.init();
-
 		return mappingMetadata;
 	}
 

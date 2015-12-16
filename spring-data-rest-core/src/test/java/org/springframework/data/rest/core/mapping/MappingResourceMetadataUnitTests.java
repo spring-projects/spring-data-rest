@@ -41,9 +41,9 @@ public class MappingResourceMetadataUnitTests {
 	MongoMappingContext context = new MongoMappingContext();
 
 	MongoPersistentEntity<?> entity = context.getPersistentEntity(Entity.class);
-	ResourceMappings resourceMappings = new PersistentEntitiesResourceMappings(new PersistentEntities(
-			Arrays.asList(context)));
-	MappingResourceMetadata metadata = new MappingResourceMetadata(entity, resourceMappings).init();
+	ResourceMappings resourceMappings = new PersistentEntitiesResourceMappings(
+			new PersistentEntities(Arrays.asList(context)));
+	MappingResourceMetadata metadata = new MappingResourceMetadata(entity, resourceMappings);
 
 	/**
 	 * @see DATAREST-514
@@ -76,7 +76,7 @@ public class MappingResourceMetadataUnitTests {
 	public void isExportedIfExplicitlyAnnotated() {
 
 		MappingResourceMetadata metadata = new MappingResourceMetadata(context.getPersistentEntity(Related.class),
-				resourceMappings).init();
+				resourceMappings);
 		assertThat(metadata.isExported(), is(true));
 	}
 
