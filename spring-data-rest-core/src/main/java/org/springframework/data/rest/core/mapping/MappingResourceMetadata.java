@@ -49,19 +49,14 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 
 		super(entity.getType());
 
-		this.entity = entity;
 		this.propertyMappings = new PropertyMappings(resourceMappings);
 
-		RestResource annotation = entity.findAnnotation(RestResource.class);
-		this.explicitlyExported = annotation != null && annotation.exported();
-	}
-
-	public MappingResourceMetadata init() {
-
+		this.entity = entity;
 		this.entity.doWithAssociations(propertyMappings);
 		this.entity.doWithProperties(propertyMappings);
 
-		return this;
+		RestResource annotation = entity.findAnnotation(RestResource.class);
+		this.explicitlyExported = annotation != null && annotation.exported();
 	}
 
 	/* 
