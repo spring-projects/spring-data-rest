@@ -146,24 +146,6 @@
 		</profile>
 
 		<profile>
-			<id>neo4j</id>
-
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
-			<dependencies>
-				<dependency>
-					<groupId>org.springframework.data</groupId>
-					<artifactId>spring-data-neo4j</artifactId>
-					<version>${springdata.neo4j}</version>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-
-		</profile>
-
-		<profile>
 			<id>gemfire</id>
 
 			<activation>
