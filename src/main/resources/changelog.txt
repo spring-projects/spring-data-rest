@@ -1,6 +1,16 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.4.2.RELEASE (2015-12-18)
+---------------------------------------------
+* DATAREST-731 - Release 2.4.2 (Gosling).
+* DATAREST-723 - ConcurrentModificationException.
+* DATAREST-714 - Improve reference documentation to mention RepositoryRestConfigurer.
+* DATAREST-712 - Search a repository that implements QueryDslPredicateExecutor by a related Entity doesn't work anymore.
+* DATAREST-705 - Cannot PUT versioned entity returned by spring-data-rest.
+* DATAREST-697 - ProjectionSerializer doesn't react to unwrapping mode correctly.
+
+
 Changes in version 2.4.1.RELEASE (2015-11-15)
 ---------------------------------------------
 * DATAREST-707 - Release 2.4.1 (Gosling).
