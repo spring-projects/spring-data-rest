@@ -24,6 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -66,6 +70,7 @@ import org.springframework.data.rest.core.event.ValidatingRepositoryEventListene
 import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.projection.SubTypeAwareProxyProjectionFactory;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.rest.core.support.EntityLookup;
@@ -148,11 +153,6 @@ import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  * Main application configuration for Spring Data REST. To customize how the exporter works, subclass this and override
@@ -547,7 +547,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	/**
 	 * Special {@link org.springframework.web.servlet.HandlerAdapter} that only recognizes handler methods defined in the
 	 * provided controller classes.
-	 * 
+	 *
 	 * @param resourceProcessors {@link ResourceProcessor}s available in the {@link ApplicationContext}.
 	 * @return
 	 */
@@ -792,15 +792,24 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return lookups;
 	}
 
-	protected List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
+	@Bean
+	public SubTypeAwareProxyProjectionFactory projectionFactory() {
 
-		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
+		SubTypeAwareProxyProjectionFactory projectionFactory = new SubTypeAwareProxyProjectionFactory();
 		projectionFactory.setBeanFactory(applicationContext);
-		projectionFactory.setResourceLoader(applicationContext);
+		projectionFactory.setBeanClassLoader(applicationContext.getClassLoader());
+		return projectionFactory;
+	}
 
-		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
-				persistentEntities(), selfLinkProvider(), config().getProjectionConfiguration(), projectionFactory,
+	@Bean
+	public PersistentEntityResourceAssemblerArgumentResolver persistentEntityResourceAssemblerArgumentResolver() {
+
+		return new PersistentEntityResourceAssemblerArgumentResolver(
+				persistentEntities(), selfLinkProvider(), config().getProjectionConfiguration(), projectionFactory(),
 				associationLinks());
+	}
+
+	protected List<HandlerMethodArgumentResolver> defaultMethodArgumentResolvers() {
 
 		PageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
 
@@ -815,7 +824,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		return Arrays.asList(defaultedPageableResolver, jacksonPageableResolver, sortResolver,
 				serverHttpRequestMethodArgumentResolver(), repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
-				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE, peraResolver,
+				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE,
+				persistentEntityResourceAssemblerArgumentResolver(),
 				backendIdHandlerMethodArgumentResolver(), eTagArgumentResolver());
 	}
 
