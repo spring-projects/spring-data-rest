@@ -462,10 +462,12 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throw new ResourceNotFoundException();
 		}
 
-		eTag.verify(resourceInformation.getPersistentEntity(), domainObj);
+		PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
+
+		eTag.verify(entity, domainObj);
 
 		publisher.publishEvent(new BeforeDeleteEvent(domainObj));
-		invoker.invokeDelete(id);
+		invoker.invokeDelete((Serializable) entity.getIdentifierAccessor(domainObj).getIdentifier());
 		publisher.publishEvent(new AfterDeleteEvent(domainObj));
 
 		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);

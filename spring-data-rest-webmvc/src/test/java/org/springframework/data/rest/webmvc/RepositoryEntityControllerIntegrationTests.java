@@ -17,16 +17,19 @@ package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.webmvc.TestMvcClient.*;
 import static org.springframework.http.HttpMethod.*;
 
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.AddressRepository;
@@ -99,7 +102,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler,
 				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
 
-		assertThat(entity.getHeaders().getLocation().toString(), not(endsWith("{?projection}")));
+		assertThat(entity.getHeaders().getLocation().toString(), not(Matchers.endsWith("{?projection}")));
 	}
 
 	/**
@@ -272,6 +275,27 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 				assembler, new LinkedMultiValueMap<String, String>());
 
 		assertThat(entity.getHeaders().getETag(), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATAREST-724
+	 */
+	@Test
+	public void deletesEntityWithCustomLookupCorrectly() throws Exception {
+
+		Address address = repository.save(new Address());
+		assertThat(repository.findOne(address.id), is(notNullValue()));
+
+		RootResourceInformation resourceInformation = getResourceInformation(Address.class);
+		RepositoryInvoker invoker = spy(resourceInformation.getInvoker());
+		doReturn(address).when(invoker).invokeFindOne("foo");
+
+		RootResourceInformation informationSpy = Mockito.spy(resourceInformation);
+		doReturn(invoker).when(informationSpy).getInvoker();
+
+		controller.deleteItemResource(informationSpy, "foo", ETag.from("0"));
+
+		assertThat(repository.findOne(address.id), is(nullValue()));
 	}
 
 	interface AddressProjection {}

@@ -126,7 +126,6 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 		 */
-
 		public <T> T invokeFindOne(Serializable id) {
 			return postProcess(lookup != null ? lookup.lookupEntity(id) : delegate.invokeFindOne(id));
 		}
