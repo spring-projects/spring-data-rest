@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.ConversionFailedException;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.repository.support.RepositoryInvokerFactory;
 
 /**
  * Unit tests for {@link UriToEntityConverter}.
@@ -48,7 +51,8 @@ public class UriToEntityConverterUnitTests {
 	static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
 	static final TypeDescriptor ENTITY_TYPE = TypeDescriptor.valueOf(Entity.class);
 
-	@Mock ConversionService conversionService;
+	@Mock Repositories repositories;
+	@Mock RepositoryInvokerFactory invokerFactory;
 
 	MongoMappingContext context;
 	UriToEntityConverter converter;
@@ -61,7 +65,8 @@ public class UriToEntityConverterUnitTests {
 		this.context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.asList(Entity.class, NonEntity.class)));
 		this.context.afterPropertiesSet();
 
-		this.converter = new UriToEntityConverter(new PersistentEntities(Arrays.asList(this.context)), conversionService);
+		this.converter = new UriToEntityConverter(new PersistentEntities(Arrays.asList(this.context)), invokerFactory,
+				repositories);
 	}
 
 	/**
@@ -90,7 +95,7 @@ public class UriToEntityConverterUnitTests {
 	@Test
 	public void canConvertEntityWithIdPropertyAndFromStringConversionPossible() {
 
-		when(conversionService.canConvert(STRING_TYPE, ENTITY_TYPE)).thenReturn(true);
+		doReturn(mock(RepositoryInformation.class)).when(repositories).getRepositoryInformationFor(ENTITY_TYPE.getType());
 
 		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE), is(true));
 	}
@@ -110,7 +115,10 @@ public class UriToEntityConverterUnitTests {
 	public void invokesConverterWithLastUriPathSegment() {
 
 		Entity reference = new Entity();
-		when(conversionService.convert("1", Entity.class)).thenReturn(reference);
+
+		RepositoryInvoker invoker = mock(RepositoryInvoker.class);
+		doReturn(reference).when(invoker).invokeFindOne("1");
+		doReturn(invoker).when(invokerFactory).getInvokerFor(ENTITY_TYPE.getType());
 
 		assertThat(converter.convert(URI.create("/foo/bar/1"), URI_TYPE, ENTITY_TYPE), is((Object) reference));
 	}
@@ -129,6 +137,30 @@ public class UriToEntityConverterUnitTests {
 	@Test(expected = ConversionFailedException.class)
 	public void rejectsUriWithLessThanTwoSegments() {
 		converter.convert(URI.create("1"), URI_TYPE, ENTITY_TYPE);
+	}
+
+	/**
+	 * @see DATAREST-741
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullPersistentEntities() {
+		new UriToEntityConverter(null, invokerFactory, repositories);
+	}
+
+	/**
+	 * @see DATAREST-741
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullRepositoryInvokerFactory() {
+		new UriToEntityConverter(mock(PersistentEntities.class), null, repositories);
+	}
+
+	/**
+	 * @see DATAREST-741
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullRepositories() {
+		new UriToEntityConverter(mock(PersistentEntities.class), invokerFactory, null);
 	}
 
 	static class Entity {

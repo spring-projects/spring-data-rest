@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.core.convert.ConversionFailedException;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.repository.support.DomainClassConverter;
+import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**
- * A {@link GenericConverter} that can convert a {@link URI} domain entity.
+ * A {@link GenericConverter} that can convert a {@link URI} into an entity.
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
@@ -40,23 +40,26 @@ import org.springframework.util.Assert;
 public class UriToEntityConverter implements ConditionalGenericConverter {
 
 	private static final TypeDescriptor URI_TYPE = TypeDescriptor.valueOf(URI.class);
-	private static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
 
 	private final PersistentEntities entities;
+	private final RepositoryInvokerFactory invokerFactory;
+	private final Repositories repositories;
 	private final Set<ConvertiblePair> convertiblePairs;
-	private final ConversionService conversionService;
 
 	/**
-	 * Creates a new {@link UriToEntityConverter} using the given {@link PersistentEntities} and
-	 * {@link DomainClassConverter}.
+	 * Creates a new {@link UriToEntityConverter} using the given {@link PersistentEntities},
+	 * {@link RepositoryInvokerFactory} and {@link Repositories}.
 	 * 
 	 * @param entities must not be {@literal null}.
-	 * @param conversionService must not be {@literal null}.
+	 * @param invokerFactory must not be {@literal null}.
+	 * @param repositories must not be {@literal null}.
 	 */
-	public UriToEntityConverter(PersistentEntities entities, ConversionService conversionService) {
+	public UriToEntityConverter(PersistentEntities entities, RepositoryInvokerFactory invokerFactory,
+			Repositories repositories) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(invokerFactory, "RepositoryInvokerFactory must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null!");
 
 		Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
 
@@ -72,7 +75,8 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 
 		this.convertiblePairs = Collections.unmodifiableSet(convertiblePairs);
 		this.entities = entities;
-		this.conversionService = conversionService;
+		this.invokerFactory = invokerFactory;
+		this.repositories = repositories;
 	}
 
 	/* 
@@ -81,7 +85,8 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 	 */
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
-		return !sourceType.equals(URI_TYPE) ? false : conversionService.canConvert(STRING_TYPE, targetType);
+		return !sourceType.equals(URI_TYPE) ? false
+				: repositories.getRepositoryInformationFor(targetType.getType()) != null;
 	}
 
 	/*
@@ -103,8 +108,8 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 		PersistentEntity<?, ?> entity = entities.getPersistentEntity(targetType.getType());
 
 		if (entity == null) {
-			throw new ConversionFailedException(sourceType, targetType, source, new IllegalArgumentException(
-					"No PersistentEntity information available for " + targetType.getType()));
+			throw new ConversionFailedException(sourceType, targetType, source,
+					new IllegalArgumentException("No PersistentEntity information available for " + targetType.getType()));
 		}
 
 		URI uri = (URI) source;
@@ -115,6 +120,6 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 					"Cannot resolve URI " + uri + ". Is it local or remote? Only local URIs are resolvable."));
 		}
 
-		return conversionService.convert(parts[parts.length - 1], targetType.getType());
+		return invokerFactory.getInvokerFor(targetType.getType()).invokeFindOne(parts[parts.length - 1]);
 	}
 }

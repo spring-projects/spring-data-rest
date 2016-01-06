@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -326,11 +326,12 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 					factory.getEntityPathResolver());
 
 			return new QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver(repositories(),
-					repositoryInvokerFactory(), resourceMetadataHandlerMethodArgumentResolver(), predicateBuilder, factory);
+					repositoryInvokerFactory(defaultConversionService()), resourceMetadataHandlerMethodArgumentResolver(),
+					predicateBuilder, factory);
 		}
 
-		return new RootResourceInformationHandlerMethodArgumentResolver(repositories(), repositoryInvokerFactory(),
-				resourceMetadataHandlerMethodArgumentResolver());
+		return new RootResourceInformationHandlerMethodArgumentResolver(repositories(),
+				repositoryInvokerFactory(defaultConversionService()), resourceMetadataHandlerMethodArgumentResolver());
 	}
 
 	@Bean
@@ -595,12 +596,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				uriToEntityConverter(defaultConversionService()), selfLinkProvider());
 	}
 
-	/**
-	 * @param entities
-	 * @return
-	 */
 	protected UriToEntityConverter uriToEntityConverter(ConversionService conversionService) {
-		return new UriToEntityConverter(persistentEntities(), conversionService);
+		return new UriToEntityConverter(persistentEntities(), repositoryInvokerFactory(conversionService), repositories());
 	}
 
 	/**
@@ -627,10 +624,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public RepositoryInvokerFactory repositoryInvokerFactory() {
+	public RepositoryInvokerFactory repositoryInvokerFactory(@Qualifier ConversionService defaultConversionService) {
 
 		return new UnwrappingRepositoryInvokerFactory(
-				new DefaultRepositoryInvokerFactory(repositories(), defaultConversionService()), getEntityLookups());
+				new DefaultRepositoryInvokerFactory(repositories(), defaultConversionService), getEntityLookups());
 	}
 
 	@Bean

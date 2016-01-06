@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.UriToEntityConverter;
@@ -62,7 +63,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Jon Brisbin
- * @author Greg Trunquist
+ * @author Greg Turnquist
  * @author Oliver Gierke
  */
 @Configuration
@@ -119,8 +120,8 @@ public class RepositoryTestsConfig {
 		SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks,
 				Collections.<EntityLookup<?>> emptyList());
 
-		return new PersistentEntityJackson2Module(mappings, persistentEntities(), config(),
-				new UriToEntityConverter(persistentEntities(), defaultConversionService()), selfLinkProvider);
+		return new PersistentEntityJackson2Module(mappings, persistentEntities(), config(), new UriToEntityConverter(
+				persistentEntities(), new DefaultRepositoryInvokerFactory(repositories()), repositories()), selfLinkProvider);
 	}
 
 	@Bean
