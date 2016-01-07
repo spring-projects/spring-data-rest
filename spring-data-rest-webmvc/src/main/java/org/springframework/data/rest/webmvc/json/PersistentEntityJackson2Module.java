@@ -112,8 +112,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		LinkCollector collector = new LinkCollector(entities, entityLinks, associationLinks);
 
 		addSerializer(new PersistentEntityResourceSerializer(collector));
-		addSerializer(new ProjectionSerializer(collector, mappings));
-		addSerializer(new ProjectionResourceContentSerializer());
+		addSerializer(new ProjectionSerializer(collector, mappings, false));
+		addSerializer(new ProjectionResourceContentSerializer(false));
 
 		setSerializerModifier(new AssociationOmittingSerializerModifier(entities, associationLinks, config));
 		setDeserializerModifier(new AssociationUriResolvingDeserializerModifier(entities, converter, associationLinks));
@@ -437,16 +437,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		private final boolean unwrapping;
 
 		/**
-		 * Creates a new {@link ProjectionSerializer} for the given {@link LinkCollector} and {@link ResourceMappings}.
-		 * 
-		 * @param collector must not be {@literal null}.
-		 * @param mappings must not be {@literal null}.
-		 */
-		public ProjectionSerializer(LinkCollector collector, ResourceMappings mappings) {
-			this(collector, mappings, false);
-		}
-
-		/**
 		 * Creates a new {@link ProjectionSerializer} for the given {@link LinkCollector}, {@link ResourceMappings} whether
 		 * to be in unwrapping mode or not.
 		 * 
@@ -541,13 +531,17 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	@SuppressWarnings("serial")
 	private static class ProjectionResourceContentSerializer extends StdSerializer<ProjectionResourceContent> {
 
-		private boolean unwrapping;
+		private final boolean unwrapping;
 
 		/**
 		 * Creates a new {@link ProjectionResourceContentSerializer}.
+		 * 
+		 * @param unwrapping whether to expose the unwrapping state.
 		 */
-		public ProjectionResourceContentSerializer() {
+		public ProjectionResourceContentSerializer(boolean unwrapping) {
+
 			super(ProjectionResourceContent.class);
+			this.unwrapping = unwrapping;
 		}
 
 		/* 
@@ -579,9 +573,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 */
 		@Override
 		public JsonSerializer<ProjectionResourceContent> unwrappingSerializer(NameTransformer unwrapper) {
-
-			this.unwrapping = true;
-			return this;
+			return new ProjectionResourceContentSerializer(true);
 		}
 	}
 
