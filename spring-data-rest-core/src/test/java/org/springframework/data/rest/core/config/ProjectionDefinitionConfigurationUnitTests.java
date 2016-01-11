@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package org.springframework.data.rest.core.config;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.util.Map;
+
 import org.junit.Test;
-import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration.ProjectionDefinitionKey;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration.ProjectionDefinition;
 
 /**
  * Unit tests for {@link ProjectionDefinitionConfiguration}.
@@ -117,22 +119,24 @@ public class ProjectionDefinitionConfigurationUnitTests {
 	 * @see DATAREST-221
 	 */
 	@Test
-	public void definitionKeyEquals() {
+	public void definitionEquals() {
 
-		ProjectionDefinitionKey objectNameKey = new ProjectionDefinitionKey(Object.class, "name");
-		ProjectionDefinitionKey sameObjectNameKey = new ProjectionDefinitionKey(Object.class, "name");
-		ProjectionDefinitionKey stringNameKey = new ProjectionDefinitionKey(String.class, "name");
-		ProjectionDefinitionKey objectOtherNameKey = new ProjectionDefinitionKey(Object.class, "otherName");
+		ProjectionDefinition objectName = new ProjectionDefinition(Object.class, Object.class, "name");
+		ProjectionDefinition sameObjectName = new ProjectionDefinition(Object.class, Object.class, "name");
+		ProjectionDefinition stringName = new ProjectionDefinition(String.class, Object.class, "name");
+		ProjectionDefinition objectOtherNameKey = new ProjectionDefinition(Object.class, Object.class, "otherName");
 
-		assertThat(objectNameKey, is(objectNameKey));
-		assertThat(objectNameKey, is(sameObjectNameKey));
-		assertThat(sameObjectNameKey, is(objectNameKey));
+		assertThat(objectName, is(objectName));
+		assertThat(objectName, is(sameObjectName));
+		assertThat(sameObjectName, is(objectName));
 
-		assertThat(objectNameKey, is(not(stringNameKey)));
-		assertThat(stringNameKey, is(not(objectNameKey)));
+		assertThat(objectName, is(not(stringName)));
+		assertThat(stringName, is(not(objectName)));
 
-		assertThat(objectNameKey, is(not(objectOtherNameKey)));
-		assertThat(objectOtherNameKey, is(not(objectNameKey)));
+		assertThat(objectName, is(not(objectOtherNameKey)));
+		assertThat(objectOtherNameKey, is(not(objectName)));
+
+		assertThat(objectName, is(not(new Object())));
 	}
 
 	/**
@@ -146,8 +150,31 @@ public class ProjectionDefinitionConfigurationUnitTests {
 
 		assertThat(configuration.hasProjectionFor(Child.class), is(true));
 		assertThat(configuration.getProjectionsFor(Child.class).values(), hasItem(ParentProjection.class));
-		assertThat(configuration.getProjectionType(Child.class, "parentProjection"),
-				is(typeCompatibleWith(ParentProjection.class)));
+		assertThat(configuration.getProjectionType(Child.class, "summary"), is(typeCompatibleWith(ParentProjection.class)));
+	}
+
+	/**
+	 * @see DATAREST-221
+	 */
+	@Test
+	public void defaultsParamternameToProjection() {
+		assertThat(new ProjectionDefinitionConfiguration().getParameterName(), is("projection"));
+	}
+
+	/**
+	 * @see DATAREST-747
+	 */
+	@Test
+	public void returnsMostConcreteProjectionForSourceType() {
+
+		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
+		configuration.addProjection(ParentProjection.class);
+		configuration.addProjection(ChildProjection.class);
+
+		Map<String, Class<?>> projections = configuration.getProjectionsFor(Child.class);
+
+		assertThat(projections.values(), hasSize(1));
+		assertThat(projections.values(), hasItem(ChildProjection.class));
 	}
 
 	@Projection(name = "name", types = Integer.class)
@@ -162,6 +189,9 @@ public class ProjectionDefinitionConfigurationUnitTests {
 
 	class Child extends Parent {}
 
-	@Projection(types = Parent.class)
+	@Projection(name = "summary", types = Parent.class)
 	interface ParentProjection {}
+
+	@Projection(name = "summary", types = Child.class)
+	interface ChildProjection {}
 }
