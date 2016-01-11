@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ package org.springframework.data.rest.core.config;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -37,7 +38,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	private static final String PROJECTION_ANNOTATION_NOT_FOUND = "Projection annotation not found on %s! Either add the annotation or hand source type to the registration manually!";
 	private static final String DEFAULT_PROJECTION_PARAMETER_NAME = "projection";
 
-	private final Map<ProjectionDefinitionKey, Class<?>> projectionDefinitions;
+	private final Set<ProjectionDefinition> projectionDefinitions;
 	private String parameterName = DEFAULT_PROJECTION_PARAMETER_NAME;
 
 	/**
@@ -56,7 +57,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 
 		Assert.notNull(resourceMetadata, "ResourceMetadata must not be null!");
 
-		this.projectionDefinitions = new HashMap<ProjectionDefinitionKey, Class<?>>();
+		this.projectionDefinitions = new HashSet<ProjectionDefinition>();
 
 		for (ResourceMetadata metadata : resourceMetadata) {
 
@@ -106,8 +107,8 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		String name = annotation.name();
 		Class<?>[] sourceTypes = annotation.types();
 
-		return StringUtils.hasText(name) ? addProjection(projectionType, name, sourceTypes) : addProjection(projectionType,
-				sourceTypes);
+		return StringUtils.hasText(name) ? addProjection(projectionType, name, sourceTypes)
+				: addProjection(projectionType, sourceTypes);
 	}
 
 	/**
@@ -132,14 +133,15 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	 * @param sourceTypes must not be {@literal null} or empty.
 	 * @return
 	 */
-	public ProjectionDefinitionConfiguration addProjection(Class<?> projectionType, String name, Class<?>... sourceTypes) {
+	public ProjectionDefinitionConfiguration addProjection(Class<?> projectionType, String name,
+			Class<?>... sourceTypes) {
 
 		Assert.notNull(projectionType, "Projection type must not be null!");
 		Assert.hasText(name, "Name must not be null or empty!");
 		Assert.notEmpty(sourceTypes, "Source types must not be null!");
 
 		for (Class<?> sourceType : sourceTypes) {
-			this.projectionDefinitions.put(new ProjectionDefinitionKey(sourceType, name), projectionType);
+			this.projectionDefinitions.add(new ProjectionDefinition(sourceType, projectionType, name));
 		}
 
 		return this;
@@ -161,8 +163,8 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	@Override
 	public boolean hasProjectionFor(Class<?> sourceType) {
 
-		for (ProjectionDefinitionKey key : projectionDefinitions.keySet()) {
-			if (key.sourceType.isAssignableFrom(sourceType)) {
+		for (ProjectionDefinition definition : projectionDefinitions) {
+			if (definition.sourceType.isAssignableFrom(sourceType)) {
 				return true;
 			}
 		}
@@ -181,15 +183,28 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		Assert.notNull(sourceType, "Source type must not be null!");
 
 		Class<?> userType = ClassUtils.getUserClass(sourceType);
+		Map<String, ProjectionDefinition> byName = new HashMap<String, ProjectionDefinition>();
 		Map<String, Class<?>> result = new HashMap<String, Class<?>>();
 
-		for (Entry<ProjectionDefinitionKey, Class<?>> entry : projectionDefinitions.entrySet()) {
-			if (entry.getKey().sourceType.isAssignableFrom(userType)) {
-				result.put(entry.getKey().name, entry.getValue());
+		for (ProjectionDefinition entry : projectionDefinitions) {
+
+			if (!entry.sourceType.isAssignableFrom(userType)) {
+				continue;
+			}
+
+			ProjectionDefinition existing = byName.get(entry.name);
+
+			if (existing == null || isSubTypeOf(entry.sourceType, existing.sourceType)) {
+				byName.put(entry.name, entry);
+				result.put(entry.name, entry.targetType);
 			}
 		}
 
 		return result;
+	}
+
+	private static boolean isSubTypeOf(Class<?> left, Class<?> right) {
+		return right.isAssignableFrom(left) && !left.equals(right);
 	}
 
 	/**
@@ -197,23 +212,26 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	 * 
 	 * @author Oliver Gierke
 	 */
-	static final class ProjectionDefinitionKey {
+	static final class ProjectionDefinition {
 
-		private final Class<?> sourceType;
+		private final Class<?> sourceType, targetType;
 		private final String name;
 
 		/**
 		 * Creates a new {@link ProjectionDefinitionKey} for the given source type and name;
 		 * 
 		 * @param sourceType must not be {@literal null}.
+		 * @param targetType must not be {@literal null}.
 		 * @param name must not be {@literal null} or empty.
 		 */
-		public ProjectionDefinitionKey(Class<?> sourceType, String name) {
+		public ProjectionDefinition(Class<?> sourceType, Class<?> targetType, String name) {
 
 			Assert.notNull(sourceType, "Source type must not be null!");
+			Assert.notNull(targetType, "Target type must not be null!");
 			Assert.hasText(name, "Name must not be null or empty!");
 
 			this.sourceType = sourceType;
+			this.targetType = targetType;
 			this.name = name;
 		}
 
@@ -224,12 +242,13 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		@Override
 		public boolean equals(Object obj) {
 
-			if (!(obj instanceof ProjectionDefinitionKey)) {
+			if (!(obj instanceof ProjectionDefinition)) {
 				return false;
 			}
 
-			ProjectionDefinitionKey that = (ProjectionDefinitionKey) obj;
-			return this.name.equals(that.name) && this.sourceType.equals(that.sourceType);
+			ProjectionDefinition that = (ProjectionDefinition) obj;
+			return this.name.equals(that.name) && this.sourceType.equals(that.sourceType)
+					&& this.sourceType.equals(that.sourceType);
 		}
 
 		/* 
@@ -243,6 +262,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 
 			result += name.hashCode();
 			result += sourceType.hashCode();
+			result += targetType.hashCode();
 
 			return result;
 		}
