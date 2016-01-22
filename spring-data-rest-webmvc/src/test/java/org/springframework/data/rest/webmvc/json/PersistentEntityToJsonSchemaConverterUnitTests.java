@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguratio
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.TestConfiguration;
 import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.data.rest.webmvc.mongodb.Profile;
+import org.springframework.data.rest.webmvc.mongodb.SimulatedGroovyDomainClass;
 import org.springframework.data.rest.webmvc.mongodb.User;
 import org.springframework.data.rest.webmvc.mongodb.User.EmailAddress;
 import org.springframework.data.rest.webmvc.mongodb.User.TypeWithPattern;
@@ -73,6 +74,7 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 
 			config.getMetadataConfiguration().registerJsonSchemaFormat(JsonSchemaFormat.EMAIL, EmailAddress.class);
 			config.getMetadataConfiguration().registerFormattingPatternFor("[A-Z]+", TypeWithPattern.class);
+			config.getMetadataConfiguration().registerJsonSchemaFormat(JsonSchemaFormat.EMAIL);
 
 			config.exposeIdsFor(Profile.class);
 		}
@@ -157,6 +159,18 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 				"Items must not appear for collection associations."));
 
 		assertConstraints(User.class, constraints);
+	}
+
+	/**
+	 * @see DATAREST-754
+	 */
+	@Test
+	public void handlesGroovyDomainObjects() {
+
+		List<Constraint> constraints = new ArrayList<Constraint>();
+		constraints.add(new Constraint("$.properties.name", is(notNullValue()), "Has descriptor for name property"));
+
+		assertConstraints(SimulatedGroovyDomainClass.class, constraints);
 	}
 
 	@SuppressWarnings("unchecked")
