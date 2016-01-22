@@ -20,6 +20,7 @@
 		<cassandra.version>2.0.9</cassandra.version>
 		<cassandraunit.version>2.0.2.1</cassandraunit.version>
 		<spring-security.version>4.0.1.RELEASE</spring-security.version>
+		<groovy.version>2.3.7</groovy.version>
 	</properties>
 
 	<dependencies>
@@ -119,6 +120,13 @@
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
 			<version>${jsonpath}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>${groovy.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -377,6 +385,9 @@
 							<outputDirectory>target/generated-sources/annotations</outputDirectory>
 							<processor>org.springframework.data.mongodb.repository.support.MongoAnnotationProcessor</processor>
 							<logOnlyOnError>true</logOnlyOnError>
+							<options>
+								<querydsl.excludedPackages>org.springframework.data.rest.webmvc.mongodb.groovy,groovy.lang</querydsl.excludedPackages>
+							</options>
 						</configuration>
 					</execution>
 				</executions>

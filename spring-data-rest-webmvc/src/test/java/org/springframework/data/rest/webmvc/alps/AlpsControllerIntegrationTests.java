@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.alps;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.After;
@@ -198,5 +199,21 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 				.andExpect(jsonPath(
 						"$.alps.descriptors[?(@.id == 'person-representation')].descriptors[?(@.name == 'gender')][0].doc.value",
 						is("Male, Female, Undefined")));
+	}
+
+	/**
+	 * @see DATAREST-753
+	 */
+	@Test
+	public void alpsCanHandleGroovyDomainObjects() throws Exception {
+
+		Link profileLink = client.discoverUnique("profile");
+		Link groovyDomainObjectLink = client.discoverUnique(profileLink, "simulatedGroovyDomainClasses");
+		client.follow(groovyDomainObjectLink)//
+				.andExpect(jsonPath(
+						"$.alps.descriptors[?(@.id == 'simulatedGroovyDomainClass-representation')][0].descriptors[0].name",
+						is("name")
+				));
+
 	}
 }
