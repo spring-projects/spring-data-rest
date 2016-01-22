@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 
 /**
@@ -61,6 +62,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 public class PersistentEntityToJsonSchemaConverter implements ConditionalGenericConverter {
 
@@ -186,18 +188,25 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 				}
 			}
 
-			TypeInformation<?> propertyType = persistentProperty == null
-					? ClassTypeInformation.from(definition.getPrimaryMember().getRawType())
+			boolean isPersistentPropertyNull = persistentProperty == null;
+
+			AnnotatedMember primaryMember = definition.getPrimaryMember();
+			if (primaryMember ==  null) { // Ignore bean definitions with neither a getter nor a setter
+				continue;
+			}
+
+			TypeInformation<?> propertyType = isPersistentPropertyNull
+					? ClassTypeInformation.from(primaryMember.getRawType())
 					: persistentProperty.getTypeInformation();
 			TypeInformation<?> actualPropertyType = propertyType.getActualType();
 			Class<?> rawPropertyType = propertyType.getType();
 
 			JsonSchemaFormat format = configuration.getMetadataConfiguration().getSchemaFormatFor(rawPropertyType);
-			ResourceDescription description = persistentProperty == null
+			ResourceDescription description = isPersistentPropertyNull
 					? jackson.getFallbackDescription(metadata, definition) : getDescriptionFor(persistentProperty, metadata);
 			JsonSchemaProperty property = getSchemaProperty(definition, propertyType, description);
 
-			boolean isSyntheticProperty = persistentProperty == null;
+			boolean isSyntheticProperty = isPersistentPropertyNull;
 			boolean isNotWritable = !isSyntheticProperty && !persistentProperty.isWritable();
 			boolean isJacksonReadOnly = !isSyntheticProperty && jackson.isReadOnly(persistentProperty);
 
@@ -224,7 +233,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 				continue;
 			}
 
-			if (persistentProperty == null) {
+			if (isPersistentPropertyNull) {
 				registrar.register(property, actualPropertyType);
 				continue;
 			}
