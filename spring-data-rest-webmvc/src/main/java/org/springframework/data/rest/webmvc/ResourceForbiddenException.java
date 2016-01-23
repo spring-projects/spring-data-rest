@@ -24,19 +24,19 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Eric Spiegelberg - eric [at] miletwentyfour [dot] com
  */
 @ResponseStatus(HttpStatus.FORBIDDEN)
-public class ForbiddenException extends RuntimeException {
+public class ResourceForbiddenException extends RuntimeException {
 
 	private static final long serialVersionUID = 7992904489502842099L;
 
-	public ForbiddenException() {
+	public ResourceForbiddenException() {
 		this("Access Forbidden!");
 	}
 
-	public ForbiddenException(String message) {
+	public ResourceForbiddenException(String message) {
 		this(message, null);
 	}
 
-	public ForbiddenException(String message, Throwable cause) {
+	public ResourceForbiddenException(String message, Throwable cause) {
 		super(message, cause);
 	}
 

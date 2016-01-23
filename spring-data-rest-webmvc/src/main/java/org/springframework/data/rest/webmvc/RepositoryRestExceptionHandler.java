@@ -75,13 +75,13 @@ public class RepositoryRestExceptionHandler {
 	}
 
 	/**
-	 * Handles {@link ForbiddenException} by returning {@code 404 Not Found}.
+	 * Handles {@link ResourceForbiddenException} by returning {@code 403 Not Found}.
 	 * 
 	 * @param o_O the exception to handle.
 	 * @return
 	 */
 	@ExceptionHandler
-	ResponseEntity<?> handleForbidden(ForbiddenException o_O) {
+	ResponseEntity<?> handleForbidden(ResourceForbiddenException o_O) {
 		return forbidden(new HttpHeaders());
 	}
 	
