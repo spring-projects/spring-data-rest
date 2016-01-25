@@ -15,22 +15,22 @@
  */
 package org.springframework.data.rest.webmvc.mongodb.groovy;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
+
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Simulates a Groovy domain object by extending {@link GroovyObject}.
  *
  * @author Greg Turnquist
+ * @author Oliver Gierke
  * @see DATAREST-754
  */
 @Document
 public class SimulatedGroovyDomainClass implements GroovyObject {
 
-	private String id;
-	private String name;
+	private String id, name;
 
 	public String getId() {
 		return id;
@@ -65,9 +65,7 @@ public class SimulatedGroovyDomainClass implements GroovyObject {
 	}
 
 	@Override
-	public void setProperty(String s, Object o) {
-
-	}
+	public void setProperty(String s, Object o) {}
 
 	@Override
 	public MetaClass getMetaClass() {
@@ -75,7 +73,5 @@ public class SimulatedGroovyDomainClass implements GroovyObject {
 	}
 
 	@Override
-	public void setMetaClass(MetaClass metaClass) {
-
-	}
+	public void setMetaClass(MetaClass metaClass) {}
 }

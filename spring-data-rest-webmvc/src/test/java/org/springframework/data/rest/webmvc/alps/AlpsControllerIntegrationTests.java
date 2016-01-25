@@ -17,7 +17,6 @@ package org.springframework.data.rest.webmvc.alps;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.After;
@@ -209,11 +208,10 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		Link profileLink = client.discoverUnique("profile");
 		Link groovyDomainObjectLink = client.discoverUnique(profileLink, "simulatedGroovyDomainClasses");
+
 		client.follow(groovyDomainObjectLink)//
 				.andExpect(jsonPath(
 						"$.alps.descriptors[?(@.id == 'simulatedGroovyDomainClass-representation')][0].descriptors[0].name",
-						is("name")
-				));
-
+						is("name")));
 	}
 }
