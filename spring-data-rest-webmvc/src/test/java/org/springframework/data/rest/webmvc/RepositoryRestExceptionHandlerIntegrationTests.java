@@ -43,8 +43,8 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Jeremy Rickard
  * @author Eric Spiegelberg - eric [at] miletwentyfour [dot] com
  */
-@ContextConfiguration(classes = { JpaRepositoryConfig.class, RepositoryRestExceptionHandlerIntegrationTests.class })
 @Transactional
+@ContextConfiguration(classes = { JpaRepositoryConfig.class, RepositoryRestExceptionHandlerIntegrationTests.class })
 public class RepositoryRestExceptionHandlerIntegrationTests extends AbstractControllerIntegrationTests {
 
 	@Autowired RepositoryEntityController controller;
