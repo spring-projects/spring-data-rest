@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  * 
  * @author Thibaud Lepretre
  * @author Oliver Gierke
+ * @author Eric Spiegelberg - eric [at] miletwentyfour [dot] com
  */
 @ControllerAdvice(basePackageClasses = RepositoryRestExceptionHandler.class)
 public class RepositoryRestExceptionHandler {
@@ -73,6 +74,17 @@ public class RepositoryRestExceptionHandler {
 		return notFound(new HttpHeaders());
 	}
 
+	/**
+	 * Handles {@link ResourceForbiddenException} by returning {@code 403 Not Found}.
+	 * 
+	 * @param o_O the exception to handle.
+	 * @return
+	 */
+	@ExceptionHandler
+	ResponseEntity<?> handleForbidden(ResourceForbiddenException o_O) {
+		return forbidden(new HttpHeaders());
+	}
+	
 	/**
 	 * Handles {@link HttpMessageNotReadableException} by returning {@code 400 Bad Request}.
 	 * 
@@ -155,6 +167,10 @@ public class RepositoryRestExceptionHandler {
 		return response(HttpStatus.NOT_FOUND, headers, null);
 	}
 
+	private static ResponseEntity<?> forbidden(HttpHeaders headers) {
+		return response(HttpStatus.FORBIDDEN, headers, null);
+	}
+	
 	private static ResponseEntity<ExceptionMessage> badRequest(HttpHeaders headers, Exception throwable) {
 		return errorResponse(HttpStatus.BAD_REQUEST, headers, throwable);
 	}

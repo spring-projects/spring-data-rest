@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,9 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -32,10 +30,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+
 /**
  * Unit tests for {@link RepositoryRestExceptionHandler}.
  * 
  * @author Oliver Gierke
+ * @author Eric Spiegelberg - eric [at] miletwentyfour [dot] com
  */
 public class RepositoryRestExceptionHandlerUnitTests {
 
@@ -69,6 +71,27 @@ public class RepositoryRestExceptionHandlerUnitTests {
 		assertThat(result.getStatusCode(), is(HttpStatus.BAD_REQUEST));
 	}
 
+	@Test
+	public void handlesHttpMessageResourceNotFoundException() {
+
+		ResponseEntity<?> result = HANDLER
+				.handleNotFound(new ResourceNotFoundException());
+
+		assertThat(result.getStatusCode(), is(HttpStatus.NOT_FOUND));
+	}
+	
+	/**
+	 * @see DATAREST-755
+	 */
+	@Test
+	public void handlesHttpMessageResourceForbiddenException() {
+
+		ResponseEntity<?> result = HANDLER
+				.handleForbidden(new ResourceForbiddenException());
+
+		assertThat(result.getStatusCode(), is(HttpStatus.FORBIDDEN));
+	}
+	
 	/**
 	 * @see DATAREST-507
 	 */
