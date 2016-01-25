@@ -74,7 +74,6 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 
 			config.getMetadataConfiguration().registerJsonSchemaFormat(JsonSchemaFormat.EMAIL, EmailAddress.class);
 			config.getMetadataConfiguration().registerFormattingPatternFor("[A-Z]+", TypeWithPattern.class);
-			config.getMetadataConfiguration().registerJsonSchemaFormat(JsonSchemaFormat.EMAIL);
 
 			config.exposeIdsFor(Profile.class);
 		}

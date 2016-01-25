@@ -188,25 +188,23 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 				}
 			}
 
-			boolean isPersistentPropertyNull = persistentProperty == null;
-
 			AnnotatedMember primaryMember = definition.getPrimaryMember();
-			if (primaryMember ==  null) { // Ignore bean definitions with neither a getter nor a setter
+
+			if (primaryMember == null) {
 				continue;
 			}
 
-			TypeInformation<?> propertyType = isPersistentPropertyNull
-					? ClassTypeInformation.from(primaryMember.getRawType())
-					: persistentProperty.getTypeInformation();
+			TypeInformation<?> propertyType = persistentProperty == null
+					? ClassTypeInformation.from(primaryMember.getRawType()) : persistentProperty.getTypeInformation();
 			TypeInformation<?> actualPropertyType = propertyType.getActualType();
 			Class<?> rawPropertyType = propertyType.getType();
 
 			JsonSchemaFormat format = configuration.getMetadataConfiguration().getSchemaFormatFor(rawPropertyType);
-			ResourceDescription description = isPersistentPropertyNull
+			ResourceDescription description = persistentProperty == null
 					? jackson.getFallbackDescription(metadata, definition) : getDescriptionFor(persistentProperty, metadata);
 			JsonSchemaProperty property = getSchemaProperty(definition, propertyType, description);
 
-			boolean isSyntheticProperty = isPersistentPropertyNull;
+			boolean isSyntheticProperty = persistentProperty == null;
 			boolean isNotWritable = !isSyntheticProperty && !persistentProperty.isWritable();
 			boolean isJacksonReadOnly = !isSyntheticProperty && jackson.isReadOnly(persistentProperty);
 
@@ -233,7 +231,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 				continue;
 			}
 
-			if (isPersistentPropertyNull) {
+			if (persistentProperty == null) {
 				registrar.register(property, actualPropertyType);
 				continue;
 			}

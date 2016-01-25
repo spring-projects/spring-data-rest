@@ -15,26 +15,24 @@
  */
 package org.springframework.data.rest.webmvc.jpa.groovy;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
-import org.springframework.data.mongodb.core.mapping.Document;
-
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 /**
  * Simulates a Groovy domain object by extending {@link GroovyObject}.
  *
  * @author Greg Turnquist
+ * @author Oliver Gierke
  * @see DATAREST-754
  */
 @Entity
 public class SimulatedGroovyDomainClass implements GroovyObject {
 
-	@Id @GeneratedValue private Long id;
+	private @Id @GeneratedValue Long id;
 	private String name;
 
 	public Long getId() {
@@ -53,8 +51,6 @@ public class SimulatedGroovyDomainClass implements GroovyObject {
 		this.name = name;
 	}
 
-	protected SimulatedGroovyDomainClass() {}
-
 	//
 	// The following fields don't actually have to be implemented since the test cases don't
 	// make any Groovy calls. This just simulates the structure of a Groovy object to
@@ -72,9 +68,7 @@ public class SimulatedGroovyDomainClass implements GroovyObject {
 	}
 
 	@Override
-	public void setProperty(String s, Object o) {
-
-	}
+	public void setProperty(String s, Object o) {}
 
 	@Override
 	public MetaClass getMetaClass() {
@@ -82,7 +76,5 @@ public class SimulatedGroovyDomainClass implements GroovyObject {
 	}
 
 	@Override
-	public void setMetaClass(MetaClass metaClass) {
-
-	}
+	public void setMetaClass(MetaClass metaClass) {}
 }

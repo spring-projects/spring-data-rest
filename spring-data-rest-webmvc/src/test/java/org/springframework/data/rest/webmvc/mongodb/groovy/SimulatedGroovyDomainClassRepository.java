@@ -23,6 +23,4 @@ import org.springframework.data.repository.CrudRepository;
  * @author Greg Turnquist
  * @see DATAREST-754
  */
-public interface SimulatedGroovyDomainClassRepository extends CrudRepository<SimulatedGroovyDomainClass, String> {
-
-}
+public interface SimulatedGroovyDomainClassRepository extends CrudRepository<SimulatedGroovyDomainClass, String> {}
