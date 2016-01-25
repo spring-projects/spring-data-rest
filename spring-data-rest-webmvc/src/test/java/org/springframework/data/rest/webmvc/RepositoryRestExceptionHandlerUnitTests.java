@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import ch.qos.logback.classic.Logger;
  * Unit tests for {@link RepositoryRestExceptionHandler}.
  * 
  * @author Oliver Gierke
+ * @author Eric Spiegelberg - eric [at] miletwentyfour [dot] com
  */
 public class RepositoryRestExceptionHandlerUnitTests {
 
@@ -79,8 +80,11 @@ public class RepositoryRestExceptionHandlerUnitTests {
 		assertThat(result.getStatusCode(), is(HttpStatus.NOT_FOUND));
 	}
 	
+	/**
+	 * @see DATAREST-755
+	 */
 	@Test
-	public void handlesHttpMessageResourceFobiddenException() {
+	public void handlesHttpMessageResourceForbiddenException() {
 
 		ResponseEntity<?> result = HANDLER
 				.handleForbidden(new ResourceForbiddenException());

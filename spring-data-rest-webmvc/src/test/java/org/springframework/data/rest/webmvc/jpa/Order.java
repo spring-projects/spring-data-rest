@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import javax.persistence.Table;
 
 /**
  * @author Oliver Gierke
+ * @author Eric Spiegelberg - eric [at] miletwentyfour [dot] com
  */
 @Entity
 @Table(name = "ORDERS")
@@ -80,4 +81,9 @@ public class Order {
 	public Type getType() {
 		return type;
 	}
+
+	public void setType(Type type) {
+		this.type = type;
+	}
+
 }
