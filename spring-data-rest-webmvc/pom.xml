@@ -130,129 +130,84 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Unifying: Neo4j VS. Solr -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.3</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Gemfire -->
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-gemfire</artifactId>
+			<version>${springdata.gemfire}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Solr -->
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-solr</artifactId>
+			<version>${springdata.solr}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.solr</groupId>
+			<artifactId>solr-core</artifactId>
+			<version>4.10.1</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jdk.tools</artifactId>
+					<groupId>jdk.tools</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.google</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- Spring Security -->
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-core</artifactId>
+			<version>${spring-security.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+			<version>${spring-security.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+			<version>${spring-security.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<version>${spring-security.version}</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
-
-	<profiles>
-
-		<profile>
-			<id>unifying</id>
-
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
-			<dependencies>
-				<!-- Neo4j VS. Solr -->
-				<dependency>
-					<groupId>commons-io</groupId>
-					<artifactId>commons-io</artifactId>
-					<version>2.3</version>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-
-		</profile>
-
-		<profile>
-			<id>gemfire</id>
-
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
-			<dependencies>
-				<dependency>
-					<groupId>org.springframework.data</groupId>
-					<artifactId>spring-data-gemfire</artifactId>
-					<version>${springdata.gemfire}</version>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-
-		<profile>
-			<id>solr</id>
-
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
-			<dependencies>
-
-				<dependency>
-					<groupId>org.springframework.data</groupId>
-					<artifactId>spring-data-solr</artifactId>
-					<version>${springdata.solr}</version>
-					<scope>test</scope>
-				</dependency>
-
-				<dependency>
-					<groupId>org.apache.solr</groupId>
-					<artifactId>solr-core</artifactId>
-					<version>4.10.1</version>
-					<scope>test</scope>
-					<exclusions>
-						<exclusion>
-							<groupId>org.slf4j</groupId>
-							<artifactId>slf4j-api</artifactId>
-						</exclusion>
-						<exclusion>
-							<artifactId>jdk.tools</artifactId>
-							<groupId>jdk.tools</groupId>
-						</exclusion>
-						<exclusion>
-							<groupId>com.google</groupId>
-							<artifactId>guava</artifactId>
-						</exclusion>
-					</exclusions>
-				</dependency>
-
-			</dependencies>
-
-		</profile>
-
-		<profile>
-
-			<id>spring-security</id>
-
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
-			<dependencies>
-
-				<dependency>
-					<groupId>org.springframework.security</groupId>
-					<artifactId>spring-security-core</artifactId>
-					<version>${spring-security.version}</version>
-					<scope>test</scope>
-				</dependency>
-
-				<dependency>
-					<groupId>org.springframework.security</groupId>
-					<artifactId>spring-security-config</artifactId>
-					<version>${spring-security.version}</version>
-					<scope>test</scope>
-				</dependency>
-
-				<dependency>
-					<groupId>org.springframework.security</groupId>
-					<artifactId>spring-security-web</artifactId>
-					<version>${spring-security.version}</version>
-					<scope>test</scope>
-				</dependency>
-
-				<dependency>
-					<groupId>org.springframework.security</groupId>
-					<artifactId>spring-security-test</artifactId>
-					<version>${spring-security.version}</version>
-					<scope>test</scope>
-				</dependency>
-
-			</dependencies>
-		</profile>
-
-	</profiles>
 
 	<build>
 		<plugins>

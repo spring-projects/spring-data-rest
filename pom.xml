@@ -80,62 +80,6 @@
 			</build>
 		</profile>
 
-		<profile>
-			<id>jpa</id>
-
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
-			<dependencies>
-
-				<dependency>
-					<groupId>org.springframework.data</groupId>
-					<artifactId>spring-data-jpa</artifactId>
-					<version>${springdata.jpa}</version>
-					<scope>test</scope>
-				</dependency>
-
-				<dependency>
-					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate-entitymanager</artifactId>
-					<version>${hibernate.version}</version>
-					<scope>test</scope>
-				</dependency>
-
-				<dependency>
-					<groupId>org.hsqldb</groupId>
-					<artifactId>hsqldb</artifactId>
-					<version>2.3.2</version>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-
-		<profile>
-			<id>mongodb</id>
-
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
-			<dependencies>
-				<dependency>
-					<groupId>org.springframework.data</groupId>
-					<artifactId>spring-data-mongodb</artifactId>
-					<version>${springdata.mongodb}</version>
-					<scope>test</scope>
-				</dependency>
-
-				<dependency>
-					<groupId>com.querydsl</groupId>
-					<artifactId>querydsl-mongodb</artifactId>
-					<version>${querydsl}</version>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-
 	</profiles>
 
 	<dependencies>
@@ -145,6 +89,45 @@
 			<artifactId>validation-api</artifactId>
 			<version>1.0.0.GA</version>
 			<optional>true</optional>
+		</dependency>
+
+		<!-- JPA -->
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-jpa</artifactId>
+			<version>${springdata.jpa}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>${hibernate.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.3.2</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- MongoDB -->
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-mongodb</artifactId>
+			<version>${springdata.mongodb}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.querydsl</groupId>
+			<artifactId>querydsl-mongodb</artifactId>
+			<version>${querydsl}</version>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
