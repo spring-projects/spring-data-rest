@@ -32,7 +32,7 @@
 		<springdata.jpa>1.10.0.BUILD-SNAPSHOT</springdata.jpa>
 		<springdata.mongodb>1.9.0.BUILD-SNAPSHOT</springdata.mongodb>
 		<springdata.gemfire>1.8.0.BUILD-SNAPSHOT</springdata.gemfire>
-		<springdata.solr>1.6.0.BUILD-SNAPSHOT</springdata.solr>
+		<springdata.solr>2.0.0.BUILD-SNAPSHOT</springdata.solr>
 		<springdata.cassandra>1.4.0.BUILD-SNAPSHOT</springdata.cassandra>
 
 		<hibernate.version>4.3.10.Final</hibernate.version>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.solr.core.SolrTemplate;
-import org.springframework.data.solr.server.SolrServerFactory;
+import org.springframework.data.solr.server.SolrClientFactory;
 import org.springframework.data.solr.server.support.EmbeddedSolrServerFactory;
 import org.springframework.util.FileCopyUtils;
 import org.xml.sax.SAXException;
 
 /**
  * @author Christoph Strobl
+ * @author Oliver Gierke
  */
 @Configuration
 public class SolrInfrastructureConfig {
@@ -46,15 +47,15 @@ public class SolrInfrastructureConfig {
 	private static final Resource SOLR_SCHEMA = new ClassPathResource("schema.xml", SolrInfrastructureConfig.class);
 
 	@Bean
-	public SolrServerFactory solrServerFactory(final String solrHomeDir) throws ParserConfigurationException,
-			IOException, SAXException {
+	public SolrClientFactory solrClientFactory(final String solrHomeDir)
+			throws ParserConfigurationException, IOException, SAXException {
 
 		prepareConfiguration(solrHomeDir);
 		return new EmbeddedSolrServerFactory(solrHomeDir);
 	}
 
 	@Bean
-	public SolrTemplate solrTemplate(SolrServerFactory factory) {
+	public SolrTemplate solrTemplate(SolrClientFactory factory) {
 		return new SolrTemplate(factory);
 	}
 
