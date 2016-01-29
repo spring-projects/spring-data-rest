@@ -332,12 +332,13 @@
 				</dependencies>
 				<executions>
 					<execution>
+						<id>test-sources</id>
 						<phase>generate-test-sources</phase>
 						<goals>
 							<goal>test-process</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>target/generated-sources/annotations</outputDirectory>
+							<outputDirectory>target/generated-test-sources/test-annotations</outputDirectory>
 							<processor>org.springframework.data.mongodb.repository.support.MongoAnnotationProcessor</processor>
 							<logOnlyOnError>true</logOnlyOnError>
 							<options>
