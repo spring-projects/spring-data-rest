@@ -1,6 +1,6 @@
 
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,74 +30,74 @@ import org.springframework.plugin.core.Plugin;
  */
 public interface BackendIdConverter extends Plugin<Class<?>> {
 
-    /**
-     * Returns the id of the entity to be looked up eventually.
-     *
-     * @param id         the source id as it was parsed from the incoming request, will never be {@literal null}.
-     * @param entityType the type of the object to be resolved, will never be {@literal null}.
-     * @return must not be {@literal null}.
-     */
-    Serializable fromRequestId(String id, Class<?> entityType);
+	/**
+	 * Returns the id of the entity to be looked up eventually.
+	 *
+	 * @param id         the source id as it was parsed from the incoming request, will never be {@literal null}.
+	 * @param entityType the type of the object to be resolved, will never be {@literal null}.
+	 * @return must not be {@literal null}.
+	 */
+	Serializable fromRequestId(String id, Class<?> entityType);
 
-    /**
-     * Returns the id to be used in the URI generated to point to an entity of the given type with the given id.
-     *
-     * @param id         the entity's id, will never be {@literal null}.
-     * @param entityType the type of the entity to expose.
-     * @return
-     */
-    String toRequestId(Serializable id, Class<?> entityType);
+	/**
+	 * Returns the id to be used in the URI generated to point to an entity of the given type with the given id.
+	 *
+	 * @param id         the entity's id, will never be {@literal null}.
+	 * @param entityType the type of the entity to expose.
+	 * @return
+	 */
+	String toRequestId(Serializable id, Class<?> entityType);
 
-    /**
-     * The default {@link BackendIdConverter} that will use URL encoding/decoding of ids to ensure valid URL generation.
-     *
-     * This class applies a simple UrlEncode/Decode to the presented id with the exception of any id which contains a
-     * '/' character. Encoded '/'s are generally rejected by web servers (404) as a security risk. As it is perfectly
-     * valid (though potentially a rare occurrence) for an id to contain '/'s, we avoid the issue by double encoding the
-     * '/' --> %2F --> %252F.
-     *
-     * @author Oliver Gierke
-     * @author Andrew Walters
-     */
-    public enum DefaultIdConverter implements BackendIdConverter {
+	/**
+	 * The default {@link BackendIdConverter} that will use URL encoding/decoding of ids to ensure valid URL generation.
+	 *
+	 * This class applies a simple UrlEncode/Decode to the presented id with the exception of any id which contains a
+	 * '/' character. Encoded '/'s are generally rejected by web servers (404) as a security risk. As it is perfectly
+	 * valid (though potentially a rare occurrence) for an id to contain '/'s, we avoid the issue by double encoding the
+	 * '/' --> %2F --> %252F.
+	 *
+	 * @author Oliver Gierke
+	 * @author Andrew Walters
+	 */
+	public enum DefaultIdConverter implements BackendIdConverter {
 
-        INSTANCE;
+		INSTANCE;
 
-        private static final String UTF8_ENCODING = "UTF-8";
+		private static final String UTF8_ENCODING = "UTF-8";
 
-        /*
-         * (non-Javadoc)
-         * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#fromRequestId(java.lang.String, java.lang.Class)
-         */
-        @Override
-        public Serializable fromRequestId(String id, Class<?> entityType) {
-            try {
-                return URLDecoder.decode(id, UTF8_ENCODING).replaceAll("%2F", "/");
-            } catch (UnsupportedEncodingException e) {
-                return id;
-            }
-        }
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#fromRequestId(java.lang.String, java.lang.Class)
+		 */
+		@Override
+		public Serializable fromRequestId(String id, Class<?> entityType) {
+			try {
+				return URLDecoder.decode(id, UTF8_ENCODING).replaceAll("%2F", "/");
+			} catch (UnsupportedEncodingException e) {
+				return id;
+			}
+		}
 
-        /*
-         * (non-Javadoc)
-         * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#toRequestId(java.lang.Object, java.lang.Class)
-         */
-        @Override
-        public String toRequestId(Serializable id, Class<?> entityType) {
-            try {
-                return URLEncoder.encode(id.toString(), UTF8_ENCODING).replaceAll("%2F", "%252F");
-            } catch (UnsupportedEncodingException e) {
-                return id.toString();
-            }
-        }
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#toRequestId(java.lang.Object, java.lang.Class)
+		 */
+		@Override
+		public String toRequestId(Serializable id, Class<?> entityType) {
+			try {
+				return URLEncoder.encode(id.toString(), UTF8_ENCODING).replaceAll("%2F", "%252F");
+			} catch (UnsupportedEncodingException e) {
+				return id.toString();
+			}
+		}
 
-        /*
-         * (non-Javadoc)
-         * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
-         */
-        @Override
-        public boolean supports(Class<?> entityType) {
-            return true;
-        }
-    }
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
+		 */
+		@Override
+		public boolean supports(Class<?> entityType) {
+			return true;
+		}
+	}
 }
