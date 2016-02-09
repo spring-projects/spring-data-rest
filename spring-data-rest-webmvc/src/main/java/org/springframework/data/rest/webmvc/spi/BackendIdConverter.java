@@ -25,14 +25,14 @@ import org.springframework.plugin.core.Plugin;
 
 /**
  * SPI to allow the customization of how entity ids are exposed in URIs generated.
- *
+ * 
  * @author Oliver Gierke
  */
 public interface BackendIdConverter extends Plugin<Class<?>> {
 
 	/**
 	 * Returns the id of the entity to be looked up eventually.
-	 *
+	 * 
 	 * @param id the source id as it was parsed from the incoming request, will never be {@literal null}.
 	 * @param entityType the type of the object to be resolved, will never be {@literal null}.
 	 * @return must not be {@literal null}.
@@ -41,7 +41,7 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 
 	/**
 	 * Returns the id to be used in the URI generated to point to an entity of the given type with the given id.
-	 *
+	 * 
 	 * @param id the entity's id, will never be {@literal null}.
 	 * @param entityType the type of the entity to expose.
 	 * @return
@@ -50,12 +50,12 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 
 	/**
 	 * The default {@link BackendIdConverter} that will use URL encoding/decoding of ids to ensure valid URL generation.
-	 *
+	 * 
 	 * This class applies a simple UrlEncode/Decode to the presented id with the exception of any id which contains a
 	 * '/' character. Encoded '/'s are generally rejected by web servers (404) as a security risk. As it is perfectly
 	 * valid (though potentially a rare occurrence) for an id to contain '/'s, we avoid the issue by double encoding the
 	 * '/' --> %2F --> %252F.
-	 *
+	 * 
 	 * @author Oliver Gierke
 	 * @author Andrew Walters
 	 */
@@ -65,7 +65,7 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 
 		private static final String UTF8_ENCODING = "UTF-8";
 
-		/*
+		/* 
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#fromRequestId(java.lang.String, java.lang.Class)
 		 */
@@ -78,7 +78,7 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 			}
 		}
 
-		/*
+		/* 
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#toRequestId(java.lang.Object, java.lang.Class)
 		 */
@@ -91,7 +91,7 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 			}
 		}
 
-		/*
+		/* 
 		 * (non-Javadoc)
 		 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
 		 */
