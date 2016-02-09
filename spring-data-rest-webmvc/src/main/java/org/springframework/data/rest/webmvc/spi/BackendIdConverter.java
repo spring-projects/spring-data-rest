@@ -33,7 +33,7 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 	/**
 	 * Returns the id of the entity to be looked up eventually.
 	 *
-	 * @param id         the source id as it was parsed from the incoming request, will never be {@literal null}.
+	 * @param id the source id as it was parsed from the incoming request, will never be {@literal null}.
 	 * @param entityType the type of the object to be resolved, will never be {@literal null}.
 	 * @return must not be {@literal null}.
 	 */
@@ -42,7 +42,7 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 	/**
 	 * Returns the id to be used in the URI generated to point to an entity of the given type with the given id.
 	 *
-	 * @param id         the entity's id, will never be {@literal null}.
+	 * @param id the entity's id, will never be {@literal null}.
 	 * @param entityType the type of the entity to expose.
 	 * @return
 	 */
