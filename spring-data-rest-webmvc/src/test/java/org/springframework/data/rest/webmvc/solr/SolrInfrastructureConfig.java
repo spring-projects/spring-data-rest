@@ -25,6 +25,14 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.apache.solr.core.CloseHook;
+import org.apache.solr.core.CoreDescriptor;
+import org.apache.solr.core.SolrCore;
+import org.junit.ClassRule;
+import org.junit.rules.TemporaryFolder;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -32,7 +40,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.server.SolrClientFactory;
 import org.springframework.data.solr.server.support.EmbeddedSolrServerFactory;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.StringUtils;
 import org.xml.sax.SAXException;
 
 /**
@@ -45,10 +55,11 @@ public class SolrInfrastructureConfig {
 	private static final String CORE_PROPERTIES = "name=collection1";
 	private static final Resource SOLR_CONFIG = new ClassPathResource("solrconfig.xml", SolrInfrastructureConfig.class);
 	private static final Resource SOLR_SCHEMA = new ClassPathResource("schema.xml", SolrInfrastructureConfig.class);
+	private static final Resource SOLR_XML = new ClassPathResource("solr.xml", SolrInfrastructureConfig.class);
 
 	@Bean
-	public SolrClientFactory solrClientFactory(final String solrHomeDir)
-			throws ParserConfigurationException, IOException, SAXException {
+	public SolrClientFactory solrClientFactory(final String solrHomeDir) throws ParserConfigurationException,
+			IOException, SAXException {
 
 		prepareConfiguration(solrHomeDir);
 		return new EmbeddedSolrServerFactory(solrHomeDir);
@@ -56,25 +67,30 @@ public class SolrInfrastructureConfig {
 
 	@Bean
 	public SolrTemplate solrTemplate(SolrClientFactory factory) {
+
+		attachCloseHook(factory);
 		return new SolrTemplate(factory);
 	}
 
-	private static void prepareConfiguration(final String solrHomeDir) throws IOException {
+	private static void prepareConfiguration(final String solrHomePath) throws IOException {
 
 		Map<String, String> configParams = new HashMap<String, String>();
-		configParams.put("${data.dir}", solrHomeDir);
-		configParams.put("${lucene.version}", "4.7");
+		configParams.put("${data.dir}", solrHomePath);
+		configParams.put("${lucene.version}", "5.3.1");
 
 		Resource solrConfig = filterResource(SOLR_CONFIG, configParams);
 		Resource solrSchema = SOLR_SCHEMA;
+		Resource solrXml = SOLR_XML;
 
-		File confDir = new File(new File(solrHomeDir, "collection1"), "conf");
+		File solrHomeDir = new File(solrHomePath);
+		File collectionDir = new File(solrHomeDir, "collection1");
+		File confDir = new File(collectionDir, "conf");
 		confDir.mkdirs();
 
+		FileCopyUtils.copy(solrXml.getInputStream(), new FileOutputStream(createFile(solrHomeDir, "solr.xml")));
+		FileCopyUtils.copy(CORE_PROPERTIES.getBytes(), new FileOutputStream(createFile(collectionDir, "core.properties")));
 		FileCopyUtils.copy(solrSchema.getInputStream(), new FileOutputStream(createFile(confDir, "schema.xml")));
 		FileCopyUtils.copy(solrConfig.getInputStream(), new FileOutputStream(createFile(confDir, "solrconfig.xml")));
-		FileCopyUtils.copy(CORE_PROPERTIES.getBytes(),
-				new FileOutputStream(createFile(new File(solrHomeDir), "config.properties")));
 	}
 
 	private static File createFile(File parent, String child) throws IOException {
@@ -84,5 +100,66 @@ public class SolrInfrastructureConfig {
 			file.createNewFile();
 		}
 		return file;
+	}
+
+	/**
+	 * {@link SpringJUnit4ClassRunner} executes {@link ClassRule}s before the actual shutdown of the
+	 * {@link ApplicationContext}. This causes the {@link TemporaryFolder} to vanish before Solr can gracefully shutdown.<br />
+	 * To prevent error messages popping up we register a {@link CloseHook} re adding the index directory and removing it
+	 * after {@link SolrCore#close()}.
+	 * 
+	 * @param factory
+	 */
+	private void attachCloseHook(SolrClientFactory factory) {
+
+		EmbeddedSolrServer server = (EmbeddedSolrServer) factory.getSolrClient();
+
+		for (SolrCore core : server.getCoreContainer().getCores()) {
+
+			core.addCloseHook(new CloseHook() {
+
+				private String path;
+
+				@Override
+				public void preClose(SolrCore core) {
+
+					CoreDescriptor cd = core.getCoreDescriptor();
+
+					if (cd != null) {
+
+						File tmp = new File(core.getIndexDir()).getParentFile();
+
+						if (!tmp.exists()) {
+							try {
+
+								File indexFile = new File(tmp, "index");
+								indexFile.mkdirs();
+
+								this.path = indexFile.getPath();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+
+				@Override
+				public void postClose(SolrCore core) {
+
+					if (StringUtils.hasText(this.path)) {
+
+						File tmp = new File(this.path);
+						if (tmp.exists() && tmp.getPath().startsWith(FileUtils.getTempDirectoryPath())) {
+
+							try {
+								FileUtils.deleteDirectory(tmp);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+			});
+		}
 	}
 }
