@@ -58,8 +58,8 @@ public class SolrInfrastructureConfig {
 	private static final Resource SOLR_XML = new ClassPathResource("solr.xml", SolrInfrastructureConfig.class);
 
 	@Bean
-	public SolrClientFactory solrClientFactory(final String solrHomeDir) throws ParserConfigurationException,
-			IOException, SAXException {
+	public SolrClientFactory solrClientFactory(final String solrHomeDir)
+			throws ParserConfigurationException, IOException, SAXException {
 
 		prepareConfiguration(solrHomeDir);
 		return new EmbeddedSolrServerFactory(solrHomeDir);
@@ -104,7 +104,8 @@ public class SolrInfrastructureConfig {
 
 	/**
 	 * {@link SpringJUnit4ClassRunner} executes {@link ClassRule}s before the actual shutdown of the
-	 * {@link ApplicationContext}. This causes the {@link TemporaryFolder} to vanish before Solr can gracefully shutdown.<br />
+	 * {@link ApplicationContext}. This causes the {@link TemporaryFolder} to vanish before Solr can gracefully shutdown.
+	 * <br />
 	 * To prevent error messages popping up we register a {@link CloseHook} re adding the index directory and removing it
 	 * after {@link SolrCore#close()}.
 	 * 
@@ -125,37 +126,42 @@ public class SolrInfrastructureConfig {
 
 					CoreDescriptor cd = core.getCoreDescriptor();
 
-					if (cd != null) {
+					if (cd == null) {
+						return;
+					}
 
-						File tmp = new File(core.getIndexDir()).getParentFile();
+					File tmp = new File(core.getIndexDir()).getParentFile();
 
-						if (!tmp.exists()) {
-							try {
+					if (tmp.exists()) {
+						return;
+					}
 
-								File indexFile = new File(tmp, "index");
-								indexFile.mkdirs();
+					try {
 
-								this.path = indexFile.getPath();
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
+						File indexFile = new File(tmp, "index");
+						indexFile.mkdirs();
+
+						this.path = indexFile.getPath();
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
 				}
 
 				@Override
 				public void postClose(SolrCore core) {
 
-					if (StringUtils.hasText(this.path)) {
+					if (!StringUtils.hasText(this.path)) {
+						return;
+					}
 
-						File tmp = new File(this.path);
-						if (tmp.exists() && tmp.getPath().startsWith(FileUtils.getTempDirectoryPath())) {
+					File tmp = new File(this.path);
 
-							try {
-								FileUtils.deleteDirectory(tmp);
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
+					if (tmp.exists() && tmp.getPath().startsWith(FileUtils.getTempDirectoryPath())) {
+
+						try {
+							FileUtils.deleteDirectory(tmp);
+						} catch (IOException e) {
+							e.printStackTrace();
 						}
 					}
 				}
