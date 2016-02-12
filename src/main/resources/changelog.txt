@@ -1,6 +1,40 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.5.0.M1 (2016-02-12)
+----------------------------------------
+* DATAREST-765 - Make sure Solr tests run with Spring Data Solr 2.0 (Solr 5).
+* DATAREST-758 - Add code of conduct.
+* DATAREST-757 - Upgrade to Spring Data Solr 2.0.
+* DATAREST-756 - Release 2.5 M1 (Hopper).
+* DATAREST-754 - Spring Data REST throws NPE when exposing JSON Schema for a Groovy domai object.
+* DATAREST-747 - ProjectionDefinitionConfiguration does not select projection for most concrete type.
+* DATAREST-743 - Rest Endpoints produce HttpMessageNotWritableException sometimes after restarts.
+* DATAREST-741 - Deserialization of association URIs does not consider EntityLookups.
+* DATAREST-740 - Remove Cassandra integration tests.
+* DATAREST-726 - Move ResourceProcessorHandlerMethodReturnValueHandler to Resolvable type to be able to move it to Spring HATEOAS.
+* DATAREST-724 - Add SPI to allow customizing which property should uniquely identify an item resource.
+* DATAREST-723 - ConcurrentModificationException.
+* DATAREST-716 - Rest Endpoints produce HttpMessageNotWritableException sometimes after restarts.
+* DATAREST-714 - Improve reference documentation to mention RepositoryRestConfigurer.
+* DATAREST-712 - Search a repository that implements QueryDslPredicateExecutor by a related Entity doesn't work anymore.
+* DATAREST-708 - Upgrade to Querydsl 4.
+* DATAREST-706 - RepositoryExceptionHandler passes null instead of exception.
+* DATAREST-705 - Cannot PUT versioned entity returned by spring-data-rest.
+* DATAREST-701 - NPE when updating resource via PUT.
+* DATAREST-699 - On Java 8, link templates to search resources using pagination contain pageable variable.
+* DATAREST-698 - Returned size is the -1 from the parameter that is given.
+* DATAREST-697 - ProjectionSerializer doesn't react to unwrapping mode correctly.
+* DATAREST-690 - Invalid JSON Schema for properties pointing to association resources.
+* DATAREST-686 - resourceDescriptionMessageSource does not support UTF-8 property files.
+* DATAREST-684 - Edit reference documents to show proper steps in return HAL from custom endpoint.
+* DATAREST-683 - ALPS profile does not reflect jackson customization (e.g. enableEnumTranslation=true).
+* DATAREST-674 - Guard against regression in UrlPathHelper in Spring 4.2.
+* DATAREST-669 - Include section on dependency management from Spring Data Commons into reference documentation.
+* DATAREST-665 - Use consistent scheme for property titles in JSON Schema.
+* DATAREST-473 - Add option to disable default exposure of public repository interfaces.
+
+
 Changes in version 2.4.2.RELEASE (2015-12-18)
 ---------------------------------------------
 * DATAREST-731 - Release 2.4.2 (Gosling).
