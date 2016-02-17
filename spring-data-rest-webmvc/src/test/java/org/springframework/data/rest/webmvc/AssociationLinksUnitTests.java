@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.PersistentProperty;
@@ -33,6 +35,7 @@ import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -40,6 +43,8 @@ import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.hateoas.Link;
 
 /**
+ * Unit tests for {@link AssociationLinks}.
+ * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -48,10 +53,11 @@ public class AssociationLinksUnitTests {
 	AssociationLinks links;
 
 	ResourceMappings mappings;
-
 	MongoMappingContext mappingContext;
 	MongoPersistentEntity<?> entity;
 	ResourceMetadata sampleResourceMetadata;
+
+	@Mock RepositoryRestConfiguration config;
 
 	@Before
 	public void setUp() {
@@ -59,7 +65,7 @@ public class AssociationLinksUnitTests {
 		this.mappingContext = new MongoMappingContext();
 		this.entity = mappingContext.getPersistentEntity(Sample.class);
 		this.mappings = new PersistentEntitiesResourceMappings(new PersistentEntities(Arrays.asList(mappingContext)));
-		this.links = new AssociationLinks(mappings);
+		this.links = new AssociationLinks(mappings, config);
 	}
 
 	/**
@@ -67,7 +73,12 @@ public class AssociationLinksUnitTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullMappings() {
-		new AssociationLinks(null);
+		new AssociationLinks(null, mock(RepositoryRestConfiguration.class));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void rejectsNullConfiguration() {
+		new AssociationLinks(mappings, null);
 	}
 
 	/**
@@ -75,7 +86,7 @@ public class AssociationLinksUnitTests {
 	 */
 	@Test
 	public void considersNullPropertyUnlinkable() {
-		assertThat(links.isLinkableAssociation(null), is(false));
+		assertThat(links.isLinkableAssociation((PersistentProperty<?>) null), is(false));
 	}
 
 	/**
@@ -117,6 +128,19 @@ public class AssociationLinksUnitTests {
 
 		PersistentProperty<?> property = entity.getPersistentProperty("hiddenProperty");
 		assertThat(links.getLinksFor(property.getAssociation(), new Path("/sample")), hasSize(0));
+	}
+
+	@Test
+	public void detectsLookupTypes() {
+
+		doReturn(true).when(config).isLookupType(Property.class);
+
+		assertThat(links.isLookupType(entity.getPersistentProperty("hiddenProperty")), is(true));
+	}
+
+	@Test
+	public void delegatesResourceMetadataLookupToMappings() {
+		assertThat(links.getMetadataFor(Property.class), is(mappings.getMetadataFor(Property.class)));
 	}
 
 	public static class Sample {

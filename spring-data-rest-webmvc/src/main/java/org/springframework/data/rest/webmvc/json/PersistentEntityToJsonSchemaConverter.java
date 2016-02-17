@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,9 +35,11 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.config.JsonSchemaFormat;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
@@ -71,11 +76,12 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	private static final TypeInformation<?> STRING_TYPE_INFORMATION = ClassTypeInformation.from(String.class);
 
 	private final Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
-	private final ResourceMappings mappings;
+	private final AssociationLinks associations;
 	private final PersistentEntities entities;
 	private final MessageSourceAccessor accessor;
 	private final ObjectMapper objectMapper;
 	private final RepositoryRestConfiguration configuration;
+	private final ValueTypeSchemaPropertyCustomizerFactory customizerFactory;
 
 	/**
 	 * Creates a new {@link PersistentEntityToJsonSchemaConverter} for the given {@link PersistentEntities} and
@@ -87,20 +93,22 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @param objectMapper must not be {@literal null}.
 	 * @param configuration must not be {@literal null}.
 	 */
-	public PersistentEntityToJsonSchemaConverter(PersistentEntities entities, ResourceMappings mappings,
-			MessageSourceAccessor accessor, ObjectMapper objectMapper, RepositoryRestConfiguration configuration) {
+	public PersistentEntityToJsonSchemaConverter(PersistentEntities entities, AssociationLinks associations,
+			MessageSourceAccessor accessor, ObjectMapper objectMapper, RepositoryRestConfiguration configuration,
+			ValueTypeSchemaPropertyCustomizerFactory customizerFactory) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(associations, "AssociationLinks must not be null!");
 		Assert.notNull(accessor, "MessageSourceAccessor must not be null!");
 		Assert.notNull(objectMapper, "ObjectMapper must not be null!");
 		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
 
 		this.entities = entities;
-		this.mappings = mappings;
+		this.associations = associations;
 		this.accessor = accessor;
 		this.objectMapper = objectMapper;
 		this.configuration = configuration;
+		this.customizerFactory = customizerFactory;
 
 		for (TypeInformation<?> domainType : entities.getManagedTypes()) {
 			convertiblePairs.add(new ConvertiblePair(domainType.getType(), JsonSchema.class));
@@ -144,23 +152,22 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	public JsonSchema convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 		final PersistentEntity<?, ?> persistentEntity = entities.getPersistentEntity((Class<?>) source);
-		final ResourceMetadata metadata = mappings.getMetadataFor(persistentEntity.getType());
+		final ResourceMetadata metadata = associations.getMappings().getMetadataFor(persistentEntity.getType());
 
-		Definitions descriptors = new Definitions();
+		Definitions definitions = new Definitions();
 		List<AbstractJsonSchemaProperty<?>> propertiesFor = getPropertiesFor(persistentEntity.getType(), metadata,
-				descriptors);
+				definitions);
 
 		String title = resolveMessageWithDefault(new ResolvableType(persistentEntity.getType()));
 
-		return new JsonSchema(title, resolveMessage(metadata.getItemResourceDescription()), propertiesFor, descriptors);
+		return new JsonSchema(title, resolveMessage(metadata.getItemResourceDescription()), propertiesFor, definitions);
 	}
 
 	private List<AbstractJsonSchemaProperty<?>> getPropertiesFor(Class<?> type, final ResourceMetadata metadata,
-			final Definitions descriptors) {
+			final Definitions definitions) {
 
 		final PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
 		final JacksonMetadata jackson = new JacksonMetadata(objectMapper, type);
-		final AssociationLinks associationLinks = new AssociationLinks(mappings);
 
 		if (entity == null) {
 			return Collections.<AbstractJsonSchemaProperty<?>> emptyList();
@@ -236,15 +243,17 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 				continue;
 			}
 
-			if (associationLinks.isLinkableAssociation(persistentProperty)) {
+			if (configuration.isLookupType(persistentProperty.getActualType())) {
+				registrar.register(property.with(propertyType), actualPropertyType);
+			} else if (associations.isLinkableAssociation(persistentProperty)) {
 				registrar.register(property.asAssociation(), null);
 			} else {
 
 				if (persistentProperty.isEntity()) {
 
-					if (!descriptors.hasDefinitionFor(propertyType)) {
-						descriptors.addDefinition(propertyType,
-								new Item(propertyType, getNestedPropertiesFor(persistentProperty, descriptors)));
+					if (!definitions.hasDefinitionFor(propertyType)) {
+						definitions.addDefinition(propertyType,
+								new Item(propertyType, getNestedPropertiesFor(persistentProperty, definitions)));
 					}
 
 					registrar.register(property.with(propertyType, Definitions.getReference(propertyType)), actualPropertyType);
@@ -266,7 +275,8 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			return Collections.emptyList();
 		}
 
-		return getPropertiesFor(property.getActualType(), mappings.getMetadataFor(property.getActualType()), descriptors);
+		return getPropertiesFor(property.getActualType(),
+				associations.getMappings().getMetadataFor(property.getActualType()), descriptors);
 	}
 
 	private JsonSchemaProperty getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,
@@ -322,7 +332,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @author Oliver Gierke
 	 * @since 2.4
 	 */
-	private static class JsonSchemaPropertyRegistrar {
+	private class JsonSchemaPropertyRegistrar {
 
 		private final JacksonMetadata metadata;
 		private final List<AbstractJsonSchemaProperty<?>> properties;
@@ -349,16 +359,51 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 			JsonSerializer<?> serializer = metadata.getTypeSerializer(type.getType());
 
-			if (!(serializer instanceof JsonSchemaPropertyCustomizer)) {
-				properties.add(property);
+			if ((serializer instanceof JsonSchemaPropertyCustomizer)) {
+				properties.add(((JsonSchemaPropertyCustomizer) serializer).customize(property, type));
 				return;
 			}
 
-			properties.add(((JsonSchemaPropertyCustomizer) serializer).customize(property, type));
+			if (configuration.isLookupType(type.getType())) {
+				properties.add(customizerFactory.getCustomizerFor(type.getType()).customize(property, type));
+				return;
+			}
+
+			properties.add(property);
 		}
 
 		public List<AbstractJsonSchemaProperty<?>> getProperties() {
 			return properties;
+		}
+	}
+
+	@RequiredArgsConstructor
+	public static class ValueTypeSchemaPropertyCustomizerFactory {
+
+		private final @NonNull RepositoryInvokerFactory factory;
+
+		public JsonSchemaPropertyCustomizer getCustomizerFor(final Class<?> type) {
+
+			return new JsonSchemaPropertyCustomizer() {
+
+				/* 
+				 * (non-Javadoc)
+				 * @see org.springframework.data.rest.webmvc.json.JsonSchemaPropertyCustomizer#customize(org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty, org.springframework.data.util.TypeInformation)
+				 */
+				@Override
+				public JsonSchemaProperty customize(JsonSchemaProperty property, TypeInformation<?> type) {
+
+					List<String> result = new ArrayList<String>();
+
+					for (Object element : factory.getInvokerFor(type.getType()).invokeFindAll((Sort) null)) {
+						result.add(element.toString());
+					}
+
+					Collections.sort(result);
+
+					return new EnumProperty(property.getName(), property.getTitle(), result, property.description, true);
+				}
+			};
 		}
 	}
 

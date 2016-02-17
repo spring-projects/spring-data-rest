@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,21 +34,23 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.core.Path;
+import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
+import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
+import org.springframework.data.rest.webmvc.ResourceProcessorInvoker;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
-import org.springframework.data.rest.webmvc.mapping.LinkCollectingAssociationHandler;
-import org.springframework.data.rest.webmvc.mapping.NestedLinkCollectingAssociationHandler;
-import org.springframework.hateoas.EntityLinks;
+import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.UriTemplate;
+import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -63,6 +64,7 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -72,13 +74,16 @@ import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.deser.std.CollectionDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerBuilder;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.databind.type.CollectionLikeType;
 import com.fasterxml.jackson.databind.util.NameTransformer;
 
@@ -99,34 +104,31 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * Creates a new {@link PersistentEntityJackson2Module} using the given {@link ResourceMappings}, {@link Repositories}
 	 * , {@link RepositoryRestConfiguration}, {@link UriToEntityConverter} and {@link SelfLinkProvider}.
 	 * 
-	 * @param mappings must not be {@literal null}.
+	 * @param associations must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
 	 * @param config must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
 	 * @param linkProvider must not be {@literal null}.
 	 */
-	public PersistentEntityJackson2Module(ResourceMappings mappings, PersistentEntities entities,
-			RepositoryRestConfiguration config, UriToEntityConverter converter, SelfLinkProvider linkProvider,
-			EntityLinks entityLinks) {
+	public PersistentEntityJackson2Module(AssociationLinks associations, PersistentEntities entities,
+			UriToEntityConverter converter, LinkCollector collector, RepositoryInvokerFactory factory,
+			NestedEntitySerializer serializer, LookupObjectSerializer lookupObjectSerializer) {
 
 		super(new Version(2, 0, 0, null, "org.springframework.data.rest", "jackson-module"));
 
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(associations, "AssociationLinks must not be null!");
 		Assert.notNull(entities, "Repositories must not be null!");
-		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
 		Assert.notNull(converter, "UriToEntityConverter must not be null!");
-		Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
-
-		AssociationLinks associationLinks = new AssociationLinks(mappings);
-		LinkCollector collector = new LinkCollector(entities, linkProvider, associationLinks);
+		Assert.notNull(collector, "LinkCollector must not be null!");
 
 		addSerializer(new PersistentEntityResourceSerializer(collector));
-		addSerializer(new ProjectionSerializer(collector, mappings, false));
+		addSerializer(new ProjectionSerializer(collector, associations, false));
 		addSerializer(new ProjectionResourceContentSerializer(false));
 
-		setSerializerModifier(new AssociationOmittingSerializerModifier(entities, associationLinks, config,
-				new NestedEntitySerializer(entityLinks, entities, mappings)));
-		setDeserializerModifier(new AssociationUriResolvingDeserializerModifier(entities, converter, associationLinks));
+		setSerializerModifier(
+				new AssociationOmittingSerializerModifier(entities, associations, serializer, lookupObjectSerializer));
+		setDeserializerModifier(
+				new AssociationUriResolvingDeserializerModifier(entities, associations, converter, factory));
 	}
 
 	/**
@@ -149,7 +151,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		private PersistentEntityResourceSerializer(LinkCollector collector) {
 
-			super((Class) PersistentEntityResource.class);
+			super(PersistentEntityResource.class);
 
 			this.collector = collector;
 		}
@@ -162,21 +164,23 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		public void serialize(final PersistentEntityResource resource, final JsonGenerator jgen,
 				final SerializerProvider provider) throws IOException, JsonGenerationException {
 
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Serializing PersistentEntity " + resource.getPersistentEntity());
-			}
+			LOG.debug("Serializing PersistentEntity {}.", resource.getPersistentEntity());
 
 			Object content = resource.getContent();
+
+			if (hasScalarSerializer(content, provider)) {
+				provider.defaultSerializeValue(content, jgen);
+				return;
+			}
+
+			Links links = getLinks(resource);
 
 			if (TargetAware.class.isInstance(content)) {
 
 				TargetAware targetAware = (TargetAware) content;
-				Links links = collector.getLinksFor(targetAware.getTarget(), resource.getLinks());
 				provider.defaultSerializeValue(new ProjectionResource(targetAware, links), jgen);
 				return;
 			}
-
-			Links links = collector.getLinksFor(resource.getContent(), resource.getLinks());
 
 			Resource<Object> resourceToRender = new Resource<Object>(resource.getContent(), links) {
 
@@ -187,6 +191,24 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			};
 
 			provider.defaultSerializeValue(resourceToRender, jgen);
+		}
+
+		private Links getLinks(PersistentEntityResource resource) {
+
+			Object source = getLinkSource(resource.getContent());
+
+			return resource.isNested() ? collector.getLinksForNested(source, resource.getLinks())
+					: collector.getLinksFor(source, resource.getLinks());
+		}
+
+		private Object getLinkSource(Object object) {
+			return TargetAware.class.isInstance(object) ? ((TargetAware) object).getTarget() : object;
+		}
+
+		private static boolean hasScalarSerializer(Object source, SerializerProvider provider) throws JsonMappingException {
+
+			JsonSerializer<Object> serializer = provider.findValueSerializer(source.getClass());
+			return serializer instanceof ToStringSerializer || serializer instanceof StdScalarSerializer;
 		}
 	}
 
@@ -199,9 +221,9 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	static class AssociationOmittingSerializerModifier extends BeanSerializerModifier {
 
 		private final @NonNull PersistentEntities entities;
-		private final @NonNull AssociationLinks associationLinks;
-		private final @NonNull RepositoryRestConfiguration configuration;
-		private final @NonNull NestedEntitySerializer foo;
+		private final @NonNull AssociationLinks associations;
+		private final @NonNull NestedEntitySerializer nestedEntitySerializer;
+		private final @NonNull LookupObjectSerializer lookupObjectSerializer;
 
 		/* 
 		 * (non-Javadoc)
@@ -229,14 +251,22 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					continue;
 				}
 
+				if (associations.isLookupType(persistentProperty)) {
+
+					LOG.debug("Assigning lookup object serializer for {}.", persistentProperty);
+					writer.assignSerializer(lookupObjectSerializer);
+					result.add(writer);
+					continue;
+				}
+
 				// Is there a default projection?
 
-				if (associationLinks.isLinkableAssociation(persistentProperty)) {
+				if (associations.isLinkableAssociation(persistentProperty)) {
 					continue;
 				}
 
 				// Skip ids unless explicitly configured to expose
-				if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(entity.getType())) {
+				if (persistentProperty.isIdProperty() && !associations.isIdExposed(entity)) {
 					continue;
 				}
 
@@ -245,9 +275,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				}
 
 				if (persistentProperty.isEntity()) {
-					writer.assignSerializer(foo);
 
-					System.out.println("Entity!" + persistentProperty.toString());
+					LOG.debug("Assigning nested entity serializer for {}.", persistentProperty);
+
+					writer.assignSerializer(nestedEntitySerializer);
 				}
 
 				result.add(writer);
@@ -280,20 +311,27 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 	}
 
-	static class NestedEntitySerializer extends StdSerializer<Object> {
+	/**
+	 * Serializer to wrap values into an {@link Resource} instance and collecting all association links.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.5
+	 */
+	public static class NestedEntitySerializer extends StdSerializer<Object> {
 
 		private static final long serialVersionUID = -2327469118972125954L;
 
-		private final EntityLinks entityLinks;
 		private final PersistentEntities entities;
-		private final ResourceMappings mappings;
+		private final EmbeddedResourcesAssembler assembler;
+		private final ResourceProcessorInvoker invoker;
 
-		public NestedEntitySerializer(EntityLinks entityLinks, PersistentEntities entities, ResourceMappings mappings) {
+		public NestedEntitySerializer(PersistentEntities entities, EmbeddedResourcesAssembler assembler,
+				ResourceProcessorInvoker invoker) {
 
 			super(Object.class);
-			this.entityLinks = entityLinks;
 			this.entities = entities;
-			this.mappings = mappings;
+			this.assembler = assembler;
+			this.invoker = invoker;
 		}
 
 		/* 
@@ -305,17 +343,17 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			if (value instanceof Collection) {
 
-				List<Resource<Object>> resources = new ArrayList<Resource<Object>>();
+				Collection<?> source = (Collection<?>) value;
+				List<Object> resources = new ArrayList<Object>();
 
-				for (Object element : (Collection<?>) value) {
+				for (Object element : source) {
 					resources.add(toResource(element));
 				}
 
-				provider.findValueSerializer(Resources.class).serialize(new Resources<Resource<Object>>(resources), gen,
-						provider);
+				provider.defaultSerializeValue(resources, gen);
 
 			} else {
-				provider.findValueSerializer(Resource.class).serialize(toResource(value), gen, provider);
+				provider.defaultSerializeValue(toResource(value), gen);
 			}
 		}
 
@@ -323,13 +361,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			PersistentEntity<?, ?> entity = entities.getPersistentEntity(value.getClass());
 
-			NestedLinkCollectingAssociationHandler handler = new NestedLinkCollectingAssociationHandler(entityLinks, entities,
-					entity.getPropertyAccessor(value), mappings);
-			entity.doWithAssociations(handler);
-
-			return new Resource<Object>(value, handler.getLinks());
+			return invoker.invokeProcessorsFor(PersistentEntityResource.build(value, entity).//
+					withEmbedded(assembler.getEmbeddedResources(value)).//
+					buildNested());
 		}
-
 	}
 
 	/**
@@ -339,31 +374,13 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * 
 	 * @author Oliver Gierke
 	 */
+	@RequiredArgsConstructor
 	public static class AssociationUriResolvingDeserializerModifier extends BeanDeserializerModifier {
 
-		private final UriToEntityConverter converter;
-		private final PersistentEntities repositories;
-		private final AssociationLinks associationLinks;
-
-		/**
-		 * Creates a new {@link AssociationUriResolvingDeserializerModifier} using the given {@link Repositories},
-		 * {@link UriToEntityConverter} and {@link AssociationLinks}.
-		 * 
-		 * @param repositories must not be {@literal null}.
-		 * @param converter must not be {@literal null}.
-		 * @param mappings must not be {@literal null}.
-		 */
-		public AssociationUriResolvingDeserializerModifier(PersistentEntities repositories, UriToEntityConverter converter,
-				AssociationLinks associationLinks) {
-
-			Assert.notNull(repositories, "Repositories must not be null!");
-			Assert.notNull(converter, "UriToEntityConverter must not be null!");
-			Assert.notNull(associationLinks, "AssociationLinks must not be null!");
-
-			this.repositories = repositories;
-			this.converter = converter;
-			this.associationLinks = associationLinks;
-		}
+		private final @NonNull PersistentEntities entities;
+		private final @NonNull AssociationLinks associationLinks;
+		private final @NonNull UriToEntityConverter converter;
+		private final @NonNull RepositoryInvokerFactory factory;
 
 		/* 
 		 * (non-Javadoc)
@@ -374,7 +391,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				BeanDeserializerBuilder builder) {
 
 			Iterator<SettableBeanProperty> properties = builder.getProperties();
-			PersistentEntity<?, ?> entity = repositories.getPersistentEntity(beanDesc.getBeanClass());
+			PersistentEntity<?, ?> entity = entities.getPersistentEntity(beanDesc.getBeanClass());
 
 			if (entity == null) {
 				return builder;
@@ -385,28 +402,41 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				SettableBeanProperty property = properties.next();
 				PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getName());
 
+				if (associationLinks.isLookupType(persistentProperty)) {
+
+					RepositoryInvokingDeserializer repositoryInvokingDeserializer = new RepositoryInvokingDeserializer(factory,
+							persistentProperty);
+					JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, repositoryInvokingDeserializer,
+							config);
+
+					builder.addOrReplaceProperty(property.withValueDeserializer(deserializer), false);
+					continue;
+				}
+
 				if (!associationLinks.isLinkableAssociation(persistentProperty)) {
 					continue;
 				}
 
 				UriStringDeserializer uriStringDeserializer = new UriStringDeserializer(persistentProperty, converter);
+				JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, uriStringDeserializer, config);
 
-				if (persistentProperty.isCollectionLike()) {
-
-					CollectionLikeType collectionType = config.getTypeFactory()
-							.constructCollectionLikeType(persistentProperty.getType(), persistentProperty.getActualType());
-					CollectionValueInstantiator instantiator = new CollectionValueInstantiator(persistentProperty);
-					CollectionDeserializer collectionDeserializer = new CollectionDeserializer(collectionType,
-							uriStringDeserializer, null, instantiator);
-
-					builder.addOrReplaceProperty(property.withValueDeserializer(collectionDeserializer), false);
-
-				} else {
-					builder.addOrReplaceProperty(property.withValueDeserializer(uriStringDeserializer), false);
-				}
+				builder.addOrReplaceProperty(property.withValueDeserializer(deserializer), false);
 			}
 
 			return builder;
+		}
+
+		private static JsonDeserializer<?> wrapIfCollection(PersistentProperty<?> property,
+				JsonDeserializer<Object> elementDeserializer, DeserializationConfig config) {
+
+			if (!property.isCollectionLike()) {
+				return elementDeserializer;
+			}
+
+			CollectionLikeType collectionType = config.getTypeFactory().constructCollectionLikeType(property.getType(),
+					property.getActualType());
+			CollectionValueInstantiator instantiator = new CollectionValueInstantiator(property);
+			return new CollectionDeserializer(collectionType, elementDeserializer, null, instantiator);
 		}
 	}
 
@@ -482,7 +512,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	static class ProjectionSerializer extends StdSerializer<TargetAware> {
 
 		private final LinkCollector collector;
-		private final ResourceMappings mappings;
+		private final AssociationLinks associations;
 		private final boolean unwrapping;
 
 		/**
@@ -493,12 +523,12 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @param mappings must not be {@literal null}.
 		 * @param unwrapping
 		 */
-		private ProjectionSerializer(LinkCollector collector, ResourceMappings mappings, boolean unwrapping) {
+		private ProjectionSerializer(LinkCollector collector, AssociationLinks mappings, boolean unwrapping) {
 
 			super(TargetAware.class);
 
 			this.collector = collector;
-			this.mappings = mappings;
+			this.associations = mappings;
 			this.unwrapping = unwrapping;
 		}
 
@@ -511,7 +541,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				throws IOException, JsonGenerationException {
 
 			Object target = value.getTarget();
-			Links links = mappings.getMetadataFor(value.getTargetClass()).isExported() ? collector.getLinksFor(target)
+			Links links = associations.getMetadataFor(value.getTargetClass()).isExported() ? collector.getLinksFor(target)
 					: new Links();
 
 			if (!unwrapping) {
@@ -543,7 +573,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 */
 		@Override
 		public JsonSerializer<TargetAware> unwrappingSerializer(NameTransformer unwrapper) {
-			return new ProjectionSerializer(collector, mappings, true);
+			return new ProjectionSerializer(collector, associations, true);
 		}
 	}
 
@@ -627,103 +657,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	}
 
 	/**
-	 * A service to collect all standard links that need to be added to a certain object.
-	 *
-	 * @author Oliver Gierke
-	 */
-	private static class LinkCollector {
-
-		private final PersistentEntities entities;
-		private final AssociationLinks associationLinks;
-		private final SelfLinkProvider links;
-
-		/**
-		 * Creates a new {@link PersistentEntities}, {@link SelfLinkProvider} and {@link AssociationLinks}.
-		 * 
-		 * @param entities must not be {@literal null}.
-		 * @param linkProvider must not be {@literal null}.
-		 * @param associationLinks must not be {@literal null}.
-		 */
-		public LinkCollector(PersistentEntities entities, SelfLinkProvider linkProvider,
-				AssociationLinks associationLinks) {
-
-			Assert.notNull(entities, "PersistentEntities must not be null!");
-			Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
-			Assert.notNull(associationLinks, "AssociationLinks must not be null!");
-
-			this.links = linkProvider;
-			this.entities = entities;
-			this.associationLinks = associationLinks;
-		}
-
-		/**
-		 * Returns all {@link Links} for the given object.
-		 * 
-		 * @param object must not be {@literal null}.
-		 * @return
-		 */
-		public Links getLinksFor(Object object) {
-			return getLinksFor(object, Collections.<Link> emptyList());
-		}
-
-		/**
-		 * Returns all {@link Links} for the given object and already existing {@link Link}.
-		 * 
-		 * @param object must not be {@literal null}.
-		 * @param existingLinks must not be {@literal null}.
-		 * @return
-		 */
-		public Links getLinksFor(Object object, List<Link> existingLinks) {
-
-			Assert.notNull(object, "Object must not be null!");
-			Assert.notNull(existingLinks, "Existing links must not be null!");
-
-			PersistentEntity<?, ?> entity = entities.getPersistentEntity(object.getClass());
-
-			Links links = new Links(existingLinks);
-			Link selfLink = createSelfLink(object, links);
-
-			if (selfLink == null) {
-				return links;
-			}
-
-			Path path = new Path(selfLink.expand().getHref());
-
-			LinkCollectingAssociationHandler handler = new LinkCollectingAssociationHandler(entities, path, associationLinks);
-			entity.doWithAssociations(handler);
-
-			List<Link> result = new ArrayList<Link>(existingLinks);
-			result.addAll(handler.getLinks());
-
-			return addSelfLinkIfNecessary(object, result);
-		}
-
-		private Links addSelfLinkIfNecessary(Object object, List<Link> existing) {
-
-			Links result = new Links(existing);
-
-			if (result.hasLink(Link.REL_SELF)) {
-				return result;
-			}
-
-			List<Link> list = new ArrayList<Link>();
-			list.add(createSelfLink(object, result));
-			list.addAll(existing);
-
-			return new Links(list);
-		}
-
-		private Link createSelfLink(Object object, Links existing) {
-
-			if (existing.hasLink(Link.REL_SELF)) {
-				return existing.getLink(Link.REL_SELF);
-			}
-
-			return links.createSelfLinkFor(object).withSelfRel();
-		}
-	}
-
-	/**
 	 * {@link ValueInstantiator} to create collection or map instances based on the type of the configured
 	 * {@link PersistentProperty}.
 	 * 
@@ -766,6 +699,63 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			return property.isMap() ? CollectionFactory.createMap(collectionOrMapType, 0)
 					: CollectionFactory.createCollection(collectionOrMapType, 0);
+		}
+	}
+
+	private static class RepositoryInvokingDeserializer extends StdScalarDeserializer<Object> {
+
+		private static final long serialVersionUID = -3033458643050330913L;
+		private final RepositoryInvoker invoker;
+
+		private RepositoryInvokingDeserializer(RepositoryInvokerFactory factory, PersistentProperty<?> property) {
+
+			super(property.getActualType());
+			this.invoker = factory.getInvokerFor(_valueClass);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
+		 */
+		@Override
+		public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+			return invoker.invokeFindOne(p.getValueAsString());
+		}
+	}
+
+	@RequiredArgsConstructor
+	public static class LookupObjectSerializer extends ToStringSerializer {
+
+		private static final long serialVersionUID = -3033458643050330913L;
+		private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.ser.std.ToStringSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
+		 */
+		@Override
+		public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+
+			if (value instanceof Collection) {
+
+				gen.writeStartArray();
+
+				for (Object element : (Collection<?>) value) {
+					gen.writeString(getLookupKey(element));
+				}
+
+				gen.writeEndArray();
+
+			} else {
+				gen.writeString(getLookupKey(value));
+			}
+		}
+
+		@SuppressWarnings("unchecked")
+		private String getLookupKey(Object value) {
+
+			EntityLookup<Object> lookup = (EntityLookup<Object>) lookups.getPluginFor(value.getClass());
+			return lookup.getResourceIdentifier(value).toString();
 		}
 	}
 }

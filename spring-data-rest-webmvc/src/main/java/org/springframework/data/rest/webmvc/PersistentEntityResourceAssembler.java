@@ -15,18 +15,11 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
@@ -42,35 +35,14 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  */
+@RequiredArgsConstructor
 public class PersistentEntityResourceAssembler implements ResourceAssembler<Object, PersistentEntityResource> {
 
-	private final PersistentEntities entities;
-	private final Projector projector;
-	private final ResourceMappings mappings;
-	private final EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
-	private final SelfLinkProvider linkProvider;
-
-	/**
-	 * Creates a new {@link PersistentEntityResourceAssembler}.
-	 * 
-	 * @param entities must not be {@literal null}.
-	 * @param linkProvider must not be {@literal null}.
-	 * @param projector must not be {@literal null}.
-	 * @param mappings must not be {@literal null}.
-	 */
-	public PersistentEntityResourceAssembler(PersistentEntities entities, SelfLinkProvider linkProvider,
-			Projector projector, ResourceMappings mappings) {
-
-		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
-		Assert.notNull(projector, "PersistentEntityProjector must not be be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
-
-		this.entities = entities;
-		this.linkProvider = linkProvider;
-		this.projector = projector;
-		this.mappings = mappings;
-	}
+	private final @NonNull PersistentEntities entities;
+	private final @NonNull Projector projector;
+	private final @NonNull AssociationLinks associations;
+	private final @NonNull SelfLinkProvider linkProvider;
+	private final @NonNull EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 
 	/* 
 	 * (non-Javadoc)
@@ -113,68 +85,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 	 * @return
 	 */
 	private Iterable<EmbeddedWrapper> getEmbeddedResources(Object instance) {
-
-		Assert.notNull(instance, "Entity instance must not be null!");
-
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(instance.getClass());
-
-		final List<EmbeddedWrapper> associationProjections = new ArrayList<EmbeddedWrapper>();
-		final PersistentPropertyAccessor accessor = entity.getPropertyAccessor(instance);
-		final AssociationLinks associationLinks = new AssociationLinks(mappings);
-		final ResourceMetadata metadata = mappings.getMetadataFor(entity.getType());
-
-		entity.doWithAssociations(new SimpleAssociationHandler() {
-
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
-			 */
-			@Override
-			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
-
-				PersistentProperty<?> property = association.getInverse();
-
-				if (!associationLinks.isLinkableAssociation(property)) {
-					return;
-				}
-
-				if (!projector.hasExcerptProjection(property.getActualType())) {
-					return;
-				}
-
-				Object value = accessor.getProperty(association.getInverse());
-
-				if (value == null) {
-					return;
-				}
-
-				String rel = metadata.getMappingFor(property).getRel();
-
-				if (value instanceof Collection) {
-
-					Collection<?> collection = (Collection<?>) value;
-
-					if (collection.isEmpty()) {
-						return;
-					}
-
-					List<Object> nestedCollection = new ArrayList<Object>();
-
-					for (Object element : collection) {
-						if (element != null) {
-							nestedCollection.add(projector.projectExcerpt(element));
-						}
-					}
-
-					associationProjections.add(wrappers.wrap(nestedCollection, rel));
-
-				} else {
-					associationProjections.add(wrappers.wrap(projector.projectExcerpt(value), rel));
-				}
-			}
-		});
-
-		return associationProjections;
+		return new EmbeddedResourcesAssembler(entities, associations, projector).getEmbeddedResources(instance);
 	}
 
 	/**

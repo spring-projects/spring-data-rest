@@ -62,8 +62,8 @@ public abstract class AbstractControllerIntegrationTests {
 			SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks(),
 					Collections.<EntityLookup<?>> emptyList());
 
-			return new PersistentEntityResourceAssembler(persistentEntities(), selfLinkProvider, StubProjector.INSTANCE,
-					resourceMappings());
+			return new PersistentEntityResourceAssembler(persistentEntities(), StubProjector.INSTANCE, associationLinks(),
+					selfLinkProvider);
 		}
 	}
 

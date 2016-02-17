@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,25 @@
 package org.springframework.data.rest.webmvc.support;
 
 /**
- * Interface for a component being able to create projections for objects.
- * 
  * @author Oliver Gierke
  */
-public interface Projector extends ExcerptProjector {
+public interface ExcerptProjector {
 
 	/**
-	 * Returns the projection object for the given source. This may result in the same object being returned or a
-	 * completely different acting as projection for the source.
+	 * Creates a excerpt projection for the given source. If no excerpt projection is available, the call will fall back
+	 * to the behavior of {@link #project(Object)}. If you completely wish to skip handling the object, check for the
+	 * presence of an excerpt projection using {@link #hasExcerptProjection(Class)}.
 	 * 
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
-	Object project(Object source);
+	Object projectExcerpt(Object source);
+
+	/**
+	 * Returns whether an excerpt projection has been registered for the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	boolean hasExcerptProjection(Class<?> type);
 }

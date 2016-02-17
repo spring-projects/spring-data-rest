@@ -32,6 +32,7 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.webmvc.AbstractControllerIntegrationTests.TestConfiguration;
+import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.data.rest.webmvc.mongodb.User;
 import org.springframework.data.rest.webmvc.support.Projector;
@@ -53,6 +54,7 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 	@Autowired PersistentEntities entities;
 	@Autowired EntityLinks entityLinks;
 	@Autowired @Qualifier("objectMapper") ObjectMapper objectMapper;
+	@Autowired AssociationLinks associations;
 
 	/**
 	 * @see DATAREST-609
@@ -64,9 +66,8 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 
 		when(projector.projectExcerpt(anyObject())).thenAnswer(new ReturnsArgumentAt(0));
 
-		PersistentEntityResourceAssembler assembler = new PersistentEntityResourceAssembler(entities,
-				new DefaultSelfLinkProvider(entities, entityLinks, Collections.<EntityLookup<?>> emptyList()), projector,
-				mappings);
+		PersistentEntityResourceAssembler assembler = new PersistentEntityResourceAssembler(entities, projector,
+				associations, new DefaultSelfLinkProvider(entities, entityLinks, Collections.<EntityLookup<?>> emptyList()));
 
 		User user = new User();
 		user.id = BigInteger.valueOf(4711);

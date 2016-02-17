@@ -15,12 +15,18 @@
  */
 package org.springframework.data.rest.webmvc.mapping;
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.Path;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -34,21 +40,11 @@ import org.springframework.util.Assert;
  * @author Greg Turnquist
  * @since 2.1
  */
+@RequiredArgsConstructor
 public class AssociationLinks {
 
-	private final ResourceMappings mappings;
-
-	/**
-	 * Creates a new {@link AssociationLinks} using the given {@link ResourceMappings}.
-	 * 
-	 * @param mappings must not be {@literal null}.
-	 */
-	public AssociationLinks(ResourceMappings mappings) {
-
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
-
-		this.mappings = mappings;
-	}
+	private final @NonNull @Getter ResourceMappings mappings;
+	private final @NonNull RepositoryRestConfiguration config;
 
 	/**
 	 * Returns the links to render for the given {@link Association}.
@@ -62,10 +58,9 @@ public class AssociationLinks {
 		Assert.notNull(association, "Association must not be null!");
 		Assert.notNull(path, "Base path must not be null!");
 
-		PersistentProperty<?> property = association.getInverse();
+		if (isLinkableAssociation(association)) {
 
-		if (isLinkableAssociation(property)) {
-
+			PersistentProperty<?> property = association.getInverse();
 			ResourceMetadata metadata = mappings.getMetadataFor(property.getOwner().getType());
 			ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
@@ -79,6 +74,46 @@ public class AssociationLinks {
 	}
 
 	/**
+	 * Returns the {@link ResourceMetadata} for the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	public ResourceMetadata getMetadataFor(Class<?> type) {
+
+		Assert.notNull(type, "Type must not be null!");
+
+		return mappings.getMetadataFor(type);
+	}
+
+	/**
+	 * Returns whether the type of the given {@link PersistentProperty} is configured as lookup type.
+	 * 
+	 * @param property can be {@literal null}.
+	 * @return
+	 */
+	public boolean isLookupType(PersistentProperty<?> property) {
+		return property == null ? false : config.isLookupType(property.getActualType());
+	}
+
+	public boolean isIdExposed(PersistentEntity<?, ?> entity) {
+		return config.isIdExposedFor(entity.getType());
+	}
+
+	/**
+	 * Returns whether the given {@link Association} is linkable.
+	 * 
+	 * @param association must not be {@literal null}.
+	 * @return
+	 */
+	public boolean isLinkableAssociation(Association<? extends PersistentProperty<?>> association) {
+
+		Assert.notNull(association, "Association must not be null!");
+
+		return isLinkableAssociation(association.getInverse());
+	}
+
+	/**
 	 * Returns whether the given property is an association that is linkable.
 	 * 
 	 * @param property can be {@literal null}.
@@ -86,7 +121,7 @@ public class AssociationLinks {
 	 */
 	public boolean isLinkableAssociation(PersistentProperty<?> property) {
 
-		if (property == null || !property.isAssociation()) {
+		if (property == null || !property.isAssociation() || config.isLookupType(property.getActualType())) {
 			return false;
 		}
 

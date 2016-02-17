@@ -34,7 +34,8 @@
 		<springdata.gemfire>1.8.0.BUILD-SNAPSHOT</springdata.gemfire>
 		<springdata.solr>2.0.0.BUILD-SNAPSHOT</springdata.solr>
 		<springdata.cassandra>1.4.0.BUILD-SNAPSHOT</springdata.cassandra>
-
+		<!-- Downgrade due to https://github.com/FasterXML/jackson-databind/issues/1132 -->
+		<jackson>2.6.5</jackson>
 		<hibernate.version>4.3.10.Final</hibernate.version>
 
 		<bundlor.enabled>false</bundlor.enabled>

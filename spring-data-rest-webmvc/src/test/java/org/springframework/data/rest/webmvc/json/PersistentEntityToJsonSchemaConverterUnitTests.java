@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +34,12 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.config.JsonSchemaFormat;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.webmvc.TestMvcClient;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
+import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.ValueTypeSchemaPropertyCustomizerFactory;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.TestConfiguration;
+import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.data.rest.webmvc.mongodb.Profile;
 import org.springframework.data.rest.webmvc.mongodb.User;
@@ -60,10 +62,10 @@ import com.jayway.jsonpath.JsonPath;
 public class PersistentEntityToJsonSchemaConverterUnitTests {
 
 	@Autowired @Qualifier("resourceDescriptionMessageSourceAccessor") MessageSourceAccessor accessor;
-	@Autowired RepositoryResourceMappings mappings;
 	@Autowired RepositoryRestConfiguration configuration;
 	@Autowired PersistentEntities entities;
 	@Autowired @Qualifier("objectMapper") ObjectMapper objectMapper;
+	@Autowired AssociationLinks associations;
 
 	@Configuration
 	@Import(RepositoryRestMvcConfiguration.class)
@@ -86,7 +88,10 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 
 		TestMvcClient.initWebTest();
 
-		converter = new PersistentEntityToJsonSchemaConverter(entities, mappings, accessor, objectMapper, configuration);
+		ValueTypeSchemaPropertyCustomizerFactory customizerFactory = mock(ValueTypeSchemaPropertyCustomizerFactory.class);
+
+		converter = new PersistentEntityToJsonSchemaConverter(entities, associations, accessor, objectMapper, configuration,
+				customizerFactory);
 	}
 
 	/**

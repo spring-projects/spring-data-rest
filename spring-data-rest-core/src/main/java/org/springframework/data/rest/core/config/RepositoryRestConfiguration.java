@@ -61,6 +61,7 @@ public class RepositoryRestConfiguration {
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
 	private final MetadataConfiguration metadataConfiguration;
 	private final EntityLookupConfiguration entityLookupConfiguration;
+	private final List<Class<?>> valueTypes = new ArrayList<Class<?>>();
 
 	private final EnumTranslationConfiguration enumTranslationConfiguration;
 	private boolean enableEnumTranslation = false;
@@ -555,7 +556,7 @@ public class RepositoryRestConfiguration {
 	 * @return the {@link EntityLookupRegistrar} to build custom {@link EntityLookup}s.
 	 * @since 2.5
 	 */
-	public EntityLookupRegistrar withCustomEntityLookup() {
+	public EntityLookupRegistrar withEntityLookup() {
 		return entityLookupConfiguration;
 	}
 
@@ -570,5 +571,9 @@ public class RepositoryRestConfiguration {
 		Assert.notNull(repositories, "Repositories must not be null!");
 
 		return entityLookupConfiguration.getEntityLookups(repositories);
+	}
+
+	public boolean isLookupType(Class<?> type) {
+		return this.entityLookupConfiguration.isLookupType(type);
 	}
 }

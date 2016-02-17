@@ -41,7 +41,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
-import org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.ResourcesProcessorWrapper;
+import org.springframework.data.rest.webmvc.ResourceProcessorInvoker.ResourcesProcessorWrapper;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.PagedResources.PageMetadata;
@@ -217,7 +217,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		MethodParameter parameter = METHOD_PARAMS.get("resource");
 
 		ResourceProcessorHandlerMethodReturnValueHandler handler = new ResourceProcessorHandlerMethodReturnValueHandler(
-				delegate, resourceProcessors);
+				delegate, new ResourceProcessorInvoker(resourceProcessors));
 		handler.setRootLinksAsHeaders(true);
 		handler.handleReturnValue(resource, parameter, null, null);
 
@@ -295,7 +295,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 		resourceProcessors.add((ResourceProcessor<?>) factory.getProxy());
 
-		new ResourceProcessorHandlerMethodReturnValueHandler(delegate, resourceProcessors);
+		new ResourceProcessorHandlerMethodReturnValueHandler(delegate, new ResourceProcessorInvoker(resourceProcessors));
 	}
 
 	// Helpers ---------------------------------------------------------//
@@ -307,7 +307,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		}
 
 		HandlerMethodReturnValueHandler handler = new ResourceProcessorHandlerMethodReturnValueHandler(delegate,
-				resourceProcessors);
+				new ResourceProcessorInvoker(resourceProcessors));
 		handler.handleReturnValue(returnValue, methodParam, null, null);
 	}
 
@@ -317,7 +317,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		when(delegate.supportsReturnType(Mockito.any(MethodParameter.class))).thenReturn(value);
 
 		HandlerMethodReturnValueHandler handler = new ResourceProcessorHandlerMethodReturnValueHandler(delegate,
-				resourceProcessors);
+				new ResourceProcessorInvoker(resourceProcessors));
 
 		assertThat(handler.supportsReturnType(parameter), is(value));
 	}
