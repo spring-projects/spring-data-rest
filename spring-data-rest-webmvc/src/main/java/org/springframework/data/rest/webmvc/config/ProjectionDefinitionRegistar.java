@@ -19,6 +19,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.rest.core.config.Projection;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -69,7 +71,11 @@ public class ProjectionDefinitionRegistar extends InstantiationAwareBeanPostProc
 			Class<?> projection = resourceMetadata.getExcerptProjection();
 
 			if (projection != null) {
-				config.getObject().getProjectionConfiguration().addProjection(projection);
+
+				Projection annotation = AnnotationUtils.findAnnotation(projection, Projection.class);
+				Class<?>[] target = annotation == null ? new Class[] { resourceMetadata.getDomainType() } : annotation.types();
+
+				config.getObject().getProjectionConfiguration().addProjection(projection, target);
 			}
 		}
 

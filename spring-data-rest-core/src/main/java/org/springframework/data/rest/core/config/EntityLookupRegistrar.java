@@ -38,15 +38,7 @@ public interface EntityLookupRegistrar {
 	 */
 	<T, ID extends Serializable, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forRepository(Class<R> type);
 
-	/**
-	 * Registers an {@link EntityLookup} for the given repository type, identifier mapping and lookup operation.
-	 * 
-	 * @param type must not be {@literal null}.
-	 * @param identifierMapping must not be {@literal null}.
-	 * @param lookup must not be {@literal null}.
-	 */
-	<T, ID extends Serializable, R extends Repository<T, ?>> EntityLookupRegistrar forRepository(Class<R> type,
-			Converter<T, ID> identifierMapping, Lookup<R, ID> lookup);
+	<T, ID extends Serializable, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forValueRepository(Class<R> type);
 
 	interface IdMappingRegistrar<T, R extends Repository<T, ?>> {
 
@@ -58,6 +50,19 @@ public interface EntityLookupRegistrar {
 		 */
 		<ID extends Serializable> LookupRegistrar<T, ID, R> withIdMapping(Converter<T, ID> mapping);
 	}
+
+	/**
+	 * Registers an {@link EntityLookup} for the given repository type, identifier mapping and lookup operation.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param identifierMapping must not be {@literal null}.
+	 * @param lookup must not be {@literal null}.
+	 */
+	<T, ID extends Serializable, R extends Repository<T, ?>> EntityLookupRegistrar forRepository(Class<R> type,
+			Converter<T, ID> identifierMapping, Lookup<R, ID> lookup);
+
+	<T, ID extends Serializable, R extends Repository<T, ?>> EntityLookupRegistrar forValueRepository(Class<R> type,
+			Converter<T, ID> identifierMapping, Lookup<R, ID> lookup);
 
 	interface LookupRegistrar<T, ID extends Serializable, R extends Repository<T, ?>> {
 

@@ -27,10 +27,12 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.webmvc.AbstractControllerIntegrationTests.TestConfiguration;
+import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.data.rest.webmvc.mongodb.User;
 import org.springframework.data.rest.webmvc.support.Projector;
@@ -38,6 +40,8 @@ import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.test.context.ContextConfiguration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for {@link PersistentEntityResourceAssembler}.
@@ -49,25 +53,29 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 
 	@Autowired PersistentEntities entities;
 	@Autowired EntityLinks entityLinks;
+	@Autowired @Qualifier("objectMapper") ObjectMapper objectMapper;
+	@Autowired AssociationLinks associations;
 
 	/**
 	 * @see DATAREST-609
 	 */
 	@Test
-	public void addsSelfAndSingleResourceLinkToResourceByDefault() {
+	public void addsSelfAndSingleResourceLinkToResourceByDefault() throws Exception {
 
 		Projector projector = mock(Projector.class);
 
 		when(projector.projectExcerpt(anyObject())).thenAnswer(new ReturnsArgumentAt(0));
 
-		PersistentEntityResourceAssembler assembler = new PersistentEntityResourceAssembler(entities,
-				new DefaultSelfLinkProvider(entities, entityLinks, Collections.<EntityLookup<?>> emptyList()), projector,
-				mappings);
+		PersistentEntityResourceAssembler assembler = new PersistentEntityResourceAssembler(entities, projector,
+				associations, new DefaultSelfLinkProvider(entities, entityLinks, Collections.<EntityLookup<?>> emptyList()));
 
 		User user = new User();
 		user.id = BigInteger.valueOf(4711);
 
-		Links links = new Links(assembler.toResource(user).getLinks());
+		PersistentEntityResource resource = assembler.toResource(user);
+
+		System.out.println(objectMapper.writeValueAsString(resource));
+		Links links = new Links(resource.getLinks());
 
 		assertThat(links, is(Matchers.<Link> iterableWithSize(2)));
 		assertThat(links.getLink("self").getVariables(), is(Matchers.empty()));

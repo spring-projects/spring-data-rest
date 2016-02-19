@@ -17,11 +17,13 @@ package org.springframework.data.rest.webmvc.support;
 
 import static org.springframework.hateoas.TemplateVariable.VariableType.*;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.Repositories;
@@ -57,39 +59,14 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
+@RequiredArgsConstructor
 public class RepositoryEntityLinks extends AbstractEntityLinks {
 
-	private final Repositories repositories;
-	private final ResourceMappings mappings;
-	private final RepositoryRestConfiguration config;
-	private final PagingAndSortingTemplateVariables templateVariables;
-	private final PluginRegistry<BackendIdConverter, Class<?>> idConverters;
-
-	/**
-	 * Creates a new {@link RepositoryEntityLinks}.
-	 * 
-	 * @param repositories must not be {@literal null}.
-	 * @param mappings must not be {@literal null}.
-	 * @param config must not be {@literal null}.
-	 * @param pagingAndSortingTemplateVariables must not be {@literal null}.
-	 * @param idConverters must not be {@literal null}.
-	 */
-	@Autowired
-	public RepositoryEntityLinks(Repositories repositories, ResourceMappings mappings, RepositoryRestConfiguration config,
-			PagingAndSortingTemplateVariables templateVariables, PluginRegistry<BackendIdConverter, Class<?>> idConverters) {
-
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
-		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
-		Assert.notNull(templateVariables, "PagingAndSortingTemplateVariables must not be null!");
-		Assert.notNull(idConverters, "Id converter registry must not be null!");
-
-		this.repositories = repositories;
-		this.mappings = mappings;
-		this.config = config;
-		this.templateVariables = templateVariables;
-		this.idConverters = idConverters;
-	}
+	private final @NonNull Repositories repositories;
+	private final @NonNull ResourceMappings mappings;
+	private final @NonNull RepositoryRestConfiguration config;
+	private final @NonNull PagingAndSortingTemplateVariables templateVariables;
+	private final @NonNull PluginRegistry<BackendIdConverter, Class<?>> idConverters;
 
 	/*
 	 * (non-Javadoc)

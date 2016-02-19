@@ -40,18 +40,26 @@ import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
+import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
+import org.springframework.data.rest.webmvc.ResourceProcessorInvoker;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
+import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.rest.webmvc.mongodb.MongoDbRepositoryConfig;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
+import org.springframework.data.rest.webmvc.support.ExcerptProjector;
 import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.RelProvider;
+import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.plugin.core.OrderAwarePluginRegistry;
@@ -120,8 +128,19 @@ public class RepositoryTestsConfig {
 		SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks,
 				Collections.<EntityLookup<?>> emptyList());
 
-		return new PersistentEntityJackson2Module(mappings, persistentEntities(), config(), new UriToEntityConverter(
-				persistentEntities(), new DefaultRepositoryInvokerFactory(repositories()), repositories()), selfLinkProvider);
+		DefaultRepositoryInvokerFactory invokerFactory = new DefaultRepositoryInvokerFactory(repositories());
+		UriToEntityConverter uriToEntityConverter = new UriToEntityConverter(persistentEntities(), invokerFactory,
+				repositories());
+
+		AssociationLinks associations = new AssociationLinks(mappings, config());
+		LinkCollector collector = new LinkCollector(persistentEntities(), selfLinkProvider, associations);
+
+		NestedEntitySerializer nestedEntitySerializer = new NestedEntitySerializer(persistentEntities(),
+				new EmbeddedResourcesAssembler(persistentEntities(), associations, mock(ExcerptProjector.class)),
+				new ResourceProcessorInvoker(Collections.<ResourceProcessor<?>> emptyList()));
+
+		return new PersistentEntityJackson2Module(associations, persistentEntities(), uriToEntityConverter, collector,
+				invokerFactory, nestedEntitySerializer, mock(LookupObjectSerializer.class));
 	}
 
 	@Bean

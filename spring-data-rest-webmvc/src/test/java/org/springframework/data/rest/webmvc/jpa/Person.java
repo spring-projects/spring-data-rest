@@ -43,13 +43,28 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({ "height", "weight" })
 public class Person {
 
-	private Long id;
-	@Description("A person's first name") private String firstName;
-	@Description("A person's last name") private String lastName;
-	@Description("A person's siblings") private List<Person> siblings = Collections.emptyList();
+	@Id @GeneratedValue private Long id;
+
+	@Description("A person's first name") //
+	private String firstName;
+
+	@Description("A person's last name") //
+	private String lastName;
+
+	@Description("A person's siblings") //
+	@ManyToMany //
+	private List<Person> siblings = new ArrayList<Person>();
+
+	@ManyToOne //
 	private Person father;
-	@Description("Timestamp this person object was created") private Date created;
-	private int age, height, weight;
+
+	@Description("Timestamp this person object was created") //
+	private Date created;
+
+	@JsonIgnore //
+	private int age;
+
+	private int height, weight;
 	private Gender gender;
 
 	public Person() {}
@@ -59,8 +74,6 @@ public class Person {
 		this.lastName = lastName;
 	}
 
-	@Id
-	@GeneratedValue
 	public Long getId() {
 		return id;
 	}
@@ -87,14 +100,15 @@ public class Person {
 	}
 
 	public Person addSibling(Person p) {
+
 		if (siblings == Collections.EMPTY_LIST) {
 			siblings = new ArrayList<Person>();
 		}
+
 		siblings.add(p);
 		return this;
 	}
 
-	@ManyToMany
 	public List<Person> getSiblings() {
 		return siblings;
 	}
@@ -103,7 +117,6 @@ public class Person {
 		this.siblings = siblings;
 	}
 
-	@ManyToOne
 	public Person getFather() {
 		return father;
 	}
@@ -123,7 +136,6 @@ public class Person {
 		this.created = Calendar.getInstance().getTime();
 	}
 
-	@JsonIgnore
 	public int getAge() {
 		return age;
 	}

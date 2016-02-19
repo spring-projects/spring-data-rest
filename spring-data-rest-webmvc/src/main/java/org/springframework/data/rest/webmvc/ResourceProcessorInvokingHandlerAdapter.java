@@ -41,21 +41,21 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandlerAdapter {
 
-	private static final Method RETURN_VALUE_HANDLER_METHOD = ReflectionUtils.findMethod(
-			ResourceProcessorInvokingHandlerAdapter.class, "getReturnValueHandlers");
+	private static final Method RETURN_VALUE_HANDLER_METHOD = ReflectionUtils
+			.findMethod(ResourceProcessorInvokingHandlerAdapter.class, "getReturnValueHandlers");
 
-	private final List<ResourceProcessor<?>> resourcesProcessors;
+	private final ResourceProcessorInvoker invoker;
 
 	/**
-	 * Creates a new {@link ResourceProcessorInvokingHandlerAdapter} with the given {@link ResourceProcessor}s.
+	 * Creates a new {@link ResourceProcessorInvokingHandlerAdapter} with the given {@link ResourceProcessorInvoker}.
 	 * 
-	 * @param resourcesProcessors must not be {@literal null}.
+	 * @param invoker must not be {@literal null}.
 	 */
 	@Autowired(required = false)
-	public ResourceProcessorInvokingHandlerAdapter(List<ResourceProcessor<?>> resourcesProcessors) {
+	public ResourceProcessorInvokingHandlerAdapter(ResourceProcessorInvoker invoker) {
 
-		Assert.notNull(resourcesProcessors);
-		this.resourcesProcessors = resourcesProcessors;
+		Assert.notNull(invoker);
+		this.invoker = invoker;
 	}
 
 	/*
@@ -72,7 +72,7 @@ public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandl
 
 		// Set up ResourceProcessingHandlerMethodResolver to delegate to originally configured ones
 		List<HandlerMethodReturnValueHandler> newHandlers = new ArrayList<HandlerMethodReturnValueHandler>();
-		newHandlers.add(new ResourceProcessorHandlerMethodReturnValueHandler(oldHandlers, resourcesProcessors));
+		newHandlers.add(new ResourceProcessorHandlerMethodReturnValueHandler(oldHandlers, invoker));
 
 		// Configure the new handler to be used
 		this.setReturnValueHandlers(newHandlers);

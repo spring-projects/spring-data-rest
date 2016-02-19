@@ -17,6 +17,9 @@ package org.springframework.data.rest.webmvc.alps;
 
 import static org.springframework.hateoas.alps.Alps.*;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,7 +46,6 @@ import org.springframework.data.rest.core.mapping.MethodResourceMapping;
 import org.springframework.data.rest.core.mapping.ParameterMetadata;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
-import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SimpleResourceDescription;
@@ -75,44 +77,19 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
+@RequiredArgsConstructor
 public class RootResourceInformationToAlpsDescriptorConverter {
 
 	private static final List<HttpMethod> UNDOCUMENTED_METHODS = Arrays.asList(HttpMethod.OPTIONS, HttpMethod.HEAD);
 
-	private final Repositories repositories;
-	private final PersistentEntities persistentEntities;
-	private final ResourceMappings mappings;
-	private final EntityLinks entityLinks;
-	private final MessageSourceAccessor messageSource;
-	private final RepositoryRestConfiguration configuration;
-	private final ObjectMapper mapper;
-	private final EnumTranslator translator;
-
-	/**
-	 * Creates a new {@link RootResourceInformationToAlpsDescriptorConverter} instance.
-	 * 
-	 * @param mappings must not be {@literal null}.
-	 * @param repositories must not be {@literal null}.
-	 * @param entities must not be {@literal null}.
-	 * @param entityLinks must not be {@literal null}.
-	 * @param messageSource must not be {@literal null}.
-	 * @param configuration must not be {@literal null}.
-	 * @param mapper must not be {@literal null}.
-	 * @param translator must not be {@literal null}.
-	 */
-	public RootResourceInformationToAlpsDescriptorConverter(ResourceMappings mappings, Repositories repositories,
-			PersistentEntities entities, EntityLinks entityLinks, MessageSourceAccessor messageSource,
-			RepositoryRestConfiguration configuration, ObjectMapper mapper, EnumTranslator translator) {
-
-		this.mappings = mappings;
-		this.persistentEntities = entities;
-		this.repositories = repositories;
-		this.entityLinks = entityLinks;
-		this.messageSource = messageSource;
-		this.configuration = configuration;
-		this.mapper = mapper;
-		this.translator = translator;
-	}
+	private final @NonNull AssociationLinks associations;
+	private final @NonNull Repositories repositories;
+	private final @NonNull PersistentEntities persistentEntities;
+	private final @NonNull EntityLinks entityLinks;
+	private final @NonNull MessageSourceAccessor messageSource;
+	private final @NonNull RepositoryRestConfiguration configuration;
+	private final @NonNull ObjectMapper mapper;
+	private final @NonNull EnumTranslator translator;
 
 	/*
 	 * (non-Javadoc)
@@ -150,7 +127,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 	private Descriptor buildRepresentationDescriptor(Class<?> type) {
 
-		ResourceMetadata metadata = mappings.getMetadataFor(type);
+		ResourceMetadata metadata = associations.getMetadataFor(type);
 
 		String href = ProfileController.getPath(this.configuration, metadata);
 
@@ -165,7 +142,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 	private Descriptor buildCollectionResourceDescriptor(Class<?> type, RootResourceInformation resourceInformation,
 			Descriptor representationDescriptor, HttpMethod method) {
 
-		ResourceMetadata metadata = mappings.getMetadataFor(type);
+		ResourceMetadata metadata = associations.getMetadataFor(type);
 
 		List<Descriptor> nestedDescriptors = new ArrayList<Descriptor>();
 		nestedDescriptors.addAll(getPaginationDescriptors(type, method));
@@ -246,7 +223,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 			Descriptor representationDescriptor, HttpMethod method) {
 
 		PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
-		ResourceMetadata metadata = mappings.getMetadataFor(entity.getType());
+		ResourceMetadata metadata = associations.getMetadataFor(entity.getType());
 
 		return descriptor().//
 				id(prefix(method).concat(metadata.getItemResourceRel())).//
@@ -267,7 +244,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		ProjectionDefinitionConfiguration projectionConfiguration = configuration.getProjectionConfiguration();
 
 		return projectionConfiguration.hasProjectionFor(type)
-				? Arrays.asList(buildProjectionDescriptor(mappings.getMetadataFor(type)))
+				? Arrays.asList(buildProjectionDescriptor(associations.getMetadataFor(type)))
 				: Collections.<Descriptor> emptyList();
 	}
 
@@ -316,8 +293,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		final PersistentEntity<?, ?> entity = persistentEntities.getPersistentEntity(type);
 		final List<Descriptor> propertyDescriptors = new ArrayList<Descriptor>();
 		final JacksonMetadata jackson = new JacksonMetadata(mapper, type);
-		final AssociationLinks associationLinks = new AssociationLinks(mappings);
-		final ResourceMetadata metadata = mappings.getMetadataFor(entity.getType());
+		final ResourceMetadata metadata = associations.getMetadataFor(entity.getType());
 
 		entity.doWithProperties(new SimplePropertyHandler() {
 
@@ -350,7 +326,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 				PersistentProperty<?> property = association.getInverse();
 
-				if (!jackson.isExported(property) || !associationLinks.isLinkableAssociation(property)) {
+				if (!jackson.isExported(property) || !associations.isLinkableAssociation(property)) {
 					return;
 				}
 
@@ -359,7 +335,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				DescriptorBuilder builder = descriptor().//
 						name(mapping.getRel()).doc(getDocFor(mapping.getDescription()));
 
-				ResourceMetadata targetTypeMetadata = mappings.getMetadataFor(property.getActualType());
+				ResourceMetadata targetTypeMetadata = associations.getMetadataFor(property.getActualType());
 
 				String href = ProfileController.getPath(configuration, targetTypeMetadata) + "#"
 						+ getRepresentationDescriptorId(targetTypeMetadata);
@@ -379,7 +355,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 	private Collection<Descriptor> buildSearchResourceDescriptors(PersistentEntity<?, ?> entity) {
 
-		ResourceMetadata metadata = mappings.getMetadataFor(entity.getType());
+		ResourceMetadata metadata = associations.getMetadataFor(entity.getType());
 		List<Descriptor> descriptors = new ArrayList<Descriptor>();
 
 		for (MethodResourceMapping methodMapping : metadata.getSearchResourceMappings()) {

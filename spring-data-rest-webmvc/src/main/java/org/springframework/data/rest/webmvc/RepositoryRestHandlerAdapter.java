@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
@@ -38,15 +37,15 @@ public class RepositoryRestHandlerAdapter extends ResourceProcessorInvokingHandl
 
 	/**
 	 * Creates a new {@link RepositoryRestHandlerAdapter} using the given {@link HandlerMethodArgumentResolver} and
-	 * {@link ResourceProcessor}s.
+	 * {@link ResourceProcessorInvoker}.
 	 * 
 	 * @param argumentResolvers must not be {@literal null}.
-	 * @param resourceProcessors must not be {@literal null}.
+	 * @param invoker must not be {@literal null}.
 	 */
 	public RepositoryRestHandlerAdapter(List<HandlerMethodArgumentResolver> argumentResolvers,
-			List<ResourceProcessor<?>> resourceProcessors) {
+			ResourceProcessorInvoker invoker) {
 
-		super(resourceProcessors);
+		super(invoker);
 		this.argumentResolvers = argumentResolvers;
 	}
 

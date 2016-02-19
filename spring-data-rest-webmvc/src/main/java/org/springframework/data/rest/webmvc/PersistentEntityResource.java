@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +45,15 @@ public class PersistentEntityResource extends Resource<Object> {
 
 	private final PersistentEntity<?, ?> entity;
 	private final Iterable<EmbeddedWrapper> embeddeds;
-	private final boolean isNew;
+
+	/**
+	 * Returns whether the content of the resource is a new entity about to be created. Used to distinguish between
+	 * creation and updates for incoming requests.
+	 * 
+	 * @return
+	 */
+	private final @Getter boolean isNew;
+	private final @Getter boolean nested;
 
 	/**
 	 * Creates a new {@link PersistentEntityResource} for the given {@link PersistentEntity}, content, embedded
@@ -55,7 +65,7 @@ public class PersistentEntityResource extends Resource<Object> {
 	 * @param embeddeds can be {@literal null}.
 	 */
 	private PersistentEntityResource(PersistentEntity<?, ?> entity, Object content, Iterable<Link> links,
-			Iterable<EmbeddedWrapper> embeddeds, boolean isNew) {
+			Iterable<EmbeddedWrapper> embeddeds, boolean isNew, boolean nested) {
 
 		super(content, links);
 
@@ -64,6 +74,7 @@ public class PersistentEntityResource extends Resource<Object> {
 		this.entity = entity;
 		this.embeddeds = embeddeds == null ? NO_EMBEDDEDS : embeddeds;
 		this.isNew = isNew;
+		this.nested = nested;
 	}
 
 	/**
@@ -91,16 +102,6 @@ public class PersistentEntityResource extends Resource<Object> {
 	 */
 	public Iterable<EmbeddedWrapper> getEmbeddeds() {
 		return embeddeds;
-	}
-
-	/**
-	 * Returns whether the content of the resource is a new entity about to be created. Used to distinguish between
-	 * creation and updates for incoming requests.
-	 * 
-	 * @return
-	 */
-	public boolean isNew() {
-		return isNew;
 	}
 
 	/**
@@ -169,13 +170,21 @@ public class PersistentEntityResource extends Resource<Object> {
 			return this;
 		}
 
+		public Builder withLinks(List<Link> links) {
+
+			Assert.notNull(links, "Links must not be null!");
+
+			this.links.addAll(links);
+			return this;
+		}
+
 		/**
 		 * Finally creates the {@link PersistentEntityResource} instance.
 		 * 
 		 * @return
 		 */
 		public PersistentEntityResource build() {
-			return new PersistentEntityResource(entity, content, links, embeddeds, false);
+			return new PersistentEntityResource(entity, content, links, embeddeds, false, false);
 		}
 
 		/**
@@ -185,7 +194,11 @@ public class PersistentEntityResource extends Resource<Object> {
 		 * @return
 		 */
 		public PersistentEntityResource forCreation() {
-			return new PersistentEntityResource(entity, content, links, embeddeds, true);
+			return new PersistentEntityResource(entity, content, links, embeddeds, true, false);
+		}
+
+		public PersistentEntityResource buildNested() {
+			return new PersistentEntityResource(entity, content, links, embeddeds, false, true);
 		}
 	}
 

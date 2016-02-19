@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.config;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 
 import java.util.Arrays;
@@ -30,9 +31,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
+import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.mongodb.Address;
 import org.springframework.data.rest.webmvc.mongodb.User;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -61,7 +64,9 @@ public class JsonPatchHandlerUnitTests {
 
 		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
 
-		this.handler = new JsonPatchHandler(new ObjectMapper(), new DomainObjectReader(entities, mappings));
+		AssociationLinks associations = new AssociationLinks(mappings, mock(RepositoryRestConfiguration.class));
+
+		this.handler = new JsonPatchHandler(new ObjectMapper(), new DomainObjectReader(entities, associations));
 
 		Address address = new Address();
 		address.street = "Foo";

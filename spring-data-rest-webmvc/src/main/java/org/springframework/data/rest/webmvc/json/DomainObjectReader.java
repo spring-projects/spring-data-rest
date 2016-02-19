@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,7 +29,6 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
@@ -47,27 +49,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Oliver Gierke
  * @since 2.2
  */
+@RequiredArgsConstructor
 public class DomainObjectReader {
 
-	private final PersistentEntities entities;
-	private final AssociationLinks associationLinks;
-	private final ClassIntrospector introspector;
-
-	/**
-	 * Creates a new {@link DomainObjectReader} using the given {@link PersistentEntities} and {@link ResourceMappings}.
-	 * 
-	 * @param entities must not be {@literal null}.
-	 * @param mappings must not be {@literal null}.
-	 */
-	public DomainObjectReader(PersistentEntities entities, ResourceMappings mappings) {
-
-		Assert.notNull(entities, "PersistentEntites must not be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
-
-		this.entities = entities;
-		this.associationLinks = new AssociationLinks(mappings);
-		this.introspector = new BasicClassIntrospector();
-	}
+	private final @NonNull PersistentEntities entities;
+	private final @NonNull AssociationLinks associationLinks;
+	private final @NonNull ClassIntrospector introspector = new BasicClassIntrospector();
 
 	/**
 	 * Reads the given input stream into an {@link ObjectNode} and applies that to the given existing instance.

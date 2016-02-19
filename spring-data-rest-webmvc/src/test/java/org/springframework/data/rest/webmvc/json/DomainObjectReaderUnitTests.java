@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,7 +32,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -65,7 +68,8 @@ public class DomainObjectReaderUnitTests {
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
 
-		this.reader = new DomainObjectReader(entities, mappings);
+		this.reader = new DomainObjectReader(entities,
+				new AssociationLinks(mappings, mock(RepositoryRestConfiguration.class)));
 	}
 
 	/**

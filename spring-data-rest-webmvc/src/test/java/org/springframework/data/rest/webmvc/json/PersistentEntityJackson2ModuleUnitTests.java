@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,13 +33,23 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
-import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
-import org.springframework.data.rest.core.config.MetadataConfiguration;
-import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.support.EntityLookup;
+import org.springframework.data.rest.core.support.SelfLinkProvider;
+import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
+import org.springframework.data.rest.webmvc.ResourceProcessorInvoker;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.AssociationOmittingSerializerModifier;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.support.ExcerptProjector;
+import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.UriTemplate;
+import org.springframework.plugin.core.OrderAwarePluginRegistry;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -55,8 +66,11 @@ import com.jayway.jsonpath.JsonPath;
 @RunWith(MockitoJUnitRunner.class)
 public class PersistentEntityJackson2ModuleUnitTests {
 
-	@Mock AssociationLinks associationLinks;
+	@Mock AssociationLinks associations;
 	@Mock UriToEntityConverter converter;
+	@Mock EntityLinks entityLinks;
+	@Mock ResourceMappings mappings;
+	@Mock SelfLinkProvider selfLinks;
 
 	PersistentEntities persistentEntities;
 	ObjectMapper mapper;
@@ -71,17 +85,21 @@ public class PersistentEntityJackson2ModuleUnitTests {
 
 		this.persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
 
-		SimpleModule module = new SimpleModule();
-		module.setSerializerModifier(new PersistentEntityJackson2Module.AssociationOmittingSerializerModifier(
-				persistentEntities, associationLinks, new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
-						new MetadataConfiguration(), mock(EnumTranslationConfiguration.class))));
+		ResourceProcessorInvoker invoker = new ResourceProcessorInvoker(Collections.<ResourceProcessor<?>> emptyList());
 
-		module.setDeserializerModifier(new PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier(
-				persistentEntities, converter, associationLinks));
+		NestedEntitySerializer nestedEntitySerializer = new NestedEntitySerializer(persistentEntities,
+				new EmbeddedResourcesAssembler(persistentEntities, associations, mock(ExcerptProjector.class)), invoker);
+		OrderAwarePluginRegistry<EntityLookup<?>, Class<?>> lookups = OrderAwarePluginRegistry.create();
+
+		SimpleModule module = new SimpleModule();
+
+		module.setSerializerModifier(new AssociationOmittingSerializerModifier(persistentEntities, associations,
+				nestedEntitySerializer, new LookupObjectSerializer(lookups)));
+		module.setDeserializerModifier(new AssociationUriResolvingDeserializerModifier(persistentEntities, associations,
+				converter, mock(RepositoryInvokerFactory.class)));
 
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(module);
-
 	}
 
 	/**
@@ -119,7 +137,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		PersistentProperty<?> property = persistentEntities.getPersistentEntity(PetOwner.class)
 				.getPersistentProperty("pet");
 
-		when(associationLinks.isLinkableAssociation(property)).thenReturn(true);
+		when(associations.isLinkableAssociation(property)).thenReturn(true);
 		when(converter.convert(new UriTemplate("/pets/1").expand(), TypeDescriptor.valueOf(URI.class),
 				TypeDescriptor.valueOf(Pet.class))).thenReturn(new Cat());
 

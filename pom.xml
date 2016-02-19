@@ -36,7 +36,6 @@
 		<springdata.cassandra>1.4.0.BUILD-SNAPSHOT</springdata.cassandra>
 
 		<hibernate.version>4.3.10.Final</hibernate.version>
-
 		<bundlor.enabled>false</bundlor.enabled>
 	</properties>
 
