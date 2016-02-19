@@ -37,7 +37,10 @@ import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.UriTemplate;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -57,6 +60,8 @@ public class PersistentEntityJackson2ModuleUnitTests {
 
 	@Mock AssociationLinks associationLinks;
 	@Mock UriToEntityConverter converter;
+	@Mock EntityLinks entityLinks;
+	@Mock ResourceMappings mappings;
 
 	PersistentEntities persistentEntities;
 	ObjectMapper mapper;
@@ -72,9 +77,11 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		this.persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
 
 		SimpleModule module = new SimpleModule();
-		module.setSerializerModifier(new PersistentEntityJackson2Module.AssociationOmittingSerializerModifier(
-				persistentEntities, associationLinks, new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
-						new MetadataConfiguration(), mock(EnumTranslationConfiguration.class))));
+		module.setSerializerModifier(
+				new PersistentEntityJackson2Module.AssociationOmittingSerializerModifier(persistentEntities, associationLinks,
+						new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(), new MetadataConfiguration(),
+								mock(EnumTranslationConfiguration.class)),
+						new NestedEntitySerializer(entityLinks, persistentEntities, mappings)));
 
 		module.setDeserializerModifier(new PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier(
 				persistentEntities, converter, associationLinks));

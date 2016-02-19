@@ -15,9 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -39,9 +43,12 @@ import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
 import org.springframework.data.rest.webmvc.mapping.LinkCollectingAssociationHandler;
+import org.springframework.data.rest.webmvc.mapping.NestedLinkCollectingAssociationHandler;
+import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -99,7 +106,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * @param linkProvider must not be {@literal null}.
 	 */
 	public PersistentEntityJackson2Module(ResourceMappings mappings, PersistentEntities entities,
-			RepositoryRestConfiguration config, UriToEntityConverter converter, SelfLinkProvider linkProvider) {
+			RepositoryRestConfiguration config, UriToEntityConverter converter, SelfLinkProvider linkProvider,
+			EntityLinks entityLinks) {
 
 		super(new Version(2, 0, 0, null, "org.springframework.data.rest", "jackson-module"));
 
@@ -116,7 +124,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		addSerializer(new ProjectionSerializer(collector, mappings, false));
 		addSerializer(new ProjectionResourceContentSerializer(false));
 
-		setSerializerModifier(new AssociationOmittingSerializerModifier(entities, associationLinks, config));
+		setSerializerModifier(new AssociationOmittingSerializerModifier(entities, associationLinks, config,
+				new NestedEntitySerializer(entityLinks, entities, mappings)));
 		setDeserializerModifier(new AssociationUriResolvingDeserializerModifier(entities, converter, associationLinks));
 	}
 
@@ -136,7 +145,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * {@link AssociationLinks}.
 		 * 
 		 * @param entities must not be {@literal null}.
-		 * @param links must not be {@literal null}.
 		 */
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		private PersistentEntityResourceSerializer(LinkCollector collector) {
@@ -187,31 +195,13 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * 
 	 * @author Oliver Gierke
 	 */
+	@RequiredArgsConstructor
 	static class AssociationOmittingSerializerModifier extends BeanSerializerModifier {
 
-		private final PersistentEntities entities;
-		private final RepositoryRestConfiguration configuration;
-		private final AssociationLinks associationLinks;
-
-		/**
-		 * Creates a new {@link AssociationOmittingSerializerModifier} for the given {@link PersistentEntities},
-		 * {@link AssociationLinks} and {@link RepositoryRestConfiguration}.
-		 * 
-		 * @param entities must not be {@literal null}.
-		 * @param associationLinks must not be {@literal null}.
-		 * @param configuration must not be {@literal null}.
-		 */
-		public AssociationOmittingSerializerModifier(PersistentEntities entities, AssociationLinks associationLinks,
-				RepositoryRestConfiguration configuration) {
-
-			Assert.notNull(entities, "PersistentEntities must not be null!");
-			Assert.notNull(associationLinks, "AssociationLinks must not be null!");
-			Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
-
-			this.entities = entities;
-			this.configuration = configuration;
-			this.associationLinks = associationLinks;
-		}
+		private final @NonNull PersistentEntities entities;
+		private final @NonNull AssociationLinks associationLinks;
+		private final @NonNull RepositoryRestConfiguration configuration;
+		private final @NonNull NestedEntitySerializer foo;
 
 		/* 
 		 * (non-Javadoc)
@@ -254,6 +244,12 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					continue;
 				}
 
+				if (persistentProperty.isEntity()) {
+					writer.assignSerializer(foo);
+
+					System.out.println("Entity!" + persistentProperty.toString());
+				}
+
 				result.add(writer);
 			}
 
@@ -282,6 +278,58 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			return null;
 		}
+	}
+
+	static class NestedEntitySerializer extends StdSerializer<Object> {
+
+		private static final long serialVersionUID = -2327469118972125954L;
+
+		private final EntityLinks entityLinks;
+		private final PersistentEntities entities;
+		private final ResourceMappings mappings;
+
+		public NestedEntitySerializer(EntityLinks entityLinks, PersistentEntities entities, ResourceMappings mappings) {
+
+			super(Object.class);
+			this.entityLinks = entityLinks;
+			this.entities = entities;
+			this.mappings = mappings;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
+		 */
+		@Override
+		public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+
+			if (value instanceof Collection) {
+
+				List<Resource<Object>> resources = new ArrayList<Resource<Object>>();
+
+				for (Object element : (Collection<?>) value) {
+					resources.add(toResource(element));
+				}
+
+				provider.findValueSerializer(Resources.class).serialize(new Resources<Resource<Object>>(resources), gen,
+						provider);
+
+			} else {
+				provider.findValueSerializer(Resource.class).serialize(toResource(value), gen, provider);
+			}
+		}
+
+		private Resource<Object> toResource(Object value) {
+
+			PersistentEntity<?, ?> entity = entities.getPersistentEntity(value.getClass());
+
+			NestedLinkCollectingAssociationHandler handler = new NestedLinkCollectingAssociationHandler(entityLinks, entities,
+					entity.getPropertyAccessor(value), mappings);
+			entity.doWithAssociations(handler);
+
+			return new Resource<Object>(value, handler.getLinks());
+		}
+
 	}
 
 	/**

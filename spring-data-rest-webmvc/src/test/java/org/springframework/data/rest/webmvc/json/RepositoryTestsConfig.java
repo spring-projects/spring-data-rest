@@ -120,8 +120,10 @@ public class RepositoryTestsConfig {
 		SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks,
 				Collections.<EntityLookup<?>> emptyList());
 
-		return new PersistentEntityJackson2Module(mappings, persistentEntities(), config(), new UriToEntityConverter(
-				persistentEntities(), new DefaultRepositoryInvokerFactory(repositories()), repositories()), selfLinkProvider);
+		return new PersistentEntityJackson2Module(mappings, persistentEntities(), config(),
+				new UriToEntityConverter(persistentEntities(), new DefaultRepositoryInvokerFactory(repositories()),
+						repositories()),
+				selfLinkProvider, entityLinks);
 	}
 
 	@Bean

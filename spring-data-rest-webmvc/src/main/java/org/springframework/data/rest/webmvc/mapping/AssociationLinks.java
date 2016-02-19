@@ -99,5 +99,4 @@ public class AssociationLinks {
 		metadata = mappings.getMetadataFor(property.getActualType());
 		return metadata == null ? false : metadata.isExported();
 	}
-
 }

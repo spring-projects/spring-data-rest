@@ -593,7 +593,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		PersistentEntities entities = persistentEntities();
 
 		return new PersistentEntityJackson2Module(resourceMappings(), entities, config(),
-				uriToEntityConverter(defaultConversionService()), selfLinkProvider());
+				uriToEntityConverter(defaultConversionService()), selfLinkProvider(), entityLinks());
 	}
 
 	protected UriToEntityConverter uriToEntityConverter(ConversionService conversionService) {

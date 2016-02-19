@@ -27,6 +27,7 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.EntityLookup;
@@ -39,6 +40,8 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Integration tests for {@link PersistentEntityResourceAssembler}.
  * 
@@ -49,12 +52,13 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 
 	@Autowired PersistentEntities entities;
 	@Autowired EntityLinks entityLinks;
+	@Autowired @Qualifier("objectMapper") ObjectMapper objectMapper;
 
 	/**
 	 * @see DATAREST-609
 	 */
 	@Test
-	public void addsSelfAndSingleResourceLinkToResourceByDefault() {
+	public void addsSelfAndSingleResourceLinkToResourceByDefault() throws Exception {
 
 		Projector projector = mock(Projector.class);
 
@@ -67,7 +71,10 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 		User user = new User();
 		user.id = BigInteger.valueOf(4711);
 
-		Links links = new Links(assembler.toResource(user).getLinks());
+		PersistentEntityResource resource = assembler.toResource(user);
+
+		System.out.println(objectMapper.writeValueAsString(resource));
+		Links links = new Links(resource.getLinks());
 
 		assertThat(links, is(Matchers.<Link> iterableWithSize(2)));
 		assertThat(links.getLink("self").getVariables(), is(Matchers.empty()));

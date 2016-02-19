@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.mapping.Association;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -42,6 +41,7 @@ public class LinkCollectingAssociationHandler implements SimpleAssociationHandle
 	private final PersistentEntities entities;
 	private final AssociationLinks associationLinks;
 	private final Path basePath;
+	private final boolean nested;
 
 	private final List<Link> links;
 
@@ -54,6 +54,11 @@ public class LinkCollectingAssociationHandler implements SimpleAssociationHandle
 	 * @param associationLinks must not be {@literal null}.
 	 */
 	public LinkCollectingAssociationHandler(PersistentEntities entities, Path path, AssociationLinks associationLinks) {
+		this(entities, path, associationLinks, false);
+	}
+
+	private LinkCollectingAssociationHandler(PersistentEntities entities, Path path, AssociationLinks associationLinks,
+			boolean nested) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
 		Assert.notNull(path, "Path must not be null!");
@@ -64,6 +69,11 @@ public class LinkCollectingAssociationHandler implements SimpleAssociationHandle
 		this.basePath = path;
 
 		this.links = new ArrayList<Link>();
+		this.nested = nested;
+	}
+
+	public LinkCollectingAssociationHandler nested() {
+		return nested ? this : new LinkCollectingAssociationHandler(entities, basePath, associationLinks, true);
 	}
 
 	/**
@@ -95,10 +105,6 @@ public class LinkCollectingAssociationHandler implements SimpleAssociationHandle
 					links.add(link);
 				}
 			}
-
-		} else {
-			PersistentEntity<?, ?> associationEntity = entities.getPersistentEntity(property.getActualType());
-			associationEntity.doWithAssociations(this);
 		}
 	}
 }
