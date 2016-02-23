@@ -1,6 +1,14 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.4.4.RELEASE (2016-02-23)
+---------------------------------------------
+* DATAREST-766 - Release 2.4.4 (Gosling SR4).
+* DATAREST-754 - Spring Data REST throws NPE when exposing JSON Schema for a Groovy domai object.
+* DATAREST-747 - ProjectionDefinitionConfiguration does not select projection for most concrete type.
+* DATAREST-743 - Rest Endpoints produce HttpMessageNotWritableException sometimes after restarts.
+
+
 Changes in version 2.5.0.M1 (2016-02-12)
 ----------------------------------------
 * DATAREST-765 - Make sure Solr tests run with Spring Data Solr 2.0 (Solr 5).
