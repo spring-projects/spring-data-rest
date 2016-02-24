@@ -37,7 +37,8 @@ public class Profile {
 	private @JsonProperty(required = true) String type;
 	private @LastModifiedDate Date lastModifiedDate;
 	private @JsonProperty("renamed") String aliased;
-	private Map<String, String> metadata = new HashMap<String, String>();
+	private Map<String, String> metadata = new HashMap<String, String>();	
+	private Map<String, Value> metadataComplex = new HashMap<String, Value>();
 
 	public String getId() {
 		return id;
@@ -81,5 +82,13 @@ public class Profile {
 
 	public void setMetadata(Map<String, String> metadata) {
 		this.metadata = metadata;
+	}
+	
+	public Map<String, Value> getMetadataComplex() {
+		return metadataComplex;
+	}
+
+	public void setMetadataComplex(Map<String, Value> metadataComplex) {
+		this.metadataComplex = metadataComplex;
 	}
 }
