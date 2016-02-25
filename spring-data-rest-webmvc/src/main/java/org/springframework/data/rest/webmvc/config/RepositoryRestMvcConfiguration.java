@@ -96,7 +96,7 @@ import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.ValueTypeSchemaPropertyCustomizerFactory;
-import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
@@ -755,8 +755,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public AssociationLinks associationLinks() {
-		return new AssociationLinks(resourceMappings(), config());
+	public Associations associationLinks() {
+		return new Associations(resourceMappings(), config());
 	}
 
 	protected List<EntityLookup<?>> getEntityLookups() {

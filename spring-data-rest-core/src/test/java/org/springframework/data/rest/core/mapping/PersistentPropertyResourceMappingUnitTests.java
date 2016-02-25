@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,11 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.annotation.Reference;
+import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
+import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
-import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
-import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -41,7 +41,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 @RunWith(MockitoJUnitRunner.class)
 public class PersistentPropertyResourceMappingUnitTests {
 
-	MongoMappingContext mappingContext = new MongoMappingContext();
+	KeyValueMappingContext mappingContext = new KeyValueMappingContext();
 
 	/**
 	 * @see DATAREST-175
@@ -114,11 +114,11 @@ public class PersistentPropertyResourceMappingUnitTests {
 
 	private ResourceMapping getPropertyMappingFor(Class<?> entity, String propertyName) {
 
-		MongoPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(entity);
-		MongoPersistentProperty property = persistentEntity.getPersistentProperty(propertyName);
+		KeyValuePersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(entity);
+		KeyValuePersistentProperty property = persistentEntity.getPersistentProperty(propertyName);
 
-		ResourceMappings resourceMappings = new PersistentEntitiesResourceMappings(new PersistentEntities(
-				Arrays.asList(mappingContext)));
+		ResourceMappings resourceMappings = new PersistentEntitiesResourceMappings(
+				new PersistentEntities(Arrays.asList(mappingContext)));
 
 		return new PersistentPropertyResourceMapping(property, resourceMappings);
 	}
@@ -126,10 +126,10 @@ public class PersistentPropertyResourceMappingUnitTests {
 	public static class Entity {
 
 		Related first;
-		@DBRef Related third;
+		@Reference Related third;
 
-		@DBRef//
-		@RestResource(path = "secPath", rel = "secRel", exported = false)//
+		@Reference //
+		@RestResource(path = "secPath", rel = "secRel", exported = false) //
 		List<Related> second;
 
 		@Description("Some description") String fourth;

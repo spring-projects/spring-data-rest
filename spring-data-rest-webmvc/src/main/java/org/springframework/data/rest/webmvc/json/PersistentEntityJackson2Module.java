@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.ResourceProcessorInvoker;
-import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
@@ -110,7 +110,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * @param converter must not be {@literal null}.
 	 * @param linkProvider must not be {@literal null}.
 	 */
-	public PersistentEntityJackson2Module(AssociationLinks associations, PersistentEntities entities,
+	public PersistentEntityJackson2Module(Associations associations, PersistentEntities entities,
 			UriToEntityConverter converter, LinkCollector collector, RepositoryInvokerFactory factory,
 			NestedEntitySerializer serializer, LookupObjectSerializer lookupObjectSerializer) {
 
@@ -144,7 +144,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		/**
 		 * Creates a new {@link PersistentEntityResourceSerializer} using the given {@link PersistentEntities} and
-		 * {@link AssociationLinks}.
+		 * {@link Associations}.
 		 * 
 		 * @param entities must not be {@literal null}.
 		 */
@@ -221,7 +221,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	static class AssociationOmittingSerializerModifier extends BeanSerializerModifier {
 
 		private final @NonNull PersistentEntities entities;
-		private final @NonNull AssociationLinks associations;
+		private final @NonNull Associations associations;
 		private final @NonNull NestedEntitySerializer nestedEntitySerializer;
 		private final @NonNull LookupObjectSerializer lookupObjectSerializer;
 
@@ -378,7 +378,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	public static class AssociationUriResolvingDeserializerModifier extends BeanDeserializerModifier {
 
 		private final @NonNull PersistentEntities entities;
-		private final @NonNull AssociationLinks associationLinks;
+		private final @NonNull Associations associationLinks;
 		private final @NonNull UriToEntityConverter converter;
 		private final @NonNull RepositoryInvokerFactory factory;
 
@@ -512,7 +512,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	static class ProjectionSerializer extends StdSerializer<TargetAware> {
 
 		private final LinkCollector collector;
-		private final AssociationLinks associations;
+		private final Associations associations;
 		private final boolean unwrapping;
 
 		/**
@@ -523,7 +523,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @param mappings must not be {@literal null}.
 		 * @param unwrapping
 		 */
-		private ProjectionSerializer(LinkCollector collector, AssociationLinks mappings, boolean unwrapping) {
+		private ProjectionSerializer(LinkCollector collector, Associations mappings, boolean unwrapping) {
 
 			super(TargetAware.class);
 

@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.data</groupId>
+		<artifactId>spring-data-rest-parent</artifactId>
+		<version>2.5.0.VO-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+    <name>Spring Data REST Tests</name>
+	<artifactId>spring-data-rest-tests</artifactId>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>spring-data-rest-tests-core</module>
+		<module>spring-data-rest-tests-jpa</module>
+		<module>spring-data-rest-tests-mongodb</module>
+		<module>spring-data-rest-tests-solr</module>
+		<module>spring-data-rest-tests-gemfire</module>
+	</modules>
+
+	<properties>
+		<groovy.version>2.4.4</groovy.version>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>${groovy.version}</version>
+		</dependency>
+
+	</dependencies>
+
+</project>

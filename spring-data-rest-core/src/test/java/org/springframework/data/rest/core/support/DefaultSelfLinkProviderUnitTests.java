@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -35,9 +34,9 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
-import org.springframework.data.rest.core.domain.mongodb.Profile;
+import org.springframework.data.rest.core.domain.Profile;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 
@@ -73,7 +72,7 @@ public class DefaultSelfLinkProviderUnitTests {
 			}
 		});
 
-		MongoMappingContext context = new MongoMappingContext();
+		KeyValueMappingContext context = new KeyValueMappingContext();
 		context.getPersistentEntity(Profile.class);
 		context.afterPropertiesSet();
 
@@ -112,10 +111,10 @@ public class DefaultSelfLinkProviderUnitTests {
 	@Test
 	public void usesEntityIdIfNoLookupDefined() {
 
-		String id = UUID.randomUUID().toString();
-		Link link = provider.createSelfLinkFor(new Profile(id, "Name", "Type"));
+		Profile profile = new Profile("Name", "Type");
+		Link link = provider.createSelfLinkFor(profile);
 
-		assertThat(link.getHref(), Matchers.endsWith(id));
+		assertThat(link.getHref(), Matchers.endsWith(profile.getId().toString()));
 	}
 
 	/**
@@ -131,8 +130,7 @@ public class DefaultSelfLinkProviderUnitTests {
 
 		this.provider = new DefaultSelfLinkProvider(entities, entityLinks, Arrays.asList(lookup));
 
-		String id = UUID.randomUUID().toString();
-		Link link = provider.createSelfLinkFor(new Profile(id, "Name", "Type"));
+		Link link = provider.createSelfLinkFor(new Profile("Name", "Type"));
 
 		assertThat(link.getHref(), Matchers.endsWith("foo"));
 	}

@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.config.ResourceMapping;
-import org.springframework.data.rest.core.domain.jpa.ConfiguredPersonRepository;
+import org.springframework.data.rest.core.domain.ConfiguredPersonRepository;
 
 /**
  * Tests to check that {@link ResourceMapping}s are handled correctly.

@@ -1,0 +1,20 @@
+Bundle-SymbolicName: org.springframework.data.rest.core
+Bundle-Name: ${project.name}
+Bundle-Vendor: Pivotal Software, Inc.
+Bundle-Version: ${project.version}
+Bundle-ManifestVersion: 2
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package:
+ sun.reflect;version="0";resolution:=optional
+Import-Template:
+ com.fasterxml.jackson.*;version="${jackson:[=.=.=,+1.0.0)}";resolution:=optional,
+ com.google.common.*;version="${guava:[=.=.=,+1.0.0)}";resolution:=optional,
+ javax.enterprise.*;version="${cdi:[=.=.=,+1.0.0)}";resolution:=optional,
+ javax.inject.*;version="[1.0.0,2.0.0)";resolution:=optional,
+ javax.xml.bind.*;version="0";resolution:=optional,
+ javax.xml.transform.*;version="0";resolution:=optional,
+ org.atteo.evo.inflector.*;version="[1.2.1,2.0.0)",
+ org.slf4j.*;version="${slf4j:[=.=.=,+1.0.0)}",
+ org.springframework.*;version="${spring:[=.=.=,+1.0.0)}",
+ org.springframework.hateoas.*;version="${spring-hateoas:[=.=.=,+1.0.0)}",
+DynamicImport-Package: *

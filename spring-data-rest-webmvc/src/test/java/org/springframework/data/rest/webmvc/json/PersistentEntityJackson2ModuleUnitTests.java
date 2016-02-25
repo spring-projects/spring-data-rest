@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -44,7 +44,7 @@ import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
-import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ResourceProcessor;
@@ -66,7 +66,7 @@ import com.jayway.jsonpath.JsonPath;
 @RunWith(MockitoJUnitRunner.class)
 public class PersistentEntityJackson2ModuleUnitTests {
 
-	@Mock AssociationLinks associations;
+	@Mock Associations associations;
 	@Mock UriToEntityConverter converter;
 	@Mock EntityLinks entityLinks;
 	@Mock ResourceMappings mappings;
@@ -78,7 +78,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 	@Before
 	public void setUp() {
 
-		MongoMappingContext mappingContext = new MongoMappingContext();
+		KeyValueMappingContext mappingContext = new KeyValueMappingContext();
 		mappingContext.getPersistentEntity(Sample.class);
 		mappingContext.getPersistentEntity(SampleWithAdditionalGetters.class);
 		mappingContext.getPersistentEntity(PersistentEntityJackson2ModuleUnitTests.PetOwner.class);

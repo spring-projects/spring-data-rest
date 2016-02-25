@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
-import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.Projector;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceAssembler;
@@ -40,7 +40,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 	private final @NonNull PersistentEntities entities;
 	private final @NonNull Projector projector;
-	private final @NonNull AssociationLinks associations;
+	private final @NonNull Associations associations;
 	private final @NonNull SelfLinkProvider linkProvider;
 	private final @NonNull EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 

@@ -1,0 +1,359 @@
+On branch issue/VO
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+
+	modified:   pom.xml
+	modified:   spring-data-rest-core/pom.xml
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/AbstractIntegrationTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/RepositoryRestConfigurationIntegrationTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/RepositoryRestConfigurationUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/RepositoryTestsConfig.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/UriToEntityConverterUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/config/ResourceMappingUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/context/RepositoryEventIntegrationTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/context/ValidatorIntegrationTests.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/JpaRepositoryConfig.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/Person.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/Profile.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/AnnotatedPersonEventHandler.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/AnnotatedPersonEventHandler.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/AnnotatedPersonRepository.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/AnnotatedPersonRepository.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/Author.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/Author.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/AuthorRepository.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/AuthorRepository.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/ConfiguredPersonRepository.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/ConfiguredPersonRepository.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/CreditCard.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/CreditCard.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/CreditCardRepository.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/CreditCardRepository.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/EventHandlerInvokedException.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/EventHandlerInvokedException.java
+	new file:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/JpaRepositoryConfig.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/Order.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/Order.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/OrderRepository.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/OrderRepository.java
+	new file:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/Person.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/PersonBeforeSaveHandler.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/PersonBeforeSaveHandler.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/PersonNameValidator.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/PersonNameValidator.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/PersonRepository.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/PersonRepository.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/PlainPersonRepository.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/PlainPersonRepository.java
+	new file:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/mongodb/MongoDbRepositoryConfig.java
+	new file:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/mongodb/Profile.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/ProfileLoader.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/mongodb/ProfileLoader.java
+	renamed:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/ProfileRepository.java -> spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/mongodb/ProfileRepository.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/event/AnnotatedEventHandlerInvokerUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/mapping/CrudMethodsSupportedHttpMethodsUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/mapping/MappingResourceMetadataUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/mapping/PersistentPropertyResourceMappingUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/mapping/RepositoryResourceMappingsIntegrationTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/support/DefaultSelfLinkProviderUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/support/DomainObjectMergerTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/support/UnwrappingRepositoryInvokerFactoryUnitTests.java
+	deleted:    spring-data-rest-tests/pom.xml
+	deleted:    spring-data-rest-tests/spring-data-rest-tests-core/pom.xml
+	deleted:    spring-data-rest-tests/spring-data-rest-tests-core/src/test/java/org/springframework/data/rest/tests/RepositoryTestsConfig.java
+	deleted:    spring-data-rest-tests/spring-data-rest-tests-core/src/test/resources/logback.xml
+	deleted:    spring-data-rest-tests/spring-data-rest-tests-gemfire/pom.xml
+	deleted:    spring-data-rest-tests/spring-data-rest-tests-jpa/pom.xml
+	deleted:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/util/TestUtils.java
+	deleted:    spring-data-rest-tests/spring-data-rest-tests-mongodb/pom.xml
+	deleted:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/tests/mongodb/TestUtils.java
+	deleted:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/webmvc/json/PersistentEntitySerializationTests.java
+	deleted:    spring-data-rest-tests/spring-data-rest-tests-solr/pom.xml
+	modified:   spring-data-rest-webmvc/pom.xml
+	modified:   spring-data-rest-webmvc/src/main/java/org/springframework/data/rest/webmvc/ProfileResourceProcessor.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-core/src/test/java/org/springframework/data/rest/tests/AbstractControllerIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/AbstractControllerIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-core/src/test/java/org/springframework/data/rest/tests/AbstractWebIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/AbstractWebIntegrationTests.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/AssociationLinksUnitTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-core/src/test/java/org/springframework/data/rest/tests/CommonWebTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/CommonWebTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/jpa/DataRest363Tests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/DuplicateLinkListingTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/webmvc/PersistentEntityResourceAssemblerIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/PersistentEntityResourceAssemblerIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/jpa/ProfileIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/ProfileIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/RepositoryControllerIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositoryControllerIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/RepositoryEntityControllerIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositoryEntityControllerIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/RepositoryPropertyReferenceControllerIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositoryPropertyReferenceControllerIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/webmvc/RepositoryRestHandlerMappingIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositoryRestHandlerMappingIntegrationTests.java
+	new file:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositoryRestMvcTestConfig.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/RepositorySearchControllerIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositorySearchControllerIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-core/src/test/java/org/springframework/data/rest/tests/RequestParameters.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RequestParameters.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-core/src/test/java/org/springframework/data/rest/tests/ResourceTester.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/ResourceTester.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/RootResourceInformationIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RootResourceInformationIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-core/src/test/java/org/springframework/data/rest/tests/TestMvcClient.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/TestMvcClient.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/alps/AlpsControllerIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/alps/AlpsControllerIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/webmvc/config/AbstractRepositoryRestMvcConfigurationIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/config/AbstractRepositoryRestMvcConfigurationIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/webmvc/config/JsonPatchHandlerUnitTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/config/JsonPatchHandlerUnitTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/webmvc/config/LegacyRepresentationConfigIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/config/LegacyRepresentationConfigIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/webmvc/config/QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUnitTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/config/QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUnitTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/main/java/org/springframework/data/rest/tests/gemfire/AbstractPersistentEntity.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/AbstractPersistentEntity.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/main/java/org/springframework/data/rest/tests/gemfire/Address.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/Address.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/main/java/org/springframework/data/rest/tests/gemfire/Customer.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/Customer.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/main/java/org/springframework/data/rest/tests/gemfire/CustomerRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/CustomerRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/main/java/org/springframework/data/rest/tests/gemfire/EmailAddress.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/EmailAddress.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/test/java/org/springframework/data/rest/tests/gemfire/GemfireRepositoryConfig.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/GemfireRepositoryConfig.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/test/java/org/springframework/data/rest/tests/gemfire/GemfireWebTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/GemfireWebTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/main/java/org/springframework/data/rest/tests/gemfire/LineItem.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/LineItem.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/main/java/org/springframework/data/rest/tests/gemfire/Order.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/Order.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/main/java/org/springframework/data/rest/tests/gemfire/OrderRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/OrderRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/main/java/org/springframework/data/rest/tests/gemfire/Product.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/Product.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/main/java/org/springframework/data/rest/tests/gemfire/ProductRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/ProductRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/Address.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Address.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/AddressRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/AddressRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/Author.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Author.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/AuthorRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/AuthorRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/AuthorsController.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/AuthorsController.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/Book.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Book.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/BookExcerpt.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/BookExcerpt.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/BookIdConverter.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/BookIdConverter.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/BookRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/BookRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/CreditCard.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/CreditCard.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/CreditCardRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/CreditCardRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/jpa/DataRest262Tests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/DataRest262Tests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/Item.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Item.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/ItemRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/ItemRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/jpa/JpaInfrastructureConfig.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/JpaInfrastructureConfig.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/jpa/JpaRepositoryConfig.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/JpaRepositoryConfig.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/jpa/JpaWebTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/JpaWebTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/LineItem.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/LineItem.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/Order.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Order.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/OrderRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/OrderRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/OrderSummary.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/OrderSummary.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/Person.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Person.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/PersonRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/PersonRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/PersonSummary.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/PersonSummary.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/Receipt.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Receipt.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/ReceiptRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/ReceiptRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/jpa/TestDataPopulator.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/TestDataPopulator.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/Type.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Type.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/User.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/User.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/UserExcerpt.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/UserExcerpt.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/main/java/org/springframework/data/rest/webmvc/jpa/UserRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/UserRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/jpa/groovy/SimulatedGroovyDomainClass.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/groovy/SimulatedGroovyDomainClass.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/jpa/groovy/SimulatedGroovyDomainClassRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/groovy/SimulatedGroovyDomainClassRepository.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/DomainObjectReaderUnitTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/json/Jackson2DatatypeHelperIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/Jackson2DatatypeHelperIntegrationTests.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/JacksonMetadataUnitTests.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/PersistentEntityJackson2ModuleUnitTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/json/PersistentEntitySerializationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/PersistentEntitySerializationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/webmvc/json/PersistentEntityToJsonSchemaConverterUnitTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/PersistentEntityToJsonSchemaConverterUnitTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/json/RepositoryTestsConfig.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/RepositoryTestsConfig.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mapping/AssociationsUnitTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/Address.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/Address.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/tests/mongodb/MongoDbRepositoryConfig.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/MongoDbRepositoryConfig.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/tests/mongodb/MongoWebTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/MongoWebTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/Profile.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/Profile.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/ProfileRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/ProfileRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/Receipt.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/Receipt.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/ReceiptRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/ReceiptRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/User.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/User.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/UserRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/UserRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/UserSummary.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/UserSummary.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/groovy/SimulatedGroovyDomainClass.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/groovy/SimulatedGroovyDomainClass.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/groovy/SimulatedGroovyDomainClassRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/groovy/SimulatedGroovyDomainClassRepository.java
+	new file:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/Order.java
+	new file:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/Person.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/security/PreAuthorizedOrderRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/PreAuthorizedOrderRepository.java
+	new file:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/SecureJpaConfiguration.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/security/SecuredPersonRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/SecuredPersonRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/security/SecurityConfiguration.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/SecurityConfiguration.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/security/SecurityIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/SecurityIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-solr/src/test/java/org/springframework/data/rest/webmvc/solr/Product.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/solr/Product.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-solr/src/test/java/org/springframework/data/rest/webmvc/solr/ProductRepository.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/solr/ProductRepository.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-solr/src/test/java/org/springframework/data/rest/webmvc/solr/SolrInfrastructureConfig.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/solr/SolrInfrastructureConfig.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-solr/src/test/java/org/springframework/data/rest/webmvc/solr/SolrTestBase.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/solr/SolrTestBase.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-solr/src/test/java/org/springframework/data/rest/webmvc/solr/SolrWebTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/solr/SolrWebTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/support/BackendIdConverterHandlerMethodArgumentResolverIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/BackendIdConverterHandlerMethodArgumentResolverIntegrationTests.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/ETagUnitTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/support/ExceptionHandlingCustomizationIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/ExceptionHandlingCustomizationIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/java/org/springframework/data/rest/webmvc/support/RepositoryEntityLinksIntegrationTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/RepositoryEntityLinksIntegrationTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/java/org/springframework/data/rest/webmvc/support/RepositoryLinkBuildUnitTests.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/RepositoryLinkBuildUnitTests.java
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-solr/src/test/java/org/springframework/data/rest/webmvc/solr/TestUtils.java -> spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/util/TestUtils.java
+	new file:   spring-data-rest-webmvc/src/test/resources/META-INF/persistence.xml
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-gemfire/src/test/resources/META-INF/spring/cache-config.xml -> spring-data-rest-webmvc/src/test/resources/META-INF/spring/cache-config.xml
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/resources/org/springframework/data/rest/webmvc/jpa/order.json -> spring-data-rest-webmvc/src/test/resources/org/springframework/data/rest/webmvc/jpa/order.json
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-jpa/src/test/resources/org/springframework/data/rest/webmvc/jpa/person.json -> spring-data-rest-webmvc/src/test/resources/org/springframework/data/rest/webmvc/jpa/person.json
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-solr/src/test/resources/org/springframework/data/rest/webmvc/solr/schema.xml -> spring-data-rest-webmvc/src/test/resources/org/springframework/data/rest/webmvc/solr/schema.xml
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-solr/src/test/resources/org/springframework/data/rest/webmvc/solr/solr.xml -> spring-data-rest-webmvc/src/test/resources/org/springframework/data/rest/webmvc/solr/solr.xml
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-solr/src/test/resources/org/springframework/data/rest/webmvc/solr/solrconfig.xml -> spring-data-rest-webmvc/src/test/resources/org/springframework/data/rest/webmvc/solr/solrconfig.xml
+	renamed:    spring-data-rest-tests/spring-data-rest-tests-mongodb/src/test/resources/rest-messages.properties -> spring-data-rest-webmvc/src/test/resources/rest-messages.properties
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   pom.xml
+	modified:   spring-data-rest-core/pom.xml
+	modified:   spring-data-rest-core/src/main/java/org/springframework/data/rest/core/event/ValidatingRepositoryEventListener.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/AbstractIntegrationTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/RepositoryRestConfigurationIntegrationTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/RepositoryRestConfigurationUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/RepositoryTestsConfig.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/UriToEntityConverterUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/config/ResourceMappingUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/context/RepositoryEventIntegrationTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/context/ValidatorIntegrationTests.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/AnnotatedPersonEventHandler.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/AnnotatedPersonRepository.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/Author.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/AuthorRepository.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/ConfiguredPersonRepository.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/CreditCard.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/CreditCardRepository.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/EventHandlerInvokedException.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/JpaRepositoryConfig.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/Order.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/OrderRepository.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/Person.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/PersonBeforeSaveHandler.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/PersonNameValidator.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/PersonRepository.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/jpa/PlainPersonRepository.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/mongodb/MongoDbRepositoryConfig.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/mongodb/Profile.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/mongodb/ProfileLoader.java
+	deleted:    spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/mongodb/ProfileRepository.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/event/AnnotatedEventHandlerInvokerUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/mapping/CrudMethodsSupportedHttpMethodsUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/mapping/MappingResourceMetadataUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/mapping/PersistentPropertyResourceMappingUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/mapping/RepositoryResourceMappingsIntegrationTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/support/DefaultSelfLinkProviderUnitTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/support/DomainObjectMergerTests.java
+	modified:   spring-data-rest-core/src/test/java/org/springframework/data/rest/core/support/UnwrappingRepositoryInvokerFactoryUnitTests.java
+	modified:   spring-data-rest-webmvc/pom.xml
+	modified:   spring-data-rest-webmvc/src/main/java/org/springframework/data/rest/webmvc/ProfileResourceProcessor.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/AbstractControllerIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/AbstractWebIntegrationTests.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/AssociationLinksUnitTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/CommonWebTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/DuplicateLinkListingTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/PersistentEntityResourceAssemblerIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/ProfileIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositoryControllerIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositoryEntityControllerIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositoryPropertyReferenceControllerIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositoryRestHandlerMappingIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositoryRestMvcTestConfig.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RepositorySearchControllerIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RequestParameters.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/ResourceTester.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/RootResourceInformationIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/TestMvcClient.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/alps/AlpsControllerIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/config/AbstractRepositoryRestMvcConfigurationIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/config/JsonPatchHandlerUnitTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/config/LegacyRepresentationConfigIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/config/QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUnitTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/AbstractPersistentEntity.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/Address.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/Customer.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/CustomerRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/EmailAddress.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/GemfireRepositoryConfig.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/GemfireWebTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/LineItem.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/Order.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/OrderRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/Product.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/gemfire/ProductRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Address.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/AddressRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Author.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/AuthorRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/AuthorsController.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Book.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/BookExcerpt.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/BookIdConverter.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/BookRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/CreditCard.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/CreditCardRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/DataRest262Tests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Item.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/ItemRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/JpaInfrastructureConfig.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/JpaRepositoryConfig.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/JpaWebTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/LineItem.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Order.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/OrderRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/OrderSummary.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Person.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/PersonRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/PersonSummary.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Receipt.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/ReceiptRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/TestDataPopulator.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/Type.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/User.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/UserExcerpt.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/UserRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/groovy/SimulatedGroovyDomainClass.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/jpa/groovy/SimulatedGroovyDomainClassRepository.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/DomainObjectReaderUnitTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/Jackson2DatatypeHelperIntegrationTests.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/JacksonMetadataUnitTests.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/PersistentEntityJackson2ModuleUnitTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/PersistentEntitySerializationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/PersistentEntityToJsonSchemaConverterUnitTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/json/RepositoryTestsConfig.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mapping/AssociationsUnitTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/Address.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/MongoDbRepositoryConfig.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/MongoWebTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/Profile.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/ProfileRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/Receipt.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/ReceiptRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/User.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/UserRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/UserSummary.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/groovy/SimulatedGroovyDomainClass.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/groovy/SimulatedGroovyDomainClassRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/Order.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/Person.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/PreAuthorizedOrderRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/SecureJpaConfiguration.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/SecuredPersonRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/SecurityConfiguration.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/security/SecurityIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/solr/Product.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/solr/ProductRepository.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/solr/SolrInfrastructureConfig.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/solr/SolrTestBase.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/solr/SolrWebTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/BackendIdConverterHandlerMethodArgumentResolverIntegrationTests.java
+	modified:   spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/ETagUnitTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/ExceptionHandlingCustomizationIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/RepositoryEntityLinksIntegrationTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/RepositoryLinkBuildUnitTests.java
+	deleted:    spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/util/TestUtils.java
+	deleted:    spring-data-rest-webmvc/src/test/resources/META-INF/persistence.xml
+	deleted:    spring-data-rest-webmvc/src/test/resources/META-INF/spring/cache-config.xml
+	deleted:    spring-data-rest-webmvc/src/test/resources/org/springframework/data/rest/webmvc/jpa/order.json
+	deleted:    spring-data-rest-webmvc/src/test/resources/org/springframework/data/rest/webmvc/jpa/person.json
+	deleted:    spring-data-rest-webmvc/src/test/resources/org/springframework/data/rest/webmvc/solr/schema.xml
+	deleted:    spring-data-rest-webmvc/src/test/resources/org/springframework/data/rest/webmvc/solr/solr.xml
+	deleted:    spring-data-rest-webmvc/src/test/resources/org/springframework/data/rest/webmvc/solr/solrconfig.xml
+	deleted:    spring-data-rest-webmvc/src/test/resources/rest-messages.properties
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	dates.sh
+	sample.txt
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/AnnotatedPersonEventHandler.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/AnnotatedPersonRepository.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/Author.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/AuthorRepository.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/ConfiguredPersonRepository.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/CreditCard.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/CreditCardRepository.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/EventHandlerInvokedException.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/JpaRepositoryConfig.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/Order.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/OrderRepository.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/Person.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/PersonBeforeSaveHandler.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/PersonNameValidator.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/PersonRepository.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/PlainPersonRepository.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/Profile.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/ProfileLoader.java
+	spring-data-rest-core/src/test/java/org/springframework/data/rest/core/domain/ProfileRepository.java
+	spring-data-rest-core/template.mf
+	spring-data-rest-hal-browser/template.mf
+	spring-data-rest-tests/
+

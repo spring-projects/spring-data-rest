@@ -47,17 +47,17 @@ import org.springframework.util.Assert;
 public class LinkCollector {
 
 	private final PersistentEntities entities;
-	private final AssociationLinks associationLinks;
+	private final Associations associationLinks;
 	private final SelfLinkProvider links;
 
 	/**
-	 * Creates a new {@link PersistentEntities}, {@link SelfLinkProvider} and {@link AssociationLinks}.
-	 * 
+	 * Creates a new {@link PersistentEntities}, {@link SelfLinkProvider} and {@link Associations}.
+	 *
 	 * @param entities must not be {@literal null}.
 	 * @param linkProvider must not be {@literal null}.
 	 * @param associationLinks must not be {@literal null}.
 	 */
-	public LinkCollector(PersistentEntities entities, SelfLinkProvider linkProvider, AssociationLinks associationLinks) {
+	public LinkCollector(PersistentEntities entities, SelfLinkProvider linkProvider, Associations associationLinks) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
 		Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
@@ -70,7 +70,7 @@ public class LinkCollector {
 
 	/**
 	 * Returns all {@link Links} for the given object.
-	 * 
+	 *
 	 * @param object must not be {@literal null}.
 	 * @return
 	 */
@@ -80,7 +80,7 @@ public class LinkCollector {
 
 	/**
 	 * Returns all {@link Links} for the given object and already existing {@link Link}.
-	 * 
+	 *
 	 * @param object must not be {@literal null}.
 	 * @param existingLinks must not be {@literal null}.
 	 * @return
@@ -151,7 +151,7 @@ public class LinkCollector {
 
 	/**
 	 * {@link SimpleAssociationHandler} that will collect {@link Link}s for all linkable associations.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @since 2.1
 	 */
@@ -162,19 +162,19 @@ public class LinkCollector {
 
 		private final @NonNull PersistentEntities entities;
 		private final @NonNull Path basePath;
-		private final @NonNull AssociationLinks associationLinks;
+		private final @NonNull Associations associationLinks;
 		private final @NonNull List<Link> links = new ArrayList<Link>();
 
 		/**
 		 * Returns the links collected after the {@link Association} has been traversed.
-		 * 
+		 *
 		 * @return the links
 		 */
 		public List<Link> getLinks() {
 			return links;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
 		 */
@@ -202,10 +202,10 @@ public class LinkCollector {
 
 		private final SelfLinkProvider selfLinks;
 		private final PersistentPropertyAccessor accessor;
-		private final AssociationLinks associations;
+		private final Associations associations;
 		private final @Getter List<Link> links = new ArrayList<Link>();
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
 		 */
@@ -234,7 +234,7 @@ public class LinkCollector {
 
 		/**
 		 * Returns a link pointing to the given entity using the given {@link ResourceMapping} to detect the link relation.
-		 * 
+		 *
 		 * @param entity must not be {@literal null}.
 		 * @param mapping must not be {@literal null}.
 		 * @return
@@ -246,7 +246,7 @@ public class LinkCollector {
 		/**
 		 * Returns the given object as {@link Collection}, i.e. the object as is if it's a collection already or wrapped
 		 * into a single-element collection otherwise.
-		 * 
+		 *
 		 * @param object can be {@literal null}.
 		 * @return
 		 */

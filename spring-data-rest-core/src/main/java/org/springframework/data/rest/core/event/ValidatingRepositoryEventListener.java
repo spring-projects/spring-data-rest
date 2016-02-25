@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.data.rest.core.ValidationErrors;
 import org.springframework.util.Assert;
@@ -44,19 +44,19 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ValidatingRepositoryEventListener.class);
 
-	private final ObjectFactory<Repositories> repositoriesFactory;
+	private final ObjectFactory<PersistentEntities> persistentEntitiesFactory;
 	private final MultiValueMap<String, Validator> validators;
 
 	/**
 	 * Creates a new {@link ValidatingRepositoryEventListener} using the given repositories.
 	 * 
-	 * @param repositoriesFactory must not be {@literal null}.
+	 * @param persistentEntitiesFactory must not be {@literal null}.
 	 */
-	public ValidatingRepositoryEventListener(ObjectFactory<Repositories> repositoriesFactory) {
+	public ValidatingRepositoryEventListener(ObjectFactory<PersistentEntities> persistentEntitiesFactory) {
 
-		Assert.notNull(repositoriesFactory, "Repositories must not be null!");
+		Assert.notNull(persistentEntitiesFactory, "PersistentEntities must not be null!");
 
-		this.repositoriesFactory = repositoriesFactory;
+		this.persistentEntitiesFactory = persistentEntitiesFactory;
 		this.validators = new LinkedMultiValueMap<String, Validator>();
 	}
 
@@ -159,24 +159,26 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 		validate("afterDelete", entity);
 	}
 
-	private Errors validate(String event, Object o) {
+	private Errors validate(String event, Object entity) {
 
-		if (o == null) {
+		if (entity == null) {
 			return null;
 		}
 
-		Class<?> domainType = o.getClass();
-		Repositories repositories = repositoriesFactory.getObject();
-		Errors errors = new ValidationErrors(domainType.getSimpleName(), o, repositories.getPersistentEntity(domainType));
+		Class<?> domainType = entity.getClass();
+		PersistentEntities persistentEntities = persistentEntitiesFactory.getObject();
+		Errors errors = new ValidationErrors(domainType.getSimpleName(), entity,
+				persistentEntities.getPersistentEntity(domainType));
 
 		for (Validator v : getValidatorsForEvent(event)) {
+
 			if (v.supports(domainType)) {
-				LOGGER.debug("{}: {} with {}", event, o, v);
-				ValidationUtils.invokeValidator(v, o, errors);
+				LOGGER.debug("{}: {} with {}", event, entity, v);
+				ValidationUtils.invokeValidator(v, entity, errors);
 			}
 		}
 
-		if (errors.getErrorCount() > 0) {
+		if (errors.hasErrors()) {
 			throw new RepositoryConstraintViolationException(errors);
 		}
 
@@ -184,6 +186,7 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 	}
 
 	private Collection<Validator> getValidatorsForEvent(String event) {
+
 		Collection<Validator> validators = this.validators.get(event);
 		return validators == null ? Collections.<Validator> emptySet() : validators;
 	}

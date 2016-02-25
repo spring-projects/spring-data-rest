@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,14 @@ public interface EntityLookupRegistrar {
 	 */
 	<T, ID extends Serializable, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forRepository(Class<R> type);
 
-	<T, ID extends Serializable, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forValueRepository(Class<R> type);
+	/**
+	 * Starts building a custom {@link EntityLookup} for the given repository type and registers the domain type of the
+	 * given repository as lookup type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
+	<T, ID extends Serializable, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forLookupRepository(Class<R> type);
 
 	interface IdMappingRegistrar<T, R extends Repository<T, ?>> {
 
@@ -61,6 +68,14 @@ public interface EntityLookupRegistrar {
 	<T, ID extends Serializable, R extends Repository<T, ?>> EntityLookupRegistrar forRepository(Class<R> type,
 			Converter<T, ID> identifierMapping, Lookup<R, ID> lookup);
 
+	/**
+	 * Registers an {@link EntityLookup} for the given repository type, identifier mapping and lookup operation and
+	 * registers the domain type managed by the given repository as lookup type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @param identifierMapping must not be {@literal null}.
+	 * @param lookup must not be {@literal null}.
+	 */
 	<T, ID extends Serializable, R extends Repository<T, ?>> EntityLookupRegistrar forValueRepository(Class<R> type,
 			Converter<T, ID> identifierMapping, Lookup<R, ID> lookup);
 

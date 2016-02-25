@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,16 +28,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
-import org.springframework.data.rest.core.domain.jpa.Author;
-import org.springframework.data.rest.core.domain.jpa.CreditCard;
-import org.springframework.data.rest.core.domain.jpa.JpaRepositoryConfig;
-import org.springframework.data.rest.core.domain.jpa.Person;
+import org.springframework.data.rest.core.domain.Author;
+import org.springframework.data.rest.core.domain.CreditCard;
+import org.springframework.data.rest.core.domain.JpaRepositoryConfig;
+import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.test.context.ContextConfiguration;
@@ -56,7 +56,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RepositoryResourceMappingsIntegrationTests {
 
 	@Autowired ListableBeanFactory factory;
-	@Autowired JpaMetamodelMappingContext mappingContext;
+	@Autowired KeyValueMappingContext mappingContext;
 
 	ResourceMappings mappings;
 
@@ -70,7 +70,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 
 	@Test
 	public void detectsAllMappings() {
-		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(4)));
+		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(5)));
 	}
 
 	@Test
@@ -143,8 +143,8 @@ public class RepositoryResourceMappingsIntegrationTests {
 			methodNames.add(method.getMethod().getName());
 		}
 
-		assertThat(methodNames, hasSize(3));
-		assertThat(methodNames, hasItems("findByFirstName", "findByCreatedGreaterThan", "findByCreatedUsingISO8601Date"));
+		assertThat(methodNames, hasSize(2));
+		assertThat(methodNames, hasItems("findByFirstName", "findByCreatedGreaterThan"));
 	}
 
 	/**

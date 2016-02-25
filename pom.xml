@@ -34,9 +34,12 @@
 		<springdata.gemfire>1.8.0.BUILD-SNAPSHOT</springdata.gemfire>
 		<springdata.solr>2.0.0.BUILD-SNAPSHOT</springdata.solr>
 		<springdata.cassandra>1.4.0.BUILD-SNAPSHOT</springdata.cassandra>
+		<springdata.keyvalue>1.1.0.BUILD-SNAPSHOT</springdata.keyvalue>
+
+		<hibernate.version>4.3.10.Final</hibernate.version>
 		<!-- Downgrade due to https://github.com/FasterXML/jackson-databind/issues/1132 -->
 		<jackson>2.6.5</jackson>
-		<hibernate.version>4.3.10.Final</hibernate.version>
+		<jsonpath>0.9.1</jsonpath>
 
 		<bundlor.enabled>false</bundlor.enabled>
 	</properties>
@@ -69,7 +72,23 @@
 	<profiles>
 
 		<profile>
+
+			<id>it</id>
+
+			<modules>
+				<module>spring-data-rest-core</module>
+				<module>spring-data-rest-webmvc</module>
+				<module>spring-data-rest-distribution</module>
+				<module>spring-data-rest-hal-browser</module>
+				<module>spring-data-rest-tests</module>
+			</modules>
+
+		</profile>
+
+		<profile>
+
 			<id>release</id>
+
 			<build>
 				<plugins>
 					<plugin>
@@ -79,6 +98,7 @@
 					</plugin>
 				</plugins>
 			</build>
+
 		</profile>
 
 	</profiles>
@@ -90,45 +110,6 @@
 			<artifactId>validation-api</artifactId>
 			<version>1.0.0.GA</version>
 			<optional>true</optional>
-		</dependency>
-
-		<!-- JPA -->
-
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-jpa</artifactId>
-			<version>${springdata.jpa}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-entitymanager</artifactId>
-			<version>${hibernate.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<version>2.3.2</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- MongoDB -->
-
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-mongodb</artifactId>
-			<version>${springdata.mongodb}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.querydsl</groupId>
-			<artifactId>querydsl-mongodb</artifactId>
-			<version>${querydsl}</version>
-			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
