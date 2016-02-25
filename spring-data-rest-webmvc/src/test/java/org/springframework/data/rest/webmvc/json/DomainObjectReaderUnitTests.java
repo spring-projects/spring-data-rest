@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -59,7 +59,7 @@ public class DomainObjectReaderUnitTests {
 	@Before
 	public void setUp() {
 
-		MongoMappingContext mappingContext = new MongoMappingContext();
+		KeyValueMappingContext mappingContext = new KeyValueMappingContext();
 		mappingContext.getPersistentEntity(SampleUser.class);
 		mappingContext.getPersistentEntity(Person.class);
 		mappingContext.getPersistentEntity(TypeWithGenericMap.class);
@@ -68,8 +68,7 @@ public class DomainObjectReaderUnitTests {
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
 
-		this.reader = new DomainObjectReader(entities,
-				new AssociationLinks(mappings, mock(RepositoryRestConfiguration.class)));
+		this.reader = new DomainObjectReader(entities, new Associations(mappings, mock(RepositoryRestConfiguration.class)));
 	}
 
 	/**

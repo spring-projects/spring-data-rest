@@ -96,7 +96,7 @@ import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.ValueTypeSchemaPropertyCustomizerFactory;
-import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
@@ -232,9 +232,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * {@link org.springframework.validation.Validator} instances assigned to specific domain types.
 	 */
 	@Bean
-	public ValidatingRepositoryEventListener validatingRepositoryEventListener(ObjectFactory<Repositories> repositories) {
+	public ValidatingRepositoryEventListener validatingRepositoryEventListener(
+			ObjectFactory<PersistentEntities> entities) {
 
-		ValidatingRepositoryEventListener listener = new ValidatingRepositoryEventListener(repositories);
+		ValidatingRepositoryEventListener listener = new ValidatingRepositoryEventListener(entities);
 		configurerDelegate.configureValidatingRepositoryEventListener(listener);
 		configureValidatingRepositoryEventListener(listener);
 
@@ -755,8 +756,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public AssociationLinks associationLinks() {
-		return new AssociationLinks(resourceMappings(), config());
+	public Associations associationLinks() {
+		return new Associations(resourceMappings(), config());
 	}
 
 	protected List<EntityLookup<?>> getEntityLookups() {

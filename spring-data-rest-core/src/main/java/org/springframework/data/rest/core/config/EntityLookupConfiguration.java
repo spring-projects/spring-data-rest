@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 	 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar#forValueRepository(java.lang.Class)
 	 */
 	@Override
-	public <T, ID extends Serializable, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forValueRepository(
+	public <T, ID extends Serializable, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forLookupRepository(
 			Class<R> type) {
 		this.lookupTypes.add(AbstractRepositoryMetadata.getMetadata(type).getDomainType());
 		return forRepository(type);

@@ -1,0 +1,127 @@
+/*
+ * Copyright 2012-2016 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.rest.webmvc.json;
+
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+
+import java.util.Arrays;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.context.support.StaticMessageSource;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.tests.RepositoryTestsConfig;
+import org.springframework.data.rest.tests.mongodb.Address;
+import org.springframework.data.rest.tests.mongodb.MongoDbRepositoryConfig;
+import org.springframework.data.rest.tests.mongodb.User;
+import org.springframework.data.rest.tests.mongodb.User.Gender;
+import org.springframework.data.rest.webmvc.PersistentEntityResource;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkDiscoverer;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
+import org.springframework.hateoas.hal.HalLinkDiscoverer;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletWebRequest;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+
+/**
+ * Integration tests for entity (de)serialization.
+ * 
+ * @author Jon Brisbin
+ * @author Greg Turnquist
+ * @author Oliver Gierke
+ */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = { MongoDbRepositoryConfig.class, RepositoryTestsConfig.class,
+		PersistentEntitySerializationTests.TestConfig.class })
+@Transactional
+public class PersistentEntitySerializationTests {
+
+	@Autowired ObjectMapper mapper;
+	@Autowired Repositories repositories;
+
+	@Configuration
+	static class TestConfig extends RepositoryTestsConfig {
+
+		@Bean
+		@Override
+		public ObjectMapper objectMapper() {
+
+			ObjectMapper objectMapper = super.objectMapper();
+			objectMapper.registerModule(
+					new JacksonSerializers(new EnumTranslator(new MessageSourceAccessor(new StaticMessageSource()))));
+			return objectMapper;
+		}
+	}
+
+	LinkDiscoverer linkDiscoverer;
+	ProjectionFactory projectionFactory;
+
+	@Before
+	public void setUp() {
+
+		RequestContextHolder.setRequestAttributes(new ServletWebRequest(new MockHttpServletRequest()));
+
+		this.linkDiscoverer = new HalLinkDiscoverer();
+		this.projectionFactory = new SpelAwareProxyProjectionFactory();
+	}
+
+	/**
+	 * @see DATAREST-250
+	 */
+	@Test
+	public void serializesEmbeddedReferencesCorrectly() throws Exception {
+
+		User user = new User();
+		user.address = new Address();
+		user.address.street = "Street";
+
+		PersistentEntityResource userResource = PersistentEntityResource.//
+				build(user, repositories.getPersistentEntity(User.class)).//
+				withLink(new Link("/users/1")).//
+				build();
+
+		PagedResources<PersistentEntityResource> persistentEntityResource = new PagedResources<PersistentEntityResource>(
+				Arrays.asList(userResource), new PageMetadata(1, 0, 10));
+
+		String result = mapper.writeValueAsString(persistentEntityResource);
+
+		assertThat(JsonPath.read(result, "$_embedded.users[*].address"), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATAREST-654
+	 */
+	@Test
+	public void deserializesTranslatedEnumProperty() throws Exception {
+		assertThat(mapper.readValue("{ \"gender\" : \"Male\" }", User.class).gender, is(Gender.MALE));
+	}
+}

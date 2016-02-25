@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.data.map.repository.config.EnableMapRepositories;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
@@ -32,10 +32,9 @@ import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.core.domain.jpa.ConfiguredPersonRepository;
-import org.springframework.data.rest.core.domain.jpa.JpaRepositoryConfig;
-import org.springframework.data.rest.core.domain.jpa.Person;
-import org.springframework.data.rest.core.domain.jpa.PersonRepository;
+import org.springframework.data.rest.core.domain.ConfiguredPersonRepository;
+import org.springframework.data.rest.core.domain.Person;
+import org.springframework.data.rest.core.domain.PersonRepository;
 import org.springframework.format.support.DefaultFormattingConversionService;
 
 /**
@@ -43,7 +42,7 @@ import org.springframework.format.support.DefaultFormattingConversionService;
  * @author Oliver Gierke
  */
 @Configuration
-@Import({ JpaRepositoryConfig.class })
+@EnableMapRepositories
 public class RepositoryTestsConfig {
 
 	@Autowired private ApplicationContext context;

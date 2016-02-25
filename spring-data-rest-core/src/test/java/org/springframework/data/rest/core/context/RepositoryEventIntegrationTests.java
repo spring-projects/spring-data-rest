@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.rest.core.RepositoryTestsConfig;
-import org.springframework.data.rest.core.domain.jpa.AnnotatedPersonEventHandler;
-import org.springframework.data.rest.core.domain.jpa.EventHandlerInvokedException;
-import org.springframework.data.rest.core.domain.jpa.Person;
-import org.springframework.data.rest.core.domain.jpa.PersonBeforeSaveHandler;
-import org.springframework.data.rest.core.domain.jpa.PersonRepository;
+import org.springframework.data.rest.core.domain.AnnotatedPersonEventHandler;
+import org.springframework.data.rest.core.domain.EventHandlerInvokedException;
+import org.springframework.data.rest.core.domain.Person;
+import org.springframework.data.rest.core.domain.PersonBeforeSaveHandler;
+import org.springframework.data.rest.core.domain.PersonRepository;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
 import org.springframework.data.rest.core.event.AfterDeleteEvent;
 import org.springframework.data.rest.core.event.AfterLinkDeleteEvent;

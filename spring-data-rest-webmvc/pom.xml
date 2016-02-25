@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -16,11 +17,8 @@
 	</parent>
 
 	<properties>
-		<jsonpath>0.9.1</jsonpath>
 		<cassandra.version>2.0.9</cassandra.version>
 		<cassandraunit.version>2.0.2.1</cassandraunit.version>
-		<spring-security.version>4.0.1.RELEASE</spring-security.version>
-		<groovy.version>2.4.4</groovy.version>
 	</properties>
 
 	<dependencies>
@@ -89,7 +87,7 @@
 			<artifactId>json-patch</artifactId>
 			<version>1.7</version>
 		</dependency>
-
+		
 		<!-- Querydsl -->
 
 		<dependency>
@@ -122,234 +120,14 @@
 			<version>${jsonpath}</version>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<version>${groovy.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- Unifying: Neo4j VS. Solr -->
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.3</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- Gemfire -->
-
+		
 		<dependency>
 			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-gemfire</artifactId>
-			<version>${springdata.gemfire}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- Solr -->
-
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-solr</artifactId>
-			<version>${springdata.solr}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.solr</groupId>
-			<artifactId>solr-core</artifactId>
-			<version>5.3.1</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jdk.tools</artifactId>
-					<groupId>jdk.tools</groupId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.google</groupId>
-					<artifactId>guava</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!-- Spring Security -->
-
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-core</artifactId>
-			<version>${spring-security.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-config</artifactId>
-			<version>${spring-security.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-web</artifactId>
-			<version>${spring-security.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
-			<version>${spring-security.version}</version>
+			<artifactId>spring-data-keyvalue</artifactId>
+			<version>${springdata.keyvalue}</version>
 			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-test</id>
-						<configuration>
-							<excludes>
-								<exclude>**/*</exclude>
-							</excludes>
-						</configuration>
-					</execution>
-					<execution>
-						<id>base-tests</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<phase>test</phase>
-						<configuration>
-							<includes>
-								<include>**/*Test*.java</include>
-							</includes>
-							<!-- exclude store-specific tests from base-tests -->
-							<excludes>
-								<exclude>**/cassandra/*Test*.java</exclude>
-								<exclude>**/gemfire/*Test*.java</exclude>
-								<exclude>**/jpa/*Test*.java</exclude>
-								<exclude>**/mongodb/*Test*.java</exclude>
-								<exclude>**/neo4j/*Test*.java</exclude>
-								<exclude>**/solr/*Test*.java</exclude>
-							</excludes>
-						</configuration>
-					</execution>
-					<execution>
-						<id>cassandra-tests</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<phase>test</phase>
-						<configuration>
-							<includes>
-								<include>**/cassandra/*Test*.java</include>
-							</includes>
-						</configuration>
-					</execution>
-					<execution>
-						<id>gemfire-tests</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<phase>test</phase>
-						<configuration>
-							<includes>
-								<include>**/gemfire/*Test*.java</include>
-							</includes>
-						</configuration>
-					</execution>
-					<execution>
-						<id>jpa-tests</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<phase>test</phase>
-						<configuration>
-							<includes>
-								<include>**/jpa/*Test*.java</include>
-							</includes>
-						</configuration>
-					</execution>
-					<execution>
-						<id>mongodb-tests</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<phase>test</phase>
-						<configuration>
-							<includes>
-								<include>**/mongodb/*Test*.java</include>
-							</includes>
-						</configuration>
-					</execution>
-					<execution>
-						<id>neo4j-tests</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<phase>test</phase>
-						<configuration>
-							<includes>
-								<include>**/neo4j/*Test*.java</include>
-							</includes>
-						</configuration>
-					</execution>
-					<execution>
-						<id>solr-tests</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<phase>test</phase>
-						<configuration>
-							<includes>
-								<include>**/solr/*Test*.java</include>
-							</includes>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>com.mysema.maven</groupId>
-				<artifactId>apt-maven-plugin</artifactId>
-				<version>${apt}</version>
-				<dependencies>
-					<dependency>
-						<groupId>com.querydsl</groupId>
-						<artifactId>querydsl-apt</artifactId>
-						<version>${querydsl}</version>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<id>test-sources</id>
-						<phase>generate-test-sources</phase>
-						<goals>
-							<goal>test-process</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>target/generated-test-sources/test-annotations</outputDirectory>
-							<processor>org.springframework.data.mongodb.repository.support.MongoAnnotationProcessor</processor>
-							<logOnlyOnError>true</logOnlyOnError>
-							<options>
-								<querydsl.excludedPackages>org.springframework.data.rest.webmvc.mongodb.groovy,groovy.lang</querydsl.excludedPackages>
-							</options>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-		</plugins>
-	</build>
 
 </project>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,11 @@ import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.annotation.Reference;
+import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
+import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
-import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
-import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 /**
@@ -38,9 +38,9 @@ import org.springframework.data.rest.core.annotation.RestResource;
 @RunWith(MockitoJUnitRunner.class)
 public class MappingResourceMetadataUnitTests {
 
-	MongoMappingContext context = new MongoMappingContext();
+	KeyValueMappingContext context = new KeyValueMappingContext();
 
-	MongoPersistentEntity<?> entity = context.getPersistentEntity(Entity.class);
+	KeyValuePersistentEntity<?> entity = context.getPersistentEntity(Entity.class);
 	ResourceMappings resourceMappings = new PersistentEntitiesResourceMappings(
 			new PersistentEntities(Arrays.asList(context)));
 	MappingResourceMetadata metadata = new MappingResourceMetadata(entity, resourceMappings);
@@ -51,7 +51,7 @@ public class MappingResourceMetadataUnitTests {
 	@Test
 	public void allowsLookupOfPropertyByMappedName() {
 
-		MongoPersistentProperty property = entity.getPersistentProperty("related");
+		KeyValuePersistentProperty property = entity.getPersistentProperty("related");
 
 		PropertyAwareResourceMapping propertyMapping = metadata.getProperty("foo");
 
@@ -81,7 +81,7 @@ public class MappingResourceMetadataUnitTests {
 	}
 
 	static class Entity {
-		@DBRef @RestResource(rel = "foo", path = "foo") private Related related;
+		@Reference @RestResource(rel = "foo", path = "foo") private Related related;
 	}
 
 	@RestResource

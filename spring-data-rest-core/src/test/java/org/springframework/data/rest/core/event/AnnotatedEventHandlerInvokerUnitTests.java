@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
-import org.springframework.data.rest.core.domain.jpa.Person;
+import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.event.AnnotatedEventHandlerInvoker.EventHandlerMethod;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
@@ -66,7 +66,7 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
 		invoker.postProcessAfterInitialization(sampleHandler, "sampleHandler");
 
-		invoker.onApplicationEvent(new BeforeCreateEvent(new Person()));
+		invoker.onApplicationEvent(new BeforeCreateEvent(new Person("Dave", "Matthews")));
 
 		assertThat(sampleHandler.wasCalled, is(true));
 	}

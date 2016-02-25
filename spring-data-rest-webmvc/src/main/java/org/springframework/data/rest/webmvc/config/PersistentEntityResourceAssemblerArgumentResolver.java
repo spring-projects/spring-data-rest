@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
-import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.PersistentEntityProjector;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -43,7 +43,7 @@ public class PersistentEntityResourceAssemblerArgumentResolver implements Handle
 	private final @NonNull SelfLinkProvider linkProvider;
 	private final @NonNull ProjectionDefinitions projectionDefinitions;
 	private final @NonNull ProjectionFactory projectionFactory;
-	private final @NonNull AssociationLinks links;
+	private final @NonNull Associations links;
 
 	/* 
 	 * (non-Javadoc)

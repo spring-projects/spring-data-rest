@@ -32,8 +32,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
@@ -54,14 +55,14 @@ public class UriToEntityConverterUnitTests {
 	@Mock Repositories repositories;
 	@Mock RepositoryInvokerFactory invokerFactory;
 
-	MongoMappingContext context;
+	KeyValueMappingContext context;
 	UriToEntityConverter converter;
 
 	@Before
 	@SuppressWarnings("unchecked")
 	public void setUp() {
 
-		this.context = new MongoMappingContext();
+		this.context = new KeyValueMappingContext();
 		this.context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.asList(Entity.class, NonEntity.class)));
 		this.context.afterPropertiesSet();
 
@@ -164,7 +165,7 @@ public class UriToEntityConverterUnitTests {
 	}
 
 	static class Entity {
-		String id;
+		@Id String id;
 	}
 
 	static class NonEntity {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
-import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
+import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.CrudMethods;
@@ -103,8 +103,8 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 	@Test
 	public void exposesMethodsForProperties() {
 
-		MongoMappingContext context = new MongoMappingContext();
-		MongoPersistentEntity<?> entity = context.getPersistentEntity(Entity.class);
+		KeyValueMappingContext context = new KeyValueMappingContext();
+		KeyValuePersistentEntity<?> entity = context.getPersistentEntity(Entity.class);
 
 		SupportedHttpMethods methods = getSupportedHttpMethodsFor(EntityRepository.class);
 

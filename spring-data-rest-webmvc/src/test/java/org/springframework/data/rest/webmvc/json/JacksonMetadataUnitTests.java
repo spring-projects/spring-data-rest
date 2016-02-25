@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -51,7 +51,7 @@ public class JacksonMetadataUnitTests {
 	@Before
 	public void setUp() {
 
-		this.context = new MongoMappingContext();
+		this.context = new KeyValueMappingContext();
 
 		this.mapper = new ObjectMapper();
 		this.mapper.disable(MapperFeature.INFER_PROPERTY_MUTATORS);

@@ -51,7 +51,7 @@ import org.springframework.data.rest.webmvc.json.JsonSchema.Definitions;
 import org.springframework.data.rest.webmvc.json.JsonSchema.EnumProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.Item;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
-import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -76,7 +76,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	private static final TypeInformation<?> STRING_TYPE_INFORMATION = ClassTypeInformation.from(String.class);
 
 	private final Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
-	private final AssociationLinks associations;
+	private final Associations associations;
 	private final PersistentEntities entities;
 	private final MessageSourceAccessor accessor;
 	private final ObjectMapper objectMapper;
@@ -93,7 +93,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @param objectMapper must not be {@literal null}.
 	 * @param configuration must not be {@literal null}.
 	 */
-	public PersistentEntityToJsonSchemaConverter(PersistentEntities entities, AssociationLinks associations,
+	public PersistentEntityToJsonSchemaConverter(PersistentEntities entities, Associations associations,
 			MessageSourceAccessor accessor, ObjectMapper objectMapper, RepositoryRestConfiguration configuration,
 			ValueTypeSchemaPropertyCustomizerFactory customizerFactory) {
 

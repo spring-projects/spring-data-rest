@@ -28,33 +28,33 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.Reference;
+import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
+import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
-import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
-import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
-import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.hateoas.Link;
 
 /**
- * Unit tests for {@link AssociationLinks}.
+ * Unit tests for {@link Associations}.
  * 
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AssociationLinksUnitTests {
 
-	AssociationLinks links;
+	Associations links;
 
 	ResourceMappings mappings;
-	MongoMappingContext mappingContext;
-	MongoPersistentEntity<?> entity;
+	KeyValueMappingContext mappingContext;
+	KeyValuePersistentEntity<?> entity;
 	ResourceMetadata sampleResourceMetadata;
 
 	@Mock RepositoryRestConfiguration config;
@@ -62,10 +62,10 @@ public class AssociationLinksUnitTests {
 	@Before
 	public void setUp() {
 
-		this.mappingContext = new MongoMappingContext();
+		this.mappingContext = new KeyValueMappingContext();
 		this.entity = mappingContext.getPersistentEntity(Sample.class);
 		this.mappings = new PersistentEntitiesResourceMappings(new PersistentEntities(Arrays.asList(mappingContext)));
-		this.links = new AssociationLinks(mappings, config);
+		this.links = new Associations(mappings, config);
 	}
 
 	/**
@@ -73,12 +73,12 @@ public class AssociationLinksUnitTests {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullMappings() {
-		new AssociationLinks(null, mock(RepositoryRestConfiguration.class));
+		new Associations(null, mock(RepositoryRestConfiguration.class));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void rejectsNullConfiguration() {
-		new AssociationLinks(mappings, null);
+		new Associations(mappings, null);
 	}
 
 	/**
@@ -103,7 +103,7 @@ public class AssociationLinksUnitTests {
 	@Test
 	public void considersUnexportedPropertyUnlinkable() {
 
-		MongoPersistentProperty property = entity.getPersistentProperty("unexportedProperty");
+		KeyValuePersistentProperty property = entity.getPersistentProperty("unexportedProperty");
 		assertThat(links.isLinkableAssociation(property), is(false));
 	}
 

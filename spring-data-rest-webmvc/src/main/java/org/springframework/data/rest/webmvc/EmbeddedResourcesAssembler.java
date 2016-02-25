@@ -29,7 +29,7 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
-import org.springframework.data.rest.webmvc.mapping.AssociationLinks;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
@@ -42,14 +42,14 @@ import org.springframework.util.Assert;
 public class EmbeddedResourcesAssembler {
 
 	private final @NonNull PersistentEntities entities;
-	private final @NonNull AssociationLinks associations;
+	private final @NonNull Associations associations;
 	private final @NonNull ExcerptProjector projector;
 	private final @NonNull EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 
 	/**
 	 * Returns the embedded resources to render. This will add an {@link RelatedResource} for linkable associations if
 	 * they have an excerpt projection registered.
-	 * 
+	 *
 	 * @param instance must not be {@literal null}.
 	 * @return
 	 */
