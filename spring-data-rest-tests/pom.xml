@@ -19,10 +19,12 @@
 		<module>spring-data-rest-tests-mongodb</module>
 		<module>spring-data-rest-tests-solr</module>
 		<module>spring-data-rest-tests-gemfire</module>
+		<module>spring-data-rest-tests-shop</module>
 	</modules>
 
 	<properties>
 		<groovy.version>2.4.4</groovy.version>
+		<source.level>1.8</source.level>
 	</properties>
 
 	<dependencies>

@@ -232,9 +232,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * {@link org.springframework.validation.Validator} instances assigned to specific domain types.
 	 */
 	@Bean
-	public ValidatingRepositoryEventListener validatingRepositoryEventListener(ObjectFactory<Repositories> repositories) {
+	public ValidatingRepositoryEventListener validatingRepositoryEventListener(
+			ObjectFactory<PersistentEntities> persistentEntities) {
 
-		ValidatingRepositoryEventListener listener = new ValidatingRepositoryEventListener(repositories);
+		ValidatingRepositoryEventListener listener = new ValidatingRepositoryEventListener(persistentEntities);
 		configurerDelegate.configureValidatingRepositoryEventListener(listener);
 		configureValidatingRepositoryEventListener(listener);
 

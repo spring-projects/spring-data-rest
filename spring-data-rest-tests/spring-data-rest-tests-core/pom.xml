@@ -19,7 +19,6 @@
 			<artifactId>spring-data-rest-webmvc</artifactId>
 			<version>2.5.0.VO-SNAPSHOT</version>
 		</dependency>
-		
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -52,5 +51,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 </project>

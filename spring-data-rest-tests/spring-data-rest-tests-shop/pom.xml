@@ -6,27 +6,24 @@
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-rest-tests</artifactId>
 		<version>2.5.0.VO-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<name>Spring Data REST Tests - Gemfire</name>
-	<artifactId>spring-data-rest-tests-gemfire</artifactId>
+	<name>Spring Data REST Tests - Shop</name>
+	<artifactId>spring-data-rest-tests-shop</artifactId>
 
 	<dependencies>
 
 		<dependency>
-			<groupId>org.springframework.data</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>spring-data-rest-tests-core</artifactId>
-			<version>2.5.0.VO-SNAPSHOT</version>
+			<version>${project.version}</version>
 			<type>test-jar</type>
 		</dependency>
 
-		<!-- Gemfire -->
-
 		<dependency>
 			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-gemfire</artifactId>
-			<version>${springdata.gemfire}</version>
+			<artifactId>spring-data-keyvalue</artifactId>
+			<version>${springdata.keyvalue}</version>
 		</dependency>
 
 	</dependencies>
