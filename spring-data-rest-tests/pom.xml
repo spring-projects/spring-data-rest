@@ -19,11 +19,13 @@
 		<module>spring-data-rest-tests-jpa</module>
 		<module>spring-data-rest-tests-mongodb</module>
 		<module>spring-data-rest-tests-security</module>
+		<module>spring-data-rest-tests-shop</module>
 		<module>spring-data-rest-tests-solr</module>
 	</modules>
 
 	<properties>
 		<groovy.version>2.4.4</groovy.version>
+		<source.level>1.8</source.level>
 	</properties>
 
 	<dependencies>
