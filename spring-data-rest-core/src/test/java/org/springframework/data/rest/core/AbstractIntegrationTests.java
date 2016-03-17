@@ -22,7 +22,6 @@ import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.domain.PersonRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Base class for integration tests loading {@link RepositoryTestsConfig} and populating the {@link PersonRepository}
@@ -32,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RepositoryTestsConfig.class)
-@Transactional
 public abstract class AbstractIntegrationTests {
 
 	@Autowired PersonRepository repository;

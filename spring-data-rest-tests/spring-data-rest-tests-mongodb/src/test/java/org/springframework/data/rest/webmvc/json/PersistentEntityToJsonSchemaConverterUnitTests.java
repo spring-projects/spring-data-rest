@@ -52,6 +52,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 
 /**
  * @author Oliver Gierke
@@ -186,6 +187,8 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 
 			try {
 				assertThat(constraint.description, JsonPath.read(writeSchemaFor, constraint.selector), constraint.matcher);
+			} catch (PathNotFoundException e) {
+				assertThat(constraint.matcher.matches(null), is(true));
 			} catch (RuntimeException e) {
 				assertThat(e, constraint.matcher);
 			}

@@ -33,7 +33,6 @@
 			<groupId>com.querydsl</groupId>
 			<artifactId>querydsl-mongodb</artifactId>
 			<version>${querydsl}</version>
-			<scope>test</scope>
 		</dependency>
 
 		<!-- Querydsl -->
@@ -76,7 +75,6 @@
 						<configuration>
 							<outputDirectory>target/generated-sources/annotations</outputDirectory>
 							<processor>org.springframework.data.mongodb.repository.support.MongoAnnotationProcessor</processor>
-							<logOnlyOnError>true</logOnlyOnError>
 							<options>
 								<querydsl.excludedPackages>org.springframework.data.rest.tests.mongodb.groovy,groovy.lang</querydsl.excludedPackages>
 							</options>

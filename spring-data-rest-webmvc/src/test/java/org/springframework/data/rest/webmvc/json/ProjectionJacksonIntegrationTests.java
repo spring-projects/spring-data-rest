@@ -65,7 +65,7 @@ public class ProjectionJacksonIntegrationTests {
 		CustomerProjection projection = factory.createProjection(CustomerProjection.class, customer);
 
 		String result = mapper.writeValueAsString(projection);
-		assertThat(JsonPath.read(result, "$firstname"), is((Object) "Dave"));
+		assertThat(JsonPath.read(result, "$.firstname"), is((Object) "Dave"));
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class ProjectionJacksonIntegrationTests {
 
 		String result = mapper.writeValueAsString(resources);
 
-		assertThat(JsonPath.read(result, "$_embedded.customers[0].firstname"), is((Object) "Dave"));
+		assertThat(JsonPath.read(result, "$._embedded.customers[0].firstname"), is((Object) "Dave"));
 	}
 
 	static class Customer {

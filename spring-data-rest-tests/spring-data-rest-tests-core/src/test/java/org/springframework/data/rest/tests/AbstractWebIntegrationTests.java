@@ -15,16 +15,15 @@ package org.springframework.data.rest.tests;
  * limitations under the License.
  */
 
-
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import net.minidev.json.JSONArray;
+
 import java.util.Collections;
 import java.util.Map;
-
-import net.minidev.json.JSONArray;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -65,7 +64,7 @@ import com.jayway.jsonpath.JsonPath;
 @ContextConfiguration(classes = RepositoryRestMvcConfiguration.class)
 public abstract class AbstractWebIntegrationTests {
 
-	private static final String CONTENT_LINK_JSONPATH = "$._embedded.._links.%s.href[0]";
+	private static final String CONTENT_LINK_JSONPATH = "$._embedded.._links.%s.href";
 
 	@Autowired WebApplicationContext context;
 	@Autowired LinkDiscoverers discoverers;
@@ -117,8 +116,10 @@ public abstract class AbstractWebIntegrationTests {
 
 		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
-		MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.request(HttpMethod.PATCH, href).//
-				content(payload.toString()).contentType(mediaType)).//
+		MockHttpServletResponse response = mvc
+				.perform(MockMvcRequestBuilders.request(HttpMethod.PATCH, href).//
+						content(payload.toString()).contentType(mediaType))
+				.//
 				andExpect(status().is2xxSuccessful()).//
 				andReturn().getResponse();
 
@@ -153,7 +154,8 @@ public abstract class AbstractWebIntegrationTests {
 
 		try {
 
-			String href = JsonPath.read(content, String.format(CONTENT_LINK_JSONPATH, rel)).toString();
+			String href = JsonPath.<JSONArray> read(content, String.format(CONTENT_LINK_JSONPATH, rel)).get(0).toString();
+
 			assertThat("Expected to find a link with rel" + rel + " in the content section of the response!", href,
 					is(expected ? notNullValue() : nullValue()));
 

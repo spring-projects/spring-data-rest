@@ -37,7 +37,7 @@
 		<springdata.keyvalue>1.1.0.BUILD-SNAPSHOT</springdata.keyvalue>
 
 		<hibernate.version>4.3.10.Final</hibernate.version>
-		<jsonpath>0.9.1</jsonpath>
+		<jsonpath>1.1.0</jsonpath>
 		<bundlor.enabled>false</bundlor.enabled>
 	</properties>
 

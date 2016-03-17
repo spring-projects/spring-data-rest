@@ -42,7 +42,6 @@ import org.springframework.data.rest.core.event.BeforeLinkSaveEvent;
 import org.springframework.data.rest.core.event.BeforeSaveEvent;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tests around the {@link org.springframework.context.ApplicationEvent} handling abstractions.
@@ -52,7 +51,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-@Transactional
 public class RepositoryEventIntegrationTests {
 
 	@Configuration

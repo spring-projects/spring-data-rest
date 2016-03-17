@@ -225,7 +225,7 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
 
-		assertThat(JsonPath.read(result, "$_embedded.orders[*].lineItems"), is(notNullValue()));
+		assertThat(JsonPath.read(result, "$._embedded.orders[*].lineItems"), is(notNullValue()));
 	}
 
 	/**
@@ -251,7 +251,7 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(resource);
 
-		assertThat(JsonPath.read(result, "$_embedded.father[*]._links.self"), is(notNullValue()));
+		assertThat(JsonPath.read(result, "$._embedded.father[*]._links.self"), is(notNullValue()));
 	}
 
 	/**
@@ -270,7 +270,7 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(resource);
 
-		assertThat(JsonPath.read(result, "$_links.processed"), is(notNullValue()));
+		assertThat(JsonPath.read(result, "$._links.processed"), is(notNullValue()));
 	}
 
 	/**

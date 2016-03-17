@@ -38,7 +38,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
@@ -50,7 +49,6 @@ import org.springframework.web.context.WebApplicationContext;
  * @author Rob Winch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@Transactional
 @ContextConfiguration(classes = { SecurityIntegrationTests.Config.class, SecurityConfiguration.class,
 		RepositoryRestMvcConfiguration.class })
 public class SecurityIntegrationTests extends AbstractWebIntegrationTests {

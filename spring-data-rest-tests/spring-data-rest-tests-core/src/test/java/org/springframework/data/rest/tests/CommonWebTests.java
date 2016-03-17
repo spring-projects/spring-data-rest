@@ -134,7 +134,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 			if (searchLink != null) {
 				client.follow(searchLink).//
 						andExpect(client.hasLinkWithRel("self")).//
-						andExpect(jsonPath("$.domainType", is(nullValue()))); // DATAREST-549
+						andExpect(jsonPath("$.domainType").doesNotExist()); // DATAREST-549
 			}
 		}
 	}
@@ -182,7 +182,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 			for (String linkedRel : linked.getValue()) {
 
 				// Find URIs pointing to linked resources
-				String jsonPath = String.format("$..%s._links.%s.href", linked.getKey(), linkedRel);
+				String jsonPath = String.format("$._embedded.%s[*]._links.%s.href", linked.getKey(), linkedRel);
 				String representation = resource.getContentAsString();
 				JSONArray uris = JsonPath.read(representation, jsonPath);
 

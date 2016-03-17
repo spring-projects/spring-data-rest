@@ -19,6 +19,8 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import net.minidev.json.JSONArray;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +32,6 @@ import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.tests.TestMvcClient;
 import org.springframework.data.rest.webmvc.ProfileController;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.data.rest.webmvc.alps.AlpsController;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.data.rest.webmvc.jpa.Item;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
@@ -44,6 +45,8 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import com.jayway.jsonpath.JsonPath;
 
 /**
  * Integration tests for {@link AlpsController}.
@@ -146,9 +149,11 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		assertThat(itemsLink, is(notNullValue()));
 
-		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
-				.andExpect(
-						jsonPath("$.alps.descriptors[?(@.id == 'item-representation')][0].href", endsWith("/profile/items")));
+		String result = client.follow(itemsLink, RestMediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
+		String href = JsonPath.<JSONArray> read(result, "$.alps.descriptors[?(@.id == 'item-representation')].href").get(0)
+				.toString();
+
+		assertThat(href, endsWith("/profile/items"));
 	}
 
 	/**
@@ -162,12 +167,13 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		String jsonPath = "$.alps."; // Root
 		jsonPath += "descriptors[?(@.id == 'person-representation')]."; // Representation descriptor
-		jsonPath += "descriptors[?(@.name == 'father')][0]."; // First father descriptor
+		jsonPath += "descriptors[?(@.name == 'father')]."; // First father descriptor
 		jsonPath += "rt"; // Return type
 
-		client.follow(usersLink, RestMediaTypes.ALPS_JSON)//
-				.andExpect(jsonPath(jsonPath,
-						allOf(containsString(ProfileController.PROFILE_ROOT_MAPPING), endsWith("-representation"))));
+		String result = client.follow(usersLink, RestMediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
+		String rt = JsonPath.<JSONArray> read(result, jsonPath).get(0).toString();
+
+		assertThat(rt, allOf(containsString(ProfileController.PROFILE_ROOT_MAPPING), endsWith("-representation")));
 	}
 
 	/**
@@ -195,10 +201,14 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link profileLink = client.discoverUnique("profile");
 		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
-		client.follow(peopleLink)//
-				.andExpect(jsonPath(
-						"$.alps.descriptors[?(@.id == 'person-representation')].descriptors[?(@.name == 'gender')][0].doc.value",
-						is("Male, Female, Undefined")));
+		String result = client.follow(peopleLink).andReturn().getResponse().getContentAsString();
+
+		String value = JsonPath
+				.<JSONArray> read(result,
+						"$.alps.descriptors[?(@.id == 'person-representation')].descriptors[?(@.name == 'gender')].doc.value")
+				.get(0).toString();
+
+		assertThat(value, is("Male, Female, Undefined"));
 	}
 
 	/**
@@ -210,9 +220,13 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link profileLink = client.discoverUnique("profile");
 		Link groovyDomainObjectLink = client.discoverUnique(profileLink, "simulatedGroovyDomainClasses");
 
-		client.follow(groovyDomainObjectLink)//
-				.andExpect(jsonPath(
-						"$.alps.descriptors[?(@.id == 'simulatedGroovyDomainClass-representation')][0].descriptors[0].name",
-						is("name")));
+		String result = client.follow(groovyDomainObjectLink).andReturn().getResponse().getContentAsString();
+
+		String name = JsonPath
+				.<JSONArray> read(result,
+						"$.alps.descriptors[?(@.id == 'simulatedGroovyDomainClass-representation')].descriptors[0].name")
+				.get(0).toString();
+
+		assertThat(name, is("name"));
 	}
 }

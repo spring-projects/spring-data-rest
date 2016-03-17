@@ -42,17 +42,15 @@ import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.Re
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Integration tests for {@link RepositoryResourceMappings}.
  * 
  * @author Oliver Gierke
- * @author Greg Trunquist
+ * @author Greg Turnquist
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
-@Transactional
 public class RepositoryResourceMappingsIntegrationTests {
 
 	@Autowired ListableBeanFactory factory;

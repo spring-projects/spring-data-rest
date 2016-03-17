@@ -694,10 +694,10 @@ public class JpaWebTests extends CommonWebTests {
 
 		MockHttpServletResponse response = client.request(client.discoverUnique("people"));
 
-		String jsonPath = String.format("$._embedded.people[?(@.firstName == '%s')][0]", name);
+		String jsonPath = String.format("$._embedded.people[?(@.firstName == '%s')]", name);
 
 		// Assert content inlined
-		Object john = JsonPath.read(response.getContentAsString(), jsonPath);
+		Object john = JsonPath.<JSONArray> read(response.getContentAsString(), jsonPath).get(0);
 		assertThat(john, is(notNullValue()));
 		assertThat(JsonPath.read(john, "$.firstName"), is(notNullValue()));
 

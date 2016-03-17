@@ -45,7 +45,6 @@ import org.springframework.hateoas.hal.HalLinkDiscoverer;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletWebRequest;
 
@@ -62,7 +61,6 @@ import com.jayway.jsonpath.JsonPath;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { MongoDbRepositoryConfig.class, RepositoryTestsConfig.class,
 		PersistentEntitySerializationTests.TestConfig.class })
-@Transactional
 public class PersistentEntitySerializationTests {
 
 	@Autowired ObjectMapper mapper;
@@ -114,7 +112,7 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
 
-		assertThat(JsonPath.read(result, "$_embedded.users[*].address"), is(notNullValue()));
+		assertThat(JsonPath.read(result, "$._embedded.users[*].address"), is(notNullValue()));
 	}
 
 	/**
