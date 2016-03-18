@@ -1,6 +1,16 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.5.0.RC1 (2016-03-18)
+-----------------------------------------
+* DATAREST-787 - Remove dependency to JSON Patch library.
+* DATAREST-782 - Release 2.5 RC1 (Hopper).
+* DATAREST-776 - Support for lookup types.
+* DATAREST-775 - Support for associations in nested entities.
+* DATAREST-774 - Separate integration tests from core ones.
+* DATAREST-770 - Downgrade to Jackson 2.6.5 until 2.7.2 is released.
+
+
 Changes in version 2.4.4.RELEASE (2016-02-23)
 ---------------------------------------------
 * DATAREST-766 - Release 2.4.4 (Gosling SR4).
