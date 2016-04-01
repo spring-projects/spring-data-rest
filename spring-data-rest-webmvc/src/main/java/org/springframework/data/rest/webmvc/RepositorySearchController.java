@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
-import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.support.RepositoryInvoker;
@@ -84,13 +83,12 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @param assembler must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
-	 * @param auditableBeanWrapperFactory must not be {@literal null}.
 	 */
 	@Autowired
 	public RepositorySearchController(PagedResourcesAssembler<Object> assembler, RepositoryEntityLinks entityLinks,
-			ResourceMappings mappings, AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
+			ResourceMappings mappings) {
 
-		super(assembler, auditableBeanWrapperFactory);
+		super(assembler);
 
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");

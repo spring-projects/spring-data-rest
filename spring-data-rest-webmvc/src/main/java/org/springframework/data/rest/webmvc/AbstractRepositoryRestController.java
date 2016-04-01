@@ -19,22 +19,17 @@ import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
-import org.springframework.data.auditing.AuditableBeanWrapper;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
-import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.core.EmbeddedWrappers;
-import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -50,23 +45,18 @@ class AbstractRepositoryRestController {
 	private static final EmbeddedWrappers WRAPPERS = new EmbeddedWrappers(false);
 
 	private final PagedResourcesAssembler<Object> pagedResourcesAssembler;
-	private final AuditableBeanWrapperFactory auditableBeanWrapperFactory;
 
 	/**
 	 * Creates a new {@link AbstractRepositoryRestController} for the given {@link PagedResourcesAssembler} and
 	 * {@link AuditableBeanWrapperFactory}.
 	 * 
 	 * @param pagedResourcesAssembler must not be {@literal null}.
-	 * @param auditableBeanWrapperFactory must not be {@literal null}.
 	 */
-	public AbstractRepositoryRestController(PagedResourcesAssembler<Object> pagedResourcesAssembler,
-			AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
+	public AbstractRepositoryRestController(PagedResourcesAssembler<Object> pagedResourcesAssembler) {
 
 		Assert.notNull(pagedResourcesAssembler, "PagedResourcesAssembler must not be null!");
-		Assert.notNull(auditableBeanWrapperFactory, "AuditableBeanWrapperFactory must not be null!");
 
 		this.pagedResourcesAssembler = pagedResourcesAssembler;
-		this.auditableBeanWrapperFactory = auditableBeanWrapperFactory;
 	}
 
 	protected Link resourceLink(RootResourceInformation resourceLink, Resource resource) {
@@ -124,8 +114,8 @@ class AbstractRepositoryRestController {
 			return pagedResourcesAssembler.toEmptyResource(page, domainType, baseLink);
 		}
 
-		return baseLink == null ? pagedResourcesAssembler.toResource(page, assembler) : pagedResourcesAssembler.toResource(
-				page, assembler, baseLink);
+		return baseLink == null ? pagedResourcesAssembler.toResource(page, assembler)
+				: pagedResourcesAssembler.toResource(page, assembler, baseLink);
 	}
 
 	protected Resources<?> entitiesToResources(Iterable<Object> entities, PersistentEntityResourceAssembler assembler,
@@ -144,56 +134,6 @@ class AbstractRepositoryRestController {
 		}
 
 		return new Resources<Resource<Object>>(resources, getDefaultSelfLink());
-	}
-
-	/**
-	 * Returns the default headers to be returned for the given {@link PersistentEntityResource}. Will set {@link ETag}
-	 * and {@code Last-Modified} headers if applicable.
-	 * 
-	 * @param resource can be {@literal null}.
-	 * @return
-	 */
-	protected HttpHeaders prepareHeaders(PersistentEntityResource resource) {
-		return resource == null ? new HttpHeaders() : prepareHeaders(resource.getPersistentEntity(), resource.getContent());
-	}
-
-	/**
-	 * Retruns the default headers to be returned for the given {@link PersistentEntity} and value. Will set {@link ETag}
-	 * and {@code Last-Modified} headers if applicable.
-	 * 
-	 * @param entity must not be {@literal null}.
-	 * @param value must not be {@literal null}.
-	 * @return
-	 */
-	protected HttpHeaders prepareHeaders(PersistentEntity<?, ?> entity, Object value) {
-
-		// Add ETag
-		HttpHeaders headers = ETag.from(entity, value).addTo(new HttpHeaders());
-
-		// Add Last-Modified
-		AuditableBeanWrapper wrapper = getAuditableBeanWrapper(value);
-
-		if (wrapper == null) {
-			return headers;
-		}
-
-		Calendar lastModifiedDate = wrapper.getLastModifiedDate();
-
-		if (lastModifiedDate != null) {
-			headers.setLastModified(lastModifiedDate.getTimeInMillis());
-		}
-
-		return headers;
-	}
-
-	/**
-	 * Returns the {@link AuditableBeanWrapper} for the given source.
-	 * 
-	 * @param source can be {@literal null}.
-	 * @return
-	 */
-	protected AuditableBeanWrapper getAuditableBeanWrapper(Object source) {
-		return auditableBeanWrapperFactory.getBeanWrapperFor(source);
 	}
 
 	protected Link getDefaultSelfLink() {

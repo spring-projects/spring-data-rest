@@ -32,18 +32,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.CollectionFactory;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.event.AfterLinkDeleteEvent;
 import org.springframework.data.rest.core.event.AfterLinkSaveEvent;
 import org.springframework.data.rest.core.event.BeforeLinkDeleteEvent;
@@ -76,26 +74,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @RepositoryRestController
 @SuppressWarnings({ "unchecked" })
-class RepositoryPropertyReferenceController extends AbstractRepositoryRestController implements
-		ApplicationEventPublisherAware {
+class RepositoryPropertyReferenceController extends AbstractRepositoryRestController
+		implements ApplicationEventPublisherAware {
 
 	private static final String BASE_MAPPING = "/{repository}/{id}/{property}";
 	private static final Collection<HttpMethod> AUGMENTING_METHODS = Arrays.asList(HttpMethod.PATCH, HttpMethod.POST);
 
 	private final Repositories repositories;
-	private final ConversionService conversionService;
+	private final RepositoryInvokerFactory repositoryInvokerFactory;
 
 	private ApplicationEventPublisher publisher;
 
 	@Autowired
 	public RepositoryPropertyReferenceController(Repositories repositories,
-			@Qualifier("defaultConversionService") ConversionService conversionService,
-			PagedResourcesAssembler<Object> assembler, AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
+			RepositoryInvokerFactory repositoryInvokerFactory, PagedResourcesAssembler<Object> assembler) {
 
-		super(assembler, auditableBeanWrapperFactory);
+		super(assembler);
 
 		this.repositories = repositories;
-		this.conversionService = conversionService;
+		this.repositoryInvokerFactory = repositoryInvokerFactory;
 	}
 
 	/* 
@@ -109,8 +106,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 	@RequestMapping(value = BASE_MAPPING, method = GET)
 	public ResponseEntity<ResourceSupport> followPropertyReference(final RootResourceInformation repoRequest,
-			@BackendId Serializable id, final @PathVariable String property, final PersistentEntityResourceAssembler assembler)
-			throws Exception {
+			@BackendId Serializable id, final @PathVariable String property,
+			final PersistentEntityResourceAssembler assembler) throws Exception {
 
 		final HttpHeaders headers = new HttpHeaders();
 
@@ -239,7 +236,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			produces = { SPRING_DATA_COMPACT_JSON_VALUE, TEXT_URI_LIST_VALUE })
 	public ResponseEntity<ResourceSupport> followPropertyReferenceCompact(RootResourceInformation repoRequest,
 			@BackendId Serializable id, @PathVariable String property, PersistentEntityResourceAssembler assembler)
-			throws Exception {
+					throws Exception {
 
 		ResponseEntity<ResourceSupport> response = followPropertyReference(repoRequest, id, property, assembler);
 
@@ -287,9 +284,9 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@RequestMapping(value = BASE_MAPPING, method = { PATCH, PUT, POST }, //
 			consumes = { MediaType.APPLICATION_JSON_VALUE, SPRING_DATA_COMPACT_JSON_VALUE, TEXT_URI_LIST_VALUE })
 	public ResponseEntity<? extends ResourceSupport> createPropertyReference(
-			final RootResourceInformation resourceInformation, final HttpMethod requestMethod, final @RequestBody(
-					required = false) Resources<Object> incoming, @BackendId Serializable id, @PathVariable String property)
-			throws Exception {
+			final RootResourceInformation resourceInformation, final HttpMethod requestMethod,
+			final @RequestBody(required = false) Resources<Object> incoming, @BackendId Serializable id,
+			@PathVariable String property) throws Exception {
 
 		final Resources<Object> source = incoming == null ? new Resources<Object>(Collections.emptyList()) : incoming;
 		final RepositoryInvoker invoker = resourceInformation.getInvoker();
@@ -303,8 +300,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 				if (prop.property.isCollectionLike()) {
 
-					Collection<Object> collection = AUGMENTING_METHODS.contains(requestMethod) ? (Collection<Object>) prop.propertyValue
-							: CollectionFactory.createCollection(propertyType, 0);
+					Collection<Object> collection = AUGMENTING_METHODS.contains(requestMethod)
+							? (Collection<Object>) prop.propertyValue : CollectionFactory.createCollection(propertyType, 0);
 
 					// Add to the existing collection
 					for (Link l : source.getLinks()) {
@@ -315,7 +312,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 				} else if (prop.property.isMap()) {
 
-					Map<String, Object> map = AUGMENTING_METHODS.contains(requestMethod) ? (Map<String, Object>) prop.propertyValue
+					Map<String, Object> map = AUGMENTING_METHODS.contains(requestMethod)
+							? (Map<String, Object>) prop.propertyValue
 							: CollectionFactory.<String, Object> createMap(propertyType, 0);
 
 					// Add to the existing collection
@@ -357,7 +355,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = DELETE)
 	public ResponseEntity<ResourceSupport> deletePropertyReferenceId(final RootResourceInformation repoRequest,
 			@BackendId Serializable id, @PathVariable String property, final @PathVariable String propertyId)
-			throws Exception {
+					throws Exception {
 
 		final RepositoryInvoker invoker = repoRequest.getInvoker();
 
@@ -417,7 +415,10 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 		String href = link.expand().getHref();
 		String id = href.substring(href.lastIndexOf('/') + 1);
-		return conversionService.convert(id, type);
+
+		RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(type);
+
+		return invoker.invokeFindOne(id);
 	}
 
 	private ResourceSupport doWithReferencedProperty(RootResourceInformation resourceInformation, Serializable id,
@@ -452,7 +453,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		final Object propertyValue;
 		final PersistentPropertyAccessor accessor;
 
-		private ReferencedProperty(PersistentProperty<?> property, Object propertyValue, PersistentPropertyAccessor wrapper) {
+		private ReferencedProperty(PersistentProperty<?> property, Object propertyValue,
+				PersistentPropertyAccessor wrapper) {
 
 			this.property = property;
 			this.propertyValue = propertyValue;

@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.auditing.AuditableBeanWrapper;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentEntity;
@@ -94,6 +93,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	private final RepositoryEntityLinks entityLinks;
 	private final RepositoryRestConfiguration config;
 	private final ConversionService conversionService;
+	private final HttpHeadersPreparer headersPreparer;
 
 	private ApplicationEventPublisher publisher;
 
@@ -115,11 +115,12 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			@Qualifier("defaultConversionService") ConversionService conversionService,
 			AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
 
-		super(assembler, auditableBeanWrapperFactory);
+		super(assembler);
 
 		this.entityLinks = entityLinks;
 		this.config = config;
 		this.conversionService = conversionService;
+		this.headersPreparer = new HttpHeadersPreparer(auditableBeanWrapperFactory);
 	}
 
 	/*
@@ -317,7 +318,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		Links links = new Links(assembler.toResource(domainObject).getLinks());
 
-		HttpHeaders headers = prepareHeaders(resourceInformation.getPersistentEntity(), domainObject);
+		HttpHeaders headers = headersPreparer.prepareHeaders(resourceInformation.getPersistentEntity(), domainObject);
 		headers.add(LINK_HEADER, links.toString());
 
 		return new ResponseEntity<Object>(headers, HttpStatus.NO_CONTENT);
@@ -350,7 +351,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		List<String> ifNoneMatch = headers.getIfNoneMatch();
 		ETag eTag = ifNoneMatch.isEmpty() ? ETag.NO_ETAG : ETag.from(ifNoneMatch.get(0));
 		PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
-		HttpHeaders responseHeaders = prepareHeaders(entity, domainObj);
+		HttpHeaders responseHeaders = headersPreparer.prepareHeaders(entity, domainObj);
 
 		if (eTag.matches(entity, domainObj)) {
 			return new ResponseEntity<Resource<?>>(responseHeaders, HttpStatus.NOT_MODIFIED);
@@ -358,14 +359,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		// Check last modification for If-Modified-Since
 
-		if (headers.getIfModifiedSince() != -1) {
-
-			AuditableBeanWrapper wrapper = getAuditableBeanWrapper(domainObj);
-			long current = wrapper.getLastModifiedDate().getTimeInMillis() / 1000 * 1000;
-
-			if (current <= headers.getIfModifiedSince()) {
-				return new ResponseEntity<Resource<?>>(responseHeaders, HttpStatus.NOT_MODIFIED);
-			}
+		if (headersPreparer.isObjectStillValid(domainObj, headers)) {
+			return new ResponseEntity<Resource<?>>(responseHeaders, HttpStatus.NOT_MODIFIED);
 		}
 
 		PersistentEntityResource resource = assembler.toFullResource(domainObj);
@@ -489,7 +484,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		publisher.publishEvent(new AfterSaveEvent(domainObject));
 
 		PersistentEntityResource resource = assembler.toFullResource(obj);
-		HttpHeaders headers = prepareHeaders(resource);
+		HttpHeaders headers = headersPreparer.prepareHeaders(resource);
 
 		if (PUT.equals(httpMethod)) {
 			addLocationHeader(headers, assembler, obj);
@@ -518,7 +513,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		PersistentEntityResource resource = returnBody ? assembler.toFullResource(savedObject) : null;
 
-		HttpHeaders headers = prepareHeaders(resource);
+		HttpHeaders headers = headersPreparer.prepareHeaders(resource);
 		addLocationHeader(headers, assembler, savedObject);
 
 		return ControllerUtils.toResponseEntity(HttpStatus.CREATED, headers, resource);

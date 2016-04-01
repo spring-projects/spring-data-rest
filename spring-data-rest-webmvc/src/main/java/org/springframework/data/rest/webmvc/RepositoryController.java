@@ -18,7 +18,6 @@ package org.springframework.data.rest.webmvc;
 import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -54,13 +53,12 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	 * @param repositories must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
-	 * @param auditableBeanWrapperFactory must not be {@literal null}.
 	 */
 	@Autowired
 	public RepositoryController(PagedResourcesAssembler<Object> assembler, Repositories repositories,
-			EntityLinks entityLinks, ResourceMappings mappings, AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
+			EntityLinks entityLinks, ResourceMappings mappings) {
 
-		super(assembler, auditableBeanWrapperFactory);
+		super(assembler);
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
