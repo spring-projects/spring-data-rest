@@ -7,6 +7,7 @@
 		<artifactId>spring-data-rest-parent</artifactId>
 		<version>2.5.0.BUILD-SNAPSHOT</version>
 	</parent>
+
 	<artifactId>spring-data-rest-hal-browser</artifactId>
 
 	<name>Spring Data REST - HAL Browser</name>
@@ -28,7 +29,7 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<version>3.0.1</version>
-			<scope>test</scope>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -54,7 +55,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.10</version>
 				<executions>
 					<execution>
 						<id>unpack-hal-browser</id>
@@ -94,7 +94,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
 				<executions>
 					<execution>
 						<phase>process-resources</phase>
