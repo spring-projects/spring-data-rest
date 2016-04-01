@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.AbstractView;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Unit tests for {@link HalBrowser}.
@@ -44,22 +46,27 @@ public class HalBrowserUnitTests {
 
 	/**
 	 * @see DATAREST-565
+	 * @see DATAREST-720
 	 */
 	@Test
 	public void createsContextRelativeRedirectForBrowser() throws Exception {
 
 		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
 				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
-		View view = new HalBrowser(configuration).browser();
-
-		assertThat(view, is(instanceOf(RedirectView.class)));
 
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.setContextPath("/context");
 
+		View view = new HalBrowser(configuration).browser(request);
+
+		assertThat(view, is(instanceOf(RedirectView.class)));
+
 		((AbstractView) view).render(Collections.<String, Object> emptyMap(), request, response);
 
-		assertThat(response.getHeader(HttpHeaders.LOCATION), Matchers.startsWith("/context"));
+		UriComponents components = UriComponentsBuilder.fromUriString(response.getHeader(HttpHeaders.LOCATION)).build();
+
+		assertThat(components.getPath(), Matchers.startsWith("/context"));
+		assertThat(components.getFragment(), is("/context"));
 	}
 }
