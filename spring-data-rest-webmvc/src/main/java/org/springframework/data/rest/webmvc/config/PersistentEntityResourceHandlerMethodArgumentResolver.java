@@ -22,6 +22,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.webmvc.IncomingRequest;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
@@ -124,14 +125,27 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 			Serializable id = idResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 			Object objectToUpdate = getObjectToUpdate(id, resourceInformation);
-			boolean forUpdate = objectToUpdate != null;
+
+			boolean forUpdate = false;
+			Object entityIdentifier = null;
+			PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
+
+			if (objectToUpdate != null) {
+				forUpdate = true;
+				entityIdentifier = entity.getIdentifierAccessor(objectToUpdate).getIdentifier();
+			}
+
 			Object obj = read(resourceInformation, incoming, converter, objectToUpdate);
 
 			if (obj == null) {
 				throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType));
 			}
 
-			Builder build = PersistentEntityResource.build(obj, resourceInformation.getPersistentEntity());
+			if (entityIdentifier != null) {
+				entity.getPropertyAccessor(obj).setProperty(entity.getIdProperty(), entityIdentifier);
+			}
+
+			Builder build = PersistentEntityResource.build(obj, entity);
 			return forUpdate ? build.build() : build.forCreation();
 		}
 

@@ -31,8 +31,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
@@ -387,17 +385,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PUT, ResourceType.ITEM);
 
-		// Force ID on unmarshalled object
-		PersistentPropertyAccessor incomingWrapper = new ConvertingPropertyAccessor(payload.getPropertyAccessor(),
-				conversionService);
-		incomingWrapper.setProperty(payload.getPersistentEntity().getIdProperty(), id);
-
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
-		Object objectToSave = incomingWrapper.getBean();
-
-		Object domainObject = payload.getContent();
-
-		eTag.verify(resourceInformation.getPersistentEntity(), domainObject);
+		Object objectToSave = payload.getContent();
+		eTag.verify(resourceInformation.getPersistentEntity(), objectToSave);
 
 		return payload.isNew() ? createAndReturn(objectToSave, invoker, assembler, config.returnBodyOnCreate(acceptHeader))
 				: saveAndReturn(objectToSave, invoker, PUT, assembler, config.returnBodyOnUpdate(acceptHeader));
