@@ -39,8 +39,8 @@ public class RepositoryConstraintViolationExceptionMessage {
 
 			String message = accessor.getMessage(fieldError);
 
-			this.errors.add(new ValidationError(fieldError.getObjectName(), message, String.format("%s",
-					fieldError.getRejectedValue()), fieldError.getField()));
+			this.errors.add(new ValidationError(fieldError.getObjectName(), message,
+					String.format("%s", fieldError.getRejectedValue()), fieldError.getField()));
 		}
 	}
 

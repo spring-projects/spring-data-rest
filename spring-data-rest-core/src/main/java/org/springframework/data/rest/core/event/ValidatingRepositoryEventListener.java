@@ -23,12 +23,14 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.data.rest.core.ValidationErrors;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.validation.DirectFieldBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
@@ -167,8 +169,10 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 
 		Class<?> domainType = entity.getClass();
 		PersistentEntities persistentEntities = persistentEntitiesFactory.getObject();
-		Errors errors = new ValidationErrors(domainType.getSimpleName(), entity,
-				persistentEntities.getPersistentEntity(domainType));
+		PersistentEntity<?, ?> persistentEntity = persistentEntities.getPersistentEntity(domainType);
+
+		Errors errors = persistentEntity == null ? new DirectFieldBindingResult(entity, domainType.getSimpleName())
+				: new ValidationErrors(entity, persistentEntity);
 
 		for (Validator v : getValidatorsForEvent(event)) {
 

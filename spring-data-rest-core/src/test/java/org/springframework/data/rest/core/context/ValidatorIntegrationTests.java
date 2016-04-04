@@ -23,6 +23,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
 import org.springframework.data.rest.core.RepositoryTestsConfig;
@@ -59,9 +60,12 @@ public class ValidatorIntegrationTests {
 	}
 
 	@Autowired ConfigurableApplicationContext context;
+	@Autowired KeyValueMappingContext mappingContext;
 
 	@Test(expected = RepositoryConstraintViolationException.class)
 	public void shouldValidateLastName() throws Exception {
+
+		mappingContext.getPersistentEntity(Person.class);
 
 		// Empty name should be rejected by PersonNameValidator
 		context.publishEvent(new BeforeSaveEvent(new Person("Dave", "")));

@@ -1,88 +1,100 @@
+/*
+ * Copyright 2012-2016 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.rest.core;
 
-import static org.springframework.util.ReflectionUtils.*;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
+import org.springframework.beans.BeansException;
+import org.springframework.beans.ConfigurablePropertyAccessor;
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.validation.AbstractErrors;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.util.Assert;
+import org.springframework.validation.AbstractPropertyBindingResult;
 import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 
 /**
- * An {@link Errors} implementation for use in the events mechanism of Spring Data REST.
+ * An {@link Errors} implementation for use in the events mechanism of Spring Data REST. Customizes actual field lookup
+ * by using a {@link PersistentPropertyAccessor} for actual value lookups.
  * 
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
-public class ValidationErrors extends AbstractErrors {
+public class ValidationErrors extends AbstractPropertyBindingResult {
 
 	private static final long serialVersionUID = 8141826537389141361L;
 
-	private String name;
-	private Object entity;
-	private PersistentEntity<?, ?> persistentEntity;
-	private List<ObjectError> globalErrors = new ArrayList<ObjectError>();
-	private List<FieldError> fieldErrors = new ArrayList<FieldError>();
+	private final PersistentPropertyAccessor accessor;
+	private PersistentEntity<?, ?> entity;
 
-	public ValidationErrors(String name, Object entity, PersistentEntity<?, ?> persistentEntity) {
-		this.name = name;
+	/**
+	 * Creates a new {@link ValidationErrors} instance for the given source object and {@link PersistentEntity}.
+	 * 
+	 * @param source the source object to gather validation errors on, must not be {@literal null}.
+	 * @param entity the {@link PersistentEntity} for the given source instance, must not be {@literal null}.
+	 */
+	public ValidationErrors(Object source, PersistentEntity<?, ?> entity) {
+
+		super(source.getClass().getSimpleName());
+
+		Assert.notNull(source, "Entity must not be null!");
+		Assert.notNull(entity, "PersistentEntity must not be null!");
+		Assert.isTrue(entity.getType().isInstance(source),
+				"Given source object is not of type of the given PersistentEntity");
+
 		this.entity = entity;
-		this.persistentEntity = persistentEntity;
+		this.accessor = entity.getPropertyAccessor(source);
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.validation.AbstractPropertyBindingResult#getPropertyAccessor()
+	 */
 	@Override
-	public String getObjectName() {
-		return name;
+	public ConfigurablePropertyAccessor getPropertyAccessor() {
+
+		return new DirectFieldAccessor(getTarget()) {
+
+			@Override
+			public Object getPropertyValue(String propertyName) throws BeansException {
+				PersistentProperty<?> property = entity.getPersistentProperty(propertyName);
+				return property == null ? null : accessor.getProperty(property);
+			}
+		};
 	}
 
-	@Override
-	public void reject(String errorCode, Object[] errorArgs, String defaultMessage) {
-		globalErrors.add(new ObjectError(name, new String[] { errorCode }, errorArgs, defaultMessage));
-	}
-
-	@Override
-	public void rejectValue(String field, String errorCode, Object[] errorArgs, String defaultMessage) {
-		fieldErrors.add(new FieldError(name, field, getFieldValue(field), true, new String[] { errorCode }, errorArgs,
-				defaultMessage));
-	}
-
-	@Override
-	public void addAllErrors(Errors errors) {
-		globalErrors.addAll(errors.getAllErrors());
-	}
-
-	@Override
-	public List<ObjectError> getGlobalErrors() {
-		return globalErrors;
-	}
-
-	@Override
-	public List<FieldError> getFieldErrors() {
-		return fieldErrors;
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.validation.AbstractBindingResult#getFieldValue(java.lang.String)
+	 */
 	@Override
 	public Object getFieldValue(String field) {
-		PersistentProperty<?> prop = persistentEntity != null ? persistentEntity.getPersistentProperty(field) : null;
-		if (null == prop) {
-			return null;
+
+		if (field.contains(".")) {
+			return super.getFieldValue(field);
 		}
 
-		Method getter = prop.getGetter();
-		if (null != getter) {
-			return invokeMethod(getter, entity);
-		}
-		Field fld = prop.getField();
-		if (null != fld) {
-			return getField(fld, entity);
-		}
-
-		return null;
+		return accessor.getProperty(entity.getPersistentProperty(field));
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.validation.AbstractBindingResult#getTarget()
+	 */
+	@Override
+	public Object getTarget() {
+		return accessor.getBean();
+	}
 }
