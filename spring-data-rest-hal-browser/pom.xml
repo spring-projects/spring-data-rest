@@ -102,12 +102,12 @@
 						</goals>
 						<configuration>
 							<target>
-								<move todir="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser">
+								<copy todir="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser">
 									<fileset dir="${project.build.directory}/hal-browser/META-INF/resources/webjars/hal-browser/${browser.version}" />
-								</move>
-								<move todir="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/vendor/js">
+								</copy>
+								<copy todir="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/vendor/js">
 									<fileset dir="${project.build.directory}/json-editor/META-INF/resources/webjars/json-editor/${json-editor.version}" />
-								</move>
+								</copy>
 								<delete file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/browser.html" />
 							</target>
 						</configuration>
