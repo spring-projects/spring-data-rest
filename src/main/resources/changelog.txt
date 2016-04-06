@@ -1,6 +1,17 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.5.0.RELEASE (2016-04-06)
+---------------------------------------------
+* DATAREST-799 - Add pull request template.
+* DATAREST-798 - Nested validation errors reported as top level ones.
+* DATAREST-794 - Build for Solr integration tests broken after upgrade to Solr 5.5 in Spring Data Solr.
+* DATAREST-792 - PUT request for item resource with customized entity lookup fails.
+* DATAREST-791 - Repository with EntityLookup not resolving for POST on an Association-Ressource.
+* DATAREST-790 - Release 2.5 GA (Hopper).
+* DATAREST-720 - HAL Browser default URI doesn't respect context path.
+
+
 Changes in version 2.5.0.RC1 (2016-03-18)
 -----------------------------------------
 * DATAREST-787 - Remove dependency to JSON Patch library.
