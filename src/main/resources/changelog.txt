@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.5.1.RELEASE (2016-04-06)
+---------------------------------------------
+* DATAREST-802 - Release 2.5.1 (Hopper SR1).
+
+
 Changes in version 2.5.0.RELEASE (2016-04-06)
 ---------------------------------------------
 * DATAREST-799 - Add pull request template.
