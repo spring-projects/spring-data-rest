@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,14 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import lombok.Value;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
+import org.springframework.util.Assert;
 import org.springframework.validation.FieldError;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,15 +35,22 @@ public class RepositoryConstraintViolationExceptionMessage {
 
 	private final List<ValidationError> errors = new ArrayList<ValidationError>();
 
-	public RepositoryConstraintViolationExceptionMessage(RepositoryConstraintViolationException violationException,
+	/**
+	 * Creates a new {@link RepositoryConstraintViolationExceptionMessage} for the given
+	 * {@link RepositoryConstraintViolationException} and {@link MessageSourceAccessor}.
+	 * 
+	 * @param exception must not be {@literal null}.
+	 * @param accessor must not be {@literal null}.
+	 */
+	public RepositoryConstraintViolationExceptionMessage(RepositoryConstraintViolationException exception,
 			MessageSourceAccessor accessor) {
 
-		for (FieldError fieldError : violationException.getErrors().getFieldErrors()) {
+		Assert.notNull(exception, "RepositoryConstraintViolationException must not be null!");
+		Assert.notNull(accessor, "MessageSourceAccessor must not be null!");
 
-			String message = accessor.getMessage(fieldError);
-
-			this.errors.add(new ValidationError(fieldError.getObjectName(), message,
-					String.format("%s", fieldError.getRejectedValue()), fieldError.getField()));
+		for (FieldError fieldError : exception.getErrors().getFieldErrors()) {
+			this.errors.add(ValidationError.of(fieldError.getObjectName(), fieldError.getField(),
+					fieldError.getRejectedValue(), accessor.getMessage(fieldError)));
 		}
 	}
 
@@ -49,34 +59,10 @@ public class RepositoryConstraintViolationExceptionMessage {
 		return errors;
 	}
 
+	@Value(staticConstructor = "of")
 	public static class ValidationError {
-
-		private final String entity;
-		private final String message;
-		private final String invalidValue;
-		private final String property;
-
-		public ValidationError(String entity, String message, String invalidValue, String property) {
-			this.entity = entity;
-			this.message = message;
-			this.invalidValue = invalidValue;
-			this.property = property;
-		}
-
-		public String getEntity() {
-			return entity;
-		}
-
-		public String getMessage() {
-			return message;
-		}
-
-		public String getInvalidValue() {
-			return invalidValue;
-		}
-
-		public String getProperty() {
-			return property;
-		}
+		String entity, property;
+		Object invalidValue;
+		String message;
 	}
 }
