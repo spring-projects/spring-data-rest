@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 
 /**
  * Unit tests for {@link PersistentEntityProjector}.
@@ -36,24 +38,32 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 @RunWith(MockitoJUnitRunner.class)
 public class PersistentEntityProjectorUnitTests {
 
-	@Mock ProjectionFactory factory;
 	@Mock ResourceMappings mappings;
+
+	Projector projector;
+	ProjectionFactory factory;
 	ProjectionDefinitionConfiguration configuration;
 
 	@Before
 	public void setUp() {
-		configuration = new ProjectionDefinitionConfiguration();
+
+		this.configuration = new ProjectionDefinitionConfiguration();
+		this.factory = new SpelAwareProxyProjectionFactory();
+		this.projector = new PersistentEntityProjector(configuration, factory, "sample", mappings);
+
+		ResourceMetadata metadata = mock(ResourceMetadata.class);
+		doReturn(metadata).when(mappings).getMetadataFor(Object.class);
+		doReturn(Excerpt.class).when(metadata).getExcerptProjection();
 	}
 
 	/**
 	 * @see DATAREST-221
 	 */
 	@Test
-	public void returnsObjectAsIfNoProjectionTypeFound() {
-
-		Projector projector = new PersistentEntityProjector(configuration, factory, "sample", mappings);
+	public void returnsObjectAsIsIfNoProjectionTypeFound() {
 
 		Object object = new Object();
+
 		assertThat(projector.project(object), is(object));
 	}
 
@@ -65,14 +75,42 @@ public class PersistentEntityProjectorUnitTests {
 
 		configuration.addProjection(Sample.class, Object.class);
 
-		Projector projector = new PersistentEntityProjector(configuration, factory, "sample", mappings);
-		Object source = new Object();
-		projector.project(source);
-
-		verify(factory, times(1)).createProjection(Sample.class, source);
+		assertThat(projector.project(new Object()), is(instanceOf(Sample.class)));
 	}
 
-	interface Sample {
+	/**
+	 * @see DATAREST-806
+	 */
+	@Test
+	public void favorsExplicitProjectionOverExcerpt() {
 
+		configuration.addProjection(Sample.class, Object.class);
+
+		assertThat(projector.projectExcerpt(new Object()), is(instanceOf(Sample.class)));
 	}
+
+	/**
+	 * @see DATAREST-806
+	 */
+	@Test
+	public void excerptProjectionIsUsedForExcerpt() {
+		assertThat(projector.projectExcerpt(new Object()), is(instanceOf(Excerpt.class)));
+	}
+
+	/**
+	 * @see DATAREST-806
+	 */
+	@Test
+	public void usesExcerptProjectionIfNoExplicitProjectionWasRequested() {
+
+		configuration.addProjection(Sample.class, Object.class);
+
+		PersistentEntityProjector projector = new PersistentEntityProjector(configuration, factory, null, mappings);
+
+		assertThat(projector.projectExcerpt(new Object()), is(instanceOf(Excerpt.class)));
+	}
+
+	interface Sample {}
+
+	interface Excerpt {}
 }

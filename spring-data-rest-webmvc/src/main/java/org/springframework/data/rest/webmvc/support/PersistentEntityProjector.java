@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
@@ -59,13 +60,49 @@ public class PersistentEntityProjector extends DefaultExcerptProjector implement
 	 */
 	public Object project(Object source) {
 
+		return projectWithDefault(source, new Converter<Object, Object>() {
+
+			@Override
+			public Object convert(Object source) {
+				return source;
+			}
+		});
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.support.DefaultExcerptProjector#projectExcerpt(java.lang.Object)
+	 */
+	@Override
+	public Object projectExcerpt(Object source) {
+
+		return projectWithDefault(source, new Converter<Object, Object>() {
+
+			@Override
+			public Object convert(Object source) {
+				return PersistentEntityProjector.super.projectExcerpt(source);
+			}
+		});
+	}
+
+	/**
+	 * Creates the projection for the given source instance falling back to the given {@link Converter} if no explicit
+	 * projection is selected.
+	 * 
+	 * @param source must not be {@literal null}.
+	 * @param converter must not be {@literal null}.
+	 * @return
+	 */
+	private Object projectWithDefault(Object source, Converter<Object, Object> converter) {
+
 		Assert.notNull(source, "Projection source must not be null!");
+		Assert.notNull(converter, "Converter must not be null!");
 
 		if (!StringUtils.hasText(projection)) {
-			return source;
+			return converter.convert(source);
 		}
 
 		Class<?> projectionType = definitions.getProjectionType(source.getClass(), projection);
-		return projectionType == null ? source : factory.createProjection(projectionType, source);
+		return projectionType == null ? converter.convert(source) : factory.createProjection(projectionType, source);
 	}
 }
