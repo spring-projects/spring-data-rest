@@ -18,11 +18,16 @@ package org.springframework.data.rest.core;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.NotReadablePropertyException;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
+import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.validation.Errors;
 
 /**
  * Unit tests for {@link ValidationErrors}.
@@ -31,7 +36,16 @@ import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingCon
  */
 public class ValidationErrorsUnitTests {
 
-	KeyValueMappingContext context = new KeyValueMappingContext();
+	PersistentEntities entities;
+
+	@Before
+	public void setUp() {
+
+		KeyValueMappingContext context = new KeyValueMappingContext();
+		context.getPersistentEntity(Foo.class);
+
+		this.entities = new PersistentEntities(Arrays.asList(context));
+	}
 
 	/**
 	 * @see DATAREST-798
@@ -39,7 +53,7 @@ public class ValidationErrorsUnitTests {
 	@Test
 	public void exposesNestedViolationsCorrectly() {
 
-		ValidationErrors errors = new ValidationErrors(new Foo(), context.getPersistentEntity(Foo.class));
+		ValidationErrors errors = new ValidationErrors(new Foo(), entities);
 
 		errors.pushNestedPath("bars[0]");
 		errors.rejectValue("field", "asdf");
@@ -48,11 +62,33 @@ public class ValidationErrorsUnitTests {
 		assertThat(errors.getFieldError().getField(), is("bars[0].field"));
 	}
 
+	/**
+	 * @see DATAREST-801
+	 */
+	@Test
+	public void getsTheNestedFieldsValue() {
+		expectedErrorBehavior(new ValidationErrors(new Foo(), entities));
+	}
+
+	private static void expectedErrorBehavior(Errors errors) {
+
+		assertThat(errors.getFieldValue("bars"), is(notNullValue()));
+
+		errors.pushNestedPath("bars[0]");
+
+		try {
+			errors.getFieldValue("bars");
+			fail("Expected NotReadablePropertyException!");
+		} catch (NotReadablePropertyException e) {}
+
+		assertThat(errors.getFieldValue("field"), is((Object) "Hello"));
+	}
+
 	static class Foo {
-		List<Bar> bars = new ArrayList<Bar>();
+		List<Bar> bars = Collections.singletonList(new Bar());
 	}
 
 	static class Bar {
-		String field;
+		String field = "Hello";
 	}
 }
