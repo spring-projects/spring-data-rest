@@ -15,12 +15,20 @@
  */
 package org.springframework.data.rest.core;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.ConfigurablePropertyAccessor;
 import org.springframework.beans.DirectFieldAccessor;
+import org.springframework.beans.NotReadablePropertyException;
+import org.springframework.beans.PropertyAccessorFactory;
+import org.springframework.beans.PropertyAccessorUtils;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.util.Assert;
 import org.springframework.validation.AbstractPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -36,8 +44,8 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 
 	private static final long serialVersionUID = 8141826537389141361L;
 
-	private final PersistentPropertyAccessor accessor;
-	private PersistentEntity<?, ?> entity;
+	private final Object source;
+	private final PersistentEntities entities;
 
 	/**
 	 * Creates a new {@link ValidationErrors} instance for the given source object and {@link PersistentEntity}.
@@ -45,17 +53,15 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 	 * @param source the source object to gather validation errors on, must not be {@literal null}.
 	 * @param entity the {@link PersistentEntity} for the given source instance, must not be {@literal null}.
 	 */
-	public ValidationErrors(Object source, PersistentEntity<?, ?> entity) {
+	public ValidationErrors(Object source, PersistentEntities entities) {
 
 		super(source.getClass().getSimpleName());
 
 		Assert.notNull(source, "Entity must not be null!");
-		Assert.notNull(entity, "PersistentEntity must not be null!");
-		Assert.isTrue(entity.getType().isInstance(source),
-				"Given source object is not of type of the given PersistentEntity");
+		Assert.notNull(entities, "PersistentEntities must not be null!");
 
-		this.entity = entity;
-		this.accessor = entity.getPropertyAccessor(source);
+		this.entities = entities;
+		this.source = source;
 	}
 
 	/* 
@@ -69,24 +75,31 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 
 			@Override
 			public Object getPropertyValue(String propertyName) throws BeansException {
-				PersistentProperty<?> property = entity.getPersistentProperty(propertyName);
-				return property == null ? null : accessor.getProperty(property);
+
+				Collection<String> segments = Arrays.asList(propertyName.split("\\."));
+				Iterator<String> iterator = segments.iterator();
+				Object value = source;
+
+				do {
+
+					String segment = iterator.next();
+					PersistentEntity<?, ?> entity = entities.getPersistentEntity(value.getClass());
+					PersistentProperty<?> property = entity.getPersistentProperty(PropertyAccessorUtils.getPropertyName(segment));
+
+					if (property == null) {
+						throw new NotReadablePropertyException(source.getClass(), propertyName);
+					}
+
+					ConfigurablePropertyAccessor accessor = property.usePropertyAccess()
+							? PropertyAccessorFactory.forBeanPropertyAccess(value)
+							: PropertyAccessorFactory.forDirectFieldAccess(value);
+					value = accessor.getPropertyValue(segment);
+
+				} while (iterator.hasNext());
+
+				return value;
 			}
 		};
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.validation.AbstractBindingResult#getFieldValue(java.lang.String)
-	 */
-	@Override
-	public Object getFieldValue(String field) {
-
-		if (field.contains(".")) {
-			return super.getFieldValue(field);
-		}
-
-		return accessor.getProperty(entity.getPersistentProperty(field));
 	}
 
 	/* 
@@ -95,6 +108,6 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 	 */
 	@Override
 	public Object getTarget() {
-		return accessor.getBean();
+		return source;
 	}
 }
