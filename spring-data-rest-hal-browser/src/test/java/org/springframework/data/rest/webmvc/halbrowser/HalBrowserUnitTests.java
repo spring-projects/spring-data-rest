@@ -15,18 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.halbrowser;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
-import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
-import org.springframework.data.rest.core.config.MetadataConfiguration;
-import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -51,14 +45,12 @@ public class HalBrowserUnitTests {
 	@Test
 	public void createsContextRelativeRedirectForBrowser() throws Exception {
 
-		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
-				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
-
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setRequestURI("/context");
 		request.setContextPath("/context");
 
-		View view = new HalBrowser(configuration).browser(request);
+		View view = new HalBrowser().browser(request);
 
 		assertThat(view, is(instanceOf(RedirectView.class)));
 
@@ -66,7 +58,26 @@ public class HalBrowserUnitTests {
 
 		UriComponents components = UriComponentsBuilder.fromUriString(response.getHeader(HttpHeaders.LOCATION)).build();
 
-		assertThat(components.getPath(), Matchers.startsWith("/context"));
+		assertThat(components.getPath(), startsWith("/context"));
 		assertThat(components.getFragment(), is("/context"));
+	}
+
+	@Test
+	public void producesProxyRelativeRedirectIfNecessary() {
+
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/browser");
+		request.addHeader("X-Forwarded-Host", "somehost");
+		request.addHeader("X-Forwarded-Port", "4711");
+		request.addHeader("X-Forwarded-Proto", "https");
+		request.addHeader("X-Forwarded-Prefix", "/prefix");
+
+		View view = new HalBrowser().browser(request);
+
+		assertThat(view, is(instanceOf(RedirectView.class)));
+
+		String url = ((RedirectView) view).getUrl();
+
+		assertThat(url, startsWith("https://somehost:4711/prefix"));
+		assertThat(url, endsWith("/prefix"));
 	}
 }

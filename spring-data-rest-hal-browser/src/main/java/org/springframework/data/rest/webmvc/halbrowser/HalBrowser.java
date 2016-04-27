@@ -17,15 +17,14 @@ package org.springframework.data.rest.webmvc.halbrowser;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.util.UriComponents;
 
 /**
  * Controller with a few convenience redirects to expose the HAL browser shipped as static content.
@@ -37,22 +36,7 @@ import org.springframework.web.servlet.view.RedirectView;
 public class HalBrowser {
 
 	private static String BROWSER = "/browser";
-	public static String BROWSER_INDEX = BROWSER.concat("/index.html");
-
-	private final RepositoryRestConfiguration configuration;
-
-	/**
-	 * Creates a new {@link HalBrowser} for the given {@link RepositoryRestConfiguration}.
-	 * 
-	 * @param configuration must not be {@literal null}.
-	 */
-	@Autowired
-	public HalBrowser(RepositoryRestConfiguration configuration) {
-
-		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
-
-		this.configuration = configuration;
-	}
+	private static String INDEX = "/index.html";
 
 	/**
 	 * Redirects requests to the API root asking for HTML to the HAL browser.
@@ -61,7 +45,7 @@ public class HalBrowser {
 	 */
 	@RequestMapping(value = { "/", "" }, method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
 	public View index(HttpServletRequest request) {
-		return browser(request);
+		return getRedirectView(request, false);
 	}
 
 	/**
@@ -71,10 +55,30 @@ public class HalBrowser {
 	 */
 	@RequestMapping(value = "/browser", method = RequestMethod.GET)
 	public View browser(HttpServletRequest request) {
+		return getRedirectView(request, request.getRequestURI().endsWith("/browser"));
+	}
 
-		String contextPath = request.getContextPath();
-		String basePath = configuration.getBasePath().toString();
+	/**
+	 * Returns the View to redirect to to access the HAL browser.
+	 * 
+	 * @param request must not be {@literal null}.
+	 * @param browserRelative
+	 * @return
+	 */
+	private View getRedirectView(HttpServletRequest request, boolean browserRelative) {
 
-		return new RedirectView(basePath.concat(BROWSER_INDEX).concat("#").concat(contextPath.concat(basePath)), true);
+		ServletUriComponentsBuilder builder = ServletUriComponentsBuilder.fromRequest(request);
+
+		UriComponents components = builder.build();
+		String path = components.getPath() == null ? "" : components.getPath();
+
+		if (!browserRelative) {
+			builder.path(BROWSER);
+		}
+
+		builder.path(INDEX);
+		builder.fragment(browserRelative ? path.substring(0, path.lastIndexOf("/browser")) : path);
+
+		return new RedirectView(builder.build().toUriString());
 	}
 }
