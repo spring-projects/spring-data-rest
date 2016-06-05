@@ -31,6 +31,7 @@ import org.springframework.data.rest.core.domain.PersonBeforeSaveHandler;
 import org.springframework.data.rest.core.domain.PersonRepository;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
 import org.springframework.data.rest.core.event.AfterDeleteEvent;
+import org.springframework.data.rest.core.event.AfterFindOneEvent;
 import org.springframework.data.rest.core.event.AfterLinkDeleteEvent;
 import org.springframework.data.rest.core.event.AfterLinkSaveEvent;
 import org.springframework.data.rest.core.event.AfterSaveEvent;
@@ -48,6 +49,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Pavel Varchenko
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -160,5 +162,13 @@ public class RepositoryEventIntegrationTests {
 	@Test(expected = EventHandlerInvokedException.class)
 	public void shouldDispatchAfterLinkDelete() throws Exception {
 		appCtx.publishEvent(new AfterLinkDeleteEvent(person, new Object()));
+	}
+
+	/**
+	 * @see DATAREST-836
+	 */
+	@Test(expected = EventHandlerInvokedException.class)
+	public void shouldDispatchAfterFindOne() throws Exception {
+		appCtx.publishEvent(new AfterFindOneEvent(person));
 	}
 }

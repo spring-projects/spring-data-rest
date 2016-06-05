@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AfterCreateEvent;
 import org.springframework.data.rest.core.event.AfterDeleteEvent;
+import org.springframework.data.rest.core.event.AfterFindOneEvent;
 import org.springframework.data.rest.core.event.AfterSaveEvent;
 import org.springframework.data.rest.core.event.BeforeCreateEvent;
 import org.springframework.data.rest.core.event.BeforeDeleteEvent;
@@ -75,6 +76,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Jeremy Rickard
+ * @author Pavel Varchenko
  */
 @RepositoryRestController
 class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
@@ -313,6 +315,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		if (domainObject == null) {
 			throw new ResourceNotFoundException();
 		}
+		publisher.publishEvent(new AfterFindOneEvent(domainObject));
 
 		Links links = new Links(assembler.toResource(domainObject).getLinks());
 
