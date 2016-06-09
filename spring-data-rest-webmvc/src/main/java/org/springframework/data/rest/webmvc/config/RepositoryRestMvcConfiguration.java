@@ -503,7 +503,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		RelProvider defaultedRelProvider = this.relProvider != null ? this.relProvider : new EvoInflectorRelProvider();
 
 		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider, curieProvider,
-				resourceDescriptionMessageSourceAccessor());
+				resourceDescriptionMessageSourceAccessor(), applicationContext.getAutowireCapableBeanFactory());
 
 		ObjectMapper mapper = basicObjectMapper();
 		mapper.registerModule(persistentEntityJackson2Module());
