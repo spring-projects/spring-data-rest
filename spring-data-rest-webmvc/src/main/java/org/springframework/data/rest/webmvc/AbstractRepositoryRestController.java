@@ -27,11 +27,9 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
@@ -81,30 +79,6 @@ class AbstractRepositoryRestController {
 		} else {
 			return new Resources(EMPTY_RESOURCE_LIST);
 		}
-	}
-
-	/**
-	 * Turns the given source into a {@link ResourceSupport} if needed and possible. Uses the given
-	 * {@link PersistentEntityResourceAssembler} for the actual conversion.
-	 * 
-	 * @param source can be must not be {@literal null}.
-	 * @param assembler must not be {@literal null}.
-	 * @param domainType the domain type in case the source is an empty iterable, must not be {@literal null}.
-	 * @param baseLink can be {@literal null}.
-	 * @return
-	 */
-	protected Object toResource(Object source, PersistentEntityResourceAssembler assembler, Class<?> domainType,
-			Link baseLink) {
-
-		if (source instanceof Iterable) {
-			return toResources((Iterable<?>) source, assembler, domainType, baseLink);
-		} else if (source == null) {
-			throw new ResourceNotFoundException();
-		} else if (ClassUtils.isPrimitiveOrWrapper(source.getClass())) {
-			return source;
-		}
-
-		return assembler.toFullResource(source);
 	}
 
 	protected Resources<?> entitiesToResources(Page<Object> page, PersistentEntityResourceAssembler assembler,

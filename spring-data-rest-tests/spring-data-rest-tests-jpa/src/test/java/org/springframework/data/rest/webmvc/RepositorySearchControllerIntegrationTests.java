@@ -39,6 +39,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
@@ -100,8 +101,8 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>(1);
 		parameters.add("firstname", "John");
 
-		ResponseEntity<Object> response = controller.executeSearch(resourceInformation, parameters, "firstname", PAGEABLE,
-				null, assembler);
+		ResponseEntity<?> response = controller.executeSearch(resourceInformation, parameters, "firstname", PAGEABLE, null,
+				assembler, new HttpHeaders());
 
 		ResourceTester tester = ResourceTester.of(response.getBody());
 		PagedResources<Object> pagedResources = tester.assertIsPage();
@@ -190,8 +191,8 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 
 		RootResourceInformation resourceInformation = getResourceInformation(Book.class);
 
-		ResponseEntity<Object> result = controller.executeSearch(resourceInformation, parameters, "findByAuthorsContains",
-				PAGEABLE, null, assembler);
+		ResponseEntity<?> result = controller.executeSearch(resourceInformation, parameters, "findByAuthorsContains",
+				PAGEABLE, null, assembler, new HttpHeaders());
 
 		assertThat(result.getBody(), is(instanceOf(Resources.class)));
 	}

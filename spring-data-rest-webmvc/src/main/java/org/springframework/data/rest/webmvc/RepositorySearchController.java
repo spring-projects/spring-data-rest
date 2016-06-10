@@ -28,12 +28,14 @@ import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.MethodResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
+import org.springframework.data.rest.core.util.Supplier;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.util.ClassTypeInformation;
@@ -53,9 +55,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -75,6 +79,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	private final RepositoryEntityLinks entityLinks;
 	private final ResourceMappings mappings;
+	private ResourceStatus resourceStatus;
 
 	/**
 	 * Creates a new {@link RepositorySearchController} using the given {@link PagedResourcesAssembler},
@@ -86,7 +91,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 */
 	@Autowired
 	public RepositorySearchController(PagedResourcesAssembler<Object> assembler, RepositoryEntityLinks entityLinks,
-			ResourceMappings mappings) {
+			ResourceMappings mappings, HttpHeadersPreparer headersPreparer) {
 
 		super(assembler);
 
@@ -95,6 +100,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		this.entityLinks = entityLinks;
 		this.mappings = mappings;
+		this.resourceStatus = ResourceStatus.of(headersPreparer);
 	}
 
 	/**
@@ -112,7 +118,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAllow(Collections.singleton(HttpMethod.GET));
 
-		return new ResponseEntity<Object>(headers, HttpStatus.OK);
+		return ResponseEntity.ok().headers(headers).build();
 	}
 
 	/**
@@ -126,7 +132,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		verifySearchesExposed(resourceInformation);
 
-		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+		return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -169,9 +175,9 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET)
-	public ResponseEntity<Object> executeSearch(RootResourceInformation resourceInformation,
+	public ResponseEntity<?> executeSearch(RootResourceInformation resourceInformation,
 			@RequestParam MultiValueMap<String, Object> parameters, @PathVariable String search, DefaultedPageable pageable,
-			Sort sort, PersistentEntityResourceAssembler assembler) {
+			Sort sort, PersistentEntityResourceAssembler assembler, @RequestHeader HttpHeaders headers) {
 
 		Method method = checkExecutability(resourceInformation, search);
 		Object result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort, assembler);
@@ -180,7 +186,40 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		MethodResourceMapping methodMapping = searchMappings.getExportedMethodMappingForPath(search);
 		Class<?> domainType = methodMapping.getReturnedDomainType();
 
-		return new ResponseEntity<Object>(toResource(result, assembler, domainType, null), HttpStatus.OK);
+		return toResource(result, assembler, domainType, null, headers, resourceInformation);
+	}
+
+	/**
+	 * Turns the given source into a {@link ResourceSupport} if needed and possible. Uses the given
+	 * {@link PersistentEntityResourceAssembler} for the actual conversion.
+	 * 
+	 * @param source can be must not be {@literal null}.
+	 * @param assembler must not be {@literal null}.
+	 * @param domainType the domain type in case the source is an empty iterable, must not be {@literal null}.
+	 * @param baseLink can be {@literal null}.
+	 * @return
+	 */
+	protected ResponseEntity<?> toResource(final Object source, final PersistentEntityResourceAssembler assembler,
+			Class<?> domainType, Link baseLink, HttpHeaders headers, RootResourceInformation information) {
+
+		if (source instanceof Iterable) {
+			return ResponseEntity.ok(toResources((Iterable<?>) source, assembler, domainType, baseLink));
+		} else if (source == null) {
+			throw new ResourceNotFoundException();
+		} else if (ClassUtils.isPrimitiveOrWrapper(source.getClass())) {
+			return ResponseEntity.ok(source);
+		}
+
+		PersistentEntity<?, ?> entity = information.getPersistentEntity();
+
+		return resourceStatus.getStatusAndHeaders(headers, source, entity).toResponseEntity(//
+				new Supplier<PersistentEntityResource>() {
+
+					@Override
+					public PersistentEntityResource get() {
+						return assembler.toFullResource(source);
+					}
+				});
 	}
 
 	/**
@@ -199,13 +238,17 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET, //
 			produces = { "application/x-spring-data-compact+json" })
 	public ResourceSupport executeSearchCompact(RootResourceInformation resourceInformation,
-			@RequestParam MultiValueMap<String, Object> parameters, @PathVariable String repository,
-			@PathVariable String search, DefaultedPageable pageable, Sort sort, PersistentEntityResourceAssembler assembler) {
+			@RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, Object> parameters,
+			@PathVariable String repository, @PathVariable String search, DefaultedPageable pageable, Sort sort,
+			PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
 		Object result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort, assembler);
 		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
-		Object resource = toResource(result, assembler, metadata.getDomainType(), null);
+		ResponseEntity<?> entity = toResource(result, assembler, metadata.getDomainType(), null, headers,
+				resourceInformation);
+		Object resource = entity.getBody();
+
 		List<Link> links = new ArrayList<Link>();
 
 		if (resource instanceof Resources && ((Resources<?>) resource).getContent() != null) {
