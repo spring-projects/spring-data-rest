@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -36,6 +37,7 @@ public class Profile {
 	private Long person;
 	private @JsonProperty(required = true) String type;
 	private @LastModifiedDate Date lastModifiedDate;
+	private @Version Long version;
 	private @JsonProperty("renamed") String aliased;
 	private Map<String, String> metadata = new HashMap<String, String>();
 

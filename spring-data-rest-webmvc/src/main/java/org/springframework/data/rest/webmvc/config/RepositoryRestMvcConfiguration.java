@@ -77,6 +77,7 @@ import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
+import org.springframework.data.rest.webmvc.HttpHeadersPreparer;
 import org.springframework.data.rest.webmvc.ProfileResourceProcessor;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
@@ -771,6 +772,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public AuditableBeanWrapperFactory auditableBeanWrapperFactory() {
 		return new MappingAuditableBeanWrapperFactory(persistentEntities());
+	}
+
+	@Bean
+	public HttpHeadersPreparer httpHeadersPreparer() {
+		return new HttpHeadersPreparer(auditableBeanWrapperFactory());
 	}
 
 	@Bean

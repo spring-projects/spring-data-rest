@@ -42,12 +42,12 @@ import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 /**
@@ -273,7 +273,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		Mockito.when(assembler.toFullResource(Mockito.any(Object.class))).thenReturn(resource);
 
 		ResponseEntity<Resource<?>> entity = controller.getItemResource(getResourceInformation(Address.class), address.id,
-				assembler, new LinkedMultiValueMap<String, String>());
+				assembler, new HttpHeaders());
 
 		assertThat(entity.getHeaders().getETag(), is(notNullValue()));
 	}

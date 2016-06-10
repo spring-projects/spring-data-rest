@@ -343,4 +343,34 @@ public class MongoWebTests extends CommonWebTests {
 
 		mvc.perform(get(href)).andExpect(status().isOk());
 	}
+
+	/**
+	 * @see DATAREST-835
+	 */
+	@Test
+	public void exposesETagHeaderForSearchResourceYieldingItemResource() throws Exception {
+
+		Link link = client.discoverUnique("profiles", "search", "findById");
+
+		Profile profile = repository.findAll().iterator().next();
+
+		mvc.perform(get(link.expand(profile.getId()).getHref()))//
+				.andExpect(header().string("ETag", is("\"0\"")))//
+				.andExpect(header().string("Last-Modified", is(notNullValue())));
+	}
+
+	/**
+	 * @see DATAREST-835
+	 */
+	@Test
+	public void doesNotAddETagHeaderForCollectionQueryResource() throws Exception {
+
+		Link link = client.discoverUnique("profiles", "search", "findByType");
+
+		Profile profile = repository.findAll().iterator().next();
+
+		mvc.perform(get(link.expand(profile.getType()).getHref()))//
+				.andExpect(header().string("ETag", is(nullValue())))//
+				.andExpect(header().string("Last-Modified", is(nullValue())));
+	}
 }
