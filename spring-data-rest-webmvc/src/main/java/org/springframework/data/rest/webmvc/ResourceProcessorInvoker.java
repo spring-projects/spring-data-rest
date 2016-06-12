@@ -38,7 +38,9 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Oliver Gierke
  * @since 2.5
+ * @deprecated use the same type from Spring HATEOAS, will be removed in 2.7.
  */
+@Deprecated
 public class ResourceProcessorInvoker {
 
 	private final List<ProcessorWrapper> processors;

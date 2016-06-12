@@ -40,7 +40,6 @@ import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
-import org.springframework.data.rest.webmvc.ResourceProcessorInvoker;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
@@ -59,6 +58,7 @@ import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.Jackson2HalModule;
+import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
 import org.springframework.plugin.core.OrderAwarePluginRegistry;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

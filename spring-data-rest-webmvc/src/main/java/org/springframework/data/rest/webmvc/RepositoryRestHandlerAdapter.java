@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,20 +30,22 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * their Spring MVC context.
  * 
  * @author Jon Brisbin
+ * @author Oliver Gierke
  */
-public class RepositoryRestHandlerAdapter extends ResourceProcessorInvokingHandlerAdapter {
+public class RepositoryRestHandlerAdapter
+		extends org.springframework.hateoas.mvc.ResourceProcessorInvokingHandlerAdapter {
 
 	private final List<HandlerMethodArgumentResolver> argumentResolvers;
 
 	/**
 	 * Creates a new {@link RepositoryRestHandlerAdapter} using the given {@link HandlerMethodArgumentResolver} and
-	 * {@link ResourceProcessorInvoker}.
+	 * {@link org.springframework.hateoas.mvc.ResourceProcessorInvoker}.
 	 * 
 	 * @param argumentResolvers must not be {@literal null}.
 	 * @param invoker must not be {@literal null}.
 	 */
 	public RepositoryRestHandlerAdapter(List<HandlerMethodArgumentResolver> argumentResolvers,
-			ResourceProcessorInvoker invoker) {
+			org.springframework.hateoas.mvc.ResourceProcessorInvoker invoker) {
 
 		super(invoker);
 		this.argumentResolvers = argumentResolvers;

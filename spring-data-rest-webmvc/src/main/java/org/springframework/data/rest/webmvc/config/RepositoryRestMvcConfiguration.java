@@ -81,7 +81,6 @@ import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
-import org.springframework.data.rest.webmvc.ResourceProcessorInvoker;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
@@ -127,6 +126,7 @@ import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.CurieProvider;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.hateoas.hal.Jackson2HalModule.HalHandlerInstantiator;
+import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
 import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -845,7 +845,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		RepositoryEntityLinks entityLinks = entityLinks();
 		MessageSourceAccessor messageSourceAccessor = resourceDescriptionMessageSourceAccessor();
 		RepositoryRestConfiguration config = config();
-		ResourceMappings resourceMappings = resourceMappings();
 
 		return new RootResourceInformationToAlpsDescriptorConverter(associationLinks(), repositories, persistentEntities,
 				entityLinks, messageSourceAccessor, config, objectMapper(), enumTranslator());
