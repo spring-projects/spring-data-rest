@@ -1,6 +1,15 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.5.2.RELEASE (2016-06-15)
+---------------------------------------------
+* DATAREST-815 - HAL browser redirect fails when proxied through Zuul.
+* DATAREST-806 - Projections are no longer applied to collection result.
+* DATAREST-805 - RepositoryConstraintViolationExceptionMessage produces inaccurate output.
+* DATAREST-804 - Release 2.5.2 (Hopper SR2).
+* DATAREST-801 - Nested validation errors reported as top level ones.
+
+
 Changes in version 2.5.1.RELEASE (2016-04-06)
 ---------------------------------------------
 * DATAREST-802 - Release 2.5.1 (Hopper SR1).
