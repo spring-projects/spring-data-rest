@@ -471,7 +471,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		publisher.publishEvent(new BeforeSaveEvent(domainObject));
 		Object obj = invoker.invokeSave(domainObject);
-		publisher.publishEvent(new AfterSaveEvent(domainObject));
+		publisher.publishEvent(new AfterSaveEvent(obj));
 
 		PersistentEntityResource resource = assembler.toFullResource(obj);
 		HttpHeaders headers = headersPreparer.prepareHeaders(resource);
