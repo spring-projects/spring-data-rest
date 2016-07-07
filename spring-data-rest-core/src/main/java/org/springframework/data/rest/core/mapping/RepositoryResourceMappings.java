@@ -127,7 +127,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 					mappings.add(methodMapping);
 				}
 			}
-			
+			 
          for (Method queryMethod : repositoryInformation.getRepositoryInterface().getMethods()) {
             queryMethod = ClassUtils.getMostSpecificMethod(queryMethod, repositoryInformation.getRepositoryInterface());
             if (!repositoryInformation.isQueryMethod(queryMethod) && queryMethod.isAnnotationPresent(RestResource.class)) {
