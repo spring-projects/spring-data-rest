@@ -20,7 +20,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 /**
  * Enable the creation of RepositoryRestController taking advantage of 
  * HATEOAS features applied by Spring Data Rest
- *  
+ * 
  * @author Diego Baldani
  */
 public class CustomAbstractRepositoryRestController extends AbstractRepositoryRestController {
