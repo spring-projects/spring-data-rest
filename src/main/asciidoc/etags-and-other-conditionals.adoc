@@ -50,7 +50,7 @@ The http://tools.ietf.org/html/rfc7232#section-3.3[If-Modified-Since header] pro
 ====
 [source,java]
 ----
-include::{spring-data-rest-root}/spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/mongodb/Receipt.java[tag=code]
+include::{spring-data-rest-root}/spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/Receipt.java[tag=code]
 ----
 ====
 

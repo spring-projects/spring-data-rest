@@ -10,11 +10,11 @@ Spring Data REST works quite well with Spring Security. This section will show e
 
 The following example from Spring Data REST's test suite shows Spring Security's {spring-security-docs}/#el-pre-post-annotations[PreAuthorization model], the most sophisticated version:
 
-.spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/PreAuthorizedOrderRepository.java
+.spring-data-rest-tests/spring-data-rest-tests-security/src/test/java/org/springframework/data/rest/tests/security/PreAuthorizedOrderRepository.java
 ====
 [source,java]
 ----
-include::{spring-data-rest-root}/spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/PreAuthorizedOrderRepository.java[tag=code]
+include::{spring-data-rest-root}/spring-data-rest-tests/spring-data-rest-tests-security/src/test/java/org/springframework/data/rest/tests/security/PreAuthorizedOrderRepository.java[tag=code]
 ----
 ====
 
@@ -32,11 +32,11 @@ The previous example illustrates that `CrudRepository`, in fact, has four delete
 
 The following example shows Spring Security's older `@Secured` annotation, which is purely role-based:
 
-.spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/SecuredPersonRepository.java
+.spring-data-rest-tests/spring-data-rest-tests-security/src/test/java/org/springframework/data/rest/tests/security/SecuredPersonRepository.java
 ====
 [source,java]
 ----
-include::{spring-data-rest-root}/spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/SecuredPersonRepository.java[tag=code]
+include::{spring-data-rest-root}/spring-data-rest-tests/spring-data-rest-tests-security/src/test/java/org/springframework/data/rest/tests/security/SecuredPersonRepository.java[tag=code]
 ----
 ====
 
@@ -50,11 +50,11 @@ NOTE: If you are starting with a new project or first applying Spring Security, 
 
 To configure method level security, here is a brief snippet from Spring Data REST's test suite:
 
-.spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/SecurityConfiguration.java
+.spring-data-rest-tests/spring-data-rest-tests-security/src/test/java/org/springframework/data/rest/tests/security/SecurityConfiguration.java
 ====
 [source,java]
 ----
-include::{spring-data-rest-root}/spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc//security/SecurityConfiguration.java[tag=code]
+include::{spring-data-rest-root}/spring-data-rest-tests/spring-data-rest-tests-security/src/test/java/org/springframework/data/rest/tests/security/SecurityConfiguration.java[tag=code]
 	...
 }
 ----
