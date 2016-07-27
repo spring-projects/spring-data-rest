@@ -1,6 +1,22 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.0.M1 (2016-07-27)
+----------------------------------------
+* DATAREST-856 - Integrate version badge from spring.io.
+* DATAREST-852 - User placeholder property for JSR-303 API.
+* DATAREST-849 - Remove obsolete reference to ConversionService.
+* DATAREST-848 - Upgrade to latest HAL browser.
+* DATAREST-847 - RepositoryEntityController.saveAndReturn calls AfterSaveEvent with wrong domain object.
+* DATAREST-840 - Make sure Jackson HandlerInstantiator can use Spring dependency injection.
+* DATAREST-837 - Move ResourceProcessor invoking infrastructure to Spring HATEOAS.
+* DATAREST-815 - HAL browser redirect fails when proxied through Zuul.
+* DATAREST-806 - Projections are no longer applied to collection result.
+* DATAREST-805 - RepositoryConstraintViolationExceptionMessage produces inaccurate output.
+* DATAREST-803 - Release 2.6 M1 (Ingalls).
+* DATAREST-801 - Nested validation errors reported as top level ones.
+
+
 Changes in version 2.5.2.RELEASE (2016-06-15)
 ---------------------------------------------
 * DATAREST-815 - HAL browser redirect fails when proxied through Zuul.
