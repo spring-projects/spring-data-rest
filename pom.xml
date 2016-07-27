@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.9.0.M1</version>
+		<version>1.9.0.BUILD-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 
@@ -28,13 +28,13 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-rest</dist.id>
 
-		<springdata.commons>1.13.0.M1</springdata.commons>
-		<springdata.jpa>1.11.0.M1</springdata.jpa>
-		<springdata.mongodb>1.10.0.M1</springdata.mongodb>
-		<springdata.gemfire>1.9.0.M1</springdata.gemfire>
-		<springdata.solr>2.1.0.M1</springdata.solr>
-		<springdata.cassandra>1.5.0.M1</springdata.cassandra>
-		<springdata.keyvalue>1.2.0.M1</springdata.keyvalue>
+		<springdata.commons>1.13.0.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.jpa>1.11.0.BUILD-SNAPSHOT</springdata.jpa>
+		<springdata.mongodb>1.10.0.BUILD-SNAPSHOT</springdata.mongodb>
+		<springdata.gemfire>1.9.0.BUILD-SNAPSHOT</springdata.gemfire>
+		<springdata.solr>2.1.0.BUILD-SNAPSHOT</springdata.solr>
+		<springdata.cassandra>1.5.0.BUILD-SNAPSHOT</springdata.cassandra>
+		<springdata.keyvalue>1.2.0.BUILD-SNAPSHOT</springdata.keyvalue>
 
 		<hibernate.version>4.3.10.Final</hibernate.version>
 		<jsonpath>1.1.0</jsonpath>
@@ -113,8 +113,8 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-milestone</id>
-			<url>https://repo.spring.io/libs-milestone</url>
+			<id>spring-libs-snapshot</id>
+			<url>https://repo.spring.io/libs-snapshot</url>
 		</repository>
 	</repositories>
 
