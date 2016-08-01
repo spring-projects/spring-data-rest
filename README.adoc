@@ -1,3 +1,6 @@
+image:https://spring.io/badges/spring-data-rest/ga.svg[Spring Data REST, link="http://projects.spring.io/spring-data-rest/#quick-start"]
+image:https://spring.io/badges/spring-data-rest/snapshot.svg[Spring Data REST, link="http://projects.spring.io/spring-data-rest/#quick-start"]
+
 = Spring Data REST
 
 The goal of the project is to provide a flexible and configurable mechanism for writing simple services that can be exposed over HTTP.

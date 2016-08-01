@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.convert.ConversionService;
@@ -90,7 +89,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	private final RepositoryEntityLinks entityLinks;
 	private final RepositoryRestConfiguration config;
-	private final ConversionService conversionService;
 	private final HttpHeadersPreparer headersPreparer;
 
 	private ApplicationEventPublisher publisher;
@@ -104,20 +102,17 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @param config must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
-	 * @param conversionService must not be {@literal null}.
 	 * @param auditableBeanWrapperFactory must not be {@literal null}.
 	 */
 	@Autowired
 	public RepositoryEntityController(Repositories repositories, RepositoryRestConfiguration config,
 			RepositoryEntityLinks entityLinks, PagedResourcesAssembler<Object> assembler,
-			@Qualifier("defaultConversionService") ConversionService conversionService,
 			AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
 
 		super(assembler);
 
 		this.entityLinks = entityLinks;
 		this.config = config;
-		this.conversionService = conversionService;
 		this.headersPreparer = new HttpHeadersPreparer(auditableBeanWrapperFactory);
 	}
 
@@ -471,7 +466,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		publisher.publishEvent(new BeforeSaveEvent(domainObject));
 		Object obj = invoker.invokeSave(domainObject);
-		publisher.publishEvent(new AfterSaveEvent(domainObject));
+		publisher.publishEvent(new AfterSaveEvent(obj));
 
 		PersistentEntityResource resource = assembler.toFullResource(obj);
 		HttpHeaders headers = headersPreparer.prepareHeaders(resource);

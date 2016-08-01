@@ -121,6 +121,22 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 				allOf(hasItem(GET), not(hasItems(DELETE, PATCH, PUT, POST))));
 	}
 
+	/**
+	 * @see DATAREST-825
+	 */
+	@Test
+	public void supportsDeleteIfFindOneIsHidden() {
+		assertMethodsSupported(getSupportedHttpMethodsFor(HidesFindOne.class), ITEM, true, DELETE, PATCH, PUT, OPTIONS);
+	}
+
+	/**
+	 * @see DATAREST-825
+	 */
+	@Test
+	public void doesNotSupportDeleteIfNoFindOneAvailable() {
+		assertMethodsSupported(getSupportedHttpMethodsFor(NoFindOne.class), ITEM, false, DELETE);
+	}
+
 	private static SupportedHttpMethods getSupportedHttpMethodsFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
@@ -148,7 +164,18 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 	interface HidesDelete extends CrudRepository<Object, Long> {
 
 		@RestResource(exported = false)
-		void delete(Object id);
+		void delete(Object entity);
+	}
+
+	interface HidesFindOne extends CrudRepository<Object, Long> {
+
+		@Override
+		@RestResource(exported = false)
+		Object findOne(Long id);
+	}
+
+	interface NoFindOne extends Repository<Object, Long> {
+		void delete(Object entity);
 	}
 
 	interface EntityRepository extends CrudRepository<Entity, Long> {}

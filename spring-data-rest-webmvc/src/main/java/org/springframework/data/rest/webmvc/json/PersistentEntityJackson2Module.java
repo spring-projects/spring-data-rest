@@ -43,13 +43,13 @@ import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
-import org.springframework.data.rest.webmvc.ResourceProcessorInvoker;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.UriTemplate;
+import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -148,7 +148,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * 
 		 * @param entities must not be {@literal null}.
 		 */
-		@SuppressWarnings({ "unchecked", "rawtypes" })
 		private PersistentEntityResourceSerializer(LinkCollector collector) {
 
 			super(PersistentEntityResource.class);

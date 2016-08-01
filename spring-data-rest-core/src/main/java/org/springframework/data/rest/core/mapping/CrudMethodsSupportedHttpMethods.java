@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package org.springframework.data.rest.core.mapping;
 
 import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -57,14 +60,15 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getSupportedHttpMethods(org.springframework.data.rest.core.mapping.ResourceType)
 	 */
 	@Override
-	public Set<HttpMethod> getMethodsFor(ResourceType resourcType) {
+	public Set<HttpMethod> getMethodsFor(ResourceType resourceType) {
 
-		Assert.notNull(resourcType, "Resource type must not be null!");
+		Assert.notNull(resourceType, "Resource type must not be null!");
 
 		Set<HttpMethod> methods = new HashSet<HttpMethod>();
 		methods.add(OPTIONS);
 
-		switch (resourcType) {
+		switch (resourceType) {
+
 			case COLLECTION:
 
 				if (exposedMethods.exposesFindAll()) {
@@ -80,7 +84,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 
 			case ITEM:
 
-				if (exposedMethods.exposesDelete() && exposedMethods.exposesFindOne()) {
+				if (exposedMethods.exposesDelete()) {
 					methods.add(DELETE);
 				}
 
@@ -97,7 +101,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 				break;
 
 			default:
-				throw new IllegalArgumentException(String.format("Unsupported resource type %s!", resourcType));
+				throw new IllegalArgumentException(String.format("Unsupported resource type %s!", resourceType));
 		}
 
 		return Collections.unmodifiableSet(methods);
@@ -134,16 +138,10 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	/**
 	 * @author Oliver Gierke
 	 */
+	@RequiredArgsConstructor
 	private static class DefaultExposureAwareCrudMethods implements ExposureAwareCrudMethods {
 
-		private final CrudMethods crudMethods;
-
-		/**
-		 * @param exposedMethods
-		 */
-		public DefaultExposureAwareCrudMethods(CrudMethods crudMethods) {
-			this.crudMethods = crudMethods;
-		}
+		private final @NonNull CrudMethods crudMethods;
 
 		/* 
 		 * (non-Javadoc)
@@ -160,7 +158,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 		 */
 		@Override
 		public boolean exposesDelete() {
-			return exposes(crudMethods.getDeleteMethod());
+			return exposes(crudMethods.getDeleteMethod()) && crudMethods.hasFindOneMethod();
 		}
 
 		/* 
