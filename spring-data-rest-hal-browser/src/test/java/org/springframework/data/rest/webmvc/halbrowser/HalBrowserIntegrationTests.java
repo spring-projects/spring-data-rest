@@ -80,7 +80,7 @@ public class HalBrowserIntegrationTests {
 
 		mvc.perform(get(BASE_PATH).accept(MediaType.ALL)).//
 				andExpect(status().isOk()).//
-				andExpect(header().string(HttpHeaders.CONTENT_TYPE, is(MediaTypes.HAL_JSON.toString())));
+				andExpect(header().string(HttpHeaders.CONTENT_TYPE, startsWith(MediaTypes.HAL_JSON.toString())));
 	}
 
 	/**
