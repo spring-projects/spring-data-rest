@@ -23,6 +23,7 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
@@ -563,6 +564,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 	static class CustomAcceptHeaderHttpServletRequest extends HttpServletRequestWrapper {
 
 		private final List<MediaType> acceptMediaTypes;
+		private final List<String> acceptMediaTypeStrings;
 
 		/**
 		 * Creates a new {@link CustomAcceptHeaderHttpServletRequest} for the given delegate {@link HttpServletRequest} and
@@ -578,6 +580,14 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 			Assert.notEmpty(acceptMediaTypes, "MediaTypes must not be empty!");
 
 			this.acceptMediaTypes = acceptMediaTypes;
+
+			List<String> acceptMediaTypeStrings = new ArrayList<String>(acceptMediaTypes.size());
+
+			for (MediaType mediaType : acceptMediaTypes) {
+				acceptMediaTypeStrings.add(mediaType.toString());
+			}
+
+			this.acceptMediaTypeStrings = acceptMediaTypeStrings;
 		}
 
 		/* 
@@ -592,6 +602,20 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 			}
 
 			return super.getHeader(name);
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see javax.servlet.http.HttpServletRequestWrapper#getHeaders(java.lang.String)
+		 */
+		@Override
+		public Enumeration<String> getHeaders(String name) {
+
+			if (HttpHeaders.ACCEPT.equalsIgnoreCase(name) && acceptMediaTypes != null) {
+				return Collections.enumeration(acceptMediaTypeStrings);
+			}
+
+			return super.getHeaders(name);
 		}
 	}
 }
