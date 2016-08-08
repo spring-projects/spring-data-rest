@@ -273,7 +273,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public ProjectionDefinitionRegistar projectionDefinitionRegistrar(ObjectFactory<RepositoryRestConfiguration> config) {
+	public static ProjectionDefinitionRegistar projectionDefinitionRegistrar(
+			ObjectFactory<RepositoryRestConfiguration> config) {
 		return new ProjectionDefinitionRegistar(config);
 	}
 
