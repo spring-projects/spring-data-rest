@@ -15,7 +15,10 @@
  */
 package org.springframework.data.rest.tests.mongodb;
 
+import org.springframework.util.Assert;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * @author Oliver Gierke
@@ -23,5 +26,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Address {
 
 	public String street;
-	public @JsonProperty(required = true) String zipCode;
+	public @JsonProperty(required = true) ZipCode zipCode;
+
+	public static class ZipCode {
+
+		private final String value;
+
+		public ZipCode(String value) {
+
+			Assert.isTrue(value.matches("[0-9]{5}"), "Zip code must consist of five numeric digits!");
+
+			this.value = value;
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		@JsonValue
+		public String toString() {
+			return value;
+		}
+	}
 }

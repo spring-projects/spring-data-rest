@@ -19,7 +19,12 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.Value;
+
 import java.io.ByteArrayInputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -77,6 +82,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(TypeWithGenericMap.class);
 		mappingContext.getPersistentEntity(VersionedType.class);
 		mappingContext.getPersistentEntity(SampleWithCreatedDate.class);
+		mappingContext.getPersistentEntity(Wrapper.class);
 		mappingContext.getPersistentEntity(SampleWithTransient.class);
 		mappingContext.getPersistentEntity(User.class);
 		mappingContext.getPersistentEntity(Inner.class);
@@ -373,6 +379,32 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.inner.items.get(0).some, is("value"));
 	}
 
+	@Test
+	public void collectsAllErrorsIntoException() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = (ObjectNode) mapper.readTree("{ \"sample\" : "//
+				+ "{ \"ccn\" : \"1234567\", \"date\" : \"foo\" }, "//
+				+ " \"samples\" : [ { \"ccn\" : \"7654321\" } ] }");
+
+		try {
+
+			reader.readPut(node, new Wrapper(), mapper);
+
+			fail("Expected ".concat(JsonDeserializationException.class.getSimpleName().concat("!")));
+
+		} catch (JsonDeserializationException o_O) {
+
+			DeserializationErrors errors = o_O.getErrors();
+
+			System.out.println(errors);
+
+			assertThat(errors, is(notNullValue()));
+			assertThat(errors.hasErrorForPath("sample.ccn"), is(true));
+			assertThat(errors.hasErrorForPath("sample.date"), is(true));
+		}
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class TypeWithGenericMap {
 
@@ -389,6 +421,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	@NoArgsConstructor(force = true)
 	static class SampleWithCreatedDate {
 
 		@CreatedDate //
@@ -396,6 +429,7 @@ public class DomainObjectReaderUnitTests {
 		Date createdDate;
 	}
 
+	@Value
 	static class User {
 
 		public List<Phone> phones = new ArrayList<Phone>();
@@ -442,5 +476,34 @@ public class DomainObjectReaderUnitTests {
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Item {
 		String some;
+	}
+
+	@Value
+	@NoArgsConstructor(force = true)
+	static class Wrapper {
+		Sample sample;
+		List<Sample> samples;
+	}
+
+	@Value
+	static class Sample {
+
+		LocalDate date;
+		CCN ccn;
+	}
+
+	@EqualsAndHashCode
+	static class CCN {
+
+		String number;
+
+		public CCN(String number) {
+
+			if (!number.matches("[0-9]{8}")) {
+				throw new IllegalArgumentException("Invalid CCN format!");
+			}
+
+			this.number = number;
+		}
 	}
 }

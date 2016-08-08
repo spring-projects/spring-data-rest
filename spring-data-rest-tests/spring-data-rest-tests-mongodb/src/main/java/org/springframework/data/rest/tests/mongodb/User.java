@@ -27,6 +27,7 @@ import java.util.Set;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -44,6 +45,7 @@ public class User {
 	public String firstname, lastname;
 	public Address address;
 	public Set<Address> shippingAddresses;
+	public Map<String, Address> mappedAddresses;
 	public List<String> nicknames;
 	public Gender gender;
 	public @ReadOnlyProperty EmailAddress email;
@@ -61,6 +63,9 @@ public class User {
 		 * @param value
 		 */
 		public EmailAddress(String value) {
+
+			Assert.isTrue(value.matches("^\\S+@\\S+$"), String.format("Invalid email address %s!", value));
+
 			this.value = value;
 		}
 

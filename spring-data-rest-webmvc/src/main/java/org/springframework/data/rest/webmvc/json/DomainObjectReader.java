@@ -17,7 +17,9 @@ package org.springframework.data.rest.webmvc.json;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,8 +73,8 @@ public class DomainObjectReader {
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
 		try {
-			return doMerge((ObjectNode) mapper.readTree(source), target, mapper);
-		} catch (Exception o_O) {
+			return merge((ObjectNode) mapper.readTree(source), target, mapper);
+		} catch (IOException o_O) {
 			throw new HttpMessageNotReadableException("Could not read payload!", o_O);
 		}
 	}
@@ -129,8 +131,16 @@ public class DomainObjectReader {
 	public <T> T merge(ObjectNode source, T target, ObjectMapper mapper) {
 
 		try {
-			return doMerge(source, target, mapper);
-		} catch (Exception o_O) {
+
+			ResultAndErrors<T> result = doMerge(source, target, mapper, "");
+
+			if (result.getErrors().iterator().hasNext()) {
+				throw new JsonDeserializationException(target.getClass(), result.getErrors());
+			}
+
+			return result.getResult();
+
+		} catch (IOException o_O) {
 			throw new HttpMessageNotReadableException("Could not read payload!", o_O);
 		}
 	}
@@ -142,10 +152,12 @@ public class DomainObjectReader {
 	 * @param target must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
 	 * @return
+	 * @throws IOException
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> T doMerge(ObjectNode root, T target, ObjectMapper mapper) throws Exception {
+	private <T> ResultAndErrors<T> doMerge(ObjectNode root, T target, ObjectMapper mapper, String propertyBase)
+			throws IOException {
 
 		Assert.notNull(root, "Root ObjectNode must not be null!");
 		Assert.notNull(target, "Target object instance must not be null!");
@@ -154,7 +166,7 @@ public class DomainObjectReader {
 		PersistentEntity<?, ?> entity = entities.getPersistentEntity(target.getClass());
 
 		if (entity == null) {
-			return mapper.readerForUpdating(target).readValue(root);
+			return readWithMapper(root, target, mapper, propertyBase);
 		}
 
 		MappedProperties mappedProperties = MappedProperties.fromJacksonProperties(entity, mapper);
@@ -175,7 +187,8 @@ public class DomainObjectReader {
 
 			if (child.isArray()) {
 
-				boolean nestedObjectFound = handleArrayNode((ArrayNode) child, asCollection(rawValue), mapper);
+				boolean nestedObjectFound = handleArrayNode((ArrayNode) child, asCollection(rawValue), mapper,
+						property.getName());
 
 				if (nestedObjectFound) {
 					i.remove();
@@ -199,7 +212,7 @@ public class DomainObjectReader {
 						continue;
 					}
 
-					doMergeNestedMap((Map<String, Object>) rawValue, objectNode, mapper);
+					doMergeNestedMap((Map<String, Object>) rawValue, objectNode, mapper, property.getName());
 
 					// Remove potentially emptied Map as values have been handled recursively
 					if (!objectNode.fieldNames().hasNext()) {
@@ -211,12 +224,12 @@ public class DomainObjectReader {
 
 				if (rawValue != null && property.isEntity()) {
 					i.remove();
-					doMerge(objectNode, rawValue, mapper);
+					doMerge(objectNode, rawValue, mapper, property.getName());
 				}
 			}
 		}
 
-		return mapper.readerForUpdating(target).readValue(root);
+		return readWithMapper(root, target, mapper, propertyBase);
 	}
 
 	/**
@@ -227,14 +240,15 @@ public class DomainObjectReader {
 	 * @param mapper the {@link ObjectMapper} to use, must not be {@literal null}.
 	 * @return whether an object merge has been applied to the {@link ArrayNode}.
 	 */
-	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, ObjectMapper mapper)
-			throws Exception {
+	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, ObjectMapper mapper, String base)
+			throws IOException {
 
 		Assert.notNull(array, "ArrayNode must not be null!");
 		Assert.notNull(collection, "Source collection must not be null!");
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
 		Iterator<Object> value = collection.iterator();
+		int i = 0;
 		boolean nestedObjectFound = false;
 
 		for (JsonNode jsonNode : array) {
@@ -244,15 +258,16 @@ public class DomainObjectReader {
 			}
 
 			Object next = value.next();
+			String indexedBase = base.concat(String.format("[%s]", i));
 
 			if (ArrayNode.class.isInstance(jsonNode)) {
-				return handleArrayNode(array, asCollection(next), mapper);
+				return handleArrayNode(array, asCollection(next), mapper, indexedBase);
 			}
 
 			if (ObjectNode.class.isInstance(jsonNode)) {
 
 				nestedObjectFound = true;
-				doMerge((ObjectNode) jsonNode, next, mapper);
+				doMerge((ObjectNode) jsonNode, next, mapper, indexedBase);
 			}
 		}
 
@@ -265,9 +280,10 @@ public class DomainObjectReader {
 	 * @param source can be {@literal null}.
 	 * @param node must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
-	 * @throws Exception
+	 * @throws IOException
 	 */
-	private void doMergeNestedMap(Map<String, Object> source, ObjectNode node, ObjectMapper mapper) throws Exception {
+	private void doMergeNestedMap(Map<String, Object> source, ObjectNode node, ObjectMapper mapper, String propertyBase)
+			throws IOException {
 
 		if (source == null) {
 			return;
@@ -280,11 +296,12 @@ public class DomainObjectReader {
 			Entry<String, JsonNode> entry = fields.next();
 			JsonNode child = entry.getValue();
 			Object sourceValue = source.get(entry.getKey());
+			String base = String.format("%s.%s", propertyBase, entry.getKey());
 
 			if (child instanceof ObjectNode && sourceValue != null) {
-				doMerge((ObjectNode) child, sourceValue, mapper);
+				doMerge((ObjectNode) child, sourceValue, mapper, base);
 			} else if (child instanceof ArrayNode && sourceValue != null) {
-				handleArrayNode((ArrayNode) child, asCollection(sourceValue), mapper);
+				handleArrayNode((ArrayNode) child, asCollection(sourceValue), mapper, base);
 			} else {
 				source.put(entry.getKey(),
 						mapper.treeToValue(child, sourceValue == null ? Object.class : sourceValue.getClass()));
@@ -292,6 +309,20 @@ public class DomainObjectReader {
 
 			fields.remove();
 		}
+	}
+
+	private static <T> ResultAndErrors<T> readWithMapper(ObjectNode node, T target, ObjectMapper mapper,
+			String propertyBase) throws IOException {
+
+		LenientDeserializationProblemHandler handler = new LenientDeserializationProblemHandler(propertyBase);
+
+		T value = mapper.readerForUpdating(target)//
+				.withHandler(handler)//
+				.readValue(node);
+
+		return handler.hasErrors() ? //
+				ResultAndErrors.<T> forErrors(handler.getErrors()) : //
+				ResultAndErrors.<T> forResult(value);
 	}
 
 	/**
@@ -316,5 +347,20 @@ public class DomainObjectReader {
 		}
 
 		return Collections.singleton(source);
+	}
+
+	@Value
+	private static class ResultAndErrors<T> {
+
+		T result;
+		DeserializationErrors errors;
+
+		public static <T> ResultAndErrors<T> forResult(T result) {
+			return new ResultAndErrors<T>(result, DeserializationErrors.NONE);
+		}
+
+		public static <T> ResultAndErrors<T> forErrors(DeserializationErrors errors) {
+			return new ResultAndErrors<T>((T) null, errors);
+		}
 	}
 }

@@ -22,6 +22,8 @@ import java.util.List;
 
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
+import org.springframework.data.rest.webmvc.json.DeserializationErrors.DeserializationError;
+import org.springframework.data.rest.webmvc.json.JsonDeserializationException;
 import org.springframework.util.Assert;
 import org.springframework.validation.FieldError;
 
@@ -54,6 +56,21 @@ public class RepositoryConstraintViolationExceptionMessage {
 		}
 	}
 
+	public RepositoryConstraintViolationExceptionMessage(JsonDeserializationException exception) {
+
+		Assert.notNull(exception, "JsonDeserializationException must not be null!");
+
+		for (DeserializationError error : exception.getErrors()) {
+
+			Exception errorException = error.getException();
+			String message = errorException.getCause() != null ? errorException.getCause().getMessage()
+					: errorException.getMessage();
+
+			this.errors
+					.add(ValidationError.of(exception.getType().getSimpleName(), error.getPath(), error.getSource(), message));
+		}
+	}
+
 	@JsonProperty("errors")
 	public List<ValidationError> getErrors() {
 		return errors;
@@ -61,6 +78,7 @@ public class RepositoryConstraintViolationExceptionMessage {
 
 	@Value(staticConstructor = "of")
 	public static class ValidationError {
+
 		String entity, property;
 		Object invalidValue;
 		String message;

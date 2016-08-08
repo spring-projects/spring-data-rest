@@ -30,12 +30,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.CommonWebTests;
+import org.springframework.data.rest.tests.mongodb.Address.ZipCode;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -74,7 +78,7 @@ public class MongoWebTests extends CommonWebTests {
 
 		Address address = new Address();
 		address.street = "ETagDoesntMatchExceptionUnitTests";
-		address.zipCode = "Bar";
+		address.zipCode = new ZipCode("01234");
 
 		User thomas = new User();
 		thomas.firstname = "Thomas";
@@ -342,5 +346,35 @@ public class MongoWebTests extends CommonWebTests {
 		String href = link.expand(thomasUri.getHref()).getHref();
 
 		mvc.perform(get(href)).andExpect(status().isOk());
+	}
+
+	@Test
+	public void reportsAllErrorsContainedInRequest() throws Exception {
+
+		User oliver = userRepository.findOne(QUser.user.firstname.eq("Oliver"));
+
+		mvc.perform(patch("/users/".concat(oliver.id.toString()))//
+				.content("{\"email\" : \"foobar\", "//
+						+ "\"gender\" : \"foobar\", " //
+						+ "\"address\" : { \"zipCode\" : \"ABCDEF\" }, "//
+						+ "\"mappedAddresses\" : { \"someKey\" : { \"zipCode\" : \"ABCDEF\" } } }"))//
+				.andDo(MockMvcResultHandlers.print())//
+				.andExpect(status().is4xxClientError())//
+				.andExpect(hasErrorForProperties("email", "gender", "address.zipCode", "mappedAddresses.someKey.zipCode"))//
+		;//
+	}
+
+	private static ResultMatcher hasErrorForProperties(String... properties) {
+
+		return new ResultMatcher() {
+
+			@Override
+			public void match(MvcResult result) throws Exception {
+
+				for (String property : properties) {
+					jsonPath(String.format("$.errors[?(@.property == '%s')]", property)).exists().match(result);
+				}
+			}
+		};
 	}
 }

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.springframework.data.rest.webmvc.IncomingRequest;
@@ -70,9 +71,9 @@ class JsonPatchHandler {
 	 * @param request must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @return
-	 * @throws Exception
+	 * @throws IOException
 	 */
-	public <T> T apply(IncomingRequest request, T target) throws Exception {
+	public <T> T apply(IncomingRequest request, T target) throws IOException {
 
 		Assert.notNull(request, "Request must not be null!");
 		Assert.isTrue(request.isPatchRequest(), "Cannot handle non-PATCH request!");
@@ -86,11 +87,11 @@ class JsonPatchHandler {
 	}
 
 	@SuppressWarnings("unchecked")
-	<T> T applyPatch(InputStream source, T target) throws Exception {
+	<T> T applyPatch(InputStream source, T target) {
 		return getPatchOperations(source).apply(target, (Class<T>) target.getClass());
 	}
 
-	<T> T applyMergePatch(InputStream source, T existingObject) throws Exception {
+	<T> T applyMergePatch(InputStream source, T existingObject) {
 		return reader.read(source, existingObject, mapper);
 	}
 

@@ -25,6 +25,7 @@ import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
+import org.springframework.data.rest.webmvc.json.JsonDeserializationException;
 import org.springframework.data.rest.webmvc.support.ETagDoesntMatchException;
 import org.springframework.data.rest.webmvc.support.ExceptionMessage;
 import org.springframework.data.rest.webmvc.support.RepositoryConstraintViolationExceptionMessage;
@@ -107,8 +108,14 @@ public class RepositoryRestExceptionHandler {
 	@ExceptionHandler
 	ResponseEntity<RepositoryConstraintViolationExceptionMessage> handleRepositoryConstraintViolationException(
 			RepositoryConstraintViolationException o_O) {
-		return response(HttpStatus.BAD_REQUEST, new HttpHeaders(), new RepositoryConstraintViolationExceptionMessage(o_O,
-				messageSourceAccessor));
+		return response(HttpStatus.BAD_REQUEST, new HttpHeaders(),
+				new RepositoryConstraintViolationExceptionMessage(o_O, messageSourceAccessor));
+	}
+
+	@ExceptionHandler
+	ResponseEntity<RepositoryConstraintViolationExceptionMessage> handleJsonDeserializationException(
+			JsonDeserializationException o_O) {
+		return response(HttpStatus.BAD_REQUEST, new HttpHeaders(), new RepositoryConstraintViolationExceptionMessage(o_O));
 	}
 
 	/**

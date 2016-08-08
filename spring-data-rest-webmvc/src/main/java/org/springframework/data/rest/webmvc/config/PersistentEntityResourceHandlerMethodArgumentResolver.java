@@ -197,12 +197,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 			JsonPatchHandler handler = new JsonPatchHandler(mapper, reader);
 			return handler.apply(request, existingObject);
 
-		} catch (Exception o_O) {
-
-			if (o_O instanceof HttpMessageNotReadableException) {
-				throw (HttpMessageNotReadableException) o_O;
-			}
-
+		} catch (IOException o_O) {
 			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, existingObject.getClass()), o_O);
 		}
 	}
