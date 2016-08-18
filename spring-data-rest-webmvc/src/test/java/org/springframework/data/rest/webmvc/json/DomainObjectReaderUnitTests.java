@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +28,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
@@ -61,6 +64,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Person.class);
 		mappingContext.getPersistentEntity(TypeWithGenericMap.class);
 		mappingContext.getPersistentEntity(VersionedType.class);
+		mappingContext.getPersistentEntity(SampleWithCreatedDate.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -169,6 +173,23 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.version, is(1L));
 	}
 
+	/**
+	 * @see DATAREST-873
+	 */
+	@Test
+	public void doesNotApplyInputToReadOnlyFields() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = (ObjectNode) mapper.readTree("{}");
+
+		Date reference = new Date();
+
+		SampleWithCreatedDate sample = new SampleWithCreatedDate();
+		sample.createdDate = reference;
+
+		assertThat(reader.readPut(node, sample, mapper).createdDate, is(reference));
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class SampleUser {
 
@@ -209,5 +230,13 @@ public class DomainObjectReaderUnitTests {
 		@Version Long version;
 
 		String firstname, lastname;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class SampleWithCreatedDate {
+
+		@CreatedDate //
+		@ReadOnlyProperty //
+		Date createdDate;
 	}
 }
