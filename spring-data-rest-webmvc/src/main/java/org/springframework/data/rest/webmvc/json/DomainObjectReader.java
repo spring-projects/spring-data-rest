@@ -108,7 +108,7 @@ public class DomainObjectReader {
 			@Override
 			public void doWithPersistentProperty(PersistentProperty<?> property) {
 
-				if (property.isIdProperty() || property.isVersionProperty()) {
+				if (property.isIdProperty() || property.isVersionProperty() || !property.isWritable()) {
 					return;
 				}
 
