@@ -274,7 +274,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					continue;
 				}
 
-				if (persistentProperty.isEntity()) {
+				if (persistentProperty.isEntity() && !writer.isUnwrapping()) {
 
 					LOG.debug("Assigning nested entity serializer for {}.", persistentProperty);
 
