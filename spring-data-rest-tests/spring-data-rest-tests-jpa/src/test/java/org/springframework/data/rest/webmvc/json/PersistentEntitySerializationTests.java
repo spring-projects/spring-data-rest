@@ -36,6 +36,7 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
+import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.LineItem;
 import org.springframework.data.rest.webmvc.jpa.Order;
@@ -288,5 +289,16 @@ public class PersistentEntitySerializationTests {
 		String result = mapper.writeValueAsString(new Resource<PersonSummary>(projection));
 
 		assertThat(JsonPath.read(result, "$._links.self"), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATAREST-880
+	 */
+	@Test
+	public void unwrapsNestedTypeCorrectly() throws Exception {
+
+		CreditCard creditCard = new CreditCard(new CreditCard.CCN("1234123412341234"));
+
+		assertThat(JsonPath.read(mapper.writeValueAsString(creditCard), "$.ccn"), is("1234123412341234"));
 	}
 }

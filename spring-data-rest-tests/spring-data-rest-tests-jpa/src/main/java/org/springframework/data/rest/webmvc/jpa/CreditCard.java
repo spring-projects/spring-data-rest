@@ -15,14 +15,34 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
  * @author Oliver Gierke
  */
 @Entity
+@Getter
+@NoArgsConstructor(force = true)
+@RequiredArgsConstructor
 public class CreditCard {
 
 	@Id Long id;
+	final @JsonUnwrapped CCN ccn;
+
+	@Embeddable
+	@Getter
+	@NoArgsConstructor(force = true)
+	@AllArgsConstructor
+	public static class CCN {
+		String ccn;
+	}
 }
