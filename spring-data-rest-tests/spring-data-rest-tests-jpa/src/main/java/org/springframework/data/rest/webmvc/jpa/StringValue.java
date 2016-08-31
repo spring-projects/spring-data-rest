@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,23 @@ import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
+/**
+ *
+ * @author Mathias D
+ * @author Rob Baily
+ */
 @Entity
 @DiscriminatorValue("S")
 public class StringValue extends Value {
 
-    @Column(name = "STRING_VALUE")
-    private String value;
+	@Column(name = "STRING_VALUE")
+	private String value;
 
-    public String getValue() {
-        return value;
-    }
+	public String getValue() {
+		return value;
+	}
 
-    public void setValue(String value) {
-        this.value = value;
-    }
+	public void setValue(String value) {
+		this.value = value;
+	}
 }

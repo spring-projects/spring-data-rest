@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,14 +37,14 @@ import java.math.BigDecimal;
 
 /**
  * Integration tests for DATAREST-872.
- * 
+ *
  * @author Mathias D
  * @author Rob Baily
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(
-		classes = { JpaRepositoryConfig.class, RepositoryRestMvcConfiguration.class })
+		classes = {JpaRepositoryConfig.class, RepositoryRestMvcConfiguration.class})
 public class DataRest872Tests extends AbstractWebIntegrationTests {
 
 	@Autowired WebApplicationContext context;

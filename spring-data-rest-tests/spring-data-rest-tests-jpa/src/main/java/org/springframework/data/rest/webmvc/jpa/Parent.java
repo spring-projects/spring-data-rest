@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,21 +23,26 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
+/**
+ *
+ * @author Mathias D
+ * @author Rob Baily
+ */
 @Entity
 public class Parent {
 
-    @Id
-    @GeneratedValue(strategy = IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = IDENTITY)
+	private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    private Value valueHolder;
+	@OneToOne(cascade = CascadeType.ALL)
+	private Value valueHolder;
 
-    public Value getValueHolder() {
-        return valueHolder;
-    }
+	public Value getValueHolder() {
+		return valueHolder;
+	}
 
-    public void setValueHolder(Value valueHolder) {
-        this.valueHolder = valueHolder;
-    }
+	public void setValueHolder(Value valueHolder) {
+		this.valueHolder = valueHolder;
+	}
 }

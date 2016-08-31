@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,23 +28,28 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+/**
+ *
+ * @author Mathias D
+ * @author Rob Baily
+ */
 @Entity
-@Inheritance(strategy= SINGLE_TABLE)
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
+@Inheritance(strategy = SINGLE_TABLE)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
-        @Type(name="DECIMAL", value=DecimalValue.class),
-        @Type(name="STRING", value=StringValue.class)})
+		@Type(name = "DECIMAL", value = DecimalValue.class),
+		@Type(name = "STRING", value = StringValue.class)})
 public class Value {
 
-    @Id
-    @GeneratedValue(strategy = IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = IDENTITY)
+	private Long id;
 
-    public Long getId() {
-        return id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 }
