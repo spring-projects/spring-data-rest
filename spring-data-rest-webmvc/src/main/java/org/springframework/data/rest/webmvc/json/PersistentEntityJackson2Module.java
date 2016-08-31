@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -354,6 +355,12 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			} else {
 				provider.defaultSerializeValue(toResource(value), gen);
 			}
+		}
+
+		@Override
+		public void serializeWithType(Object value, JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
+			// not sure if anything more needs to be done in this case other than the default
+			serialize(value,gen,serializers);
 		}
 
 		private Resource<Object> toResource(Object value) {
