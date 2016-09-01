@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * 
  * @author Oliver Gierke
  * @author Phil Webb
+ * @deprecated in favor of Spring HATEOAS' variant of this class.
  */
+@Deprecated
 public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandlerAdapter {
 
 	private static final Method RETURN_VALUE_HANDLER_METHOD = ReflectionUtils

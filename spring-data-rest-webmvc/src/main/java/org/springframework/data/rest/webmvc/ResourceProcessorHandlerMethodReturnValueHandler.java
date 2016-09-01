@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,13 +39,15 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * configured {@link ResourceProcessor}s.
  * 
  * @author Oliver Gierke
+ * @deprecated in favor of Spring HATEOAS' version of this class
  */
+@Deprecated
 @RequiredArgsConstructor
 public class ResourceProcessorHandlerMethodReturnValueHandler implements HandlerMethodReturnValueHandler {
 
-	static final ResolvableType RESOURCE_TYPE = ResolvableType.forClass(Resource.class);
-	static final ResolvableType RESOURCES_TYPE = ResolvableType.forClass(Resources.class);
-	private static final ResolvableType HTTP_ENTITY_TYPE = ResolvableType.forClass(HttpEntity.class);
+	static final ResolvableType RESOURCE_TYPE = ResolvableType.forRawClass(Resource.class);
+	static final ResolvableType RESOURCES_TYPE = ResolvableType.forRawClass(Resources.class);
+	private static final ResolvableType HTTP_ENTITY_TYPE = ResolvableType.forRawClass(HttpEntity.class);
 
 	static final Field CONTENT_FIELD = ReflectionUtils.findField(Resources.class, "content");
 

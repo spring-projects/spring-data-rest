@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.data.rest.webmvc.HttpEntityMatcher.*;
 import static org.springframework.util.ReflectionUtils.*;
 
 import java.lang.reflect.Method;
@@ -29,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,6 +62,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Oliver Gierke
  * @author Jon Brisbin
  */
+@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
@@ -126,7 +125,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
-		invokeReturnValueHandler("stringResourceEntity", is(BAR), FOO);
+		invokeReturnValueHandler("stringResourceEntity", FOO, BAR);
 	}
 
 	@Test
@@ -135,7 +134,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
-		invokeReturnValueHandler("stringResourceEntity", httpEntity(BAR_RESP_ENTITY), FOO_RESP_ENTITY);
+		invokeReturnValueHandler("stringResourceEntity", FOO_RESP_ENTITY, BAR_RESP_ENTITY);
 	}
 
 	@Test
@@ -144,7 +143,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
-		invokeReturnValueHandler("resourceEntity", httpEntity(BAR_RESP_ENTITY), FOO_RESP_ENTITY);
+		invokeReturnValueHandler("resourceEntity", FOO_RESP_ENTITY, BAR_RESP_ENTITY);
 	}
 
 	@Test
@@ -153,7 +152,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		resourceProcessors.add(StringResourcesProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
-		invokeReturnValueHandler("resources", is(BARS), FOOS);
+		invokeReturnValueHandler("resources", FOOS, BARS);
 	}
 
 	@Test
@@ -162,7 +161,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		resourceProcessors.add(SpecializedStringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
-		invokeReturnValueHandler("stringResourceEntity", httpEntity(BAR_RES_ENTITY), FOO_RES_ENTITY);
+		invokeReturnValueHandler("stringResourceEntity", FOO_RES_ENTITY, BAR_RES_ENTITY);
 	}
 
 	@Test
@@ -171,7 +170,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
-		invokeReturnValueHandler("specializedStringResourceEntity", httpEntity(BAR_ENTITY), FOO_RES_ENTITY);
+		invokeReturnValueHandler("specializedStringResourceEntity", FOO_RES_ENTITY, BAR_ENTITY);
 	}
 
 	@Test
@@ -180,7 +179,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
-		invokeReturnValueHandler("longResource", is(LONG_20), LONG_10);
+		invokeReturnValueHandler("longResource", LONG_10, LONG_20);
 	}
 
 	@Test
@@ -189,7 +188,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(SpecializedLongResourceProcessor.INSTANCE);
 
-		invokeReturnValueHandler("specializedLongResourceEntity", httpEntity(LONG_20_RES_ENTITY), LONG_10_RES_ENTITY);
+		invokeReturnValueHandler("specializedLongResourceEntity", LONG_10_RES_ENTITY, LONG_20_RES_ENTITY);
 	}
 
 	@Test
@@ -198,7 +197,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(SpecializedLongResourceProcessor.INSTANCE);
 
-		invokeReturnValueHandler("numberResourceEntity", httpEntity(LONG_10_ENTITY), LONG_10_ENTITY);
+		invokeReturnValueHandler("numberResourceEntity", LONG_10_ENTITY, LONG_10_ENTITY);
 	}
 
 	@Test
@@ -207,7 +206,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		resourceProcessors.add(StringResourceProcessor.INSTANCE);
 		resourceProcessors.add(LongResourceProcessor.INSTANCE);
 
-		invokeReturnValueHandler("resourceEntity", is(LONG_20), LONG_10_RES);
+		invokeReturnValueHandler("resourceEntity", LONG_10_RES, LONG_20);
 	}
 
 	@Test
@@ -249,7 +248,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		SampleProjection projection = factory.createProjection(SampleProjection.class, new Sample());
 		Resource<SampleProjection> resource = new Resource<SampleProjection>(projection);
 
-		invokeReturnValueHandler("object", is(resource), resource);
+		invokeReturnValueHandler("object", resource, resource);
 		assertThat(projectionProcessor.invoked, is(true));
 	}
 
@@ -276,7 +275,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 
 		EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 		Resources<Object> value = new Resources<Object>(
-				Collections.<Object> singleton(wrappers.emptyCollectionOf(Object.class)));
+				Collections.<Object>singleton(wrappers.emptyCollectionOf(Object.class)));
 		ResourcesProcessorWrapper wrapper = new ResourcesProcessorWrapper(new SpecialResourcesProcessor());
 
 		ResolvableType type = ResolvableType.forMethodReturnType(Controller.class.getMethod("resourcesOfObject"));
@@ -298,9 +297,20 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		new ResourceProcessorHandlerMethodReturnValueHandler(delegate, new ResourceProcessorInvoker(resourceProcessors));
 	}
 
-	// Helpers ---------------------------------------------------------//
-	private void invokeReturnValueHandler(String method, final Matcher<?> matcher, Object returnValue) throws Exception {
-		final MethodParameter methodParam = METHOD_PARAMS.get(method);
+	/**
+	 * @see DATAREST-881
+	 */
+	@Test
+	public void processesElementsForWildcardedResources() throws Exception {
+
+		resourceProcessors.add(StringResourceProcessor.INSTANCE);
+
+		invokeReturnValueHandler("wildcardedResources", FOOS, BARS);
+	}
+
+	private void invokeReturnValueHandler(String method, Object returnValue, Object expected) throws Exception {
+
+		MethodParameter methodParam = METHOD_PARAMS.get(method);
 
 		if (methodParam == null) {
 			throw new IllegalArgumentException("Invalid method!");
@@ -398,6 +408,8 @@ public class ResourceProcessorHandlerMethodReturnValueHandlerUnitTests {
 		ResponseEntity<Resources<?>> resourcesResponseEntity();
 
 		Resources<Object> resourcesOfObject();
+
+		Resources<?> wildcardedResources();
 	}
 
 	static class StringResource extends Resource<String> {
