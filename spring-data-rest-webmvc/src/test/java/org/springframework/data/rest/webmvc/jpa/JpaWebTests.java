@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import net.minidev.json.JSONArray;
@@ -57,6 +58,7 @@ import com.jayway.jsonpath.JsonPath;
  * 
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Mark Paluch
  */
 @Transactional
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
@@ -546,7 +548,7 @@ public class JpaWebTests extends CommonWebTests {
 	 * @see DATAREST-384
 	 */
 	@Test
-	public void execturesSearchThatTakesASort() throws Exception {
+	public void exectuesSearchThatTakesASort() throws Exception {
 
 		Link booksLink = client.discoverUnique("books");
 		Link searchLink = client.discoverUnique(booksLink, "search");
@@ -563,6 +565,57 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(client.hasLinkWithRel("self"));
 
 		client.follow(findBySortedLink.expand("title,asc")).//
+				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
+				andExpect(client.hasLinkWithRel("self"));
+	}
+
+	/**
+	 * @see DATAREST-883
+	 */
+	@Test
+	public void exectuesSearchThatTakesAMappedSortProperty() throws Exception {
+
+		Link booksLink = client.discoverUnique("books");
+		Link searchLink = client.discoverUnique(booksLink, "search");
+		Link findBySortedLink = client.discoverUnique(searchLink, "find-by-sorted");
+
+		// Assert sort options advertised
+		assertThat(findBySortedLink.isTemplated(), is(true));
+		assertThat(findBySortedLink.getVariableNames(), hasItems("sort", "projection"));
+
+		// Assert results returned as specified
+		client.follow(findBySortedLink.expand("sales,desc")).//
+				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
+				andExpect(client.hasLinkWithRel("self"));
+
+		client.follow(findBySortedLink.expand("sales,asc")).//
+				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
+				andExpect(client.hasLinkWithRel("self"));
+	}
+
+	/**
+	 * @see DATAREST-883
+	 */
+	@Test
+	public void exectuesCustomQuerySearchThatTakesAMappedSortProperty() throws Exception {
+
+		Link booksLink = client.discoverUnique("books");
+		Link searchLink = client.discoverUnique(booksLink, "search");
+		Link findByLink = client.discoverUnique(searchLink, "find-spring-books-sorted");
+
+		// Assert sort options advertised
+		assertThat(findByLink.isTemplated(), is(true));
+
+		// Assert results returned as specified
+		client.follow(findByLink.expand("0", "10", "sales,desc")).//
+				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
+				andExpect(client.hasLinkWithRel("self"));
+
+		client.follow(findByLink.expand("0", "10", "unknown,asc,sales,asc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
 				andExpect(client.hasLinkWithRel("self"));

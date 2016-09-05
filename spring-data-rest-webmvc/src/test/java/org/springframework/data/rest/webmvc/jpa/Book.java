@@ -26,8 +26,11 @@ import javax.persistence.ManyToMany;
 
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @Entity
 public class Book {
@@ -38,14 +41,18 @@ public class Book {
 	@ManyToMany(cascade = { CascadeType.MERGE })//
 	@RestResource(path = "creators") public Set<Author> authors;
 
+	@JsonProperty("sales")
+	public long soldUnits;
+
 	public String title;
 
 	protected Book() {}
 
-	public Book(String isbn, String title, Iterable<Author> authors) {
+	public Book(String isbn, String title, long soldUnits, Iterable<Author> authors) {
 
 		this.isbn = isbn;
 		this.title = title;
+		this.soldUnits = soldUnits;
 
 		this.authors = new HashSet<Author>();
 
