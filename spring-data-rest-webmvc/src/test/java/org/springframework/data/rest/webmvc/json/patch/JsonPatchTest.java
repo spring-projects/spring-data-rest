@@ -113,7 +113,7 @@ public class JsonPatchTest {
 		ClassPathResource resource = new ClassPathResource(jsonPatchFile, getClass());
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode node = mapper.readValue(resource.getInputStream(), JsonNode.class);
-		Patch patch = new JsonPatchPatchConverter().convert(node);
+		Patch patch = new JsonPatchPatchConverter(mapper).convert(node);
 		return patch;
 	}
 
