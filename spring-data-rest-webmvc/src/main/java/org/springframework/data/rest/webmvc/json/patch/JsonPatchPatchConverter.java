@@ -33,9 +33,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 
-	private static final ObjectMapper MAPPER = new ObjectMapper();
+	private final ObjectMapper mapper;
 
-	/**
+    public JsonPatchPatchConverter(ObjectMapper mapper) {
+    	this.mapper = mapper;
+    }
+
+    /**
 	 * Constructs a {@link Patch} object given a JsonNode.
 	 * 
 	 * @param jsonNode a JsonNode containing the JSON Patch
@@ -99,7 +103,7 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 			}
 			Object value = operation.getValue();
 			if (value != null) {
-				opNode.set("value", MAPPER.valueToTree(value));
+				opNode.set("value", mapper.valueToTree(value));
 			}
 			patchNode.add(opNode);
 		}
