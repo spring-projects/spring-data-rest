@@ -16,20 +16,26 @@
 
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
  * @author Roy Clarkson
  * @author Craig Walls
+ * @author Mathias Düsterhöft
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 class Todo {
 
 	private Long id;
 	private String description;
 	private boolean complete;
+	private TodoType type = new TodoType();
+
+	public Todo(Long id, String description, boolean complete) {
+		this.id = id;
+		this.description = description;
+		this.complete = complete;
+	}
 }
