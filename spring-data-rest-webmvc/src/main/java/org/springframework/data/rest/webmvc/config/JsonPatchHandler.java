@@ -107,7 +107,7 @@ class JsonPatchHandler {
 	private Patch getPatchOperations(InputStream source) {
 
 		try {
-			return new JsonPatchPatchConverter().convert(mapper.readTree(source));
+			return new JsonPatchPatchConverter(mapper).convert(mapper.readTree(source));
 		} catch (Exception o_O) {
 			throw new HttpMessageNotReadableException(
 					String.format("Could not read PATCH operations! Expected %s!", RestMediaTypes.JSON_PATCH_JSON), o_O);
