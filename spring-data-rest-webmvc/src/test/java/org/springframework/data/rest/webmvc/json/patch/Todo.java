@@ -16,6 +16,9 @@
 
 package org.springframework.data.rest.webmvc.json.patch;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -33,6 +36,7 @@ class Todo {
 	private String description;
 	private boolean complete;
 	private TodoType type = new TodoType();
+	private List<String> items = new ArrayList<String>();
 
 	public Todo(Long id, String description, boolean complete) {
 

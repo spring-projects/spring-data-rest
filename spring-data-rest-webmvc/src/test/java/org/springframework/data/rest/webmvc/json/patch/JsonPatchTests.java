@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -112,6 +113,17 @@ public class JsonPatchTests {
 		assertEquals("D", todos.get(3).getDescription());
 		assertEquals("E", todos.get(4).getDescription());
 		assertEquals("F", todos.get(5).getDescription());
+	}
+
+	@Test
+	public void patchArray() throws Exception {
+		Todo todo = new Todo(1L, "F", false);
+
+		Patch patch = readJsonPatch("patch-array.json");
+		assertEquals(1, patch.size());
+
+		Todo patchedTodo = patch.apply(todo, Todo.class);
+		assertEquals(Arrays.asList("one","two","three"), patchedTodo.getItems());
 	}
 
 	private Patch readJsonPatch(String jsonPatchFile) throws IOException, JsonParseException, JsonMappingException {
