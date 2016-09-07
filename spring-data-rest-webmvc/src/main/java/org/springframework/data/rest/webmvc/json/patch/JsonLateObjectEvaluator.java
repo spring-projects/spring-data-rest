@@ -42,7 +42,7 @@ class JsonLateObjectEvaluator implements LateObjectEvaluator {
 		try {
 			return mapper.readValue(valueNode.traverse(), type);
 		} catch (Exception e) {
-			return null;
+			throw new PatchException("JSON deserialization exception", e);
 		}
 	}
 }
