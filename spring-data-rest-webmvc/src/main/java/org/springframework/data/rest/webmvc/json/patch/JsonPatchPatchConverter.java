@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Convert {@link JsonNode}s containing JSON Patch to/from {@link Patch} objects.
  * 
  * @author Craig Walls
+ * @author Oliver Trosien
  */
 public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 
