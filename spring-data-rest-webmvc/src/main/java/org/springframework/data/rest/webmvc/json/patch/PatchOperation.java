@@ -26,6 +26,7 @@ import org.springframework.expression.ExpressionException;
  * Abstract base class representing and providing support methods for patch operations.
  * 
  * @author Craig Walls
+ * @author Mathias Düsterhöft
  */
 public abstract class PatchOperation {
 
@@ -164,7 +165,7 @@ public abstract class PatchOperation {
 	 *         otherwise.
 	 */
 	protected <T> Object evaluateValueFromTarget(Object targetObject, Class<T> entityType) {
-		return value instanceof LateObjectEvaluator ? ((LateObjectEvaluator) value).evaluate(entityType) : value;
+		return value instanceof LateObjectEvaluator ? ((LateObjectEvaluator) value).evaluate(spelExpression.getValueType(targetObject)) : value;
 	}
 
 	/**
