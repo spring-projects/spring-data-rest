@@ -120,10 +120,8 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 			return valueNode.asInt();
 		} else if (valueNode.isLong()) {
 			return valueNode.asLong();
-		} else if (valueNode.isObject()) {
+		} else if (valueNode.isObject() || (valueNode.isArray())) {
 			return new JsonLateObjectEvaluator(valueNode);
-		} else if (valueNode.isArray()) {
-			// TODO: Convert valueNode to array
 		}
 
 		return null;
