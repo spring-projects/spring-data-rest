@@ -16,6 +16,7 @@
 
 package org.springframework.data.rest.webmvc.json.patch;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,7 @@ class Todo {
 	private boolean complete;
 	private TodoType type = new TodoType();
 	private List<String> items = new ArrayList<String>();
+	private BigInteger amount;
 
 	public Todo(Long id, String description, boolean complete) {
 		this.id = id;
