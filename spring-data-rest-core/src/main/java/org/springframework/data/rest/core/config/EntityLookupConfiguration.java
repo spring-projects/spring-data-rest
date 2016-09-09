@@ -186,7 +186,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 				LookupInformation<Object, Serializable, Repository<? extends T, ?>> lookupInformation) {
 
 			Assert.notNull(repositories, "Repositories must not be null!");
-			Assert.notNull(lookupInformation, "LookuInformation must not be null!");
+			Assert.notNull(lookupInformation, "LookupInformation must not be null!");
 
 			RepositoryInformation information = repositories.getRepositoryInformation(lookupInformation.repositoryType);
 
