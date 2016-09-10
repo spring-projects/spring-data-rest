@@ -99,7 +99,7 @@ public class TestMvcClient {
 	public MockHttpServletResponse request(String href, MediaType contentType) throws Exception {
 		return mvc.perform(get(href).accept(contentType)). //
 				andExpect(status().isOk()). //
-				andExpect(content().contentType(contentType)). //
+				andExpect(content().contentTypeCompatibleWith(contentType)). //
 				andReturn().getResponse();
 	}
 
@@ -191,6 +191,7 @@ public class TestMvcClient {
 
 	/**
 	 * Follow URL supplied as a string with a specific Accept header.
+	 * 
 	 * @param href
 	 * @param accept
 	 * @return

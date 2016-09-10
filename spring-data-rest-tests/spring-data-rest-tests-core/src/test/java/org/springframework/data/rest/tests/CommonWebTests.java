@@ -102,7 +102,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	public void servesHalWhenRequested() throws Exception {
 
 		mvc.perform(get("/")). //
-				andExpect(content().contentType(MediaTypes.HAL_JSON)). //
+				andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON)). //
 				andExpect(jsonPath("$._links", notNullValue()));
 	}
 
@@ -211,7 +211,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 						accept(ALPS_MEDIA_TYPE))
 				.//
 				andExpect(status().isOk()).//
-				andExpect(content().contentType(ALPS_MEDIA_TYPE));
+				andExpect(content().contentTypeCompatibleWith(ALPS_MEDIA_TYPE));
 	}
 
 	/**
