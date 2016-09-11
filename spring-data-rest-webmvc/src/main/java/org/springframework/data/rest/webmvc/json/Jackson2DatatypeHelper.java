@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.springframework.util.ClassUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
+import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 /**
@@ -35,15 +36,21 @@ public class Jackson2DatatypeHelper {
 			Jackson2DatatypeHelper.class.getClassLoader());
 	private static final boolean IS_HIBERNATE4_MODULE_AVAILABLE = ClassUtils.isPresent(
 			"com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module", Jackson2DatatypeHelper.class.getClassLoader());
+	private static final boolean IS_HIBERNATE5_MODULE_AVAILABLE = ClassUtils.isPresent(
+			"com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module", Jackson2DatatypeHelper.class.getClassLoader());
 
-	private static final boolean IS_JODA_MODULE_AVAILABLE = ClassUtils.isPresent(
-			"com.fasterxml.jackson.datatype.joda.JodaModule", Jackson2DatatypeHelper.class.getClassLoader());
+	private static final boolean IS_JODA_MODULE_AVAILABLE = ClassUtils
+			.isPresent("com.fasterxml.jackson.datatype.joda.JodaModule", Jackson2DatatypeHelper.class.getClassLoader());
 
 	public static void configureObjectMapper(ObjectMapper mapper) {
 
 		// Hibernate types
-		if (IS_HIBERNATE_AVAILABLE && Hibernate4Checker.isHibernate4() && IS_HIBERNATE4_MODULE_AVAILABLE) {
-			Hibernate4ModuleRegistrar.registerModule(mapper);
+		if (IS_HIBERNATE_AVAILABLE && HibernateVersions.isHibernate4() && IS_HIBERNATE4_MODULE_AVAILABLE) {
+			new Hibernate4ModuleRegistrar().registerModule(mapper);
+		}
+
+		if (IS_HIBERNATE_AVAILABLE && HibernateVersions.isHibernate5() && IS_HIBERNATE5_MODULE_AVAILABLE) {
+			new Hibernate5ModuleRegistrar().registerModule(mapper);
 		}
 
 		// JODA time
@@ -52,19 +59,34 @@ public class Jackson2DatatypeHelper {
 		}
 	}
 
-	private static class Hibernate4Checker {
+	private static class HibernateVersions {
 
 		public static boolean isHibernate4() {
 			return Version.getVersionString().startsWith("4");
+		}
+
+		public static boolean isHibernate5() {
+			return Version.getVersionString().startsWith("5");
 		}
 	}
 
 	private static class Hibernate4ModuleRegistrar {
 
-		public static void registerModule(ObjectMapper mapper) {
+		public void registerModule(ObjectMapper mapper) {
 
 			Hibernate4Module module = new Hibernate4Module();
 			module.enable(Hibernate4Module.Feature.FORCE_LAZY_LOADING);
+
+			mapper.registerModule(module);
+		}
+	}
+
+	private static class Hibernate5ModuleRegistrar {
+
+		public void registerModule(ObjectMapper mapper) {
+
+			Hibernate5Module module = new Hibernate5Module();
+			module.enable(Hibernate5Module.Feature.FORCE_LAZY_LOADING);
 
 			mapper.registerModule(module);
 		}
