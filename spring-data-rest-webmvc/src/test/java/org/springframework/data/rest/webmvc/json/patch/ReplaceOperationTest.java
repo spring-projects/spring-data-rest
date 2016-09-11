@@ -15,12 +15,16 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ReplaceOperationTest {
 
@@ -36,6 +40,20 @@ public class ReplaceOperationTest {
 		replace.perform(todos, Todo.class);
 		
 		assertTrue(todos.get(1).isComplete());
+	}
+
+	@Test
+	public void replaceObjectPropertyValue() throws Exception {
+		// initial Todo list
+		Todo todo = new Todo(1L, "A", false);
+
+		ReplaceOperation replace = new ReplaceOperation("/type", new JsonLateObjectEvaluator(new ObjectMapper().readTree("{\"value\":\"new\"}")));
+		replace.perform(todo, Todo.class);
+
+		assertNotNull(todo.getType());
+		assertNotNull(todo.getType().getValue());
+		assertTrue(todo.getType().getValue().equals("new"));
+
 	}
 
 	@Test
