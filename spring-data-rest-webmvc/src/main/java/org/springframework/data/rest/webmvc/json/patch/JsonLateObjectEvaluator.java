@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * {@link LateObjectEvaluator} implementation that assumes values represented as JSON objects.
  * 
  * @author Craig Walls
- * @author Mathias Düsterhöft
  */
 class JsonLateObjectEvaluator implements LateObjectEvaluator {
 

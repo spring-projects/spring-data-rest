@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.springframework.util.Assert;
+
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,16 +32,26 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Convert {@link JsonNode}s containing JSON Patch to/from {@link Patch} objects.
  * 
  * @author Craig Walls
+ * @author Oliver Gierke
+ * @author Mathias Düsterhöft
  */
 public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 
 	private final ObjectMapper mapper;
 
-    public JsonPatchPatchConverter(ObjectMapper mapper) {
-    	this.mapper = mapper;
-    }
+	/**
+	 * Creates a new {@link JsonPatchPatchConverter} for the given {@link ObjectMapper}.
+	 * 
+	 * @param mapper must not be {@literal null}.
+	 */
+	public JsonPatchPatchConverter(ObjectMapper mapper) {
 
-    /**
+		Assert.notNull(mapper, "ObjectMapper must not be null!");
+
+		this.mapper = mapper;
+	}
+
+	/**
 	 * Constructs a {@link Patch} object given a JsonNode.
 	 * 
 	 * @param jsonNode a JsonNode containing the JSON Patch
