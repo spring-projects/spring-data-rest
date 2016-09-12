@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
  * @author Roy Clarkson
  * @author Craig Walls
  * @author Mathias Düsterhöft
+ * @author Oliver Gierke
  */
 @Data
 @NoArgsConstructor
@@ -34,6 +35,7 @@ class Todo {
 	private TodoType type = new TodoType();
 
 	public Todo(Long id, String description, boolean complete) {
+
 		this.id = id;
 		this.description = description;
 		this.complete = complete;

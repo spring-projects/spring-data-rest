@@ -15,9 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,25 +33,11 @@ public class ReplaceOperationTest {
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		ReplaceOperation replace = new ReplaceOperation("/1/complete", true);
 		replace.perform(todos, Todo.class);
-		
+
 		assertTrue(todos.get(1).isComplete());
-	}
-
-	@Test
-	public void replaceObjectPropertyValue() throws Exception {
-		// initial Todo list
-		Todo todo = new Todo(1L, "A", false);
-
-		ReplaceOperation replace = new ReplaceOperation("/type", new JsonLateObjectEvaluator(new ObjectMapper().readTree("{\"value\":\"new\"}")));
-		replace.perform(todo, Todo.class);
-
-		assertNotNull(todo.getType());
-		assertNotNull(todo.getType().getValue());
-		assertTrue(todo.getType().getValue().equals("new"));
-
 	}
 
 	@Test
@@ -63,7 +47,7 @@ public class ReplaceOperationTest {
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		ReplaceOperation replace = new ReplaceOperation("/1/description", "BBB");
 		replace.perform(todos, Todo.class);
 
@@ -77,11 +61,27 @@ public class ReplaceOperationTest {
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		ReplaceOperation replace = new ReplaceOperation("/1/description", 22);
 		replace.perform(todos, Todo.class);
 
 		assertEquals("22", todos.get(1).getDescription());
 	}
 
+	/**
+	 * @see DATAREST-885
+	 */
+	@Test
+	public void replaceObjectPropertyValue() throws Exception {
+
+		Todo todo = new Todo(1L, "A", false);
+
+		ReplaceOperation replace = new ReplaceOperation("/type",
+				new JsonLateObjectEvaluator(new ObjectMapper().readTree("{ \"value\" : \"new\" }")));
+		replace.perform(todo, Todo.class);
+
+		assertNotNull(todo.getType());
+		assertNotNull(todo.getType().getValue());
+		assertTrue(todo.getType().getValue().equals("new"));
+	}
 }
