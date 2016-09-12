@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Convert {@link JsonNode}s containing JSON Patch to/from {@link Patch} objects.
  * 
  * @author Craig Walls
+ * @author Oliver Trosien
  */
 public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 
@@ -120,13 +121,10 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 			return valueNode.asInt();
 		} else if (valueNode.isLong()) {
 			return valueNode.asLong();
-		} else if (valueNode.isObject()) {
+		} else if (valueNode.isObject() || (valueNode.isArray())) {
 			return new JsonLateObjectEvaluator(valueNode);
-		} else if (valueNode.isArray()) {
-			// TODO: Convert valueNode to array
 		}
-
-		return null;
+		throw new PatchException("Unrecognized valueNode type at path: " + path + ". valueNode: " + valueNode.toString());
 	}
 
 	/**
