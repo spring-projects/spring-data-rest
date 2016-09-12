@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Craig Walls
  * @author Oliver Gierke
  * @author Mathias Düsterhöft
+ * @author Oliver Trosien
  */
 public class JsonPatchTests {
 
@@ -115,15 +116,19 @@ public class JsonPatchTests {
 		assertEquals("F", todos.get(5).getDescription());
 	}
 
+	/**
+	 * @see DATAREST-885
+	 */
 	@Test
 	public void patchArray() throws Exception {
+
 		Todo todo = new Todo(1L, "F", false);
 
 		Patch patch = readJsonPatch("patch-array.json");
 		assertEquals(1, patch.size());
 
 		Todo patchedTodo = patch.apply(todo, Todo.class);
-		assertEquals(Arrays.asList("one","two","three"), patchedTodo.getItems());
+		assertEquals(Arrays.asList("one", "two", "three"), patchedTodo.getItems());
 	}
 
 	private Patch readJsonPatch(String jsonPatchFile) throws IOException, JsonParseException, JsonMappingException {
