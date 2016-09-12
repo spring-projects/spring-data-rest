@@ -36,6 +36,8 @@ import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
  */
 class MappedProperties {
 
+	private static final ClassIntrospector INTROSPECTOR = new BasicClassIntrospector();
+
 	private final Map<PersistentProperty<?>, String> propertyToFieldName;
 	private final Map<String, PersistentProperty<?>> fieldNameToProperty;
 
@@ -68,9 +70,7 @@ class MappedProperties {
 	 */
 	public static MappedProperties fromJacksonProperties(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
 
-		ClassIntrospector introspector = new BasicClassIntrospector();
-
-		BeanDescription description = introspector.forDeserialization(mapper.getDeserializationConfig(),
+		BeanDescription description = INTROSPECTOR.forDeserialization(mapper.getDeserializationConfig(),
 				mapper.constructType(entity.getType()), mapper.getDeserializationConfig());
 
 		return new MappedProperties(entity, description);
@@ -93,7 +93,7 @@ class MappedProperties {
 	 */
 	public boolean hasPersistentPropertyForField(String fieldName) {
 
-		Assert.hasText(fieldName, "Field name must not be empty or null!");
+		Assert.hasText(fieldName, "Field name must not be null or empty!");
 
 		return fieldNameToProperty.containsKey(fieldName);
 	}
@@ -104,7 +104,7 @@ class MappedProperties {
 	 */
 	public PersistentProperty<?> getPersistentProperty(String fieldName) {
 
-		Assert.hasText(fieldName, "Field name must not be empty or null!");
+		Assert.hasText(fieldName, "Field name must not be null or empty!");
 
 		return fieldNameToProperty.get(fieldName);
 	}

@@ -15,10 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -32,29 +34,14 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * resolved to their property names. Unknown properties are removed from {@link Sort}.
  * 
  * @author Mark Paluch
- * @since 2.6
+ * @author Oliver Gierke
+ * @since 2.6, 2.5.3
  */
+@RequiredArgsConstructor
 public class MappingAwareSortArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private final JacksonMappingAwareSortTranslator translator;
-	private final SortHandlerMethodArgumentResolver delegate;
-
-	/**
-	 * Creates a new {@link MappingAwareSortArgumentResolver} for the given {@link JacksonMappingAwareSortTranslator} and
-	 * {@link SortHandlerMethodArgumentResolver}.
-	 *
-	 * @param translator must not be {@literal null}.
-	 * @param delegate must not be {@literal null}.
-	 */
-	public MappingAwareSortArgumentResolver(JacksonMappingAwareSortTranslator translator,
-			SortHandlerMethodArgumentResolver delegate) {
-
-		Assert.notNull(translator, "JacksonMappingSortTranslator must not be null!");
-		Assert.notNull(delegate, "PageableHandlerMethodArgumentResolver must not be null!");
-
-		this.translator = translator;
-		this.delegate = delegate;
-	}
+	private final @NonNull JacksonMappingAwareSortTranslator translator;
+	private final @NonNull SortHandlerMethodArgumentResolver delegate;
 
 	/*
 	 * (non-Javadoc)
@@ -75,10 +62,6 @@ public class MappingAwareSortArgumentResolver implements HandlerMethodArgumentRe
 
 		Sort sort = delegate.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 
-		if (sort == null) {
-			return null;
-		}
-
-		return translator.translateMethodParameter(sort, parameter, webRequest);
+		return sort == null ? null : translator.translateSort(sort, parameter, webRequest);
 	}
 }

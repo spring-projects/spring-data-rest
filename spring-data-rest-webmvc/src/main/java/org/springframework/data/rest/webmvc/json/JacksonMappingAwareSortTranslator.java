@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,16 +33,13 @@ import org.springframework.web.context.request.NativeWebRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 /**
  * Translator for {@link Sort} arguments that is aware of Jackson-Mapping on domain classes. Jackson field names are
  * translated to {@link PersistentProperty} names. Domain class are looked up by resolving request URLs to mapped
  * repositories.
  *
  * @author Mark Paluch
- * @since 2.6
+ * @since 2.6, 2.5.3
  */
 @RequiredArgsConstructor
 public class JacksonMappingAwareSortTranslator {
@@ -57,7 +57,7 @@ public class JacksonMappingAwareSortTranslator {
 	 * @return a {@link Sort} containing translated property names or {@literal null} the resulting {@link Sort} contains
 	 *         no properties.
 	 */
-	protected Sort translateMethodParameter(Sort input, MethodParameter parameter, NativeWebRequest webRequest) {
+	protected Sort translateSort(Sort input, MethodParameter parameter, NativeWebRequest webRequest) {
 
 		Assert.notNull(input, "Sort must not be null!");
 		Assert.notNull(parameter, "MethodParameter must not be null!");
@@ -74,7 +74,8 @@ public class JacksonMappingAwareSortTranslator {
 	 * Translates {@link Sort} orders from Jackson-mapped field names to {@link PersistentProperty} names.
 	 *
 	 * @author Mark Paluch
-	 * @since 2.6
+	 * @author Oliver Gierke
+	 * @since 2.6, 2.5.3
 	 */
 	@RequiredArgsConstructor
 	static class SortTranslator {
@@ -95,17 +96,14 @@ public class JacksonMappingAwareSortTranslator {
 			for (Order order : input) {
 
 				if (mappedProperties.hasPersistentPropertyForField(order.getProperty())) {
+
 					PersistentProperty<?> persistentProperty = mappedProperties.getPersistentProperty(order.getProperty());
 					Order mappedOrder = new Order(order.getDirection(), persistentProperty.getName(), order.getNullHandling());
 					filteredOrders.add(order.isIgnoreCase() ? mappedOrder.ignoreCase() : mappedOrder);
 				}
 			}
 
-			if (filteredOrders.isEmpty()) {
-				return null;
-			}
-
-			return new Sort(filteredOrders);
+			return filteredOrders.isEmpty() ? null : new Sort(filteredOrders);
 		}
 	}
 }

@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Unit tests for {@link JacksonMappingAwareSortTranslator.SortTranslator}.
  *
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @soundtrack dkn - Out Of This World (original version)
  */
 public class SortTranslatorUnitTests {
