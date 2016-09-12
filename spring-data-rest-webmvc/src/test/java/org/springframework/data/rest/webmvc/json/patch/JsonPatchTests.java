@@ -36,11 +36,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  * @author Mathias Düsterhöft
  */
-public class JsonPatchTest {
+public class JsonPatchTests {
 
 	@Test
 	public void manySuccessfulOperations() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
@@ -62,7 +62,7 @@ public class JsonPatchTest {
 
 	@Test
 	public void failureAtBeginning() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
@@ -80,7 +80,6 @@ public class JsonPatchTest {
 			assertEquals("Test against path '/5/description' failed.", e.getMessage());
 		}
 
-		// nothing should have changed
 		assertEquals(6, todos.size());
 		assertFalse(todos.get(1).isComplete());
 		assertEquals("D", todos.get(3).getDescription());
@@ -90,7 +89,7 @@ public class JsonPatchTest {
 
 	@Test
 	public void failureInMiddle() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
@@ -108,7 +107,6 @@ public class JsonPatchTest {
 			assertEquals("Test against path '/5/description' failed.", e.getMessage());
 		}
 
-		// nothing should have changed
 		assertEquals(6, todos.size());
 		assertFalse(todos.get(1).isComplete());
 		assertEquals("D", todos.get(3).getDescription());
@@ -117,11 +115,11 @@ public class JsonPatchTest {
 	}
 
 	private Patch readJsonPatch(String jsonPatchFile) throws IOException, JsonParseException, JsonMappingException {
+
 		ClassPathResource resource = new ClassPathResource(jsonPatchFile, getClass());
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode node = mapper.readValue(resource.getInputStream(), JsonNode.class);
-		Patch patch = new JsonPatchPatchConverter(mapper).convert(node);
+		JsonNode node = new ObjectMapper().readValue(resource.getInputStream(), JsonNode.class);
+		Patch patch = new JsonPatchPatchConverter(new ObjectMapper()).convert(node);
+
 		return patch;
 	}
-
 }

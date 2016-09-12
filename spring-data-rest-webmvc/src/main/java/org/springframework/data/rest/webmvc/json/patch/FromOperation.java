@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,19 @@
 package org.springframework.data.rest.webmvc.json.patch;
 
 /**
- * Abstract base class for operations requiring a source property, such as "copy" and "move".
- * (e.g., copy <i>from</i> here to there.
+ * Abstract base class for operations requiring a source property, such as "copy" and "move". (e.g., copy <i>from</i>
+ * here to there.
+ * 
  * @author Craig Walls
+ * @author Oliver Gierke
  */
-public abstract class FromOperation extends PatchOperation {
+abstract class FromOperation extends PatchOperation {
 
-	protected String from;
-	
+	private final String from;
+
 	/**
 	 * Constructs the operation
+	 * 
 	 * @param op The name of the operation to perform. (e.g., 'copy')
 	 * @param path The operation's target path. (e.g., '/foo/bar/4')
 	 * @param from The operation's source path. (e.g., '/foo/bar/5')
@@ -34,9 +37,8 @@ public abstract class FromOperation extends PatchOperation {
 		super(op, path);
 		this.from = from;
 	}
-	
+
 	public String getFrom() {
 		return from;
 	}
-
 }

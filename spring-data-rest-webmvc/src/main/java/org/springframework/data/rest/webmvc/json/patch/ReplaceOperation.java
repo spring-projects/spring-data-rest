@@ -24,16 +24,20 @@ public class ReplaceOperation extends PatchOperation {
 
 	/**
 	 * Constructs the replace operation
+	 * 
 	 * @param path The path whose value is to be replaced. (e.g., '/foo/bar/4')
 	 * @param value The value that will replace the current path value.
 	 */
 	public ReplaceOperation(String path, Object value) {
 		super("replace", path, value);
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
+	 */
 	@Override
 	<T> void perform(Object target, Class<T> type) {
 		setValueOnTarget(target, evaluateValueFromTarget(target, type));
 	}
-	
 }

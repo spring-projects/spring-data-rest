@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@ import java.util.List;
 
 import org.junit.Test;
 
-public class MoveOperationTest {
+public class MoveOperationTests {
 
 	@Test
 	public void moveBooleanPropertyValue() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		try {
 			MoveOperation move = new MoveOperation("/1/complete", "/0/complete");
 			move.perform(todos, Todo.class);
@@ -45,12 +45,12 @@ public class MoveOperationTest {
 
 	@Test
 	public void moveStringPropertyValue() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		MoveOperation move = new MoveOperation("/1/description", "/0/description");
 		move.perform(todos, Todo.class);
 
@@ -59,12 +59,12 @@ public class MoveOperationTest {
 
 	@Test
 	public void moveBooleanPropertyValueIntoStringProperty() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		try {
 			MoveOperation move = new MoveOperation("/1/description", "/0/complete");
 			move.perform(todos, Todo.class);
@@ -77,23 +77,23 @@ public class MoveOperationTest {
 
 	//
 	// NOTE: Moving an item about in a list probably has zero effect, as the order of the list is
-	//       usually determined by the DB query that produced the list. Moving things around in a
-	//       java.util.List and then saving those items really means nothing to the DB, as the
-	//       properties that determined the original order are still the same and will result in
-	//       the same order when the objects are queries again.
+	// usually determined by the DB query that produced the list. Moving things around in a
+	// java.util.List and then saving those items really means nothing to the DB, as the
+	// properties that determined the original order are still the same and will result in
+	// the same order when the objects are queries again.
 	//
-	
+
 	@Test
 	public void moveListElementToBeginningOfList() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", true));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		MoveOperation move = new MoveOperation("/0", "/1");
 		move.perform(todos, Todo.class);
-		
+
 		assertEquals(3, todos.size());
 		assertEquals(2L, todos.get(0).getId().longValue());
 		assertEquals("B", todos.get(0).getDescription());
@@ -102,53 +102,53 @@ public class MoveOperationTest {
 
 	@Test
 	public void moveListElementToMiddleOfList() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		MoveOperation move = new MoveOperation("/2", "/0");
 		move.perform(todos, Todo.class);
-		
+
 		assertEquals(3, todos.size());
 		assertEquals(1L, todos.get(2).getId().longValue());
 		assertEquals("A", todos.get(2).getDescription());
 		assertTrue(todos.get(2).isComplete());
 	}
-	
+
 	@Test
 	public void moveListElementToEndOfList_usingIndex() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		MoveOperation move = new MoveOperation("/2", "/0");
 		move.perform(todos, Todo.class);
-		
+
 		assertEquals(3, todos.size());
 		assertEquals(1L, todos.get(2).getId().longValue());
 		assertEquals("A", todos.get(2).getDescription());
 		assertTrue(todos.get(2).isComplete());
 	}
-	
+
 	@Test
 	public void moveListElementToBeginningOfList_usingTilde() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(3L, "C", false));
 		todos.add(new Todo(4L, "E", false));
 		todos.add(new Todo(2L, "G", false));
-		
+
 		List<Todo> expected = new ArrayList<Todo>();
 		expected.add(new Todo(1L, "A", true));
 		expected.add(new Todo(2L, "G", false));
 		expected.add(new Todo(3L, "C", false));
 		expected.add(new Todo(4L, "E", false));
-		
+
 		MoveOperation move = new MoveOperation("/1", "/~");
 		move.perform(todos, Todo.class);
 		assertEquals(expected, todos);
@@ -156,19 +156,19 @@ public class MoveOperationTest {
 
 	@Test
 	public void moveListElementToEndOfList_usingTilde() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "G", false));
 		todos.add(new Todo(3L, "C", false));
 		todos.add(new Todo(4L, "E", false));
-		
+
 		List<Todo> expected = new ArrayList<Todo>();
 		expected.add(new Todo(1L, "A", true));
 		expected.add(new Todo(3L, "C", false));
 		expected.add(new Todo(4L, "E", false));
 		expected.add(new Todo(2L, "G", false));
-		
+
 		MoveOperation move = new MoveOperation("/~", "/1");
 		move.perform(todos, Todo.class);
 		assertEquals(expected, todos);

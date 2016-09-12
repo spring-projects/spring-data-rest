@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,29 @@
 package org.springframework.data.rest.webmvc.json.patch;
 
 /**
- * Operation that removes the value at the given path.
- * Will throw a {@link PatchException} if the given path isn't valid or if the path is non-nullable.
+ * Operation that removes the value at the given path. Will throw a {@link PatchException} if the given path isn't valid
+ * or if the path is non-nullable.
  * 
  * @author Craig Walls
+ * @author Oliver Gierke
  */
 public class RemoveOperation extends PatchOperation {
 
 	/**
 	 * Constructs the remove operation
+	 * 
 	 * @param path The path of the value to be removed. (e.g., '/foo/bar/4')
 	 */
 	public RemoveOperation(String path) {
 		super("remove", path);
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
+	 */
 	@Override
 	<T> void perform(Object target, Class<T> type) {
 		popValueAtPath(target, path);
 	}
-
 }

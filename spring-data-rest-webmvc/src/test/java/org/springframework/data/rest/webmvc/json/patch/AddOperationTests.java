@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,49 +22,47 @@ import java.util.List;
 
 import org.junit.Test;
 
-public class AddOperationTest {
+public class AddOperationTests {
 
-	
 	@Test
 	public void addBooleanPropertyValue() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		AddOperation add = new AddOperation("/1/complete", true);
 		add.perform(todos, Todo.class);
-		
+
 		assertTrue(todos.get(1).isComplete());
 	}
 
 	@Test
 	public void addStringPropertyValue() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		AddOperation add = new AddOperation("/1/description", "BBB");
 		add.perform(todos, Todo.class);
-		
+
 		assertEquals("BBB", todos.get(1).getDescription());
 	}
 
-	
 	@Test
 	public void addItemToList() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		
+
 		AddOperation add = new AddOperation("/1", new Todo(null, "D", true));
 		add.perform(todos, Todo.class);
-		
+
 		assertEquals(4, todos.size());
 		assertEquals("A", todos.get(0).getDescription());
 		assertFalse(todos.get(0).isComplete());
@@ -75,5 +73,4 @@ public class AddOperationTest {
 		assertEquals("C", todos.get(3).getDescription());
 		assertFalse(todos.get(3).isComplete());
 	}
-	
 }

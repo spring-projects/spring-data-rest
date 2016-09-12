@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,8 +61,6 @@ public class PathToSpEL {
 		return spelToExpression(pathNodesToSpEL(copyOf(path.split("\\/"), path.split("\\/").length - 1)));
 	}
 
-	// private helpers
-
 	private static String pathToSpEL(String path) {
 		return pathNodesToSpEL(path.split("\\/"));
 	}
@@ -71,7 +69,9 @@ public class PathToSpEL {
 		StringBuilder spelBuilder = new StringBuilder();
 
 		for (int i = 0; i < pathNodes.length; i++) {
+
 			String pathNode = pathNodes[i];
+
 			if (pathNode.length() == 0) {
 				continue;
 			}
@@ -82,20 +82,26 @@ public class PathToSpEL {
 			}
 
 			try {
+
 				int index = Integer.parseInt(pathNode);
 				spelBuilder.append('[').append(index).append(']');
+
 			} catch (NumberFormatException e) {
+
 				if (spelBuilder.length() > 0) {
 					spelBuilder.append('.');
 				}
+
 				spelBuilder.append(pathNode);
 			}
 		}
 
 		String spel = spelBuilder.toString();
+
 		if (spel.length() == 0) {
 			spel = "#this";
 		}
+
 		return spel;
 	}
 
