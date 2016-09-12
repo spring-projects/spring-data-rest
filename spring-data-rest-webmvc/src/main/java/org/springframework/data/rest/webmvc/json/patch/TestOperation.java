@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,22 +43,29 @@ class TestOperation extends PatchOperation {
 		super("test", path, value);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
+	 */
 	@Override
 	<T> void perform(Object target, Class<T> type) {
+
 		Object expected = normalizeIfNumber(evaluateValueFromTarget(target, type));
 		Object actual = normalizeIfNumber(getValueFromTarget(target));
+
 		if (!ObjectUtils.nullSafeEquals(expected, actual)) {
 			throw new PatchException("Test against path '" + path + "' failed.");
 		}
 	}
 
 	private Object normalizeIfNumber(Object expected) {
+
 		if (expected instanceof Double || expected instanceof Float) {
 			expected = BigDecimal.valueOf(((Number) expected).doubleValue());
 		} else if (expected instanceof Number) {
 			expected = BigInteger.valueOf(((Number) expected).longValue());
 		}
+
 		return expected;
 	}
-
 }

@@ -15,13 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.springframework.util.Assert;
-
-import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -35,21 +35,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Oliver Gierke
  * @author Mathias Düsterhöft
  */
+@RequiredArgsConstructor
 public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 
-	private final ObjectMapper mapper;
-
-	/**
-	 * Creates a new {@link JsonPatchPatchConverter} for the given {@link ObjectMapper}.
-	 * 
-	 * @param mapper must not be {@literal null}.
-	 */
-	public JsonPatchPatchConverter(ObjectMapper mapper) {
-
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
-
-		this.mapper = mapper;
-	}
+	private final @NonNull ObjectMapper mapper;
 
 	/**
 	 * Constructs a {@link Patch} object given a JsonNode.
@@ -58,13 +47,16 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 	 * @return a {@link Patch}
 	 */
 	public Patch convert(JsonNode jsonNode) {
+
 		if (!(jsonNode instanceof ArrayNode)) {
 			throw new IllegalArgumentException("JsonNode must be an instance of ArrayNode");
 		}
 
 		ArrayNode opNodes = (ArrayNode) jsonNode;
 		List<PatchOperation> ops = new ArrayList<PatchOperation>(opNodes.size());
+
 		for (Iterator<JsonNode> elements = opNodes.elements(); elements.hasNext();) {
+
 			JsonNode opNode = elements.next();
 
 			String opType = opNode.get("op").textValue();
@@ -105,18 +97,25 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 		List<PatchOperation> operations = patch.getOperations();
 		JsonNodeFactory nodeFactory = JsonNodeFactory.instance;
 		ArrayNode patchNode = nodeFactory.arrayNode();
+
 		for (PatchOperation operation : operations) {
+
 			ObjectNode opNode = nodeFactory.objectNode();
 			opNode.set("op", nodeFactory.textNode(operation.getOp()));
 			opNode.set("path", nodeFactory.textNode(operation.getPath()));
+
 			if (operation instanceof FromOperation) {
+
 				FromOperation fromOp = (FromOperation) operation;
 				opNode.set("from", nodeFactory.textNode(fromOp.getFrom()));
 			}
+
 			Object value = operation.getValue();
+
 			if (value != null) {
 				opNode.set("value", mapper.valueToTree(value));
 			}
+
 			patchNode.add(opNode);
 		}
 
@@ -124,6 +123,7 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 	}
 
 	private Object valueFromJsonNode(String path, JsonNode valueNode) {
+
 		if (valueNode == null || valueNode.isNull()) {
 			return null;
 		} else if (valueNode.isTextual()) {
@@ -137,36 +137,11 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 		} else if (valueNode.isLong()) {
 			return valueNode.asLong();
 		} else if (valueNode.isObject()) {
-			return new JsonLateObjectEvaluator(valueNode);
+			return new JsonLateObjectEvaluator(mapper, valueNode);
 		} else if (valueNode.isArray()) {
 			// TODO: Convert valueNode to array
 		}
 
 		return null;
 	}
-
-	/**
-	 * Returns whether the trailing element of the given {@link JsonPointer} is a pointer into an array or collection.
-	 * 
-	 * @param pointer must not be {@literal null}.
-	 * @return
-	 */
-	private static boolean isCollectionElementReference(String pointer) {
-
-		String[] segments = pointer.split("/");
-
-		if (segments.length == 0) {
-			return false;
-		}
-
-		String trailing = segments[segments.length - 1];
-
-		try {
-			Integer.parseInt(trailing);
-			return true;
-		} catch (NumberFormatException o_O) {
-			return false;
-		}
-	}
-
 }

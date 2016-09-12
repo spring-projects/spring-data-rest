@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,26 +23,31 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.expression.Expression;
 
-public class PathToSpelTest {
+public class PathToSpelTests {
 
 	@Test
 	public void listIndex() {
+
 		Expression expr = PathToSpEL.pathToExpression("/1/description");
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
-		assertEquals("B", (String) expr.getValue(todos));		
+
+		assertEquals("B", (String) expr.getValue(todos));
 	}
-	
+
 	@Test
 	public void listTilde() {
+
 		Expression expr = PathToSpEL.pathToExpression("/~/description");
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
+
 		assertEquals("C", (String) expr.getValue(todos));
 	}
-	
 }

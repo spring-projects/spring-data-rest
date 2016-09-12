@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -23,23 +26,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @author Craig Walls
  */
+@RequiredArgsConstructor
 class JsonLateObjectEvaluator implements LateObjectEvaluator {
 
-	private static final ObjectMapper MAPPER = new ObjectMapper();
+	private final @NonNull ObjectMapper mapper;
+	private final @NonNull JsonNode valueNode;
 
-	private JsonNode valueNode;
-
-	public JsonLateObjectEvaluator(JsonNode valueNode) {
-		this.valueNode = valueNode;
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.LateObjectEvaluator#evaluate(java.lang.Class)
+	 */
 	@Override
 	public <T> Object evaluate(Class<T> type) {
+
 		try {
-			return MAPPER.readValue(valueNode.traverse(), type);
+			return mapper.readValue(valueNode.traverse(), type);
 		} catch (Exception e) {
 			return null;
 		}
 	}
-
 }

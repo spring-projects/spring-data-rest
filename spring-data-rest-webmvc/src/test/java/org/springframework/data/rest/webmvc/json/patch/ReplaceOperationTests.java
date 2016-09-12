@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,11 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ReplaceOperationTest {
+public class ReplaceOperationTests {
 
 	@Test
 	public void replaceBooleanPropertyValue() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
@@ -42,7 +42,7 @@ public class ReplaceOperationTest {
 
 	@Test
 	public void replaceTextPropertyValue() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
@@ -56,7 +56,7 @@ public class ReplaceOperationTest {
 
 	@Test
 	public void replaceTextPropertyValueWithANumber() throws Exception {
-		// initial Todo list
+
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
@@ -76,8 +76,9 @@ public class ReplaceOperationTest {
 
 		Todo todo = new Todo(1L, "A", false);
 
+		ObjectMapper mapper = new ObjectMapper();
 		ReplaceOperation replace = new ReplaceOperation("/type",
-				new JsonLateObjectEvaluator(new ObjectMapper().readTree("{ \"value\" : \"new\" }")));
+				new JsonLateObjectEvaluator(mapper, mapper.readTree("{ \"value\" : \"new\" }")));
 		replace.perform(todo, Todo.class);
 
 		assertNotNull(todo.getType());
