@@ -140,6 +140,8 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 		} else if (valueNode.isObject() || (valueNode.isArray())) {
 			return new JsonLateObjectEvaluator(mapper, valueNode);
 		}
-		throw new PatchException("Unrecognized valueNode type at path: " + path + ". valueNode: " + valueNode.toString());
+
+		throw new PatchException(
+				String.format("Unrecognized valueNode type at path %s and value node %s.", path, valueNode));
 	}
 }
