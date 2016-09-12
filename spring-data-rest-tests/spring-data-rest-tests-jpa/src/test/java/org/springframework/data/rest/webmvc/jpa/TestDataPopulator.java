@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class TestDataPopulator {
 

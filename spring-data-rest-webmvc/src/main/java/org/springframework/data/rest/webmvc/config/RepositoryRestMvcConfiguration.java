@@ -33,10 +33,10 @@ import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.Ordered;
@@ -96,9 +96,9 @@ import org.springframework.data.rest.webmvc.json.MappingAwareDefaultedPageableAr
 import org.springframework.data.rest.webmvc.json.MappingAwarePageableArgumentResolver;
 import org.springframework.data.rest.webmvc.json.MappingAwareSortArgumentResolver;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
-import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
+import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.ValueTypeSchemaPropertyCustomizerFactory;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
@@ -166,7 +166,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @Configuration
 @EnableHypermediaSupport(type = HypermediaType.HAL)
 @ComponentScan(basePackageClasses = RepositoryRestController.class,
-		includeFilters = @Filter(BasePathAwareController.class) , useDefaultFilters = false)
+		includeFilters = @Filter(BasePathAwareController.class), useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 @Import({ SpringDataJacksonConfiguration.class, EnableSpringDataWebSupport.QuerydslActivator.class })
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration implements InitializingBean {
@@ -742,12 +742,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public JacksonMappingAwareSortTranslator sortMethodArgumentTranslator() {
-		return new JacksonMappingAwareSortTranslator(objectMapper(), repositories(),
-				DomainClassResolver.create(repositories(), resourceMappings(), baseUri()));
-	}
-
-	@Bean
 	public PluginRegistry<BackendIdConverter, Class<?>> backendIdConverterRegistry() {
 
 		List<BackendIdConverter> converters = new ArrayList<BackendIdConverter>(idConverters.size());
@@ -793,13 +787,14 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		HateoasPageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
 
+		JacksonMappingAwareSortTranslator sortTranslator = new JacksonMappingAwareSortTranslator(objectMapper(),
+				repositories(), DomainClassResolver.of(repositories(), resourceMappings(), baseUri()));
 
-		HandlerMethodArgumentResolver sortResolver = new MappingAwareSortArgumentResolver(sortMethodArgumentTranslator(),
-				sortResolver());
-		HandlerMethodArgumentResolver jacksonPageableResolver = new MappingAwarePageableArgumentResolver(
-				sortMethodArgumentTranslator(), pageableResolver);
+		HandlerMethodArgumentResolver sortResolver = new MappingAwareSortArgumentResolver(sortTranslator, sortResolver());
+		HandlerMethodArgumentResolver jacksonPageableResolver = new MappingAwarePageableArgumentResolver(sortTranslator,
+				pageableResolver);
 		HandlerMethodArgumentResolver defaultedPageableResolver = new MappingAwareDefaultedPageableArgumentResolver(
-				sortMethodArgumentTranslator(), pageableResolver);
+				sortTranslator, pageableResolver);
 
 		return Arrays.asList(defaultedPageableResolver, jacksonPageableResolver, sortResolver,
 				serverHttpRequestMethodArgumentResolver(), repoRequestArgumentResolver(), persistentEntityArgumentResolver(),

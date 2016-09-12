@@ -15,12 +15,14 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -35,29 +37,14 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * {@link Sort}.
  * 
  * @author Mark Paluch
- * @since 2.6
+ * @author Oliver Gierke
+ * @since 2.6, 2.5.3
  */
+@RequiredArgsConstructor
 public class MappingAwarePageableArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private final JacksonMappingAwareSortTranslator translator;
-	private final PageableHandlerMethodArgumentResolver delegate;
-
-	/**
-	 * Creates a new {@link MappingAwarePageableArgumentResolver} for the given {@link JacksonMappingAwareSortTranslator}
-	 * and {@link PageableHandlerMethodArgumentResolver}.
-	 *
-	 * @param translator must not be {@literal null}.
-	 * @param delegate must not be {@literal null}.
-	 */
-	public MappingAwarePageableArgumentResolver(JacksonMappingAwareSortTranslator translator,
-			PageableHandlerMethodArgumentResolver delegate) {
-
-		Assert.notNull(translator, "JacksonMappingSortTranslator must not be null!");
-		Assert.notNull(delegate, "PageableHandlerMethodArgumentResolver must not be null!");
-
-		this.translator = translator;
-		this.delegate = delegate;
-	}
+	private final @NonNull JacksonMappingAwareSortTranslator translator;
+	private final @NonNull PageableHandlerMethodArgumentResolver delegate;
 
 	/*
 	 * (non-Javadoc)
@@ -82,7 +69,7 @@ public class MappingAwarePageableArgumentResolver implements HandlerMethodArgume
 			return null;
 		}
 
-		Sort translated = translator.translateMethodParameter(pageable.getSort(), parameter, webRequest);
+		Sort translated = translator.translateSort(pageable.getSort(), parameter, webRequest);
 		return new PageRequest(pageable.getPageNumber(), pageable.getPageSize(), translated);
 	}
 

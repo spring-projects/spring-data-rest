@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.lang.reflect.Method;
 
 import org.springframework.data.repository.support.Repositories;
@@ -31,42 +34,15 @@ import org.springframework.web.context.request.NativeWebRequest;
  * requests} related to mapped and exported {@link Repositories}.
  *
  * @author Mark Paluch
- * @since 2.6
+ * @author Oliver Gierke
+ * @since 2.6, 2.5.3
  */
+@RequiredArgsConstructor(staticName = "of")
 public class DomainClassResolver {
 
-	private final Repositories repositories;
-	private final ResourceMappings mappings;
-	private final BaseUri baseUri;
-
-	/**
-	 * Creates a new {@link DomainClassResolver} for the given {@link Repositories} and {@link ResourceMappings}.
-	 *
-	 * @param repositories must not be {@literal null}.
-	 * @param mappings must not be {@literal null}.
-	 * @param baseUri must not be {@literal null}.
-	 */
-	private DomainClassResolver(Repositories repositories, ResourceMappings mappings, BaseUri baseUri) {
-
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
-		Assert.notNull(baseUri, "BaseUri must not be null!");
-
-		this.repositories = repositories;
-		this.mappings = mappings;
-		this.baseUri = baseUri;
-	}
-
-	/**
-	 * Creates a new {@link DomainClassResolver} for the given {@link Repositories} and {@link ResourceMappings}.
-	 *
-	 * @param repositories must not be {@literal null}.
-	 * @param mappings must not be {@literal null}.
-	 * @param baseUri must not be {@literal null}.
-	 */
-	public static DomainClassResolver create(Repositories repositories, ResourceMappings mappings, BaseUri baseUri) {
-		return new DomainClassResolver(repositories, mappings, baseUri);
-	}
+	private final @NonNull Repositories repositories;
+	private final @NonNull ResourceMappings mappings;
+	private final @NonNull BaseUri baseUri;
 
 	/**
 	 * Resolves a domain class that is associated with the {@link NativeWebRequest}
@@ -89,7 +65,9 @@ public class DomainClassResolver {
 		}
 
 		for (Class<?> domainType : repositories) {
+
 			ResourceMetadata mapping = mappings.getMetadataFor(domainType);
+
 			if (mapping.getPath().matches(repositoryKey) && mapping.isExported()) {
 				return domainType;
 			}
