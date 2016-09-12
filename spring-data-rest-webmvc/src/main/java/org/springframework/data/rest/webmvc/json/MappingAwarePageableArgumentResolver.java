@@ -35,7 +35,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * {@link Sort}.
  * 
  * @author Mark Paluch
- * @since 2.6
+ * @author Oliver Gierke
+ * @since 2.6, 2.5.3, 2.4.5
  */
 public class MappingAwarePageableArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -82,8 +83,7 @@ public class MappingAwarePageableArgumentResolver implements HandlerMethodArgume
 			return null;
 		}
 
-		Sort translated = translator.translateMethodParameter(pageable.getSort(), parameter, webRequest);
+		Sort translated = translator.translateSort(pageable.getSort(), parameter, webRequest);
 		return new PageRequest(pageable.getPageNumber(), pageable.getPageSize(), translated);
 	}
-
 }

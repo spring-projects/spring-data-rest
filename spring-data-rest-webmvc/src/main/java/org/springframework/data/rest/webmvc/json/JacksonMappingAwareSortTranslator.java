@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * repositories.
  *
  * @author Mark Paluch
+ * @since 2.6, 2.5.3, 2.4.5
  */
 public class JacksonMappingAwareSortTranslator {
 
@@ -72,7 +73,7 @@ public class JacksonMappingAwareSortTranslator {
 	 * @return a {@link Sort} containing translated property names or {@literal null} the resulting {@link Sort} contains
 	 *         no properties.
 	 */
-	protected Sort translateMethodParameter(Sort input, MethodParameter parameter, NativeWebRequest webRequest) {
+	protected Sort translateSort(Sort input, MethodParameter parameter, NativeWebRequest webRequest) {
 
 		Assert.notNull(input, "Sort must not be null!");
 		Assert.notNull(parameter, "MethodParameter must not be null!");
@@ -89,6 +90,8 @@ public class JacksonMappingAwareSortTranslator {
 	 * Translates {@link Sort} orders from Jackson-mapped field names to {@link PersistentProperty} names.
 	 *
 	 * @author Mark Paluch
+	 * @author Oliver Gierke
+	 * @since 2.6, 2.5.3, 2.4.5
 	 */
 	static class SortTranslator {
 
@@ -120,17 +123,14 @@ public class JacksonMappingAwareSortTranslator {
 			for (Order order : input) {
 
 				if (mappedProperties.hasPersistentPropertyForField(order.getProperty())) {
+
 					PersistentProperty<?> persistentProperty = mappedProperties.getPersistentProperty(order.getProperty());
 					Order mappedOrder = new Order(order.getDirection(), persistentProperty.getName(), order.getNullHandling());
 					filteredOrders.add(order.isIgnoreCase() ? mappedOrder.ignoreCase() : mappedOrder);
 				}
 			}
 
-			if (filteredOrders.isEmpty()) {
-				return null;
-			}
-
-			return new Sort(filteredOrders);
+			return filteredOrders.isEmpty() ? null : new Sort(filteredOrders);
 		}
 	}
 }

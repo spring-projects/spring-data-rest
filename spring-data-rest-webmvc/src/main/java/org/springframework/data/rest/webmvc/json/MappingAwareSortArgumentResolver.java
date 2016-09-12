@@ -32,7 +32,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * resolved to their property names. Unknown properties are removed from {@link Sort}.
  * 
  * @author Mark Paluch
- * @since 2.6
+ * @author Oliver Gierke
+ * @since 2.6, 2.5.3, 2.4.5
  */
 public class MappingAwareSortArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -75,10 +76,6 @@ public class MappingAwareSortArgumentResolver implements HandlerMethodArgumentRe
 
 		Sort sort = delegate.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 
-		if (sort == null) {
-			return null;
-		}
-
-		return translator.translateMethodParameter(sort, parameter, webRequest);
+		return sort == null ? null : translator.translateSort(sort, parameter, webRequest);
 	}
 }

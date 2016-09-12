@@ -31,7 +31,8 @@ import org.springframework.web.context.request.NativeWebRequest;
  * requests} related to mapped and exported {@link Repositories}.
  *
  * @author Mark Paluch
- * @since 2.6
+ * @author Oliver Gierke
+ * @since 2.6, 2.5.3, 2.4.5
  */
 public class DomainClassResolver {
 
@@ -64,7 +65,7 @@ public class DomainClassResolver {
 	 * @param mappings must not be {@literal null}.
 	 * @param baseUri must not be {@literal null}.
 	 */
-	public static DomainClassResolver create(Repositories repositories, ResourceMappings mappings, BaseUri baseUri) {
+	public static DomainClassResolver of(Repositories repositories, ResourceMappings mappings, BaseUri baseUri) {
 		return new DomainClassResolver(repositories, mappings, baseUri);
 	}
 
@@ -89,7 +90,9 @@ public class DomainClassResolver {
 		}
 
 		for (Class<?> domainType : repositories) {
+
 			ResourceMetadata mapping = mappings.getMetadataFor(domainType);
+
 			if (mapping.getPath().matches(repositoryKey) && mapping.isExported()) {
 				return domainType;
 			}
