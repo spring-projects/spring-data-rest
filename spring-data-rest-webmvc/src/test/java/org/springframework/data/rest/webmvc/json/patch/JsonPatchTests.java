@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.core.io.ClassPathResource;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -40,6 +42,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Trosien
  */
 public class JsonPatchTests {
+
+	public @Rule ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void manySuccessfulOperations() throws Exception {
@@ -118,7 +122,7 @@ public class JsonPatchTests {
 	}
 
 	/**
-	 * @see DATAREST-885
+	 * @see DATAREST-889
 	 */
 	@Test
 	public void patchArray() throws Exception {
@@ -132,34 +136,39 @@ public class JsonPatchTests {
 		assertEquals(Arrays.asList("one", "two", "three"), patchedTodo.getItems());
 	}
 
+	/**
+	 * @see DATAREST-889
+	 */
 	@Test
 	public void patchUnknownType() throws Exception {
+
 		Todo todo = new Todo();
 		todo.setAmount(BigInteger.ONE);
 
-		try {
-			Patch patch = readJsonPatch("patch-biginteger.json");
-			assertEquals(1, patch.size());
-			assertEquals(new BigInteger("18446744073709551616"), patch.getOperations().get(0).value);
-		} catch (PatchException e) {
-			assertEquals("Unrecognized valueNode type at path: /amount. valueNode: 18446744073709551616", e.getMessage());
-		}
+		exception.expect(PatchException.class);
+		exception.expectMessage("/amount");
+		exception.expectMessage("18446744073709551616");
+
+		readJsonPatch("patch-biginteger.json");
 	}
 
+	/**
+	 * @see DATAREST-889
+	 */
 	@Test
 	public void failureWithInvalidPatchContent() throws Exception {
+
 		Todo todo = new Todo();
 		todo.setDescription("Description");
 
 		Patch patch = readJsonPatch("patch-failing-with-invalid-content.json");
-		assertEquals(1, patch.size());
 
-		try {
-			Todo patchedTodo = patch.apply(todo, Todo.class);
-			assertEquals("Description", patchedTodo.getDescription());
-		} catch (PatchException e) {
-			assertEquals("JSON deserialization exception", e.getMessage());
-		}
+		exception.expect(PatchException.class);
+		exception.expectMessage("content");
+		exception.expectMessage("blabla");
+		exception.expectMessage(String.class.toString());
+
+		patch.apply(todo, Todo.class);
 	}
 
 	private Patch readJsonPatch(String jsonPatchFile) throws IOException, JsonParseException, JsonMappingException {
