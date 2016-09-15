@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -347,6 +349,17 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 				for (Object element : source) {
 					resources.add(toResource(element));
+				}
+
+				provider.defaultSerializeValue(resources, gen);
+
+			} else if (value instanceof Map) {
+
+				Map<?, ?> source = (Map<?, ?>) value;
+				Map<Object, Object> resources = CollectionFactory.createMap(value.getClass(), source.size());
+
+				for (Entry<?, ?> entry : source.entrySet()) {
+					resources.put(entry.getKey(), toResource(entry.getValue()));
 				}
 
 				provider.defaultSerializeValue(resources, gen);

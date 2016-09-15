@@ -19,6 +19,7 @@ import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +37,8 @@ import org.springframework.data.rest.tests.mongodb.Address;
 import org.springframework.data.rest.tests.mongodb.MongoDbRepositoryConfig;
 import org.springframework.data.rest.tests.mongodb.User;
 import org.springframework.data.rest.tests.mongodb.User.Gender;
+import org.springframework.data.rest.tests.mongodb.User.Nested;
+import org.springframework.data.rest.tests.mongodb.UserRepository;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverer;
@@ -65,6 +68,7 @@ public class PersistentEntitySerializationTests {
 
 	@Autowired ObjectMapper mapper;
 	@Autowired Repositories repositories;
+	@Autowired UserRepository users;
 
 	@Configuration
 	static class TestConfig extends RepositoryTestsConfig {
@@ -121,5 +125,22 @@ public class PersistentEntitySerializationTests {
 	@Test
 	public void deserializesTranslatedEnumProperty() throws Exception {
 		assertThat(mapper.readValue("{ \"gender\" : \"Male\" }", User.class).gender, is(Gender.MALE));
+	}
+
+	/**
+	 * @see DATAREST-864
+	 */
+	@Test
+	public void createsNestedResourceForMap() throws Exception {
+
+		User dave = users.save(new User());
+		dave.colleaguesMap = new HashMap<String, Nested>();
+		dave.colleaguesMap.put("carter", new Nested(users.save(new User())));
+
+		PersistentEntityResource resource = PersistentEntityResource
+				.build(dave, repositories.getPersistentEntity(User.class)).build();
+
+		assertThat(JsonPath.parse(mapper.writeValueAsString(resource)).read("$.colleaguesMap.carter._links.user.href",
+				String.class), is(notNullValue()));
 	}
 }
