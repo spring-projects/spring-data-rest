@@ -15,9 +15,13 @@
  */
 package org.springframework.data.rest.tests.mongodb;
 
+import lombok.Value;
+
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -47,6 +51,7 @@ public class User {
 	public org.joda.time.LocalDateTime jodaDateTime;
 	public TypeWithPattern pattern;
 	public @DBRef(lazy = true) List<User> colleagues;
+	public Map<String, Nested> colleaguesMap = new HashMap<String, Nested>();
 
 	public static class EmailAddress {
 
@@ -67,4 +72,10 @@ public class User {
 	}
 
 	public static class TypeWithPattern {}
+
+	@Value
+	public static class Nested {
+		public @DBRef(lazy = true) User user;
+		public String foo = "foo";
+	}
 }
