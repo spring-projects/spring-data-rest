@@ -79,6 +79,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerBuilder;
@@ -368,6 +369,13 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			} else {
 				provider.defaultSerializeValue(toResource(value), gen);
 			}
+		}
+
+		@Override
+		public void serializeWithType(Object value, JsonGenerator gen, SerializerProvider provider,
+					TypeSerializer typeSerializer) throws IOException {
+
+			serialize(value, gen, provider);
 		}
 
 		private Resource<Object> toResource(Object value) {
