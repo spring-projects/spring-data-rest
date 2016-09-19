@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import lombok.Data;
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -22,24 +24,17 @@ import javax.persistence.Entity;
  * @author Alex Leigh
  * @see DATAREST-872
  */
+@Data
 @Entity
 @DiscriminatorValue("S")
 public class Suite extends Room {
 
-	public static final String TYPE = "suite";
+	static final String TYPE = "suite";
 
 	private String suiteCode;
 
 	@Override
 	public String getType() {
 		return TYPE;
-	}
-
-	public String getSuiteCode() {
-		return suiteCode;
-	}
-
-	public void setSuiteCode(String suiteCode) {
-		this.suiteCode = suiteCode;
 	}
 }
