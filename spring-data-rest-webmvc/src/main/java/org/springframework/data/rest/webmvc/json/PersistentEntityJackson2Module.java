@@ -357,7 +357,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			} else if (value instanceof Map) {
 
 				Map<?, ?> source = (Map<?, ?>) value;
-				Map<Object, Object> resources = CollectionFactory.createMap(value.getClass(), source.size());
+				Map<Object, Object> resources = CollectionFactory.createApproximateMap(value.getClass(), source.size());
 
 				for (Entry<?, ?> entry : source.entrySet()) {
 					resources.put(entry.getKey(), toResource(entry.getValue()));
