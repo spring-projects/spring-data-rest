@@ -15,52 +15,36 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
-import javax.persistence.*;
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 /**
  * @author Alex Leigh
  * @see DATAREST-872
  */
+@Data
 @Entity
 public class Guest {
 
-	@Id
-	@GeneratedValue
+	@Id @GeneratedValue //
 	private Long id;
 
-	@OneToOne(cascade = CascadeType.ALL)
+	@OneToOne(cascade = CascadeType.ALL) //
 	private Room room;
 
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) //
 	private List<Meal> meals = new ArrayList<Meal>();
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public Room getRoom() {
-		return room;
-	}
-
-	public void setRoom(Room room) {
-		this.room = room;
-	}
-
-	public List<Meal> getMeals() {
-		return meals;
-	}
-
-	public void setMeals(List<Meal> meals) {
-		this.meals = meals;
-	}
-
 	public void addMeal(Meal meal) {
-		meals.add(meal);
+		this.meals.add(meal);
 	}
 }

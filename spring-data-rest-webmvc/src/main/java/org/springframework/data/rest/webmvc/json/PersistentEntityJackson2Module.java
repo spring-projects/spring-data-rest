@@ -96,6 +96,7 @@ import com.fasterxml.jackson.databind.util.NameTransformer;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Alex Leigh
  */
 public class PersistentEntityJackson2Module extends SimpleModule {
 
@@ -318,6 +319,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * Serializer to wrap values into an {@link Resource} instance and collecting all association links.
 	 *
 	 * @author Oliver Gierke
+	 * @author Alex Leigh
 	 * @since 2.5
 	 */
 	public static class NestedEntitySerializer extends StdSerializer<Object> {
@@ -371,10 +373,13 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.JsonSerializer#serializeWithType(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider, com.fasterxml.jackson.databind.jsontype.TypeSerializer)
+		 */
 		@Override
 		public void serializeWithType(Object value, JsonGenerator gen, SerializerProvider provider,
-					TypeSerializer typeSerializer) throws IOException {
-
+				TypeSerializer typeSerializer) throws IOException {
 			serialize(value, gen, provider);
 		}
 

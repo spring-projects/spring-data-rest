@@ -31,12 +31,24 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.StaticMessageSource;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
-import org.springframework.data.rest.webmvc.jpa.*;
+import org.springframework.data.rest.webmvc.jpa.CreditCard;
+import org.springframework.data.rest.webmvc.jpa.Dinner;
+import org.springframework.data.rest.webmvc.jpa.Guest;
+import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
+import org.springframework.data.rest.webmvc.jpa.LineItem;
+import org.springframework.data.rest.webmvc.jpa.Order;
+import org.springframework.data.rest.webmvc.jpa.OrderRepository;
+import org.springframework.data.rest.webmvc.jpa.Person;
+import org.springframework.data.rest.webmvc.jpa.PersonRepository;
+import org.springframework.data.rest.webmvc.jpa.PersonSummary;
+import org.springframework.data.rest.webmvc.jpa.Suite;
+import org.springframework.data.rest.webmvc.jpa.UserExcerpt;
 import org.springframework.data.rest.webmvc.util.TestUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverer;
@@ -63,6 +75,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Jon Brisbin
  * @author Greg Turnquist
  * @author Oliver Gierke
+ * @author Alex Leigh
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { JpaRepositoryConfig.class, PersistentEntitySerializationTests.TestConfig.class })
@@ -75,6 +88,7 @@ public class PersistentEntitySerializationTests {
 	@Autowired Repositories repositories;
 	@Autowired PersonRepository people;
 	@Autowired OrderRepository orders;
+	@Autowired JpaMetamodelMappingContext context;
 
 	@Configuration
 	static class TestConfig extends RepositoryTestsConfig {
@@ -310,10 +324,9 @@ public class PersistentEntitySerializationTests {
 		guest.setRoom(suite);
 		guest.addMeal(dinner);
 
-		PersistentEntityResource resource = PersistentEntityResource.
-				build(guest, repositories.getPersistentEntity(Guest.class)).
-				withLink(new Link("/guests/1")).
-				build();
+		PersistentEntityResource resource = PersistentEntityResource//
+				.build(guest, context.getPersistentEntity(Guest.class))//
+				.withLink(new Link("/guests/1")).build();
 
 		String result = mapper.writeValueAsString(resource);
 

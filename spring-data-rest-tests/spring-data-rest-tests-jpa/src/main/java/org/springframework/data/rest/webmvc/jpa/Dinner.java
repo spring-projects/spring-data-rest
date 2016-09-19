@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import lombok.Data;
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -22,6 +24,7 @@ import javax.persistence.Entity;
  * @author Alex Leigh
  * @see DATAREST-872
  */
+@Data
 @Entity
 @DiscriminatorValue("D")
 public class Dinner extends Meal {
@@ -33,13 +36,5 @@ public class Dinner extends Meal {
 	@Override
 	public String getType() {
 		return TYPE;
-	}
-
-	public String getDinnerCode() {
-		return dinnerCode;
-	}
-
-	public void setDinnerCode(String dinnerCode) {
-		this.dinnerCode = dinnerCode;
 	}
 }

@@ -15,37 +15,29 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Data;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 /**
  * @author Alex Leigh
  * @see DATAREST-872
  */
+@Data
 @Entity
 @Inheritance
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
-@JsonSubTypes({
-		@JsonSubTypes.Type(value = Suite.class, name = Suite.TYPE)
-})
+@JsonSubTypes({ @JsonSubTypes.Type(value = Suite.class, name = Suite.TYPE) })
 public abstract class Room {
 
-	@Id
-	@GeneratedValue
+	@Id @GeneratedValue //
 	private Long id;
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public abstract String getType();
 }
