@@ -817,10 +817,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			objectMapper.registerModule(new JacksonSerializers(enumTranslator()));
 		}
 
-		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
 		// Configure custom Modules
 		configurerDelegate.configureJacksonObjectMapper(objectMapper);
 		configureJacksonObjectMapper(objectMapper);
+
+		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
 
 		return objectMapper;
 	}
