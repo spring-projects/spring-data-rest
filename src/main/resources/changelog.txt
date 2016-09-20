@@ -1,6 +1,18 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.4.5.RELEASE (2016-09-20)
+---------------------------------------------
+* DATAREST-902 - Fix order dependent DuplicateLinkListingTests.
+* DATAREST-901 - Release 2.4.5 (Gosling SR5).
+* DATAREST-883 - Sort mapping does not consider Jackson customizations in field names.
+* DATAREST-873 - Allow excluding properties from being nullified in PUT requests.
+* DATAREST-863 - REST calls to /api always redirect to HAL Browser if no accept header is specified.
+* DATAREST-847 - RepositoryEntityController.saveAndReturn calls AfterSaveEvent with wrong domain object.
+* DATAREST-815 - HAL browser redirect fails when proxied through Zuul.
+* DATAREST-720 - HAL Browser default URI doesn't respect context path.
+
+
 Changes in version 2.5.3.RELEASE (2016-09-20)
 ---------------------------------------------
 * DATAREST-898 - Typo in EntityLookupConfiguration assertion message.
