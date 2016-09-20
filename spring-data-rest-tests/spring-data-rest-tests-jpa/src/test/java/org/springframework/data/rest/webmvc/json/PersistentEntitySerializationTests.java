@@ -15,8 +15,14 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -37,6 +43,7 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
+import org.springframework.data.rest.webmvc.jpa.Country;
 import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.Dinner;
 import org.springframework.data.rest.webmvc.jpa.Guest;
@@ -55,6 +62,7 @@ import org.springframework.hateoas.LinkDiscoverer;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.hateoas.hal.HalLinkDiscoverer;
@@ -76,6 +84,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Greg Turnquist
  * @author Oliver Gierke
  * @author Alex Leigh
+ * @author Mathias Düsterhöft
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { JpaRepositoryConfig.class, PersistentEntitySerializationTests.TestConfig.class })
@@ -332,5 +341,18 @@ public class PersistentEntitySerializationTests {
 
 		assertThat(JsonPath.read(result, "$.room.type"), equalTo("suite"));
 		assertThat(JsonPath.read(result, "$.meals[0].type"), equalTo("dinner"));
+	}
+
+	/**
+	 * DATAREST-904
+	 * @Relation should always be taken into account for rel names
+	 */
+	@Test
+	public void serializeResourcesWithRelationRelName() throws Exception {
+		Resources<Country> countryResources = new Resources<>(singletonList(new Country("FR", "France")));
+
+		String result = mapper.writeValueAsString(countryResources);
+		System.out.println(result);
+		assertThat(JsonPath.read(result, "_embedded.country-list"), hasSize(1));
 	}
 }
