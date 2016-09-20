@@ -93,7 +93,8 @@ public class DuplicateLinkListingTests {
 	@Test
 	public void testBasics() throws Exception {
 
-		ResultActions frodoActions = testMvcClient.follow("/people/1");
+		Person person = personRepository.findAll().iterator().next();
+		ResultActions frodoActions = testMvcClient.follow("/people/" + person.getId());
 
 		frodoActions.andExpect(jsonPath("$.links").value(hasSize(4)));
 	}
