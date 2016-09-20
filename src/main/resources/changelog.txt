@@ -1,6 +1,28 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.5.3.RELEASE (2016-09-20)
+---------------------------------------------
+* DATAREST-898 - Typo in EntityLookupConfiguration assertion message.
+* DATAREST-897 - NestedEntitySerializer fails to serialize Map for Hibernate proxy.
+* DATAREST-889 - JSON Patch silently nullifies property values.
+* DATAREST-887 - JsonLateObjectEvaluator uses hard-coded ObjectMapper.
+* DATAREST-886 - JSON Patch for arrays is broken.
+* DATAREST-885 - Patch with object value omitted.
+* DATAREST-883 - Sort mapping does not consider Jackson customizations in field names.
+* DATAREST-881 - ResourceProcessor is not invoked if RepositoryEntityController does not return a subtype of Resources.
+* DATAREST-880 - @JsonUnwrapped annotation ignored.
+* DATAREST-873 - Allow excluding properties from being nullified in PUT requests.
+* DATAREST-872 - Jackson's @JsonTypeInfo is not supported.
+* DATAREST-866 - NullPointerException from RepositoryRestConfiguration if you inject mvcValidator into RepositoryRestConfigurer.
+* DATAREST-864 - NestedEntitySerializer does not support Maps.
+* DATAREST-863 - REST calls to /api always redirect to HAL Browser if no accept header is specified.
+* DATAREST-859 - Broken links to included code in conditionals reference documentation.
+* DATAREST-858 - Broken links to included code in security reference documentation.
+* DATAREST-847 - RepositoryEntityController.saveAndReturn calls AfterSaveEvent with wrong domain object.
+* DATAREST-842 - Release 2.5.3 (Hopper SR3).
+
+
 Changes in version 2.6.0.M1 (2016-07-27)
 ----------------------------------------
 * DATAREST-856 - Integrate version badge from spring.io.
