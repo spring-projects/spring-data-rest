@@ -26,8 +26,9 @@ import org.springframework.util.Assert;
  * A {@link RelProvider} based on the {@link ResourceMappings} for the registered repositories.
  * 
  * @author Oliver Gierke
+ * @author Mathias Düsterhöft
  */
-@Order(Ordered.LOWEST_PRECEDENCE + 10)
+@Order(Ordered.LOWEST_PRECEDENCE - 10)
 public class RepositoryRelProvider implements RelProvider {
 
 	private final ObjectFactory<ResourceMappings> mappings;
