@@ -90,11 +90,7 @@ import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
 import org.springframework.data.rest.webmvc.json.EnumTranslator;
 import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
-import org.springframework.data.rest.webmvc.json.JacksonMappingAwareSortTranslator;
 import org.springframework.data.rest.webmvc.json.JacksonSerializers;
-import org.springframework.data.rest.webmvc.json.MappingAwareDefaultedPageableArgumentResolver;
-import org.springframework.data.rest.webmvc.json.MappingAwarePageableArgumentResolver;
-import org.springframework.data.rest.webmvc.json.MappingAwareSortArgumentResolver;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
@@ -106,8 +102,8 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
 import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.DefaultExcerptProjector;
+import org.springframework.data.rest.webmvc.support.DefaultedPageableHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.support.DelegatingHandlerMapping;
-import org.springframework.data.rest.webmvc.support.DomainClassResolver;
 import org.springframework.data.rest.webmvc.support.ETagArgumentResolver;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
 import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
@@ -161,12 +157,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * @author Oliver Gierke
  * @author Jon Brisbin
  * @author Greg Turnquist
- * @author Mark Paluch
  */
 @Configuration
 @EnableHypermediaSupport(type = HypermediaType.HAL)
 @ComponentScan(basePackageClasses = RepositoryRestController.class,
-		includeFilters = @Filter(BasePathAwareController.class), useDefaultFilters = false)
+		includeFilters = @Filter(BasePathAwareController.class) , useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 @Import({ SpringDataJacksonConfiguration.class, EnableSpringDataWebSupport.QuerydslActivator.class })
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration implements InitializingBean {
@@ -786,17 +781,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				associationLinks());
 
 		HateoasPageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
-
-		JacksonMappingAwareSortTranslator sortTranslator = new JacksonMappingAwareSortTranslator(objectMapper(),
-				repositories(), DomainClassResolver.of(repositories(), resourceMappings(), baseUri()));
-
-		HandlerMethodArgumentResolver sortResolver = new MappingAwareSortArgumentResolver(sortTranslator, sortResolver());
-		HandlerMethodArgumentResolver jacksonPageableResolver = new MappingAwarePageableArgumentResolver(sortTranslator,
+		HandlerMethodArgumentResolver defaultedPageableResolver = new DefaultedPageableHandlerMethodArgumentResolver(
 				pageableResolver);
-		HandlerMethodArgumentResolver defaultedPageableResolver = new MappingAwareDefaultedPageableArgumentResolver(
-				sortTranslator, pageableResolver);
 
-		return Arrays.asList(defaultedPageableResolver, jacksonPageableResolver, sortResolver,
+		return Arrays.asList(defaultedPageableResolver, pageableResolver, sortResolver(),
 				serverHttpRequestMethodArgumentResolver(), repoRequestArgumentResolver(), persistentEntityArgumentResolver(),
 				resourceMetadataHandlerMethodArgumentResolver(), HttpMethodHandlerMethodArgumentResolver.INSTANCE, peraResolver,
 				backendIdHandlerMethodArgumentResolver(), eTagArgumentResolver());

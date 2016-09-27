@@ -17,8 +17,6 @@ package org.springframework.data.rest.webmvc.jpa;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -28,7 +26,6 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 /**
  * @author Oliver Gierke
- * @author Mark Paluch
  */
 @RepositoryRestResource(excerptProjection = BookExcerpt.class)
 public interface BookRepository extends CrudRepository<Book, Long> {
@@ -38,8 +35,4 @@ public interface BookRepository extends CrudRepository<Book, Long> {
 
 	@Query("select b from Book b where :author member of b.authors")
 	List<Book> findByAuthorsContains(@Param("author") Author author);
-
-	@RestResource(rel = "find-spring-books-sorted")
-	@Query("select b from Book b where b.title like 'Spring%'")
-	Page<Book> findByTitleIsLike(Pageable pageable);
 }

@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,8 +33,12 @@ import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.BasicClassIntrospector;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -42,7 +47,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * detect nested objects, lookup the original value and apply the merge recursively.
  * 
  * @author Oliver Gierke
- * @author Mark Paluch
  * @since 2.2
  */
 @RequiredArgsConstructor
@@ -50,11 +54,12 @@ public class DomainObjectReader {
 
 	private final @NonNull PersistentEntities entities;
 	private final @NonNull Associations associationLinks;
+	private final @NonNull ClassIntrospector introspector = new BasicClassIntrospector();
 
 	/**
 	 * Reads the given input stream into an {@link ObjectNode} and applies that to the given existing instance.
 	 * 
-	 * @param source must not be {@literal null}.
+	 * @param request must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
 	 * @return
@@ -92,7 +97,7 @@ public class DomainObjectReader {
 
 		Assert.notNull(entity, "No PersistentEntity found for ".concat(type.getName()).concat("!"));
 
-		final MappedProperties properties = MappedProperties.fromJacksonProperties(entity, mapper);
+		final MappedProperties properties = getJacksonProperties(entity, mapper);
 
 		entity.doWithProperties(new SimplePropertyHandler() {
 
@@ -151,7 +156,7 @@ public class DomainObjectReader {
 			return mapper.readerForUpdating(target).readValue(root);
 		}
 
-		MappedProperties mappedProperties = MappedProperties.fromJacksonProperties(entity, mapper);
+		MappedProperties mappedProperties = getJacksonProperties(entity, mapper);
 
 		for (Iterator<Entry<String, JsonNode>> i = root.fields(); i.hasNext();) {
 
@@ -234,6 +239,65 @@ public class DomainObjectReader {
 				doMerge((ObjectNode) child, sourceValue, mapper);
 				fields.remove();
 			}
+		}
+	}
+
+	/**
+	 * Returns the {@link MappedProperties} for the given {@link PersistentEntity}.
+	 * 
+	 * @param entity must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 * @return
+	 */
+	private MappedProperties getJacksonProperties(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
+
+		BeanDescription description = introspector.forDeserialization(mapper.getDeserializationConfig(),
+				mapper.constructType(entity.getType()), mapper.getDeserializationConfig());
+
+		return new MappedProperties(entity, description);
+	}
+
+	/**
+	 * Simple value object to capture a mapping of Jackson mapped field names and {@link PersistentProperty} instances.
+	 *
+	 * @author Oliver Gierke
+	 */
+	private static class MappedProperties {
+
+		private final Map<PersistentProperty<?>, String> propertyToFieldName;
+		private final Map<String, PersistentProperty<?>> fieldNameToProperty;
+
+		/**
+		 * Creates a new {@link MappedProperties} instance for the given {@link PersistentEntity} and
+		 * {@link BeanDescription}.
+		 * 
+		 * @param entity must not be {@literal null}.
+		 * @param description must not be {@literal null}.
+		 */
+		public MappedProperties(PersistentEntity<?, ?> entity, BeanDescription description) {
+
+			this.propertyToFieldName = new HashMap<PersistentProperty<?>, String>();
+			this.fieldNameToProperty = new HashMap<String, PersistentProperty<?>>();
+
+			for (BeanPropertyDefinition property : description.findProperties()) {
+
+				PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getInternalName());
+
+				propertyToFieldName.put(persistentProperty, property.getName());
+				fieldNameToProperty.put(property.getName(), persistentProperty);
+			}
+		}
+
+		public String getMappedName(PersistentProperty<?> property) {
+			return propertyToFieldName.get(property);
+		}
+
+		public boolean hasPersistentPropertyForField(String fieldName) {
+			return fieldNameToProperty.containsKey(fieldName);
+		}
+
+		public PersistentProperty<?> getPersistentProperty(String fieldName) {
+			return fieldNameToProperty.get(fieldName);
 		}
 	}
 }

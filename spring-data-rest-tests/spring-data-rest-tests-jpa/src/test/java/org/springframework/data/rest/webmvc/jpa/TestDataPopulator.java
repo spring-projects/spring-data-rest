@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * @author Jon Brisbin
  * @author Oliver Gierke
- * @author Mark Paluch
  */
 public class TestDataPopulator {
 
@@ -54,8 +53,8 @@ public class TestDataPopulator {
 
 		Iterable<Author> authors = this.authors.save(Arrays.asList(ollie, mark, michael, david, john, thomas));
 
-		books.save(new Book("1449323952", "Spring Data", 1000, authors));
-		books.save(new Book("1449323953", "Spring Data (Second Edition)", 2000, authors));
+		books.save(new Book("1449323952", "Spring Data", authors));
+		books.save(new Book("1449323953", "Spring Data (Second Edition)", authors));
 	}
 
 	private void populateOrders() {
