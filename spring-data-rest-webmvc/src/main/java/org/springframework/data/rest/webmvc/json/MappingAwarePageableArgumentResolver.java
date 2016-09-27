@@ -22,15 +22,15 @@ import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.data.web.PageableArgumentResolver;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
- * {@link HandlerMethodArgumentResolver} to resolve {@link Pageable} from a
- * {@link PageableHandlerMethodArgumentResolver} applying field to property mapping.
+ * {@link HandlerMethodArgumentResolver} to resolve {@link Pageable} from a {@link PageableArgumentResolver} applying
+ * field to property mapping.
  * <p>
  * A resolved {@link Pageable} is post-processed by applying Jackson field-to-property mapping if it contains a
  * {@link Sort} instance. Customized fields are resolved to their property names. Unknown properties are removed from
@@ -38,13 +38,13 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * 
  * @author Mark Paluch
  * @author Oliver Gierke
- * @since 2.6, 2.5.3
+ * @since 2.6
  */
 @RequiredArgsConstructor
-public class MappingAwarePageableArgumentResolver implements HandlerMethodArgumentResolver {
+public class MappingAwarePageableArgumentResolver implements HandlerMethodArgumentResolver, PageableArgumentResolver {
 
 	private final @NonNull JacksonMappingAwareSortTranslator translator;
-	private final @NonNull PageableHandlerMethodArgumentResolver delegate;
+	private final @NonNull PageableArgumentResolver delegate;
 
 	/*
 	 * (non-Javadoc)
@@ -57,20 +57,19 @@ public class MappingAwarePageableArgumentResolver implements HandlerMethodArgume
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
+	 * @see org.springframework.data.web.PageableArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	public Pageable resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+	public Pageable resolveArgument(MethodParameter methodParameter, ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
 
-		Pageable pageable = delegate.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
+		Pageable pageable = delegate.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
 
 		if (pageable == null || pageable.getSort() == null) {
 			return pageable;
 		}
 
-		Sort translated = translator.translateSort(pageable.getSort(), parameter, webRequest);
+		Sort translated = translator.translateSort(pageable.getSort(), methodParameter, webRequest);
 		return new PageRequest(pageable.getPageNumber(), pageable.getPageSize(), translated);
 	}
-
 }

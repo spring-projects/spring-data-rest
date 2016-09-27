@@ -116,6 +116,7 @@ import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration;
 import org.springframework.data.web.config.SpringDataJacksonConfiguration;
@@ -801,7 +802,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				persistentEntities(), selfLinkProvider(), config().getProjectionConfiguration(), projectionFactory,
 				associationLinks());
 
-		HateoasPageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
+		PageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
 
 		JacksonMappingAwareSortTranslator sortTranslator = new JacksonMappingAwareSortTranslator(objectMapper(),
 				repositories(), DomainClassResolver.of(repositories(), resourceMappings(), baseUri()));
