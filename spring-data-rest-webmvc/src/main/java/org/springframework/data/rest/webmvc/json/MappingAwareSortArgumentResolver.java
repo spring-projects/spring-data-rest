@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -35,13 +36,13 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * 
  * @author Mark Paluch
  * @author Oliver Gierke
- * @since 2.6, 2.5.3
+ * @since 2.6
  */
 @RequiredArgsConstructor
-public class MappingAwareSortArgumentResolver implements HandlerMethodArgumentResolver {
+public class MappingAwareSortArgumentResolver implements HandlerMethodArgumentResolver, SortArgumentResolver {
 
 	private final @NonNull JacksonMappingAwareSortTranslator translator;
-	private final @NonNull SortHandlerMethodArgumentResolver delegate;
+	private final @NonNull SortArgumentResolver delegate;
 
 	/*
 	 * (non-Javadoc)
@@ -57,11 +58,11 @@ public class MappingAwareSortArgumentResolver implements HandlerMethodArgumentRe
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
 	@Override
-	public Sort resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+	public Sort resolveArgument(MethodParameter methodParameter, ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
 
-		Sort sort = delegate.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
+		Sort sort = delegate.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
 
-		return sort == null ? null : translator.translateSort(sort, parameter, webRequest);
+		return sort == null ? null : translator.translateSort(sort, methodParameter, webRequest);
 	}
 }
