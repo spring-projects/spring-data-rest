@@ -39,7 +39,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
- * @since 2.6, 2.5.3
+ * @since 2.6
  */
 @RequiredArgsConstructor
 public class MappingAwareDefaultedPageableArgumentResolver implements HandlerMethodArgumentResolver {
