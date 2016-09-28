@@ -702,6 +702,16 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(client.hasLinkWithRel("self"));
 	}
 
+	/**
+	 * @see DATAREST-910
+	 */
+	@Test
+	public void callUnmappedCustomRepositoryController() throws Exception {
+
+		mvc.perform(post("/orders/search/sort")).andExpect(status().isOk());
+		mvc.perform(post("/orders/search/sort?sort=type&page=1&size=10")).andExpect(status().isOk());
+	}
+
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
 
 		Link peopleLink = client.discoverUnique("people");
