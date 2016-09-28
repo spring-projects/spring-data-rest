@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -35,7 +36,7 @@ import org.springframework.web.context.request.NativeWebRequest;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
- * @since 2.6, 2.5.3
+ * @since 2.6
  */
 @RequiredArgsConstructor(staticName = "of")
 public class DomainClassResolver {
@@ -49,8 +50,7 @@ public class DomainClassResolver {
 	 *
 	 * @param method must not be {@literal null}.
 	 * @param webRequest must not be {@literal null}.
-	 * @return domain type that is associated with this request.
-	 * @throws IllegalArgumentException if there's no repository key associated or no domain type can be resolved.
+	 * @return domain type that is associated with this request or {@literal null} if no domain class can be resolved.
 	 */
 	public Class<?> resolve(Method method, NativeWebRequest webRequest) {
 
@@ -61,7 +61,14 @@ public class DomainClassResolver {
 		String repositoryKey = UriUtils.findMappingVariable("repository", method, lookupPath);
 
 		if (!StringUtils.hasText(repositoryKey)) {
-			throw new IllegalArgumentException(String.format("Could not determine a repository key from %s.", lookupPath));
+			List<String> pathSegments = UriUtils.getPathSegments(method);
+			if (!pathSegments.isEmpty()) {
+				repositoryKey = pathSegments.get(0);
+			}
+		}
+
+		if (!StringUtils.hasText(repositoryKey)) {
+			return null;
 		}
 
 		for (Class<?> domainType : repositories) {
@@ -73,7 +80,6 @@ public class DomainClassResolver {
 			}
 		}
 
-		throw new IllegalArgumentException(
-				String.format("Could not resolve an exported domain type for %s.", repositoryKey));
+		return null;
 	}
 }
