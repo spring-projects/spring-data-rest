@@ -18,12 +18,19 @@ package org.springframework.data.rest.webmvc.json;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
+import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.rest.webmvc.json.JacksonMappingAwareSortTranslator.SortTranslator;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -35,7 +42,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class SortTranslatorUnitTests {
 
+	private ObjectMapper objectMapper = new ObjectMapper();
 	private KeyValueMappingContext mappingContext;
+	private PersistentEntities persistentEntities;
+	private SortTranslator sortTranslator;
 
 	@Before
 	public void setUp() {
@@ -43,6 +53,11 @@ public class SortTranslatorUnitTests {
 		mappingContext = new KeyValueMappingContext();
 		mappingContext.getPersistentEntity(Plain.class);
 		mappingContext.getPersistentEntity(WithJsonProperty.class);
+		mappingContext.getPersistentEntity(UnwrapEmbedded.class);
+		mappingContext.getPersistentEntity(MultiUnwrapped.class);
+
+		persistentEntities = new PersistentEntities(Collections.singleton(mappingContext));
+		sortTranslator = new SortTranslator(persistentEntities, objectMapper);
 	}
 
 	/**
@@ -51,10 +66,8 @@ public class SortTranslatorUnitTests {
 	@Test
 	public void shouldMapKnownProperties() {
 
-		MappedProperties mappedProperties = MappedProperties
-				.fromJacksonProperties(mappingContext.getPersistentEntity(Plain.class), new ObjectMapper());
-		Sort translatedSort = new JacksonMappingAwareSortTranslator.SortTranslator(mappedProperties)
-				.translateSort(new Sort("hello", "name"));
+		Sort translatedSort = sortTranslator.translateSort(new Sort("hello", "name"),
+				mappingContext.getPersistentEntity(Plain.class));
 
 		assertThat(translatedSort.getOrderFor("hello"), is(nullValue()));
 		assertThat(translatedSort.getOrderFor("name"), is(notNullValue()));
@@ -66,10 +79,8 @@ public class SortTranslatorUnitTests {
 	@Test
 	public void returnsNullSortIfNoPropertiesMatch() {
 
-		MappedProperties mappedProperties = MappedProperties
-				.fromJacksonProperties(mappingContext.getPersistentEntity(Plain.class), new ObjectMapper());
-		Sort translatedSort = new JacksonMappingAwareSortTranslator.SortTranslator(mappedProperties)
-				.translateSort(new Sort("hello", "world"));
+		Sort translatedSort = sortTranslator.translateSort(new Sort("hello", "world"),
+				mappingContext.getPersistentEntity(Plain.class));
 
 		assertThat(translatedSort, is(nullValue()));
 	}
@@ -80,10 +91,8 @@ public class SortTranslatorUnitTests {
 	@Test
 	public void shouldMapKnownPropertiesWithJsonProperty() {
 
-		MappedProperties mappedProperties = MappedProperties
-				.fromJacksonProperties(mappingContext.getPersistentEntity(WithJsonProperty.class), new ObjectMapper());
-		Sort translatedSort = new JacksonMappingAwareSortTranslator.SortTranslator(mappedProperties)
-				.translateSort(new Sort("hello", "foo"));
+		Sort translatedSort = sortTranslator.translateSort(new Sort("hello", "foo"),
+				mappingContext.getPersistentEntity(WithJsonProperty.class));
 
 		assertThat(translatedSort.getOrderFor("hello"), is(nullValue()));
 		assertThat(translatedSort.getOrderFor("name"), is(notNullValue()));
@@ -95,19 +104,122 @@ public class SortTranslatorUnitTests {
 	@Test
 	public void shouldJacksonFieldNameForMapping() {
 
-		MappedProperties mappedProperties = MappedProperties
-				.fromJacksonProperties(mappingContext.getPersistentEntity(WithJsonProperty.class), new ObjectMapper());
-		Sort translatedSort = new JacksonMappingAwareSortTranslator.SortTranslator(mappedProperties)
-				.translateSort(new Sort("name"));
+		Sort translatedSort = sortTranslator.translateSort(new Sort("name"),
+				mappingContext.getPersistentEntity(WithJsonProperty.class));
 
 		assertThat(translatedSort, is(nullValue()));
 	}
 
+	/**
+	 * @see DATAREST-910
+	 */
+	@Test
+	public void shouldMapKnownNestedProperties() {
+
+		Sort translatedSort = sortTranslator.translateSort(
+				new Sort("embedded.name", "embedded.collection", "embedded.someInterface"),
+				mappingContext.getPersistentEntity(Plain.class));
+
+		assertThat(translatedSort.getOrderFor("embedded.name"), is(notNullValue()));
+		assertThat(translatedSort.getOrderFor("embedded.collection"), is(notNullValue()));
+		assertThat(translatedSort.getOrderFor("embedded.someInterface"), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATAREST-910
+	 */
+	@Test
+	public void shouldSkipWrongNestedProperties() {
+
+		Sort translatedSort = sortTranslator.translateSort(new Sort("embedded.unknown"),
+				mappingContext.getPersistentEntity(Plain.class));
+
+		assertThat(translatedSort, is(nullValue()));
+	}
+
+	/**
+	 * @see DATAREST-910
+	 */
+	@Test
+	public void shouldSkipKnownAssociationProperties() {
+
+		Sort translatedSort = sortTranslator.translateSort(new Sort("refEmbedded.name"),
+				mappingContext.getPersistentEntity(Plain.class));
+
+		assertThat(translatedSort, is(nullValue()));
+	}
+
+	/**
+	 * @see DATAREST-910
+	 */
+	@Test
+	public void shouldJacksonFieldNameForNestedFieldMapping() {
+
+		Sort translatedSort = sortTranslator.translateSort(new Sort("em.foo"),
+				mappingContext.getPersistentEntity(WithJsonProperty.class));
+
+		assertThat(translatedSort.getOrderFor("embeddedWithJsonProperty.bar"), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATAREST-910
+	 */
+	@Test
+	public void shouldTranslatePathForSingleLevelJsonUnwrappedObject() {
+
+		Sort translatedSort = sortTranslator.translateSort(new Sort("un-name"),
+				mappingContext.getPersistentEntity(UnwrapEmbedded.class));
+
+		assertThat(translatedSort.getOrderFor("embedded.name"), is(notNullValue()));
+	}
+
+	/**
+	 * @see DATAREST-910
+	 */
+	@Test
+	public void shouldTranslatePathForMultiLevelLevelJsonUnwrappedObject() {
+
+		Sort translatedSort = sortTranslator.translateSort(new Sort("un-name", "burrito.un-name"),
+				mappingContext.getPersistentEntity(MultiUnwrapped.class));
+
+		assertThat(translatedSort.getOrderFor("anotherWrap.embedded.name"), is(notNullValue()));
+		assertThat(translatedSort.getOrderFor("burrito.embedded.name"), is(notNullValue()));
+	}
+
 	static class Plain {
+
 		public String name;
+		public Embedded embedded;
+		@Reference public Embedded refEmbedded;
+	}
+
+	static class UnwrapEmbedded {
+		@JsonUnwrapped(prefix = "un-") public Embedded embedded;
+	}
+
+	static class MultiUnwrapped {
+
+		public String name;
+		@JsonUnwrapped public UnwrapEmbedded anotherWrap;
+		public UnwrapEmbedded burrito;
+	}
+
+	static class Embedded {
+
+		public String name;
+		public List<String> collection;
+		public SomeInterface someInterface;
 	}
 
 	static class WithJsonProperty {
-		public @JsonProperty("foo") String name;
+
+		@JsonProperty("foo") public String name;
+		@JsonProperty("em") public EmbeddedWithJsonProperty embeddedWithJsonProperty;
 	}
+
+	static class EmbeddedWithJsonProperty {
+		@JsonProperty("foo") public String bar;
+	}
+
+	static interface SomeInterface {}
 }

@@ -17,8 +17,12 @@ package org.springframework.data.rest.webmvc.jpa;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
+import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @Configuration
 @EnableJpaRepositories
@@ -50,6 +55,14 @@ public class JpaRepositoryConfig extends JpaInfrastructureConfig {
 	static class BooksHtmlController {
 
 		@RequestMapping(value = "/books/{id}", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
-		void person(@PathVariable String id) {}
+		void someMethod(@PathVariable String id) {}
+	}
+
+	@RepositoryRestController
+	@RequestMapping("orders")
+	static class OrdersJsonController {
+
+		@RequestMapping(value = "/search/sort", method = RequestMethod.POST, produces = "application/hal+json")
+		void someMethodWithArgs(Sort sort, Pageable pageable, DefaultedPageable defaultedPageable) {}
 	}
 }

@@ -805,7 +805,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		PageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
 
 		JacksonMappingAwareSortTranslator sortTranslator = new JacksonMappingAwareSortTranslator(objectMapper(),
-				repositories(), DomainClassResolver.of(repositories(), resourceMappings(), baseUri()));
+				repositories(), DomainClassResolver.of(repositories(), resourceMappings(), baseUri()), persistentEntities());
 
 		HandlerMethodArgumentResolver sortResolver = new MappingAwareSortArgumentResolver(sortTranslator, sortResolver());
 		HandlerMethodArgumentResolver jacksonPageableResolver = new MappingAwarePageableArgumentResolver(sortTranslator,
