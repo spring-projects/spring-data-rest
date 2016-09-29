@@ -1,6 +1,14 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.5.4.RELEASE (2016-09-29)
+---------------------------------------------
+* DATAREST-909 - Revert Jackson-aware Sort and Pageable translation in Hopper and Gosling release trains.
+* DATAREST-908 - Regression with custom controllers.
+* DATAREST-906 - MappingAwarePageableArgumentResolver accidentally drops default Pageable returned from delegate PageableHandlerMethodArgumentResolver.
+* DATAREST-903 - Release 2.5.4 (Hopper SR4).
+
+
 Changes in version 2.4.6.RELEASE (2016-09-29)
 ---------------------------------------------
 * DATAREST-913 - Release 2.4.6 (Gosling SR6).
