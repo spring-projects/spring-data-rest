@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.servlet.config.annotation.CorsRegistration;
 
 /**
  * Spring Data REST configuration options.
@@ -36,6 +38,7 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @author Jeremy Rickard
  * @author Greg Turnquist
+ * @author Mark Paluch
  */
 @SuppressWarnings("deprecation")
 public class RepositoryRestConfiguration {
@@ -58,6 +61,7 @@ public class RepositoryRestConfiguration {
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
 	private RepositoryDetectionStrategy repositoryDetectionStrategy = RepositoryDetectionStrategies.DEFAULT;
 
+	private final RepositoryCorsRegistry corsRegistry = new RepositoryCorsRegistry();
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
 	private final MetadataConfiguration metadataConfiguration;
 	private final EntityLookupConfiguration entityLookupConfiguration;
@@ -547,6 +551,34 @@ public class RepositoryRestConfiguration {
 	public void setRepositoryDetectionStrategy(RepositoryDetectionStrategy repositoryDetectionStrategy) {
 		this.repositoryDetectionStrategy = repositoryDetectionStrategy == null ? RepositoryDetectionStrategies.DEFAULT
 				: repositoryDetectionStrategy;
+	}
+
+	/**
+	 * Returns the {@link RepositoryCorsRegistry} to configure Cross-origin resource sharing.
+	 *
+	 * @return the {@link RepositoryCorsRegistry}.
+	 * @since 2.6
+	 * @see RepositoryCorsRegistry
+	 * @see CorsRegistration
+	 */
+	public RepositoryCorsRegistry getCorsRegistry() {
+		return corsRegistry;
+	}
+
+	/**
+	 * Configures Cross-origin resource sharing given a {@code path}.
+	 *
+	 * @param path path or path pattern, must not be {@literal null} or empty.
+	 * @return the {@link CorsRegistration} to build a CORS configuration.
+	 * @since 2.6
+	 * @see CorsConfiguration
+	 */
+	public CorsRegistration addCorsMapping(String path) {
+
+		Assert.notNull(path, "Path must not be null!");
+		Assert.hasText(path, "Path must not be empty!");
+
+		return corsRegistry.addMapping(path);
 	}
 
 	/**

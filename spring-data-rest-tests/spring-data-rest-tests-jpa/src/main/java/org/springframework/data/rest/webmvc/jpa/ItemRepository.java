@@ -16,10 +16,13 @@
 package org.springframework.data.rest.webmvc.jpa;
 
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 /**
  * @author Greg Turnquist
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @see DATAREST-463
  */
+@CrossOrigin
 public interface ItemRepository extends CrudRepository<Item, Long> {}

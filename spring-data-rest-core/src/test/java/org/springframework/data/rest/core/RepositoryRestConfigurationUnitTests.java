@@ -15,9 +15,11 @@
  */
 package org.springframework.data.rest.core;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,11 +30,13 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.domain.Profile;
 import org.springframework.data.rest.core.domain.ProfileRepository;
 import org.springframework.http.MediaType;
+import org.springframework.web.cors.CorsConfiguration;
 
 /**
  * Unit tests for {@link RepositoryRestConfiguration}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @soundtrack Adam F - Circles (Colors)
  */
 public class RepositoryRestConfigurationUnitTests {
@@ -132,10 +136,25 @@ public class RepositoryRestConfigurationUnitTests {
 	 * @see DATAREST-776
 	 */
 	@Test
-	public void consideresDomainTypeOfValueRepositoryLookupTypes() {
+	public void considersDomainTypeOfValueRepositoryLookupTypes() {
 
 		configuration.withEntityLookup().forLookupRepository(ProfileRepository.class);
 
 		assertThat(configuration.isLookupType(Profile.class), is(true));
+	}
+
+	/**
+	 * @see DATAREST-573
+	 */
+	@Test
+	public void configuresCorsProcessing() {
+
+		configuration.addCorsMapping("/hello").maxAge(1234);
+
+		Map<String, CorsConfiguration> corsConfigurations = configuration.getCorsRegistry().getCorsConfigurations();
+		assertThat(corsConfigurations, hasKey("/hello"));
+
+		CorsConfiguration corsConfiguration = corsConfigurations.get("/hello");
+		assertThat(corsConfiguration.getMaxAge(), is(1234L));
 	}
 }
