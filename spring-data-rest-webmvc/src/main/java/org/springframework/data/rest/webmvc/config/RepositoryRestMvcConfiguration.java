@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanCreationException;
@@ -139,9 +140,11 @@ import org.springframework.plugin.core.OrderAwarePluginRegistry;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
@@ -571,6 +574,16 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	/**
+	 * {@link HttpRequestHandlerAdapter} to handle CORS preflight requests.
+	 *
+	 * @return
+	 */
+	@Bean
+	public HttpRequestHandlerAdapter httpRequestHandlerAdapter() {
+		return new HttpRequestHandlerAdapter();
+	}
+
+	/**
 	 * The {@link HandlerMapping} to delegate requests to Spring Data REST controllers. Sets up a
 	 * {@link DelegatingHandlerMapping} to make sure manually implemented {@link BasePathAwareController} instances that
 	 * register custom handlers for certain media types don't cause the {@link RepositoryRestHandlerMapping} to be
@@ -582,13 +595,18 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public DelegatingHandlerMapping restHandlerMapping() {
 
-		RepositoryRestHandlerMapping repositoryMapping = new RepositoryRestHandlerMapping(resourceMappings(), config());
+		Map<String, CorsConfiguration> corsConfigurations = config().getCorsRegistry().getCorsConfigurations();
+
+		RepositoryRestHandlerMapping repositoryMapping = new RepositoryRestHandlerMapping(resourceMappings(), config(),
+				repositories());
 		repositoryMapping.setJpaHelper(jpaHelper());
 		repositoryMapping.setApplicationContext(applicationContext);
+		repositoryMapping.setCorsConfigurations(corsConfigurations);
 		repositoryMapping.afterPropertiesSet();
 
 		BasePathAwareHandlerMapping basePathMapping = new BasePathAwareHandlerMapping(config());
 		basePathMapping.setApplicationContext(applicationContext);
+		basePathMapping.setCorsConfigurations(corsConfigurations);
 		basePathMapping.afterPropertiesSet();
 
 		List<HandlerMapping> mappings = new ArrayList<HandlerMapping>();
@@ -980,4 +998,5 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Deprecated
 	protected void configureJacksonObjectMapper(ObjectMapper objectMapper) {}
+
 }

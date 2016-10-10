@@ -1,0 +1,73 @@
+[[customizing-sdr.configuring-cors]]
+= Configuring CORS
+
+For security reasons, browsers prohibit AJAX calls to resources residing outside the current origin. When working with client-side HTTP requests issued by a browser you want to enable specific HTTP resources to be accessible.
+
+Spring Data REST supports as of 2.6 http://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-origin resource sharing] (CORS) through http://docs.spring.io/spring/docs/{version}/spring-framework-reference/html/cors.html[Spring's CORS] support.
+
+
+== Repository interface CORS configuration
+
+You can add a `@CrossOrigin` annotation to your repository interfaces to enable CORS for the whole repository. By default `@CrossOrigin` allows all origins and HTTP methods:
+
+[source, java]
+----
+@CrossOrigin
+interface PersonRepository extends CrudRepository<Person, Long> {}
+----
+
+In the above example CORS support is enabled for the whole `PersonRepository`. `@CrossOrigin` provides attributes to configure CORS support.
+
+[source, java]
+----
+@CrossOrigin(origins = "http://domain2.com",
+		methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE }, maxAge = 3600)
+interface PersonRepository extends CrudRepository<Person, Long> {}
+----
+
+This example enables CORS support for the whole `PersonRepository` providing one origin, restricted to `GET`, `POST` and `DELETE` methods with a max age of 3600 seconds.
+
+== Repository REST Controller method CORS configuration
+
+Spring Data REST fully supports http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cors.html#_controller_method_cors_configuration[Spring Web MVC's Controller method configuration] on custom REST Controllers sharing repository base paths.
+
+[source, java]
+----
+@RepositoryRestController
+@RequestMapping("/person")
+public class PersonController {
+
+	@CrossOrigin(maxAge = 3600)
+	@RequestMapping(method = RequestMethod.GET, "/xml/{id}", produces = MediaType.APPLICATION_XML_VALUE)
+	public Person retrieve(@PathVariable Long id) {
+		// ...
+	}
+}
+----
+
+NOTE: Controllers annotated with `@RepositoryRestController` inherit `@CrossOrigin` configuration from their associated repositories.
+
+== Global CORS configuration
+
+In addition to fine-grained, annotation-based configuration you’ll probably want to define some global CORS configuration as well. This is similar to Spring Web MVC'S CORS configuration but can be declared within Spring Data REST and combined with fine-grained `@CrossOrigin` configuration. By default all origins and `GET`, `HEAD`, and `POST` methods are allowed.
+
+NOTE: Existing Spring Web MVC CORS configuration is not applied to Spring Data REST.
+
+[source, java]
+----
+@Component
+public class SpringDataRestCustomization extends RepositoryRestConfigurerAdapter {
+
+  @Override
+  public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+
+    config.addCorsMapping("/person/**")
+        .allowedOrigins("http://domain2.com")
+        .allowedMethods("PUT", "DELETE")
+        .allowedHeaders("header1", "header2", "header3")
+        .exposedHeaders("header1", "header2")
+        .allowCredentials(false).maxAge(3600);
+  }
+}
+----
+
