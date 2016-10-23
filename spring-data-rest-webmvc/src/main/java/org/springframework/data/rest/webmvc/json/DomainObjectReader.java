@@ -54,7 +54,6 @@ public class DomainObjectReader {
 
 	private final @NonNull PersistentEntities entities;
 	private final @NonNull Associations associationLinks;
-	private final @NonNull ClassIntrospector introspector = new BasicClassIntrospector();
 
 	/**
 	 * Reads the given input stream into an {@link ObjectNode} and applies that to the given existing instance.
@@ -97,7 +96,7 @@ public class DomainObjectReader {
 
 		Assert.notNull(entity, "No PersistentEntity found for ".concat(type.getName()).concat("!"));
 
-		final MappedProperties properties = getJacksonProperties(entity, mapper);
+		final MappedProperties properties = MappedProperties.fromJacksonProperties(entity, mapper);
 
 		entity.doWithProperties(new SimplePropertyHandler() {
 
@@ -156,7 +155,7 @@ public class DomainObjectReader {
 			return mapper.readerForUpdating(target).readValue(root);
 		}
 
-		MappedProperties mappedProperties = getJacksonProperties(entity, mapper);
+		MappedProperties mappedProperties = MappedProperties.fromJacksonProperties(entity, mapper);
 
 		for (Iterator<Entry<String, JsonNode>> i = root.fields(); i.hasNext();) {
 
@@ -243,26 +242,13 @@ public class DomainObjectReader {
 	}
 
 	/**
-	 * Returns the {@link MappedProperties} for the given {@link PersistentEntity}.
-	 * 
-	 * @param entity must not be {@literal null}.
-	 * @param mapper must not be {@literal null}.
-	 * @return
-	 */
-	private MappedProperties getJacksonProperties(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
-
-		BeanDescription description = introspector.forDeserialization(mapper.getDeserializationConfig(),
-				mapper.constructType(entity.getType()), mapper.getDeserializationConfig());
-
-		return new MappedProperties(entity, description);
-	}
-
-	/**
 	 * Simple value object to capture a mapping of Jackson mapped field names and {@link PersistentProperty} instances.
 	 *
 	 * @author Oliver Gierke
 	 */
-	private static class MappedProperties {
+	static class MappedProperties {
+
+		private static final ClassIntrospector INTROSPECTOR = new BasicClassIntrospector();
 
 		private final Map<PersistentProperty<?>, String> propertyToFieldName;
 		private final Map<String, PersistentProperty<?>> fieldNameToProperty;
@@ -270,11 +256,14 @@ public class DomainObjectReader {
 		/**
 		 * Creates a new {@link MappedProperties} instance for the given {@link PersistentEntity} and
 		 * {@link BeanDescription}.
-		 * 
+		 *
 		 * @param entity must not be {@literal null}.
 		 * @param description must not be {@literal null}.
 		 */
-		public MappedProperties(PersistentEntity<?, ?> entity, BeanDescription description) {
+		private MappedProperties(PersistentEntity<?, ?> entity, BeanDescription description) {
+
+			Assert.notNull(entity, "Entity must not be null!");
+			Assert.notNull(description, "BeanDescription must not be null!");
 
 			this.propertyToFieldName = new HashMap<PersistentProperty<?>, String>();
 			this.fieldNameToProperty = new HashMap<String, PersistentProperty<?>>();
@@ -283,20 +272,58 @@ public class DomainObjectReader {
 
 				PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getInternalName());
 
-				propertyToFieldName.put(persistentProperty, property.getName());
-				fieldNameToProperty.put(property.getName(), persistentProperty);
+				if (persistentProperty != null) {
+					propertyToFieldName.put(persistentProperty, property.getName());
+					fieldNameToProperty.put(property.getName(), persistentProperty);
+				}
 			}
 		}
 
+		/**
+		 * Creates {@link MappedProperties} for the given {@link PersistentEntity}.
+		 *
+		 * @param entity must not be {@literal null}.
+		 * @param mapper must not be {@literal null}.
+		 * @return
+		 */
+		public static MappedProperties fromJacksonProperties(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
+
+			BeanDescription description = INTROSPECTOR.forDeserialization(mapper.getDeserializationConfig(),
+					mapper.constructType(entity.getType()), mapper.getDeserializationConfig());
+
+			return new MappedProperties(entity, description);
+		}
+
+		/**
+		 * @param property must not be {@literal null}
+		 * @return the mapped name for the {@link PersistentProperty}
+		 */
 		public String getMappedName(PersistentProperty<?> property) {
+
+			Assert.notNull(property, "PersistentProperty must not be null!");
+
 			return propertyToFieldName.get(property);
 		}
 
+		/**
+		 * @param fieldName must not be empty or {@literal null}.
+		 * @return {@literal true} if the field name resolves to a {@literal PersistentProperty}.
+		 */
 		public boolean hasPersistentPropertyForField(String fieldName) {
+
+			Assert.hasText(fieldName, "Field name must not be null or empty!");
+
 			return fieldNameToProperty.containsKey(fieldName);
 		}
 
+		/**
+		 * @param fieldName must not be empty or {@literal null}.
+		 * @return the {@link PersistentProperty} backing the field with the field name.
+		 */
 		public PersistentProperty<?> getPersistentProperty(String fieldName) {
+
+			Assert.hasText(fieldName, "Field name must not be null or empty!");
+
 			return fieldNameToProperty.get(fieldName);
 		}
 	}
