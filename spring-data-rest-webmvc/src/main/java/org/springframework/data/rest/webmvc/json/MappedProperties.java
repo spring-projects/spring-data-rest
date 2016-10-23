@@ -49,6 +49,9 @@ class MappedProperties {
 	 */
 	private MappedProperties(PersistentEntity<?, ?> entity, BeanDescription description) {
 
+		Assert.notNull(entity, "Entity must not be null!");
+		Assert.notNull(description, "BeanDescription must not be null!");
+
 		this.propertyToFieldName = new HashMap<PersistentProperty<?>, String>();
 		this.fieldNameToProperty = new HashMap<String, PersistentProperty<?>>();
 
@@ -56,8 +59,10 @@ class MappedProperties {
 
 			PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getInternalName());
 
-			propertyToFieldName.put(persistentProperty, property.getName());
-			fieldNameToProperty.put(property.getName(), persistentProperty);
+			if (persistentProperty != null) {
+				propertyToFieldName.put(persistentProperty, property.getName());
+				fieldNameToProperty.put(property.getName(), persistentProperty);
+			}
 		}
 	}
 
@@ -100,7 +105,7 @@ class MappedProperties {
 
 	/**
 	 * @param fieldName must not be empty or {@literal null}.
-	 * @return
+	 * @return the {@link PersistentProperty} backing the field with the field name.
 	 */
 	public PersistentProperty<?> getPersistentProperty(String fieldName) {
 
