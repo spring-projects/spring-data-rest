@@ -15,20 +15,26 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentProperty;
@@ -39,6 +45,7 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
+import org.springframework.data.rest.webmvc.json.JacksonSerializers.EnumTranslatingDeserializer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.AssociationOmittingSerializerModifier;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
@@ -81,9 +88,10 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		KeyValueMappingContext mappingContext = new KeyValueMappingContext();
 		mappingContext.getPersistentEntity(Sample.class);
 		mappingContext.getPersistentEntity(SampleWithAdditionalGetters.class);
+		mappingContext.getPersistentEntity(SampleWithEnumContainer.class);
 		mappingContext.getPersistentEntity(PersistentEntityJackson2ModuleUnitTests.PetOwner.class);
 
-		this.persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
+		this.persistentEntities = new PersistentEntities(asList(mappingContext));
 
 		ResourceProcessorInvoker invoker = new ResourceProcessorInvoker(Collections.<ResourceProcessor<?>> emptyList());
 
@@ -97,7 +105,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 				nestedEntitySerializer, new LookupObjectSerializer(lookups)));
 		module.setDeserializerModifier(new AssociationUriResolvingDeserializerModifier(persistentEntities, associations,
 				converter, mock(RepositoryInvokerFactory.class)));
-
+		module.addDeserializer(Enum.class, new EnumTranslatingDeserializer(new EnumTranslator(new MessageSourceAccessor(new StaticMessageSource()))));
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(module);
 	}
@@ -147,6 +155,26 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		assertThat(petOwner.getPet(), is(notNullValue()));
 	}
 
+	/**
+	 * @see DATAREST-929
+	 */
+	@Test
+	public void deserializeEnumCollectionAndArray() throws IOException {
+
+		SampleWithEnumContainer result = mapper.readValue("{\"enumContainerSet\": [\"SECOND\", \"FIRST\"], \"enumContainerArray\": [\"SECOND\", \"FIRST\"]}",
+				SampleWithEnumContainer.class);
+
+		assertThat(result, is(notNullValue()));
+
+		assertThat(result.enumContainerSet.size(), is(2));
+		assertTrue(result.enumContainerSet.contains(SampleEnum.FIRST));
+		assertTrue(result.enumContainerSet.contains(SampleEnum.SECOND));
+
+		assertThat(result.enumContainerArray.length, is(2));
+		assertTrue(asList(result.enumContainerArray).contains(SampleEnum.FIRST));
+		assertTrue(asList(result.enumContainerArray).contains(SampleEnum.SECOND));
+	}
+
 	static class PetOwner {
 
 		Pet pet;
@@ -170,5 +198,14 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		public int getNumber() {
 			return 5;
 		}
+	}
+
+	static class SampleWithEnumContainer {
+		public Set<SampleEnum> enumContainerSet;
+		public SampleEnum[] enumContainerArray;
+	}
+
+	static enum SampleEnum {
+		FIRST, SECOND
 	}
 }
