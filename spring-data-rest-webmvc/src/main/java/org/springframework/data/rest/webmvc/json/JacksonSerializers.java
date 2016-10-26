@@ -75,7 +75,7 @@ public class JacksonSerializers extends SimpleModule {
 	 * @author Oliver Gierke
 	 */
 	@SuppressWarnings("rawtypes")
-	public static class EnumTranslatingSerializer extends StdSerializer<Enum>implements JsonSchemaPropertyCustomizer {
+	public static class EnumTranslatingSerializer extends StdSerializer<Enum> implements JsonSchemaPropertyCustomizer {
 
 		private static final long serialVersionUID = -6706924011396258646L;
 
@@ -127,7 +127,7 @@ public class JacksonSerializers extends SimpleModule {
 	 * @author Oliver Gierke
 	 */
 	@SuppressWarnings("rawtypes")
-	public static class EnumTranslatingDeserializer extends StdDeserializer<Enum>implements ContextualDeserializer {
+	public static class EnumTranslatingDeserializer extends StdDeserializer<Enum> implements ContextualDeserializer {
 
 		private static final long serialVersionUID = 5305284644923180079L;
 
