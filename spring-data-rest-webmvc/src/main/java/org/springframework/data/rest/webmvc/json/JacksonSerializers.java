@@ -29,6 +29,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -181,7 +182,11 @@ public class JacksonSerializers extends SimpleModule {
 				throw new IllegalStateException("Can only translate enum with property information!");
 			}
 
-			return translator.fromText((Class<? extends Enum<?>>) property.getType().getRawClass(), p.getText());
+			JavaType propertyType = property.getType();
+			if (propertyType.isContainerType()) {
+				propertyType = propertyType.getContentType();
+			}
+			return translator.fromText((Class<? extends Enum<?>>) propertyType.getRawClass(), p.getText());
 		}
 	}
 }
