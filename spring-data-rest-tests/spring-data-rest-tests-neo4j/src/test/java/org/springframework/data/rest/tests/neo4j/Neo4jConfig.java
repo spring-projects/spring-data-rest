@@ -31,25 +31,25 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 public class Neo4jConfig {
 
-    @Bean
-    public org.neo4j.ogm.config.Configuration configuration() {
-        final org.neo4j.ogm.config.Configuration configuration = new org.neo4j.ogm.config.Configuration();
-        configuration.driverConfiguration().setDriverClassName(EmbeddedDriver.class.getName());
-        return configuration;
-    }
+	@Bean
+	public org.neo4j.ogm.config.Configuration configuration() {
+		final org.neo4j.ogm.config.Configuration configuration = new org.neo4j.ogm.config.Configuration();
+		configuration.driverConfiguration().setDriverClassName(EmbeddedDriver.class.getName());
+		return configuration;
+	}
 
-    @Bean
-    public SessionFactory sessionFactory() {
-        return new SessionFactory(configuration(), "org.springframework.data.rest.tests.neo4j");
-    }
+	@Bean
+	public SessionFactory sessionFactory() {
+		return new SessionFactory(configuration(), "org.springframework.data.rest.tests.neo4j");
+	}
 
-    @Bean
-    public Neo4jTransactionManager transactionManager() {
-        return new Neo4jTransactionManager(sessionFactory());
-    }
+	@Bean
+	public Neo4jTransactionManager transactionManager() {
+		return new Neo4jTransactionManager(sessionFactory());
+	}
 
-    @Bean
-    public TestDataPopulator testDataPopulator() {
-        return new TestDataPopulator();
-    }
+	@Bean
+	public TestDataPopulator testDataPopulator() {
+		return new TestDataPopulator();
+	}
 }

@@ -24,35 +24,35 @@ import org.neo4j.ogm.annotation.NodeEntity;
 @NodeEntity
 public class Address {
 
-    @GraphId
-    private Long id;
+	@GraphId
+	private Long id;
 
-    private String street;
+	private String street;
 
-    private String city;
+	private String city;
 
-    private Country country;
+	private Country country;
 
-    public Address(String street, String city, Country country) {
+	public Address(String street, String city, Country country) {
 
-        this.street = street;
-        this.city = city;
-        this.country = country;
-    }
+		this.street = street;
+		this.city = city;
+		this.country = country;
+	}
 
-    public Address() {
+	public Address() {
 
-    }
+	}
 
-    public String getStreet() {
-        return street;
-    }
+	public String getStreet() {
+		return street;
+	}
 
-    public String getCity() {
-        return city;
-    }
+	public String getCity() {
+		return city;
+	}
 
-    public Country getCountry() {
-        return country;
-    }
+	public Country getCountry() {
+		return country;
+	}
 }

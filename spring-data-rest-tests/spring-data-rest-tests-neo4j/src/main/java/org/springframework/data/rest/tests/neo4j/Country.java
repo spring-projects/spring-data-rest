@@ -24,26 +24,26 @@ import org.neo4j.ogm.annotation.NodeEntity;
 @NodeEntity
 public class Country {
 
-    @GraphId
-    private Long id;
+	@GraphId
+	private Long id;
 
-    private String code;
+	private String code;
 
-    private String name;
+	private String name;
 
-    public Country(String code, String name) {
-        this.code = code;
-        this.name = name;
-    }
+	public Country(String code, String name) {
+		this.code = code;
+		this.name = name;
+	}
 
-    public Country() {
-    }
+	public Country() {
+	}
 
-    public String getCode() {
-        return code;
-    }
+	public String getCode() {
+		return code;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 }
