@@ -23,5 +23,5 @@ import org.springframework.data.neo4j.repository.GraphRepository;
  */
 public interface CountryRepository extends GraphRepository<Country> {
 
-    Customer findByCode(String code);
+	Customer findByCode(String code);
 }

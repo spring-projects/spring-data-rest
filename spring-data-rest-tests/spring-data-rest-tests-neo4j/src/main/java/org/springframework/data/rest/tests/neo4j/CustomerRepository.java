@@ -23,5 +23,5 @@ import org.springframework.data.neo4j.repository.GraphRepository;
  */
 public interface CustomerRepository extends GraphRepository<Customer> {
 
-    Customer findByEmailAddress(String emailAddress);
+	Customer findByEmailAddress(String emailAddress);
 }

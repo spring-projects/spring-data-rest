@@ -16,24 +16,17 @@
 package org.springframework.data.rest.tests.neo4j;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Arrays;
-import java.util.Collections;
 
-import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.Predicate;
-import net.minidev.json.JSONArray;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.CommonWebTests;
-import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -47,64 +40,62 @@ import org.springframework.transaction.annotation.Transactional;
 @ContextConfiguration(classes = Neo4jConfig.class)
 public class Neo4jWebTests extends CommonWebTests {
 
-    @Autowired
-    TestDataPopulator populator;
+	@Autowired
+	TestDataPopulator populator;
 
-    @Before
-    @Override
-    public void setUp() {
-        this.populator.populateRepositories();
-        super.setUp();
-    }
+	@Before
+	@Override
+	public void setUp() {
+		this.populator.populateRepositories();
+		super.setUp();
+	}
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
-     */
-    @Override
-    protected Iterable<String> expectedRootLinkRels() {
-        return Arrays.asList("customers", "countries");
-    }
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
+	 */
+	@Override
+	protected Iterable<String> expectedRootLinkRels() {
+		return Arrays.asList("customers", "countries");
+	}
 
-    @Test
-    public void emptyObjectMatchesResponse() throws Exception {
+	@Test
+	public void emptyObjectMatchesResponse() throws Exception {
 
-        Link customersLink = client.discoverUnique("customers");
-        Link customerLink = assertHasContentLinkWithRel("self", client.request(customersLink));
+		Link customersLink = client.discoverUnique("customers");
+		Link customerLink = assertHasContentLinkWithRel("self", client.request(customersLink));
 
-        MockHttpServletResponse response = patchAndGet(customerLink,
-                "{\"firstName\" : null, \"lastName\" : null, \"emailAddress\": null, \"addresses\" : [{ \"street\" : null, \"city\": null, \"country\": null}]}", MediaType.APPLICATION_JSON);
+		MockHttpServletResponse response = patchAndGet(customerLink,
+				"{\"firstName\" : null, \"lastName\" : null, \"emailAddress\": null, \"addresses\" : [{ \"street\" : null, \"city\": null, \"country\": null}]}", MediaType.APPLICATION_JSON);
 
-        assertThat(JsonPath.read(response.getContentAsString(), "$.firstName"), is(nullValue()));
-        assertThat(JsonPath.read(response.getContentAsString(), "$.lastName"), is(nullValue()));
-        assertThat(JsonPath.read(response.getContentAsString(), "$.emailAddress"), is(nullValue()));
-        assertThat(JsonPath.read(response.getContentAsString(), "$.addresses[0].street"), is(nullValue()));
-        assertThat(JsonPath.read(response.getContentAsString(), "$.addresses[0].city"), is(nullValue()));
-        assertThat(JsonPath.read(response.getContentAsString(), "$.addresses[0].country"), is(nullValue()));
-    }
+		assertThat(JsonPath.read(response.getContentAsString(), "$.firstName"), is(nullValue()));
+		assertThat(JsonPath.read(response.getContentAsString(), "$.lastName"), is(nullValue()));
+		assertThat(JsonPath.read(response.getContentAsString(), "$.emailAddress"), is(nullValue()));
+		assertThat(JsonPath.read(response.getContentAsString(), "$.addresses[0].street"), is(nullValue()));
+		assertThat(JsonPath.read(response.getContentAsString(), "$.addresses[0].city"), is(nullValue()));
+		assertThat(JsonPath.read(response.getContentAsString(), "$.addresses[0].country"), is(nullValue()));
+	}
 
-    @Test
-    public void customersLinkContainsAllCustomers() throws Exception {
+	@Test
+	public void customersLinkContainsAllCustomers() throws Exception {
 
-        Link profileLink = client.discoverUnique("customers");
-        client.follow(profileLink).//
-                andExpect(jsonPath("$._embedded.customers").value(hasSize(7)));
-    }
+		Link profileLink = client.discoverUnique("customers");
+		client.follow(profileLink).//
+				andExpect(jsonPath("$._embedded.customers").value(hasSize(7)));
+	}
 
-    @Test
-    public void deletedCustomerIsRemovedFromEndpoint() throws Exception {
+	@Test
+	public void deletedCustomerIsRemovedFromEndpoint() throws Exception {
 
-        // Lookup customer
-        Link customers = client.discoverUnique("customers");
-        Link customerLink = assertHasContentLinkWithRel("self", client.request(customers));
+		// Lookup customer
+		Link customers = client.discoverUnique("customers");
+		Link customerLink = assertHasContentLinkWithRel("self", client.request(customers));
 
-        // Delete customer
-        mvc.perform(delete(customerLink.getHref()));
+		// Delete customer
+		mvc.perform(delete(customerLink.getHref()));
 
-        // Assert we deleted a customer.
-        client.follow(customers).//
-                andExpect(jsonPath("$._embedded.customers").value(hasSize(6)));
-    }
-
-
+		// Assert we deleted a customer.
+		client.follow(customers).//
+				andExpect(jsonPath("$._embedded.customers").value(hasSize(6)));
+	}
 }
