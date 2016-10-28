@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
+import org.springframework.data.rest.core.config.RepositoryCorsRegistry;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.domain.Profile;
 import org.springframework.data.rest.core.domain.ProfileRepository;
@@ -149,9 +150,10 @@ public class RepositoryRestConfigurationUnitTests {
 	@Test
 	public void configuresCorsProcessing() {
 
-		configuration.addCorsMapping("/hello").maxAge(1234);
+		RepositoryCorsRegistry registry = configuration.getCorsRegistry();
+		registry.addMapping("/hello").maxAge(1234);
 
-		Map<String, CorsConfiguration> corsConfigurations = configuration.getCorsRegistry().getCorsConfigurations();
+		Map<String, CorsConfiguration> corsConfigurations = registry.getCorsConfigurations();
 		assertThat(corsConfigurations, hasKey("/hello"));
 
 		CorsConfiguration corsConfiguration = corsConfigurations.get("/hello");

@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
@@ -57,6 +58,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Mock ResourceMappings mappings;
+	@Mock Repositories repositories;
 
 	RepositoryRestConfiguration configuration;
 	RepositoryRestHandlerMapping handlerMapping;
@@ -69,7 +71,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 		configuration = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
 				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
 
-		handlerMapping = new RepositoryRestHandlerMapping(mappings, configuration);
+		handlerMapping = new RepositoryRestHandlerMapping(mappings, configuration, repositories);
 		handlerMapping.setApplicationContext(CONTEXT);
 
 		mockRequest = new MockHttpServletRequest();

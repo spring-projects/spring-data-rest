@@ -15,11 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
@@ -58,7 +56,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 				@Override
 				public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 
-					config.addCorsMapping("/books/**") //
+					config.getCorsRegistry().addMapping("/books/**") //
 							.allowedMethods("GET", "PUT", "POST") //
 							.allowedOrigins("http://far.far.away");
 				}
@@ -79,7 +77,8 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
 				.andExpect(status().isOk()) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.away")) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS,TRACE"));
+				.andExpect(
+						header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS,TRACE"));
 	}
 
 	/**

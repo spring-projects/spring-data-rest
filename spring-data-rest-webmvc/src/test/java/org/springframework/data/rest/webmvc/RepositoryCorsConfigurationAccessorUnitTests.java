@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
 import org.junit.Before;
@@ -25,28 +25,31 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.CorsConfigurationAccessor;
+import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.NoOpStringValueResolver;
+import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.RepositoryCorsConfigurationAccessor;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.cors.CorsConfiguration;
 
 /**
- * Unit tests for {@link CorsConfigurationAccessor}.
+ * Unit tests for {@link RepositoryCorsConfigurationAccessor}.
  * 
  * @author Mark Paluch
+ * @author Oliver Gierke
  * @soundtrack Aso Mamiko - Drive Me Crazy (Club Mix)
+ * @since 2.6
  */
 @RunWith(MockitoJUnitRunner.class)
-public class CorsConfigurationAccessorUnitTests {
+public class RepositoryCorsConfigurationAccessorUnitTests {
 
-	CorsConfigurationAccessor accessor;
+	RepositoryCorsConfigurationAccessor accessor;
 
 	@Mock ResourceMappings mappings;
 	@Mock Repositories repositories;
 
 	@Before
 	public void before() throws Exception {
-		accessor = new CorsConfigurationAccessor(mappings, repositories, null);
+		accessor = new RepositoryCorsConfigurationAccessor(mappings, repositories, NoOpStringValueResolver.INSTANCE);
 	}
 
 	/**
@@ -90,7 +93,10 @@ public class CorsConfigurationAccessorUnitTests {
 	@CrossOrigin
 	interface AnnotatedRepository {}
 
-	@CrossOrigin(origins = "http://far.far.away", allowedHeaders = "Content-type", maxAge = 1234,
-			exposedHeaders = "Accept", methods = RequestMethod.PATCH, allowCredentials = "true")
+	@CrossOrigin(origins = "http://far.far.away", //
+			allowedHeaders = "Content-type", //
+			maxAge = 1234, exposedHeaders = "Accept", //
+			methods = RequestMethod.PATCH, //
+			allowCredentials = "true")
 	interface FullyConfiguredCorsRepository {}
 }

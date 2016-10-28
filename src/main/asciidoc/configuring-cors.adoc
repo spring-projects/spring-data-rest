@@ -21,7 +21,8 @@ In the above example CORS support is enabled for the whole `PersonRepository`. `
 [source, java]
 ----
 @CrossOrigin(origins = "http://domain2.com",
-		methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE }, maxAge = 3600)
+  methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE },
+  maxAge = 3600)
 interface PersonRepository extends CrudRepository<Person, Long> {}
 ----
 
@@ -34,14 +35,13 @@ Spring Data REST fully supports http://docs.spring.io/spring/docs/current/spring
 [source, java]
 ----
 @RepositoryRestController
-@RequestMapping("/person")
 public class PersonController {
 
-	@CrossOrigin(maxAge = 3600)
-	@RequestMapping(method = RequestMethod.GET, "/xml/{id}", produces = MediaType.APPLICATION_XML_VALUE)
-	public Person retrieve(@PathVariable Long id) {
-		// ...
-	}
+  @CrossOrigin(maxAge = 3600)
+  @RequestMapping(path = "/people/xml/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
+  public Person retrieve(@PathVariable Long id) {
+    // …
+  }
 }
 ----
 
@@ -61,12 +61,12 @@ public class SpringDataRestCustomization extends RepositoryRestConfigurerAdapter
   @Override
   public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 
-    config.addCorsMapping("/person/**")
-        .allowedOrigins("http://domain2.com")
-        .allowedMethods("PUT", "DELETE")
-        .allowedHeaders("header1", "header2", "header3")
-        .exposedHeaders("header1", "header2")
-        .allowCredentials(false).maxAge(3600);
+    config.getCorsRegistry().addCorsMapping("/person/**")
+      .allowedOrigins("http://domain2.com")
+      .allowedMethods("PUT", "DELETE")
+      .allowedHeaders("header1", "header2", "header3")
+      .exposedHeaders("header1", "header2")
+      .allowCredentials(false).maxAge(3600);
   }
 }
 ----

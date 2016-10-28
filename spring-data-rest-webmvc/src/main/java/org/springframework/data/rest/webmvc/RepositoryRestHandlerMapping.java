@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -66,7 +69,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	private final RepositoryRestConfiguration configuration;
 	private final Repositories repositories;
 
-	private StringValueResolver embeddedValueResolver;
+	private RepositoryCorsConfigurationAccessor corsConfigurationAccessor;
 	private JpaHelper jpaHelper;
 
 	/**
@@ -99,6 +102,8 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		this.mappings = mappings;
 		this.configuration = config;
 		this.repositories = repositories;
+		this.corsConfigurationAccessor = new RepositoryCorsConfigurationAccessor(mappings, repositories,
+				NoOpStringValueResolver.INSTANCE);
 	}
 
 	/**
@@ -108,14 +113,17 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		this.jpaHelper = jpaHelper;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping#setEmbeddedValueResolver(org.springframework.util.StringValueResolver)
 	 */
 	@Override
 	public void setEmbeddedValueResolver(StringValueResolver resolver) {
 
-		embeddedValueResolver = resolver;
 		super.setEmbeddedValueResolver(resolver);
+
+		this.corsConfigurationAccessor = new RepositoryCorsConfigurationAccessor(mappings, repositories,
+				resolver == null ? NoOpStringValueResolver.INSTANCE : resolver);
 	}
 
 	/*
@@ -207,15 +215,10 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 			return corsConfiguration;
 		}
 
-		// Repository root resource
-		CorsConfiguration repositoryConfiguration = new CorsConfigurationAccessor(mappings, repositories,
-				embeddedValueResolver).findCorsConfiguration(lookupPath);
+		CorsConfiguration repositoryCorsConfiguration = corsConfigurationAccessor.findCorsConfiguration(lookupPath);
 
-		if (repositoryConfiguration != null) {
-			return corsConfiguration != null ? corsConfiguration.combine(repositoryConfiguration) : repositoryConfiguration;
-		}
-
-		return corsConfiguration;
+		return corsConfiguration == null ? repositoryCorsConfiguration
+				: corsConfiguration.combine(repositoryCorsConfiguration);
 	}
 
 	/**
@@ -231,37 +234,40 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	}
 
 	/**
-	 * Accessor to obtain {@link CorsConfiguration} for exposed repositories.
-	 * <p>
-	 * Exported Repository classes can be annotated with {@link CrossOrigin} to configure CORS for a specific repository.
+	 * No-op {@link StringValueResolver} that returns the given {@link String} value as is.
 	 *
-	 * @author Mark Paluch
+	 * @author Oliver Gierke
 	 * @since 2.6
 	 */
-	static class CorsConfigurationAccessor {
+	enum NoOpStringValueResolver implements StringValueResolver {
 
-		private final ResourceMappings mappings;
-		private final Repositories repositories;
-		private final StringValueResolver embeddedValueResolver;
+		INSTANCE;
 
-		/**
-		 * Creates a new {@link CorsConfigurationAccessor} given {@link ResourceMappings}, {@link Repositories} and
-		 * {@link StringValueResolver}.
-		 *
-		 * @param mappings must not be {@literal null}.
-		 * @param repositories must not be {@literal null}.
-		 * @param embeddedValueResolver may be {@literal null} if not present.
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.util.StringValueResolver#resolveStringValue(java.lang.String)
 		 */
-		CorsConfigurationAccessor(ResourceMappings mappings, Repositories repositories,
-				StringValueResolver embeddedValueResolver) {
-
-			Assert.notNull(mappings, "ResourceMappings must not be null!");
-			Assert.notNull(repositories, "Repositories must not be null!");
-
-			this.mappings = mappings;
-			this.repositories = repositories;
-			this.embeddedValueResolver = embeddedValueResolver;
+		@Override
+		public String resolveStringValue(String value) {
+			return value;
 		}
+	}
+
+	/**
+	 * Accessor to obtain {@link CorsConfiguration} for exposed repositories.
+	 * <p>
+	 * Exported repository classes can be annotated with {@link CrossOrigin} to configure CORS for a specific repository.
+	 *
+	 * @author Mark Paluch
+	 * @author Oliver Gierke
+	 * @since 2.6
+	 */
+	@RequiredArgsConstructor
+	static class RepositoryCorsConfigurationAccessor {
+
+		private final @NonNull ResourceMappings mappings;
+		private final @NonNull Repositories repositories;
+		private final @NonNull StringValueResolver embeddedValueResolver;
 
 		CorsConfiguration findCorsConfiguration(String lookupPath) {
 
@@ -305,7 +311,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 			if (CollectionUtils.isEmpty(config.getAllowedOrigins())) {
 				config.setAllowedOrigins(Arrays.asList(CrossOrigin.DEFAULT_ORIGINS));
 			}
-			
+
 			if (CollectionUtils.isEmpty(config.getAllowedMethods())) {
 				for (HttpMethod httpMethod : HttpMethod.values()) {
 					config.addAllowedMethod(httpMethod);
@@ -362,7 +368,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		}
 
 		private String resolveCorsAnnotationValue(String value) {
-			return (this.embeddedValueResolver != null ? this.embeddedValueResolver.resolveStringValue(value) : value);
+			return this.embeddedValueResolver.resolveStringValue(value);
 		}
 	}
 }

@@ -28,7 +28,6 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.servlet.config.annotation.CorsRegistration;
 
 /**
@@ -563,22 +562,6 @@ public class RepositoryRestConfiguration {
 	 */
 	public RepositoryCorsRegistry getCorsRegistry() {
 		return corsRegistry;
-	}
-
-	/**
-	 * Configures Cross-origin resource sharing given a {@code path}.
-	 *
-	 * @param path path or path pattern, must not be {@literal null} or empty.
-	 * @return the {@link CorsRegistration} to build a CORS configuration.
-	 * @since 2.6
-	 * @see CorsConfiguration
-	 */
-	public CorsRegistration addCorsMapping(String path) {
-
-		Assert.notNull(path, "Path must not be null!");
-		Assert.hasText(path, "Path must not be empty!");
-
-		return corsRegistry.addMapping(path);
 	}
 
 	/**
