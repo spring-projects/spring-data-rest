@@ -15,9 +15,13 @@
  */
 package org.springframework.data.rest.tests.neo4j;
 
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
@@ -31,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.CommonWebTests;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.Link;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,14 +63,36 @@ public class Neo4jWebTests extends CommonWebTests {
      */
     @Override
     protected Iterable<String> expectedRootLinkRels() {
-        return Arrays.asList("customers");
+        return Arrays.asList("customers", "countries");
     }
 
-    /**
-     * @see DATAREST-184
-     */
     @Test
-    public void deletesCustomer() throws Exception {
+    public void emptyObjectMatchesResponse() throws Exception {
+
+        Link customersLink = client.discoverUnique("customers");
+        Link customerLink = assertHasContentLinkWithRel("self", client.request(customersLink));
+
+        MockHttpServletResponse response = patchAndGet(customerLink,
+                "{\"firstName\" : null, \"lastName\" : null, \"emailAddress\": null, \"addresses\" : [{ \"street\" : null, \"city\": null, \"country\": null}]}", MediaType.APPLICATION_JSON);
+
+        assertThat(JsonPath.read(response.getContentAsString(), "$.firstName"), is(nullValue()));
+        assertThat(JsonPath.read(response.getContentAsString(), "$.lastName"), is(nullValue()));
+        assertThat(JsonPath.read(response.getContentAsString(), "$.emailAddress"), is(nullValue()));
+        assertThat(JsonPath.read(response.getContentAsString(), "$.addresses[0].street"), is(nullValue()));
+        assertThat(JsonPath.read(response.getContentAsString(), "$.addresses[0].city"), is(nullValue()));
+        assertThat(JsonPath.read(response.getContentAsString(), "$.addresses[0].country"), is(nullValue()));
+    }
+
+    @Test
+    public void customersLinkContainsAllCustomers() throws Exception {
+
+        Link profileLink = client.discoverUnique("customers");
+        client.follow(profileLink).//
+                andExpect(jsonPath("$._embedded.customers").value(hasSize(7)));
+    }
+
+    @Test
+    public void deletedCustomerIsRemovedFromEndpoint() throws Exception {
 
         // Lookup customer
         Link customers = client.discoverUnique("customers");
@@ -74,25 +101,10 @@ public class Neo4jWebTests extends CommonWebTests {
         // Delete customer
         mvc.perform(delete(customerLink.getHref()));
 
-        // Assert no customers anymore
-        assertDoesNotHaveContentLinkWithRel("self", client.request(customers));
+        // Assert we deleted a customer.
+        client.follow(customers).//
+                andExpect(jsonPath("$._embedded.customers").value(hasSize(6)));
     }
 
-    protected Link assertContentLinkWithRel(String rel, MockHttpServletResponse response, boolean expected) throws Exception {
-        String content = response.getContentAsString();
 
-        try {
-            String string = String.format("$._embedded.._links.%s.href", new Object[]{rel});
-            JSONArray read = JsonPath.read(content, string, new Predicate[0]);
-            String o_O = read.get(0).toString();
-            Assert.assertThat("Expected to find a link with rel" + rel + " in the content section of the response!", o_O, Matchers.is(expected?Matchers.notNullValue():Matchers.nullValue()));
-            return new Link(o_O, rel);
-        } catch (InvalidPathException | IndexOutOfBoundsException e) {
-            if(expected) {
-                Assert.fail("Didn\'t find any content in the given response!");
-            }
-
-            return null;
-        }
-    }
 }
