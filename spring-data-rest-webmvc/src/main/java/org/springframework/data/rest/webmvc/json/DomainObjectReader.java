@@ -19,7 +19,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,6 +40,7 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.BasicClassIntrospector;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -143,6 +147,7 @@ public class DomainObjectReader {
 	 * @return
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	private <T> T doMerge(ObjectNode root, T target, ObjectMapper mapper) throws Exception {
 
 		Assert.notNull(root, "Root ObjectNode must not be null!");
@@ -161,11 +166,6 @@ public class DomainObjectReader {
 
 			Entry<String, JsonNode> entry = i.next();
 			JsonNode child = entry.getValue();
-
-			if (child.isArray()) {
-				continue;
-			}
-
 			String fieldName = entry.getKey();
 
 			if (!mappedProperties.hasPersistentPropertyForField(fieldName)) {
@@ -173,16 +173,26 @@ public class DomainObjectReader {
 				continue;
 			}
 
-			if (child.isObject()) {
+			PersistentProperty<?> property = mappedProperties.getPersistentProperty(fieldName);
+			PersistentPropertyAccessor accessor = entity.getPropertyAccessor(target);
+			Object rawValue = accessor.getProperty(property);
 
-				PersistentProperty<?> property = mappedProperties.getPersistentProperty(fieldName);
+			if (child.isArray()) {
+
+				boolean nestedObjectFound = handleArrayNode((ArrayNode) child, asCollection(rawValue), mapper);
+
+				if (nestedObjectFound) {
+					i.remove();
+				}
+
+				continue;
+			}
+
+			if (child.isObject()) {
 
 				if (associationLinks.isLinkableAssociation(property)) {
 					continue;
 				}
-
-				PersistentPropertyAccessor accessor = entity.getPropertyAccessor(target);
-				Object nested = accessor.getProperty(property);
 
 				ObjectNode objectNode = (ObjectNode) child;
 
@@ -193,7 +203,7 @@ public class DomainObjectReader {
 						continue;
 					}
 
-					doMergeNestedMap((Map<String, Object>) nested, objectNode, mapper);
+					doMergeNestedMap((Map<String, Object>) rawValue, objectNode, mapper);
 
 					// Remove potentially emptied Map as values have been handled recursively
 					if (!objectNode.fieldNames().hasNext()) {
@@ -203,13 +213,53 @@ public class DomainObjectReader {
 					continue;
 				}
 
-				if (nested != null && property.isEntity()) {
-					doMerge(objectNode, nested, mapper);
+				if (rawValue != null && property.isEntity()) {
+					doMerge(objectNode, rawValue, mapper);
 				}
 			}
 		}
 
 		return mapper.readerForUpdating(target).readValue(root);
+	}
+
+	/**
+	 * Applies the diff handling to {@link ArrayNode}s, potentially recursing into nested ones.
+	 * 
+	 * @param array the source {@link ArrayNode}m, must not be {@literal null}.
+	 * @param collection the actual collection values, must not be {@literal null}.
+	 * @param mapper the {@link ObjectMapper} to use, must not be {@literal null}.
+	 * @return whether an object merge has been applied to the {@link ArrayNode}.
+	 */
+	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, ObjectMapper mapper)
+			throws Exception {
+
+		Assert.notNull(array, "ArrayNode must not be null!");
+		Assert.notNull(collection, "Source collection must not be null!");
+		Assert.notNull(mapper, "ObjectMapper must not be null!");
+
+		Iterator<Object> value = collection.iterator();
+		boolean nestedObjectFound = false;
+
+		for (JsonNode jsonNode : array) {
+
+			if (!value.hasNext()) {
+				return nestedObjectFound;
+			}
+
+			Object next = value.next();
+
+			if (ArrayNode.class.isInstance(jsonNode)) {
+				return handleArrayNode(array, asCollection(next), mapper);
+			}
+
+			if (ObjectNode.class.isInstance(jsonNode)) {
+
+				nestedObjectFound = true;
+				doMerge((ObjectNode) jsonNode, next, mapper);
+			}
+		}
+
+		return nestedObjectFound;
 	}
 
 	/**
@@ -242,10 +292,37 @@ public class DomainObjectReader {
 	}
 
 	/**
+	 * Returns the given source instance as {@link Collection}.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private static Collection<Object> asCollection(Object source) {
+
+		if (source == null) {
+			return Collections.emptyList();
+		}
+
+		if (source instanceof Collection) {
+			return (Collection<Object>) source;
+		}
+
+		if (source.getClass().isArray()) {
+			return Arrays.asList((Object[]) source);
+		}
+
+		return Collections.singleton(source);
+	}
+
+	/**
 	 * Simple value object to capture a mapping of Jackson mapped field names and {@link PersistentProperty} instances.
+	 * 
+	 * @param source can be {@literal null}.
 	 *
 	 * @author Oliver Gierke
 	 */
+	@SuppressWarnings("unchecked")
 	static class MappedProperties {
 
 		private static final ClassIntrospector INTROSPECTOR = new BasicClassIntrospector();
