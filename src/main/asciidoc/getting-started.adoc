@@ -189,4 +189,4 @@ You can run your application as either a Spring Boot app (with links showns abov
 
 NOTE: In general Spring Data REST doesn't add functionality to a given data store. This means that by definition, it should work with any Spring Data project that supports the Repository programming model. The data stores listed above are simply the ones we have written integration tests to verify.
 
-From this point, you can are free to <<customizing-sdr,customize Spring Data REST>> with various options.
+From this point, you are free to <<customizing-sdr,customize Spring Data REST>> with various options.
