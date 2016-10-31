@@ -18,9 +18,14 @@ package org.springframework.data.rest.webmvc.json;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
@@ -43,6 +48,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Charsets;
 
 /**
  * Unit tests for {@link DomainObjectReader}.
@@ -65,6 +71,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(TypeWithGenericMap.class);
 		mappingContext.getPersistentEntity(VersionedType.class);
 		mappingContext.getPersistentEntity(SampleWithCreatedDate.class);
+		mappingContext.getPersistentEntity(User.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -190,6 +197,23 @@ public class DomainObjectReaderUnitTests {
 		assertThat(reader.readPut(node, sample, mapper).createdDate, is(reference));
 	}
 
+	@Test
+	public void readsPatchForEntityNestedInCollection() throws Exception {
+
+		Phone phone = new Phone();
+		phone.creationDate = new GregorianCalendar();
+
+		User user = new User();
+		user.phones.add(phone);
+
+		ByteArrayInputStream source = new ByteArrayInputStream(
+				"{ \"phones\" : [ { \"label\" : \"some label\" } ] }".getBytes(Charsets.UTF_8));
+
+		User result = reader.read(source, user, new ObjectMapper());
+
+		assertThat(result.phones.get(0).creationDate, is(notNullValue()));
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class SampleUser {
 
@@ -238,5 +262,16 @@ public class DomainObjectReaderUnitTests {
 		@CreatedDate //
 		@ReadOnlyProperty //
 		Date createdDate;
+	}
+
+	static class User {
+
+		public List<Phone> phones = new ArrayList<Phone>();
+	}
+
+	static class Phone {
+
+		public Calendar creationDate;
+		public String label;
 	}
 }

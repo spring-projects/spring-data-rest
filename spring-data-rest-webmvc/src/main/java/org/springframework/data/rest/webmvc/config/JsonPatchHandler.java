@@ -123,7 +123,7 @@ class JsonPatchHandler {
 			}
 		}
 
-		return reader.merge((ObjectNode) patchedNode, target, mapper);
+		return mapper.readerForUpdating(target).readValue(patchedNode);
 	}
 
 	<T> T applyMergePatch(InputStream source, T existingObject) throws Exception {
