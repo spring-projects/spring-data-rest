@@ -85,8 +85,8 @@ class JsonPatchHandler {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	<T> T applyPatch(InputStream source, T target) throws Exception {
-
 		return getPatchOperations(source).apply(target, (Class<T>) target.getClass());
 	}
 

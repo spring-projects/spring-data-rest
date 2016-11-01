@@ -104,7 +104,7 @@ public class DomainObjectReaderUnitTests {
 	public void considersMappedFieldNamesWhenApplyingNodeToDomainObject() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
-		mapper.setPropertyNamingStrategy(PropertyNamingStrategy.PASCAL_CASE_TO_CAMEL_CASE);
+		mapper.setPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE);
 
 		JsonNode node = new ObjectMapper().readTree("{\"FirstName\":\"Carter\",\"LastName\":\"Beauford\"}");
 
