@@ -97,7 +97,6 @@ import org.springframework.data.rest.webmvc.json.MappingAwarePageableArgumentRes
 import org.springframework.data.rest.webmvc.json.MappingAwareSortArgumentResolver;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.ValueTypeSchemaPropertyCustomizerFactory;
 import org.springframework.data.rest.webmvc.mapping.Associations;
@@ -637,12 +636,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		EmbeddedResourcesAssembler assembler = new EmbeddedResourcesAssembler(entities, associationLinks(),
 				excerptProjector());
-		NestedEntitySerializer serializer = new NestedEntitySerializer(entities, assembler, resourceProcessorInvoker());
 		LookupObjectSerializer lookupObjectSerializer = new LookupObjectSerializer(
 				OrderAwarePluginRegistry.create(getEntityLookups()));
 
 		return new PersistentEntityJackson2Module(associationLinks(), entities, uriToEntityConverter, linkCollector(),
-				repositoryInvokerFactory, serializer, lookupObjectSerializer);
+				repositoryInvokerFactory, lookupObjectSerializer, resourceProcessorInvoker(), assembler);
 	}
 
 	@Bean
