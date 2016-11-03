@@ -18,7 +18,6 @@ package org.springframework.data.rest.webmvc.jpa;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Collections;
@@ -119,7 +118,7 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void shouldApplyDefaultPageable() throws Exception {
 
-		mvc.perform(get("/books/default-pageable")).andDo(print()) //
+		mvc.perform(get("/books/default-pageable"))//
 				.andExpect(jsonPath("$.content[0].sales").value(0)) //
 				.andExpect(jsonPath("$.size").value(1));
 	}
@@ -130,7 +129,7 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 	@Test
 	public void shouldOverrideDefaultPageable() throws Exception {
 
-		mvc.perform(get("/books/default-pageable?size=10")).andDo(print()) //
+		mvc.perform(get("/books/default-pageable?size=10"))//
 				.andExpect(jsonPath("$.content[0].sales").value(0)) //
 				.andExpect(jsonPath("$.size").value(10));
 	}
