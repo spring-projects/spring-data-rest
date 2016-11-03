@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
+import org.springframework.data.rest.core.config.Projection;
 
 /**
  * @author Oliver Gierke
@@ -32,6 +33,11 @@ import org.springframework.data.annotation.Reference;
 @Data
 @EqualsAndHashCode(of = "id")
 public class LineItem {
+
+	@Projection(name = "productsOnly", types = { LineItem.class })
+	public interface LineItemProductsOnlyProjection {
+		List<Product.ProductNameOnlyProjection> getProducts();
+	}
 
 	private final @Id UUID id = UUID.randomUUID();
 	private final String description;

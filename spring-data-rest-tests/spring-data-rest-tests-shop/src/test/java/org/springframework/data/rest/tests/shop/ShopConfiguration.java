@@ -58,6 +58,22 @@ public class ShopConfiguration {
 		};
 	}
 
+	@Bean
+	public ResourceProcessor<Resource<Product.ProductNameOnlyProjection>> productNameOnlyProjectionResourceProcessor() {
+		return new ResourceProcessor<Resource<Product.ProductNameOnlyProjection>>() {
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.springframework.hateoas.ResourceProcessor#process(org.springframework.hateoas.ResourceSupport)
+			 */
+			@Override
+			public Resource<Product.ProductNameOnlyProjection> process(Resource<Product.ProductNameOnlyProjection> resource) {
+				resource.add(new Link("alpha", "beta"));
+				return resource;
+			}
+		};
+	}
+
 	@PostConstruct
 	public void init() {
 

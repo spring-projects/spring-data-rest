@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.rest.core.config.Projection;
 
 /**
  * @author Oliver Gierke
@@ -30,6 +31,11 @@ import org.springframework.data.annotation.Id;
 @Value
 @RequiredArgsConstructor
 public class Product {
+
+	@Projection(name = "nameOnly", types = { Product.class })
+	public interface ProductNameOnlyProjection {
+		String getName();
+	}
 
 	private final @Id UUID id = UUID.randomUUID();
 	private final String name;
