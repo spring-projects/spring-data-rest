@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.5.5.RELEASE (2016-11-03)
+---------------------------------------------
+* DATAREST-931 - PATCH for non-resource associations doesn't work as expected.
+* DATAREST-915 - Release 2.5.5 (Hopper SR5).
+* DATAREST-575 - Insufficient check for the presence of a PersistentProperty in MappedProperties.
+
+
 Changes in version 2.5.4.RELEASE (2016-09-29)
 ---------------------------------------------
 * DATAREST-909 - Revert Jackson-aware Sort and Pageable translation in Hopper and Gosling release trains.
