@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -134,6 +135,7 @@ public class DomainObjectReaderUnitTests {
 	 * @see DATAREST-701
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public void mergesNestedMapWithoutTypeInformation() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -143,7 +145,13 @@ public class DomainObjectReaderUnitTests {
 		target.map = new HashMap<String, Object>();
 		target.map.put("b", new HashMap<String, Object>());
 
-		reader.readPut((ObjectNode) node, target, mapper);
+		TypeWithGenericMap result = reader.readPut((ObjectNode) node, target, mapper);
+
+		assertThat(result.map.get("a"), is((Object) "1"));
+
+		Object object = result.map.get("b");
+		assertThat(object, is(instanceOf(Map.class)));
+		assertThat(((Map<Object, Object>) object).get("c"), is((Object) "2"));
 	}
 
 	/**
@@ -197,6 +205,9 @@ public class DomainObjectReaderUnitTests {
 		assertThat(reader.readPut(node, sample, mapper).createdDate, is(reference));
 	}
 
+	/**
+	 * @see DATAREST-931
+	 */
 	@Test
 	public void readsPatchForEntityNestedInCollection() throws Exception {
 
@@ -212,6 +223,54 @@ public class DomainObjectReaderUnitTests {
 		User result = reader.read(source, user, new ObjectMapper());
 
 		assertThat(result.phones.get(0).creationDate, is(notNullValue()));
+	}
+
+	/**
+	 * @see DATAREST-919
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void readsComplexNestedMapsAndArrays() throws Exception {
+
+		Map<String, Object> childMap = new HashMap<String, Object>();
+		childMap.put("child1", "ok");
+
+		HashMap<String, Object> nestedMap = new HashMap<String, Object>();
+		nestedMap.put("c1", "v1");
+
+		TypeWithGenericMap map = new TypeWithGenericMap();
+		map.map = new HashMap<String, Object>();
+		map.map.put("sub1", "ok");
+		map.map.put("sub2", new ArrayList<String>(Arrays.asList("ok1", "ok2")));
+		map.map.put("sub3", new ArrayList<Object>(Arrays.asList(childMap)));
+		map.map.put("sub4", nestedMap);
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode payload = (ObjectNode) mapper.readTree("{ \"map\" : { \"sub1\" : \"ok\","
+				+ " \"sub2\" : [ \"ok1\", \"ok2\" ], \"sub3\" : [ { \"childOk1\" : \"ok\" }], \"sub4\" : {"
+				+ " \"c1\" : \"v1\", \"c2\" : \"new\" } } }");
+
+		TypeWithGenericMap result = reader.readPut(payload, map, mapper);
+
+		assertThat(result.map.get("sub1"), is((Object) "ok"));
+
+		List<String> sub2 = as(result.map.get("sub2"), List.class);
+		assertThat(sub2.get(0), is("ok1"));
+		assertThat(sub2.get(1), is("ok2"));
+
+		List<Map<String, String>> sub3 = as(result.map.get("sub3"), List.class);
+		assertThat(sub3.get(0).get("childOk1"), is("ok"));
+
+		Map<Object, String> sub4 = as(result.map.get("sub4"), Map.class);
+		assertThat(sub4.get("c1"), is("v1"));
+		assertThat(sub4.get("c2"), is("new"));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T as(Object source, Class<T> type) {
+
+		assertThat(source, is(instanceOf(type)));
+		return (T) source;
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
