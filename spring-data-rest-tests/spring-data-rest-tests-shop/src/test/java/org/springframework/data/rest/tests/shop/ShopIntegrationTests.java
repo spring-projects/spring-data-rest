@@ -18,6 +18,9 @@ package org.springframework.data.rest.tests.shop;
 import static org.hamcrest.CoreMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
@@ -66,5 +69,37 @@ public class ShopIntegrationTests extends AbstractWebIntegrationTests {
 		actions.andExpect(jsonPath(prefix.concat(suffix)).doesNotExist());
 		actions.andExpect(jsonPath(prefix.concat("_links.").concat(suffix)).exists());
 		actions.andExpect(jsonPath(prefix.concat("_embedded.").concat(suffix)).exists());
+	}
+
+	@Test
+	public void renderProductNameOnlyProjection() throws Exception {
+		Map<String, Object> arguments = new HashMap<>();
+		arguments.put("projection", "nameOnly");
+		client.follow(client.discoverUnique("products").expand(arguments))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$._embedded.products[0].name", notNullValue()))
+			.andExpect(jsonPath("$._embedded.products[0].price").doesNotExist());
+	}
+
+	@Test
+	public void renderProductNameOnlyProjectionResourceProcessor() throws Exception {
+		Map<String, Object> arguments = new HashMap<>();
+		arguments.put("projection", "nameOnly");
+		client.follow(client.discoverUnique("products").expand(arguments))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$._embedded.products[0]._links.beta").exists());
+	}
+
+	/**
+	 * @see DATAREST-221
+	 */
+	@Test
+	public void renderOrderItemsOnlyProjectionResourceProcessor() throws Exception {
+		Map<String, Object> arguments = new HashMap<>();
+		arguments.put("projection", "itemsOnly");
+		client.follow(client.discoverUnique("orders").expand(arguments))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$._embedded.orders[0].items[0].products[0].name").exists())
+			.andExpect(jsonPath("$._embedded.orders[0].items[0].products[0]._links.beta").exists());
 	}
 }
