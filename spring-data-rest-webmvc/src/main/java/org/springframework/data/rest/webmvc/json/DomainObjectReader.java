@@ -286,8 +286,14 @@ public class DomainObjectReader {
 
 			if (child instanceof ObjectNode && sourceValue != null) {
 				doMerge((ObjectNode) child, sourceValue, mapper);
-				fields.remove();
+			} else if (child instanceof ArrayNode && sourceValue != null) {
+				handleArrayNode((ArrayNode) child, asCollection(sourceValue), mapper);
+			} else {
+				source.put(entry.getKey(),
+						mapper.treeToValue(child, sourceValue == null ? Object.class : sourceValue.getClass()));
 			}
+
+			fields.remove();
 		}
 	}
 
