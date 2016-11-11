@@ -214,6 +214,7 @@ public class DomainObjectReader {
 				}
 
 				if (rawValue != null && property.isEntity()) {
+					i.remove();
 					doMerge(objectNode, rawValue, mapper);
 				}
 			}
