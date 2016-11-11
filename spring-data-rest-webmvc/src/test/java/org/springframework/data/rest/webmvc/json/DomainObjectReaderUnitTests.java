@@ -38,6 +38,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -75,12 +76,30 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(TypeWithGenericMap.class);
 		mappingContext.getPersistentEntity(VersionedType.class);
 		mappingContext.getPersistentEntity(SampleWithCreatedDate.class);
+		mappingContext.getPersistentEntity(SampleWithTransient.class);
 		mappingContext.getPersistentEntity(User.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
 
 		this.reader = new DomainObjectReader(entities, new Associations(mappings, mock(RepositoryRestConfiguration.class)));
+	}
+
+	/**
+	 * @see DATAREST-
+	 */
+	@Test
+	public void considersTransientProperties() throws Exception {
+
+		SampleWithTransient sample = new SampleWithTransient();
+		sample.name="name";
+		sample.temporary="temp";
+		JsonNode node = new ObjectMapper().readTree("{\"name\": \"new name\", \"temporary\": \"new temp\"}");
+
+		SampleWithTransient result = reader.readPut((ObjectNode) node, sample, new ObjectMapper());
+
+		assertThat(result.name, is("new name"));
+		assertThat(result.temporary, is("new temp"));
 	}
 
 	/**
@@ -335,5 +354,12 @@ public class DomainObjectReaderUnitTests {
 
 		public Calendar creationDate;
 		public String label;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class SampleWithTransient {
+
+		String name;
+		@Transient String temporary;
 	}
 }
