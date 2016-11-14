@@ -145,7 +145,7 @@ There are many properties you can alter:
 | sortParamName      | change name of the query parameter for sorting
 | defaultMediaType   | change default media type to use when none is specified
 | returnBodyOnCreate | change if a body should be returned on creating a new entity
-| returnBodyOnupdate | change if a body should be returned on updating an entity
+| returnBodyOnUpdate | change if a body should be returned on updating an entity
 |===
 
 [[getting-started.bootstrap]]
