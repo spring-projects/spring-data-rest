@@ -285,8 +285,9 @@ public class DomainObjectReader {
 			} else if (child instanceof ArrayNode && sourceValue != null) {
 				handleArrayNode((ArrayNode) child, asCollection(sourceValue), mapper);
 			} else {
-				source.put(entry.getKey(),
-						mapper.treeToValue(child, sourceValue == null ? Object.class : sourceValue.getClass()));
+
+				Class<?> target = sourceValue == null ? Object.class : sourceValue.getClass();
+				source.put(entry.getKey(), mapper.treeToValue(child, target));
 			}
 
 			fields.remove();
