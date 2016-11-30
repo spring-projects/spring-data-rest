@@ -108,6 +108,52 @@
 								<copy todir="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/vendor/js">
 									<fileset dir="${project.build.directory}/json-editor/META-INF/resources/webjars/json-editor/${json-editor.version}" />
 								</copy>
+								<copy file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/browser.html"
+									  tofile="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/index.html" />
+								<replace file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/index.html">
+									<replacefilter>
+									<replacetoken><![CDATA[</body>]]></replacetoken>
+									<replacevalue><![CDATA[
+	<script id="dynamic-request-template" type="text/template">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h3>Create/Update</h3>
+		</div>
+
+		<form class="non-safe" action="<%= href %>">
+			<div class="modal-body" style="padding-top: 0px">
+				<div id="jsoneditor"></div>
+
+				<div class="well well-small" style="padding-bottom: 0px;">
+					<div class="container-fluid">
+						<div class="row-fluid">
+							<div class="control-group">
+								<label class="control-label" style="display: inline-block; font-weight: bold;">Action:</label>
+								<input name="method" type="text" class="method controls" style="width: 98%" value="POST" />
+								<input name="url" type="text" class="url controls" style="width: 98%" value="<%= href %>" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-primary">Make Request</button>
+			</div>
+		</form>
+	</script>
+
+	<script src="vendor/js/jsoneditor.js"></script>
+	<script src="js/CustomPostForm.js"></script>
+
+</body>]]></replacevalue>
+									</replacefilter>
+								</replace>
+								<replace file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/index.html">
+									<replacefilter>
+										<replacetoken>The HAL Browser</replacetoken>
+										<replacevalue>The HAL Browser (for Spring Data REST)</replacevalue>
+									</replacefilter>
+								</replace>
 								<delete file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/browser.html" />
 							</target>
 						</configuration>
