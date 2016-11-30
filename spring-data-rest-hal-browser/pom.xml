@@ -112,8 +112,8 @@
 									  tofile="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/index.html" />
 								<replace file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/index.html">
 									<replacefilter>
-									<replacetoken><![CDATA[</body>]]></replacetoken>
-									<replacevalue><![CDATA[
+										<replacetoken><![CDATA[</body>]]></replacetoken>
+										<replacevalue><![CDATA[
 	<script id="dynamic-request-template" type="text/template">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -145,7 +145,8 @@
 	<script src="vendor/js/jsoneditor.js"></script>
 	<script src="js/CustomPostForm.js"></script>
 
-</body>]]></replacevalue>
+</body>]]>
+										</replacevalue>
 									</replacefilter>
 								</replace>
 								<replace file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/index.html">
