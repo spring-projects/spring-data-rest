@@ -26,13 +26,13 @@ import org.springframework.data.rest.core.config.Projection;
 
 /**
  * @author Oliver Gierke
+ * @author Craig Andrews
  */
-
 @Value
 @RequiredArgsConstructor
 public class Product {
 
-	@Projection(name = "nameOnly", types = { Product.class })
+	@Projection(name = "nameOnly", types = Product.class)
 	public interface ProductNameOnlyProjection {
 		String getName();
 	}

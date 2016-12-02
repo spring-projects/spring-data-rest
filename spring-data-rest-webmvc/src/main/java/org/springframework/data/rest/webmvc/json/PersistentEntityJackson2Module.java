@@ -41,6 +41,7 @@ import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
@@ -110,13 +111,16 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * 
 	 * @param associations must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
-	 * @param config must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
-	 * @param linkProvider must not be {@literal null}.
+	 * @param collector must not be {@literal null}.
+	 * @param factory must not be {@literal null}.
+	 * @param lookupObjectSerializer must not be {@literal null}.
+	 * @param invoker must not be {@literal null}.
+	 * @param assembler must not be {@literal null}.
 	 */
 	public PersistentEntityJackson2Module(Associations associations, PersistentEntities entities,
 			UriToEntityConverter converter, LinkCollector collector, RepositoryInvokerFactory factory,
-			LookupObjectSerializer lookupObjectSerializer, ResourceProcessorInvoker resourceProcessorInvoker,
+			LookupObjectSerializer lookupObjectSerializer, ResourceProcessorInvoker invoker,
 			EmbeddedResourcesAssembler assembler) {
 
 		super(new Version(2, 0, 0, null, "org.springframework.data.rest", "jackson-module"));
@@ -126,9 +130,9 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		Assert.notNull(converter, "UriToEntityConverter must not be null!");
 		Assert.notNull(collector, "LinkCollector must not be null!");
 
-		NestedEntitySerializer serializer = new NestedEntitySerializer(entities, assembler, resourceProcessorInvoker);
+		NestedEntitySerializer serializer = new NestedEntitySerializer(entities, assembler, invoker);
 		addSerializer(new PersistentEntityResourceSerializer(collector));
-		addSerializer(new ProjectionSerializer(collector, associations, resourceProcessorInvoker, false));
+		addSerializer(new ProjectionSerializer(collector, associations, invoker, false));
 		addSerializer(new ProjectionResourceContentSerializer(false));
 
 		setSerializerModifier(
@@ -540,7 +544,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		private final LinkCollector collector;
 		private final Associations associations;
-		private final ResourceProcessorInvoker resourceProcessorInvoker;
+		private final ResourceProcessorInvoker invoker;
 		private final boolean unwrapping;
 
 		/**
@@ -549,15 +553,17 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * 
 		 * @param collector must not be {@literal null}.
 		 * @param mappings must not be {@literal null}.
+		 * @param invoker must not be {@literal null}.
 		 * @param unwrapping
 		 */
-		private ProjectionSerializer(LinkCollector collector, Associations mappings, ResourceProcessorInvoker resourceProcessorInvoker, boolean unwrapping) {
+		private ProjectionSerializer(LinkCollector collector, Associations mappings, ResourceProcessorInvoker invoker,
+				boolean unwrapping) {
 
 			super(TargetAware.class);
 
 			this.collector = collector;
 			this.associations = mappings;
-			this.resourceProcessorInvoker = resourceProcessorInvoker;
+			this.invoker = invoker;
 			this.unwrapping = unwrapping;
 		}
 
@@ -583,14 +589,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 		}
 
-		private ProjectionResource toResource(TargetAware value) {
-			Object target = value.getTarget();
-			Links links = associations.getMetadataFor(value.getTargetClass()).isExported() ? collector.getLinksFor(target)
-					: new Links();
-			Resource<TargetAware> resource = resourceProcessorInvoker.invokeProcessorsFor(new Resource<TargetAware>(value, links));
-			return new ProjectionResource(resource.getContent(), resource.getLinks());
-    }
-
 		/* 
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.JsonSerializer#isUnwrappingSerializer()
@@ -606,7 +604,24 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 */
 		@Override
 		public JsonSerializer<TargetAware> unwrappingSerializer(NameTransformer unwrapper) {
-			return new ProjectionSerializer(collector, associations, resourceProcessorInvoker, true);
+			return new ProjectionSerializer(collector, associations, invoker, true);
+		}
+
+		/**
+		 * Creates a {@link ProjectionResource} for the given {@link TargetAware}.
+		 * 
+		 * @param value must not be {@literal null}.
+		 * @return
+		 */
+		private ProjectionResource toResource(TargetAware value) {
+
+			Object target = value.getTarget();
+			ResourceMetadata metadata = associations.getMetadataFor(value.getTargetClass());
+			Links links = metadata.isExported() ? collector.getLinksFor(target) : new Links();
+
+			Resource<TargetAware> resource = invoker.invokeProcessorsFor(new Resource<TargetAware>(value, links));
+
+			return new ProjectionResource(resource.getContent(), resource.getLinks());
 		}
 	}
 
