@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.map.repository.config.EnableMapRepositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.shop.Customer.Gender;
+import org.springframework.data.rest.tests.shop.Product.ProductNameOnlyProjection;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
@@ -59,15 +60,16 @@ public class ShopConfiguration {
 	}
 
 	@Bean
-	public ResourceProcessor<Resource<Product.ProductNameOnlyProjection>> productNameOnlyProjectionResourceProcessor() {
-		return new ResourceProcessor<Resource<Product.ProductNameOnlyProjection>>() {
+	public ResourceProcessor<Resource<ProductNameOnlyProjection>> productNameOnlyProjectionResourceProcessor() {
+
+		return new ResourceProcessor<Resource<ProductNameOnlyProjection>>() {
 
 			/*
 			 * (non-Javadoc)
 			 * @see org.springframework.hateoas.ResourceProcessor#process(org.springframework.hateoas.ResourceSupport)
 			 */
 			@Override
-			public Resource<Product.ProductNameOnlyProjection> process(Resource<Product.ProductNameOnlyProjection> resource) {
+			public Resource<ProductNameOnlyProjection> process(Resource<Product.ProductNameOnlyProjection> resource) {
 				resource.add(new Link("alpha", "beta"));
 				return resource;
 			}
