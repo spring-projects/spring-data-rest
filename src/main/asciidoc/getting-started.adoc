@@ -105,7 +105,7 @@ class CustomRestMvcConfiguration {
 
       @Override
       public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-        configuration.setBasePath("/api")
+        config.setBasePath("/api");
       }
     };
   }
@@ -121,7 +121,7 @@ public class CustomizedRestMvcConfiguration extends RepositoryRestConfigurerAdap
 
   @Override
   public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-    configuration.setBasePath("/api")
+    config.setBasePath("/api");
   }
 }
 ----
