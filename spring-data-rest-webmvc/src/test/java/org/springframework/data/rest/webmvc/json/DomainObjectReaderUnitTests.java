@@ -59,6 +59,7 @@ import com.google.common.base.Charsets;
  * Unit tests for {@link DomainObjectReader}.
  * 
  * @author Oliver Gierke
+ * @author Craig Andrews
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainObjectReaderUnitTests {
@@ -83,23 +84,6 @@ public class DomainObjectReaderUnitTests {
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
 
 		this.reader = new DomainObjectReader(entities, new Associations(mappings, mock(RepositoryRestConfiguration.class)));
-	}
-
-	/**
-	 * @see DATAREST-
-	 */
-	@Test
-	public void considersTransientProperties() throws Exception {
-
-		SampleWithTransient sample = new SampleWithTransient();
-		sample.name="name";
-		sample.temporary="temp";
-		JsonNode node = new ObjectMapper().readTree("{\"name\": \"new name\", \"temporary\": \"new temp\"}");
-
-		SampleWithTransient result = reader.readPut((ObjectNode) node, sample, new ObjectMapper());
-
-		assertThat(result.name, is("new name"));
-		assertThat(result.temporary, is("new temp"));
 	}
 
 	/**
@@ -320,6 +304,24 @@ public class DomainObjectReaderUnitTests {
 			this.firstName = firstName;
 			this.lastName = lastName;
 		}
+	}
+
+	/**
+	 * @see DATAREST-937
+	 */
+	@Test
+	public void considersTransientProperties() throws Exception {
+
+		SampleWithTransient sample = new SampleWithTransient();
+		sample.name = "name";
+		sample.temporary = "temp";
+
+		JsonNode node = new ObjectMapper().readTree("{ \"name\" : \"new name\", \"temporary\" : \"new temp\" }");
+
+		SampleWithTransient result = reader.readPut((ObjectNode) node, sample, new ObjectMapper());
+
+		assertThat(result.name, is("new name"));
+		assertThat(result.temporary, is("new temp"));
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
