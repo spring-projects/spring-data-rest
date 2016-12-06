@@ -76,6 +76,8 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(VersionedType.class);
 		mappingContext.getPersistentEntity(SampleWithCreatedDate.class);
 		mappingContext.getPersistentEntity(User.class);
+		mappingContext.getPersistentEntity(Inner.class);
+		mappingContext.getPersistentEntity(Outer.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -269,6 +271,31 @@ public class DomainObjectReaderUnitTests {
 		assertThat(sub4.get("c2"), is("new"));
 	}
 
+	/**
+	 * @see DATAREST-938
+	 */
+	@Test
+	public void nestedEntitiesAreUpdated() throws Exception {
+
+		Inner inner = new Inner();
+		inner.name = "inner name";
+		inner.prop = "something";
+		Outer outer = new Outer();
+		outer.prop = "else";
+		outer.name = "outer name";
+		outer.inner = inner;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"name\" : \"new inner name\" } }");
+
+		Outer result = reader.merge((ObjectNode) node, outer, new ObjectMapper());
+
+		assertThat(result, is(sameInstance(outer)));
+		assertThat(result.prop, is("else"));
+		assertThat(result.inner.prop, is("something"));
+		assertThat(result.inner.name, is("new inner name"));
+		assertThat(result.inner, is(sameInstance(inner)));
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -335,5 +362,20 @@ public class DomainObjectReaderUnitTests {
 
 		public Calendar creationDate;
 		public String label;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Outer {
+
+		String name;
+		String prop;
+		Inner inner;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Inner {
+
+		String name;
+		String prop;
 	}
 }
