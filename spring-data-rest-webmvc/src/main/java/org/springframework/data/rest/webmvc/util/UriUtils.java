@@ -16,16 +16,19 @@
 package org.springframework.data.rest.webmvc.util;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.hateoas.core.AnnotationMappingDiscoverer;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Utility methods to work with requests and URIs.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public abstract class UriUtils {
 
@@ -37,8 +40,8 @@ public abstract class UriUtils {
 	 * Returns the value for the mapping variable with the given name.
 	 * 
 	 * @param variable must not be {@literal null} or empty.
-	 * @param parameter
-	 * @param request
+	 * @param method must not be {@literal null}.
+	 * @param lookupPath
 	 * @return
 	 */
 	public static String findMappingVariable(String variable, Method method, String lookupPath) {
@@ -56,5 +59,20 @@ public abstract class UriUtils {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns the mapping path segments request mapping.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @return
+	 */
+	public static List<String> getPathSegments(Method method) {
+
+		Assert.notNull(method, "Method must not be null!");
+
+		String mapping = DISCOVERER.getMapping(method.getDeclaringClass(), method);
+
+		return UriComponentsBuilder.fromPath(mapping).build().getPathSegments();
 	}
 }

@@ -57,7 +57,7 @@ public class MappingAwarePageableArgumentResolverUnitTests {
 	}
 
 	/**
-	 * @see DATAREST-906
+	 * @see DATAREST-906, DATACMNS-918
 	 */
 	@Test
 	public void resolveArgumentShouldReturnTranslatedPageable() throws Exception {
@@ -76,7 +76,7 @@ public class MappingAwarePageableArgumentResolverUnitTests {
 	}
 
 	/**
-	 * @see DATAREST-906
+	 * @see DATAREST-906, DATACMNS-918
 	 */
 	@Test
 	public void resolveArgumentShouldReturnPageableWithoutSort() throws Exception {
@@ -93,7 +93,7 @@ public class MappingAwarePageableArgumentResolverUnitTests {
 	}
 
 	/**
-	 * @see DATAREST-906
+	 * @see DATAREST-906, DATACMNS-918
 	 */
 	@Test
 	public void resolveArgumentShouldReturnNoPageable() throws Exception {

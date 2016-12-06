@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-rest-parent</artifactId>
-	<version>2.6.0.BUILD-SNAPSHOT</version>
+	<version>2.6.0.DATACMNS-918-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Spring Data REST</name>
@@ -28,7 +28,7 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-rest</dist.id>
 
-		<springdata.commons>1.13.0.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.commons>1.13.0.DATACMNS-918-SNAPSHOT</springdata.commons>
 		<springdata.jpa>1.11.0.BUILD-SNAPSHOT</springdata.jpa>
 		<springdata.mongodb>1.10.0.BUILD-SNAPSHOT</springdata.mongodb>
 		<springdata.gemfire>1.9.0.BUILD-SNAPSHOT</springdata.gemfire>
