@@ -61,7 +61,9 @@ public class DomainClassResolver {
 		String repositoryKey = UriUtils.findMappingVariable("repository", method, lookupPath);
 
 		if (!StringUtils.hasText(repositoryKey)) {
+
 			List<String> pathSegments = UriUtils.getPathSegments(method);
+
 			if (!pathSegments.isEmpty()) {
 				repositoryKey = pathSegments.get(0);
 			}

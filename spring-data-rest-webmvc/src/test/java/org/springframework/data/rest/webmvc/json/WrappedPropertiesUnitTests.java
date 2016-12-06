@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.rest.webmvc.json;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,10 +37,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /**
  * Unit tests for {@link WrappedProperties}.
  * 
@@ -45,9 +44,10 @@ import lombok.NoArgsConstructor;
  */
 public class WrappedPropertiesUnitTests {
 
-	private static final ObjectMapper MAPPER = new ObjectMapper();
-	private KeyValueMappingContext mappingContext;
-	private PersistentEntities persistentEntities;
+	static final ObjectMapper MAPPER = new ObjectMapper();
+
+	KeyValueMappingContext mappingContext;
+	PersistentEntities persistentEntities;
 
 	@Before
 	public void setUp() {
@@ -55,6 +55,7 @@ public class WrappedPropertiesUnitTests {
 		mappingContext = new KeyValueMappingContext();
 		mappingContext.getPersistentEntity(MultiLevelNesting.class);
 		mappingContext.getPersistentEntity(SyntheticProperties.class);
+
 		persistentEntities = new PersistentEntities(Collections.singleton(mappingContext));
 	}
 
