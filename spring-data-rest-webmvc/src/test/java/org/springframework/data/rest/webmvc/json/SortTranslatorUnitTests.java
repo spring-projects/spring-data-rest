@@ -42,10 +42,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class SortTranslatorUnitTests {
 
-	private ObjectMapper objectMapper = new ObjectMapper();
-	private KeyValueMappingContext mappingContext;
-	private PersistentEntities persistentEntities;
-	private SortTranslator sortTranslator;
+	ObjectMapper objectMapper = new ObjectMapper();
+	KeyValueMappingContext mappingContext;
+	PersistentEntities persistentEntities;
+	SortTranslator sortTranslator;
 
 	@Before
 	public void setUp() {

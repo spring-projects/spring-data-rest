@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.rest.webmvc.json;
 
 import lombok.NonNull;
@@ -88,6 +87,7 @@ class WrappedProperties {
 	public boolean hasPersistentPropertiesForField(String fieldName) {
 
 		Assert.hasText(fieldName, "Field name must not be null or empty!");
+
 		return fieldNameToProperties.containsKey(fieldName);
 	}
 
@@ -112,8 +112,8 @@ class WrappedProperties {
 	@RequiredArgsConstructor
 	static class JacksonUnwrappedPropertiesResolver {
 
-		final @NonNull PersistentEntities persistentEntities;
-		final @NonNull ObjectMapper mapper;
+		private final @NonNull PersistentEntities persistentEntities;
+		private final @NonNull ObjectMapper mapper;
 
 		/**
 		 * Resolve {@code @JsonUnwrapped} field names to a list of involved {@link PersistentProperty properties}.
@@ -142,7 +142,6 @@ class WrappedProperties {
 			for (BeanPropertyDefinition property : getMappedProperties(entity)) {
 
 				AnnotatedMember annotatedMember = findAnnotatedMember(property);
-
 				PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getInternalName());
 
 				if (isJsonUnwrapped(annotatedMember)) {
@@ -199,7 +198,12 @@ class WrappedProperties {
 			return withInternalName;
 		}
 
-		private AnnotatedMember findAnnotatedMember(BeanPropertyDefinition property) {
+		private BeanDescription getBeanDescription(Class<?> type) {
+			return INTROSPECTOR.forDeserialization(mapper.getDeserializationConfig(), mapper.constructType(type),
+					mapper.getDeserializationConfig());
+		}
+
+		private static AnnotatedMember findAnnotatedMember(BeanPropertyDefinition property) {
 
 			if (property.getPrimaryMember() != null) {
 				return property.getPrimaryMember();
@@ -219,11 +223,6 @@ class WrappedProperties {
 		private static boolean isJsonUnwrapped(AnnotatedMember primaryMember) {
 			return primaryMember.hasAnnotation(JsonUnwrapped.class)
 					&& primaryMember.getAnnotation(JsonUnwrapped.class).enabled();
-		}
-
-		private BeanDescription getBeanDescription(Class<?> type) {
-			return INTROSPECTOR.forDeserialization(mapper.getDeserializationConfig(), mapper.constructType(type),
-					mapper.getDeserializationConfig());
 		}
 	}
 }
