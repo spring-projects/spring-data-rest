@@ -87,6 +87,23 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	/**
+	 * @see DATAREST-
+	 */
+	@Test
+	public void considersTransientProperties() throws Exception {
+
+		SampleWithTransient sample = new SampleWithTransient();
+		sample.name="name";
+		sample.temporary="temp";
+		JsonNode node = new ObjectMapper().readTree("{\"name\": \"new name\", \"temporary\": \"new temp\"}");
+
+		SampleWithTransient result = reader.readPut((ObjectNode) node, sample, new ObjectMapper());
+
+		assertThat(result.name, is("new name"));
+		assertThat(result.temporary, is("new temp"));
+	}
+
+	/**
 	 * @see DATAREST-461
 	 */
 	@Test
