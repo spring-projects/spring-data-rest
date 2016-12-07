@@ -48,6 +48,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Craig Andrews
+ * @author Mathias Düsterhöft
  * @since 2.2
  */
 @RequiredArgsConstructor
@@ -175,7 +176,7 @@ public class DomainObjectReader {
 
 			if (child.isArray()) {
 
-				boolean nestedObjectFound = handleArrayNode((ArrayNode) child, asCollection(rawValue), mapper);
+				boolean nestedObjectFound = handleArrayNode((ArrayNode) child, asCollection(rawValue), property.getComponentType(), mapper);
 
 				if (nestedObjectFound) {
 					i.remove();
@@ -224,10 +225,10 @@ public class DomainObjectReader {
 	 * 
 	 * @param array the source {@link ArrayNode}m, must not be {@literal null}.
 	 * @param collection the actual collection values, must not be {@literal null}.
-	 * @param mapper the {@link ObjectMapper} to use, must not be {@literal null}.
-	 * @return whether an object merge has been applied to the {@link ArrayNode}.
+	 * @param componentType the item type of the collection
+	 * @param mapper the {@link ObjectMapper} to use, must not be {@literal null}.  @return whether an object merge has been applied to the {@link ArrayNode}.
 	 */
-	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, ObjectMapper mapper)
+	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, Class<?> componentType, ObjectMapper mapper)
 			throws Exception {
 
 		Assert.notNull(array, "ArrayNode must not be null!");
@@ -240,13 +241,18 @@ public class DomainObjectReader {
 		for (JsonNode jsonNode : array) {
 
 			if (!value.hasNext()) {
+				if (componentType != null) {
+					collection.add(mapper.treeToValue(jsonNode, componentType));
+				}
 				return nestedObjectFound;
 			}
 
 			Object next = value.next();
 
 			if (ArrayNode.class.isInstance(jsonNode)) {
-				return handleArrayNode(array, asCollection(next), mapper);
+				final Collection<Object> nestedCollection = asCollection(next);
+				final Iterator<Object> iterator = nestedCollection.iterator();
+				return handleArrayNode(array, nestedCollection, iterator.hasNext() ? iterator.next().getClass() : null, mapper);
 			}
 
 			if (ObjectNode.class.isInstance(jsonNode)) {
@@ -254,6 +260,12 @@ public class DomainObjectReader {
 				nestedObjectFound = true;
 				doMerge((ObjectNode) jsonNode, next, mapper);
 			}
+		}
+
+		while (value.hasNext()) {
+			//there are more items in the collection than contained in the json node - remove it.
+			value.next();
+			value.remove();
 		}
 
 		return nestedObjectFound;
@@ -284,7 +296,9 @@ public class DomainObjectReader {
 			if (child instanceof ObjectNode && sourceValue != null) {
 				doMerge((ObjectNode) child, sourceValue, mapper);
 			} else if (child instanceof ArrayNode && sourceValue != null) {
-				handleArrayNode((ArrayNode) child, asCollection(sourceValue), mapper);
+				final Collection<Object> nestedCollection = asCollection(sourceValue);
+				final Iterator<Object> iterator = nestedCollection.iterator();
+				handleArrayNode((ArrayNode) child, nestedCollection, iterator.hasNext() ? iterator.next().getClass() : null, mapper);
 			} else {
 				source.put(entry.getKey(),
 						mapper.treeToValue(child, sourceValue == null ? Object.class : sourceValue.getClass()));

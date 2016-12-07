@@ -19,6 +19,9 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +63,7 @@ import com.google.common.base.Charsets;
  * 
  * @author Oliver Gierke
  * @author Craig Andrews
+ * @author Mathias Düsterhöft
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainObjectReaderUnitTests {
@@ -373,6 +377,51 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.inner.items.get(0).some, is("value"));
 	}
 
+	/**
+	 * @see DATAREST-956
+	 */
+	@Test
+	public void writesArrayWithAddedItemForPut() throws Exception {
+
+		Child inner = new Child();
+		inner.items = new ArrayList<Item>();
+		inner.items.add(new Item());
+
+		Parent source = new Parent();
+		source.inner = inner;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"items\" : [ { \"some\" : \"value\" }, { \"some\" : \"value1\" } ] } }");
+
+		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
+
+		assertThat(result.inner.items.size(), is(2));
+		assertThat(result.inner.items.get(0).some, is("value"));
+		assertThat(result.inner.items.get(1).some, is("value1"));
+	}
+
+	/**
+	 * @see DATAREST-956
+	 */
+	@Test
+	public void writesArrayWithRemovedItemForPut() throws Exception {
+
+		Child inner = new Child();
+		inner.items = new ArrayList<Item>();
+		inner.items.add(new Item("test1"));
+		inner.items.add(new Item("test2"));
+		inner.items.add(new Item("test3"));
+
+		Parent source = new Parent();
+		source.inner = inner;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"items\" : [ { \"some\" : \"value\" } ] } }");
+
+		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
+
+		assertThat(result.inner.items.size(), is(1));
+		assertThat(result.inner.items.get(0).some, is("value"));
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class TypeWithGenericMap {
 
@@ -440,6 +489,8 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	@NoArgsConstructor
+	@AllArgsConstructor
 	static class Item {
 		String some;
 	}
