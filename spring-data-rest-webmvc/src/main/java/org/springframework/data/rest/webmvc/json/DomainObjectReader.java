@@ -47,6 +47,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * 
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Craig Andrews
  * @since 2.2
  */
 @RequiredArgsConstructor

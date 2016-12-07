@@ -283,6 +283,7 @@ public class DomainObjectReaderUnitTests {
 		Inner inner = new Inner();
 		inner.name = "inner name";
 		inner.prop = "something";
+
 		Outer outer = new Outer();
 		outer.prop = "else";
 		outer.name = "outer name";
