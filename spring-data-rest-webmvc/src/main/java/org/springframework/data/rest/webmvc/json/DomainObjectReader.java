@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * detect nested objects, lookup the original value and apply the merge recursively.
  * 
  * @author Oliver Gierke
+ * @author Craig Andrews
  * @since 2.2
  */
 @RequiredArgsConstructor
