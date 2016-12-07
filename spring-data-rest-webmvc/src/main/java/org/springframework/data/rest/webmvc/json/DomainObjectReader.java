@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,6 +49,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Craig Andrews
+ * @author Mathias Düsterhöft
  * @since 2.2
  */
 @RequiredArgsConstructor
@@ -175,7 +177,7 @@ public class DomainObjectReader {
 
 			if (child.isArray()) {
 
-				boolean nestedObjectFound = handleArrayNode((ArrayNode) child, asCollection(rawValue), mapper);
+				boolean nestedObjectFound = handleArrayNode((ArrayNode) child, asCollection(rawValue), property.getComponentType(), mapper);
 
 				if (nestedObjectFound) {
 					i.remove();
@@ -224,29 +226,35 @@ public class DomainObjectReader {
 	 * 
 	 * @param array the source {@link ArrayNode}m, must not be {@literal null}.
 	 * @param collection the actual collection values, must not be {@literal null}.
-	 * @param mapper the {@link ObjectMapper} to use, must not be {@literal null}.
-	 * @return whether an object merge has been applied to the {@link ArrayNode}.
+	 * @param componentType the item type of the collection
+	 * @param mapper the {@link ObjectMapper} to use, must not be {@literal null}.  @return whether an object merge has been applied to the {@link ArrayNode}.
 	 */
-	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, ObjectMapper mapper)
+	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, Class<?> componentType, ObjectMapper mapper)
 			throws Exception {
 
 		Assert.notNull(array, "ArrayNode must not be null!");
 		Assert.notNull(collection, "Source collection must not be null!");
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
-		Iterator<Object> value = collection.iterator();
+		//we need an iterator for the original collection - we might modify it but we want to keep iterating over the original collection
+		Iterator<Object> value = new ArrayList<Object>(collection).iterator();
 		boolean nestedObjectFound = false;
 
 		for (JsonNode jsonNode : array) {
 
 			if (!value.hasNext()) {
-				return nestedObjectFound;
+				if (componentType != null) {
+					collection.add(mapper.treeToValue(jsonNode, componentType));
+					continue;
+				}
 			}
 
 			Object next = value.next();
 
 			if (ArrayNode.class.isInstance(jsonNode)) {
-				return handleArrayNode(array, asCollection(next), mapper);
+				Collection<Object> nestedCollection = asCollection(next);
+				Iterator<Object> iterator = nestedCollection.iterator();
+				return handleArrayNode(array, nestedCollection, iterator.hasNext() ? iterator.next().getClass() : null, mapper);
 			}
 
 			if (ObjectNode.class.isInstance(jsonNode)) {
@@ -254,6 +262,11 @@ public class DomainObjectReader {
 				nestedObjectFound = true;
 				doMerge((ObjectNode) jsonNode, next, mapper);
 			}
+		}
+
+		while (value.hasNext()) {
+			//there are more items in the collection than contained in the json node - remove it.
+			collection.remove(value.next());
 		}
 
 		return nestedObjectFound;
@@ -284,7 +297,9 @@ public class DomainObjectReader {
 			if (child instanceof ObjectNode && sourceValue != null) {
 				doMerge((ObjectNode) child, sourceValue, mapper);
 			} else if (child instanceof ArrayNode && sourceValue != null) {
-				handleArrayNode((ArrayNode) child, asCollection(sourceValue), mapper);
+				Collection<Object> nestedCollection = asCollection(sourceValue);
+				Iterator<Object> iterator = nestedCollection.iterator();
+				handleArrayNode((ArrayNode) child, nestedCollection, iterator.hasNext() ? iterator.next().getClass() : null, mapper);
 			} else {
 				source.put(entry.getKey(),
 						mapper.treeToValue(child, sourceValue == null ? Object.class : sourceValue.getClass()));
