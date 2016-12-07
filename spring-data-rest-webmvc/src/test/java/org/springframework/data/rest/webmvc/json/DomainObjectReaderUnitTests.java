@@ -15,12 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -57,6 +58,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
+
+import javassist.runtime.Inner;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 /**
  * Unit tests for {@link DomainObjectReader}.
@@ -390,13 +395,17 @@ public class DomainObjectReaderUnitTests {
 		Parent source = new Parent();
 		source.inner = inner;
 
-		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"items\" : [ { \"some\" : \"value\" }, { \"some\" : \"value1\" } ] } }");
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"items\" : [ " +
+				"{ \"some\" : \"value1\" }," +
+				"{ \"some\" : \"value2\" }," +
+				"{ \"some\" : \"value3\" } ] } }");
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
-		assertThat(result.inner.items.size(), is(2));
-		assertThat(result.inner.items.get(0).some, is("value"));
-		assertThat(result.inner.items.get(1).some, is("value1"));
+		assertThat(result.inner.items.size(), is(3));
+		assertThat(result.inner.items.get(0).some, is("value1"));
+		assertThat(result.inner.items.get(1).some, is("value2"));
+		assertThat(result.inner.items.get(2).some, is("value3"));
 	}
 
 	/**

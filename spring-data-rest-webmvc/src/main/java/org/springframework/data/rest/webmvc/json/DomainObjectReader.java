@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -235,7 +236,8 @@ public class DomainObjectReader {
 		Assert.notNull(collection, "Source collection must not be null!");
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
-		Iterator<Object> value = collection.iterator();
+		//we need an iterator for the original collection - we might modify it but we want to keep iterating over the original collection
+		Iterator<Object> value = new ArrayList<Object>(collection).iterator();
 		boolean nestedObjectFound = false;
 
 		for (JsonNode jsonNode : array) {
@@ -243,15 +245,15 @@ public class DomainObjectReader {
 			if (!value.hasNext()) {
 				if (componentType != null) {
 					collection.add(mapper.treeToValue(jsonNode, componentType));
+					continue;
 				}
-				return nestedObjectFound;
 			}
 
 			Object next = value.next();
 
 			if (ArrayNode.class.isInstance(jsonNode)) {
-				final Collection<Object> nestedCollection = asCollection(next);
-				final Iterator<Object> iterator = nestedCollection.iterator();
+				Collection<Object> nestedCollection = asCollection(next);
+				Iterator<Object> iterator = nestedCollection.iterator();
 				return handleArrayNode(array, nestedCollection, iterator.hasNext() ? iterator.next().getClass() : null, mapper);
 			}
 
@@ -264,8 +266,7 @@ public class DomainObjectReader {
 
 		while (value.hasNext()) {
 			//there are more items in the collection than contained in the json node - remove it.
-			value.next();
-			value.remove();
+			collection.remove(value.next());
 		}
 
 		return nestedObjectFound;
@@ -296,8 +297,8 @@ public class DomainObjectReader {
 			if (child instanceof ObjectNode && sourceValue != null) {
 				doMerge((ObjectNode) child, sourceValue, mapper);
 			} else if (child instanceof ArrayNode && sourceValue != null) {
-				final Collection<Object> nestedCollection = asCollection(sourceValue);
-				final Iterator<Object> iterator = nestedCollection.iterator();
+				Collection<Object> nestedCollection = asCollection(sourceValue);
+				Iterator<Object> iterator = nestedCollection.iterator();
 				handleArrayNode((ArrayNode) child, nestedCollection, iterator.hasNext() ? iterator.next().getClass() : null, mapper);
 			} else {
 				source.put(entry.getKey(),
