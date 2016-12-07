@@ -81,6 +81,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(User.class);
 		mappingContext.getPersistentEntity(Inner.class);
 		mappingContext.getPersistentEntity(Outer.class);
+		mappingContext.getPersistentEntity(Parent.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -352,6 +353,26 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.temporary, is("new temp"));
 	}
 
+	/**
+	 * @see DATAREST-953
+	 */
+	@Test
+	public void writesArrayForPut() throws Exception {
+
+		Child inner = new Child();
+		inner.items = new ArrayList<Item>();
+		inner.items.add(new Item());
+
+		Parent source = new Parent();
+		source.inner = inner;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"items\" : [ { \"some\" : \"value\" } ] } }");
+
+		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
+
+		assertThat(result.inner.items.get(0).some, is("value"));
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class TypeWithGenericMap {
 
@@ -406,5 +427,20 @@ public class DomainObjectReaderUnitTests {
 
 		String name;
 		String prop;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Parent {
+		Child inner;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Child {
+		List<Item> items;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Item {
+		String some;
 	}
 }
