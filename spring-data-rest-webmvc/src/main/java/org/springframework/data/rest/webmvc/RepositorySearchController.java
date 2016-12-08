@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,16 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
+import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.MethodResourceMapping;
@@ -66,6 +69,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Matthew Borger
  */
 @RepositoryRestController
 class RepositorySearchController extends AbstractRepositoryRestController {
@@ -75,6 +79,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	private final RepositoryEntityLinks entityLinks;
 	private final ResourceMappings mappings;
+	private final HttpHeadersPreparer headersPreparer;
 
 	/**
 	 * Creates a new {@link RepositorySearchController} using the given {@link PagedResourcesAssembler},
@@ -83,18 +88,21 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @param assembler must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
+	 * @param auditableBeanWrapperFactory must not be {@literal null}.
 	 */
 	@Autowired
 	public RepositorySearchController(PagedResourcesAssembler<Object> assembler, RepositoryEntityLinks entityLinks,
-			ResourceMappings mappings) {
+			ResourceMappings mappings, AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
 
 		super(assembler);
 
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(auditableBeanWrapperFactory, "AuditableBeanWrapperFactory must not be null!");
 
 		this.entityLinks = entityLinks;
 		this.mappings = mappings;
+		this.headersPreparer = new HttpHeadersPreparer(auditableBeanWrapperFactory);
 	}
 
 	/**
@@ -179,6 +187,13 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		SearchResourceMappings searchMappings = resourceInformation.getSearchMappings();
 		MethodResourceMapping methodMapping = searchMappings.getExportedMethodMappingForPath(search);
 		Class<?> domainType = methodMapping.getReturnedDomainType();
+
+		PersistentEntity<?, ?> persistentEntity = resourceInformation.getPersistentEntity();
+		if(result != null && !Collection.class.isInstance(result) && persistentEntity.getType().isInstance(result)) {
+			HttpHeaders responseHeaders = headersPreparer.prepareHeaders(persistentEntity, result);
+			return new ResponseEntity<Object>(toResource(result, assembler, domainType, null), responseHeaders,
+					HttpStatus.OK);
+		}
 
 		return new ResponseEntity<Object>(toResource(result, assembler, domainType, null), HttpStatus.OK);
 	}
