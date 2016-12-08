@@ -15,13 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -58,10 +57,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
-
-import javassist.runtime.Inner;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 /**
  * Unit tests for {@link DomainObjectReader}.
@@ -310,40 +305,6 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.inner, is(sameInstance(inner)));
 	}
 
-	@SuppressWarnings("unchecked")
-	private static <T> T as(Object source, Class<T> type) {
-
-		assertThat(source, is(instanceOf(type)));
-		return (T) source;
-	}
-
-	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
-	static class SampleUser {
-
-		String name;
-		@JsonIgnore String password;
-		Map<String, SampleUser> relatedUsers;
-
-		public SampleUser(String name, String password) {
-			this.name = name;
-			this.password = password;
-		}
-	}
-
-	/**
-	 * @see DATAREST-556
-	 */
-	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
-	static class Person {
-
-		String firstName, lastName;
-
-		public Person(String firstName, String lastName) {
-			this.firstName = firstName;
-			this.lastName = lastName;
-		}
-	}
-
 	/**
 	 * @see DATAREST-937
 	 */
@@ -395,10 +356,8 @@ public class DomainObjectReaderUnitTests {
 		Parent source = new Parent();
 		source.inner = inner;
 
-		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"items\" : [ " +
-				"{ \"some\" : \"value1\" }," +
-				"{ \"some\" : \"value2\" }," +
-				"{ \"some\" : \"value3\" } ] } }");
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"items\" : [ " + "{ \"some\" : \"value1\" },"
+				+ "{ \"some\" : \"value2\" }," + "{ \"some\" : \"value3\" } ] } }");
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
@@ -429,6 +388,49 @@ public class DomainObjectReaderUnitTests {
 
 		assertThat(result.inner.items.size(), is(1));
 		assertThat(result.inner.items.get(0).some, is("value"));
+	}
+
+	@Test
+	public void testname() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = mapper.readTree("\"asd\"");
+
+		assertThat(mapper.treeToValue(node, Object.class), is((Object) "asd"));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T as(Object source, Class<T> type) {
+
+		assertThat(source, is(instanceOf(type)));
+		return (T) source;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class SampleUser {
+
+		String name;
+		@JsonIgnore String password;
+		Map<String, SampleUser> relatedUsers;
+
+		public SampleUser(String name, String password) {
+			this.name = name;
+			this.password = password;
+		}
+	}
+
+	/**
+	 * @see DATAREST-556
+	 */
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Person {
+
+		String firstName, lastName;
+
+		public Person(String firstName, String lastName) {
+			this.firstName = firstName;
+			this.lastName = lastName;
+		}
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
