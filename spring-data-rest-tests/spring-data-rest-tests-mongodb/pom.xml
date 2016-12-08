@@ -73,7 +73,7 @@
 							<goal>process</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>target/generated-sources/annotations</outputDirectory>
+							<outputDirectory>target/generated-sources/test-querydsl</outputDirectory>
 							<processor>org.springframework.data.mongodb.repository.support.MongoAnnotationProcessor</processor>
 							<options>
 								<querydsl.excludedPackages>org.springframework.data.rest.tests.mongodb.groovy,groovy.lang</querydsl.excludedPackages>
