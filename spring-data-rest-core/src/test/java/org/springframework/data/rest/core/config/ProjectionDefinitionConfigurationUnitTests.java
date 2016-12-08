@@ -121,10 +121,10 @@ public class ProjectionDefinitionConfigurationUnitTests {
 	@Test
 	public void definitionEquals() {
 
-		ProjectionDefinition objectName = new ProjectionDefinition(Object.class, Object.class, "name");
-		ProjectionDefinition sameObjectName = new ProjectionDefinition(Object.class, Object.class, "name");
-		ProjectionDefinition stringName = new ProjectionDefinition(String.class, Object.class, "name");
-		ProjectionDefinition objectOtherNameKey = new ProjectionDefinition(Object.class, Object.class, "otherName");
+		ProjectionDefinition objectName = ProjectionDefinition.of(Object.class, Object.class, "name");
+		ProjectionDefinition sameObjectName = ProjectionDefinition.of(Object.class, Object.class, "name");
+		ProjectionDefinition stringName = ProjectionDefinition.of(String.class, Object.class, "name");
+		ProjectionDefinition objectOtherNameKey = ProjectionDefinition.of(Object.class, Object.class, "otherName");
 
 		assertThat(objectName, is(objectName));
 		assertThat(objectName, is(sameObjectName));

@@ -382,10 +382,13 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 						}
 					}
 				} else if (prop.property.isMap()) {
+
 					Map<Object, Object> m = (Map<Object, Object>) prop.propertyValue;
-					Iterator<Object> itr = m.keySet().iterator();
+					Iterator<Entry<Object, Object>> itr = m.entrySet().iterator();
+
 					while (itr.hasNext()) {
-						Object key = itr.next();
+
+						Object key = itr.next().getKey();
 
 						IdentifierAccessor accessor = prop.entity.getIdentifierAccessor(m.get(key));
 						String s = accessor.getIdentifier().toString();
@@ -394,6 +397,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 							itr.remove();
 						}
 					}
+
 				} else {
 					prop.accessor.setProperty(prop.property, null);
 				}

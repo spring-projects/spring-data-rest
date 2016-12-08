@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -166,14 +167,14 @@ class WrappedProperties {
 			Map<String, List<PersistentProperty<?>>> nestedProperties = findUnwrappedPropertyPaths(
 					annotatedMember.getRawType(), propertyNameTransformer, true);
 
-			for (String key : nestedProperties.keySet()) {
+			for (Entry<String, List<PersistentProperty<?>>> entry : nestedProperties.entrySet()) {
 
 				List<PersistentProperty<?>> persistentProperties = new ArrayList<PersistentProperty<?>>();
 
 				persistentProperties.add(persistentProperty);
-				persistentProperties.addAll(nestedProperties.get(key));
+				persistentProperties.addAll(entry.getValue());
 
-				mapping.put(key, persistentProperties);
+				mapping.put(entry.getKey(), persistentProperties);
 			}
 
 			return mapping;

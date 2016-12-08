@@ -15,6 +15,11 @@
  */
 package org.springframework.data.rest.core.config;
 
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -118,7 +123,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		Assert.notEmpty(sourceTypes, "Source types must not be null!");
 
 		for (Class<?> sourceType : sourceTypes) {
-			this.projectionDefinitions.add(new ProjectionDefinition(sourceType, projectionType, name));
+			this.projectionDefinitions.add(ProjectionDefinition.of(sourceType, projectionType, name));
 		}
 
 		return this;
@@ -189,10 +194,12 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	 * 
 	 * @author Oliver Gierke
 	 */
+	@Value
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	static final class ProjectionDefinition {
 
-		private final Class<?> sourceType, targetType;
-		private final String name;
+		private final @NonNull Class<?> sourceType, targetType;
+		private final @NonNull String name;
 
 		/**
 		 * Creates a new {@link ProjectionDefinitionKey} for the given source type and name;
@@ -201,47 +208,11 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		 * @param targetType must not be {@literal null}.
 		 * @param name must not be {@literal null} or empty.
 		 */
-		public ProjectionDefinition(Class<?> sourceType, Class<?> targetType, String name) {
+		static ProjectionDefinition of(Class<?> sourceType, Class<?> targetType, String name) {
 
-			Assert.notNull(sourceType, "Source type must not be null!");
-			Assert.notNull(targetType, "Target type must not be null!");
 			Assert.hasText(name, "Name must not be null or empty!");
 
-			this.sourceType = sourceType;
-			this.targetType = targetType;
-			this.name = name;
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		@Override
-		public boolean equals(Object obj) {
-
-			if (!(obj instanceof ProjectionDefinition)) {
-				return false;
-			}
-
-			ProjectionDefinition that = (ProjectionDefinition) obj;
-			return this.name.equals(that.name) && this.sourceType.equals(that.sourceType)
-					&& this.sourceType.equals(that.sourceType);
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
-		@Override
-		public int hashCode() {
-
-			int result = 31;
-
-			result += name.hashCode();
-			result += sourceType.hashCode();
-			result += targetType.hashCode();
-
-			return result;
+			return new ProjectionDefinition(sourceType, targetType, name);
 		}
 	}
 }

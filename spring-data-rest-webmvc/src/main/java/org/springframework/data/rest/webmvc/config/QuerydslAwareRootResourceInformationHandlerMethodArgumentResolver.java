@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.config;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
@@ -103,8 +104,8 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 
 		MultiValueMap<String, String> result = new LinkedMultiValueMap<String, String>();
 
-		for (String key : source.keySet()) {
-			result.put(key, Arrays.asList(source.get(key)));
+		for (Entry<String, String[]> entry : source.entrySet()) {
+			result.put(entry.getKey(), Arrays.asList(entry.getValue()));
 		}
 
 		return result;
