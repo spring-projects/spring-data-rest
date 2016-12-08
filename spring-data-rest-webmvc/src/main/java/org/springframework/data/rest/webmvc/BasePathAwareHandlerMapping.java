@@ -190,7 +190,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		super.afterPropertiesSet();
 	}
 
-	private class UriAwareHttpServletRequest implements HttpServletRequest {
+	private static class UriAwareHttpServletRequest implements HttpServletRequest {
 
 		private final ServletContext context;
 		private final String path;
