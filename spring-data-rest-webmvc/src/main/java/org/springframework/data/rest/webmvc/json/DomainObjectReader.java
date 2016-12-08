@@ -34,6 +34,8 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.webmvc.mapping.Associations;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
 
@@ -181,9 +183,7 @@ public class DomainObjectReader {
 
 			if (child.isArray()) {
 
-				boolean nestedObjectFound = handleArrayNode((ArrayNode) child, asCollection(rawValue), property.getComponentType(), mapper);
-
-				if (nestedObjectFound) {
+				if (handleArray(child, rawValue, mapper, property.getTypeInformation())) {
 					i.remove();
 				}
 
@@ -205,7 +205,7 @@ public class DomainObjectReader {
 						continue;
 					}
 
-					doMergeNestedMap((Map<String, Object>) rawValue, objectNode, mapper);
+					doMergeNestedMap((Map<String, Object>) rawValue, objectNode, mapper, property.getTypeInformation());
 
 					// Remove potentially emptied Map as values have been handled recursively
 					if (!objectNode.fieldNames().hasNext()) {
@@ -226,39 +226,64 @@ public class DomainObjectReader {
 	}
 
 	/**
+	 * Handles the given {@link JsonNode} by treating it as {@link ArrayNode} and the given source value as
+	 * {@link Collection}-like value. Looks up the actual type to handle from the potentially available first element,
+	 * falling back to component type lookup on the given type.
+	 * 
+	 * @param node must not be {@literal null}.
+	 * @param source must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 * @param collectionType must not be {@literal null}.
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean handleArray(JsonNode node, Object source, ObjectMapper mapper, TypeInformation<?> collectionType)
+			throws Exception {
+
+		Collection<Object> collection = asCollection(source);
+		Iterator<Object> iterator = collection.iterator();
+		TypeInformation<?> componentType = iterator.hasNext() ? //
+				ClassTypeInformation.from(iterator.next().getClass()) : //
+				collectionType.getComponentType();
+
+		return handleArrayNode((ArrayNode) node, collection, mapper, componentType);
+	}
+
+	/**
 	 * Applies the diff handling to {@link ArrayNode}s, potentially recursing into nested ones.
 	 * 
 	 * @param array the source {@link ArrayNode}m, must not be {@literal null}.
 	 * @param collection the actual collection values, must not be {@literal null}.
-	 * @param componentType the item type of the collection
-	 * @param mapper the {@link ObjectMapper} to use, must not be {@literal null}.  @return whether an object merge has been applied to the {@link ArrayNode}.
+	 * @param mapper the {@link ObjectMapper} to use, must not be {@literal null}.
+	 * @param componentType the item type of the collection, can be {@literal null}.
+	 * @return whether an object merge has been applied to the {@link ArrayNode}.
 	 */
-	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, Class<?> componentType, ObjectMapper mapper)
-			throws Exception {
+	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, ObjectMapper mapper,
+			TypeInformation<?> componentType) throws Exception {
 
 		Assert.notNull(array, "ArrayNode must not be null!");
 		Assert.notNull(collection, "Source collection must not be null!");
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
-		//we need an iterator for the original collection - we might modify it but we want to keep iterating over the original collection
+		// We need an iterator for the original collection.
+		// We might modify it but we want to keep iterating over the original collection.
 		Iterator<Object> value = new ArrayList<Object>(collection).iterator();
 		boolean nestedObjectFound = false;
 
 		for (JsonNode jsonNode : array) {
 
 			if (!value.hasNext()) {
-				if (componentType != null) {
-					collection.add(mapper.treeToValue(jsonNode, componentType));
-					continue;
-				}
+
+				Class<?> type = componentType == null ? Object.class : componentType.getType();
+				collection.add(mapper.treeToValue(jsonNode, type));
+
+				continue;
 			}
 
 			Object next = value.next();
 
 			if (ArrayNode.class.isInstance(jsonNode)) {
-				Collection<Object> nestedCollection = asCollection(next);
-				Iterator<Object> iterator = nestedCollection.iterator();
-				return handleArrayNode(array, nestedCollection, iterator.hasNext() ? iterator.next().getClass() : null, mapper);
+				return handleArray(jsonNode, next, mapper, componentType);
 			}
 
 			if (ObjectNode.class.isInstance(jsonNode)) {
@@ -268,8 +293,8 @@ public class DomainObjectReader {
 			}
 		}
 
+		// there are more items in the collection than contained in the JSON node - remove it.
 		while (value.hasNext()) {
-			//there are more items in the collection than contained in the json node - remove it.
 			collection.remove(value.next());
 		}
 
@@ -284,7 +309,8 @@ public class DomainObjectReader {
 	 * @param mapper must not be {@literal null}.
 	 * @throws Exception
 	 */
-	private void doMergeNestedMap(Map<String, Object> source, ObjectNode node, ObjectMapper mapper) throws Exception {
+	private void doMergeNestedMap(Map<String, Object> source, ObjectNode node, ObjectMapper mapper,
+			TypeInformation<?> type) throws Exception {
 
 		if (source == null) {
 			return;
@@ -299,14 +325,17 @@ public class DomainObjectReader {
 			Object sourceValue = source.get(entry.getKey());
 
 			if (child instanceof ObjectNode && sourceValue != null) {
+
 				doMerge((ObjectNode) child, sourceValue, mapper);
+
 			} else if (child instanceof ArrayNode && sourceValue != null) {
-				Collection<Object> nestedCollection = asCollection(sourceValue);
-				Iterator<Object> iterator = nestedCollection.iterator();
-				handleArrayNode((ArrayNode) child, nestedCollection, iterator.hasNext() ? iterator.next().getClass() : null, mapper);
+
+				handleArray(child, sourceValue, mapper, type);
+
 			} else {
-				source.put(entry.getKey(),
-						mapper.treeToValue(child, sourceValue == null ? Object.class : sourceValue.getClass()));
+
+				Class<?> valueType = sourceValue == null ? Object.class : sourceValue.getClass();
+				source.put(entry.getKey(), mapper.treeToValue(child, valueType));
 			}
 
 			fields.remove();
