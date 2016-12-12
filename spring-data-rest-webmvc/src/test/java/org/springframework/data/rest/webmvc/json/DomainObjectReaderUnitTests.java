@@ -390,6 +390,24 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.inner.items.get(0).some, is("value"));
 	}
 
+	/**
+	 * @see DATAREST-959
+	 */
+	@Test
+	public void writesArrayOverUndefinedValueForPut() throws Exception {
+
+		Parent source = new Parent();
+		source.inner = new Child();
+		source.inner.items = null;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"items\" : [ { \"some\" : \"value\" } ] } }");
+
+		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
+
+		assertThat(result.inner.items.size(), is(1));
+		assertThat(result.inner.items.get(0).some, is("value"));
+	}
+
 	@Test
 	public void testname() throws Exception {
 

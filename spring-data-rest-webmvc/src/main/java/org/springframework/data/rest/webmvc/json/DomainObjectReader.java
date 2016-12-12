@@ -352,7 +352,7 @@ public class DomainObjectReader {
 	private static Collection<Object> asCollection(Object source) {
 
 		if (source == null) {
-			return Collections.emptyList();
+			return new ArrayList<Object>();
 		}
 
 		if (source instanceof Collection) {
