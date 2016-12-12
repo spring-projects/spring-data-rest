@@ -112,13 +112,15 @@ public class RepositoryRestConfiguration {
 	 * 
 	 * @param basePath the basePath to set
 	 */
-	public void setBasePath(String basePath) {
+	public RepositoryRestConfiguration setBasePath(String basePath) {
 
 		Assert.isTrue(!basePath.startsWith("http"), "Use a path not a URI");
 		basePath = StringUtils.trimTrailingCharacter(basePath, '/');
 		this.basePath = URI.create(basePath.startsWith("/") ? basePath : "/".concat(basePath));
 
 		Assert.isTrue(!this.basePath.isAbsolute(), "Absolute URIs are not supported as base path!");
+
+		return this;
 	}
 
 	/**
@@ -504,8 +506,11 @@ public class RepositoryRestConfiguration {
 	 * @param enableEnumTranslation
 	 * @see #getEnumTranslationConfiguration()
 	 */
-	public void setEnableEnumTranslation(boolean enableEnumTranslation) {
+	public RepositoryRestConfiguration setEnableEnumTranslation(boolean enableEnumTranslation) {
+
 		this.enableEnumTranslation = enableEnumTranslation;
+
+		return this;
 	}
 
 	/**
@@ -547,9 +552,13 @@ public class RepositoryRestConfiguration {
 	 * @param repositoryDetectionStrategy can be {@literal null}.
 	 * @since 2.5
 	 */
-	public void setRepositoryDetectionStrategy(RepositoryDetectionStrategy repositoryDetectionStrategy) {
+	public RepositoryRestConfiguration setRepositoryDetectionStrategy(
+			RepositoryDetectionStrategy repositoryDetectionStrategy) {
+
 		this.repositoryDetectionStrategy = repositoryDetectionStrategy == null ? RepositoryDetectionStrategies.DEFAULT
 				: repositoryDetectionStrategy;
+
+		return this;
 	}
 
 	/**
