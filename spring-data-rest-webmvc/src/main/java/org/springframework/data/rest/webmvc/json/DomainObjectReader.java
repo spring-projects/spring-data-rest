@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -177,6 +176,10 @@ public class DomainObjectReader {
 			PersistentPropertyAccessor accessor = entity.getPropertyAccessor(target);
 			Object rawValue = accessor.getProperty(property);
 
+			if (rawValue == null) {
+				continue;
+			}
+
 			if (child.isArray()) {
 
 				if (handleArray(child, rawValue, mapper, property.getTypeInformation())) {
@@ -211,7 +214,7 @@ public class DomainObjectReader {
 					continue;
 				}
 
-				if (rawValue != null && property.isEntity()) {
+				if (property.isEntity()) {
 					i.remove();
 					doMerge(objectNode, rawValue, mapper);
 				}
@@ -236,7 +239,12 @@ public class DomainObjectReader {
 	private boolean handleArray(JsonNode node, Object source, ObjectMapper mapper, TypeInformation<?> collectionType)
 			throws Exception {
 
-		Collection<Object> collection = asCollection(source);
+		Collection<Object> collection = ifCollection(source);
+
+		if (collection == null) {
+			return false;
+		}
+
 		Iterator<Object> iterator = collection.iterator();
 		TypeInformation<?> componentType = iterator.hasNext() ? //
 				ClassTypeInformation.from(iterator.next().getClass()) : //
@@ -339,17 +347,16 @@ public class DomainObjectReader {
 	}
 
 	/**
-	 * Returns the given source instance as {@link Collection}.
+	 * Returns the given source instance as {@link Collection} or creates a new one for the given type.
 	 * 
 	 * @param source can be {@literal null}.
+	 * @param type must not be {@literal null} in case {@code source} is null.
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private static Collection<Object> asCollection(Object source) {
+	private static Collection<Object> ifCollection(Object source) {
 
-		if (source == null) {
-			return new ArrayList<Object>();
-		}
+		Assert.notNull(source, "Source instance must not be null!");
 
 		if (source instanceof Collection) {
 			return (Collection<Object>) source;
@@ -359,6 +366,6 @@ public class DomainObjectReader {
 			return Arrays.asList((Object[]) source);
 		}
 
-		return Collections.singleton(source);
+		return null;
 	}
 }

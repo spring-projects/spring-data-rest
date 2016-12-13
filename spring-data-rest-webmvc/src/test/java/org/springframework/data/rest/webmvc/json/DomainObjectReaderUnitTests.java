@@ -26,10 +26,12 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -394,7 +396,7 @@ public class DomainObjectReaderUnitTests {
 	 * @see DATAREST-959
 	 */
 	@Test
-	public void writesArrayOverUndefinedValueForPut() throws Exception {
+	public void addsElementToPreviouslyEmptyCollection() throws Exception {
 
 		Parent source = new Parent();
 		source.inner = new Child();
@@ -406,6 +408,31 @@ public class DomainObjectReaderUnitTests {
 
 		assertThat(result.inner.items.size(), is(1));
 		assertThat(result.inner.items.get(0).some, is("value"));
+	}
+
+	/**
+	 * @see DATAREST-959
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void turnsObjectIntoCollection() throws Exception {
+
+		Parent source = new Parent();
+		source.inner = new Child();
+		source.inner.object = new Item("value");
+
+		JsonNode node = new ObjectMapper()
+				.readTree("{ \"inner\" : { \"object\" : [ { \"some\" : \"value\" }, { \"some\" : \"otherValue\" } ] } }");
+
+		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
+		assertThat(result.inner.object, is(instanceOf(Collection.class)));
+
+		Collection<?> collection = (Collection<?>) result.inner.object;
+		assertThat(collection.size(), is(2));
+
+		Iterator<Map<String, Object>> iterator = (Iterator<Map<String, Object>>) collection.iterator();
+		assertThat(iterator.next().get("some"), is((Object) "value"));
+		assertThat(iterator.next().get("some"), is((Object) "otherValue"));
 	}
 
 	@Test
@@ -515,6 +542,7 @@ public class DomainObjectReaderUnitTests {
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Child {
 		List<Item> items;
+		Object object;
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
