@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.util.Assert;
 
 /**

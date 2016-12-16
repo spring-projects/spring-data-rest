@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.util.Assert;
 
 /**
