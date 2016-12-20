@@ -828,6 +828,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+		// Configure custom Modules
+		configurerDelegate.configureJacksonObjectMapper(objectMapper);
+
 		objectMapper.registerModule(geoModule);
 
 		if (config().isEnableEnumTranslation()) {
@@ -835,8 +839,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		}
 
 		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
-		// Configure custom Modules
-		configurerDelegate.configureJacksonObjectMapper(objectMapper);
 
 		return objectMapper;
 	}
