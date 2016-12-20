@@ -42,7 +42,6 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.auditing.MappingAuditableBeanWrapperFactory;
@@ -231,7 +230,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		addFormatters(conversionService);
 
 		configurerDelegate.configureConversionService(conversionService);
-		configureConversionService(conversionService);
 
 		return conversionService;
 	}
@@ -246,7 +244,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		ValidatingRepositoryEventListener listener = new ValidatingRepositoryEventListener(entities);
 		configurerDelegate.configureValidatingRepositoryEventListener(listener);
-		configureValidatingRepositoryEventListener(listener);
 
 		return listener;
 	}
@@ -276,7 +273,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		RepositoryRestConfiguration config = new RepositoryRestConfiguration(configuration, metadataConfiguration(),
 				enumTranslator());
 		configurerDelegate.configureRepositoryRestConfiguration(config);
-		configureRepositoryRestConfiguration(config);
 
 		return config;
 	}
@@ -677,7 +673,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		er.setMessageConverters(defaultMessageConverters());
 
 		configurerDelegate.configureExceptionHandlerExceptionResolver(er);
-		configureExceptionHandlerExceptionResolver(er);
 
 		return er;
 	}
@@ -718,7 +713,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		messageConverters.add(uriListHttpMessageConverter());
 
 		configurerDelegate.configureHttpMessageConverters(messageConverters);
-		configureHttpMessageConverters(messageConverters);
 
 		return messageConverters;
 	}
@@ -843,7 +837,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
 		// Configure custom Modules
 		configurerDelegate.configureJacksonObjectMapper(objectMapper);
-		configureJacksonObjectMapper(objectMapper);
 
 		return objectMapper;
 	}
@@ -938,70 +931,4 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			return order;
 		}
 	}
-
-	/**
-	 * Override this method to add additional configuration.
-	 * 
-	 * @param config Main configuration bean.
-	 * @deprecated since 2.4, implement
-	 *             {@link RepositoryRestConfigurer#configureRepositoryRestConfiguration(RepositoryRestConfiguration)}
-	 *             either directly or extend {@link RepositoryRestConfigurerAdapter} and override the method.
-	 */
-	@Deprecated
-	protected void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {}
-
-	/**
-	 * Override this method to add your own converters.
-	 * 
-	 * @param conversionService Default ConversionService bean.
-	 * @deprecated since 2.4, implement
-	 *             {@link RepositoryRestConfigurer#configureConversionService(ConfigurableConversionService)} either
-	 *             directly or extend {@link RepositoryRestConfigurerAdapter} and override the method.
-	 */
-	@Deprecated
-	protected void configureConversionService(ConfigurableConversionService conversionService) {}
-
-	/**
-	 * Override this method to add validators manually.
-	 * 
-	 * @param validatingListener The {@link org.springframework.context.ApplicationListener} responsible for invoking
-	 *          {@link org.springframework.validation.Validator} instances.
-	 * @deprecated since 2.4, implement
-	 *             {@link RepositoryRestConfigurer#configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener)}
-	 *             either directly or extend {@link RepositoryRestConfigurerAdapter} and override the method.
-	 */
-	@Deprecated
-	protected void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener validatingListener) {}
-
-	/**
-	 * Configure the {@link ExceptionHandlerExceptionResolver}.
-	 * 
-	 * @param exceptionResolver The default exception resolver on which you can add custom argument resolvers.
-	 * @deprecated since 2.4, implement
-	 *             {@link RepositoryRestConfigurer#configureExceptionHandlerExceptionResolver(ExceptionHandlerExceptionResolver)}
-	 *             either directly or extend {@link RepositoryRestConfigurerAdapter} and override the method.
-	 */
-	@Deprecated
-	protected void configureExceptionHandlerExceptionResolver(ExceptionHandlerExceptionResolver exceptionResolver) {}
-
-	/**
-	 * Configure the available {@link HttpMessageConverter}s by adding your own.
-	 * 
-	 * @param messageConverters The converters to be used by the system.
-	 * @deprecated since 2.4, implement {@link RepositoryRestConfigurer#configureHttpMessageConverters(List)} either
-	 *             directly or extend {@link RepositoryRestConfigurerAdapter} and override the method.
-	 */
-	@Deprecated
-	protected void configureHttpMessageConverters(List<HttpMessageConverter<?>> messageConverters) {}
-
-	/**
-	 * Configure the Jackson {@link ObjectMapper} directly.
-	 * 
-	 * @param objectMapper The {@literal ObjectMapper} to be used by the system.
-	 * @deprecated since 2.4, implement {@link RepositoryRestConfigurer#configureJacksonObjectMapper(ObjectMapper)} either
-	 *             directly or extend {@link RepositoryRestConfigurerAdapter} and override the method.
-	 */
-	@Deprecated
-	protected void configureJacksonObjectMapper(ObjectMapper objectMapper) {}
-
 }
