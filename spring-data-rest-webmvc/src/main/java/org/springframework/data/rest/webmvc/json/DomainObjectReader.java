@@ -22,21 +22,32 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import org.springframework.beans.PropertyAccessor;
+import org.springframework.beans.PropertyAccessorFactory;
+import org.springframework.core.CollectionFactory;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -92,6 +103,7 @@ public class DomainObjectReader {
 	 * @param mapper
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public <T> T readPut(final ObjectNode source, T target, final ObjectMapper mapper) {
 
 		Assert.notNull(source, "ObjectNode must not be null!");
@@ -104,7 +116,49 @@ public class DomainObjectReader {
 
 		Assert.notNull(entity, "No PersistentEntity found for ".concat(type.getName()).concat("!"));
 
+		try {
+
+			Object intermediate = mapper.readerFor(target.getClass()).readValue(source);
+			return (T) mergeForPut(intermediate, target, mapper);
+
+		} catch (Exception o_O) {
+			throw new HttpMessageNotReadableException("Could not read payload!", o_O);
+		}
+	}
+
+	/**
+	 * Merges the state of given source object onto the target one preserving PUT semantics.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @param target can be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 * @return
+	 */
+	private <T> T mergeForPut(T source, T target, final ObjectMapper mapper) {
+
+		Assert.notNull(mapper, "ObjectMapper must not be null!");
+
+		if (target == null || source == null) {
+			return source;
+		}
+
+		Class<? extends Object> type = target.getClass();
+
+		final PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
+
+		if (entity == null) {
+			return source;
+		}
+
+		Assert.notNull(entity, "No PersistentEntity found for ".concat(type.getName()).concat("!"));
+
 		final MappedProperties properties = MappedProperties.fromJacksonProperties(entity, mapper);
+
+		ConversionService conversionService = new DefaultConversionService();
+		final PersistentPropertyAccessor targetAccessor = entity.getPropertyAccessor(target);
+		final ConvertingPropertyAccessor convertingAccessor = new ConvertingPropertyAccessor(targetAccessor,
+				conversionService);
+		final PersistentPropertyAccessor sourceAccessor = entity.getPropertyAccessor(source);
 
 		entity.doWithProperties(new SimplePropertyHandler() {
 
@@ -119,18 +173,50 @@ public class DomainObjectReader {
 					return;
 				}
 
-				String mappedName = properties.getMappedName(property);
-
-				boolean isMappedProperty = mappedName != null;
-				boolean noValueInSource = !source.has(mappedName);
-
-				if (isMappedProperty && noValueInSource) {
-					source.putNull(mappedName);
+				if (!properties.isMappedProperty(property)) {
+					return;
 				}
+
+				Object sourceValue = sourceAccessor.getProperty(property);
+				Object targetValue = targetAccessor.getProperty(property);
+				Object result = null;
+
+				if (property.isMap()) {
+					result = mergeMaps(property, sourceValue, targetValue, mapper);
+				} else if (property.isCollectionLike()) {
+					result = mergeCollections(property, sourceValue, targetValue, mapper);
+				} else if (property.isEntity()) {
+					result = mergeForPut(sourceValue, targetValue, mapper);
+				} else {
+					result = sourceValue;
+				}
+
+				convertingAccessor.setProperty(property, result);
 			}
 		});
 
-		return merge(source, target, mapper);
+		// Need to copy unmapped properties as the PersistentProperty model currently does not contain any transient
+		// properties
+		copyRemainingProperties(properties, source, target);
+
+		return target;
+	}
+
+	/**
+	 * Copies the unmapped properties of the given {@link MappedProperties} from the source object to the target instance.
+	 * 
+	 * @param properties must not be {@literal null}.
+	 * @param source must not be {@literal null}.
+	 * @param target must not be {@literal null}.
+	 */
+	private static void copyRemainingProperties(MappedProperties properties, Object source, Object target) {
+
+		PropertyAccessor sourceAccessor = PropertyAccessorFactory.forDirectFieldAccess(source);
+		PropertyAccessor targetAccessor = PropertyAccessorFactory.forDirectFieldAccess(target);
+
+		for (String property : properties.getSpringDataUnmappedProperties()) {
+			targetAccessor.setPropertyValue(property, sourceAccessor.getPropertyValue(property));
+		}
 	}
 
 	public <T> T merge(ObjectNode source, T target, ObjectMapper mapper) {
@@ -152,7 +238,7 @@ public class DomainObjectReader {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> T doMerge(ObjectNode root, T target, ObjectMapper mapper) throws Exception {
+	<T> T doMerge(ObjectNode root, T target, ObjectMapper mapper) throws Exception {
 
 		Assert.notNull(root, "Root ObjectNode must not be null!");
 		Assert.notNull(target, "Target object instance must not be null!");
@@ -355,6 +441,72 @@ public class DomainObjectReader {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	private Map<Object, Object> mergeMaps(PersistentProperty<?> property, Object source, Object target,
+			ObjectMapper mapper) {
+
+		Map<Object, Object> sourceMap = (Map<Object, Object>) source;
+
+		if (sourceMap == null) {
+			return null;
+		}
+
+		Map<Object, Object> targetMap = (Map<Object, Object>) target;
+		Map<Object, Object> result = targetMap == null ? CollectionFactory.createMap(Map.class, sourceMap.size())
+				: CollectionFactory.createApproximateMap(targetMap, sourceMap.size());
+
+		for (Entry<Object, Object> entry : sourceMap.entrySet()) {
+
+			Object targetValue = targetMap == null ? null : targetMap.get(entry.getKey());
+			result.put(entry.getKey(), mergeForPut(entry.getValue(), targetValue, mapper));
+		}
+
+		return result;
+	}
+
+	private Collection<Object> mergeCollections(PersistentProperty<?> property, Object source, Object target,
+			ObjectMapper mapper) {
+
+		Collection<Object> sourceCollection = asCollection(source);
+
+		if (sourceCollection == null) {
+			return null;
+		}
+
+		Collection<Object> targetCollection = asCollection(target);
+		Collection<Object> result = targetCollection == null
+				? CollectionFactory.createCollection(Collection.class, sourceCollection.size())
+				: CollectionFactory.createApproximateCollection(targetCollection, sourceCollection.size());
+
+		Iterator<Object> sourceIterator = sourceCollection.iterator();
+		Iterator<Object> targetIterator = targetCollection == null ? Collections.emptyIterator()
+				: targetCollection.iterator();
+
+		while (sourceIterator.hasNext()) {
+
+			Object sourceElement = sourceIterator.next();
+			Object targetElement = targetIterator.hasNext() ? targetIterator.next() : null;
+
+			result.add(mergeForPut(sourceElement, targetElement, mapper));
+		}
+
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static Collection<Object> asCollection(Object source) {
+
+		if (source == null) {
+			return null;
+		} else if (source instanceof Collection) {
+			return (Collection<Object>) source;
+		} else if (source.getClass().isArray()) {
+			return Arrays.asList(ObjectUtils.toObjectArray(source));
+		} else {
+			return Collections.singleton(source);
+		}
+	}
+
 	/**
 	 * Returns the given source instance as {@link Collection} or creates a new one for the given type.
 	 * 
@@ -402,13 +554,15 @@ public class DomainObjectReader {
 	 * Simple value object to capture a mapping of Jackson mapped field names and {@link PersistentProperty} instances.
 	 *
 	 * @author Oliver Gierke
+	 * @author Mark Paluch
 	 */
 	static class MappedProperties {
 
 		private static final ClassIntrospector INTROSPECTOR = new BasicClassIntrospector();
 
-		private final Map<PersistentProperty<?>, String> propertyToFieldName;
+		private final Map<PersistentProperty<?>, BeanPropertyDefinition> propertyToFieldName;
 		private final Map<String, PersistentProperty<?>> fieldNameToProperty;
+		private final Set<BeanPropertyDefinition> unmappedProperties;
 
 		/**
 		 * Creates a new {@link MappedProperties} instance for the given {@link PersistentEntity} and
@@ -422,16 +576,19 @@ public class DomainObjectReader {
 			Assert.notNull(entity, "Entity must not be null!");
 			Assert.notNull(description, "BeanDescription must not be null!");
 
-			this.propertyToFieldName = new HashMap<PersistentProperty<?>, String>();
+			this.propertyToFieldName = new HashMap<PersistentProperty<?>, BeanPropertyDefinition>();
 			this.fieldNameToProperty = new HashMap<String, PersistentProperty<?>>();
+			this.unmappedProperties = new HashSet<BeanPropertyDefinition>();
 
 			for (BeanPropertyDefinition property : description.findProperties()) {
 
 				PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getInternalName());
 
 				if (persistentProperty != null) {
-					propertyToFieldName.put(persistentProperty, property.getName());
+					propertyToFieldName.put(persistentProperty, property);
 					fieldNameToProperty.put(property.getName(), persistentProperty);
+				} else {
+					unmappedProperties.add(property);
 				}
 			}
 		}
@@ -459,7 +616,7 @@ public class DomainObjectReader {
 
 			Assert.notNull(property, "PersistentProperty must not be null!");
 
-			return propertyToFieldName.get(property);
+			return propertyToFieldName.get(property).getName();
 		}
 
 		/**
@@ -482,6 +639,39 @@ public class DomainObjectReader {
 			Assert.hasText(fieldName, "Field name must not be null or empty!");
 
 			return fieldNameToProperty.get(fieldName);
+		}
+
+		/**
+		 * Returns all properties only known to Jackson.
+		 * 
+		 * @return the names of all properties that are not known to Spring Data but appear in the Jackson metamodel.
+		 */
+		public Iterable<String> getSpringDataUnmappedProperties() {
+
+			if (unmappedProperties.isEmpty()) {
+				return Collections.emptySet();
+			}
+
+			List<String> result = new ArrayList<String>(unmappedProperties.size());
+
+			for (BeanPropertyDefinition definitions : unmappedProperties) {
+				result.add(definitions.getInternalName());
+			}
+
+			return result;
+		}
+
+		/**
+		 * Returns whether the given {@link PersistentProperty} is mapped, i.e. known to both Jackson and Spring Data.
+		 * 
+		 * @param property must not be {@literal null}.
+		 * @return
+		 */
+		public boolean isMappedProperty(PersistentProperty<?> property) {
+
+			Assert.notNull(property, "PersistentProperty must not be null!");
+
+			return propertyToFieldName.containsKey(property);
 		}
 	}
 }
