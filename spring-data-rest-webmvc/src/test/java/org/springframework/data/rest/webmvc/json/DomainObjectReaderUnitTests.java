@@ -66,6 +66,7 @@ import com.google.common.base.Charsets;
  * @author Oliver Gierke
  * @author Craig Andrews
  * @author Mathias Düsterhöft
+ * @author Ken Dombeck
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainObjectReaderUnitTests {
