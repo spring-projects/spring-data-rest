@@ -1,6 +1,19 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.5.6.RELEASE (2016-12-21)
+---------------------------------------------
+* DATAREST-959 - PUT error when merging a previously undefined array.
+* DATAREST-957 - Polish most critical Sonar warnings.
+* DATAREST-956 - PUT does not apply new items in nested collection.
+* DATAREST-953 - PUT empties nested collection.
+* DATAREST-951 - Fix example in reference documentation.
+* DATAREST-950 - Fix typos in reference documentation.
+* DATAREST-938 - Nested entities are replaced with new instances instead of being updated when merging.
+* DATAREST-937 - Transient properties in JSON should be included in merge.
+* DATAREST-932 - Release 2.5.6 (Hopper SR6).
+
+
 Changes in version 2.6.0.RC1 (2016-12-21)
 -----------------------------------------
 * DATAREST-964 - Remove deprecations in RepositoryRestMvcConfiguration.
