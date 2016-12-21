@@ -68,6 +68,7 @@ import com.google.common.base.Charsets;
  * @author Oliver Gierke
  * @author Craig Andrews
  * @author Mathias Düsterhöft
+ * @author Ken Dombeck
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainObjectReaderUnitTests {
@@ -271,7 +272,7 @@ public class DomainObjectReaderUnitTests {
 
 		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"name\" : \"new inner name\" } }");
 
-		Outer result = reader.merge((ObjectNode) node, outer, new ObjectMapper());
+		Outer result = reader.doMerge((ObjectNode) node, outer, new ObjectMapper());
 
 		assertThat(result, is(sameInstance(outer)));
 		assertThat(result.prop, is("else"));
@@ -390,13 +391,41 @@ public class DomainObjectReaderUnitTests {
 		assertThat(iterator.next().get("some"), is((Object) "otherValue"));
 	}
 
-	@Test
-	public void testname() throws Exception {
+	@Test // DATAREST-965
+	public void writesObjectWithRemovedItemsForPut() throws Exception {
 
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode node = mapper.readTree("\"asd\"");
+		Child inner = new Child();
+		inner.items = new ArrayList<Item>();
+		inner.items.add(new Item("test1"));
+		inner.items.add(new Item("test2"));
 
-		assertThat(mapper.treeToValue(node, Object.class), is((Object) "asd"));
+		Parent source = new Parent();
+		source.inner = inner;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"object\" : \"value\" } }");
+
+		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
+
+		assertThat(result.inner.items, is(nullValue()));
+		assertThat((String) result.inner.object, is("value"));
+	}
+
+	@Test // DATAREST-965
+	public void writesArrayWithRemovedObjectForPut() throws Exception {
+
+		Child inner = new Child();
+		inner.object = "value";
+
+		Parent source = new Parent();
+		source.inner = inner;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"items\" : [ { \"some\" : \"value\" } ] } }");
+
+		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
+
+		assertThat(result.inner.items.size(), is(1));
+		assertThat(result.inner.items.get(0).some, is("value"));
+		assertThat(result.inner.object, is(nullValue()));
 	}
 
 	@Test // DATAREST-986
@@ -427,9 +456,12 @@ public class DomainObjectReaderUnitTests {
 		Map<String, SampleUser> relatedUsers;
 
 		public SampleUser(String name, String password) {
+
 			this.name = name;
 			this.password = password;
 		}
+
+		protected SampleUser() {}
 	}
 
 	// DATAREST-556
@@ -442,6 +474,8 @@ public class DomainObjectReaderUnitTests {
 			this.firstName = firstName;
 			this.lastName = lastName;
 		}
+
+		protected Person() {}
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)

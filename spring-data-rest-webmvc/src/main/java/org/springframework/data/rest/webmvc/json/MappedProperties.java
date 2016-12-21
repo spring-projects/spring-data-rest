@@ -15,8 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -38,8 +43,9 @@ class MappedProperties {
 
 	private static final ClassIntrospector INTROSPECTOR = new BasicClassIntrospector();
 
-	private final Map<PersistentProperty<?>, String> propertyToFieldName;
+	private final Map<PersistentProperty<?>, BeanPropertyDefinition> propertyToFieldName;
 	private final Map<String, PersistentProperty<?>> fieldNameToProperty;
+	private final Set<BeanPropertyDefinition> unmappedProperties;
 
 	/**
 	 * Creates a new {@link MappedProperties} instance for the given {@link PersistentEntity} and {@link BeanDescription}.
@@ -52,16 +58,19 @@ class MappedProperties {
 		Assert.notNull(entity, "Entity must not be null!");
 		Assert.notNull(description, "BeanDescription must not be null!");
 
-		this.propertyToFieldName = new HashMap<PersistentProperty<?>, String>();
+		this.propertyToFieldName = new HashMap<PersistentProperty<?>, BeanPropertyDefinition>();
 		this.fieldNameToProperty = new HashMap<String, PersistentProperty<?>>();
+		this.unmappedProperties = new HashSet<BeanPropertyDefinition>();
 
 		for (BeanPropertyDefinition property : description.findProperties()) {
 
 			PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getInternalName());
 
 			if (persistentProperty != null) {
-				propertyToFieldName.put(persistentProperty, property.getName());
+				propertyToFieldName.put(persistentProperty, property);
 				fieldNameToProperty.put(property.getName(), persistentProperty);
+			} else {
+				unmappedProperties.add(property);
 			}
 		}
 	}
@@ -89,7 +98,7 @@ class MappedProperties {
 
 		Assert.notNull(property, "PersistentProperty must not be null!");
 
-		return propertyToFieldName.get(property);
+		return propertyToFieldName.get(property).getName();
 	}
 
 	/**
@@ -112,5 +121,38 @@ class MappedProperties {
 		Assert.hasText(fieldName, "Field name must not be null or empty!");
 
 		return fieldNameToProperty.get(fieldName);
+	}
+
+	/**
+	 * Returns all properties only known to Jackson.
+	 * 
+	 * @return the names of all properties that are not known to Spring Data but appear in the Jackson metamodel.
+	 */
+	public Iterable<String> getSpringDataUnmappedProperties() {
+
+		if (unmappedProperties.isEmpty()) {
+			return Collections.emptySet();
+		}
+
+		List<String> result = new ArrayList<String>(unmappedProperties.size());
+
+		for (BeanPropertyDefinition definitions : unmappedProperties) {
+			result.add(definitions.getInternalName());
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns whether the given {@link PersistentProperty} is mapped, i.e. known to both Jackson and Spring Data.
+	 * 
+	 * @param property must not be {@literal null}.
+	 * @return
+	 */
+	public boolean isMappedProperty(PersistentProperty<?> property) {
+
+		Assert.notNull(property, "PersistentProperty must not be null!");
+
+		return propertyToFieldName.containsKey(property);
 	}
 }
