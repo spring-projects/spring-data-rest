@@ -18,6 +18,7 @@ package org.springframework.data.rest.core.event;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,7 +27,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleAfterDelete;
 import org.springframework.data.rest.core.annotation.HandleAfterLinkDelete;
@@ -137,7 +140,10 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 				inspect(bean, method, HandleAfterLinkDelete.class, AfterLinkDeleteEvent.class);
 			}
 		}, Methods.USER_METHODS);
-
+		
+		for(List<EventHandlerMethod> events : handlerMethods.values())
+		    Collections.sort(events);
+		
 		return bean;
 	}
 
@@ -174,17 +180,24 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		handlerMethods.add(eventType, handlerMethod);
 	}
 
-	static class EventHandlerMethod {
+	static class EventHandlerMethod implements Comparable<EventHandlerMethod>{
 
 		final Class<?> targetType;
 		final Method method;
 		final Object handler;
+		private int order;
 
 		private EventHandlerMethod(Class<?> targetType, Object handler, Method method) {
 
 			this.targetType = targetType;
 			this.method = method;
 			this.handler = handler;
+			
+			order = Ordered.LOWEST_PRECEDENCE;
+			if(method.isAnnotationPresent(Order.class)){
+			    Order orderAnno = method.getAnnotation(Order.class);
+			    order = orderAnno.value();
+			}
 
 			ReflectionUtils.makeAccessible(this.method);
 		}
@@ -197,5 +210,10 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		public String toString() {
 			return String.format("EventHandlerMethod{ targetType=%s, method=%s, handler=%s }", targetType, method, handler);
 		}
+
+        @Override
+        public int compareTo(EventHandlerMethod o) {
+            return this.order - o.order;
+        }
 	}
 }
