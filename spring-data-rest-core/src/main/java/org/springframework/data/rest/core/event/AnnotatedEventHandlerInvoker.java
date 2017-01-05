@@ -26,7 +26,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleAfterDelete;
 import org.springframework.data.rest.core.annotation.HandleAfterLinkDelete;
@@ -39,8 +41,8 @@ import org.springframework.data.rest.core.annotation.HandleBeforeLinkSave;
 import org.springframework.data.rest.core.annotation.HandleBeforeSave;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.data.rest.core.util.Methods;
+import org.springframework.data.rest.core.util.SortedLinkedMultiValueMap;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
 
@@ -49,13 +51,14 @@ import org.springframework.util.ReflectionUtils;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Joe Valerio
  */
 public class AnnotatedEventHandlerInvoker implements ApplicationListener<RepositoryEvent>, BeanPostProcessor {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AnnotatedEventHandlerInvoker.class);
 	private static final String PARAMETER_MISSING = "Invalid event handler method %s! At least a single argument is required to determine the domain type for which you are interested in events.";
 
-	private final MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = new LinkedMultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod>();
+	private final MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = new SortedLinkedMultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod>();
 
 	/*
 	 * (non-Javadoc)
@@ -174,17 +177,24 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		handlerMethods.add(eventType, handlerMethod);
 	}
 
-	static class EventHandlerMethod {
+	static class EventHandlerMethod implements Comparable<EventHandlerMethod> {
 
 		final Class<?> targetType;
 		final Method method;
 		final Object handler;
+		private int order;
 
 		private EventHandlerMethod(Class<?> targetType, Object handler, Method method) {
 
 			this.targetType = targetType;
 			this.method = method;
 			this.handler = handler;
+
+			order = Ordered.LOWEST_PRECEDENCE;
+			if (method.isAnnotationPresent(Order.class)) {
+				Order orderAnno = method.getAnnotation(Order.class);
+				order = orderAnno.value();
+			}
 
 			ReflectionUtils.makeAccessible(this.method);
 		}
@@ -197,5 +207,11 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		public String toString() {
 			return String.format("EventHandlerMethod{ targetType=%s, method=%s, handler=%s }", targetType, method, handler);
 		}
+
+		@Override
+		public int compareTo(EventHandlerMethod o) {
+			return this.order - o.order;
+		}
 	}
+	
 }
