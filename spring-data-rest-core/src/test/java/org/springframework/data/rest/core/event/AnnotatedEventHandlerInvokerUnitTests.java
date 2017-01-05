@@ -15,11 +15,13 @@
  */
 package org.springframework.data.rest.core.event;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.data.rest.core.domain.Person;
@@ -71,6 +73,27 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 		assertThat(sampleHandler.wasCalled, is(true));
 	}
 
+	/**
+	 * @see DATAREST-970
+	 */
+	@Test
+	public void invokesEventHandlerInOrderMethods() {
+
+		SampleOrderEventHandler1 orderHandler1 = new SampleOrderEventHandler1();
+		SampleOrderEventHandler2 orderHandler2 = new SampleOrderEventHandler2();
+
+		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
+		invoker.postProcessAfterInitialization(orderHandler1, "orderHandler1");
+		invoker.postProcessAfterInitialization(orderHandler2, "orderHandler2");
+
+		invoker.onApplicationEvent(new BeforeCreateEvent(new Person("Dave", "Matthews")));
+
+		assertThat(orderHandler1.wasCalled, is(true));
+		assertThat(orderHandler2.wasCalled, is(true));
+
+		assertThat(orderHandler1.timestamp - orderHandler2.timestamp > 0, is(true));
+	}
+
 	@RepositoryEventHandler
 	static class Sample {
 
@@ -86,6 +109,34 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 		@HandleBeforeCreate
 		private void method(Person sample) {
 			wasCalled = true;
+		}
+	}
+
+	@RepositoryEventHandler
+	static class SampleOrderEventHandler1 {
+
+		boolean wasCalled = false;
+		long timestamp;
+
+		@Order(2)
+		@HandleBeforeCreate
+		private void method(Person sample) {
+			wasCalled = true;
+			timestamp = System.nanoTime();
+		}
+	}
+
+	@RepositoryEventHandler
+	static class SampleOrderEventHandler2 {
+
+		boolean wasCalled = false;
+		long timestamp;
+
+		@Order(1)
+		@HandleBeforeCreate
+		private void method(Person sample) {
+			wasCalled = true;
+			timestamp = System.nanoTime();
 		}
 	}
 }
