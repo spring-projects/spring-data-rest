@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation to tie a particular projection type to a source type. Used to find projection interfaces at startup time.
- * 
+ *
  * @author Oliver Gierke
  */
 @Inherited
@@ -35,15 +35,22 @@ public @interface Projection {
 
 	/**
 	 * The type the projection type is bound to.
-	 * 
+	 *
 	 * @return
 	 */
 	Class<?>[] types();
 
 	/**
 	 * The name of projection to refer to.
-	 * 
+	 *
 	 * @return
 	 */
 	String name() default "";
+
+	/**
+	 * List of sub-type projections that will be automatically used instead of this one,
+	 * when one of their types matches the projected object.
+	 * Each sub-projection must be an interface that extends this annotated projection interface.
+	 */
+	Class<?>[] subProjections() default {};
 }
