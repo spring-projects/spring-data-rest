@@ -44,6 +44,11 @@ var CustomPostForm = Backbone.View.extend({
 			data: this.getNewResourceData()
 		};
 
+		var cookie = document.cookie.match('(^|;)\\s*' + 'XSRF-TOKEN' + '\\s*=\\s*([^;]+)');
+		if(cookie){
+			opts.headers = {'Content-Type': 'application/json', 'X-XSRF-TOKEN': cookie.pop()};
+		}
+
 		HAL.client.request(opts).done(function (response) {
 			self.vent.trigger('response', {resource: response, jqxhr: jqxhr});
 		}).fail(function (e) {
