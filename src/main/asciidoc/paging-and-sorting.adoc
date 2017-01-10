@@ -15,7 +15,12 @@ http://localhost:8080/people/?size=5
 
 This will set the page size to 5.
 
-To use paging in your own query methods, you need to change the method signature to accept an additional `Pageable` parameter and return a `Page` rather than a `List`. For example, the following query method will be exported to `/people/search/nameStartsWith` and will support paging:
+To use paging in your own query methods, you need to:
+ 
+1. Change the method signature to accept an additional `Pageable` parameter and 
+2. Return a `Page` rather than a `List`. 
+
+For example, the following query method will be exported to `/people/search/nameStartsWith` and will support paging:
 
 [source,java]
 ----
