@@ -494,12 +494,12 @@ public class JpaWebTests extends CommonWebTests {
 		assertThat(findBySortedLink.getVariableNames(), hasItems("sort", "projection"));
 
 		// Assert results returned as specified
-		client.follow(findBySortedLink.expand("title,desc")).//
+		client.follow(findBySortedLink.expand("offer.price,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
 				andExpect(client.hasLinkWithRel("self"));
 
-		client.follow(findBySortedLink.expand("title,asc")).//
+		client.follow(findBySortedLink.expand("offer.price,asc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
 				andExpect(client.hasLinkWithRel("self"));
