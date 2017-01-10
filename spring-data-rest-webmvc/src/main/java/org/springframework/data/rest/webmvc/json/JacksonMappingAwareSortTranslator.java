@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.DomainClassResolver;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -62,16 +63,18 @@ public class JacksonMappingAwareSortTranslator {
 	 * @param repositories must not be {@literal null}.
 	 * @param domainClassResolver must not be {@literal null}.
 	 * @param persistentEntities must not be {@literal null}.
+	 * @param associations must not be {@literal null}.
 	 */
 	public JacksonMappingAwareSortTranslator(ObjectMapper objectMapper, Repositories repositories,
-			DomainClassResolver domainClassResolver, PersistentEntities persistentEntities) {
+			DomainClassResolver domainClassResolver, PersistentEntities persistentEntities, Associations associations) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(domainClassResolver, "DomainClassResolver must not be null!");
+		Assert.notNull(associations, "Associations must not be null!");
 
 		this.repositories = repositories;
 		this.domainClassResolver = domainClassResolver;
-		this.sortTranslator = new SortTranslator(persistentEntities, objectMapper);
+		this.sortTranslator = new SortTranslator(persistentEntities, objectMapper, associations);
 	}
 
 	/**
@@ -117,6 +120,7 @@ public class JacksonMappingAwareSortTranslator {
 
 		private final @NonNull PersistentEntities persistentEntities;
 		private final @NonNull ObjectMapper objectMapper;
+		private final @NonNull Associations associations;
 
 		/**
 		 * Translates {@link Sort} orders from Jackson-mapped field names to {@link PersistentProperty} names. Properties
@@ -181,7 +185,7 @@ public class JacksonMappingAwareSortTranslator {
 
 				for (PersistentProperty<?> persistentProperty : persistentProperties) {
 
-					if (persistentProperty.isAssociation()) {
+					if (associations.isLinkableAssociation(persistentProperty)) {
 						return Collections.emptyList();
 					}
 
