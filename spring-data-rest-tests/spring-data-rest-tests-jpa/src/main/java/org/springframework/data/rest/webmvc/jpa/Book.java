@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,15 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -45,9 +50,11 @@ public class Book {
 	@RestResource(path = "creators") //
 	public Set<Author> authors;
 
+	public Offer offer;
+
 	protected Book() {}
 
-	public Book(String isbn, String title, long soldUnits, Iterable<Author> authors) {
+	public Book(String isbn, String title, long soldUnits, Iterable<Author> authors, Offer offer) {
 
 		this.isbn = isbn;
 		this.title = title;
@@ -59,5 +66,17 @@ public class Book {
 			author.books.add(this);
 			this.authors.add(author);
 		}
+
+		this.offer = offer;
+	}
+
+	@Getter
+	@Embeddable
+	@AllArgsConstructor
+	@NoArgsConstructor
+	static class Offer {
+
+		double price;
+		String currency;
 	}
 }
