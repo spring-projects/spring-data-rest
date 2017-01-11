@@ -15,12 +15,14 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -60,9 +62,12 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 /**
  * Unit tests for {@link DomainObjectReader}.
- * 
+ *
  * @author Oliver Gierke
  * @author Craig Andrews
  * @author Mathias Düsterhöft
@@ -259,26 +264,47 @@ public class DomainObjectReaderUnitTests {
 		map.map.put("sub2", new ArrayList<String>(Arrays.asList("ok1", "ok2")));
 		map.map.put("sub3", new ArrayList<Object>(Arrays.asList(childMap)));
 		map.map.put("sub4", nestedMap);
+		map.map.put("sub5", new ArrayList<Integer>(Arrays.asList(1, 2)));
 
 		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode payload = (ObjectNode) mapper.readTree("{ \"map\" : { \"sub1\" : \"ok\","
-				+ " \"sub2\" : [ \"ok1\", \"ok2\" ], \"sub3\" : [ { \"childOk1\" : \"ok\" }], \"sub4\" : {"
-				+ " \"c1\" : \"v1\", \"c2\" : \"new\" } } }");
+		ObjectNode payload = (ObjectNode) mapper.readTree("{ \"map\" : {"
+		                                                       + " \"sub1\" : \"newOk\","
+		                                                       + " \"sub2\" : [ \"ok1\", \"ok3\", \"ok5\" ],"
+		                                                       + " \"sub3\" : [ { \"child1\": null, \"child2\" : \"notOk\" }, { \"child3\" : \"ok\" } ],"
+		                                                       + " \"sub4\" : { \"c2\" : \"v2\", \"c3\" : \"v3\" },"
+		                                                       + " \"sub5\": [1, 3, 5]"
+		                                                       + " } }");
 
 		TypeWithGenericMap result = reader.readPut(payload, map, mapper);
 
-		assertThat(result.map.get("sub1"), is((Object) "ok"));
+		assertThat(result.map.get("sub1"), is((Object) "newOk"));
 
 		List<String> sub2 = as(result.map.get("sub2"), List.class);
+        assertThat(sub2.size(), is(3));
 		assertThat(sub2.get(0), is("ok1"));
-		assertThat(sub2.get(1), is("ok2"));
+		assertThat(sub2.get(1), is("ok3"));
+        assertThat(sub2.get(2), is("ok5"));
 
 		List<Map<String, String>> sub3 = as(result.map.get("sub3"), List.class);
-		assertThat(sub3.get(0).get("childOk1"), is("ok"));
+        assertThat(sub3.size(), is(2));
+        assertThat(sub3.get(0).size(), is(2));
+        assertNull(sub3.get(0).get("child1"));
+        assertThat(sub3.get(0).get("child2"), is("notOk"));
+        assertThat(sub3.get(1).size(), is(1));
+        assertThat(sub3.get(1).get("child3"), is("ok"));
 
 		Map<Object, String> sub4 = as(result.map.get("sub4"), Map.class);
-		assertThat(sub4.get("c1"), is("v1"));
-		assertThat(sub4.get("c2"), is("new"));
+        assertThat(sub4.size(), is(3));
+        assertThat(sub4.get("c1"), is("v1"));
+		assertThat(sub4.get("c2"), is("v2"));
+		assertThat(sub4.get("c3"), is("v3"));
+
+		List<Integer> sub5 = as(result.map.get("sub5"), List.class);
+        assertThat(sub5.size(), is(3));
+		assertThat(sub5.get(0), is(1));
+        assertThat(sub5.get(1), is(3));
+		assertThat(sub5.get(2), is(5));
+
 	}
 
 	/**
