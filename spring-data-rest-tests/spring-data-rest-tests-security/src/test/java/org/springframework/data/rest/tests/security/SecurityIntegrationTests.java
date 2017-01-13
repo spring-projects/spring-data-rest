@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,10 +95,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				build();
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void deletePersonAccessDeniedForNoCredentials() throws Exception {
 
 		// Getting the collection is not tested here. This is to get the URI that will later be tested for DELETE
@@ -117,10 +114,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 		mvc.perform(delete(href)).andExpect(status().isUnauthorized());
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void deletePersonAccessDeniedForUsers() throws Exception {
 
 		MockHttpServletResponse response = mvc
@@ -137,10 +131,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				andExpect(status().isForbidden());
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void deletePersonAccessGrantedForAdmins() throws Exception {
 
 		MockHttpServletResponse response = mvc
@@ -157,20 +148,14 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				.andExpect(status().is(HttpStatus.NO_CONTENT.value()));
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void findAllPeopleAccessDeniedForNoCredentials() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("people").expand().getHref())).//
 				andExpect(status().isUnauthorized());
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void findAllPeopleAccessGrantedForUsers() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("people").expand().getHref()).//
@@ -178,10 +163,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				andExpect(status().isOk());
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void findAllPeopleAccessGrantedForAdmins() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("people").expand().getHref()).//
@@ -189,10 +171,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				andExpect(status().isOk());
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void deleteOrderAccessDeniedForNoCredentials() throws Exception {
 
 		// Getting the collection is not tested here. This is to get the URI that will later be tested for DELETE
@@ -209,10 +188,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 		mvc.perform(delete(href)).andExpect(status().isUnauthorized());
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void deleteOrderAccessDeniedForUsers() throws Exception {
 
 		MockHttpServletResponse response = mvc
@@ -226,10 +202,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				andExpect(status().isForbidden());
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void deleteOrderAccessGrantedForAdmins() throws Exception {
 
 		MockHttpServletResponse response = mvc
@@ -246,20 +219,14 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				.andExpect(status().is(HttpStatus.NO_CONTENT.value()));
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void findAllOrdersAccessDeniedForNoCredentials() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("orders").expand().getHref())).//
 				andExpect(status().isUnauthorized());
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void findAllOrdersAccessGrantedForUsers() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
@@ -267,10 +234,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 				andExpect(status().isOk());
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void findAllOrdersAccessGrantedForAdmins() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//

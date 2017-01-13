@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,58 +31,37 @@ import org.springframework.data.rest.core.config.ProjectionDefinitionConfigurati
 @SuppressWarnings("rawtypes")
 public class ProjectionDefinitionConfigurationUnitTests {
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-221
 	public void rejectsNullProjectionTypeForAutoConfiguration() {
 		new ProjectionDefinitionConfiguration().addProjection(null);
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-221
 	public void rejectsUnannotatedClassForConfigurationShortcut() {
 		new ProjectionDefinitionConfiguration().addProjection(String.class);
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-221
 	public void rejectsNullProjectionTypeForManualConfiguration() {
 		new ProjectionDefinitionConfiguration().addProjection(null, "name", Object.class);
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-221
 	public void rejectsNullNameForManualConfiguration() {
 		new ProjectionDefinitionConfiguration().addProjection(String.class, (String) null, Object.class);
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-221
 	public void rejectsEmptyNameForManualConfiguration() {
 		new ProjectionDefinitionConfiguration().addProjection(String.class, "", Object.class);
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-221
 	public void rejectsEmptySourceTypes() {
 		new ProjectionDefinitionConfiguration().addProjection(String.class, "name", new Class<?>[0]);
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void findsRegisteredProjection() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
@@ -91,10 +70,7 @@ public class ProjectionDefinitionConfigurationUnitTests {
 		assertThat(configuration.getProjectionType(String.class, "name"), is(equalTo((Class) Integer.class)));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void registersAnnotatedProjection() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
@@ -103,10 +79,7 @@ public class ProjectionDefinitionConfigurationUnitTests {
 		assertThat(configuration.getProjectionType(Integer.class, "name"), is(equalTo((Class) SampleProjection.class)));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void defaultsNameToSimpleClassNameIfNotAnnotated() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
@@ -115,10 +88,7 @@ public class ProjectionDefinitionConfigurationUnitTests {
 		assertThat(configuration.getProjectionType(Integer.class, "default"), is(equalTo((Class) Default.class)));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void definitionEquals() {
 
 		ProjectionDefinition objectName = ProjectionDefinition.of(Object.class, Object.class, "name");
@@ -139,10 +109,7 @@ public class ProjectionDefinitionConfigurationUnitTests {
 		assertThat(objectName, is(not(new Object())));
 	}
 
-	/**
-	 * @see DATAREST-385
-	 */
-	@Test
+	@Test // DATAREST-385
 	public void returnsProjectionForParentClass() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
@@ -153,18 +120,12 @@ public class ProjectionDefinitionConfigurationUnitTests {
 		assertThat(configuration.getProjectionType(Child.class, "summary"), is(typeCompatibleWith(ParentProjection.class)));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void defaultsParamternameToProjection() {
 		assertThat(new ProjectionDefinitionConfiguration().getParameterName(), is("projection"));
 	}
 
-	/**
-	 * @see DATAREST-747
-	 */
-	@Test
+	@Test // DATAREST-747
 	public void returnsMostConcreteProjectionForSourceType() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();

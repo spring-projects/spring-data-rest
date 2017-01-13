@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,10 +59,7 @@ public class WrappedPropertiesUnitTests {
 		persistentEntities = new PersistentEntities(Collections.singleton(mappingContext));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void wrappedPropertiesShouldConsiderSingleLevelUnwrapping() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getPersistentEntity(OneLevelNesting.class);
@@ -81,10 +78,7 @@ public class WrappedPropertiesUnitTests {
 		assertThat(street, contains(addressProperty, streetProperty));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void wrappedPropertiesShouldConsiderMultiLevelUnwrapping() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getPersistentEntity(MultiLevelNesting.class);
@@ -106,10 +100,7 @@ public class WrappedPropertiesUnitTests {
 		assertThat(street, contains(oneLevelNestingProperty, addressProperty, streetProperty));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void wrappedPropertiesShouldConsiderJacksonFieldNames() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getPersistentEntity(MultiLevelNesting.class);
@@ -119,10 +110,7 @@ public class WrappedPropertiesUnitTests {
 		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-zip-post"), is(true));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void wrappedPropertiesShouldIgnoreIgnoredJacksonFields() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getPersistentEntity(MultiLevelNesting.class);
@@ -132,10 +120,7 @@ public class WrappedPropertiesUnitTests {
 		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-street-ignored"), is(false));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void wrappedPropertiesShouldIgnoreSyntheticProperties() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getPersistentEntity(SyntheticProperties.class);

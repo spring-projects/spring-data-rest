@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,28 +38,19 @@ public class ETagUnitTests {
 
 	KeyValueMappingContext context = new KeyValueMappingContext();
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test(expected = ETagDoesntMatchException.class)
+	@Test(expected = ETagDoesntMatchException.class) // DATAREST-160
 	public void expectWrongEtag() throws Exception {
 
 		ETag eTag = ETag.from("1");
 		eTag.verify(context.getPersistentEntity(Sample.class), new Sample(0L));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void expectCorrectEtag() throws Exception {
 		ETag.from("0").verify(context.getPersistentEntity(Sample.class), new Sample(0L));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void createsETagFromVersionValue() throws Exception {
 
 		PersistentEntity<?, ?> entity = context.getPersistentEntity(Sample.class);
@@ -68,34 +59,22 @@ public class ETagUnitTests {
 		assertThat(from.toString(), is((Object) "\"0\""));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void surroundsValueWithQuotationMarksOnToString() {
 		assertThat(ETag.from("1").toString(), is("\"1\""));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void returnsNoEtagForNullStringSource() {
 		assertThat(ETag.from((String) null), is(ETag.NO_ETAG));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void returnsNoEtagForNullPersistentEntityResourceSource() {
 		assertThat(ETag.from((PersistentEntityResource) null), is(ETag.NO_ETAG));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void hasValueObjectEqualsSemantics() {
 
 		ETag one = ETag.from("1");
@@ -110,64 +89,43 @@ public class ETagUnitTests {
 		assertThat(one.equals(""), is(false));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void returnsNoEtagForEntityWithoutVersionProperty() {
 
 		PersistentEntity<?, ?> entity = context.getPersistentEntity(SampleWithoutVersion.class);
 		assertThat(ETag.from(PersistentEntityResource.build(new SampleWithoutVersion(), entity).build()), is(ETag.NO_ETAG));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void noETagReturnsNullForToString() {
 		assertThat(ETag.NO_ETAG.toString(), is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void noETagDoesNotRejectVerification() {
 		ETag.NO_ETAG.verify(context.getPersistentEntity(Sample.class), new Sample(5L));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void verificationDoesNotRejectNullEntity() {
 		ETag.from("5").verify(context.getPersistentEntity(Sample.class), null);
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void stripsTrailingAndLeadingQuotesOnCreation() {
 
 		assertThat(ETag.from("\"1\""), is(ETag.from("1")));
 		assertThat(ETag.from("\"\"1\"\""), is(ETag.from("1")));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void addsETagToHeadersIfNotNoETag() {
 
 		HttpHeaders headers = ETag.from("1").addTo(new HttpHeaders());
 		assertThat(headers.getETag(), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void doesNotAddHeaderForNoETag() {
 
 		HttpHeaders headers = ETag.NO_ETAG.addTo(new HttpHeaders());

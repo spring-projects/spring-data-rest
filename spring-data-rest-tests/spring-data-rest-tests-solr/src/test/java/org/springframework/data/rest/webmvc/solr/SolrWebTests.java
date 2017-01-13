@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,10 +77,7 @@ public class SolrWebTests extends CommonWebTests {
 		repo.deleteAll();
 	}
 
-	/**
-	 * @see DATAREST-387
-	 */
-	@Test
+	@Test // DATAREST-387
 	public void allowsPaginationThroughData() throws Exception {
 
 		MockHttpServletResponse response = client.request("/products?page=0&size=1");
@@ -97,18 +94,12 @@ public class SolrWebTests extends CommonWebTests {
 		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);
 	}
 
-	/**
-	 * @see DATAREST-387
-	 */
-	@Test
+	@Test // DATAREST-387
 	public void allowsRetrievingDataById() throws Exception {
 		requestAndCompare(PLAYSTATION);
 	}
 
-	/**
-	 * @see DATAREST-387
-	 */
-	@Test
+	@Test // DATAREST-387
 	public void createsEntitesCorrectly() throws Exception {
 
 		Product product = new Product("4", "iWatch", "trends", "scary");
@@ -120,10 +111,7 @@ public class SolrWebTests extends CommonWebTests {
 		assertJsonDocumentMatches(product);
 	}
 
-	/**
-	 * @see DATAREST-387
-	 */
-	@Test
+	@Test // DATAREST-387
 	public void deletesEntitiesCorrectly() throws Exception {
 		deleteAndVerify(new Link("/products/1"));
 	}

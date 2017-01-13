@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,7 @@ public class ValidationErrorsUnitTests {
 		this.entities = new PersistentEntities(Arrays.asList(context));
 	}
 
-	/**
-	 * @see DATAREST-798
-	 */
-	@Test
+	@Test // DATAREST-798
 	public void exposesNestedViolationsCorrectly() {
 
 		ValidationErrors errors = new ValidationErrors(new Foo(), entities);
@@ -62,10 +59,7 @@ public class ValidationErrorsUnitTests {
 		assertThat(errors.getFieldError().getField(), is("bars[0].field"));
 	}
 
-	/**
-	 * @see DATAREST-801
-	 */
-	@Test
+	@Test // DATAREST-801
 	public void getsTheNestedFieldsValue() {
 		expectedErrorBehavior(new ValidationErrors(new Foo(), entities));
 	}

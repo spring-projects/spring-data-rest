@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,7 @@ import org.springframework.http.HttpMethod;
 @RunWith(MockitoJUnitRunner.class)
 public class CrudMethodsSupportedHttpMethodsUnitTests {
 
-	/**
-	 * @see DATACMNS-589, DATAREST-409
-	 */
-	@Test
+	@Test // DATACMNS-589, DATAREST-409
 	public void doesNotSupportAnyHttpMethodForEmptyRepository() {
 
 		SupportedHttpMethods supportedMethods = getSupportedHttpMethodsFor(RawRepository.class);
@@ -62,10 +59,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 		assertMethodsSupported(supportedMethods, ITEM, false, GET, PUT, POST, PATCH, DELETE, HEAD);
 	}
 
-	/**
-	 * @see DATAREST-217, DATAREST-330, DATACMNS-589, DATAREST-409
-	 */
-	@Test
+	@Test // DATAREST-217, DATAREST-330, DATACMNS-589, DATAREST-409
 	public void defaultsSupportedHttpMethodsForItemResource() {
 
 		SupportedHttpMethods supportedHttpMethods = getSupportedHttpMethodsFor(SampleRepository.class);
@@ -74,10 +68,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 		assertMethodsSupported(supportedHttpMethods, ITEM, false, POST);
 	}
 
-	/**
-	 * @see DATAREST-217, DATAREST-330, DATACMNS-589, DATAREST-409
-	 */
-	@Test
+	@Test // DATAREST-217, DATAREST-330, DATACMNS-589, DATAREST-409
 	public void defaultsSupportedHttpMethodsForCollectionResource() {
 
 		SupportedHttpMethods supportedHttpMethods = getSupportedHttpMethodsFor(SampleRepository.class);
@@ -86,10 +77,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 		assertMethodsSupported(supportedHttpMethods, COLLECTION, false, PUT, PATCH, DELETE);
 	}
 
-	/**
-	 * @see DATACMNS-589, DATAREST-409
-	 */
-	@Test
+	@Test // DATACMNS-589, DATAREST-409
 	public void doesNotSupportDeleteIfDeleteMethodIsNotExported() {
 
 		SupportedHttpMethods supportedHttpMethods = getSupportedHttpMethodsFor(HidesDelete.class);
@@ -97,10 +85,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 		assertMethodsSupported(supportedHttpMethods, ITEM, false, DELETE);
 	}
 
-	/**
-	 * @see DATAREST-523
-	 */
-	@Test
+	@Test // DATAREST-523
 	public void exposesMethodsForProperties() {
 
 		KeyValueMappingContext context = new KeyValueMappingContext();
@@ -121,18 +106,12 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 				allOf(hasItem(GET), not(hasItems(DELETE, PATCH, PUT, POST))));
 	}
 
-	/**
-	 * @see DATAREST-825
-	 */
-	@Test
+	@Test // DATAREST-825
 	public void supportsDeleteIfFindOneIsHidden() {
 		assertMethodsSupported(getSupportedHttpMethodsFor(HidesFindOne.class), ITEM, true, DELETE, PATCH, PUT, OPTIONS);
 	}
 
-	/**
-	 * @see DATAREST-825
-	 */
-	@Test
+	@Test // DATAREST-825
 	public void doesNotSupportDeleteIfNoFindOneAvailable() {
 		assertMethodsSupported(getSupportedHttpMethodsFor(NoFindOne.class), ITEM, false, DELETE);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,10 +89,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 		assertThat(creditCardMapping.getSearchResourceMappings().isExported(), is(false));
 	}
 
-	/**
-	 * @see DATAREST-112
-	 */
-	@Test
+	@Test // DATAREST-112
 	public void usesPropertyNameAsRelForPropertyResourceMapping() {
 
 		Repositories repositories = new Repositories(factory);
@@ -107,10 +104,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 		assertThat(mapping.isExported(), is(true));
 	}
 
-	/**
-	 * @see DATAREST-111
-	 */
-	@Test
+	@Test // DATAREST-111
 	public void exposesResourceByPath() {
 
 		assertThat(mappings.exportsTopLevelResourceFor("people"), is(true));
@@ -123,10 +117,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 		assertThat(mappings.exportsTopLevelResourceFor("creditCards"), is(false));
 	}
 
-	/**
-	 * @see DATAREST-107
-	 */
-	@Test
+	@Test // DATAREST-107
 	public void skipsSearchMethodsNotExported() {
 
 		ResourceMetadata creditCardMetadata = mappings.getMetadataFor(CreditCard.class);
@@ -145,10 +136,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 		assertThat(methodNames, hasItems("findByFirstName", "findByCreatedGreaterThan"));
 	}
 
-	/**
-	 * @see DATAREST-325
-	 */
-	@Test
+	@Test // DATAREST-325
 	public void exposesMethodResourceMappingInPackageProtectedButExportedRepo() {
 
 		ResourceMetadata metadata = mappings.getMetadataFor(Author.class);

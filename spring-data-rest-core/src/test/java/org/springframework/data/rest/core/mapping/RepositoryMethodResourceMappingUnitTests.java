@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,10 +61,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		assertThat(mapping.getPath(), is(new Path("bar")));
 	}
 
-	/**
-	 * @see DATAREST-31
-	 */
-	@Test
+	@Test // DATAREST-31
 	public void doesNotDiscoverAnyParametersIfNotAnnotated() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
@@ -73,10 +70,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		assertThat(mapping.getParametersMetadata().getParameterNames(), is(emptyIterable()));
 	}
 
-	/**
-	 * @see DATAREST-31
-	 */
-	@Test
+	@Test // DATAREST-31
 	public void resolvesParameterNamesIfNotAnnotated() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
@@ -86,10 +80,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		assertThat(mapping.getParametersMetadata().getParameterNames(), hasItem("firstname"));
 	}
 
-	/**
-	 * @see DATAREST-229
-	 */
-	@Test
+	@Test // DATAREST-229
 	public void considersPagingFinderAPagingResource() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
@@ -107,10 +98,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		assertThat(mapping.getRel(), is("findByEmailAddress"));
 	}
 
-	/**
-	 * @see DATAREST-384
-	 */
-	@Test
+	@Test // DATAREST-384
 	public void considersResourceSortableIfSortParameterIsPresent() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Sort.class);
@@ -124,10 +112,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		assertThat(mapping.isSortableResource(), is(false));
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	@SuppressWarnings("rawtypes")
 	public void returnsDomainTypeAsProjectionSourceType() throws Exception {
 
@@ -137,10 +122,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		assertThat(mapping.getReturnedDomainType(), is(equalTo((Class) Person.class)));
 	}
 
-	/**
-	 * @see DATAREST-699
-	 */
-	@Test
+	@Test // DATAREST-699
 	public void doesNotIncludePageableAsParameter() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class, Pageable.class);

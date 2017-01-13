@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,20 +40,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class RootResourceInformationIntegrationTests extends AbstractControllerIntegrationTests {
 
-	/**
-	 * @see DATAREST-217
-	 */
-	@Test
+	@Test // DATAREST-217
 	public void getIsNotSupportedIfFindAllIsNotExported() {
 
 		SupportedHttpMethods supportedMethods = getResourceInformation(Address.class).getSupportedMethods();
 		assertThat(supportedMethods.getMethodsFor(COLLECTION), not(hasItem(GET)));
 	}
 
-	/**
-	 * @see DATAREST-217
-	 */
-	@Test
+	@Test // DATAREST-217
 	public void postIsNotSupportedIfSaveIsNotExported() {
 
 		SupportedHttpMethods supportedMethods = getResourceInformation(Address.class).getSupportedMethods();

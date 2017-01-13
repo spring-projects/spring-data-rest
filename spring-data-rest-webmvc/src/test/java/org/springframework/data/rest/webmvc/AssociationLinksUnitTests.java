@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,10 +68,7 @@ public class AssociationLinksUnitTests {
 		this.links = new Associations(mappings, config);
 	}
 
-	/**
-	 * @see DATAREST-262
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-262
 	public void rejectsNullMappings() {
 		new Associations(null, mock(RepositoryRestConfiguration.class));
 	}
@@ -81,36 +78,24 @@ public class AssociationLinksUnitTests {
 		new Associations(mappings, null);
 	}
 
-	/**
-	 * @see DATAREST-262
-	 */
-	@Test
+	@Test // DATAREST-262
 	public void considersNullPropertyUnlinkable() {
 		assertThat(links.isLinkableAssociation((PersistentProperty<?>) null), is(false));
 	}
 
-	/**
-	 * @see DATAREST-262
-	 */
-	@Test
+	@Test // DATAREST-262
 	public void consideredHiddenPropertyUnlinkable() {
 		assertThat(links.isLinkableAssociation(entity.getPersistentProperty("hiddenProperty")), is(false));
 	}
 
-	/**
-	 * @see DATAREST-262
-	 */
-	@Test
+	@Test // DATAREST-262
 	public void considersUnexportedPropertyUnlinkable() {
 
 		KeyValuePersistentProperty property = entity.getPersistentProperty("unexportedProperty");
 		assertThat(links.isLinkableAssociation(property), is(false));
 	}
 
-	/**
-	 * @see DATAREST-262
-	 */
-	@Test
+	@Test // DATAREST-262
 	public void createsLinkToAssociationProperty() {
 
 		PersistentProperty<?> property = entity.getPersistentProperty("property");
@@ -120,10 +105,7 @@ public class AssociationLinksUnitTests {
 		assertThat(associationLinks, hasItem(new Link("/base/property", "property")));
 	}
 
-	/**
-	 * @see DATAREST-262
-	 */
-	@Test
+	@Test // DATAREST-262
 	public void doesNotCreateLinksForHiddenProperty() {
 
 		PersistentProperty<?> property = entity.getPersistentProperty("hiddenProperty");

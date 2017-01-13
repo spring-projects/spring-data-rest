@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,40 +39,28 @@ public class MappedPropertiesUnitTests {
 	KeyValuePersistentEntity<?> entity = context.getPersistentEntity(Sample.class);
 	MappedProperties properties = MappedProperties.fromJacksonProperties(entity, mapper);
 
-	/**
-	 * @see DATAREST-575
-	 */
-	@Test
+	@Test // DATAREST-575
 	public void doesNotExposeMappedPropertyForNonSpringDataPersistentProperty() {
 
 		assertThat(properties.hasPersistentPropertyForField("notExposedBySpringData"), is(false));
 		assertThat(properties.getPersistentProperty("notExposedBySpringData"), is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-575
-	 */
-	@Test
+	@Test // DATAREST-575
 	public void doesNotExposeMappedPropertyForNonJacksonProperty() {
 
 		assertThat(properties.hasPersistentPropertyForField("notExposedByJackson"), is(false));
 		assertThat(properties.getPersistentProperty("notExposedByJackson"), is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-575
-	 */
-	@Test
+	@Test // DATAREST-575
 	public void exposesProperty() {
 
 		assertThat(properties.hasPersistentPropertyForField("exposedProperty"), is(true));
 		assertThat(properties.getPersistentProperty("exposedProperty"), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-575
-	 */
-	@Test
+	@Test // DATAREST-575
 	public void exposesRenamedPropertyByExternalName() {
 
 		assertThat(properties.hasPersistentPropertyForField("email"), is(true));

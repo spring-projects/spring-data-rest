@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,26 +47,17 @@ public class ArgumentResolverPagingAndSortingTemplateVariablesUnitTests {
 	@Mock HateoasSortHandlerMethodArgumentResolver sortResolver;
 	@Mock UriComponentsBuilder builder;
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-467
 	public void rejectsNullArgumentResolverForPageable() {
 		new ArgumentResolverPagingAndSortingTemplateVariables(null, sortResolver);
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-467
 	public void rejectsNullArgumentResolverForSort() {
 		new ArgumentResolverPagingAndSortingTemplateVariables(pageableResolver, null);
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void supportsPageableAndSortMethodParameters() {
 
 		PagingAndSortingTemplateVariables variables = new ArgumentResolverPagingAndSortingTemplateVariables(
@@ -77,18 +68,12 @@ public class ArgumentResolverPagingAndSortingTemplateVariablesUnitTests {
 		assertThat(variables.supportsParameter(getParameterMock(Object.class)), is(false));
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void forwardsEnhanceRequestForPageable() {
 		assertForwardsEnhanceFor(new PageRequest(0, 10), pageableResolver, sortResolver);
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void forwardsEnhanceRequestForSort() {
 		assertForwardsEnhanceFor(new Sort("property"), sortResolver, pageableResolver);
 	}

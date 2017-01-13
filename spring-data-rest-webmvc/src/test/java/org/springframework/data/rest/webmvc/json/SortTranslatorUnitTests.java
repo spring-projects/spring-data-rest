@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,10 +60,7 @@ public class SortTranslatorUnitTests {
 		sortTranslator = new SortTranslator(persistentEntities, objectMapper);
 	}
 
-	/**
-	 * @see DATAREST-883
-	 */
-	@Test
+	@Test // DATAREST-883
 	public void shouldMapKnownProperties() {
 
 		Sort translatedSort = sortTranslator.translateSort(new Sort("hello", "name"),
@@ -73,10 +70,7 @@ public class SortTranslatorUnitTests {
 		assertThat(translatedSort.getOrderFor("name"), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-883
-	 */
-	@Test
+	@Test // DATAREST-883
 	public void returnsNullSortIfNoPropertiesMatch() {
 
 		Sort translatedSort = sortTranslator.translateSort(new Sort("hello", "world"),
@@ -85,10 +79,7 @@ public class SortTranslatorUnitTests {
 		assertThat(translatedSort, is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-883
-	 */
-	@Test
+	@Test // DATAREST-883
 	public void shouldMapKnownPropertiesWithJsonProperty() {
 
 		Sort translatedSort = sortTranslator.translateSort(new Sort("hello", "foo"),
@@ -98,10 +89,7 @@ public class SortTranslatorUnitTests {
 		assertThat(translatedSort.getOrderFor("name"), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-883
-	 */
-	@Test
+	@Test // DATAREST-883
 	public void shouldJacksonFieldNameForMapping() {
 
 		Sort translatedSort = sortTranslator.translateSort(new Sort("name"),
@@ -110,10 +98,7 @@ public class SortTranslatorUnitTests {
 		assertThat(translatedSort, is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void shouldMapKnownNestedProperties() {
 
 		Sort translatedSort = sortTranslator.translateSort(
@@ -125,10 +110,7 @@ public class SortTranslatorUnitTests {
 		assertThat(translatedSort.getOrderFor("embedded.someInterface"), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void shouldSkipWrongNestedProperties() {
 
 		Sort translatedSort = sortTranslator.translateSort(new Sort("embedded.unknown"),
@@ -137,10 +119,7 @@ public class SortTranslatorUnitTests {
 		assertThat(translatedSort, is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void shouldSkipKnownAssociationProperties() {
 
 		Sort translatedSort = sortTranslator.translateSort(new Sort("refEmbedded.name"),
@@ -149,10 +128,7 @@ public class SortTranslatorUnitTests {
 		assertThat(translatedSort, is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void shouldJacksonFieldNameForNestedFieldMapping() {
 
 		Sort translatedSort = sortTranslator.translateSort(new Sort("em.foo"),
@@ -161,10 +137,7 @@ public class SortTranslatorUnitTests {
 		assertThat(translatedSort.getOrderFor("embeddedWithJsonProperty.bar"), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void shouldTranslatePathForSingleLevelJsonUnwrappedObject() {
 
 		Sort translatedSort = sortTranslator.translateSort(new Sort("un-name"),
@@ -173,10 +146,7 @@ public class SortTranslatorUnitTests {
 		assertThat(translatedSort.getOrderFor("embedded.name"), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void shouldTranslatePathForMultiLevelLevelJsonUnwrappedObject() {
 
 		Sort translatedSort = sortTranslator.translateSort(new Sort("un-name", "burrito.un-name"),

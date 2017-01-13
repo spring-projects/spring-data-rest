@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,28 +41,19 @@ public class RepositoryControllerIntegrationTests extends AbstractControllerInte
 
 	@Autowired RepositoryController controller;
 
-	/**
-	 * @see DATAREST-333
-	 */
-	@Test
+	@Test // DATAREST-333
 	public void rootResourceExposesGetOnly() {
 
 		HttpEntity<?> response = controller.optionsForRepositories();
 		assertAllowHeaders(response, HttpMethod.GET);
 	}
 
-	/**
-	 * @see DATAREST-333, DATAREST-330
-	 */
-	@Test
+	@Test // DATAREST-333, DATAREST-330
 	public void headRequestReturnsNoContent() {
 		assertThat(controller.headForRepositories().getStatusCode(), is(HttpStatus.NO_CONTENT));
 	}
 
-	/**
-	 * @see DATAREST-160, DATAREST-333, DATAREST-463
-	 */
-	@Test
+	@Test // DATAREST-160, DATAREST-333, DATAREST-463
 	public void exposesLinksToRepositories() {
 
 		RepositoryLinksResource resource = controller.listRepositories().getBody();

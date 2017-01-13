@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,10 +91,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		configuration.setEnableEnumTranslation(false);
 	}
 
-	/**
-	 * @see DATAREST-230
-	 */
-	@Test
+	@Test // DATAREST-230
 	public void exposesAlpsCollectionResources() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -105,10 +102,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 				.andExpect(jsonPath("$.alps.descriptors[*].name", hasItems("people", "person")));
 	}
 
-	/**
-	 * @see DATAREST-638
-	 */
-	@Test
+	@Test // DATAREST-638
 	public void verifyThatAlpsIsDefaultProfileFormat() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -120,10 +114,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 	}
 
-	/**
-	 * @see DATAREST-463
-	 */
-	@Test
+	@Test // DATAREST-463
 	public void verifyThatAttributesIgnoredDontAppearInAlps() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -138,10 +129,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", not(hasItems("manager", "curator"))));
 	}
 
-	/**
-	 * @see DATAREST-494
-	 */
-	@Test
+	@Test // DATAREST-494
 	public void linksToJsonSchemaFromRepresentationDescriptor() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -156,10 +144,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		assertThat(href, endsWith("/profile/items"));
 	}
 
-	/**
-	 * @see DATAREST-516
-	 */
-	@Test
+	@Test // DATAREST-516
 	public void referenceToAssociatedEntityDesciptorPointsToRepresentationDescriptor() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -176,10 +161,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		assertThat(rt, allOf(containsString(ProfileController.PROFILE_ROOT_MAPPING), endsWith("-representation")));
 	}
 
-	/**
-	 * @see DATAREST-630
-	 */
-	@Test
+	@Test // DATAREST-630
 	public void onlyExposesIdAttributesWhenExposedInTheConfiguration() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -190,10 +172,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", hasItems("id", "name")));
 	}
 
-	/**
-	 * @see DATAREST-683
-	 */
-	@Test
+	@Test // DATAREST-683
 	public void enumValueListingsAreTranslatedIfEnabled() throws Exception {
 
 		configuration.setEnableEnumTranslation(true);
@@ -211,10 +190,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		assertThat(value, is("Male, Female, Undefined"));
 	}
 
-	/**
-	 * @see DATAREST-753
-	 */
-	@Test
+	@Test // DATAREST-753
 	public void alpsCanHandleGroovyDomainObjects() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");

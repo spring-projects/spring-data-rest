@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,10 +51,7 @@ public class ProjectionJacksonIntegrationTests {
 		this.mapper.setHandlerInstantiator(new HalHandlerInstantiator(new EvoInflectorRelProvider(), null, null));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void considersJacksonAnnotationsOnProjectionInterfaces() throws Exception {
 
 		Customer customer = new Customer();
@@ -68,10 +65,7 @@ public class ProjectionJacksonIntegrationTests {
 		assertThat(JsonPath.read(result, "$.firstname"), is((Object) "Dave"));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void rendersHalContentCorrectly() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,10 +79,7 @@ public class JsonPatchHandlerUnitTests {
 		this.user.address = address;
 	}
 
-	/**
-	 * @see DATAREST-348
-	 */
-	@Test
+	@Test // DATAREST-348
 	public void appliesRemoveOperationCorrectly() throws Exception {
 
 		String input = "[{ \"op\": \"replace\", \"path\": \"/address/zipCode\", \"value\": \"ZIP\" },"
@@ -94,10 +91,7 @@ public class JsonPatchHandlerUnitTests {
 		assertThat(result.address.zipCode, is("ZIP"));
 	}
 
-	/**
-	 * @see DATAREST-348
-	 */
-	@Test
+	@Test // DATAREST-348
 	public void appliesMergePatchCorrectly() throws Exception {
 
 		String input = "{ \"address\" : { \"zipCode\" : \"ZIP\"}, \"lastname\" : null }";
@@ -130,10 +124,7 @@ public class JsonPatchHandlerUnitTests {
 		assertThat(user.colleagues.get(0).firstname, is(christoph.firstname));
 	}
 
-	/**
-	 * @see DATAREST-609
-	 */
-	@Test
+	@Test // DATAREST-609
 	public void hintsToMediaTypeIfBodyCantBeRead() throws Exception {
 
 		exception.expect(HttpMessageNotReadableException.class);

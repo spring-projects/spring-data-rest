@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,40 +51,28 @@ public class RepositoryRestConfigurationUnitTests {
 				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void returnsBodiesIfAcceptHeaderPresentByDefault() {
 
 		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE), is(true));
 		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE), is(true));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void doesNotReturnBodiesIfNoAcceptHeaderPresentByDefault() {
 
 		assertThat(configuration.returnBodyOnCreate(null), is(false));
 		assertThat(configuration.returnBodyOnUpdate(null), is(false));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void doesNotReturnBodiesIfEmptyAcceptHeaderPresentByDefault() {
 
 		assertThat(configuration.returnBodyOnCreate(""), is(false));
 		assertThat(configuration.returnBodyOnUpdate(""), is(false));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void doesNotReturnBodyForUpdateIfExplicitlyDeactivated() {
 
 		configuration.setReturnBodyOnUpdate(false);
@@ -94,10 +82,7 @@ public class RepositoryRestConfigurationUnitTests {
 		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE), is(false));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void doesNotReturnBodyForCreateIfExplicitlyDeactivated() {
 
 		configuration.setReturnBodyOnCreate(false);
@@ -107,10 +92,7 @@ public class RepositoryRestConfigurationUnitTests {
 		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE), is(false));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void returnsBodyForUpdateIfExplicitlyActivated() {
 
 		configuration.setReturnBodyOnUpdate(true);
@@ -120,10 +102,7 @@ public class RepositoryRestConfigurationUnitTests {
 		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE), is(true));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void returnsBodyForCreateIfExplicitlyActivated() {
 
 		configuration.setReturnBodyOnCreate(true);
@@ -133,10 +112,7 @@ public class RepositoryRestConfigurationUnitTests {
 		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE), is(true));
 	}
 
-	/**
-	 * @see DATAREST-776
-	 */
-	@Test
+	@Test // DATAREST-776
 	public void considersDomainTypeOfValueRepositoryLookupTypes() {
 
 		configuration.withEntityLookup().forLookupRepository(ProfileRepository.class);
@@ -144,10 +120,7 @@ public class RepositoryRestConfigurationUnitTests {
 		assertThat(configuration.isLookupType(Profile.class), is(true));
 	}
 
-	/**
-	 * @see DATAREST-573
-	 */
-	@Test
+	@Test // DATAREST-573
 	public void configuresCorsProcessing() {
 
 		RepositoryCorsRegistry registry = configuration.getCorsRegistry();

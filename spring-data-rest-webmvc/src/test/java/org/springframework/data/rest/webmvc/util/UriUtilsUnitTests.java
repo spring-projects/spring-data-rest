@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 public class UriUtilsUnitTests {
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void pathSegmentsShouldDiscoverPathUsingMethodMapping() throws Exception {
 
 		Method method = ClassUtils.getMethod(MappedMethod.class, "method");
@@ -44,10 +41,7 @@ public class UriUtilsUnitTests {
 		assertThat(pathSegments, hasItems("hello", "world"));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void pathSegmentsShouldDiscoverPathUsingTypeAndMethodMapping() throws Exception {
 
 		Method method = ClassUtils.getMethod(MappedClassAndMethod.class, "method");

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,10 +56,7 @@ public class MappingAwarePageableArgumentResolverUnitTests {
 		resolver = new MappingAwarePageableArgumentResolver(translator, delegate);
 	}
 
-	/**
-	 * @see DATAREST-906
-	 */
-	@Test
+	@Test // DATAREST-906
 	public void resolveArgumentShouldReturnTranslatedPageable() throws Exception {
 
 		Sort translated = new Sort("world");
@@ -75,10 +72,7 @@ public class MappingAwarePageableArgumentResolverUnitTests {
 		assertThat(result.getSort(), is(equalTo(translated)));
 	}
 
-	/**
-	 * @see DATAREST-906
-	 */
-	@Test
+	@Test // DATAREST-906
 	public void resolveArgumentShouldReturnPageableWithoutSort() throws Exception {
 
 		Pageable pageable = new PageRequest(0, 1);
@@ -92,10 +86,7 @@ public class MappingAwarePageableArgumentResolverUnitTests {
 		assertThat(result.getSort(), is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-906
-	 */
-	@Test
+	@Test // DATAREST-906
 	public void resolveArgumentShouldReturnNoPageable() throws Exception {
 
 		Pageable result = resolver.resolveArgument(parameter, modelAndViewContainer, webRequest, binderFactory);

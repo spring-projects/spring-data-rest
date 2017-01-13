@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,10 +80,7 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 		when(parameter.hasParameterAnnotation(QuerydslPredicate.class)).thenReturn(true);
 	}
 
-	/**
-	 * @see DATAREST-616
-	 */
-	@Test
+	@Test // DATAREST-616
 	public void returnsInvokerIfRepositoryIsNotQuerydslAware() {
 
 		ReceiptRepository repository = mock(ReceiptRepository.class);
@@ -94,10 +91,7 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 		assertThat(result, is(invoker));
 	}
 
-	/**
-	 * @see DATAREST-616
-	 */
-	@Test
+	@Test // DATAREST-616
 	public void wrapsInvokerInQuerydslAdapter() {
 
 		Object repository = mock(QuerydslUserRepository.class);
@@ -108,10 +102,7 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 		assertThat(result, is(instanceOf(QuerydslRepositoryInvokerAdapter.class)));
 	}
 
-	/**
-	 * @see DATAREST-616
-	 */
-	@Test
+	@Test // DATAREST-616
 	public void invokesCustomizationOnRepositoryIfItImplementsCustomizer() {
 
 		QuerydslCustomizingUserRepository repository = mock(QuerydslCustomizingUserRepository.class);

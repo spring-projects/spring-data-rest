@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,82 +82,52 @@ public class RepositoryEventIntegrationTests {
 		person = people.save(new Person("Jane", "Doe"));
 	}
 
-	/**
-	 * @see DATAREST-388
-	 */
-	@Test(expected = EventHandlerInvokedException.class)
+	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
 	public void shouldDispatchBeforeCreate() throws Exception {
 		appCtx.publishEvent(new BeforeCreateEvent(person));
 	}
 
-	/**
-	 * @see DATAREST-388
-	 */
-	@Test(expected = EventHandlerInvokedException.class)
+	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
 	public void shouldDispatchAfterCreate() throws Exception {
 		appCtx.publishEvent(new AfterCreateEvent(person));
 	}
 
-	/**
-	 * @see DATAREST-388
-	 */
-	@Test(expected = EventHandlerInvokedException.class)
+	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
 	public void shouldDispatchBeforeSave() throws Exception {
 		appCtx.publishEvent(new BeforeSaveEvent(person));
 	}
 
-	/**
-	 * @see DATAREST-388
-	 */
-	@Test(expected = EventHandlerInvokedException.class)
+	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
 	public void shouldDispatchAfterSave() throws Exception {
 		appCtx.publishEvent(new AfterSaveEvent(person));
 	}
 
-	/**
-	 * @see DATAREST-388
-	 */
-	@Test(expected = EventHandlerInvokedException.class)
+	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
 	public void shouldDispatchBeforeDelete() throws Exception {
 		appCtx.publishEvent(new BeforeDeleteEvent(person));
 	}
 
-	/**
-	 * @see DATAREST-388
-	 */
-	@Test(expected = EventHandlerInvokedException.class)
+	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
 	public void shouldDispatchAfterDelete() throws Exception {
 		appCtx.publishEvent(new AfterDeleteEvent(person));
 	}
 
-	/**
-	 * @see DATAREST-388
-	 */
-	@Test(expected = EventHandlerInvokedException.class)
+	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
 	public void shouldDispatchBeforeLinkSave() throws Exception {
 		appCtx.publishEvent(new BeforeLinkSaveEvent(person, new Object()));
 	}
 
-	/**
-	 * @see DATAREST-388
-	 */
-	@Test(expected = EventHandlerInvokedException.class)
+	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
 	public void shouldDispatchAfterLinkSave() throws Exception {
 		appCtx.publishEvent(new AfterLinkSaveEvent(person, new Object()));
 	}
 
-	/**
-	 * @see DATAREST-388
-	 */
-	@Test(expected = EventHandlerInvokedException.class)
+	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
 	public void shouldDispatchBeforeLinkDelete() throws Exception {
 		appCtx.publishEvent(new BeforeLinkDeleteEvent(person, new Object()));
 	}
 
-	/**
-	 * @see DATAREST-388
-	 */
-	@Test(expected = EventHandlerInvokedException.class)
+	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
 	public void shouldDispatchAfterLinkDelete() throws Exception {
 		appCtx.publishEvent(new AfterLinkDeleteEvent(person, new Object()));
 	}

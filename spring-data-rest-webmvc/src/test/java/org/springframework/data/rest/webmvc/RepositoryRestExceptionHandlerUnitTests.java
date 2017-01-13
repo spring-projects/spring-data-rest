@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,10 +57,7 @@ public class RepositoryRestExceptionHandlerUnitTests {
 		logger.setLevel(logLevel);
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void handlesHttpMessageNotReadableException() {
 
 		ResponseEntity<ExceptionMessage> result = HANDLER
@@ -69,10 +66,7 @@ public class RepositoryRestExceptionHandlerUnitTests {
 		assertThat(result.getStatusCode(), is(HttpStatus.BAD_REQUEST));
 	}
 
-	/**
-	 * @see DATAREST-507
-	 */
-	@Test
+	@Test // DATAREST-507
 	public void handlesConflictCorrectly() {
 
 		ResponseEntity<ExceptionMessage> result = HANDLER.handleConflict(new DataIntegrityViolationException("Message!"));
@@ -80,10 +74,7 @@ public class RepositoryRestExceptionHandlerUnitTests {
 		assertThat(result.getStatusCode(), is(HttpStatus.CONFLICT));
 	}
 
-	/**
-	 * @see DATAREST-706
-	 */
-	@Test
+	@Test // DATAREST-706
 	public void forwardsExceptionForMiscellaneousFailure() {
 
 		String message = "My Message!";

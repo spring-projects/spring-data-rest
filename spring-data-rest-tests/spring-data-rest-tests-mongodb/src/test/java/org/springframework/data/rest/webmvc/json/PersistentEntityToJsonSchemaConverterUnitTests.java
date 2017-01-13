@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,10 +95,7 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 				customizerFactory);
 	}
 
-	/**
-	 * @see DATAREST-631, DATAREST-632
-	 */
-	@Test
+	@Test // DATAREST-631, DATAREST-632
 	public void fulfillsConstraintsForProfile() {
 
 		List<Constraint> constraints = new ArrayList<Constraint>();
@@ -111,10 +108,7 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		assertConstraints(Profile.class, constraints);
 	}
 
-	/**
-	 * @see DATAREST-632
-	 */
-	@Test
+	@Test // DATAREST-632
 	public void fulfillsConstraintsForUser() throws Exception {
 
 		List<Constraint> constraints = new ArrayList<Constraint>();
@@ -166,10 +160,7 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		assertConstraints(User.class, constraints);
 	}
 
-	/**
-	 * @see DATAREST-754
-	 */
-	@Test
+	@Test // DATAREST-754
 	public void handlesGroovyDomainObjects() {
 
 		List<Constraint> constraints = new ArrayList<Constraint>();

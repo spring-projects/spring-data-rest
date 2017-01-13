@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,10 +52,7 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 		accessor = new RepositoryCorsConfigurationAccessor(mappings, repositories, NoOpStringValueResolver.INSTANCE);
 	}
 
-	/**
-	 * @see DATAREST-573
-	 */
-	@Test
+	@Test // DATAREST-573
 	public void createConfigurationShouldConstructCorsConfiguration() {
 
 		CorsConfiguration configuration = accessor.createConfiguration(AnnotatedRepository.class);
@@ -69,10 +66,7 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 		assertThat(configuration.getMaxAge(), is(1800L));
 	}
 
-	/**
-	 * @see DATAREST-573
-	 */
-	@Test
+	@Test // DATAREST-573
 	public void createConfigurationShouldConstructFullCorsConfiguration() {
 
 		CorsConfiguration configuration = accessor.createConfiguration(FullyConfiguredCorsRepository.class);

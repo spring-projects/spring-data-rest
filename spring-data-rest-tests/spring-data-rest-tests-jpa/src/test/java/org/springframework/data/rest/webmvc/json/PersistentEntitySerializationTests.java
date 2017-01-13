@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,10 +126,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(p.getSiblings(), is(Collections.EMPTY_LIST));
 	}
 
-	/**
-	 * @see DATAREST-238
-	 */
-	@Test
+	@Test // DATAREST-238
 	public void deserializePersonWithLinks() throws IOException {
 
 		String bilbo = "{\n" + "  \"_links\" : {\n" + "    \"self\" : {\n"
@@ -144,10 +141,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(p.getLastName(), equalTo("Baggins"));
 	}
 
-	/**
-	 * @see DATAREST-238
-	 */
-	@Test
+	@Test // DATAREST-238
 	public void serializesPersonEntity() throws IOException, InterruptedException {
 
 		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(Person.class);
@@ -168,10 +162,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(siblingLink.getHref(), endsWith(new UriTemplate("/{id}/siblings").expand(person.getId()).toString()));
 	}
 
-	/**
-	 * @see DATAREST-248
-	 */
-	@Test
+	@Test // DATAREST-248
 	public void deserializesPersonWithLinkToOtherPersonCorrectly() throws Exception {
 
 		Person father = people.save(new Person("John", "Doe"));
@@ -182,10 +173,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(result.getFather(), is(father));
 	}
 
-	/**
-	 * @see DATAREST-248
-	 */
-	@Test
+	@Test // DATAREST-248
 	public void deserializesPersonWithLinkToOtherPersonsCorrectly() throws Exception {
 
 		Person firstSibling = people.save(new Person("John", "Doe"));
@@ -198,10 +186,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(result.getSiblings(), hasItems(firstSibling, secondSibling));
 	}
 
-	/**
-	 * @see DATAREST-248
-	 */
-	@Test
+	@Test // DATAREST-248
 	public void deserializesEmbeddedAssociationsCorrectly() throws Exception {
 
 		String content = TestUtils.readFileFromClasspath("order.json");
@@ -210,10 +195,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(order.getLineItems(), hasSize(2));
 	}
 
-	/**
-	 * @see DATAREST-250
-	 */
-	@Test
+	@Test // DATAREST-250
 	public void serializesReferencesWithinPagedResourceCorrectly() throws Exception {
 
 		Person creator = new Person("Dave", "Matthews");
@@ -235,10 +217,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(JsonPath.read(result, "$._embedded.orders[*].lineItems"), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-521
-	 */
-	@Test
+	@Test // DATAREST-521
 	public void serializesLinksForExcerpts() throws Exception {
 
 		Person dave = new Person("Dave", "Matthews");
@@ -261,10 +240,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(JsonPath.read(result, "$._embedded.father[*]._links.self"), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-521
-	 */
-	@Test
+	@Test // DATAREST-521
 	public void rendersAdditionalLinksRegisteredWithResource() throws Exception {
 
 		Person dave = new Person("Dave", "Matthews");
@@ -280,10 +256,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(JsonPath.read(result, "$._links.processed"), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-697
-	 */
-	@Test
+	@Test // DATAREST-697
 	public void rendersProjectionWithinSimpleResourceCorrectly() throws Exception {
 
 		Person person = new Person("Dave", "Matthews");
@@ -297,10 +270,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(JsonPath.read(result, "$._links.self"), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-880
-	 */
-	@Test
+	@Test // DATAREST-880
 	public void unwrapsNestedTypeCorrectly() throws Exception {
 
 		CreditCard creditCard = new CreditCard(new CreditCard.CCN("1234123412341234"));
@@ -308,10 +278,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(JsonPath.read(mapper.writeValueAsString(creditCard), "$.ccn"), is("1234123412341234"));
 	}
 
-	/**
-	 * @see DATAREST-872
-	 */
-	@Test
+	@Test // DATAREST-872
 	public void serializesInheritance() throws Exception {
 
 		Suite suite = new Suite();

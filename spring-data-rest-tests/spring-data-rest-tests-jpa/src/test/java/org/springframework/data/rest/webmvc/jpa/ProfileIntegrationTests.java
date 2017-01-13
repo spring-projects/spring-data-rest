@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,11 +73,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 		this.client = new TestMvcClient(mvc, this.discoverers);
 	}
 
-	/**
-	 * @see DATAREST-230
-	 * @see DATAREST-638
-	 */
-	@Test
+	@Test // DATAREST-230, DATAREST-638
 	public void exposesProfileLink() throws Exception {
 
 		client.follow(ROOT_URI)//
@@ -85,11 +81,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 				.andExpect(jsonPath("$._links.profile.href", endsWith(ProfileController.PROFILE_ROOT_MAPPING)));
 	}
 
-	/**
-	 * @see DATAREST-230
-	 * @see DATAREST-638
-	 */
-	@Test
+	@Test  // DATAREST-230, DATAREST-638
 	public void profileRootLinkContainsMetadataForEachRepo() throws Exception {
 
 		Link profileLink = client.discoverUnique(new Link(ROOT_URI), ProfileResourceProcessor.PROFILE_REL);
@@ -104,10 +96,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 		assertThat(client.discoverUnique(profileLink, "addresses", MediaType.ALL), is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-638
-	 */
-	@Test
+	@Test // DATAREST-638
 	public void profileLinkOnCollectionResourceLeadsToRepositorySpecificMetadata() throws Exception {
 
 		Link peopleLink = client.discoverUnique(new Link(ROOT_URI), "people");

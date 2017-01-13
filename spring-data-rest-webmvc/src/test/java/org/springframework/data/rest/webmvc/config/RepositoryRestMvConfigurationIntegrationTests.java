@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,10 +82,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		}
 	}
 
-	/**
-	 * @see DATAREST-210
-	 */
-	@Test
+	@Test // DATAREST-210
 	public void assertEnableHypermediaSupportWorkingCorrectly() {
 
 		assertThat(context.getBean("entityLinksPluginRegistry"), is(notNullValue()));
@@ -103,10 +100,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		mapper.writeValueAsString(new RepositoryLinksResource());
 	}
 
-	/**
-	 * @see DATAREST-271
-	 */
-	@Test
+	@Test // DATAREST-271
 	public void assetConsidersPaginationCustomization() {
 
 		HateoasPageableHandlerMethodArgumentResolver resolver = context
@@ -124,10 +118,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(params.get("mySize").get(0), is("7000"));
 	}
 
-	/**
-	 * @see DATAREST-336
-	 */
-	@Test
+	@Test // DATAREST-336
 	public void objectMapperRendersDatesInIsoByDefault() throws Exception {
 
 		Sample sample = new Sample();
@@ -143,18 +134,12 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(result, is((Object) formatter.print(sample.date, Locale.US)));
 	}
 
-	/**
-	 * @see DATAREST-362
-	 */
-	@Test(expected = NoSuchBeanDefinitionException.class)
+	@Test(expected = NoSuchBeanDefinitionException.class) // DATAREST-362
 	public void doesNotExposePersistentEntityJackson2ModuleAsBean() {
 		context.getBean(PersistentEntityJackson2Module.class);
 	}
 
-	/**
-	 * @see DATAREST-362
-	 */
-	@Test
+	@Test // DATAREST-362
 	public void registeredHttpMessageConvertersAreTypeConstrained() {
 
 		Collection<MappingJackson2HttpMessageConverter> converters = context
@@ -166,10 +151,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		}
 	}
 
-	/**
-	 * @see DATAREST-424
-	 */
-	@Test
+	@Test // DATAREST-424
 	public void halHttpMethodConverterIsRegisteredBeforeTheGeneralOne() {
 
 		CollectingComponent component = context.getBean(CollectingComponent.class);
@@ -179,10 +161,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(converters.get(1).getSupportedMediaTypes(), hasItem(RestMediaTypes.SCHEMA_JSON));
 	}
 
-	/**
-	 * @see DATAREST-424
-	 */
-	@Test
+	@Test // DATAREST-424
 	public void halHttpMethodConverterIsRegisteredAfterTheGeneralOneIfHalIsDisabledAsDefaultMediaType() {
 
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(NonHalConfiguration.class);
@@ -195,10 +174,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(converters.get(1).getSupportedMediaTypes(), hasItem(MediaTypes.HAL_JSON));
 	}
 
-	/**
-	 * @see DATAREST-431, DATACMNS-626
-	 */
-	@Test
+	@Test // DATAREST-431, DATACMNS-626
 	public void hasConvertersForPointAndDistance() {
 
 		ConversionService service = context.getBean("defaultConversionService", ConversionService.class);
@@ -209,10 +185,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(service.canConvert(Distance.class, String.class), is(true));
 	}
 
-	/**
-	 * @see DATAREST-686
-	 */
-	@Test
+	@Test // DATAREST-686
 	public void defaultsEncodingForMessageSourceToUtfEight() {
 
 		MessageSourceAccessor accessor = context.getBean("resourceDescriptionMessageSourceAccessor",
