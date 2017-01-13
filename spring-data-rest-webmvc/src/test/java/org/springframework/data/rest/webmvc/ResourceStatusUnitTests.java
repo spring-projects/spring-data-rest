@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,26 +61,17 @@ public class ResourceStatusUnitTests {
 		doReturn(new HttpHeaders()).when(preparer).prepareHeaders(eq(entity), Matchers.any());
 	}
 
-	/**
-	 * @see DATAREST-835
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-835
 	public void rejectsNullPreparer() {
 		ResourceStatus.of(null);
 	}
 
-	/**
-	 * @see DATAREST-835
-	 */
-	@Test
+	@Test // DATAREST-835
 	public void returnsModifiedIfNoHeadersGiven() {
 		assertModified(status.getStatusAndHeaders(new HttpHeaders(), new Sample(0), entity));
 	}
 
-	/**
-	 * @see DATAREST-835
-	 */
-	@Test
+	@Test // DATAREST-835
 	public void returnsNotModifiedForEntityWithRequestedETag() {
 
 		HttpHeaders headers = new HttpHeaders();
@@ -89,10 +80,7 @@ public class ResourceStatusUnitTests {
 		assertNotModified(status.getStatusAndHeaders(headers, new Sample(1), entity));
 	}
 
-	/**
-	 * @see DATAREST-835
-	 */
-	@Test
+	@Test // DATAREST-835
 	public void returnsNotModifiedIfEntityIsStillConsideredValid() {
 
 		doReturn(true).when(preparer).isObjectStillValid(Matchers.any(), Matchers.any(HttpHeaders.class));

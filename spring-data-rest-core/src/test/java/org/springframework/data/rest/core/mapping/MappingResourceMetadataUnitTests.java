@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,10 +45,7 @@ public class MappingResourceMetadataUnitTests {
 			new PersistentEntities(Arrays.asList(context)));
 	MappingResourceMetadata metadata = new MappingResourceMetadata(entity, resourceMappings);
 
-	/**
-	 * @see DATAREST-514
-	 */
-	@Test
+	@Test // DATAREST-514
 	public void allowsLookupOfPropertyByMappedName() {
 
 		KeyValuePersistentProperty property = entity.getPersistentProperty("related");
@@ -60,19 +57,13 @@ public class MappingResourceMetadataUnitTests {
 		assertThat(metadata.getMappingFor(property).getPath().matches("foo"), is(true));
 	}
 
-	/**
-	 * @see DATAREST-518
-	 */
-	@Test
+	@Test // DATAREST-518
 	public void isNotExportedByDefault() {
 
 		assertThat(metadata.isExported(), is(false));
 	}
 
-	/**
-	 * @see DATAREST-518
-	 */
-	@Test
+	@Test // DATAREST-518
 	public void isExportedIfExplicitlyAnnotated() {
 
 		MappingResourceMetadata metadata = new MappingResourceMetadata(context.getPersistentEntity(Related.class),

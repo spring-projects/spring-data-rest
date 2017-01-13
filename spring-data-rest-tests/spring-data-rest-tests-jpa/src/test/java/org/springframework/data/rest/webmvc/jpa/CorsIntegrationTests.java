@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,10 +64,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		}
 	}
 
-	/**
-	 * @see DATAREST-573
-	 */
-	@Test
+	@Test // DATAREST-573
 	public void appliesSelectiveDefaultCorsConfiguration() throws Exception {
 
 		Link findItems = client.discoverUnique("items");
@@ -81,10 +78,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 						header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS,TRACE"));
 	}
 
-	/**
-	 * @see DATAREST-573
-	 */
-	@Test
+	@Test // DATAREST-573
 	public void appliesGlobalCorsConfiguration() throws Exception {
 
 		Link findBooks = client.discoverUnique("books");
@@ -103,10 +97,9 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	/**
-	 * @see DATAREST-573
 	 * @see BooksXmlController
 	 */
-	@Test
+	@Test // DATAREST-573
 	public void appliesCorsConfigurationOnCustomControllers() throws Exception {
 
 		// Preflight request
@@ -128,10 +121,9 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	/**
-	 * @see DATAREST-573
 	 * @see BooksPdfController
 	 */
-	@Test
+	@Test // DATAREST-573
 	public void appliesCorsConfigurationOnCustomControllerMethod() throws Exception {
 
 		// Preflight request
@@ -144,10 +136,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET,PUT,POST")));
 	}
 
-	/**
-	 * @see DATAREST-573
-	 */
-	@Test
+	@Test // DATAREST-573
 	public void appliesCorsConfigurationOnRepository() throws Exception {
 
 		Link authorsLink = client.discoverUnique("authors");
@@ -162,10 +151,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH"));
 	}
 
-	/**
-	 * @see DATAREST-573
-	 */
-	@Test
+	@Test // DATAREST-573
 	public void appliesCorsConfigurationOnRepositoryToCustomControllers() throws Exception {
 
 		// Preflight request

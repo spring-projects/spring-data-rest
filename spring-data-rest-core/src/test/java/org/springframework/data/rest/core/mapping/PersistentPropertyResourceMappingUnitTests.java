@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,10 +43,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 
 	KeyValueMappingContext mappingContext = new KeyValueMappingContext();
 
-	/**
-	 * @see DATAREST-175
-	 */
-	@Test
+	@Test // DATAREST-175
 	public void usesPropertyNameAsDefaultResourceMappingRelAndPath() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "first");
@@ -57,10 +54,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 		assertThat(mapping.isExported(), is(false));
 	}
 
-	/**
-	 * @see DATAREST-175
-	 */
-	@Test
+	@Test // DATAREST-175
 	public void considersMappingAnnotationOnDomainClassProperty() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "second");
@@ -71,10 +65,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 		assertThat(mapping.isExported(), is(false));
 	}
 
-	/**
-	 * @see DATAREST-175
-	 */
-	@Test
+	@Test // DATAREST-175
 	public void considersMappingAnnotationOnDomainClassPropertyMethod() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "third");
@@ -85,10 +76,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 		assertThat(mapping.isExported(), is(false));
 	}
 
-	/**
-	 * @see DATAREST-233
-	 */
-	@Test
+	@Test // DATAREST-233
 	public void returnsDefaultDescriptionKey() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "second");
@@ -99,10 +87,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 		assertThat(description.getMessage(), is("rest.description.entity.second"));
 	}
 
-	/**
-	 * @see DATAREST-233
-	 */
-	@Test
+	@Test // DATAREST-233
 	public void considersAtDescription() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "fourth");

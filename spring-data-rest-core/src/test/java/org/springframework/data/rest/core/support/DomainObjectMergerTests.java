@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,10 +52,7 @@ public class DomainObjectMergerTests {
 		this.merger = new DomainObjectMerger(new Repositories(context.getBeanFactory()), new DefaultConversionService());
 	}
 
-	/**
-	 * @see DATAREST-130
-	 */
-	@Test
+	@Test // DATAREST-130
 	public void mergeNewValue() {
 
 		Person incoming = new Person("Bilbo", "Baggins");
@@ -67,10 +64,7 @@ public class DomainObjectMergerTests {
 		assertThat(existingDomainObject.getLastName(), is(incoming.getLastName()));
 	}
 
-	/**
-	 * @see DATAREST-130
-	 */
-	@Test
+	@Test // DATAREST-130
 	public void mergeNullValue() {
 
 		Person incoming = new Person(null, null);
@@ -82,10 +76,7 @@ public class DomainObjectMergerTests {
 		assertThat(existingDomainObject.getLastName(), is(incoming.getLastName()));
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void doesNotMergeEmptyCollectionsForReferences() {
 
 		Person bilbo = new Person("Bilbo", "Baggins");

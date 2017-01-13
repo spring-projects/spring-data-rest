@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,10 +95,7 @@ public class DomainObjectReaderUnitTests {
 		this.reader = new DomainObjectReader(entities, new Associations(mappings, mock(RepositoryRestConfiguration.class)));
 	}
 
-	/**
-	 * @see DATAREST-461
-	 */
-	@Test
+	@Test // DATAREST-461
 	public void doesNotConsiderIgnoredProperties() throws Exception {
 
 		SampleUser user = new SampleUser("firstname", "password");
@@ -110,10 +107,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.password, is("password"));
 	}
 
-	/**
-	 * @see DATAREST-556
-	 */
-	@Test
+	@Test // DATAREST-556
 	public void considersMappedFieldNamesWhenApplyingNodeToDomainObject() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -127,10 +121,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.lastName, is("Beauford"));
 	}
 
-	/**
-	 * @see DATAREST-605
-	 */
-	@Test
+	@Test // DATAREST-605
 	public void mergesMapCorrectly() throws Exception {
 
 		SampleUser user = new SampleUser("firstname", "password");
@@ -146,10 +137,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.relatedUsers.get("parent").name, is("Oliver"));
 	}
 
-	/**
-	 * @see DATAREST-701
-	 */
-	@Test
+	@Test // DATAREST-701
 	@SuppressWarnings("unchecked")
 	public void mergesNestedMapWithoutTypeInformation() throws Exception {
 
@@ -169,10 +157,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(((Map<Object, Object>) object).get("c"), is((Object) "2"));
 	}
 
-	/**
-	 * @see DATAREST-701
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-701
 	public void rejectsMergingUnknownDomainObject() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -181,10 +166,7 @@ public class DomainObjectReaderUnitTests {
 		reader.readPut(node, "", mapper);
 	}
 
-	/**
-	 * @see DATAREST-705
-	 */
-	@Test
+	@Test // DATAREST-705
 	public void doesNotWipeIdAndVersionPropertyForPut() throws Exception {
 
 		VersionedType type = new VersionedType();
@@ -203,10 +185,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.version, is(1L));
 	}
 
-	/**
-	 * @see DATAREST-873
-	 */
-	@Test
+	@Test // DATAREST-873
 	public void doesNotApplyInputToReadOnlyFields() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -220,10 +199,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(reader.readPut(node, sample, mapper).createdDate, is(reference));
 	}
 
-	/**
-	 * @see DATAREST-931
-	 */
-	@Test
+	@Test // DATAREST-931
 	public void readsPatchForEntityNestedInCollection() throws Exception {
 
 		Phone phone = new Phone();
@@ -240,10 +216,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.phones.get(0).creationDate, is(notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-919
-	 */
-	@Test
+	@Test // DATAREST-919
 	@SuppressWarnings("unchecked")
 	public void readsComplexNestedMapsAndArrays() throws Exception {
 
@@ -281,10 +254,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(sub4.get("c2"), is("new"));
 	}
 
-	/**
-	 * @see DATAREST-938
-	 */
-	@Test
+	@Test // DATAREST-938
 	public void nestedEntitiesAreUpdated() throws Exception {
 
 		Inner inner = new Inner();
@@ -307,10 +277,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.inner, is(sameInstance(inner)));
 	}
 
-	/**
-	 * @see DATAREST-937
-	 */
-	@Test
+	@Test // DATAREST-937
 	public void considersTransientProperties() throws Exception {
 
 		SampleWithTransient sample = new SampleWithTransient();
@@ -325,10 +292,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.temporary, is("new temp"));
 	}
 
-	/**
-	 * @see DATAREST-953
-	 */
-	@Test
+	@Test // DATAREST-953
 	public void writesArrayForPut() throws Exception {
 
 		Child inner = new Child();
@@ -345,10 +309,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.inner.items.get(0).some, is("value"));
 	}
 
-	/**
-	 * @see DATAREST-956
-	 */
-	@Test
+	@Test // DATAREST-956
 	public void writesArrayWithAddedItemForPut() throws Exception {
 
 		Child inner = new Child();
@@ -369,10 +330,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.inner.items.get(2).some, is("value3"));
 	}
 
-	/**
-	 * @see DATAREST-956
-	 */
-	@Test
+	@Test // DATAREST-956
 	public void writesArrayWithRemovedItemForPut() throws Exception {
 
 		Child inner = new Child();
@@ -392,10 +350,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.inner.items.get(0).some, is("value"));
 	}
 
-	/**
-	 * @see DATAREST-959
-	 */
-	@Test
+	@Test // DATAREST-959
 	public void addsElementToPreviouslyEmptyCollection() throws Exception {
 
 		Parent source = new Parent();
@@ -410,10 +365,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.inner.items.get(0).some, is("value"));
 	}
 
-	/**
-	 * @see DATAREST-959
-	 */
-	@Test
+	@Test // DATAREST-959
 	@SuppressWarnings("unchecked")
 	public void turnsObjectIntoCollection() throws Exception {
 
@@ -464,9 +416,7 @@ public class DomainObjectReaderUnitTests {
 		}
 	}
 
-	/**
-	 * @see DATAREST-556
-	 */
+	// DATAREST-556
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Person {
 

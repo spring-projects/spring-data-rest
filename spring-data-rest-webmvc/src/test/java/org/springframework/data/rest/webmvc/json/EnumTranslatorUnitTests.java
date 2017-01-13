@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,42 +47,27 @@ public class EnumTranslatorUnitTests {
 		this.configuration = new EnumTranslator(new MessageSourceAccessor(messageSource));
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-654
 	public void rejectsNullMessageSourceAccessor() {
 		new EnumTranslator(null);
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test
+	@Test // DATAREST-654
 	public void parsesNullForNullSource() {
 		assertThat(configuration.fromText(MyEnum.class, null), is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test
+	@Test // DATAREST-654
 	public void parsesNullForEmptySource() {
 		assertThat(configuration.fromText(MyEnum.class, null), is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test
+	@Test // DATAREST-654
 	public void parsesNullForUnknownValue() {
 		assertThat(configuration.fromText(MyEnum.class, "Foobar"), is(nullValue()));
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test
+	@Test // DATAREST-654
 	public void returnsEnumNameIfDefaultTranslationIsDisabled() {
 
 		configuration.setEnableDefaultTranslation(false);
@@ -90,19 +75,13 @@ public class EnumTranslatorUnitTests {
 		assertThat(configuration.asText(MyEnum.SECOND_VALUE), is(MyEnum.SECOND_VALUE.name()));
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test
+	@Test // DATAREST-654
 	public void returnsDefaultTranslationByDefault() {
 
 		assertThat(configuration.asText(MyEnum.SECOND_VALUE), is("Second value"));
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test
+	@Test // DATAREST-654
 	public void parsesEnumNameIfDefaultTranslationIsDisabled() {
 
 		configuration.setEnableDefaultTranslation(false);
@@ -110,20 +89,14 @@ public class EnumTranslatorUnitTests {
 		assertThat(configuration.fromText(MyEnum.class, "FIRST_VALUE"), is(MyEnum.FIRST_VALUE));
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test
+	@Test // DATAREST-654
 	public void parsesStandardTranslationAndEnumNameByDefault() {
 
 		assertThat(configuration.fromText(MyEnum.class, "FIRST_VALUE"), is(MyEnum.FIRST_VALUE));
 		assertThat(configuration.fromText(MyEnum.class, "Second value"), is(MyEnum.SECOND_VALUE));
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test
+	@Test // DATAREST-654
 	public void translatesEnumName() {
 
 		LocaleContextHolder.setLocale(Locale.US);
@@ -134,10 +107,7 @@ public class EnumTranslatorUnitTests {
 		assertThat(configuration.asText(MyEnum.FIRST_VALUE), is("Translated"));
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test
+	@Test // DATAREST-654
 	public void parsesEnumNameByDefaultEvenIfMessageDefined() {
 
 		// Parses resolved message and enum name
@@ -152,10 +122,7 @@ public class EnumTranslatorUnitTests {
 		assertThat(configuration.fromText(MyEnum.class, "SECOND_VALUE"), is(MyEnum.SECOND_VALUE));
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test
+	@Test // DATAREST-654
 	public void parsesEnumWithDefaultTranslationDisabled() {
 
 		configuration.setEnableDefaultTranslation(false);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,7 @@ public class DelegatingHandlerMappingUnitTests {
 	@Mock HandlerMapping first, second;
 	@Mock HttpServletRequest request;
 
-	/**
-	 * @see DATAREST-490, DATAREST-522
-	 */
-	@Test
+	@Test // DATAREST-490, DATAREST-522
 	public void consultsAllHandlerMappingsAndThrowsExceptionEventually() throws Exception {
 
 		DelegatingHandlerMapping mapping = new DelegatingHandlerMapping(Arrays.asList(first, second));

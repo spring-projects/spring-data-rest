@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,10 +77,7 @@ public class DataRest262Tests {
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 	}
 
-	/**
-	 * @see DATAREST-262
-	 */
-	@Test
+	@Test // DATAREST-262
 	public void deserializesNestedAssociation() throws Exception {
 
 		Airport airport = repository.save(new Airport());
@@ -90,10 +87,7 @@ public class DataRest262Tests {
 		assertThat(result.orgOrDstFlightPart.airport.id, is(airport.id));
 	}
 
-	/**
-	 * @see DATAREST-262
-	 */
-	@Test
+	@Test // DATAREST-262
 	@Ignore
 	public void serializesLinksToNestedAssociations() throws Exception {
 

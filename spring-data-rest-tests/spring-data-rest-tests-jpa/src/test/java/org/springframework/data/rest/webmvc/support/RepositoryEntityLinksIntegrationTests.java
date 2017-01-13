@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,10 +64,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(link.getRel(), is("people"));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void returnsLinkWithProjectionTemplateVariableIfProjectionIsDefined() {
 
 		Link link = entityLinks.linkToSingleResource(Order.class, 1);
@@ -76,20 +73,14 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(link.getVariableNames(), hasItem(configuration.getProjectionConfiguration().getParameterName()));
 	}
 
-	/**
-	 * @see DATAREST-155
-	 */
-	@Test
+	@Test // DATAREST-155
 	public void usesCustomGeneratedBackendId() {
 
 		Link link = entityLinks.linkToSingleResource(Book.class, 7L);
 		assertThat(link.expand().getHref(), endsWith("/7-7-7-7-7-7-7"));
 	}
 
-	/**
-	 * @see DATAREST-317
-	 */
-	@Test
+	@Test // DATAREST-317
 	public void adaptsToExistingPageable() {
 
 		Link link = entityLinks.linkToPagedResource(Person.class, new PageRequest(0, 10));
@@ -99,10 +90,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(link.getVariableNames(), hasItems("sort", "projection"));
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void returnsLinksToSearchResources() {
 
 		Links links = entityLinks.linksToSearchResources(Person.class);
@@ -114,10 +102,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(firstnameLink.getVariableNames(), hasItems("page", "size"));
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void returnsLinkToSearchResource() {
 
 		Link link = entityLinks.linkToSearchResource(Person.class, "firstname");
@@ -127,11 +112,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(link.getVariableNames(), hasItems("firstname", "page", "size"));
 	}
 
-	/**
-	 * @see DATAREST-467
-	 * @see DATAREST-519
-	 */
-	@Test
+	@Test // DATAREST-467, DATAREST-519
 	public void prepopulatesPaginationInformationForSearchResourceLink() {
 
 		Link link = entityLinks.linkToSearchResource(Person.class, "firstname", new PageRequest(0, 10));
@@ -145,10 +126,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(components.getQueryParams(), allOf(hasKey("page"), hasKey("size")));
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void returnsTemplatedLinkForSortedSearchResource() {
 
 		Link link = entityLinks.linkToSearchResource(Person.class, "lastname");
@@ -157,11 +135,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(link.getVariableNames(), hasItems("lastname", "sort"));
 	}
 
-	/**
-	 * @see DATAREST-467
-	 * @see DATAREST-519
-	 */
-	@Test
+	@Test // DATAREST-467, DATAREST-519
 	public void prepopulatesSortInformationForSearchResourceLink() {
 
 		Link link = entityLinks.linkToSearchResource(Person.class, "lastname", new Sort("firstname"));
@@ -175,12 +149,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(components.getQueryParams(), hasKey("sort"));
 	}
 
-	/**
-	 * @see DATAREST-668
-	 * @see DATAREST-519
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-668, DATAREST-519, DATAREST-467
 	public void addsProjectVariableToSearchResourceIfAvailable() {
 
 		for (Link link : entityLinks.linksToSearchResources(Book.class)) {

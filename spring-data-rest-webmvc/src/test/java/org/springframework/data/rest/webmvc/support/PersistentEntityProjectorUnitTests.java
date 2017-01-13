@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,10 +56,7 @@ public class PersistentEntityProjectorUnitTests {
 		doReturn(Excerpt.class).when(metadata).getExcerptProjection();
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void returnsObjectAsIsIfNoProjectionTypeFound() {
 
 		Object object = new Object();
@@ -67,10 +64,7 @@ public class PersistentEntityProjectorUnitTests {
 		assertThat(projector.project(object), is(object));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void invokesProjectionFactoryIfProjectionFound() {
 
 		configuration.addProjection(Sample.class, Object.class);
@@ -78,10 +72,7 @@ public class PersistentEntityProjectorUnitTests {
 		assertThat(projector.project(new Object()), is(instanceOf(Sample.class)));
 	}
 
-	/**
-	 * @see DATAREST-806
-	 */
-	@Test
+	@Test // DATAREST-806
 	public void favorsExplicitProjectionOverExcerpt() {
 
 		configuration.addProjection(Sample.class, Object.class);
@@ -89,18 +80,12 @@ public class PersistentEntityProjectorUnitTests {
 		assertThat(projector.projectExcerpt(new Object()), is(instanceOf(Sample.class)));
 	}
 
-	/**
-	 * @see DATAREST-806
-	 */
-	@Test
+	@Test // DATAREST-806
 	public void excerptProjectionIsUsedForExcerpt() {
 		assertThat(projector.projectExcerpt(new Object()), is(instanceOf(Excerpt.class)));
 	}
 
-	/**
-	 * @see DATAREST-806
-	 */
-	@Test
+	@Test // DATAREST-806
 	public void usesExcerptProjectionIfNoExplicitProjectionWasRequested() {
 
 		configuration.addProjection(Sample.class, Object.class);

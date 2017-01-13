@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,10 +76,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 		assertThat(mapping.isExported(), is(false));
 	}
 
-	/**
-	 * @see DATAREST-229
-	 */
-	@Test
+	@Test // DATAREST-229
 	public void detectsPagingRepository() {
 		assertThat(getResourceMappingFor(PersonRepository.class).isPagingResource(), is(true));
 	}
@@ -92,10 +89,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 		assertThat(mapping.getItemResourceRel(), is("bar"));
 	}
 
-	/**
-	 * @see DATAREST-445
-	 */
-	@Test
+	@Test // DATAREST-445
 	public void usesDomainTypeFromRepositoryMetadata() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PersonRepository.class) {

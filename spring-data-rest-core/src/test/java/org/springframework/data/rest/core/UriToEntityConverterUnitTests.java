@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,10 +70,7 @@ public class UriToEntityConverterUnitTests {
 				repositories);
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void supportsOnlyEntitiesWithIdProperty() {
 
 		Set<ConvertiblePair> result = converter.getConvertibleTypes();
@@ -82,18 +79,12 @@ public class UriToEntityConverterUnitTests {
 		assertThat(result, not(hasItem(new ConvertiblePair(URI.class, NonEntity.class))));
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void cannotConvertEntityWithIdPropertyIfStringConversionMissing() {
 		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE), is(false));
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void canConvertEntityWithIdPropertyAndFromStringConversionPossible() {
 
 		doReturn(mock(RepositoryInformation.class)).when(repositories).getRepositoryInformationFor(ENTITY_TYPE.getType());
@@ -101,18 +92,12 @@ public class UriToEntityConverterUnitTests {
 		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE), is(true));
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void cannotConvertEntityWithoutIdentifier() {
 		assertThat(converter.matches(URI_TYPE, TypeDescriptor.valueOf(NonEntity.class)), is(false));
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void invokesConverterWithLastUriPathSegment() {
 
 		Entity reference = new Entity();
@@ -124,42 +109,27 @@ public class UriToEntityConverterUnitTests {
 		assertThat(converter.convert(URI.create("/foo/bar/1"), URI_TYPE, ENTITY_TYPE), is((Object) reference));
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test(expected = ConversionFailedException.class)
+	@Test(expected = ConversionFailedException.class) // DATAREST-427
 	public void rejectsUnknownType() {
 		converter.convert(URI.create("/foo/1"), URI_TYPE, STRING_TYPE);
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test(expected = ConversionFailedException.class)
+	@Test(expected = ConversionFailedException.class) // DATAREST-427
 	public void rejectsUriWithLessThanTwoSegments() {
 		converter.convert(URI.create("1"), URI_TYPE, ENTITY_TYPE);
 	}
 
-	/**
-	 * @see DATAREST-741
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-741
 	public void rejectsNullPersistentEntities() {
 		new UriToEntityConverter(null, invokerFactory, repositories);
 	}
 
-	/**
-	 * @see DATAREST-741
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-741
 	public void rejectsNullRepositoryInvokerFactory() {
 		new UriToEntityConverter(mock(PersistentEntities.class), null, repositories);
 	}
 
-	/**
-	 * @see DATAREST-741
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-741
 	public void rejectsNullRepositories() {
 		new UriToEntityConverter(mock(PersistentEntities.class), invokerFactory, null);
 	}

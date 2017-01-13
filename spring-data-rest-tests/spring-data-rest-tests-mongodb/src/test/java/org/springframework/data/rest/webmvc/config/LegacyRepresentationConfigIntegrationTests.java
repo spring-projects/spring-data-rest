@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,7 @@ public class LegacyRepresentationConfigIntegrationTests extends AbstractReposito
 		}
 	}
 
-	/**
-	 * @see DATAREST-213, DATAREST-617
-	 */
-	@Test
+	@Test // DATAREST-213, DATAREST-617
 	public void returnsJsonIfConfiguredAndRequested() throws Exception {
 
 		for (String resource : Arrays.asList("/", "/users")) {
@@ -61,10 +58,7 @@ public class LegacyRepresentationConfigIntegrationTests extends AbstractReposito
 		}
 	}
 
-	/**
-	 * @see DATAREST-213, DATAREST-617
-	 */
-	@Test
+	@Test // DATAREST-213, DATAREST-617
 	public void returnsJsonIfConfigured() throws Exception {
 
 		for (String resource : Arrays.asList("/", "/users")) {

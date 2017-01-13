@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,10 +126,7 @@ public class MongoWebTests extends CommonWebTests {
 				andExpect(jsonPath("$.address.zipCode").value(is(notNullValue())));
 	}
 
-	/**
-	 * @see DATAREST-247
-	 */
-	@Test
+	@Test // DATAREST-247
 	public void executeQueryMethodWithPrimitiveReturnType() throws Exception {
 
 		Link profiles = client.discoverUnique("profiles");
@@ -172,10 +169,7 @@ public class MongoWebTests extends CommonWebTests {
 		assertThat(JsonPath.read(response.getContentAsString(), "$.address.zipCode"), is((Object) "ZIP"));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
 
 		Link receiptLink = client.discoverUnique("receipts");
@@ -202,10 +196,7 @@ public class MongoWebTests extends CommonWebTests {
 				.andExpect(status().isPreconditionFailed());
 	}
 
-	/**
-	 * @see DATAREST-471
-	 */
-	@Test
+	@Test // DATAREST-471
 	public void auditableResourceHasLastModifiedHeaderSet() throws Exception {
 
 		Profile profile = repository.findAll().iterator().next();
@@ -216,10 +207,7 @@ public class MongoWebTests extends CommonWebTests {
 		assertThat(header, not(isEmptyOrNullString()));
 	}
 
-	/**
-	 * @see DATAREST-482
-	 */
-	@Test
+	@Test // DATAREST-482
 	public void putDoesNotRemoveAssociations() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
@@ -242,10 +230,7 @@ public class MongoWebTests extends CommonWebTests {
 				andExpect(jsonPath("$.embedded.users[0].address").doesNotExist());
 	}
 
-	/**
-	 * @see DATAREST-482
-	 */
-	@Test
+	@Test // DATAREST-482
 	public void emptiesAssociationForEmptyUriList() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
@@ -259,10 +244,7 @@ public class MongoWebTests extends CommonWebTests {
 				andExpect(jsonPath("$").exists());
 	}
 
-	/**
-	 * @see DATAREST-491
-	 */
-	@Test
+	@Test // DATAREST-491
 	public void updatesMapPropertyCorrectly() throws Exception {
 
 		Link profilesLink = client.discoverUnique("profiles");
@@ -276,10 +258,7 @@ public class MongoWebTests extends CommonWebTests {
 		client.follow(profileLink).andExpect(jsonPath("$.metadata.Key").value("Value"));
 	}
 
-	/**
-	 * @see DATAREST-506
-	 */
-	@Test
+	@Test // DATAREST-506
 	public void supportsConditionalGetsOnItemResource() throws Exception {
 
 		Receipt receipt = new Receipt();
@@ -302,10 +281,7 @@ public class MongoWebTests extends CommonWebTests {
 				andExpect(header().string(ETAG, is(notNullValue())));
 	}
 
-	/**
-	 * @see DATAREST-511
-	 */
-	@Test
+	@Test // DATAREST-511
 	public void invokesQueryResourceReturningAnOptional() throws Exception {
 
 		Profile profile = repository.findAll().iterator().next();
@@ -316,10 +292,7 @@ public class MongoWebTests extends CommonWebTests {
 				andExpect(status().isOk());
 	}
 
-	/**
-	 * @see DATAREST-517
-	 */
-	@Test
+	@Test // DATAREST-517
 	public void returnsNotFoundIfQueryExecutionDoesNotReturnResult() throws Exception {
 
 		Link link = client.discoverUnique("profiles", "search", "findById");
@@ -328,10 +301,7 @@ public class MongoWebTests extends CommonWebTests {
 				andExpect(status().isNotFound());
 	}
 
-	/**
-	 * @see DATAREST-712
-	 */
-	@Test
+	@Test // DATAREST-712
 	public void invokesQueryMethodTakingAReferenceCorrectly() throws Exception {
 
 		Link link = client.discoverUnique("users", "search", "findByColleaguesContains");
@@ -344,10 +314,7 @@ public class MongoWebTests extends CommonWebTests {
 		mvc.perform(get(href)).andExpect(status().isOk());
 	}
 
-	/**
-	 * @see DATAREST-835
-	 */
-	@Test
+	@Test // DATAREST-835
 	public void exposesETagHeaderForSearchResourceYieldingItemResource() throws Exception {
 
 		Link link = client.discoverUnique("profiles", "search", "findById");
@@ -359,10 +326,7 @@ public class MongoWebTests extends CommonWebTests {
 				.andExpect(header().string("Last-Modified", is(notNullValue())));
 	}
 
-	/**
-	 * @see DATAREST-835
-	 */
-	@Test
+	@Test // DATAREST-835
 	public void doesNotAddETagHeaderForCollectionQueryResource() throws Exception {
 
 		Link link = client.discoverUnique("profiles", "search", "findByType");

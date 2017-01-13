@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -584,9 +584,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * The {@link HandlerMapping} to delegate requests to Spring Data REST controllers. Sets up a
 	 * {@link DelegatingHandlerMapping} to make sure manually implemented {@link BasePathAwareController} instances that
 	 * register custom handlers for certain media types don't cause the {@link RepositoryRestHandlerMapping} to be
-	 * omitted.
-	 * 
-	 * @see DATAREST-490
+	 * omitted. See DATAREST-490.
+	 *
 	 * @return
 	 */
 	@Bean

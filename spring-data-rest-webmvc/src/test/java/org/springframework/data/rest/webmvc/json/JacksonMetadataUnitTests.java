@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,10 +57,7 @@ public class JacksonMetadataUnitTests {
 		this.mapper.disable(MapperFeature.INFER_PROPERTY_MUTATORS);
 	}
 
-	/**
-	 * @see DATAREST-644
-	 */
-	@Test
+	@Test // DATAREST-644
 	public void detectsReadOnlyProperty() {
 
 		JacksonMetadata metadata = new JacksonMetadata(mapper, User.class);
@@ -72,10 +69,7 @@ public class JacksonMetadataUnitTests {
 		assertThat(metadata.isReadOnly(property), is(true));
 	}
 
-	/**
-	 * @see DATAREST-644
-	 */
-	@Test
+	@Test // DATAREST-644
 	public void reportsConstructorArgumentAsJacksonWritable() {
 
 		JacksonMetadata metadata = new JacksonMetadata(mapper, Value.class);
@@ -86,10 +80,7 @@ public class JacksonMetadataUnitTests {
 		assertThat(metadata.isReadOnly(property), is(false));
 	}
 
-	/**
-	 * @see DATAREST-644
-	 */
-	@Test
+	@Test // DATAREST-644
 	public void detectsCustomSerializerFortType() {
 
 		JsonSerializer<?> serializer = new JacksonMetadata(new ObjectMapper(), SomeBean.class)

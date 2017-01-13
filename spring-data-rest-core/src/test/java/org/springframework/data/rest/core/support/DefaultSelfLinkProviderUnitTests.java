@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,34 +81,22 @@ public class DefaultSelfLinkProviderUnitTests {
 		this.provider = new DefaultSelfLinkProvider(entities, entityLinks, lookups);
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-724
 	public void rejectsNullEntities() {
 		new DefaultSelfLinkProvider(null, entityLinks, lookups);
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-724
 	public void rejectsNullEntityLinks() {
 		new DefaultSelfLinkProvider(entities, null, lookups);
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-724
 	public void rejectsNullEntityLookups() {
 		new DefaultSelfLinkProvider(entities, entityLinks, null);
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test
+	@Test // DATAREST-724
 	public void usesEntityIdIfNoLookupDefined() {
 
 		Profile profile = new Profile("Name", "Type");
@@ -117,10 +105,7 @@ public class DefaultSelfLinkProviderUnitTests {
 		assertThat(link.getHref(), Matchers.endsWith(profile.getId().toString()));
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test
+	@Test // DATAREST-724
 	@SuppressWarnings("unchecked")
 	public void usesEntityLookupIfDefined() {
 
@@ -135,10 +120,7 @@ public class DefaultSelfLinkProviderUnitTests {
 		assertThat(link.getHref(), Matchers.endsWith("foo"));
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test
+	@Test // DATAREST-724
 	public void rejectsLinkCreationForUnknownEntity() {
 
 		exception.expect(IllegalArgumentException.class);

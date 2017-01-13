@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,10 +90,7 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 		super.setUp();
 	}
 
-	/**
-	 * @see DATAREST-906
-	 */
-	@Test
+	@Test // DATAREST-906
 	public void executesSearchThatTakesAMappedSortProperty() throws Exception {
 
 		Link findBySortedLink = client.discoverUnique("books", "search", "find-spring-books-sorted");
@@ -112,10 +109,7 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 				andExpect(jsonPath("$._embedded.books[1].title").doesNotExist());
 	}
 
-	/**
-	 * @see DATAREST-906
-	 */
-	@Test
+	@Test // DATAREST-906
 	public void shouldApplyDefaultPageable() throws Exception {
 
 		mvc.perform(get("/books/default-pageable"))//
@@ -123,10 +117,7 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 				.andExpect(jsonPath("$.size").value(1));
 	}
 
-	/**
-	 * @see DATAREST-906
-	 */
-	@Test
+	@Test // DATAREST-906
 	public void shouldOverrideDefaultPageable() throws Exception {
 
 		mvc.perform(get("/books/default-pageable?size=10"))//

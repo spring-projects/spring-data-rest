@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,10 +81,7 @@ public class HalBrowserIntegrationTests {
 				defaultRequest(get(BASE_PATH).accept(MediaType.TEXT_HTML)).build();
 	}
 
-	/**
-	 * @see DATAREST-293
-	 */
-	@Test
+	@Test // DATAREST-293
 	public void exposesJsonUnderApiRootByDefault() throws Exception {
 
 		mvc.perform(get(BASE_PATH).accept(MediaType.ALL)).//
@@ -92,10 +89,7 @@ public class HalBrowserIntegrationTests {
 				andExpect(header().string(HttpHeaders.CONTENT_TYPE, startsWith(MediaTypes.HAL_JSON.toString())));
 	}
 
-	/**
-	 * @see DATAREST-293
-	 */
-	@Test
+	@Test // DATAREST-293
 	public void redirectsToBrowserForApiRootAndHtml() throws Exception {
 
 		mvc.perform(get(BASE_PATH).accept(MediaType.TEXT_HTML)).//
@@ -103,10 +97,7 @@ public class HalBrowserIntegrationTests {
 				andExpect(header().string(HttpHeaders.LOCATION, endsWith(TARGET)));
 	}
 
-	/**
-	 * @see DATAREST-293
-	 */
-	@Test
+	@Test // DATAREST-293
 	public void forwardsBrowserToIndexHtml() throws Exception {
 
 		mvc.perform(get(BASE_PATH.concat("/browser"))).//
@@ -114,10 +105,7 @@ public class HalBrowserIntegrationTests {
 				andExpect(header().string(HttpHeaders.LOCATION, endsWith(TARGET)));
 	}
 
-	/**
-	 * @see DATAREST-293
-	 */
-	@Test
+	@Test // DATAREST-293
 	public void exposesHalBrowser() throws Exception {
 
 		mvc.perform(get(BASE_PATH.concat("/browser/index.html"))).//
@@ -125,10 +113,7 @@ public class HalBrowserIntegrationTests {
 				andExpect(content().string(containsString("The HAL Browser")));
 	}
 
-	/**
-	 * @see DATAREST-293
-	 */
-	@Test
+	@Test // DATAREST-293
 	public void retrunsApiIfHtmlIsNotExplicitlyListed() throws Exception {
 
 		mvc.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON, MediaType.ALL)).//
