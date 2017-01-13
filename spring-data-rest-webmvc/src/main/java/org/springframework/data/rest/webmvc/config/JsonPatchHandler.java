@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * 
  * @author Oliver Gierke
  * @author Mathias Düsterhöft
- * @see http://tools.ietf.org/html/rfc6902
- * @see http://tools.ietf.org/html/draft-ietf-appsawg-json-merge-patch-02
+ * @see <a href="http://tools.ietf.org/html/rfc6902">http://tools.ietf.org/html/rfc6902</a>
+ * @see <a href=
+ *      "http://tools.ietf.org/html/draft-ietf-appsawg-json-merge-patch-02">http://tools.ietf.org/html/draft-ietf-appsawg-json-merge-patch-02</a>
  */
 class JsonPatchHandler {
 
