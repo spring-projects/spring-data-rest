@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -46,7 +47,6 @@ import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.format.datetime.DateFormatter;
 import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.hateoas.MediaTypes;
@@ -127,7 +127,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		ObjectMapper mapper = context.getBean("objectMapper", ObjectMapper.class);
 
 		DateFormatter formatter = new DateFormatter();
-		formatter.setIso(ISO.DATE_TIME);
+		formatter.setPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
 		Object result = JsonPath.read(mapper.writeValueAsString(sample), "$.date");
 		assertThat(result, is(instanceOf(String.class)));
