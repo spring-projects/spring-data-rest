@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleAfterDelete;
+import org.springframework.data.rest.core.annotation.HandleAfterFindOne;
 import org.springframework.data.rest.core.annotation.HandleAfterLinkDelete;
 import org.springframework.data.rest.core.annotation.HandleAfterLinkSave;
 import org.springframework.data.rest.core.annotation.HandleAfterSave;
@@ -49,6 +50,7 @@ import org.springframework.util.ReflectionUtils;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Pavel Varchenko
  */
 public class AnnotatedEventHandlerInvoker implements ApplicationListener<RepositoryEvent>, BeanPostProcessor {
 
@@ -135,6 +137,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 				inspect(bean, method, HandleAfterDelete.class, AfterDeleteEvent.class);
 				inspect(bean, method, HandleBeforeLinkDelete.class, BeforeLinkDeleteEvent.class);
 				inspect(bean, method, HandleAfterLinkDelete.class, AfterLinkDeleteEvent.class);
+				inspect(bean, method, HandleAfterFindOne.class, AfterFindOneEvent.class);
 			}
 		}, Methods.USER_METHODS);
 

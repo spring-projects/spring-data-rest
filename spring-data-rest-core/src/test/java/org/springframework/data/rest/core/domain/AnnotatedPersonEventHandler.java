@@ -15,23 +15,14 @@
  */
 package org.springframework.data.rest.core.domain;
 
-import org.springframework.data.rest.core.annotation.HandleAfterCreate;
-import org.springframework.data.rest.core.annotation.HandleAfterDelete;
-import org.springframework.data.rest.core.annotation.HandleAfterLinkDelete;
-import org.springframework.data.rest.core.annotation.HandleAfterLinkSave;
-import org.springframework.data.rest.core.annotation.HandleAfterSave;
-import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
-import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
-import org.springframework.data.rest.core.annotation.HandleBeforeLinkDelete;
-import org.springframework.data.rest.core.annotation.HandleBeforeLinkSave;
-import org.springframework.data.rest.core.annotation.HandleBeforeSave;
-import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
+import org.springframework.data.rest.core.annotation.*;
 
 /**
  * Sample annotation-based event handler.
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Pavel Varchenko
  */
 @RepositoryEventHandler
 public class AnnotatedPersonEventHandler {
@@ -39,6 +30,7 @@ public class AnnotatedPersonEventHandler {
 	@HandleAfterCreate
 	@HandleAfterDelete
 	@HandleAfterSave
+	@HandleAfterFindOne
 	public void handleAfter(Person p) {
 		throw new EventHandlerInvokedException();
 	}
