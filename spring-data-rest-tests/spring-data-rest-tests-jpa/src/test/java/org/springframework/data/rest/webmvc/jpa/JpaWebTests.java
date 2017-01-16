@@ -494,12 +494,12 @@ public class JpaWebTests extends CommonWebTests {
 		assertThat(findBySortedLink.getVariableNames(), hasItems("sort", "projection"));
 
 		// Assert results returned as specified
-		client.follow(findBySortedLink.expand("offer.price,desc")).//
+		client.follow(findBySortedLink.expand("title,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
 				andExpect(client.hasLinkWithRel("self"));
 
-		client.follow(findBySortedLink.expand("offer.price,asc")).//
+		client.follow(findBySortedLink.expand("title,asc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
 				andExpect(client.hasLinkWithRel("self"));
@@ -625,6 +625,29 @@ public class JpaWebTests extends CommonWebTests {
 
 		mvc.perform(post("/orders/search/sort")).andExpect(status().isOk());
 		mvc.perform(post("/orders/search/sort?sort=type&page=1&size=10")).andExpect(status().isOk());
+	}
+
+	@Test // DATAREST-976
+	public void appliesSortByEmbeddedAssociation() throws Exception {
+
+		Link booksLink = client.discoverUnique("books");
+		Link searchLink = client.discoverUnique(booksLink, "search");
+		Link findBySortedLink = client.discoverUnique(searchLink, "find-by-sorted");
+
+		// Assert sort options advertised
+		assertThat(findBySortedLink.isTemplated(), is(true));
+		assertThat(findBySortedLink.getVariableNames(), hasItems("sort", "projection"));
+
+		// Assert results returned as specified
+		client.follow(findBySortedLink.expand("offer.price,desc")).//
+				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
+				andExpect(client.hasLinkWithRel("self"));
+
+		client.follow(findBySortedLink.expand("offer.price,asc")).//
+				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
+				andExpect(client.hasLinkWithRel("self"));
 	}
 
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
