@@ -15,8 +15,14 @@
  */
 package org.springframework.data.rest.core.event;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
@@ -71,6 +77,26 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 		assertThat(sampleHandler.wasCalled, is(true));
 	}
 
+	/**
+	 * @see DATAREST-983
+	 */
+	@Test
+	public void invokesEventHandlerOnParentClass() {
+
+		ListEventHandler listHandler = new ListEventHandler();
+		SetEventHandler setHandler = new SetEventHandler();
+
+		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
+		invoker.postProcessAfterInitialization(listHandler, "listHandler");
+		invoker.postProcessAfterInitialization(setHandler, "setHandler");
+
+		invoker.onApplicationEvent(new BeforeCreateEvent(Collections.emptyList()));
+		invoker.onApplicationEvent(new BeforeCreateEvent(Collections.emptySet()));
+
+		assertThat(listHandler.callCount, is(1));
+		assertThat(setHandler.callCount, is(1));
+	}
+
 	@RepositoryEventHandler
 	static class Sample {
 
@@ -88,4 +114,17 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 			wasCalled = true;
 		}
 	}
+
+	static abstract class AbstractCollectionEventHandler<T extends Collection<?>>{
+		int callCount = 0;
+		@HandleBeforeCreate
+		private void method(T collection){
+			callCount += 1;
+		}
+	}
+	@RepositoryEventHandler
+	static class ListEventHandler extends AbstractCollectionEventHandler<List<?>>{}
+	@RepositoryEventHandler
+	static class SetEventHandler extends AbstractCollectionEventHandler<Set<?>>{}
+
 }

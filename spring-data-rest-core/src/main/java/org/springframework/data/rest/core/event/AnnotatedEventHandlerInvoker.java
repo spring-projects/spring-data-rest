@@ -26,6 +26,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.GenericTypeResolver;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleAfterDelete;
@@ -46,9 +48,10 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Component to discover annotated repository event handlers and trigger them on {@link ApplicationEvent}s.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Joe Valerio
  */
 public class AnnotatedEventHandlerInvoker implements ApplicationListener<RepositoryEvent>, BeanPostProcessor {
 
@@ -144,7 +147,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 	/**
 	 * Inspects the given handler method for an annotation of the given type. If the annotation present an
 	 * {@link EventHandlerMethod} is registered for the given {@link RepositoryEvent} type.
-	 * 
+	 *
 	 * @param handler must not be {@literal null}.
 	 * @param method must not be {@literal null}.
 	 * @param annotationType must not be {@literal null}.
@@ -165,7 +168,8 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 			throw new IllegalStateException(String.format(PARAMETER_MISSING, method));
 		}
 
-		EventHandlerMethod handlerMethod = new EventHandlerMethod(parameterTypes[0], handler, method);
+		Class<?> paramType = GenericTypeResolver.resolveParameterType(new MethodParameter(method, 0), handler.getClass());
+		EventHandlerMethod handlerMethod = new EventHandlerMethod(paramType, handler, method);
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Annotated handler method found: {}", handlerMethod);
