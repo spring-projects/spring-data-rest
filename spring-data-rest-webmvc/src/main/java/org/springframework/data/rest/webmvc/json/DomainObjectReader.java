@@ -32,7 +32,6 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.webmvc.mapping.Associations;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
@@ -245,10 +244,7 @@ public class DomainObjectReader {
 			return false;
 		}
 
-		Iterator<Object> iterator = collection.iterator();
-		TypeInformation<?> componentType = iterator.hasNext() ? //
-				ClassTypeInformation.from(iterator.next().getClass()) : //
-				collectionType.getComponentType();
+		TypeInformation<?> componentType = collectionType.getComponentType();
 
 		return handleArrayNode((ArrayNode) node, collection, mapper, componentType);
 	}
@@ -347,10 +343,9 @@ public class DomainObjectReader {
 	}
 
 	/**
-	 * Returns the given source instance as {@link Collection} or creates a new one for the given type.
+	 * Returns the given source instance as {@link Collection} or creates a new one.
 	 * 
 	 * @param source can be {@literal null}.
-	 * @param type must not be {@literal null} in case {@code source} is null.
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")

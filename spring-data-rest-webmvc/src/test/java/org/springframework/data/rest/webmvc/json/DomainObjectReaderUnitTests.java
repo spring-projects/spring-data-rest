@@ -88,6 +88,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Inner.class);
 		mappingContext.getPersistentEntity(Outer.class);
 		mappingContext.getPersistentEntity(Parent.class);
+		mappingContext.getPersistentEntity(EnumHolder.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -214,6 +215,21 @@ public class DomainObjectReaderUnitTests {
 		User result = reader.read(source, user, new ObjectMapper());
 
 		assertThat(result.phones.get(0).creationDate, is(notNullValue()));
+	}
+
+
+	@Test //DATAREST-977
+	public void readsPatchForComplexEnumNestedInCollection() throws Exception {
+
+		EnumHolder enumHolder = new EnumHolder();
+		enumHolder.taxClasses.add(TaxClass.EXEMPT);
+
+		ByteArrayInputStream source = new ByteArrayInputStream(
+				"{ \"taxClasses\" : [ \"EXEMPT\", \"REDUCED\" ] }".getBytes(Charsets.UTF_8));
+
+		EnumHolder result = reader.read(source, enumHolder, new ObjectMapper());
+
+		assertThat(result.taxClasses, hasItems(TaxClass.REDUCED, TaxClass.EXEMPT));
 	}
 
 	@Test // DATAREST-919
@@ -460,6 +476,24 @@ public class DomainObjectReaderUnitTests {
 
 		public Calendar creationDate;
 		public String label;
+	}
+
+	public enum TaxClass {
+		REDUCED,
+		EXEMPT {
+			@Override
+			public boolean hasTax() {
+				return false;
+			}
+		};
+
+		public boolean hasTax() {
+			return true;
+		}
+	}
+
+	static class EnumHolder {
+	   public List<TaxClass> taxClasses = new ArrayList<TaxClass>();
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
