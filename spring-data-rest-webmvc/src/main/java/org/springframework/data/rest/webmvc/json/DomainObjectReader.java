@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -277,11 +277,11 @@ public class DomainObjectReader {
 		// We need an iterator for the original collection.
 		// We might modify it but we want to keep iterating over the original collection.
 		Iterator<Object> values = new ArrayList<Object>(collection).iterator();
-		
-		// Since we are generically assuming a collection, we need to clear it and 
+
+		// Since we are generically assuming a collection, we need to clear it and
 		// rebuild it from the original as we go.
 		collection.clear();
-		
+
 		boolean nestedObjectFound = false;
 
 		for (JsonNode jsonNode : array) {
@@ -295,29 +295,29 @@ public class DomainObjectReader {
 			Object next = values.next();
 
 			if (ArrayNode.class.isInstance(jsonNode)) {
-			    collection.add(next);
+				collection.add(next);
 				return handleArray(jsonNode, next, mapper, componentType);
 			}
 
 			if (ObjectNode.class.isInstance(jsonNode)) {
-                collection.add(next);
+				collection.add(next);
 				nestedObjectFound = true;
 				doMerge((ObjectNode) jsonNode, next, mapper);
 			}
 
 			// You Need to replace the value at the array index
 			// or else you never have the ability to remove an object from the array.
-			if(ValueNode.class.isInstance(jsonNode)) {
-                Class<?> type = componentType == null ? Object.class : componentType.getType();
-                Object newValue = mapper.treeToValue(jsonNode, type);
-                collection.add(newValue);
+			if (ValueNode.class.isInstance(jsonNode)) {
+				Class<?> type = componentType == null ? Object.class : componentType.getType();
+				Object newValue = mapper.treeToValue(jsonNode, type);
+				collection.add(newValue);
 			}
 
 		}
 
 		// there are more items in the collection than contained in the JSON node - remove it.
 		while (values.hasNext()) {
-		    values.next();
+			values.next();
 			values.remove();
 		}
 
@@ -392,7 +392,6 @@ public class DomainObjectReader {
 	 * Simple value object to capture a mapping of Jackson mapped field names and {@link PersistentProperty} instances.
 	 *
 	 * @param source can be {@literal null}.
-	 *
 	 * @author Oliver Gierke
 	 */
 	static class MappedProperties {
