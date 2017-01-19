@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,11 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,6 +29,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.rest.webmvc.config.DomainObjectReaderConfiguration;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -42,16 +40,20 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.BasicClassIntrospector;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Component to apply an {@link ObjectNode} to an existing domain object. This is effectively a best-effort workaround
  * for Jackson's inability to apply a (partial) JSON document to an existing object in a deeply nested way. We manually
  * detect nested objects, lookup the original value and apply the merge recursively.
- * 
+ *
  * @author Oliver Gierke
  * @author Craig Andrews
  * @author Mathias Düsterhöft
@@ -62,10 +64,11 @@ public class DomainObjectReader {
 
 	private final @NonNull PersistentEntities entities;
 	private final @NonNull Associations associationLinks;
+	private final @NonNull DomainObjectReaderConfiguration config;
 
 	/**
 	 * Reads the given input stream into an {@link ObjectNode} and applies that to the given existing instance.
-	 * 
+	 *
 	 * @param request must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
@@ -86,7 +89,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Reads the given source node onto the given target object and applies PUT semantics, i.e. explicitly
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param mapper
@@ -144,7 +147,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Merges the given {@link ObjectNode} onto the given object.
-	 * 
+	 *
 	 * @param root must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
@@ -232,7 +235,7 @@ public class DomainObjectReader {
 	 * Handles the given {@link JsonNode} by treating it as {@link ArrayNode} and the given source value as
 	 * {@link Collection}-like value. Looks up the actual type to handle from the potentially available first element,
 	 * falling back to component type lookup on the given type.
-	 * 
+	 *
 	 * @param node must not be {@literal null}.
 	 * @param source must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
@@ -259,7 +262,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Applies the diff handling to {@link ArrayNode}s, potentially recursing into nested ones.
-	 * 
+	 *
 	 * @param array the source {@link ArrayNode}m, must not be {@literal null}.
 	 * @param collection the actual collection values, must not be {@literal null}.
 	 * @param mapper the {@link ObjectMapper} to use, must not be {@literal null}.
@@ -275,35 +278,53 @@ public class DomainObjectReader {
 
 		// We need an iterator for the original collection.
 		// We might modify it but we want to keep iterating over the original collection.
-		Iterator<Object> value = new ArrayList<Object>(collection).iterator();
+		Iterator<Object> values = new ArrayList<Object>(collection).iterator();
+
+		// Since we are generically assuming a collection, we need to clear it and
+		// rebuild it from the original as we go.
+		collection.clear();
+
+		// If replacing all values re-build the values iterator from an empty collection.
+		if(config.isReplaceAllArrayValues())
+			values = new ArrayList<Object>(collection).iterator();
+
 		boolean nestedObjectFound = false;
 
 		for (JsonNode jsonNode : array) {
 
-			if (!value.hasNext()) {
-
+			if (!values.hasNext()) {
 				Class<?> type = componentType == null ? Object.class : componentType.getType();
 				collection.add(mapper.treeToValue(jsonNode, type));
-
 				continue;
 			}
 
-			Object next = value.next();
+			Object next = values.next();
 
 			if (ArrayNode.class.isInstance(jsonNode)) {
+				collection.add(next);
 				return handleArray(jsonNode, next, mapper, componentType);
 			}
 
 			if (ObjectNode.class.isInstance(jsonNode)) {
-
+				collection.add(next);
 				nestedObjectFound = true;
 				doMerge((ObjectNode) jsonNode, next, mapper);
 			}
+
+			// You Need to replace the value at the array index
+			// or else you never have the ability to remove an object from the array.
+			if (ValueNode.class.isInstance(jsonNode)) {
+				Class<?> type = componentType == null ? Object.class : componentType.getType();
+				Object newValue = mapper.treeToValue(jsonNode, type);
+				collection.add(newValue);
+			}
+
 		}
 
 		// there are more items in the collection than contained in the JSON node - remove it.
-		while (value.hasNext()) {
-			collection.remove(value.next());
+		while (values.hasNext()) {
+			values.next();
+			values.remove();
 		}
 
 		return nestedObjectFound;
@@ -311,7 +332,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Merges nested {@link Map} values for the given source {@link Map}, the {@link ObjectNode} and {@link ObjectMapper}.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @param node must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
@@ -352,7 +373,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Returns the given source instance as {@link Collection} or creates a new one for the given type.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @param type must not be {@literal null} in case {@code source} is null.
 	 * @return
@@ -375,12 +396,10 @@ public class DomainObjectReader {
 
 	/**
 	 * Simple value object to capture a mapping of Jackson mapped field names and {@link PersistentProperty} instances.
-	 * 
-	 * @param source can be {@literal null}.
 	 *
+	 * @param source can be {@literal null}.
 	 * @author Oliver Gierke
 	 */
-	@SuppressWarnings("unchecked")
 	static class MappedProperties {
 
 		private static final ClassIntrospector INTROSPECTOR = new BasicClassIntrospector();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingCon
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.webmvc.config.DomainObjectReaderConfiguration;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -60,9 +62,13 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * Unit tests for {@link DomainObjectReader}.
- * 
+ *
  * @author Oliver Gierke
  * @author Craig Andrews
  * @author Mathias Düsterhöft
@@ -73,6 +79,9 @@ public class DomainObjectReaderUnitTests {
 	@Mock ResourceMappings mappings;
 
 	DomainObjectReader reader;
+	DomainObjectReader replaceArrayReader;
+
+  ObjectMapper mapper;
 
 	@Before
 	public void setUp() {
@@ -88,11 +97,19 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Inner.class);
 		mappingContext.getPersistentEntity(Outer.class);
 		mappingContext.getPersistentEntity(Parent.class);
+    mappingContext.getPersistentEntity(MapParent.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
 
-		this.reader = new DomainObjectReader(entities, new Associations(mappings, mock(RepositoryRestConfiguration.class)));
+		this.reader = new DomainObjectReader(entities, new Associations(mappings, mock(RepositoryRestConfiguration.class)), new DomainObjectReaderConfiguration());
+
+		DomainObjectReaderConfiguration config = new DomainObjectReaderConfiguration();
+		config.setReplaceAllArrayValues(true);
+		this.replaceArrayReader = new DomainObjectReader(entities, new Associations(mappings, mock(RepositoryRestConfiguration.class)), config);
+
+    this.mapper = new ObjectMapper();
+
 	}
 
 	/**
@@ -241,7 +258,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	/**
-	 * @see DATAREST-919
+	 * @see DATAREST-919 1 of 2
 	 */
 	@Test
 	@SuppressWarnings("unchecked")
@@ -259,26 +276,104 @@ public class DomainObjectReaderUnitTests {
 		map.map.put("sub2", new ArrayList<String>(Arrays.asList("ok1", "ok2")));
 		map.map.put("sub3", new ArrayList<Object>(Arrays.asList(childMap)));
 		map.map.put("sub4", nestedMap);
+		map.map.put("sub5", new ArrayList<Integer>(Arrays.asList(1, 2)));
 
 		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode payload = (ObjectNode) mapper.readTree("{ \"map\" : { \"sub1\" : \"ok\","
-				+ " \"sub2\" : [ \"ok1\", \"ok2\" ], \"sub3\" : [ { \"childOk1\" : \"ok\" }], \"sub4\" : {"
-				+ " \"c1\" : \"v1\", \"c2\" : \"new\" } } }");
+		ObjectNode payload = (ObjectNode) mapper
+				.readTree("{ \"map\" : { \"sub1\" : \"newok\", \"sub2\" : [ \"ok1\", \"ok3\", \"ok5\" ],"
+						+ " \"sub3\" : [ { \"child2\": \"ok\", \"child3\" : \"ok\" }, { \"child3\" : \"ok\" } ],"
+						+ " \"sub4\" : { \"c2\" : \"v2\", \"c3\" : \"v3\" }, \"sub5\": [1, 3, 5] } }");
 
 		TypeWithGenericMap result = reader.readPut(payload, map, mapper);
 
-		assertThat(result.map.get("sub1"), is((Object) "ok"));
+		assertThat(result.map.get("sub1"), is((Object) "newok"));
 
 		List<String> sub2 = as(result.map.get("sub2"), List.class);
+		assertThat(sub2.size(), is(3));
 		assertThat(sub2.get(0), is("ok1"));
-		assertThat(sub2.get(1), is("ok2"));
+		assertThat(sub2.get(1), is("ok3"));
+		assertThat(sub2.get(2), is("ok5"));
 
 		List<Map<String, String>> sub3 = as(result.map.get("sub3"), List.class);
-		assertThat(sub3.get(0).get("childOk1"), is("ok"));
+		assertThat(sub3.size(), is(2));
+		assertThat(sub3.get(0).size(), is(3));
+		assertThat(sub3.get(0).get("child1"), is("ok"));
+		assertThat(sub3.get(0).get("child2"), is("ok"));
+		assertThat(sub3.get(0).get("child3"), is("ok"));
+		assertThat(sub3.get(1).size(), is(1));
+		assertThat(sub3.get(1).get("child3"), is("ok"));
 
 		Map<Object, String> sub4 = as(result.map.get("sub4"), Map.class);
+		assertThat(sub4.size(), is(3));
 		assertThat(sub4.get("c1"), is("v1"));
-		assertThat(sub4.get("c2"), is("new"));
+		assertThat(sub4.get("c2"), is("v2"));
+		assertThat(sub4.get("c3"), is("v3"));
+
+		List<Integer> sub5 = as(result.map.get("sub5"), List.class);
+		assertThat(sub5.size(), is(3));
+		assertThat(sub5.get(0), is(1));
+		assertThat(sub5.get(1), is(3));
+		assertThat(sub5.get(2), is(5));
+
+	}
+
+	/**
+	 * @see DATAREST-919 2 of 2
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void readsComplexNestedMapsAndArraysWithReplace() throws Exception {
+
+		Map<String, Object> childMap = new HashMap<String, Object>();
+		childMap.put("child1", "ok");
+
+		HashMap<String, Object> nestedMap = new HashMap<String, Object>();
+		nestedMap.put("c1", "v1");
+
+		TypeWithGenericMap map = new TypeWithGenericMap();
+		map.map = new HashMap<String, Object>();
+		map.map.put("sub1", "ok");
+		map.map.put("sub2", new ArrayList<String>(Arrays.asList("ok1", "ok2")));
+		map.map.put("sub3", new ArrayList<Object>(Arrays.asList(childMap)));
+		map.map.put("sub4", nestedMap);
+		map.map.put("sub5", new ArrayList<Integer>(Arrays.asList(1, 2)));
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode payload = (ObjectNode) mapper
+				.readTree("{ \"map\" : { \"sub1\" : \"newok\", \"sub2\" : [ \"ok1\", \"ok3\", \"ok5\" ],"
+						+ " \"sub3\" : [ { \"child2\": \"ok\", \"child3\" : \"ok\" }, { \"child3\" : \"ok\" } ],"
+						+ " \"sub4\" : { \"c2\" : \"v2\", \"c3\" : \"v3\" }, \"sub5\": [1, 3, 5] } }");
+
+		TypeWithGenericMap result = replaceArrayReader.readPut(payload, map, mapper);
+
+		assertThat(result.map.get("sub1"), is((Object) "newok"));
+
+		List<String> sub2 = as(result.map.get("sub2"), List.class);
+		assertThat(sub2.size(), is(3));
+		assertThat(sub2.get(0), is("ok1"));
+		assertThat(sub2.get(1), is("ok3"));
+		assertThat(sub2.get(2), is("ok5"));
+
+		List<Map<String, String>> sub3 = as(result.map.get("sub3"), List.class);
+		assertThat(sub3.size(), is(2));
+		assertThat(sub3.get(0).size(), is(2));
+		assertThat(sub3.get(0).get("child2"), is("ok"));
+		assertThat(sub3.get(0).get("child3"), is("ok"));
+		assertThat(sub3.get(1).size(), is(1));
+		assertThat(sub3.get(1).get("child3"), is("ok"));
+
+		Map<Object, String> sub4 = as(result.map.get("sub4"), Map.class);
+		assertThat(sub4.size(), is(3));
+		assertThat(sub4.get("c1"), is("v1"));
+		assertThat(sub4.get("c2"), is("v2"));
+		assertThat(sub4.get("c3"), is("v3"));
+
+		List<Integer> sub5 = as(result.map.get("sub5"), List.class);
+		assertThat(sub5.size(), is(3));
+		assertThat(sub5.get(0), is(1));
+		assertThat(sub5.get(1), is(3));
+		assertThat(sub5.get(2), is(5));
+
 	}
 
 	/**
@@ -478,6 +573,121 @@ public class DomainObjectReaderUnitTests {
 		}
 	}
 
+	/**
+	 * @see DATAREST-944 1 of 4
+	 */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void readPutWithStringArray() throws Exception {
+
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("colors", new ArrayList<String>(Arrays.asList("red", "blue")));
+
+    MapParent parent = new MapParent();
+    parent.setMap(map);
+
+    ObjectNode payload = (ObjectNode) mapper.readTree(
+        "{ \"map\": { \"colors\": [ \"black\", \"white\" ] } }");
+
+    MapParent result = reader.readPut(payload, parent, mapper);
+
+    List<String> colors = as(result.getMap().get("colors"), List.class);
+    assertThat(colors.size(), is(2));
+    assertThat(colors.get(0), is("black"));
+    assertThat(colors.get(1), is("white"));
+
+  }
+
+	/**
+	 * @see DATAREST-944 2 of 4
+	 */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void readPutWithSameSizeObjectArray() throws Exception {
+
+    Map<String, Object> john = new HashMap<String, Object>();
+    john.put("name", "John");
+
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("persons", new ArrayList<Map<String, Object>>(Arrays.asList(john)));
+
+    MapParent parent = new MapParent();
+    parent.setMap(map);
+
+    ObjectNode payload = (ObjectNode) mapper.readTree(
+        "{ \"map\": { \"persons\": [ { \"name\": \"Jane\" } ] } }");
+
+    MapParent result = reader.readPut(payload, parent, mapper);
+
+    Map<String, Object> jane = new HashMap<String, Object>();
+    jane.put("name", "Jane");
+
+    List<Map<String, Object>> persons = as(result.getMap().get("persons"), List.class);
+    assertThat(persons.size(), is(1));
+    assertThat(persons.get(0), is(jane));
+
+  }
+
+	/**
+	 * @see DATAREST-944 3 of 4
+	 */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void readPutWithLargerObjectArray() throws Exception {
+
+    Map<String, Object> john = new HashMap<String, Object>();
+    john.put("name", "John");
+
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("persons", new ArrayList<Map<String, Object>>(Arrays.asList(john)));
+
+    MapParent parent = new MapParent();
+    parent.setMap(map);
+
+    ObjectNode payload = (ObjectNode) mapper.readTree(
+        "{ \"map\": { \"persons\": [ { \"name\": \"Jane\" }, { \"name\": \"Dave\" } ] } }");
+
+    MapParent result = reader.readPut(payload, parent, mapper);
+
+    Map<String, Object> jane = new HashMap<String, Object>();
+    jane.put("name", "Jane");
+
+    Map<String, Object> dave = new HashMap<String, Object>();
+    dave.put("name", "Dave");
+
+    List<Map<String, Object>> persons = as(result.getMap().get("persons"), List.class);
+    assertThat(persons.size(), is(2));
+    assertThat(persons.get(0), is(jane));
+    assertThat(persons.get(1), is(dave));
+
+  }
+
+	/**
+	 * @see DATAREST-944 4 of 4
+	 */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void readPutWithEmptyObjectArray() throws Exception {
+
+    Map<String, Object> john = new HashMap<String, Object>();
+    john.put("name", "John");
+
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("persons", new ArrayList<Map<String, Object>>(Arrays.asList(john)));
+
+    MapParent parent = new MapParent();
+    parent.setMap(map);
+
+    ObjectNode payload = (ObjectNode) mapper.readTree(
+        "{ \"map\": { \"persons\": [ ] } }");
+
+    MapParent result = reader.readPut(payload, parent, mapper);
+
+    List<Map<String, Object>> persons = as(result.getMap().get("persons"), List.class);
+    assertThat(persons.size(), is(0));
+
+  }
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class TypeWithGenericMap {
 
@@ -551,4 +761,11 @@ public class DomainObjectReaderUnitTests {
 	static class Item {
 		String some;
 	}
+
+  @Data
+  public class MapParent {
+    private String id;
+    private Map<String, Object> map;
+  }
+
 }
