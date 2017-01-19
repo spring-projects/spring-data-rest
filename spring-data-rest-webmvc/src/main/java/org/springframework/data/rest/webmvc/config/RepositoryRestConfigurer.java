@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Component to configure and customize the setup of Spring Data REST.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.4
  * @soundtrack Florian Reichelt & Max Ender - Abschlusskonzert (https://www.youtube.com/watch?v=5WP0P-ndinY)
@@ -36,21 +36,21 @@ public interface RepositoryRestConfigurer {
 
 	/**
 	 * Override this method to add additional configuration.
-	 * 
+	 *
 	 * @param config Main configuration bean.
 	 */
 	void configureRepositoryRestConfiguration(RepositoryRestConfiguration config);
 
 	/**
 	 * Override this method to add your own converters.
-	 * 
+	 *
 	 * @param conversionService Default ConversionService bean.
 	 */
 	void configureConversionService(ConfigurableConversionService conversionService);
 
 	/**
 	 * Override this method to add validators manually.
-	 * 
+	 *
 	 * @param validatingListener The {@link org.springframework.context.ApplicationListener} responsible for invoking
 	 *          {@link org.springframework.validation.Validator} instances.
 	 */
@@ -58,22 +58,29 @@ public interface RepositoryRestConfigurer {
 
 	/**
 	 * Configure the {@link ExceptionHandlerExceptionResolver}.
-	 * 
+	 *
 	 * @param exceptionResolver The default exception resolver on which you can add custom argument resolvers.
 	 */
 	void configureExceptionHandlerExceptionResolver(ExceptionHandlerExceptionResolver exceptionResolver);
 
 	/**
 	 * Configure the available {@link HttpMessageConverter}s by adding your own.
-	 * 
+	 *
 	 * @param messageConverters The converters to be used by the system.
 	 */
 	void configureHttpMessageConverters(List<HttpMessageConverter<?>> messageConverters);
 
 	/**
 	 * Configure the Jackson {@link ObjectMapper} directly.
-	 * 
+	 *
 	 * @param objectMapper The {@literal ObjectMapper} to be used by the system.
 	 */
 	void configureJacksonObjectMapper(ObjectMapper objectMapper);
+
+	/**
+	 * Configure the DomainObjectReader
+	 *
+	 * @param config
+	 */
+	void configureDomainObjectReader(DomainObjectReaderConfiguration config);
 }

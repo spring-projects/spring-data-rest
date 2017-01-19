@@ -29,6 +29,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.rest.webmvc.config.DomainObjectReaderConfiguration;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -63,6 +64,7 @@ public class DomainObjectReader {
 
 	private final @NonNull PersistentEntities entities;
 	private final @NonNull Associations associationLinks;
+	private final @NonNull DomainObjectReaderConfiguration config;
 
 	/**
 	 * Reads the given input stream into an {@link ObjectNode} and applies that to the given existing instance.
@@ -281,6 +283,10 @@ public class DomainObjectReader {
 		// Since we are generically assuming a collection, we need to clear it and
 		// rebuild it from the original as we go.
 		collection.clear();
+
+		// If replacing all values re-build the values iterator from an empty collection.
+		if(config.isReplaceAllArrayValues())
+			values = new ArrayList<Object>(collection).iterator();
 
 		boolean nestedObjectFound = false;
 
