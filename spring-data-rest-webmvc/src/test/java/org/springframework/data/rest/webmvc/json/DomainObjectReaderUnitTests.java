@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.io.ByteArrayInputStream;
@@ -33,6 +34,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Before;
@@ -88,6 +90,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Inner.class);
 		mappingContext.getPersistentEntity(Outer.class);
 		mappingContext.getPersistentEntity(Parent.class);
+		mappingContext.getPersistentEntity(Product.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -444,6 +447,19 @@ public class DomainObjectReaderUnitTests {
 		assertThat(mapper.treeToValue(node, Object.class), is((Object) "asd"));
 	}
 
+	@Test // DATAREST-986
+	public void readsComplexMap() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = mapper.readTree(
+				"{ \"map\" : { \"en\" : { \"value\" : \"eventual\" }, \"de\" : { \"value\" : \"schlussendlich\" } } }");
+
+		Product result = reader.readPut((ObjectNode) node, new Product(), mapper);
+
+		assertThat(result.map.get(Locale.ENGLISH), is(new LocalizedValue("eventual")));
+		assertThat(result.map.get(Locale.GERMAN), is(new LocalizedValue("schlussendlich")));
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -550,5 +566,18 @@ public class DomainObjectReaderUnitTests {
 	@AllArgsConstructor
 	static class Item {
 		String some;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Product {
+		Map<Locale, LocalizedValue> map = new HashMap<Locale, LocalizedValue>();
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@EqualsAndHashCode
+	static class LocalizedValue {
+		String value;
 	}
 }
