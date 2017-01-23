@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -204,7 +204,7 @@ public class DomainObjectReader {
 						continue;
 					}
 
-					doMergeNestedMap((Map<String, Object>) rawValue, objectNode, mapper, property.getTypeInformation());
+					doMergeNestedMap((Map<Object, Object>) rawValue, objectNode, mapper, property.getTypeInformation());
 
 					// Remove potentially emptied Map as values have been handled recursively
 					if (!objectNode.fieldNames().hasNext()) {
@@ -313,7 +313,7 @@ public class DomainObjectReader {
 	 * @param mapper must not be {@literal null}.
 	 * @throws Exception
 	 */
-	private void doMergeNestedMap(Map<String, Object> source, ObjectNode node, ObjectMapper mapper,
+	private void doMergeNestedMap(Map<Object, Object> source, ObjectNode node, ObjectMapper mapper,
 			TypeInformation<?> type) throws Exception {
 
 		if (source == null) {
@@ -321,25 +321,30 @@ public class DomainObjectReader {
 		}
 
 		Iterator<Entry<String, JsonNode>> fields = node.fields();
+		Class<?> keyType = typeOrObject(type.getComponentType());
+		Class<?> valueType = typeOrObject(type.getMapValueType());
 
 		while (fields.hasNext()) {
 
 			Entry<String, JsonNode> entry = fields.next();
-			JsonNode child = entry.getValue();
-			Object sourceValue = source.get(entry.getKey());
+			JsonNode value = entry.getValue();
+			String key = entry.getKey();
 
-			if (child instanceof ObjectNode && sourceValue != null) {
+			Object mappedKey = mapper.readValue(quote(key), keyType);
+			Object sourceValue = source.get(mappedKey);
 
-				doMerge((ObjectNode) child, sourceValue, mapper);
+			if (value instanceof ObjectNode && sourceValue != null) {
 
-			} else if (child instanceof ArrayNode && sourceValue != null) {
+				doMerge((ObjectNode) value, sourceValue, mapper);
 
-				handleArray(child, sourceValue, mapper, type);
+			} else if (value instanceof ArrayNode && sourceValue != null) {
+
+				handleArray(value, sourceValue, mapper, type);
 
 			} else {
 
-				Class<?> valueType = sourceValue == null ? Object.class : sourceValue.getClass();
-				source.put(entry.getKey(), mapper.treeToValue(child, valueType));
+				Class<?> typeToRead = sourceValue != null ? sourceValue.getClass() : valueType;
+				source.put(mappedKey, mapper.treeToValue(value, typeToRead));
 			}
 
 			fields.remove();
@@ -367,5 +372,25 @@ public class DomainObjectReader {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Surrounds the given source {@link String} with quotes so that they represent a valid JSON String.
+	 * 
+	 * @param source can be {@literal null}.
+	 * @return
+	 */
+	private static String quote(String source) {
+		return source == null ? null : "\"".concat(source).concat("\"");
+	}
+
+	/**
+	 * Returns the raw type of the given {@link TypeInformation} or {@link Object} as fallback.
+	 * 
+	 * @param type can be {@literal null}.
+	 * @return
+	 */
+	private static Class<?> typeOrObject(TypeInformation<?> type) {
+		return type == null ? Object.class : type.getType();
 	}
 }
