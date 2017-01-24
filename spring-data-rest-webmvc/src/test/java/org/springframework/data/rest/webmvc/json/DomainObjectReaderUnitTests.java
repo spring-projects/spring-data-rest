@@ -92,6 +92,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Outer.class);
 		mappingContext.getPersistentEntity(Parent.class);
 		mappingContext.getPersistentEntity(Product.class);
+		mappingContext.getPersistentEntity(TransientReadOnlyProperty.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -441,6 +442,15 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.map.get(Locale.GERMAN), is(new LocalizedValue("schlussendlich")));
 	}
 
+	@Test // DATAREST-987
+	public void handlesTransientPropertyWithoutFieldProperly() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = mapper.readTree("{ \"name\" : \"Foo\" }");
+
+		reader.readPut((ObjectNode) node, new TransientReadOnlyProperty(), mapper);
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -563,5 +573,16 @@ public class DomainObjectReaderUnitTests {
 	@EqualsAndHashCode
 	static class LocalizedValue {
 		String value;
+	}
+
+	@JsonAutoDetect(getterVisibility = Visibility.ANY)
+	static class TransientReadOnlyProperty {
+
+		@Transient
+		public String getName() {
+			return null;
+		}
+
+		public void setName(String name) {}
 	}
 }

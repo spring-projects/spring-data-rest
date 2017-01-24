@@ -204,11 +204,23 @@ public class DomainObjectReader {
 	 */
 	private static void copyRemainingProperties(MappedProperties properties, Object source, Object target) {
 
-		PropertyAccessor sourceAccessor = PropertyAccessorFactory.forDirectFieldAccess(source);
-		PropertyAccessor targetAccessor = PropertyAccessorFactory.forDirectFieldAccess(target);
+		PropertyAccessor sourceFieldAccessor = PropertyAccessorFactory.forDirectFieldAccess(source);
+		PropertyAccessor sourcePropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(source);
+		PropertyAccessor targetFieldAccessor = PropertyAccessorFactory.forDirectFieldAccess(target);
+		PropertyAccessor targetPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(target);
 
 		for (String property : properties.getSpringDataUnmappedProperties()) {
-			targetAccessor.setPropertyValue(property, sourceAccessor.getPropertyValue(property));
+
+			// If there's a field we can just copy it.
+			if (targetFieldAccessor.isWritableProperty(property)) {
+				targetFieldAccessor.setPropertyValue(property, sourceFieldAccessor.getPropertyValue(property));
+				continue;
+			}
+
+			// Otherwise only copy if there's both a getter and setter.
+			if (targetPropertyAccessor.isWritableProperty(property) && sourcePropertyAccessor.isReadableProperty(property)) {
+				targetPropertyAccessor.setPropertyValue(property, sourcePropertyAccessor.getPropertyValue(property));
+			}
 		}
 	}
 
