@@ -347,12 +347,7 @@ public class DomainObjectReader {
 			return false;
 		}
 
-		Iterator<Object> iterator = collection.iterator();
-		TypeInformation<?> componentType = iterator.hasNext() ? //
-				ClassTypeInformation.from(iterator.next().getClass()) : //
-				collectionType.getComponentType();
-
-		return handleArrayNode((ArrayNode) node, collection, mapper, componentType);
+		return handleArrayNode((ArrayNode) node, collection, mapper, collectionType.getComponentType());
 	}
 
 	/**
@@ -380,8 +375,7 @@ public class DomainObjectReader {
 
 			if (!value.hasNext()) {
 
-				Class<?> type = componentType == null ? Object.class : componentType.getType();
-				collection.add(mapper.treeToValue(jsonNode, type));
+				collection.add(mapper.treeToValue(jsonNode, getTypeToMap(null, componentType).getType()));
 
 				continue;
 			}
@@ -389,7 +383,7 @@ public class DomainObjectReader {
 			Object next = value.next();
 
 			if (ArrayNode.class.isInstance(jsonNode)) {
-				return handleArray(jsonNode, next, mapper, componentType);
+				return handleArray(jsonNode, next, mapper, getTypeToMap(value, componentType));
 			}
 
 			if (ObjectNode.class.isInstance(jsonNode)) {
@@ -424,7 +418,7 @@ public class DomainObjectReader {
 
 		Iterator<Entry<String, JsonNode>> fields = node.fields();
 		Class<?> keyType = typeOrObject(type.getComponentType());
-		Class<?> valueType = typeOrObject(type.getMapValueType());
+		TypeInformation<?> valueType = type.getMapValueType();
 
 		while (fields.hasNext()) {
 
@@ -434,6 +428,7 @@ public class DomainObjectReader {
 
 			Object mappedKey = mapper.readValue(quote(key), keyType);
 			Object sourceValue = source.get(mappedKey);
+			TypeInformation<?> typeToMap = getTypeToMap(sourceValue, valueType);
 
 			if (value instanceof ObjectNode && sourceValue != null) {
 
@@ -441,12 +436,11 @@ public class DomainObjectReader {
 
 			} else if (value instanceof ArrayNode && sourceValue != null) {
 
-				handleArray(value, sourceValue, mapper, type);
+				handleArray(value, sourceValue, mapper, getTypeToMap(sourceValue, typeToMap));
 
 			} else {
 
-				Class<?> typeToRead = sourceValue != null ? sourceValue.getClass() : valueType;
-				source.put(mappedKey, mapper.treeToValue(value, typeToRead));
+				source.put(mappedKey, mapper.treeToValue(value, typeToMap.getType()));
 			}
 
 			fields.remove();
@@ -560,6 +554,32 @@ public class DomainObjectReader {
 	 */
 	private static Class<?> typeOrObject(TypeInformation<?> type) {
 		return type == null ? Object.class : type.getType();
+	}
+
+	/**
+	 * Returns the type to read for the given value and default type. The type will be defaulted to {@link Object} if
+	 * missing. If the given value's type is different from the given default (i.e. more concrete) the value's type will
+	 * be used.
+	 * 
+	 * @param value can be {@literal null}.
+	 * @param type can be {@literal null}.
+	 * @return
+	 */
+	private static TypeInformation<?> getTypeToMap(Object value, TypeInformation<?> type) {
+
+		if (type == null) {
+			type = ClassTypeInformation.OBJECT;
+		}
+
+		if (value == null) {
+			return type;
+		}
+
+		if (Enum.class.isInstance(value)) {
+			return ClassTypeInformation.from(((Enum<?>) value).getDeclaringClass());
+		}
+
+		return value.getClass().equals(type.getType()) ? type : ClassTypeInformation.from(value.getClass());
 	}
 
 	/**

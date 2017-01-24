@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -93,6 +93,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Parent.class);
 		mappingContext.getPersistentEntity(Product.class);
 		mappingContext.getPersistentEntity(TransientReadOnlyProperty.class);
+		mappingContext.getPersistentEntity(CollectionOfEnumWithMethods.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -499,6 +500,20 @@ public class DomainObjectReaderUnitTests {
 		reader.readPut((ObjectNode) node, new TransientReadOnlyProperty(), mapper);
 	}
 
+	@Test // DATAREST-977
+	public void readsCollectionOfComplexEnum() throws Exception {
+
+		CollectionOfEnumWithMethods sample = new CollectionOfEnumWithMethods();
+		sample.enums.add(SampleEnum.FIRST);
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = mapper.readTree("{ \"enums\" : [ \"SECOND\", \"FIRST\" ] }");
+
+		CollectionOfEnumWithMethods result = reader.merge((ObjectNode) node, sample, mapper);
+
+		assertThat(result.enums, contains(SampleEnum.SECOND, SampleEnum.FIRST));
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -634,5 +649,34 @@ public class DomainObjectReaderUnitTests {
 		}
 
 		public void setName(String name) {}
+	}
+
+	// DATAREST-977
+
+	interface EnumInterface {
+		String getFoo();
+	}
+
+	static enum SampleEnum implements EnumInterface {
+
+		FIRST {
+
+			@Override
+			public String getFoo() {
+				return "first";
+			}
+
+		},
+		SECOND {
+
+			public String getFoo() {
+				return "second";
+			}
+		};
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class CollectionOfEnumWithMethods {
+		List<SampleEnum> enums = new ArrayList<SampleEnum>();
 	}
 }
