@@ -31,6 +31,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
@@ -165,13 +166,12 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 			return;
 		}
 
-		Class<?>[] parameterTypes = method.getParameterTypes();
-
-		if (parameterTypes.length == 0) {
+		if (method.getParameterCount() == 0) {
 			throw new IllegalStateException(String.format(PARAMETER_MISSING, method));
 		}
 
-		EventHandlerMethod handlerMethod = EventHandlerMethod.of(parameterTypes[0], handler, method);
+		ResolvableType parameter = ResolvableType.forMethodParameter(method, 0, handler.getClass());
+		EventHandlerMethod handlerMethod = EventHandlerMethod.of(parameter.resolve(), handler, method);
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Annotated handler method found: {}", handlerMethod);
