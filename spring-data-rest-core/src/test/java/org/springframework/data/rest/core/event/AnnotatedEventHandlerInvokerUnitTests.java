@@ -85,6 +85,23 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 		assertThat(orderHandler1.timestamp, is(greaterThan(orderHandler2.timestamp)));
 	}
 
+	@Test // DATAREST-983
+	public void invokesEventHandlerOnParentClass() {
+
+		FirstEventHandler firstHandler = new FirstEventHandler();
+		SecondEventHandler secondHandler = new SecondEventHandler();
+
+		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
+		invoker.postProcessAfterInitialization(firstHandler, "firstHandler");
+		invoker.postProcessAfterInitialization(secondHandler, "secondHandler");
+
+		invoker.onApplicationEvent(new BeforeCreateEvent(new FirstEntity()));
+		invoker.onApplicationEvent(new BeforeCreateEvent(new SecondEntity()));
+
+		assertThat(firstHandler.callCount, is(1));
+		assertThat(secondHandler.callCount, is(1));
+	}
+
 	@RepositoryEventHandler
 	static class Sample {
 
@@ -130,4 +147,27 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 			timestamp = System.nanoTime();
 		}
 	}
+
+	// DATAREST-983
+
+	static class AbstractBaseEntityEventHandler<T extends BaseEntity> {
+		int callCount = 0;
+
+		@HandleBeforeCreate
+		private void method(T entity) {
+			callCount += 1;
+		}
+	}
+
+	@RepositoryEventHandler
+	static class FirstEventHandler extends AbstractBaseEntityEventHandler<FirstEntity> {}
+
+	@RepositoryEventHandler
+	static class SecondEventHandler extends AbstractBaseEntityEventHandler<SecondEntity> {}
+
+	static abstract class BaseEntity {}
+
+	static class FirstEntity extends BaseEntity {}
+
+	static class SecondEntity extends BaseEntity {}
 }
