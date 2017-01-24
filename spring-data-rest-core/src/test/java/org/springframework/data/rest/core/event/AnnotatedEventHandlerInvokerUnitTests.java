@@ -19,10 +19,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDate;
 
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
@@ -33,6 +30,9 @@ import org.springframework.data.rest.core.event.AnnotatedEventHandlerInvoker.Eve
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 /**
  * Unit tests for {@link AnnotatedEventHandlerInvoker}.
  *
@@ -41,90 +41,119 @@ import org.springframework.util.MultiValueMap;
  */
 public class AnnotatedEventHandlerInvokerUnitTests {
 
-	/**
-	 * @see DATAREST-582
-	 */
-	@Test
-	@SuppressWarnings("unchecked")
-	public void doesNotDiscoverMethodsOnProxyClasses() {
+    /**
+     * @see DATAREST-582
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void doesNotDiscoverMethodsOnProxyClasses() {
 
-		ProxyFactory factory = new ProxyFactory();
-		factory.setTarget(new Sample());
-		factory.setProxyTargetClass(true);
+        ProxyFactory factory = new ProxyFactory();
+        factory.setTarget(new Sample());
+        factory.setProxyTargetClass(true);
 
-		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
-		invoker.postProcessAfterInitialization(factory.getProxy(), "proxy");
+        AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
+        invoker.postProcessAfterInitialization(factory.getProxy(), "proxy");
 
-		MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> methods = (MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod>) ReflectionTestUtils
-				.getField(invoker, "handlerMethods");
+        MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> methods = (MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod>) ReflectionTestUtils
+                .getField(invoker, "handlerMethods");
 
-		assertThat(methods.get(BeforeCreateEvent.class), hasSize(1));
-	}
+        assertThat(methods.get(BeforeCreateEvent.class), hasSize(1));
+    }
 
-	/**
-	 * @see DATAREST-606
-	 */
-	@Test
-	public void invokesPrivateEventHandlerMethods() {
+    /**
+     * @see DATAREST-606
+     */
+    @Test
+    public void invokesPrivateEventHandlerMethods() {
 
-		SampleWithPrivateHandler sampleHandler = new SampleWithPrivateHandler();
+        SampleWithPrivateHandler sampleHandler = new SampleWithPrivateHandler();
 
-		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
-		invoker.postProcessAfterInitialization(sampleHandler, "sampleHandler");
+        AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
+        invoker.postProcessAfterInitialization(sampleHandler, "sampleHandler");
 
-		invoker.onApplicationEvent(new BeforeCreateEvent(new Person("Dave", "Matthews")));
+        invoker.onApplicationEvent(new BeforeCreateEvent(new Person("Dave", "Matthews")));
 
-		assertThat(sampleHandler.wasCalled, is(true));
-	}
+        assertThat(sampleHandler.wasCalled, is(true));
+    }
 
-	/**
-	 * @see DATAREST-983
-	 */
-	@Test
-	public void invokesEventHandlerOnParentClass() {
+    /**
+     * @see DATAREST-983
+     */
+    @Test
+    public void invokesEventHandlerOnParentClass() {
 
-		ListEventHandler listHandler = new ListEventHandler();
-		SetEventHandler setHandler = new SetEventHandler();
+        FirstEventHandler firstHandler = new FirstEventHandler();
+        SecondEventHandler secondHandler = new SecondEventHandler();
 
-		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
-		invoker.postProcessAfterInitialization(listHandler, "listHandler");
-		invoker.postProcessAfterInitialization(setHandler, "setHandler");
+        AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
+        invoker.postProcessAfterInitialization(firstHandler, "listHandler");
+        invoker.postProcessAfterInitialization(secondHandler, "setHandler");
 
-		invoker.onApplicationEvent(new BeforeCreateEvent(Collections.emptyList()));
-		invoker.onApplicationEvent(new BeforeCreateEvent(Collections.emptySet()));
+        invoker.onApplicationEvent(new BeforeCreateEvent(new FirstEntity()));
+        invoker.onApplicationEvent(new BeforeCreateEvent(new SecondEntity()));
 
-		assertThat(listHandler.callCount, is(1));
-		assertThat(setHandler.callCount, is(1));
-	}
+        assertThat(firstHandler.callCount, is(1));
+        assertThat(secondHandler.callCount, is(1));
+    }
 
-	@RepositoryEventHandler
-	static class Sample {
+    @RepositoryEventHandler
+    static class Sample {
 
-		@HandleBeforeCreate
-		public void method(Sample sample) {}
-	}
+        @HandleBeforeCreate
+        public void method(Sample sample) {
+        }
+    }
 
-	@RepositoryEventHandler
-	static class SampleWithPrivateHandler {
+    @RepositoryEventHandler
+    static class SampleWithPrivateHandler {
 
-		boolean wasCalled = false;
+        boolean wasCalled = false;
 
-		@HandleBeforeCreate
-		private void method(Person sample) {
-			wasCalled = true;
-		}
-	}
+        @HandleBeforeCreate
+        private void method(Person sample) {
+            wasCalled = true;
+        }
+    }
 
-	static abstract class AbstractCollectionEventHandler<T extends Collection<?>>{
-		int callCount = 0;
-		@HandleBeforeCreate
-		private void method(T collection){
-			callCount += 1;
-		}
-	}
-	@RepositoryEventHandler
-	static class ListEventHandler extends AbstractCollectionEventHandler<List<?>>{}
-	@RepositoryEventHandler
-	static class SetEventHandler extends AbstractCollectionEventHandler<Set<?>>{}
+    static class AbstractBaseEntityEventHandler<T extends BaseEntity> {
+        int callCount = 0;
+
+        @HandleBeforeCreate
+        private void method(T entity) {
+            callCount += 1;
+        }
+    }
+
+    @RepositoryEventHandler
+    static class FirstEventHandler extends AbstractBaseEntityEventHandler<FirstEntity> {
+    }
+
+    @RepositoryEventHandler
+    static class SecondEventHandler extends AbstractBaseEntityEventHandler<SecondEntity> {
+    }
+
+    @Data
+    static abstract class BaseEntity {
+        private String id;
+        private String createdBy;
+        private LocalDate createdOn;
+        private String modifiedBy;
+        private LocalDate modifiedOn;
+    }
+
+    @Data
+    @EqualsAndHashCode(callSuper = true)
+    static class FirstEntity extends BaseEntity {
+        private String foo1;
+        private String bar1;
+    }
+
+    @Data
+    @EqualsAndHashCode(callSuper = true)
+    static class SecondEntity extends BaseEntity {
+        private String foo2;
+        private String bar2;
+    }
 
 }
