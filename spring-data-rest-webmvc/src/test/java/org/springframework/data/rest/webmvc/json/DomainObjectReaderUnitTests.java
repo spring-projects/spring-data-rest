@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Value;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
@@ -94,6 +96,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Product.class);
 		mappingContext.getPersistentEntity(TransientReadOnlyProperty.class);
 		mappingContext.getPersistentEntity(CollectionOfEnumWithMethods.class);
+		mappingContext.getPersistentEntity(SampleWithReference.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -466,6 +469,33 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.enums, contains(SampleEnum.SECOND, SampleEnum.FIRST));
 	}
 
+	@Test // DATAREST-944
+	public void mergesAssociations() {
+
+		List<Nested> originalCollection = Arrays.asList(new Nested(2, 3));
+		SampleWithReference source = new SampleWithReference(Arrays.asList(new Nested(1, 2), new Nested(2, 3)));
+		SampleWithReference target = new SampleWithReference(originalCollection);
+
+		SampleWithReference result = reader.mergeForPut(source, target, new ObjectMapper());
+
+		assertThat(result.nested, is(source.nested));
+		assertThat(result.nested == originalCollection, is(false));
+	}
+
+	@Test // DATAREST-944
+	public void mergesAssociationsAndKeepsMutableCollection() {
+
+		ArrayList<Nested> originalCollection = new ArrayList<Nested>(Arrays.asList(new Nested(2, 3)));
+		SampleWithReference source = new SampleWithReference(
+				new ArrayList<Nested>(Arrays.asList(new Nested(1, 2), new Nested(2, 3))));
+		SampleWithReference target = new SampleWithReference(originalCollection);
+
+		SampleWithReference result = reader.mergeForPut(source, target, new ObjectMapper());
+
+		assertThat(result.nested, is(source.nested));
+		assertThat(result.nested == originalCollection, is(true));
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -628,5 +658,15 @@ public class DomainObjectReaderUnitTests {
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class CollectionOfEnumWithMethods {
 		List<SampleEnum> enums = new ArrayList<SampleEnum>();
+	}
+
+	@Value
+	static class SampleWithReference {
+		@Reference List<Nested> nested;
+	}
+
+	@Value
+	static class Nested {
+		int x, y;
 	}
 }
