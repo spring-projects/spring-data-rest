@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -30,11 +31,12 @@ import java.util.Map.Entry;
 import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.core.CollectionFactory;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
@@ -127,7 +129,7 @@ public class DomainObjectReader {
 	 * @param mapper must not be {@literal null}.
 	 * @return
 	 */
-	private <T> T mergeForPut(T source, T target, final ObjectMapper mapper) {
+	<T> T mergeForPut(T source, T target, final ObjectMapper mapper) {
 
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
@@ -137,7 +139,7 @@ public class DomainObjectReader {
 
 		Class<? extends Object> type = target.getClass();
 
-		final PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
+		PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
 
 		if (entity == null) {
 			return source;
@@ -145,52 +147,14 @@ public class DomainObjectReader {
 
 		Assert.notNull(entity, "No PersistentEntity found for ".concat(type.getName()).concat("!"));
 
-		final MappedProperties properties = MappedProperties.fromJacksonProperties(entity, mapper);
+		MergingPropertyHandler propertyHandler = new MergingPropertyHandler(source, target, entity, mapper);
 
-		ConversionService conversionService = new DefaultConversionService();
-		final PersistentPropertyAccessor targetAccessor = entity.getPropertyAccessor(target);
-		final ConvertingPropertyAccessor convertingAccessor = new ConvertingPropertyAccessor(targetAccessor,
-				conversionService);
-		final PersistentPropertyAccessor sourceAccessor = entity.getPropertyAccessor(source);
-
-		entity.doWithProperties(new SimplePropertyHandler() {
-
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.data.mapping.SimplePropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
-			 */
-			@Override
-			public void doWithPersistentProperty(PersistentProperty<?> property) {
-
-				if (property.isIdProperty() || property.isVersionProperty() || !property.isWritable()) {
-					return;
-				}
-
-				if (!properties.isMappedProperty(property)) {
-					return;
-				}
-
-				Object sourceValue = sourceAccessor.getProperty(property);
-				Object targetValue = targetAccessor.getProperty(property);
-				Object result = null;
-
-				if (property.isMap()) {
-					result = mergeMaps(property, sourceValue, targetValue, mapper);
-				} else if (property.isCollectionLike()) {
-					result = mergeCollections(property, sourceValue, targetValue, mapper);
-				} else if (property.isEntity()) {
-					result = mergeForPut(sourceValue, targetValue, mapper);
-				} else {
-					result = sourceValue;
-				}
-
-				convertingAccessor.setProperty(property, result);
-			}
-		});
+		entity.doWithProperties(propertyHandler);
+		entity.doWithAssociations(new LinkedAssociationSkippingAssociationHandler(associationLinks, propertyHandler));
 
 		// Need to copy unmapped properties as the PersistentProperty model currently does not contain any transient
 		// properties
-		copyRemainingProperties(properties, source, target);
+		copyRemainingProperties(propertyHandler.getProperties(), source, target);
 
 		return target;
 	}
@@ -460,7 +424,20 @@ public class DomainObjectReader {
 			result.put(entry.getKey(), mergeForPut(entry.getValue(), targetValue, mapper));
 		}
 
-		return result;
+		if (targetMap == null) {
+			return result;
+		}
+
+		try {
+
+			targetMap.clear();
+			targetMap.putAll(result);
+
+			return targetMap;
+
+		} catch (UnsupportedOperationException o_O) {
+			return result;
+		}
 	}
 
 	private Collection<Object> mergeCollections(PersistentProperty<?> property, Object source, Object target,
@@ -489,7 +466,20 @@ public class DomainObjectReader {
 			result.add(mergeForPut(sourceElement, targetElement, mapper));
 		}
 
-		return result;
+		if (targetCollection == null) {
+			return result;
+		}
+
+		try {
+
+			targetCollection.clear();
+			targetCollection.addAll(result);
+
+			return targetCollection;
+
+		} catch (UnsupportedOperationException o_O) {
+			return result;
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -573,5 +563,100 @@ public class DomainObjectReader {
 		}
 
 		return value.getClass().equals(type.getType()) ? type : ClassTypeInformation.from(value.getClass());
+	}
+
+	/**
+	 * {@link SimpleAssociationHandler} that skips linkable associations and forwards handling for all other ones to the
+	 * delegate {@link SimplePropertyHandler}.
+	 * 
+	 * @author Oliver Gierke
+	 */
+	@RequiredArgsConstructor
+	private final class LinkedAssociationSkippingAssociationHandler implements SimpleAssociationHandler {
+
+		private final @NonNull Associations associations;
+		private final @NonNull SimplePropertyHandler delegate;
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
+		 */
+		@Override
+		public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
+
+			if (associationLinks.isLinkableAssociation(association)) {
+				return;
+			}
+
+			delegate.doWithPersistentProperty(association.getInverse());
+		}
+	}
+
+	/**
+	 * {@link SimplePropertyHandler} to merge the states of the given objects.
+	 * 
+	 * @author Oliver Gierke
+	 */
+	private class MergingPropertyHandler implements SimplePropertyHandler {
+
+		private final @Getter MappedProperties properties;
+		private final PersistentPropertyAccessor targetAccessor;
+		private final PersistentPropertyAccessor sourceAccessor;
+		private final ObjectMapper mapper;
+
+		/**
+		 * Creates a new {@link MergingPropertyHandler} for the given source, target, {@link PersistentEntity} and
+		 * {@link ObjectMapper}.
+		 * 
+		 * @param source must not be {@literal null}.
+		 * @param target must not be {@literal null}.
+		 * @param entity must not be {@literal null}.
+		 * @param mapper must not be {@literal null}.
+		 */
+		public MergingPropertyHandler(Object source, Object target, PersistentEntity<?, ?> entity, ObjectMapper mapper) {
+
+			Assert.notNull(source, "Source instance must not be null!");
+			Assert.notNull(target, "Target instance must not be null!");
+			Assert.notNull(entity, "PersistentEntity must not be null!");
+			Assert.notNull(mapper, "ObjectMapper must not be null!");
+
+			this.properties = MappedProperties.fromJacksonProperties(entity, mapper);
+			this.targetAccessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(target),
+					new DefaultConversionService());
+			this.sourceAccessor = entity.getPropertyAccessor(source);
+			this.mapper = mapper;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.mapping.SimplePropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
+		 */
+		@Override
+		public void doWithPersistentProperty(PersistentProperty<?> property) {
+
+			if (property.isIdProperty() || property.isVersionProperty() || !property.isWritable()) {
+				return;
+			}
+
+			if (!properties.isMappedProperty(property)) {
+				return;
+			}
+
+			Object sourceValue = sourceAccessor.getProperty(property);
+			Object targetValue = targetAccessor.getProperty(property);
+			Object result = null;
+
+			if (property.isMap()) {
+				result = mergeMaps(property, sourceValue, targetValue, mapper);
+			} else if (property.isCollectionLike()) {
+				result = mergeCollections(property, sourceValue, targetValue, mapper);
+			} else if (property.isEntity()) {
+				result = mergeForPut(sourceValue, targetValue, mapper);
+			} else {
+				result = sourceValue;
+			}
+
+			targetAccessor.setProperty(property, result);
+		}
 	}
 }
