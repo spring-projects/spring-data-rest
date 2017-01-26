@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-rest-parent</artifactId>
-	<version>2.6.0.BUILD-SNAPSHOT</version>
+	<version>2.6.0.DATAREST-976-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Spring Data REST</name>
