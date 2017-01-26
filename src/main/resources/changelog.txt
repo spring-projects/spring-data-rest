@@ -1,6 +1,22 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.0.RELEASE (2017-01-26)
+---------------------------------------------
+* DATAREST-987 - PUT requests fail for transient properties not backed by a field.
+* DATAREST-986 - DomainObjectReader doesn't read complex Maps properly.
+* DATAREST-983 - Annotated event handlers do not resolve generic parameter types.
+* DATAREST-979 - Update project documentation with the CLA tool integration.
+* DATAREST-978 - Migrate ticket references in test code to Spring Framework style.
+* DATAREST-977 - Patch fails on collection containing nested enums with class body.
+* DATAREST-976 - Sorting by an embedded property no longer works in Ingalls RC1.
+* DATAREST-970 - Repository event handlers don't respect @Order annotations.
+* DATAREST-967 - Release 2.6 GA (Ingalls).
+* DATAREST-965 - PUT does not remove nested properties.
+* DATAREST-954 - Patching on nested @ElementCollection Map<> using application/merge-patch+json throws org.springframework.orm.jpa.JpaSystemException.
+* DATAREST-944 - Unable to add to a nested collection.
+
+
 Changes in version 2.5.6.RELEASE (2016-12-21)
 ---------------------------------------------
 * DATAREST-959 - PUT error when merging a previously undefined array.
