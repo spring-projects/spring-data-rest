@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
-import org.springframework.data.rest.webmvc.json.DomainObjectReader.MappedProperties;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
