@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.springframework.data.rest.webmvc.json.patch;
 /**
  * Operation that removes the value at the given path. Will throw a {@link PatchException} if the given path isn't valid
  * or if the path is non-nullable.
- * 
+ *
  * @author Craig Walls
  * @author Oliver Gierke
  */
@@ -26,7 +26,7 @@ class RemoveOperation extends PatchOperation {
 
 	/**
 	 * Constructs the remove operation
-	 * 
+	 *
 	 * @param path The path of the value to be removed. (e.g., '/foo/bar/4')
 	 */
 	private RemoveOperation(SpelPath path) {

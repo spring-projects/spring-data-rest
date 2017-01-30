@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.springframework.util.ObjectUtils;
  * If the value given matches the value given at the path, the operation completes as a no-op. On the other hand, if the
  * values do not match or if there are any errors interpreting the path, a {@link PatchException} will be thrown.
  * </p>
- * 
+ *
  * @author Craig Walls
  * @author Oliver Gierke
  */
@@ -39,7 +39,7 @@ class TestOperation extends PatchOperation {
 
 	/**
 	 * Constructs the test operation
-	 * 
+	 *
 	 * @param path The path to test. (e.g., '/foo/bar/4')
 	 * @param value The value to test the path against.
 	 */

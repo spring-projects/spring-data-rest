@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.data.repository.CrudRepository;
 
 /**
  * Repository interface to access {@link Product}s.
- * 
+ *
  * @author Oliver Gierke
  * @author David Turanski
  */
@@ -30,7 +30,7 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
 
 	/**
 	 * Returns a list of {@link Product}s having a description which contains the given snippet.
-	 * 
+	 *
 	 * @param the search string
 	 * @return
 	 */
@@ -38,7 +38,7 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
 
 	/**
 	 * Returns all {@link Product}s having the given attribute value.
-	 * 
+	 *
 	 * @param attribute
 	 * @param value
 	 * @return

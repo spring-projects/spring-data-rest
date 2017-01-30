@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 /**
  * Meta-information about the root repository resource.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -83,7 +83,7 @@ public class RootResourceInformation {
 
 	/**
 	 * Verifies that the given {@link HttpMethod} is supported for the given {@link ResourceType}.
-	 * 
+	 *
 	 * @param httpMethod must not be {@literal null}.
 	 * @param resourceType must not be {@literal null}.
 	 * @throws ResourceNotFoundException if the repository is not exported at all.
@@ -110,7 +110,7 @@ public class RootResourceInformation {
 
 	/**
 	 * Verifies that the given {@link HttpMethod} is supported for the given {@link PersistentProperty}.
-	 * 
+	 *
 	 * @param httpMethod must not be {@literal null}.
 	 * @param property must not be {@literal null}.
 	 * @throws ResourceNotFoundException if the repository is not exported at all.

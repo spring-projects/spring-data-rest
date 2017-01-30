@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * Creates a new {@link RepositoryEntityController} for the given {@link Repositories},
 	 * {@link RepositoryRestConfiguration}, {@link RepositoryEntityLinks}, {@link PagedResourcesAssembler},
 	 * {@link ConversionService} and {@link AuditableBeanWrapperFactory}.
-	 * 
+	 *
 	 * @param repositories must not be {@literal null}.
 	 * @param config must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
@@ -129,7 +129,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	/**
 	 * <code>OPTIONS /{repository}</code>.
-	 * 
+	 *
 	 * @param information
 	 * @return
 	 * @since 2.2
@@ -147,7 +147,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	/**
 	 * <code>HEAD /{repository}</code>
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @return
 	 * @throws HttpRequestMethodNotSupportedException
@@ -176,7 +176,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	/**
 	 * <code>GET /{repository}</code> - Returns the collection resource (paged or unpaged).
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @param pageable
 	 * @param sort
@@ -252,7 +252,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	/**
 	 * <code>POST /{repository}</code> - Creates a new entity instances from the collection resource.
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @param payload
 	 * @param assembler
@@ -275,7 +275,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	/**
 	 * <code>OPTIONS /{repository}/{id}<code>
-	 * 
+	 *
 	 * @param information
 	 * @return
 	 * @since 2.2
@@ -294,7 +294,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	/**
 	 * <code>HEAD /{repsoitory}/{id}</code>
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @param id
 	 * @return
@@ -319,7 +319,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	/**
 	 * <code>GET /{repository}/{id}</code> - Returns a single entity.
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @param id
 	 * @return
@@ -342,7 +342,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	/**
 	 * <code>PUT /{repository}/{id}</code> - Updates an existing entity or creates one at exactly that place.
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @param payload
 	 * @param id
@@ -464,7 +464,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	/**
 	 * Triggers the creation of the domain object and renders it into the response if needed.
-	 * 
+	 *
 	 * @param domainObject
 	 * @param invoker
 	 * @return
@@ -488,7 +488,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	/**
 	 * Sets the location header pointing to the resource representing the given instance. Will make sure we properly
 	 * expand the URI template potentially created as self link.
-	 * 
+	 *
 	 * @param headers must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
 	 * @param source must not be {@literal null}.
@@ -501,7 +501,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 	/**
 	 * Returns the object backing the item resource for the given {@link RootResourceInformation} and id.
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @param id
 	 * @return

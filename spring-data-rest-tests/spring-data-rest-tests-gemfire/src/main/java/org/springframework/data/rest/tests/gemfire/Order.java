@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class Order extends AbstractPersistentEntity {
 
 	/**
 	 * Creates a new {@link Order} for the given {@link org.springframework.data.rest.tests.gemfire.Customer}.
-	 * 
+	 *
 	 * @param id order ID
 	 * @param customerId must not be {@literal null}.
 	 * @param shippingAddress must not be {@literal null}.
@@ -56,7 +56,7 @@ public class Order extends AbstractPersistentEntity {
 
 	/**
 	 * Adds the given {@link LineItem} to the {@link Order}.
-	 * 
+	 *
 	 * @param lineItem
 	 */
 	public void add(LineItem lineItem) {
@@ -66,7 +66,7 @@ public class Order extends AbstractPersistentEntity {
 	/**
 	 * Returns the id of the {@link org.springframework.data.rest.tests.gemfire.Customer} who placed the
 	 * {@link Order}.
-	 * 
+	 *
 	 * @return
 	 */
 	public Long getCustomerId() {
@@ -75,7 +75,7 @@ public class Order extends AbstractPersistentEntity {
 
 	/**
 	 * Returns the billing {@link Address} for this order.
-	 * 
+	 *
 	 * @return
 	 */
 	public Address getBillingAddress() {
@@ -84,7 +84,7 @@ public class Order extends AbstractPersistentEntity {
 
 	/**
 	 * Returns the shipping {@link Address} for this order;
-	 * 
+	 *
 	 * @return
 	 */
 	public Address getShippingAddress() {
@@ -93,7 +93,7 @@ public class Order extends AbstractPersistentEntity {
 
 	/**
 	 * Returns all {@link LineItem}s currently belonging to the {@link Order}.
-	 * 
+	 *
 	 * @return
 	 */
 	public Set<LineItem> getLineItems() {
@@ -102,7 +102,7 @@ public class Order extends AbstractPersistentEntity {
 
 	/**
 	 * Returns the total of the {@link Order}.
-	 * 
+	 *
 	 * @return
 	 */
 	public BigDecimal getTotal() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link ResourceMetadata} for a single repository.
- * 
+ *
  * @author Oliver Gierke
  */
 class RepositoryAwareResourceMetadata implements ResourceMetadata {
@@ -40,7 +40,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 	/**
 	 * Creates a new {@link RepositoryAwareResourceMetadata} for the given {@link CollectionResourceMapping},
 	 * {@link ResourceMappings} and {@link RepositoryMetadata}.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 * @param mapping must not be {@literal null}.
 	 * @param provider must not be {@literal null}.
@@ -63,14 +63,14 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 	/**
 	 * Returns whether the current {@link RootResourceMetadata} instance for the repository is the primary one to be used.
 	 * Reflects to the primary state of the bean definition.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isPrimary() {
 		return AnnotationUtils.findAnnotation(repositoryMetadata.getRepositoryInterface(), Primary.class) != null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getDomainType()
 	 */
@@ -79,7 +79,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return repositoryMetadata.getDomainType();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.RootResourceMetadata#getProperty(java.lang.String)
 	 */
@@ -93,7 +93,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return mappingMetadata.getProperty(mappedPath);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#getMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
@@ -102,7 +102,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return provider.getMappingFor(property);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#hasMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
@@ -111,7 +111,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return provider.isMapped(property);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#isExported()
 	 */
@@ -120,7 +120,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return mapping.isExported();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getCollectionRel()
 	 */
@@ -129,7 +129,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return mapping.getRel();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getSingleResourceRel()
 	 */
@@ -138,7 +138,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return mapping.getItemResourceRel();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getPath()
 	 */
@@ -147,7 +147,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return mapping.getPath();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#isPagingResource()
 	 */
@@ -156,7 +156,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return mapping.isPagingResource();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
 	 */
@@ -165,7 +165,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return mapping.getDescription();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getItemResourceDescription()
 	 */
@@ -174,7 +174,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return mapping.getItemResourceDescription();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getExcerptProjection()
 	 */
@@ -183,7 +183,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return mapping.getExcerptProjection();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getSearchResourceMappings()
 	 */
@@ -192,7 +192,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return provider.getSearchResourceMappings(repositoryMetadata.getDomainType());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getSupportedHttpMethods()
 	 */

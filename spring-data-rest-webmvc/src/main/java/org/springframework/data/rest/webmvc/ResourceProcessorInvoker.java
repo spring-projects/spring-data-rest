@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class ResourceProcessorInvoker {
 	/**
 	 * Creates a new {@link ResourceProcessorInvoker} to consider the given {@link ResourceProcessor} to post-process the
 	 * controller methods return value to before invoking the delegate.
-	 * 
+	 *
 	 * @param processors the {@link ResourceProcessor}s to be considered, must not be {@literal null}.
 	 */
 	public ResourceProcessorInvoker(Collection<ResourceProcessor<?>> processors) {
@@ -77,7 +77,7 @@ public class ResourceProcessorInvoker {
 
 	/**
 	 * Invokes all {@link ResourceProcessor} instances registered for the type of the given value.
-	 * 
+	 *
 	 * @param value must not be {@literal null}.
 	 * @return
 	 */
@@ -90,7 +90,7 @@ public class ResourceProcessorInvoker {
 
 	/**
 	 * Invokes all {@link ResourceProcessor} instances registered for the type of the given value and reference type.
-	 * 
+	 *
 	 * @param value must not be {@literal null}.
 	 * @param referenceType must not be {@literal null}.
 	 * @return
@@ -128,7 +128,7 @@ public class ResourceProcessorInvoker {
 
 	/**
 	 * Invokes all registered {@link ResourceProcessor}s registered for the given {@link ResolvableType}.
-	 * 
+	 *
 	 * @param value the object to process
 	 * @param type
 	 * @return
@@ -160,7 +160,7 @@ public class ResourceProcessorInvoker {
 	/**
 	 * Interface to unify interaction with {@link ResourceProcessor}s. The {@link Ordered} rank should be determined by
 	 * the underlying processor.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private interface ProcessorWrapper extends Ordered {
@@ -168,7 +168,7 @@ public class ResourceProcessorInvoker {
 		/**
 		 * Returns whether the underlying processor supports the given {@link ResolvableType}. It might also additionally
 		 * inspect the object that would eventually be handed to the processor.
-		 * 
+		 *
 		 * @param type the type of object to be post processed, will never be {@literal null}.
 		 * @param value the object that would be passed into the processor eventually, can be {@literal null}.
 		 * @return
@@ -178,7 +178,7 @@ public class ResourceProcessorInvoker {
 		/**
 		 * Performs the actual invocation of the processor. Implementations can be sure
 		 * {@link #supports(ResolvableType, Object)} has been called before and returned {@literal true}.
-		 * 
+		 *
 		 * @param object
 		 */
 		Object invokeProcessor(Object object);
@@ -186,7 +186,7 @@ public class ResourceProcessorInvoker {
 
 	/**
 	 * Default implementation of {@link ProcessorWrapper} to generically deal with {@link ResourceSupport} types.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class DefaultProcessorWrapper implements ResourceProcessorInvoker.ProcessorWrapper {
@@ -196,7 +196,7 @@ public class ResourceProcessorInvoker {
 
 		/**
 		 * Creates a new {@link DefaultProcessorWrapper} with the given {@link ResourceProcessor}.
-		 * 
+		 *
 		 * @param processor must not be {@literal null}.
 		 */
 		public DefaultProcessorWrapper(ResourceProcessor<?> processor) {
@@ -216,7 +216,7 @@ public class ResourceProcessorInvoker {
 			return isRawTypeAssignable(targetType, getRawType(type));
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.webmvc.ResourceProcessorHandlerMethodReturnValueHandler.PostProcessorWrapper#invokeProcessor(java.lang.Object)
 		 */
@@ -237,7 +237,7 @@ public class ResourceProcessorInvoker {
 
 		/**
 		 * Returns the target type the underlying {@link ResourceProcessor} wants to get invoked for.
-		 * 
+		 *
 		 * @return the targetType
 		 */
 		public ResolvableType getTargetType() {
@@ -248,14 +248,14 @@ public class ResourceProcessorInvoker {
 	/**
 	 * {@link ProcessorWrapper} to deal with {@link ResourceProcessor}s for {@link Resource}s. Will fall back to peeking
 	 * into the {@link Resource}'s content for type resolution.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class ResourceProcessorWrapper extends ResourceProcessorInvoker.DefaultProcessorWrapper {
 
 		/**
 		 * Creates a new {@link ResourceProcessorWrapper} for the given {@link ResourceProcessor}.
-		 * 
+		 *
 		 * @param processor must not be {@literal null}.
 		 */
 		public ResourceProcessorWrapper(ResourceProcessor<?> processor) {
@@ -279,7 +279,7 @@ public class ResourceProcessorInvoker {
 		/**
 		 * Returns whether the given {@link Resource} matches the given target {@link ResolvableType}. We inspect the
 		 * {@link Resource}'s value to determine the match.
-		 * 
+		 *
 		 * @param resource
 		 * @param target must not be {@literal null}.
 		 * @return whether the given {@link Resource} can be assigned to the given target {@link ResolvableType}
@@ -319,14 +319,14 @@ public class ResourceProcessorInvoker {
 	/**
 	 * {@link ProcessorWrapper} for {@link ResourceProcessor}s targeting {@link Resources}. Will peek into the content of
 	 * the {@link Resources} for type matching decisions if needed.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	static class ResourcesProcessorWrapper extends ResourceProcessorInvoker.DefaultProcessorWrapper {
 
 		/**
 		 * Creates a new {@link ResourcesProcessorWrapper} for the given {@link ResourceProcessor}.
-		 * 
+		 *
 		 * @param processor must not be {@literal null}.
 		 */
 		public ResourcesProcessorWrapper(ResourceProcessor<?> processor) {
@@ -350,7 +350,7 @@ public class ResourceProcessorInvoker {
 		/**
 		 * Returns whether the given {@link Resources} instance matches the given {@link ResolvableType}. We predict this by
 		 * inspecting the first element of the content of the {@link Resources}.
-		 * 
+		 *
 		 * @param resources the {@link Resources} to inspect.
 		 * @param target that target {@link ResolvableType}.
 		 * @return
@@ -398,7 +398,7 @@ public class ResourceProcessorInvoker {
 	/**
 	 * Helper extension of {@link AnnotationAwareOrderComparator} to make {@link #getOrder(Object)} public to allow it
 	 * being used in a standalone fashion.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class CustomOrderAwareComparator extends AnnotationAwareOrderComparator {

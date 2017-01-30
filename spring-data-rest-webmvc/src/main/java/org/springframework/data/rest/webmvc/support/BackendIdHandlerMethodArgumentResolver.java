@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 /**
  * {@link HandlerMethodArgumentResolver} to resolve entity ids for injection int handler method arguments annotated with
  * {@link BackendId}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
@@ -46,7 +46,7 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 	/**
 	 * Creates a new {@link BackendIdHandlerMethodArgumentResolver} for the given {@link BackendIdConverter}s and
 	 * {@link ResourceMetadataHandlerMethodArgumentResolver}.
-	 * 
+	 *
 	 * @param idConverters the {@link BackendIdConverter}s registered in the system, must not be {@literal null}..
 	 * @param resourceMetadataResolver the resolver to obtain {@link ResourceMetadata} from, must not be {@literal null}.
 	 * @param baseUri must not be {@literal null}.
@@ -63,7 +63,7 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 		this.baseUri = baseUri;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
 	 */
@@ -72,7 +72,7 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 		return parameter.hasParameterAnnotation(BackendId.class);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */

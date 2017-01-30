@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ import org.springframework.context.MessageSourceResolvable;
 
 /**
  * Adapter class for the {@link MessageSourceResolvable} part of a {@link ResourceDescription}.
- * 
+ *
  * @author Oliver Gierke
  */
 public abstract class ResolvableResourceDescriptionSupport implements ResourceDescription {
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.MessageSourceResolvable#getArguments()
 	 */
@@ -33,7 +33,7 @@ public abstract class ResolvableResourceDescriptionSupport implements ResourceDe
 		return new Object[0];
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.MessageSourceResolvable#getDefaultMessage()
 	 */

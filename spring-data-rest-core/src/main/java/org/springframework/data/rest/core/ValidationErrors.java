@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.springframework.validation.Errors;
 /**
  * An {@link Errors} implementation for use in the events mechanism of Spring Data REST. Customizes actual field lookup
  * by using a {@link PersistentPropertyAccessor} for actual value lookups.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -49,7 +49,7 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 
 	/**
 	 * Creates a new {@link ValidationErrors} instance for the given source object and {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param source the source object to gather validation errors on, must not be {@literal null}.
 	 * @param entity the {@link PersistentEntity} for the given source instance, must not be {@literal null}.
 	 */
@@ -64,7 +64,7 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 		this.source = source;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.validation.AbstractPropertyBindingResult#getPropertyAccessor()
 	 */
@@ -109,7 +109,7 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 		};
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.validation.AbstractBindingResult#getTarget()
 	 */

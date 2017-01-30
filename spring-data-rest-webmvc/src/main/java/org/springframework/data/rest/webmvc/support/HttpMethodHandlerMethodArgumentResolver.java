@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,14 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 /**
  * {@link HandlerMethodArgumentResolver} to provide {@link HttpMethod} instances for innjection into MVC controller
  * methods.
- * 
+ *
  * @author Oliver Gierke
  */
 public enum HttpMethodHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
 	INSTANCE;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
 	 */
@@ -43,7 +43,7 @@ public enum HttpMethodHandlerMethodArgumentResolver implements HandlerMethodArgu
 		return HttpMethod.class.equals(parameter.getParameterType());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */

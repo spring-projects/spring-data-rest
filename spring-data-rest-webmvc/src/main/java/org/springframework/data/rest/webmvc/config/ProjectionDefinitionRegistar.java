@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import org.springframework.util.Assert;
  * registered with the {@link RepositoryRestConfiguration}. This rather external configuration has been used to make
  * sure we don't introduce a cyclic dependency between {@link RepositoryRestConfiguration} an
  * {@link RepositoryResourceMappings} as the latter need access to the former to discover mappings in the first place.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.5
  * @soundtrack Katinka - Ausverkauf
@@ -43,7 +43,7 @@ public class ProjectionDefinitionRegistar extends InstantiationAwareBeanPostProc
 
 	/**
 	 * Creates a new {@link ProjectionDefinitionRegistar} for the given {@link RepositoryRestConfiguration}.
-	 * 
+	 *
 	 * @param config must not be {@literal null}.
 	 */
 	public ProjectionDefinitionRegistar(ObjectFactory<RepositoryRestConfiguration> config) {
@@ -53,7 +53,7 @@ public class ProjectionDefinitionRegistar extends InstantiationAwareBeanPostProc
 		this.config = config;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter#postProcessAfterInitialization(java.lang.Object, java.lang.String)
 	 */

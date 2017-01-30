@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.springframework.util.Assert;
 /**
  * Central abstraction obtain {@link ResourceMetadata} and {@link ResourceMapping} instances for domain types and
  * repositories.
- * 
+ *
  * @author Oliver Gierke
  */
 public class RepositoryResourceMappings extends PersistentEntitiesResourceMappings {
@@ -45,7 +45,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 	/**
 	 * Creates a new {@link RepositoryResourceMappings} using the given {@link Repositories} and
 	 * {@link PersistentEntities}.
-	 * 
+	 *
 	 * @param repositories must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
 	 * @param strategy must not be {@literal null}.
@@ -58,7 +58,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 	/**
 	 * Creates a new {@link RepositoryResourceMappings} from the given {@link RepositoryRestConfiguration},
 	 * {@link Repositories} and {@link RelProvider}.
-	 * 
+	 *
 	 * @param repositories must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
 	 * @param strategy must not be {@literal null}.
@@ -98,7 +98,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#getSearchResourceMappings(java.lang.Class)
 	 */
@@ -130,7 +130,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		return searchResourceMappings;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#hasMappingFor(java.lang.Class)
 	 */
@@ -148,7 +148,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings#isMapped(org.springframework.data.mapping.PersistentProperty)
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * {@link Projector} looking up a projection by name for the given source type.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PersistentEntityProjector extends DefaultExcerptProjector implements Projector {
@@ -36,7 +36,7 @@ public class PersistentEntityProjector extends DefaultExcerptProjector implement
 	/**
 	 * Creates a new {@link PersistentEntityProjector} using the given {@link ProjectionDefinitions},
 	 * {@link ProjectionFactory} and projection name.
-	 * 
+	 *
 	 * @param projectionDefinitions must not be {@literal null}.
 	 * @param factory must not be {@literal null}.
 	 * @param projection can be empty.
@@ -69,7 +69,7 @@ public class PersistentEntityProjector extends DefaultExcerptProjector implement
 		});
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.support.DefaultExcerptProjector#projectExcerpt(java.lang.Object)
 	 */
@@ -88,7 +88,7 @@ public class PersistentEntityProjector extends DefaultExcerptProjector implement
 	/**
 	 * Creates the projection for the given source instance falling back to the given {@link Converter} if no explicit
 	 * projection is selected.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
 	 * @return

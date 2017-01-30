@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A Spring HATEOAS {@link Resource} subclass that holds a reference to the entity's {@link PersistentEntity} metadata.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -49,7 +49,7 @@ public class PersistentEntityResource extends Resource<Object> {
 	/**
 	 * Returns whether the content of the resource is a new entity about to be created. Used to distinguish between
 	 * creation and updates for incoming requests.
-	 * 
+	 *
 	 * @return
 	 */
 	private final @Getter boolean isNew;
@@ -58,7 +58,7 @@ public class PersistentEntityResource extends Resource<Object> {
 	/**
 	 * Creates a new {@link PersistentEntityResource} for the given {@link PersistentEntity}, content, embedded
 	 * {@link Resources}, links and flag whether to render all associations.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 * @param content must not be {@literal null}.
 	 * @param links must not be {@literal null}.
@@ -79,7 +79,7 @@ public class PersistentEntityResource extends Resource<Object> {
 
 	/**
 	 * Returns the {@link PersistentEntity} for the underlying instance.
-	 * 
+	 *
 	 * @return
 	 */
 	public PersistentEntity<?, ? extends PersistentProperty<?>> getPersistentEntity() {
@@ -88,7 +88,7 @@ public class PersistentEntityResource extends Resource<Object> {
 
 	/**
 	 * Returns the {@link PersistentPropertyAccessor} for the underlying content bean.
-	 * 
+	 *
 	 * @return
 	 */
 	public PersistentPropertyAccessor getPropertyAccessor() {
@@ -97,7 +97,7 @@ public class PersistentEntityResource extends Resource<Object> {
 
 	/**
 	 * Returns the resources that are supposed to be rendered in the {@code _embedded} clause.
-	 * 
+	 *
 	 * @return the embeddeds
 	 */
 	public Iterable<EmbeddedWrapper> getEmbeddeds() {
@@ -106,7 +106,7 @@ public class PersistentEntityResource extends Resource<Object> {
 
 	/**
 	 * Creates a new {@link Builder} to create {@link PersistentEntityResource}s eventually.
-	 * 
+	 *
 	 * @param content must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 * @return
@@ -130,7 +130,7 @@ public class PersistentEntityResource extends Resource<Object> {
 
 		/**
 		 * Creates a new {@link Builder} instance for the given content and {@link PersistentEntity}.
-		 * 
+		 *
 		 * @param content must not be {@literal null}.
 		 * @param entity must not be {@literal null}.
 		 */
@@ -146,7 +146,7 @@ public class PersistentEntityResource extends Resource<Object> {
 		/**
 		 * Configures the builder to embed the given {@link EmbeddedWrapper} instances. Creates a {@link Resources} instance
 		 * to make sure the {@link EmbeddedWrapper} handling gets applied to the serialization output ignoring the links.
-		 * 
+		 *
 		 * @param resources can be {@literal null}.
 		 * @return the builder
 		 */
@@ -158,7 +158,7 @@ public class PersistentEntityResource extends Resource<Object> {
 
 		/**
 		 * Adds the given {@link Link} to the {@link PersistentEntityResource}.
-		 * 
+		 *
 		 * @param link must not be {@literal null}.
 		 * @return the builder
 		 */
@@ -180,7 +180,7 @@ public class PersistentEntityResource extends Resource<Object> {
 
 		/**
 		 * Finally creates the {@link PersistentEntityResource} instance.
-		 * 
+		 *
 		 * @return
 		 */
 		public PersistentEntityResource build() {
@@ -190,7 +190,7 @@ public class PersistentEntityResource extends Resource<Object> {
 		/**
 		 * Finally creates the {@link PersistentEntityResource} instance to symbolize the contained entity is about to be
 		 * created.
-		 * 
+		 *
 		 * @return
 		 */
 		public PersistentEntityResource forCreation() {
@@ -208,7 +208,7 @@ public class PersistentEntityResource extends Resource<Object> {
 			super(content);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.hateoas.ResourceSupport#getLinks()
 		 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 /**
  * {@link HandlerMethodReturnValueHandler} to post-process the objects returned from controller methods using the
  * configured {@link ResourceProcessor}s.
- * 
+ *
  * @author Oliver Gierke
  * @deprecated use the same type from Spring HATEOAS, will be removed in 2.7.
  */
@@ -119,7 +119,7 @@ public class ResourceProcessorHandlerMethodReturnValueHandler implements Handler
 	 * Re-wraps the result of the post-processing work into an {@link HttpEntity} or {@link ResponseEntity} if the
 	 * original value was one of those two types. Copies headers and status code from the original value but uses the new
 	 * body.
-	 * 
+	 *
 	 * @param newBody the post-processed value.
 	 * @param originalValue the original input value.
 	 * @return

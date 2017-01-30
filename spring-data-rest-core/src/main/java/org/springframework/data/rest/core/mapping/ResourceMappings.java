@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ public interface ResourceMappings extends Streamable<ResourceMetadata> {
 
 	/**
 	 * Returns a {@link ResourceMetadata} for the given type if available.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return the {@link ResourceMetadata} if available or {@literal null} otherwise.
 	 */
@@ -32,7 +32,7 @@ public interface ResourceMappings extends Streamable<ResourceMetadata> {
 
 	/**
 	 * Returns the {@link ResourceMapping}s for the search resources of the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
@@ -40,7 +40,7 @@ public interface ResourceMappings extends Streamable<ResourceMetadata> {
 
 	/**
 	 * Returns whether we have a {@link ResourceMapping} for the given type and it is exported.
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -48,7 +48,7 @@ public interface ResourceMappings extends Streamable<ResourceMetadata> {
 
 	/**
 	 * Returns whether we export a top-level resource for the given path.
-	 * 
+	 *
 	 * @param path must not be {@literal null} or empty.
 	 * @return
 	 */
@@ -56,7 +56,7 @@ public interface ResourceMappings extends Streamable<ResourceMetadata> {
 
 	/**
 	 * Returns whether we have a {@link ResourceMapping} for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */

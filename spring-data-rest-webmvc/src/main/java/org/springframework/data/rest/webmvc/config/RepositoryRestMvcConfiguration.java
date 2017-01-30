@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,7 +164,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
  * <p/>
  * Any XML files located in the classpath under the {@literal META-INF/spring-data-rest/} path will be automatically
  * found and loaded into this {@link org.springframework.context.ApplicationContext}.
- * 
+ *
  * @author Oliver Gierke
  * @author Jon Brisbin
  * @author Greg Turnquist
@@ -199,7 +199,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		super(context, conversionService);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
 	 */
@@ -208,7 +208,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		this.beanClassLoader = classLoader;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
@@ -316,7 +316,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	/**
 	 * {@link org.springframework.beans.factory.config.BeanPostProcessor} to turn beans annotated as
 	 * {@link org.springframework.data.rest.repository.annotation.RepositoryEventHandler}s.
-	 * 
+	 *
 	 * @return
 	 */
 	@Bean
@@ -326,7 +326,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	/**
 	 * For merging incoming objects materialized from JSON with existing domain objects loaded from the repository.
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */
@@ -338,7 +338,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	/**
 	 * Turns an {@link javax.servlet.http.HttpServletRequest} into a
 	 * {@link org.springframework.http.server.ServerHttpRequest}.
-	 * 
+	 *
 	 * @return
 	 */
 	@Bean
@@ -348,7 +348,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	/**
 	 * A convenience resolver that pulls together all the information needed to service a request.
-	 * 
+	 *
 	 * @return
 	 */
 	@Bean
@@ -388,7 +388,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	/**
 	 * A special {@link org.springframework.hateoas.EntityLinks} implementation that takes repository and current
 	 * configuration into account when generating links.
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */
@@ -404,7 +404,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	/**
 	 * Reads incoming JSON into an entity.
-	 * 
+	 *
 	 * @return
 	 */
 	@Bean
@@ -417,7 +417,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	/**
 	 * Turns a domain class into a {@link org.springframework.data.rest.webmvc.json.JsonSchema}.
-	 * 
+	 *
 	 * @return
 	 */
 	@Bean
@@ -430,7 +430,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	/**
 	 * The {@link MessageSourceAccessor} to provide messages for {@link ResourceDescription}s being rendered.
-	 * 
+	 *
 	 * @return
 	 */
 	@Bean
@@ -456,7 +456,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	/**
 	 * The Jackson {@link ObjectMapper} used internally.
-	 * 
+	 *
 	 * @return
 	 */
 	@Bean
@@ -474,7 +474,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	/**
 	 * The {@link HttpMessageConverter} used by Spring MVC to read and write JSON data.
-	 * 
+	 *
 	 * @return
 	 */
 	@Bean
@@ -545,7 +545,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	/**
 	 * The {@link HttpMessageConverter} used to create {@literal text/uri-list} responses.
-	 * 
+	 *
 	 * @return
 	 */
 	@Bean
@@ -571,7 +571,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	/**
 	 * Special {@link org.springframework.web.servlet.HandlerAdapter} that only recognizes handler methods defined in the
 	 * provided controller classes.
-	 * 
+	 *
 	 * @param resourceProcessors {@link ResourceProcessor}s available in the {@link ApplicationContext}.
 	 * @return
 	 */
@@ -645,7 +645,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	/**
 	 * Jackson module responsible for intelligently serializing and deserializing JSON that corresponds to an entity.
-	 * 
+	 *
 	 * @return
 	 */
 	protected Module persistentEntityJackson2Module() {
@@ -683,7 +683,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new DefaultExcerptProjector(projectionFactory, resourceMappings());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#extendHandlerExceptionResolvers(java.util.List)
 	 */
@@ -746,7 +746,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new AlpsJsonHttpMessageConverter(alpsConverter());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration#pageableResolver()
 	 */
@@ -763,7 +763,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return resolver;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration#sortResolver()
 	 */
@@ -914,7 +914,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	// HAL Browser
 	//
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry)
 	 */
@@ -940,7 +940,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		/**
 		 * Creates a new {@link ResourceSupportHttpMessageConverter} with the given order.
-		 * 
+		 *
 		 * @param order the order for the {@link HttpMessageConverter}.
 		 */
 		public ResourceSupportHttpMessageConverter(int order) {
@@ -948,7 +948,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			this.order = order;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.core.Ordered#getOrder()
 		 */

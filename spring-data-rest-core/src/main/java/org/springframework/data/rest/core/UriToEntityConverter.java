@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.springframework.util.Assert;
 
 /**
  * A {@link GenericConverter} that can convert a {@link URI} into an entity.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -51,7 +51,7 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 	/**
 	 * Creates a new {@link UriToEntityConverter} using the given {@link PersistentEntities},
 	 * {@link RepositoryInvokerFactory} and {@link Repositories}.
-	 * 
+	 *
 	 * @param entities must not be {@literal null}.
 	 * @param invokerFactory must not be {@literal null}.
 	 * @param repositories must not be {@literal null}.
@@ -81,7 +81,7 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 		this.repositories = repositories;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
 	 */

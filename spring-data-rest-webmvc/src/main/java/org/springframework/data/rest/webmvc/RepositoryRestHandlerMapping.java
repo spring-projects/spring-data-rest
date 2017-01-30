@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		return mappings.exportsTopLevelResourceFor(getRepositoryBasePath(repositoryLookupPath)) ? handlerMethod : null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping#handleNoMatch(java.util.Set, java.lang.String, javax.servlet.http.HttpServletRequest)
 	 */
@@ -189,7 +189,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping#process(org.springframework.web.servlet.mvc.condition.ProducesRequestCondition)
 	 */
@@ -245,7 +245,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.util.StringValueResolver#resolveStringValue(java.lang.String)
 		 */

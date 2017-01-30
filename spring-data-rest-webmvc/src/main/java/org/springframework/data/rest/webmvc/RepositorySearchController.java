@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * Controller to lookup and execute searches on a given repository.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -84,7 +84,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	/**
 	 * Creates a new {@link RepositorySearchController} using the given {@link PagedResourcesAssembler},
 	 * {@link EntityLinks} and {@link ResourceMappings}.
-	 * 
+	 *
 	 * @param assembler must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
@@ -105,7 +105,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	/**
 	 * <code>OPTIONS /{repository}/search</code>.
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @return
 	 * @since 2.2
@@ -123,7 +123,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	/**
 	 * <code>HEAD /{repository}/search</code> - Checks whether the search resource is present.
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @return
 	 */
@@ -138,7 +138,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	/**
 	 * <code>GET /{repository}/search</code> - Exposes links to the individual search resources exposed by the backing
 	 * repository.
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @return
 	 */
@@ -163,7 +163,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	/**
 	 * Executes the search with the given name.
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @param parameters
 	 * @param search
@@ -193,7 +193,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	/**
 	 * Turns the given source into a {@link ResourceSupport} if needed and possible. Uses the given
 	 * {@link PersistentEntityResourceAssembler} for the actual conversion.
-	 * 
+	 *
 	 * @param source can be must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
 	 * @param domainType the domain type in case the source is an empty iterable, must not be {@literal null}.
@@ -226,7 +226,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	/**
 	 * Executes a query method and exposes the results in compact form.
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @param parameters
 	 * @param repository
@@ -274,7 +274,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	/**
 	 * <code>OPTIONS /{repository}/search/{search}</code>.
-	 * 
+	 *
 	 * @param information
 	 * @param search
 	 * @return
@@ -293,7 +293,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	/**
 	 * Handles a {@code HEAD} request for individual searches.
-	 * 
+	 *
 	 * @param information
 	 * @param search
 	 * @return
@@ -309,7 +309,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	/**
 	 * Checks that the given request is actually executable. Will reject execution if we don't find a search with the
 	 * given name.
-	 * 
+	 *
 	 * @param resourceInformation
 	 * @param searchName
 	 * @return
@@ -367,7 +367,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 	/**
 	 * Verifies that the given {@link RootResourceInformation} has searches exposed.
-	 * 
+	 *
 	 * @param resourceInformation
 	 */
 	private static SearchResourceMappings verifySearchesExposed(RootResourceInformation resourceInformation) {
@@ -384,7 +384,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	/**
 	 * Tries to turn all elements of the given {@link List} into URIs and falls back to keeping the original element if
 	 * the conversion fails.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @return
 	 */

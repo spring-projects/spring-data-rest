@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
 
 /**
  * A value object to represent ETags.
- * 
+ *
  * @author Oliver Gierke
  */
 @EqualsAndHashCode
@@ -42,7 +42,7 @@ public final class ETag {
 
 	/**
 	 * Creates a new {@link ETag} from the given value.
-	 * 
+	 *
 	 * @param value can be {@literal null}.
 	 */
 	private ETag(String value) {
@@ -52,7 +52,7 @@ public final class ETag {
 	/**
 	 * Creates a new {@link ETag} for the given {@link String} value. Falls back to {@link #NO_ETAG} in case
 	 * {@literal null} is provided.
-	 * 
+	 *
 	 * @param value the source ETag value, must not be {@literal null}.
 	 * @return
 	 */
@@ -66,7 +66,7 @@ public final class ETag {
 
 	/**
 	 * Creates a new {@link ETag} for the given {@link PersistentEntityResource}.
-	 * 
+	 *
 	 * @param resource must not be {@literal null}.
 	 * @return
 	 */
@@ -79,7 +79,7 @@ public final class ETag {
 
 	/**
 	 * Creates a new {@link ETag} from the given {@link PersistentEntity} and target bean.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 * @param bean must not be {@literal null}.
 	 * @return
@@ -91,7 +91,7 @@ public final class ETag {
 	/**
 	 * Verifies the ETag to be created for the given target bean with the current one and raises a
 	 * {@link ETagDoesntMatchException} in case they don't match.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 * @param target can be {@literal null}.
 	 * @throws ETagDoesntMatchException in case the calculated {@link ETag} for the given bean does not match the current
@@ -111,7 +111,7 @@ public final class ETag {
 	/**
 	 * Returns whether the {@link ETag} matches the given {@link PersistentEntity} and target. A more dissenting way of
 	 * checking matches as it does not match if the ETag is {@link #NO_ETAG}.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 * @param target can be {@literal null}.
 	 * @return
@@ -127,7 +127,7 @@ public final class ETag {
 
 	/**
 	 * Adds the current {@link ETag} to the given headers.
-	 * 
+	 *
 	 * @param headers must not be {@literal null}.
 	 * @return the {@link HttpHeaders} with the ETag header been set if the current {@link ETag} instance is not
 	 *         {@link #NO_ETAG}.
@@ -145,7 +145,7 @@ public final class ETag {
 		return headers;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

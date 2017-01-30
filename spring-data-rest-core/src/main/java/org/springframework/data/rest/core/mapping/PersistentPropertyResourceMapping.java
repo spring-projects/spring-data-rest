@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Special resource mapping for {@link PersistentProperty} instances.
- * 
+ *
  * @author Oliver Gierke
  */
 class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping {
@@ -39,7 +39,7 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 
 	/**
 	 * Creates a new {@link RootPropertyResourceMapping}.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @param exported whether the property is exported or not.
 	 */
@@ -54,7 +54,7 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 		this.description = Optional.ofNullable(property.findAnnotation(Description.class));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getPath()
 	 */
@@ -66,7 +66,7 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 				.orElseGet(() -> new Path(property.getName()));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
 	 */
@@ -78,7 +78,7 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 				.orElseGet(() -> property.getName());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
 	 */
@@ -93,7 +93,7 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 		return !typeMapping.isExported() ? false : annotation.map(it -> it.exported()).orElse(true);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isPagingResource()
 	 */
@@ -102,7 +102,7 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
 	 */
@@ -118,7 +118,7 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 				.orElse(fallback);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.PropertyAwareResourceMapping#getProperty()
 	 */

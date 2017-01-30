@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link ResourceAssembler} to create {@link PersistentEntityResource}s for arbitrary domain objects.
- * 
+ *
  * @author Oliver Gierke
  */
 @RequiredArgsConstructor
@@ -44,7 +44,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 	private final @NonNull SelfLinkProvider linkProvider;
 	private final @NonNull EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.hateoas.ResourceAssembler#toResource(java.lang.Object)
 	 */
@@ -57,7 +57,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 	/**
 	 * Returns the full object as {@link PersistentEntityResource} using the underlying {@link Projector}.
-	 * 
+	 *
 	 * @param instance must not be {@literal null}.
 	 * @return
 	 */
@@ -80,7 +80,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 	/**
 	 * Returns the embedded resources to render. This will add an {@link RelatedResource} for linkable associations if
 	 * they have an excerpt projection registered.
-	 * 
+	 *
 	 * @param instance must not be {@literal null}.
 	 * @return
 	 */
@@ -90,7 +90,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 	/**
 	 * Creates the self link for the given domain instance.
-	 * 
+	 *
 	 * @param instance must be a managed entity, not {@literal null}.
 	 * @return
 	 */

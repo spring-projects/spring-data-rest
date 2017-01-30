@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.context.ApplicationListener;
 /**
  * Abstract class that listens for generic {@link RepositoryEvent}s and dispatches them to a specific method based on
  * the event type.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -69,35 +69,35 @@ public abstract class AbstractRepositoryEventListener<T> implements ApplicationL
 
 	/**
 	 * Override this method if you are interested in {@literal beforeCreate} events.
-	 * 
+	 *
 	 * @param entity The entity being created.
 	 */
 	protected void onBeforeCreate(T entity) {}
 
 	/**
 	 * Override this method if you are interested in {@literal afterCreate} events.
-	 * 
+	 *
 	 * @param entity The entity that was created.
 	 */
 	protected void onAfterCreate(T entity) {}
 
 	/**
 	 * Override this method if you are interested in {@literal beforeSave} events.
-	 * 
+	 *
 	 * @param entity The entity being saved.
 	 */
 	protected void onBeforeSave(T entity) {}
 
 	/**
 	 * Override this method if you are interested in {@literal afterSave} events.
-	 * 
+	 *
 	 * @param entity The entity that was just saved.
 	 */
 	protected void onAfterSave(T entity) {}
 
 	/**
 	 * Override this method if you are interested in {@literal beforeLinkSave} events.
-	 * 
+	 *
 	 * @param parent The parent entity to which the child object is linked.
 	 * @param linked The linked, child entity.
 	 */
@@ -105,7 +105,7 @@ public abstract class AbstractRepositoryEventListener<T> implements ApplicationL
 
 	/**
 	 * Override this method if you are interested in {@literal afterLinkSave} events.
-	 * 
+	 *
 	 * @param parent The parent entity to which the child object is linked.
 	 * @param linked The linked, child entity.
 	 */
@@ -113,7 +113,7 @@ public abstract class AbstractRepositoryEventListener<T> implements ApplicationL
 
 	/**
 	 * Override this method if you are interested in {@literal beforeLinkDelete} events.
-	 * 
+	 *
 	 * @param parent The parent entity to which the child object is linked.
 	 * @param linked The linked, child entity.
 	 */
@@ -121,7 +121,7 @@ public abstract class AbstractRepositoryEventListener<T> implements ApplicationL
 
 	/**
 	 * Override this method if you are interested in {@literal afterLinkDelete} events.
-	 * 
+	 *
 	 * @param parent The parent entity to which the child object is linked.
 	 * @param linked The linked, child entity.
 	 */
@@ -129,14 +129,14 @@ public abstract class AbstractRepositoryEventListener<T> implements ApplicationL
 
 	/**
 	 * Override this method if you are interested in {@literal beforeDelete} events.
-	 * 
+	 *
 	 * @param entity The entity that is being deleted.
 	 */
 	protected void onBeforeDelete(T entity) {}
 
 	/**
 	 * Override this method if you are interested in {@literal afterDelete} events.
-	 * 
+	 *
 	 * @param entity The entity that was just deleted.
 	 */
 	protected void onAfterDelete(T entity) {}

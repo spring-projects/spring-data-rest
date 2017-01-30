@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * Value object to represent a SpEL-backed patch path.
- * 
+ *
  * @author Oliver Gierke
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -64,7 +64,7 @@ class SpelPath {
 
 	/**
 	 * Returns a {@link SpelPath} for the given source.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
@@ -74,7 +74,7 @@ class SpelPath {
 
 	/**
 	 * Returns a {@link TypedSpelPath} binding the expression to the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -87,7 +87,7 @@ class SpelPath {
 
 	/**
 	 * Returns the leaf type of the underlying expression or the given type
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -100,7 +100,7 @@ class SpelPath {
 
 	/**
 	 * Returns whether the current path represents an append path, i.e. is supposed to append to collection.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isAppend() {
@@ -111,7 +111,7 @@ class SpelPath {
 		return SpelPath.of(path.substring(0, path.lastIndexOf('/')));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -120,7 +120,7 @@ class SpelPath {
 		return path;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -140,7 +140,7 @@ class SpelPath {
 		return this.path.equals(that.path);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -229,7 +229,7 @@ class SpelPath {
 
 		/**
 		 * Returns the {@link TypedSpelPath} for the given {@link SpelPath} and type.
-		 * 
+		 *
 		 * @param path must not be {@literal null}.
 		 * @param type must not be {@literal null}.
 		 * @return
@@ -244,7 +244,7 @@ class SpelPath {
 
 		/**
 		 * Returns the value pointed to by the current path with the given target object.
-		 * 
+		 *
 		 * @param target must not be {@literal null}.
 		 * @return can be {@literal null}.
 		 */
@@ -262,7 +262,7 @@ class SpelPath {
 
 		/**
 		 * Sets the given value on the given target object.
-		 * 
+		 *
 		 * @param target must not be {@literal null}.
 		 * @param value can be {@literal null}.
 		 */
@@ -275,7 +275,7 @@ class SpelPath {
 
 		/**
 		 * Returns the type of the expression target based on the given root.
-		 * 
+		 *
 		 * @param root must not be {@literal null}.
 		 * @return
 		 */
@@ -288,7 +288,7 @@ class SpelPath {
 
 		/**
 		 * Copies the value pointed to by the given path within the given source object to the current expression target.
-		 * 
+		 *
 		 * @param path the {@link SpelPath} to look the value up from, must not be {@literal null}.
 		 * @param source the source object to look the value up from, must not be {@literal null}.
 		 * @return
@@ -305,7 +305,7 @@ class SpelPath {
 		/**
 		 * Moves the value pointed to by the given path within the given source object to the current expression target and
 		 * removes the value from its original position.
-		 * 
+		 *
 		 * @param path the {@link SpelPath} to look the value up from, must not be {@literal null}.
 		 * @param source the source object to look the value up from, must not be {@literal null}.
 		 * @return
@@ -320,7 +320,7 @@ class SpelPath {
 
 		/**
 		 * Removes the value pointed to by the current path within the given target.
-		 * 
+		 *
 		 * @param target must not be {@literal null}.
 		 * @return the original value that was just removed.
 		 */
@@ -351,7 +351,7 @@ class SpelPath {
 		/**
 		 * Adds a value to the operation's path. If the path references a list index, the value is added to the list at the
 		 * given index. If the path references an object property, the property is set to the value.
-		 * 
+		 *
 		 * @param target The target object.
 		 * @param value The value to add.
 		 */
@@ -410,7 +410,7 @@ class SpelPath {
 
 		/**
 		 * Verifies that the given path exists on the given type. Skips collection index parts and append characters.
-		 * 
+		 *
 		 * @param path must not be {@literal null} or empty.
 		 * @param type must not be {@literal null}.
 		 * @return the {@link PropertyPath} if the path could be resolved or {@link Optional#empty()} in case an empty path

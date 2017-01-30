@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import org.springframework.util.Assert;
 
 /**
  * An exception being thrown in case the {@link ETag} calculated for a particular object does not match an expected one.
- * 
+ *
  * @author Oliver Gierke
  * @see ETag#verify(org.springframework.data.mapping.PersistentEntity, Object)
  */
@@ -33,7 +33,7 @@ public class ETagDoesntMatchException extends RuntimeException {
 	/**
 	 * Creates a new {@link ETagDoesntMatchException} for the given bean as well as the {@link ETag} it was expected to
 	 * match.
-	 * 
+	 *
 	 * @param bean must not be {@literal null}.
 	 * @param expected must not be {@literal null}.
 	 */
@@ -48,7 +48,7 @@ public class ETagDoesntMatchException extends RuntimeException {
 
 	/**
 	 * Returns the bean not matching the {@link ETag}.
-	 * 
+	 *
 	 * @return the bean
 	 */
 	public Object getBean() {
@@ -57,7 +57,7 @@ public class ETagDoesntMatchException extends RuntimeException {
 
 	/**
 	 * Returns the {@link ETag} the bean was expected to match.
-	 * 
+	 *
 	 * @return the expected
 	 */
 	public ETag getExpectedETag() {

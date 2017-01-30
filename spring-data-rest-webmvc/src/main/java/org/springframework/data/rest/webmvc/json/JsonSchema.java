@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 /**
  * Model class to render JSON schema documents.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -61,7 +61,7 @@ public class JsonSchema {
 	/**
 	 * Creates a new {@link JsonSchema} instance for the given title, description, {@link AbstractJsonSchemaProperty}s and
 	 * {@link Definitions}.
-	 * 
+	 *
 	 * @param title must not be {@literal null} or empty.
 	 * @param description can be {@literal null}.
 	 * @param properties must not be {@literal null}.
@@ -109,7 +109,7 @@ public class JsonSchema {
 
 	/**
 	 * Turns the given {@link TypeInformation} into a JSON Schema type string.
-	 * 
+	 *
 	 * @param typeInformation
 	 * @return
 	 * @see <a href=
@@ -138,7 +138,7 @@ public class JsonSchema {
 
 	/**
 	 * Returns whether the given {@link TypeInformation} represents a date.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -171,7 +171,7 @@ public class JsonSchema {
 
 		/**
 		 * Creates a new {@link Item} for the given {@link TypeInformation} and properties.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 * @param properties must not be {@literal null}.
 		 */
@@ -205,7 +205,7 @@ public class JsonSchema {
 
 		/**
 		 * Creates a new {@link PropertiesContainer} for the given {@link AbstractJsonSchemaProperty}s.
-		 * 
+		 *
 		 * @param properties must not be {@literal null}.
 		 */
 		public PropertiesContainer(Collection<AbstractJsonSchemaProperty<?>> properties) {
@@ -344,7 +344,7 @@ public class JsonSchema {
 
 		/**
 		 * Configures the {@link JsonSchemaProperty} to reflect the given type.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 * @return
 		 */
@@ -356,7 +356,7 @@ public class JsonSchema {
 
 		/**
 		 * Configures the {@link JsonSchemaProperty} to reflect the given type.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 * @return
 		 */
@@ -383,7 +383,7 @@ public class JsonSchema {
 
 		/**
 		 * Configures the given {@link JsonSchemaFormat} to be exposed on the current {@link JsonSchemaProperty}.
-		 * 
+		 *
 		 * @param format must not be {@literal null}.
 		 * @return
 		 */
@@ -397,7 +397,7 @@ public class JsonSchema {
 
 		/**
 		 * Configures the {@link JsonSchemaProperty} to require the given regular expression as pattern.
-		 * 
+		 *
 		 * @param regex must not be {@literal null}.
 		 * @return
 		 */
@@ -409,7 +409,7 @@ public class JsonSchema {
 
 		/**
 		 * Configures the {@link JsonSchemaProperty} to require the given {@link Pattern}.
-		 * 
+		 *
 		 * @param pattern must not be {@literal null}.
 		 * @return
 		 */
@@ -423,7 +423,7 @@ public class JsonSchema {
 
 		/**
 		 * Turns the current {@link JsonSchemaProperty} into an association.
-		 * 
+		 *
 		 * @return
 		 */
 		public JsonSchemaProperty asAssociation() {
@@ -484,7 +484,7 @@ public class JsonSchema {
 
 		/**
 		 * Returns the current {@link EnumProperty} exposing the given values.
-		 * 
+		 *
 		 * @param values must not be {@literal null}.
 		 * @return
 		 */

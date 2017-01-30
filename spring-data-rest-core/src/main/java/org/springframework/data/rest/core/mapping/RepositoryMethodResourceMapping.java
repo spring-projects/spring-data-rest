@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * A {@link RepositoryMethodResourceMapping} created from a {@link Method}.
- * 
+ *
  * @author Oliver Gierke
  */
 class RepositoryMethodResourceMapping implements MethodResourceMapping {
@@ -58,7 +58,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 
 	/**
 	 * Creates a new {@link RepositoryMethodResourceMapping} for the given {@link Method}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param resourceMapping must not be {@literal null}.
 	 */
@@ -98,7 +98,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		return Collections.unmodifiableList(result);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
 	 */
@@ -107,7 +107,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		return isExported;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
 	 */
@@ -116,7 +116,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		return rel;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getPath()
 	 */
@@ -125,7 +125,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		return path;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#getMethod()
 	 */
@@ -134,7 +134,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		return method;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#getParameterMetadata()
 	 */
@@ -143,7 +143,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		return new ParametersMetadata(parameterMetadata);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isPagingResource()
 	 */
@@ -152,7 +152,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		return paging;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#isSortableResource()
 	 */
@@ -161,7 +161,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		return sorting;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
 	 */
@@ -170,7 +170,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		return null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#getProjectionSourceType()
 	 */

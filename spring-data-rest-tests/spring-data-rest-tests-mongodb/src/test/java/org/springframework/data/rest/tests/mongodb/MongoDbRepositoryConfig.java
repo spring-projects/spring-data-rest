@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import com.mongodb.MongoClient;
 @EnableMongoAuditing
 public class MongoDbRepositoryConfig extends AbstractMongoConfiguration {
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mongodb.config.AbstractMongoConfiguration#getDatabaseName()
 	 */
@@ -40,7 +40,7 @@ public class MongoDbRepositoryConfig extends AbstractMongoConfiguration {
 		return "spring-data-rest-sample";
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mongodb.config.AbstractMongoConfiguration#getMappingBasePackage()
 	 */
@@ -49,7 +49,7 @@ public class MongoDbRepositoryConfig extends AbstractMongoConfiguration {
 		return "";
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mongodb.config.AbstractMongoConfiguration#mongo()
 	 */

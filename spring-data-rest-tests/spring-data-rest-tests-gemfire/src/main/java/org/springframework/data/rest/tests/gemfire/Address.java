@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import org.springframework.util.Assert;
 
 /**
  * An address.
- * 
+ *
  * @author Oliver Gierke
  */
 public class Address {
@@ -28,7 +28,7 @@ public class Address {
 
 	/**
 	 * Creates a new {@link Address} from the given street, city and country.
-	 * 
+	 *
 	 * @param street must not be {@literal null} or empty.
 	 * @param city must not be {@literal null} or empty.
 	 * @param country must not be {@literal null} or empty.
@@ -46,7 +46,7 @@ public class Address {
 
 	/**
 	 * Returns a copy of the current {@link Address} instance which is a new entity in terms of persistence.
-	 * 
+	 *
 	 * @return
 	 */
 	public Address getCopy() {
@@ -55,7 +55,7 @@ public class Address {
 
 	/**
 	 * Returns the street.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getStreet() {
@@ -64,7 +64,7 @@ public class Address {
 
 	/**
 	 * Returns the city.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getCity() {
@@ -73,7 +73,7 @@ public class Address {
 
 	/**
 	 * Returns the country.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getCountry() {

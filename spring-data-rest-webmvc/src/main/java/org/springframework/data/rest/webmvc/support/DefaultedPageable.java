@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import org.springframework.data.domain.Pageable;
 
 /**
  * Value object to capture a {@link Pageable} as well it is the default one configured.
- * 
+ *
  * @author Oliver Gierke
  */
 public class DefaultedPageable {
@@ -29,7 +29,7 @@ public class DefaultedPageable {
 
 	/**
 	 * Creates a new {@link DefaultedPageable} with the given {@link Pageable} and default flag.
-	 * 
+	 *
 	 * @param pageable can be {@literal null}.
 	 * @param isDefault
 	 */
@@ -41,7 +41,7 @@ public class DefaultedPageable {
 
 	/**
 	 * Returns the delegate {@link Pageable}.
-	 * 
+	 *
 	 * @return can be {@literal null}.
 	 */
 	public Pageable getPageable() {
@@ -50,7 +50,7 @@ public class DefaultedPageable {
 
 	/**
 	 * Returns whether the contained {@link Pageable} is the default one configured.
-	 * 
+	 *
 	 * @return the isDefault
 	 */
 	public boolean isDefault() {

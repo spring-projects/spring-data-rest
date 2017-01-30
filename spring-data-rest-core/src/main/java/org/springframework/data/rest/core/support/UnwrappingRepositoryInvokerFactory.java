@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.springframework.util.MultiValueMap;
 /**
  * {@link RepositoryInvokerFactory} that wraps the {@link RepositoryInvokerFactory} returned by the delegate with one
  * that automatically unwraps JDK 8 {@link Optional} and Guava {@link com.google.common.base.Optional}s.
- * 
+ *
  * @author Oliver Gierke
  */
 public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFactory {
@@ -59,7 +59,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 		this.lookups = Java8PluginRegistry.of(lookups);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.support.RepositoryInvokerFactory#getInvokerFor(java.lang.Class)
 	 */
@@ -74,7 +74,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 	/**
 	 * {@link RepositoryInvoker} that post-processes invocations of {@link RepositoryInvoker#invokeFindOne(Serializable)}
 	 * and {@link #invokeQueryMethod(Method, MultiValueMap, Pageable, Sort)} using the given {@link Converter}s.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	@RequiredArgsConstructor
@@ -97,7 +97,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 			return Optionals.firstNonEmpty(viaLookup, fallback);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, org.springframework.util.MultiValueMap, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
 		 */
@@ -107,7 +107,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 			return delegate.invokeQueryMethod(method, parameters, pageable, sort);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvocationInformation#hasDeleteMethod()
 		 */
@@ -116,7 +116,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 			return delegate.hasDeleteMethod();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvocationInformation#hasFindAllMethod()
 		 */
@@ -125,7 +125,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 			return delegate.hasFindAllMethod();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvocationInformation#hasFindOneMethod()
 		 */
@@ -134,7 +134,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 			return delegate.hasFindOneMethod();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvocationInformation#hasSaveMethod()
 		 */
@@ -152,7 +152,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 			delegate.invokeDeleteById(id);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindAll(org.springframework.data.domain.Pageable)
 		 */
@@ -161,7 +161,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 			return delegate.invokeFindAll(pageable);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindAll(org.springframework.data.domain.Sort)
 		 */
@@ -170,7 +170,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 			return delegate.invokeFindAll(sort);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeSave(java.lang.Object)
 		 */

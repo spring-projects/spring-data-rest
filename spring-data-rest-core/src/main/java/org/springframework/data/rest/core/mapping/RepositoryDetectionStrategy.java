@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 /**
  * The strategy to determine whether a given repository is to be exported by Spring Data REST.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.5
  * @soundtrack Katinka - Ausverkauf
@@ -33,7 +33,7 @@ public interface RepositoryDetectionStrategy {
 
 	/**
 	 * Returns whether the repository described by the given {@link RepositoryMetadata} is exported or not.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @return
 	 */
@@ -61,7 +61,7 @@ public interface RepositoryDetectionStrategy {
 
 		/**
 		 * Exposes public interfaces or ones explicitly annotated with {@link RepositoryRestResource}.
-		 * 
+		 *
 		 * @see #VISIBILITY
 		 * @see #ANNOTATED
 		 */
@@ -101,7 +101,7 @@ public interface RepositoryDetectionStrategy {
 		/**
 		 * Returns whether the given type was explicitly exported using {@link RepositoryRestResource} or
 		 * {@link RestResource}. In case no decision can be made based on the annotations, the fallback will be used.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 * @param fallback
 		 * @return

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 
 /**
  * Converter to create {@link JsonSchema} instances for {@link PersistentEntity}s.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Greg Turnquist
@@ -88,7 +88,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	/**
 	 * Creates a new {@link PersistentEntityToJsonSchemaConverter} for the given {@link PersistentEntities} and
 	 * {@link ResourceMappings}.
-	 * 
+	 *
 	 * @param entities must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
 	 * @param accessor must not be {@literal null}.
@@ -138,7 +138,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 	/**
 	 * Converts the given type into a {@link JsonSchema} instance.
-	 * 
+	 *
 	 * @param domainType must not be {@literal null}.
 	 * @return
 	 */
@@ -314,7 +314,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		/**
 		 * Creates a new {@link JsonSchemaPropertyRegistrar} using the given {@link JacksonMetadata}.
-		 * 
+		 *
 		 * @param metadata must not be {@literal null}.
 		 */
 		public JsonSchemaPropertyRegistrar(JacksonMetadata metadata) {
@@ -361,7 +361,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 			return new JsonSchemaPropertyCustomizer() {
 
-				/* 
+				/*
 				 * (non-Javadoc)
 				 * @see org.springframework.data.rest.webmvc.json.JsonSchemaPropertyCustomizer#customize(org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty, org.springframework.data.util.TypeInformation)
 				 */
@@ -394,7 +394,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		/**
 		 * Creates a new {@link ResolvableProperty} for the given {@link BeanPropertyDefinition}.
-		 * 
+		 *
 		 * @param property must not be {@literal null}.
 		 */
 		public ResolvableProperty(BeanPropertyDefinition property) {
@@ -427,7 +427,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		/**
 		 * Creates a new {@link ResolvableType} for the given type.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 */
 		public ResolvableType(Class<?> type) {
@@ -539,14 +539,14 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		/**
 		 * Creates a new {@link DefaultingMessageSourceResolvable} for the given delegate {@link MessageSourceResolvable}.
-		 * 
+		 *
 		 * @param delegate must not be {@literal null}.
 		 */
 		public DefaultingMessageSourceResolvable(MessageSourceResolvable delegate) {
 			this.delegate = delegate;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.context.MessageSourceResolvable#getArguments()
 		 */
@@ -555,7 +555,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			return delegate.getArguments();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.context.MessageSourceResolvable#getCodes()
 		 */
@@ -564,7 +564,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			return delegate.getCodes();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.context.MessageSourceResolvable#getDefaultMessage()
 		 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import org.springframework.web.servlet.HandlerMapping;
 /**
  * A {@link HandlerMapping} that considers a {@link List} of delegates. It will keep on traversing the delegates in case
  * an {@link HttpMediaTypeNotAcceptableException} is thrown while trying to lookup the handler on a particular delegate.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Benny Greb - Stabila (Moving Parts)
  */
@@ -42,7 +42,7 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
 
 	/**
 	 * Creates a new {@link DelegatingHandlerMapping} for the given delegates.
-	 * 
+	 *
 	 * @param delegates must not be {@literal null}.
 	 */
 	public DelegatingHandlerMapping(List<HandlerMapping> delegates) {
@@ -52,7 +52,7 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
 		this.delegates = delegates;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.core.Ordered#getOrder()
 	 */
@@ -61,7 +61,7 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
 		return Ordered.LOWEST_PRECEDENCE - 100;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.HandlerMapping#getHandler(javax.servlet.http.HttpServletRequest)
 	 */

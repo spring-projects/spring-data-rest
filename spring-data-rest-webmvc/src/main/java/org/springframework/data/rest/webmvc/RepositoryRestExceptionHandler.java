@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 /**
  * Exception handler for Spring Data REST controllers.
- * 
+ *
  * @author Thibaud Lepretre
  * @author Oliver Gierke
  */
@@ -53,7 +53,7 @@ public class RepositoryRestExceptionHandler {
 
 	/**
 	 * Creates a new {@link RepositoryRestExceptionHandler} using the given {@link MessageSource}.
-	 * 
+	 *
 	 * @param messageSource must not be {@literal null}.
 	 */
 	public RepositoryRestExceptionHandler(MessageSource messageSource) {
@@ -64,7 +64,7 @@ public class RepositoryRestExceptionHandler {
 
 	/**
 	 * Handles {@link ResourceNotFoundException} by returning {@code 404 Not Found}.
-	 * 
+	 *
 	 * @param o_O the exception to handle.
 	 * @return
 	 */
@@ -75,7 +75,7 @@ public class RepositoryRestExceptionHandler {
 
 	/**
 	 * Handles {@link HttpMessageNotReadableException} by returning {@code 400 Bad Request}.
-	 * 
+	 *
 	 * @param o_O the exception to handle.
 	 * @return
 	 */
@@ -100,7 +100,7 @@ public class RepositoryRestExceptionHandler {
 
 	/**
 	 * Handles {@link RepositoryConstraintViolationException}s by returning {@code 400 Bad Request}.
-	 * 
+	 *
 	 * @param o_O the exception to handle.
 	 * @return
 	 */
@@ -140,7 +140,7 @@ public class RepositoryRestExceptionHandler {
 
 	/**
 	 * Handles {@link ETagDoesntMatchException} by returning {@code 412 Precondition Failed}.
-	 * 
+	 *
 	 * @param o_O the exception to handle.
 	 * @return
 	 */

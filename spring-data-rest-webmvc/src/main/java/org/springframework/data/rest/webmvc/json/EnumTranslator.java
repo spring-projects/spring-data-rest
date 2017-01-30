@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 
 	/**
 	 * Creates a new {@link EnumTranslator} using the given {@link MessageSourceAccessor}.
-	 * 
+	 *
 	 * @param messageSourceAccessor must not be {@literal null}.
 	 */
 	public EnumTranslator(MessageSourceAccessor messageSourceAccessor) {
@@ -51,7 +51,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 		this.parseEnumNameAsFallback = true;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.config.EnumTranslationConfiguration#setEnableDefaultTranslation(boolean)
 	 */
@@ -60,7 +60,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 		this.enableDefaultTranslation = enableDefaultTranslation;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.config.EnumTranslationConfiguration#setParseEnumNameAsFallback(boolean)
 	 */
@@ -73,7 +73,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	 * Resolves the given enum value into a {@link String} consulting the configured {@link MessageSourceAccessor}
 	 * potentially falling back to the default translation if configured. Returning the plain enum name if no resolution
 	 * applies.
-	 * 
+	 *
 	 * @param value must not be {@literal null}.
 	 * @return
 	 */
@@ -104,7 +104,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	/**
 	 * Parses the given source text into the corresponding enum value using the configured {@link MessageSourceAccessor}
 	 * potentially falling back to the default translation or the plain enum name if configured.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param text can be {@literal null}
 	 * @return the resolved enum or {@literal null} if the resolution failed.
@@ -136,7 +136,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	/**
 	 * Resolves the given {@link String} text into an enum value of the given type potentially trying to resolve it
 	 * through the configured {@link MessageSourceAccessor}.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param text must not be {@literal null} or empty.
 	 * @param resolve whether to resolve the source {@link String} through the message source.
@@ -159,7 +159,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 
 	/**
 	 * Renders a default translation for the given enum (capitalized, lower case, underscores replaced by spaces).
-	 * 
+	 *
 	 * @param value must not be {@literal null}.
 	 * @return
 	 */
@@ -169,7 +169,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 
 	/**
 	 * Tries to obtain an enum value assuming the given text is a default translation of the enum name.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param text must not be {@literal null} or empty.
 	 * @return

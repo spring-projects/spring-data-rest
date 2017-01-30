@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.springframework.data.rest.core.support;
 
 /**
  * Helper methods aiming at handling String representations of resources.
- * 
+ *
  * @author Florent Biville
  */
 public class ResourceStringUtils {
@@ -25,7 +25,7 @@ public class ResourceStringUtils {
 	/**
 	 * Checks whether the given input contains actual text (slash excluded). This is a specializing variant of
 	 * {@link org.springframework.util.StringUtils )}#hasText.
-	 * 
+	 *
 	 * @param input
 	 */
 	public static boolean hasTextExceptSlash(CharSequence input) {
@@ -43,7 +43,7 @@ public class ResourceStringUtils {
 
 	/**
 	 * Returns a string without the leading slash, if any.
-	 * 
+	 *
 	 * @param path
 	 */
 	public static String removeLeadingSlash(String path) {

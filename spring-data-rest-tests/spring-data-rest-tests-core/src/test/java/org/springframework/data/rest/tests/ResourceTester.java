@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.springframework.web.util.UriTemplate;
 
 /**
  * Simple wrapper for {@link Resource}s to allow easy assertions on it.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ResourceTester {
@@ -44,7 +44,7 @@ public class ResourceTester {
 
 	/**
 	 * Creates a new {@link ResourceTester} for the given {@link ResourceSupport}.
-	 * 
+	 *
 	 * @param resource must not be {@literal null}.
 	 */
 	private ResourceTester(ResourceSupport resource) {
@@ -54,7 +54,7 @@ public class ResourceTester {
 
 	/**
 	 * Asserts that the {@link Resource} contains the given number of {@link Link}s.
-	 * 
+	 *
 	 * @param number
 	 */
 	public void assertNumberOfLinks(int number) {
@@ -63,7 +63,7 @@ public class ResourceTester {
 
 	/**
 	 * Asserts that the {@link Resource} has a link with the given rel and href.
-	 * 
+	 *
 	 * @param rel must not be {@literal null}.
 	 * @param href can be {@literal null}, if so, only the presence of a {@link Link} with the given rel is checked.
 	 */
@@ -73,7 +73,7 @@ public class ResourceTester {
 
 	/**
 	 * Asserts that the {@link Resource} has a link with the given rel and ending with the given href.
-	 * 
+	 *
 	 * @param rel must not be {@literal null}.
 	 * @param href can be {@literal null}, if so, only the presence of a {@link Link} with the given rel is checked.
 	 */

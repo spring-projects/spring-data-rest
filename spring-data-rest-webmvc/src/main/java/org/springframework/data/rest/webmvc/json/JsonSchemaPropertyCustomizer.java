@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.springframework.data.util.TypeInformation;
 
 /**
  * Callback interface to customize the {@link JsonSchemaProperty} created by default for a given type.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.4
  * @soundtrack Superflight - Four Sided Cube (Bellyjam)
@@ -29,7 +29,7 @@ public interface JsonSchemaPropertyCustomizer {
 
 	/**
 	 * Returns the customized {@link JsonSchemaProperty} based on the given one and the given type.
-	 * 
+	 *
 	 * @param property will never be {@literal null}.
 	 * @param type will never be {@literal null}.
 	 * @return

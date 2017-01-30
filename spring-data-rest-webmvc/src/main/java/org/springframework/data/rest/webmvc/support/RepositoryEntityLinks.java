@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * {@link EntityLinks} implementation that is able to create {@link Link} for domain classes managed by Spring Data
  * REST.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -99,7 +99,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	/**
 	 * Returns the link to to the paged colelction resource for the given type, pre-expanding the
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param pageable the pageable to can be {@literal null}.
 	 * @return
@@ -146,7 +146,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	/**
 	 * Returns all links to search resource for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 * @since 2.3
@@ -158,7 +158,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	/**
 	 * Returns all link to search resources for the given type, pre-expanded with the given {@link Pageable} if
 	 * applicable.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param pageable can be {@literal null}.
 	 * @return
@@ -170,7 +170,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	/**
 	 * Returns all link to search resources for the given type, pre-expanded with the given {@link Sort} if applicable.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param sort can be {@literal null}.
 	 * @return
@@ -182,7 +182,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	/**
 	 * Creates the link to the search resource with the given rel for a given type.
-	 * 
+	 *
 	 * @param domainType must not be {@literal null}.
 	 * @param rel must not be {@literal null} or empty.
 	 * @return
@@ -195,7 +195,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	/**
 	 * Creates the link to the search resource with the given rel for a given type. Uses the given {@link Pageable} to
 	 * pre-expand potentially available template variables.
-	 * 
+	 *
 	 * @param domainType must not be {@literal null}.
 	 * @param rel must not be {@literal null} or empty.
 	 * @param pageable can be {@literal null}.
@@ -209,7 +209,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	/**
 	 * Creates the link to the search resource with the given rel for a given type. Uses the given {@link Sort} to
 	 * pre-expand potentially available template variables.
-	 * 
+	 *
 	 * @param domainType must not be {@literal null}.
 	 * @param rel must not be {@literal null} or empty.
 	 * @param sort can be {@literal null}.
@@ -223,7 +223,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	/**
 	 * Returns all links to search resources of the given type. Pre-expands the template with the given {@link Pageable}
 	 * and {@link Sort} if applicable.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param pageable can be {@literal null}.
 	 * @param sort can be {@literal null}.
@@ -245,7 +245,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	/**
 	 * Returns the link pointing to the search resource with the given rel of the given type and pre-expands the
 	 * calculated URi tempalte with the given {@link Pageable} and {@link Sort}.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param rel must not be {@literal null} or empty.
 	 * @param pageable can be {@literal null}.
@@ -280,7 +280,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	/**
 	 * Returns the {@link TemplateVariables} to be added for pagination for the given {@link UriComponentsBuilder} in case
 	 * the given {@link ResourceMapping} is a paging resource.
-	 * 
+	 *
 	 * @param components must not be {@literal null}.
 	 * @param mapping must not be {@literal null}.
 	 * @param pageable can be {@literal null}.
@@ -298,7 +298,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	/**
 	 * Returns all {@link TemplateVariables} that need to be added based on the given {@link UriComponents},
 	 * {@link MethodResourceMapping}, {@link Pageable} and {@link Sort}.
-	 * 
+	 *
 	 * @param components must not be {@literal null}.
 	 * @param mapping must not be {@literal null}.
 	 * @param pageable can be {@literal null}
@@ -318,7 +318,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	/**
 	 * Returns the {@link TemplateVariables} for the projection parameter if projections are vonfigured for the given
 	 * type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
@@ -335,7 +335,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	/**
 	 * Returns the {@link TemplateVariables} for all parameters of the given {@link MethodResourceMapping}.
-	 * 
+	 *
 	 * @param mapping must not be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */

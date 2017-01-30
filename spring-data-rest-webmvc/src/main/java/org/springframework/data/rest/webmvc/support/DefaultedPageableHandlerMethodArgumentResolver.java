@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * {@link HandlerMethodArgumentResolver} to resolve {@link DefaultedPageable} if requested. Allows to find out whether
  * the resolved {@link Pageable} is logically identical to the fallback on configured on the delegate
  * {@link PageableHandlerMethodArgumentResolver}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class DefaultedPageableHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
@@ -38,7 +38,7 @@ public class DefaultedPageableHandlerMethodArgumentResolver implements HandlerMe
 	/**
 	 * Creates a new {@link DefaultedPageableHandlerMethodArgumentResolver} delegating to the given
 	 * {@link PageableHandlerMethodArgumentResolver}.
-	 * 
+	 *
 	 * @param resolver must not be {@literal null}.
 	 */
 	public DefaultedPageableHandlerMethodArgumentResolver(PageableHandlerMethodArgumentResolver resolver) {
@@ -47,7 +47,7 @@ public class DefaultedPageableHandlerMethodArgumentResolver implements HandlerMe
 		this.resolver = resolver;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
 	 */
@@ -59,7 +59,7 @@ public class DefaultedPageableHandlerMethodArgumentResolver implements HandlerMe
 		return new DefaultedPageable(pageable, resolver.isFallbackPageable(pageable));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
 	 */

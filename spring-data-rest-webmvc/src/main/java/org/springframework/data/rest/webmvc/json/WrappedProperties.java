@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,7 +113,7 @@ class WrappedProperties {
 
 	/**
 	 * This class resolves {@code @JsonUnwrapped} field names to a list of involved {@link PersistentProperty properties}.
-	 * 
+	 *
 	 * @author Mark Paluch
 	 */
 	@RequiredArgsConstructor

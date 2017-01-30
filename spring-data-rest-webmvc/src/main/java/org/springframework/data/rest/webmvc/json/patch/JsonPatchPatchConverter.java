@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * Convert {@link JsonNode}s containing JSON Patch to/from {@link Patch} objects.
- * 
+ *
  * @author Craig Walls
  * @author Oliver Gierke
  * @author Mathias Düsterhöft
@@ -41,7 +41,7 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 
 	/**
 	 * Constructs a {@link Patch} object given a JsonNode.
-	 * 
+	 *
 	 * @param jsonNode a JsonNode containing the JSON Patch
 	 * @return a {@link Patch}
 	 */

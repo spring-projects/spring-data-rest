@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,14 @@ import org.springframework.http.HttpMethod;
 
 /**
  * An API to discover the {@link HttpMethod}s supported on a given {@link ResourceType}.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface SupportedHttpMethods {
 
 	/**
 	 * Returns the supported {@link HttpMethod}s for the given {@link ResourceType}.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -38,7 +38,7 @@ public interface SupportedHttpMethods {
 
 	/**
 	 * Returns the supported {@link HttpMethod}s for the given {@link PersistentProperty}.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return
 	 */
@@ -53,7 +53,7 @@ public interface SupportedHttpMethods {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getSupportedHttpMethods(org.springframework.data.rest.core.mapping.ResourceType)
 		 */
@@ -62,7 +62,7 @@ public interface SupportedHttpMethods {
 			return Collections.emptySet();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getMethodsFor(org.springframework.data.mapping.PersistentProperty)
 		 */

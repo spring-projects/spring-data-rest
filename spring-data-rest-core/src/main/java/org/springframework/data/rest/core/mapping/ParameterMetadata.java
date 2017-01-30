@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 
 /**
  * Value object to capture metadata for query method parameters.
- * 
+ *
  * @author Oliver Gierke
  */
 public final class ParameterMetadata {
@@ -31,7 +31,7 @@ public final class ParameterMetadata {
 
 	/**
 	 * Creates a new {@link ParameterMetadata} for the given {@link MethodParameter} and base rel.
-	 * 
+	 *
 	 * @param name must not be {@literal null} or empty.
 	 * @param baseRel must not be {@literal null} or empty.
 	 */
@@ -51,7 +51,7 @@ public final class ParameterMetadata {
 
 	/**
 	 * Return sthe name of the method parameter.
-	 * 
+	 *
 	 * @return the name
 	 */
 	public String getName() {
@@ -60,14 +60,14 @@ public final class ParameterMetadata {
 
 	/**
 	 * Returns the description for the method parameter.
-	 * 
+	 *
 	 * @return the description
 	 */
 	public ResourceDescription getDescription() {
 		return description;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -86,7 +86,7 @@ public final class ParameterMetadata {
 		return this.name.equals(that.name) && this.description.equals(that.description);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
