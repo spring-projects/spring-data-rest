@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author David Turanski
+ * @author Mark Paluch
  */
 @Region
 public class Customer extends AbstractPersistentEntity {
@@ -44,9 +45,9 @@ public class Customer extends AbstractPersistentEntity {
 	 */
 	public Customer(Long id, EmailAddress emailAddress, String firstname, String lastname) {
 		super(id);
-		Assert.hasText(firstname);
-		Assert.hasText(lastname);
-		Assert.notNull(emailAddress);
+		Assert.hasText(firstname, "Firstname must not be null or empty!");
+		Assert.hasText(lastname, "Lastname must not be null or empty!");
+		Assert.notNull(emailAddress, "EmailAddress must not be null!");
 
 		this.firstname = firstname;
 		this.lastname = lastname;
@@ -62,7 +63,7 @@ public class Customer extends AbstractPersistentEntity {
 	 */
 	public void add(Address address) {
 
-		Assert.notNull(address);
+		Assert.notNull(address, "Address must not be null!");
 		this.addresses.add(address);
 	}
 
