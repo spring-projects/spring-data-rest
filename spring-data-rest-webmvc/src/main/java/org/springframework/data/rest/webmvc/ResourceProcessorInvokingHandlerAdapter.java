@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * 
  * @author Oliver Gierke
  * @author Phil Webb
+ * @author Mark Paluch
  * @deprecated in favor of Spring HATEOAS' variant of this class.
  */
 @Deprecated
@@ -56,7 +57,7 @@ public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandl
 	@Autowired(required = false)
 	public ResourceProcessorInvokingHandlerAdapter(ResourceProcessorInvoker invoker) {
 
-		Assert.notNull(invoker);
+		Assert.notNull(invoker, "ResourceProcessorInvoker must not be null!");
 		this.invoker = invoker;
 	}
 
