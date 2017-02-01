@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
 /**
  * @author Oliver Gierke
  * @author David Turanski
+ * @author Mark Paluch
  */
 @Region
 public class Order extends AbstractPersistentEntity {
@@ -44,8 +45,8 @@ public class Order extends AbstractPersistentEntity {
 	 */
 	public Order(Long id, Long customerId, Address shippingAddress) {
 		super(id);
-		Assert.notNull(customerId);
-		Assert.notNull(shippingAddress);
+		Assert.notNull(customerId, "CustomerId must not be null!");
+		Assert.notNull(shippingAddress, "ShippingAddress must not be null!");
 
 		this.customerId = customerId;
 		this.shippingAddress = shippingAddress;
