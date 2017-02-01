@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.springframework.util.ReflectionUtils;
  * {@link ResourceSupport}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 2.5
  * @deprecated use the same type from Spring HATEOAS, will be removed in 2.7.
  */
@@ -200,7 +201,7 @@ public class ResourceProcessorInvoker {
 		 */
 		public DefaultProcessorWrapper(ResourceProcessor<?> processor) {
 
-			Assert.notNull(processor);
+			Assert.notNull(processor, "ResourceProcessor must not be null!");
 
 			this.processor = processor;
 			this.targetType = ResolvableType.forClass(ResourceProcessor.class, processor.getClass()).getGeneric(0);
