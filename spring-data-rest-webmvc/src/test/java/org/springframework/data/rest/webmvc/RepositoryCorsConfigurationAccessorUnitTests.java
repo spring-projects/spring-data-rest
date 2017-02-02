@@ -15,8 +15,10 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static java.util.Collections.*;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +26,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.NoOpStringValueResolver;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.RepositoryCorsConfigurationAccessor;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -49,7 +53,7 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 
 	@Before
 	public void before() throws Exception {
-		accessor = new RepositoryCorsConfigurationAccessor(mappings, repositories, NoOpStringValueResolver.INSTANCE);
+		accessor = new RepositoryCorsConfigurationAccessor(mappings, NoOpStringValueResolver.INSTANCE, repositories);
 	}
 
 	@Test // DATAREST-573
@@ -80,6 +84,21 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 		assertThat(configuration.getAllowedMethods(), not(hasItem("DELETE")));
 		assertThat(configuration.getAllowCredentials(), is(true));
 		assertThat(configuration.getMaxAge(), is(1234L));
+	}
+
+	@Test // DATAREST-994
+	public void returnsNullCorsConfigurationWithNullRepositories() {
+
+		accessor = new RepositoryCorsConfigurationAccessor(mappings, NoOpStringValueResolver.INSTANCE, null);
+
+		ResourceMetadata resourceMetadata = mock(ResourceMetadata.class);
+		when(resourceMetadata.getPath()).thenReturn(new Path("/people"));
+		when(resourceMetadata.isExported()).thenReturn(true);
+
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
+		when(mappings.iterator()).thenReturn(singletonList(resourceMetadata).iterator());
+
+		assertThat(accessor.findCorsConfiguration("/people"), is(nullValue()));
 	}
 
 	interface PlainRepository {}
