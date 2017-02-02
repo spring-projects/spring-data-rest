@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * {@link org.springframework.data.repository.Repository} is exported under that URL path segment. Also ensures the
  * {@link OpenEntityManagerInViewInterceptor} is registered in the application context. The OEMIVI is required for the
  * REST exporter to function properly.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Mark Paluch
@@ -75,7 +75,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	/**
 	 * Creates a new {@link RepositoryRestHandlerMapping} for the given {@link ResourceMappings} and
 	 * {@link RepositoryRestConfiguration}.
-	 * 
+	 *
 	 * @param mappings must not be {@literal null}.
 	 * @param config must not be {@literal null}.
 	 */
@@ -102,8 +102,8 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		this.mappings = mappings;
 		this.configuration = config;
 		this.repositories = repositories;
-		this.corsConfigurationAccessor = new RepositoryCorsConfigurationAccessor(mappings, repositories,
-				NoOpStringValueResolver.INSTANCE);
+		this.corsConfigurationAccessor = new RepositoryCorsConfigurationAccessor(mappings,
+				NoOpStringValueResolver.INSTANCE, repositories);
 	}
 
 	/**
@@ -122,8 +122,8 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 		super.setEmbeddedValueResolver(resolver);
 
-		this.corsConfigurationAccessor = new RepositoryCorsConfigurationAccessor(mappings, repositories,
-				resolver == null ? NoOpStringValueResolver.INSTANCE : resolver);
+		this.corsConfigurationAccessor = new RepositoryCorsConfigurationAccessor(mappings,
+				resolver == null ? NoOpStringValueResolver.INSTANCE : resolver, repositories);
 	}
 
 	/*
@@ -223,7 +223,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 	/**
 	 * Returns the first segment of the given repository lookup path.
-	 * 
+	 *
 	 * @param repositoryLookupPath must not be {@literal null}.
 	 * @return
 	 */
@@ -266,14 +266,14 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	static class RepositoryCorsConfigurationAccessor {
 
 		private final @NonNull ResourceMappings mappings;
-		private final @NonNull Repositories repositories;
 		private final @NonNull StringValueResolver embeddedValueResolver;
+		private final Repositories repositories;
 
 		CorsConfiguration findCorsConfiguration(String lookupPath) {
 
 			ResourceMetadata resource = getResourceMetadata(getRepositoryBasePath(lookupPath));
 
-			return resource != null ? createConfiguration(
+			return resource != null && repositories != null ? createConfiguration(
 					repositories.getRepositoryInformationFor(resource.getDomainType()).getRepositoryInterface()) : null;
 		}
 
