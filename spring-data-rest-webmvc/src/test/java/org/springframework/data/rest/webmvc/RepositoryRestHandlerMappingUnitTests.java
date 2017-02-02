@@ -42,7 +42,7 @@ import org.springframework.web.method.HandlerMethod;
 
 /**
  * Unit tests for {@link RepositoryRestHandlerMapping}.
- * 
+ *
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
@@ -211,5 +211,10 @@ public class RepositoryRestHandlerMappingUnitTests {
 		mockRequest = new MockHttpServletRequest("GET", "/people{?projection}");
 
 		assertThat(handlerMapping.getHandler(mockRequest), is(nullValue()));
+	}
+
+	@Test // DATAREST-994
+	public void twoArgumentConstructorDoesNotThrowException() {
+		new RepositoryRestHandlerMapping(mappings, configuration);
 	}
 }
