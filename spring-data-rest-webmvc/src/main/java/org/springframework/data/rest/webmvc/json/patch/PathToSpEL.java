@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.data.rest.webmvc.json.patch;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -30,6 +31,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 public class PathToSpEL {
 
 	private static final SpelExpressionParser SPEL_EXPRESSION_PARSER = new SpelExpressionParser();
+	static final List<String> APPEND_CHARACTERS = Arrays.asList("-", "~");
 
 	/**
 	 * Converts a patch path to an {@link Expression}.
@@ -55,7 +57,7 @@ public class PathToSpEL {
 	 * Produces an expression targeting the parent of the object that the given path targets.
 	 * 
 	 * @param path the path to find a parent expression for.
-	 * @return an {@link Expression} targeting the parent of the object specifed by path.
+	 * @return an {@link Expression} targeting the parent of the object specified by path.
 	 */
 	public static Expression pathToParentExpression(String path) {
 		return spelToExpression(pathNodesToSpEL(copyOf(path.split("\\/"), path.split("\\/").length - 1)));
@@ -76,7 +78,7 @@ public class PathToSpEL {
 				continue;
 			}
 
-			if ("~".equals(pathNode)) {
+			if (APPEND_CHARACTERS.contains(pathNode)) {
 				spelBuilder.append("[size() - 1]");
 				continue;
 			}
