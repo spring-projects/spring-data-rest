@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -72,5 +73,15 @@ public class AddOperationTests {
 		assertFalse(todos.get(2).isComplete());
 		assertEquals("C", todos.get(3).getDescription());
 		assertFalse(todos.get(3).isComplete());
+	}
+
+	@Test // DATAREST-995
+	public void addsItemsToNestedList() {
+
+		Todo todo = new Todo(1L, "description", false);
+
+		new AddOperation("/items/-", "Some text.").perform(todo, Todo.class);
+
+		assertThat(todo.getItems().get(0), is("Some text."));
 	}
 }
