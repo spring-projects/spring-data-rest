@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,14 +121,14 @@ public class CopyOperationTests {
 	}
 
 	@Test
-	public void copyListElementToEndOfList_usingTilde() throws Exception {
+	public void copyListElementToEndOfList_usingDash() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		CopyOperation copy = new CopyOperation("/~", "/0");
+		CopyOperation copy = new CopyOperation("/-", "/0");
 		copy.perform(todos, Todo.class);
 
 		assertEquals(4, todos.size());
@@ -137,14 +137,14 @@ public class CopyOperationTests {
 	}
 
 	@Test
-	public void copyListElementFromEndOfList_usingTilde() throws Exception {
+	public void copyListElementFromEndOfList_usingDash() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		CopyOperation copy = new CopyOperation("/0", "/~");
+		CopyOperation copy = new CopyOperation("/0", "/-");
 		copy.perform(todos, Todo.class);
 
 		assertEquals(4, todos.size());

@@ -31,7 +31,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 public class PathToSpEL {
 
 	private static final SpelExpressionParser SPEL_EXPRESSION_PARSER = new SpelExpressionParser();
-	static final List<String> APPEND_CHARACTERS = Arrays.asList("-", "~");
+	static final List<String> APPEND_CHARACTERS = Arrays.asList("-");
 
 	/**
 	 * Converts a patch path to an {@link Expression}.
