@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -82,6 +82,6 @@ public class AddOperationTests {
 
 		new AddOperation("/items/-", "Some text.").perform(todo, Todo.class);
 
-		assertThat(todo.getItems().get(0), is("Some text."));
+		assertThat(todo.getItems().get(0)).isEqualTo("Some text.");
 	}
 }

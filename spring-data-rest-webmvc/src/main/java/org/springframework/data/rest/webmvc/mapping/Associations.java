@@ -89,11 +89,14 @@ public class Associations {
 	/**
 	 * Returns whether the type of the given {@link PersistentProperty} is configured as lookup type.
 	 * 
-	 * @param property can be {@literal null}.
+	 * @param property must not be {@literal null}.
 	 * @return
 	 */
 	public boolean isLookupType(PersistentProperty<?> property) {
-		return property == null ? false : config.isLookupType(property.getActualType());
+
+		Assert.notNull(property, "Persistent property must not be null!");
+
+		return config.isLookupType(property.getActualType());
 	}
 
 	public boolean isIdExposed(PersistentEntity<?, ?> entity) {
@@ -116,12 +119,14 @@ public class Associations {
 	/**
 	 * Returns whether the given property is an association that is linkable.
 	 * 
-	 * @param property can be {@literal null}.
+	 * @param property must not be {@literal null}.
 	 * @return
 	 */
 	public boolean isLinkableAssociation(PersistentProperty<?> property) {
 
-		if (property == null || !property.isAssociation() || config.isLookupType(property.getActualType())) {
+		Assert.notNull(property, "PersistentProperty must not be null!");
+
+		if (!property.isAssociation() || config.isLookupType(property.getActualType())) {
 			return false;
 		}
 

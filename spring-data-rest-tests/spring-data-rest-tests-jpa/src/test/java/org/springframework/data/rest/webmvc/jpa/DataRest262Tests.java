@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
@@ -84,7 +83,7 @@ public class DataRest262Tests {
 		String payload = "{\"orgOrDstFlightPart\":{\"airport\":\"/api/airports/" + airport.id + "\"}}";
 
 		AircraftMovement result = mapper.readValue(payload, AircraftMovement.class);
-		assertThat(result.orgOrDstFlightPart.airport.id, is(airport.id));
+		assertThat(result.orgOrDstFlightPart.airport.id).isEqualTo(airport.id);
 	}
 
 	@Test // DATAREST-262
@@ -105,7 +104,7 @@ public class DataRest262Tests {
 		movement.originOrDestinationAirport = first;
 		movement.orgOrDstFlightPart = part;
 
-		JpaPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(AircraftMovement.class);
+		JpaPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(AircraftMovement.class);
 
 		Resource<Object> resource = PersistentEntityResource.build(movement, persistentEntity).//
 				withLink(new Link("/api/airports/" + movement.id)).//
@@ -113,9 +112,9 @@ public class DataRest262Tests {
 
 		String result = mapper.writeValueAsString(resource);
 
-		assertThat(JsonPath.read(result, "$_links.self"), is(notNullValue()));
-		assertThat(JsonPath.read(result, "$_links.airport"), is(notNullValue()));
-		assertThat(JsonPath.read(result, "$_links.originOrDestinationAirport"), is(notNullValue()));
+		assertThat(JsonPath.<Object> read(result, "$_links.self")).isNotNull();
+		assertThat(JsonPath.<Object> read(result, "$_links.airport")).isNotNull();
+		assertThat(JsonPath.<Object> read(result, "$_links.originOrDestinationAirport")).isNotNull();
 	}
 
 	public interface AircraftMovementRepository extends CrudRepository<AircraftMovement, Long> {

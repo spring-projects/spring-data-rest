@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -57,42 +56,31 @@ public class EmbeddedResourcesAssembler {
 
 		Assert.notNull(instance, "Entity instance must not be null!");
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(instance.getClass());
+		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(instance.getClass());
 
 		final List<EmbeddedWrapper> associationProjections = new ArrayList<EmbeddedWrapper>();
 		final PersistentPropertyAccessor accessor = entity.getPropertyAccessor(instance);
 		final ResourceMetadata metadata = associations.getMetadataFor(entity.getType());
 
-		entity.doWithAssociations(new SimpleAssociationHandler() {
+		entity.doWithAssociations((SimpleAssociationHandler) association -> {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
-			 */
-			@Override
-			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
+			PersistentProperty<?> property = association.getInverse();
 
-				PersistentProperty<?> property = association.getInverse();
+			if (!associations.isLinkableAssociation(property)) {
+				return;
+			}
 
-				if (!associations.isLinkableAssociation(property)) {
-					return;
-				}
+			if (!projector.hasExcerptProjection(property.getActualType())) {
+				return;
+			}
 
-				if (!projector.hasExcerptProjection(property.getActualType())) {
-					return;
-				}
-
-				Object value = accessor.getProperty(association.getInverse());
-
-				if (value == null) {
-					return;
-				}
+			accessor.getProperty(association.getInverse()).ifPresent(it -> {
 
 				String rel = metadata.getMappingFor(property).getRel();
 
-				if (value instanceof Collection) {
+				if (it instanceof Collection) {
 
-					Collection<?> collection = (Collection<?>) value;
+					Collection<?> collection = (Collection<?>) it;
 
 					if (collection.isEmpty()) {
 						return;
@@ -109,9 +97,9 @@ public class EmbeddedResourcesAssembler {
 					associationProjections.add(wrappers.wrap(nestedCollection, rel));
 
 				} else {
-					associationProjections.add(wrappers.wrap(projector.projectExcerpt(value), rel));
+					associationProjections.add(wrappers.wrap(projector.projectExcerpt(it), rel));
 				}
-			}
+			});
 		});
 
 		return associationProjections;

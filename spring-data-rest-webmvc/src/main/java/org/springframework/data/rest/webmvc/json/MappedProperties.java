@@ -15,12 +15,16 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -39,6 +43,7 @@ import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 class MappedProperties {
 
 	private static final ClassIntrospector INTROSPECTOR = new BasicClassIntrospector();
@@ -53,7 +58,7 @@ class MappedProperties {
 	 * @param entity must not be {@literal null}.
 	 * @param description must not be {@literal null}.
 	 */
-	private MappedProperties(PersistentEntity<?, ?> entity, BeanDescription description) {
+	private MappedProperties(PersistentEntity<?, ? extends PersistentProperty<?>> entity, BeanDescription description) {
 
 		Assert.notNull(entity, "Entity must not be null!");
 		Assert.notNull(description, "BeanDescription must not be null!");
@@ -64,12 +69,15 @@ class MappedProperties {
 
 		for (BeanPropertyDefinition property : description.findProperties()) {
 
-			PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getInternalName());
+			Optional<? extends PersistentProperty<?>> persistentProperty = entity
+					.getPersistentProperty(property.getInternalName());
 
-			if (persistentProperty != null) {
-				propertyToFieldName.put(persistentProperty, property);
-				fieldNameToProperty.put(property.getName(), persistentProperty);
-			} else {
+			persistentProperty.ifPresent(it -> {
+				propertyToFieldName.put(it, property);
+				fieldNameToProperty.put(property.getName(), it);
+			});
+
+			if (!persistentProperty.isPresent()) {
 				unmappedProperties.add(property);
 			}
 		}
@@ -88,6 +96,10 @@ class MappedProperties {
 				mapper.constructType(entity.getType()), mapper.getDeserializationConfig());
 
 		return new MappedProperties(entity, description);
+	}
+
+	public static MappedProperties none() {
+		return new MappedProperties(Collections.emptyMap(), Collections.emptyMap(), Collections.emptySet());
 	}
 
 	/**

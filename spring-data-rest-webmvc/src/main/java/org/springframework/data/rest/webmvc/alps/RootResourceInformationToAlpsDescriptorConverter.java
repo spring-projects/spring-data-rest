@@ -256,7 +256,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 	 */
 	private List<Descriptor> getPaginationDescriptors(Class<?> type, HttpMethod method) {
 
-		RepositoryInformation information = repositories.getRepositoryInformationFor(type);
+		RepositoryInformation information = repositories.getRequiredRepositoryInformation(type);
 
 		if (!information.isPagingRepository() || !getType(method).equals(Type.SAFE)) {
 			return Collections.emptyList();
@@ -290,7 +290,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 	private List<Descriptor> buildPropertyDescriptors(final Class<?> type, String baseRel) {
 
-		final PersistentEntity<?, ?> entity = persistentEntities.getPersistentEntity(type);
+		final PersistentEntity<?, ?> entity = persistentEntities.getRequiredPersistentEntity(type);
 		final List<Descriptor> propertyDescriptors = new ArrayList<Descriptor>();
 		final JacksonMetadata jackson = new JacksonMetadata(mapper, type);
 		final ResourceMetadata metadata = associations.getMetadataFor(entity.getType());
@@ -311,10 +311,10 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 					propertyDescriptors.add(//
 							descriptor(). //
-									type(Type.SEMANTIC).//
-									name(propertyDefinition.getName()).//
-									doc(getDocFor(propertyMapping.getDescription(), property)).//
-									build());
+					type(Type.SEMANTIC).//
+					name(propertyDefinition.getName()).//
+					doc(getDocFor(propertyMapping.getDescription(), property)).//
+					build());
 				}
 			}
 		});
@@ -333,7 +333,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				ResourceMapping mapping = metadata.getMappingFor(property);
 
 				DescriptorBuilder builder = descriptor().//
-						name(mapping.getRel()).doc(getDocFor(mapping.getDescription()));
+				name(mapping.getRel()).doc(getDocFor(mapping.getDescription()));
 
 				ResourceMetadata targetTypeMetadata = associations.getMetadataFor(property.getActualType());
 
@@ -343,8 +343,8 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				Link link = new Link(href).withSelfRel();
 
 				builder.//
-						type(Type.SAFE).//
-						rt(link.getHref());
+				type(Type.SAFE).//
+				rt(link.getHref());
 
 				propertyDescriptors.add(builder.build());
 			}
@@ -386,6 +386,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		return getDocFor(description, null);
 	}
 
+	@SuppressWarnings("unchecked")
 	private Doc getDocFor(ResourceDescription description, PersistentProperty<?> property) {
 
 		if (description == null) {

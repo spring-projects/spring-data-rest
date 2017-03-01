@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import javax.persistence.EntityManager;
 
@@ -70,12 +69,12 @@ public class Jackson2DatatypeHelperIntegrationTests {
 	}
 
 	@Test // DATAREST-500
-	public void configuresHIbernate4ModuleToLoadLazyLoadingProxies() throws Exception {
+	public void configuresHibernate4ModuleToLoadLazyLoadingProxies() throws Exception {
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(Order.class);
-		PersistentProperty<?> property = entity.getPersistentProperty("creator");
-		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(orders.findOne(this.order.getId()));
+		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(Order.class);
+		PersistentProperty<?> property = entity.getRequiredPersistentProperty("creator");
+		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(orders.findOne(this.order.getId()).orElse(null));
 
-		assertThat(objectMapper.writeValueAsString(accessor.getProperty(property)), is(not("null")));
+		assertThat(objectMapper.writeValueAsString(accessor.getProperty(property))).isNotEqualTo("null");
 	}
 }

@@ -19,12 +19,12 @@ import java.io.Serializable;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.util.Java8PluginRegistry;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.config.ResourceMetadataHandlerMethodArgumentResolver;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
 import org.springframework.data.rest.webmvc.util.UriUtils;
-import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -39,7 +39,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  */
 public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private final PluginRegistry<BackendIdConverter, Class<?>> idConverters;
+	private final Java8PluginRegistry<BackendIdConverter, Class<?>> idConverters;
 	private final ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver;
 	private final BaseUri baseUri;
 
@@ -51,7 +51,7 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 	 * @param resourceMetadataResolver the resolver to obtain {@link ResourceMetadata} from, must not be {@literal null}.
 	 * @param baseUri must not be {@literal null}.
 	 */
-	public BackendIdHandlerMethodArgumentResolver(PluginRegistry<BackendIdConverter, Class<?>> idConverters,
+	public BackendIdHandlerMethodArgumentResolver(Java8PluginRegistry<BackendIdConverter, Class<?>> idConverters,
 			ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver, BaseUri baseUri) {
 
 		Assert.notNull(idConverters, "Id converters must not be null!");
@@ -95,7 +95,8 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 			throw new IllegalArgumentException("Could not obtain ResourceMetadata for request " + request);
 		}
 
-		BackendIdConverter pluginFor = idConverters.getPluginFor(metadata.getDomainType(), DefaultIdConverter.INSTANCE);
+		BackendIdConverter pluginFor = idConverters.getPluginFor(metadata.getDomainType())
+				.orElse(DefaultIdConverter.INSTANCE);
 		String lookupPath = baseUri.getRepositoryLookupPath(request);
 		return pluginFor.fromRequestId(UriUtils.findMappingVariable("id", parameter.getMethod(), lookupPath),
 				metadata.getDomainType());

@@ -69,7 +69,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 	private Builder wrap(Object instance, Object source) {
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(source.getClass());
+		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(source.getClass());
 
 		return PersistentEntityResource.build(instance, entity).//
 				withEmbedded(getEmbeddedResources(source)).//

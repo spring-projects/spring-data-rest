@@ -90,8 +90,6 @@ public class LinkCollector {
 		Assert.notNull(object, "Object must not be null!");
 		Assert.notNull(existingLinks, "Existing links must not be null!");
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(object.getClass());
-
 		Links links = new Links(existingLinks);
 		Link selfLink = createSelfLink(object, links);
 
@@ -102,7 +100,7 @@ public class LinkCollector {
 		Path path = new Path(selfLink.expand().getHref());
 
 		LinkCollectingAssociationHandler handler = new LinkCollectingAssociationHandler(entities, path, associationLinks);
-		entity.doWithAssociations(handler);
+		entities.getRequiredPersistentEntity(object.getClass()).doWithAssociations(handler);
 
 		List<Link> result = new ArrayList<Link>(existingLinks);
 		result.addAll(handler.getLinks());
@@ -112,7 +110,7 @@ public class LinkCollector {
 
 	public Links getLinksForNested(Object object, List<Link> existing) {
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(object.getClass());
+		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(object.getClass());
 
 		NestedLinkCollectingAssociationHandler handler = new NestedLinkCollectingAssociationHandler(links,
 				entity.getPropertyAccessor(object), associationLinks);
@@ -217,19 +215,17 @@ public class LinkCollector {
 			}
 
 			PersistentProperty<?> property = association.getInverse();
-			Object value = accessor.getProperty(property);
 
-			if (value == null) {
-				return;
-			}
+			accessor.getProperty(property).ifPresent(it -> {
 
-			ResourceMetadata metadata = associations.getMappings().getMetadataFor(property.getOwner().getType());
-			ResourceMapping propertyMapping = metadata.getMappingFor(property);
+				ResourceMetadata metadata = associations.getMappings().getMetadataFor(property.getOwner().getType());
+				ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
-			for (Object element : asCollection(value)) {
-				if (element != null)
-					links.add(getLinkFor(element, propertyMapping));
-			}
+				for (Object element : asCollection(it)) {
+					if (element != null)
+						links.add(getLinkFor(element, propertyMapping));
+				}
+			});
 		}
 
 		/**

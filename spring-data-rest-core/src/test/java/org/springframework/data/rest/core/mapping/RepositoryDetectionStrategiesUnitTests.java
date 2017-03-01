@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies.*;
 
 import java.util.HashMap;
@@ -93,7 +92,7 @@ public class RepositoryDetectionStrategiesUnitTests {
 	private static void assertExposures(RepositoryDetectionStrategy strategy, Map<Class<?>, Boolean> expected) {
 
 		for (Entry<Class<?>, Boolean> entry : expected.entrySet()) {
-			assertThat(strategy.isExported(new DefaultRepositoryMetadata(entry.getKey())), is(entry.getValue()));
+			assertThat(strategy.isExported(new DefaultRepositoryMetadata(entry.getKey()))).isEqualTo(entry.getValue());
 		}
 	}
 

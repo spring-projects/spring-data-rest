@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.tests.mongodb.TestUtils.*;
 
@@ -29,7 +28,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -87,8 +86,8 @@ public class JsonPatchHandlerUnitTests {
 
 		User result = handler.applyPatch(asStream(input), user);
 
-		assertThat(result.lastname, is(nullValue()));
-		assertThat(result.address.zipCode, is("ZIP"));
+		assertThat(result.lastname).isNull();
+		assertThat(result.address.zipCode).isEqualTo("ZIP");
 	}
 
 	@Test // DATAREST-348
@@ -98,8 +97,8 @@ public class JsonPatchHandlerUnitTests {
 
 		User result = handler.applyMergePatch(asStream(input), user);
 
-		assertThat(result.lastname, is(nullValue()));
-		assertThat(result.address.zipCode, is("ZIP"));
+		assertThat(result.lastname).isNull();
+		assertThat(result.address.zipCode).isEqualTo("ZIP");
 	}
 
 	/**
@@ -120,8 +119,8 @@ public class JsonPatchHandlerUnitTests {
 
 		handler.applyPatch(asStream(input), user);
 
-		assertThat(user.colleagues, hasSize(1));
-		assertThat(user.colleagues.get(0).firstname, is(christoph.firstname));
+		assertThat(user.colleagues).hasSize(1);
+		assertThat(user.colleagues.get(0).firstname).isEqualTo(christoph.firstname);
 	}
 
 	@Test // DATAREST-609

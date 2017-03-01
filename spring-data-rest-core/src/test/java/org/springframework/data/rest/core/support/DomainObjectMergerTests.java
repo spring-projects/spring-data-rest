@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy.*;
 
 import java.util.Arrays;
@@ -60,8 +59,8 @@ public class DomainObjectMergerTests {
 
 		merger.merge(incoming, existingDomainObject, APPLY_NULLS);
 
-		assertThat(existingDomainObject.getFirstName(), is(incoming.getFirstName()));
-		assertThat(existingDomainObject.getLastName(), is(incoming.getLastName()));
+		assertThat(existingDomainObject.getFirstName()).isEqualTo(incoming.getFirstName());
+		assertThat(existingDomainObject.getLastName()).isEqualTo(incoming.getLastName());
 	}
 
 	@Test // DATAREST-130
@@ -72,8 +71,8 @@ public class DomainObjectMergerTests {
 
 		merger.merge(incoming, existingDomainObject, APPLY_NULLS);
 
-		assertThat(existingDomainObject.getFirstName(), is(incoming.getFirstName()));
-		assertThat(existingDomainObject.getLastName(), is(incoming.getLastName()));
+		assertThat(existingDomainObject.getFirstName()).isEqualTo(incoming.getFirstName());
+		assertThat(existingDomainObject.getLastName()).isEqualTo(incoming.getLastName());
 	}
 
 	@Test // DATAREST-327
@@ -86,6 +85,6 @@ public class DomainObjectMergerTests {
 
 		merger.merge(new Person("Sam", null), frodo, IGNORE_NULLS);
 
-		assertThat(frodo.getSiblings(), is(not(emptyIterable())));
+		assertThat(frodo.getSiblings()).isNotEmpty();
 	}
 }

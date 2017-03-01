@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,8 +43,8 @@ public class IncomingRequestUnitTests {
 
 		IncomingRequest incomingRequest = new IncomingRequest(new ServletServerHttpRequest(request));
 
-		assertThat(incomingRequest.isJsonPatchRequest(), is(true));
-		assertThat(incomingRequest.isJsonMergePatchRequest(), is(false));
+		assertThat(incomingRequest.isJsonPatchRequest()).isTrue();
+		assertThat(incomingRequest.isJsonMergePatchRequest()).isFalse();
 	}
 
 	@Test // DATAREST-498
@@ -55,7 +54,7 @@ public class IncomingRequestUnitTests {
 
 		IncomingRequest incomingRequest = new IncomingRequest(new ServletServerHttpRequest(request));
 
-		assertThat(incomingRequest.isJsonPatchRequest(), is(false));
-		assertThat(incomingRequest.isJsonMergePatchRequest(), is(true));
+		assertThat(incomingRequest.isJsonPatchRequest()).isFalse();
+		assertThat(incomingRequest.isJsonMergePatchRequest()).isTrue();
 	}
 }

@@ -17,6 +17,8 @@ package org.springframework.data.rest.core.support;
 
 import static org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy.*;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.Association;
@@ -87,18 +89,18 @@ public class DomainObjectMerger {
 			@Override
 			public void doWithPersistentProperty(PersistentProperty<?> persistentProperty) {
 
-				Object sourceValue = sourceWrapper.getProperty(persistentProperty);
-				Object targetValue = targetWrapper.getProperty(persistentProperty);
+				Optional<Object> sourceValue = sourceWrapper.getProperty(persistentProperty);
+				Optional<Object> targetValue = targetWrapper.getProperty(persistentProperty);
 
 				if (targetEntity.isIdProperty(persistentProperty)) {
 					return;
 				}
 
-				if (ObjectUtils.nullSafeEquals(sourceValue, targetValue)) {
+				if (sourceValue.equals(targetValue)) {
 					return;
 				}
 
-				if (nullPolicy == APPLY_NULLS || sourceValue != null) {
+				if (nullPolicy == APPLY_NULLS || sourceValue.isPresent()) {
 					targetWrapper.setProperty(persistentProperty, sourceValue);
 				}
 			}
@@ -114,7 +116,7 @@ public class DomainObjectMerger {
 			public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
 
 				PersistentProperty<?> persistentProperty = association.getInverse();
-				Object fromVal = sourceWrapper.getProperty(persistentProperty);
+				Optional<Object> fromVal = sourceWrapper.getProperty(persistentProperty);
 
 				if (!isNullOrEmpty(fromVal) && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
 					targetWrapper.setProperty(persistentProperty, fromVal);
@@ -130,21 +132,21 @@ public class DomainObjectMerger {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	static boolean isNullOrEmpty(Object source) {
+	static boolean isNullOrEmpty(Optional<Object> source) {
 
-		if (source == null) {
-			return true;
-		}
+		return source.map(it -> {
 
-		if (source instanceof Iterable) {
-			return !((Iterable<?>) source).iterator().hasNext();
-		}
+			if (it instanceof Iterable) {
+				return !((Iterable<?>) it).iterator().hasNext();
+			}
 
-		if (ObjectUtils.isArray(source)) {
-			return ObjectUtils.isEmpty((Object[]) source);
-		}
+			if (ObjectUtils.isArray(it)) {
+				return ObjectUtils.isEmpty((Object[]) it);
+			}
 
-		return false;
+			return false;
+
+		}).orElse(true);
 	}
 
 	/**

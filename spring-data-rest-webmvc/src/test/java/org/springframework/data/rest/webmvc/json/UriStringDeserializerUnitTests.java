@@ -15,9 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
@@ -29,7 +28,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.UriToEntityConverter;
@@ -82,8 +81,8 @@ public class UriStringDeserializerUnitTests {
 	@Test // DATAREST-377
 	public void returnsNullUriIfSourceIsEmptyOrNull() throws Exception {
 
-		assertThat(invokeConverterWith(""), is(nullValue()));
-		assertThat(invokeConverterWith(null), is(nullValue()));
+		assertThat(invokeConverterWith("")).isNull();
+		assertThat(invokeConverterWith(null)).isNull();
 	}
 
 	@Test // DATAREST-377

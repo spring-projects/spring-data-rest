@@ -15,8 +15,8 @@
  */
 package org.springframework.data.rest.tests.mongodb;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.assertj.core.api.Condition;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -133,11 +134,11 @@ public class MongoWebTests extends CommonWebTests {
 		Link profileSearches = client.discoverUnique(profiles, "search");
 		Link countByTypeLink = client.discoverUnique(profileSearches, "countByType");
 
-		assertThat(countByTypeLink.isTemplated(), is(true));
-		assertThat(countByTypeLink.getVariableNames(), hasItem("type"));
+		assertThat(countByTypeLink.isTemplated()).isTrue();
+		assertThat(countByTypeLink.getVariableNames()).contains("type");
 
 		MockHttpServletResponse response = client.request(countByTypeLink.expand("Twitter"));
-		assertThat(response.getContentAsString(), is("1"));
+		assertThat(response.getContentAsString()).isEqualTo("1");
 	}
 
 	@Test
@@ -147,10 +148,11 @@ public class MongoWebTests extends CommonWebTests {
 		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
 
 		MockHttpServletResponse response = patchAndGet(userLink,
-				"{\"lastname\" : null, \"address\" : { \"zipCode\" : \"ZIP\"}}", MediaType.APPLICATION_JSON);
+				"{\"lastname\" : null, \"address\" : { \"zipCode\" : \"ZIP\"}}",
+				org.springframework.http.MediaType.APPLICATION_JSON);
 
-		assertThat(JsonPath.read(response.getContentAsString(), "$.lastname"), is(nullValue()));
-		assertThat(JsonPath.read(response.getContentAsString(), "$.address.zipCode"), is((Object) "ZIP"));
+		assertThat(JsonPath.<String> read(response.getContentAsString(), "$.lastname")).isNull();
+		assertThat(JsonPath.<String> read(response.getContentAsString(), "$.address.zipCode")).isEqualTo("ZIP");
 	}
 
 	@Test
@@ -165,8 +167,8 @@ public class MongoWebTests extends CommonWebTests {
 						+ "{ \"op\": \"remove\", \"path\": \"/lastname\" }]", //
 				RestMediaTypes.JSON_PATCH_JSON);
 
-		assertThat(JsonPath.read(response.getContentAsString(), "$.lastname"), is(nullValue()));
-		assertThat(JsonPath.read(response.getContentAsString(), "$.address.zipCode"), is((Object) "ZIP"));
+		assertThat(JsonPath.<String> read(response.getContentAsString(), "$.lastname")).isNull();
+		assertThat(JsonPath.<String> read(response.getContentAsString(), "$.address.zipCode")).isEqualTo("ZIP");
 	}
 
 	@Test // DATAREST-160
@@ -204,7 +206,7 @@ public class MongoWebTests extends CommonWebTests {
 		String header = mvc.perform(get("/profiles/{id}", profile.getId())).//
 				andReturn().getResponse().getHeader("Last-Modified");
 
-		assertThat(header, not(isEmptyOrNullString()));
+		assertThat(header).isNot(new Condition<String>(it -> it == null || it.isEmpty(), "Foo"));
 	}
 
 	@Test // DATAREST-482

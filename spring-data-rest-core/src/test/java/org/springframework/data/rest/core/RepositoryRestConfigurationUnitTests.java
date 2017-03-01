@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -54,22 +53,22 @@ public class RepositoryRestConfigurationUnitTests {
 	@Test // DATAREST-34
 	public void returnsBodiesIfAcceptHeaderPresentByDefault() {
 
-		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE), is(true));
-		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE), is(true));
+		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE)).isTrue();
+		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE)).isTrue();
 	}
 
 	@Test // DATAREST-34
 	public void doesNotReturnBodiesIfNoAcceptHeaderPresentByDefault() {
 
-		assertThat(configuration.returnBodyOnCreate(null), is(false));
-		assertThat(configuration.returnBodyOnUpdate(null), is(false));
+		assertThat(configuration.returnBodyOnCreate(null)).isFalse();
+		assertThat(configuration.returnBodyOnUpdate(null)).isFalse();
 	}
 
 	@Test // DATAREST-34
 	public void doesNotReturnBodiesIfEmptyAcceptHeaderPresentByDefault() {
 
-		assertThat(configuration.returnBodyOnCreate(""), is(false));
-		assertThat(configuration.returnBodyOnUpdate(""), is(false));
+		assertThat(configuration.returnBodyOnCreate("")).isFalse();
+		assertThat(configuration.returnBodyOnUpdate("")).isFalse();
 	}
 
 	@Test // DATAREST-34
@@ -77,9 +76,9 @@ public class RepositoryRestConfigurationUnitTests {
 
 		configuration.setReturnBodyOnUpdate(false);
 
-		assertThat(configuration.returnBodyOnUpdate(null), is(false));
-		assertThat(configuration.returnBodyOnUpdate(""), is(false));
-		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE), is(false));
+		assertThat(configuration.returnBodyOnUpdate(null)).isFalse();
+		assertThat(configuration.returnBodyOnUpdate("")).isFalse();
+		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE)).isFalse();
 	}
 
 	@Test // DATAREST-34
@@ -87,9 +86,9 @@ public class RepositoryRestConfigurationUnitTests {
 
 		configuration.setReturnBodyOnCreate(false);
 
-		assertThat(configuration.returnBodyOnCreate(null), is(false));
-		assertThat(configuration.returnBodyOnCreate(""), is(false));
-		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE), is(false));
+		assertThat(configuration.returnBodyOnCreate(null)).isFalse();
+		assertThat(configuration.returnBodyOnCreate("")).isFalse();
+		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE)).isFalse();
 	}
 
 	@Test // DATAREST-34
@@ -97,9 +96,9 @@ public class RepositoryRestConfigurationUnitTests {
 
 		configuration.setReturnBodyOnUpdate(true);
 
-		assertThat(configuration.returnBodyOnUpdate(null), is(true));
-		assertThat(configuration.returnBodyOnUpdate(""), is(true));
-		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE), is(true));
+		assertThat(configuration.returnBodyOnUpdate(null)).isTrue();
+		assertThat(configuration.returnBodyOnUpdate("")).isTrue();
+		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE)).isTrue();
 	}
 
 	@Test // DATAREST-34
@@ -107,9 +106,9 @@ public class RepositoryRestConfigurationUnitTests {
 
 		configuration.setReturnBodyOnCreate(true);
 
-		assertThat(configuration.returnBodyOnCreate(null), is(true));
-		assertThat(configuration.returnBodyOnCreate(""), is(true));
-		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE), is(true));
+		assertThat(configuration.returnBodyOnCreate(null)).isTrue();
+		assertThat(configuration.returnBodyOnCreate("")).isTrue();
+		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE)).isTrue();
 	}
 
 	@Test // DATAREST-776
@@ -117,7 +116,7 @@ public class RepositoryRestConfigurationUnitTests {
 
 		configuration.withEntityLookup().forLookupRepository(ProfileRepository.class);
 
-		assertThat(configuration.isLookupType(Profile.class), is(true));
+		assertThat(configuration.isLookupType(Profile.class)).isTrue();
 	}
 
 	@Test // DATAREST-573
@@ -127,9 +126,9 @@ public class RepositoryRestConfigurationUnitTests {
 		registry.addMapping("/hello").maxAge(1234);
 
 		Map<String, CorsConfiguration> corsConfigurations = registry.getCorsConfigurations();
-		assertThat(corsConfigurations, hasKey("/hello"));
+		assertThat(corsConfigurations).containsKey("/hello");
 
 		CorsConfiguration corsConfiguration = corsConfigurations.get("/hello");
-		assertThat(corsConfiguration.getMaxAge(), is(1234L));
+		assertThat(corsConfiguration.getMaxAge()).isEqualTo(1234L);
 	}
 }

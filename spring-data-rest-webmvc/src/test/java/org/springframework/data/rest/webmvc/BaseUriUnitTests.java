@@ -15,8 +15,9 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.net.URI;
 
@@ -32,8 +33,8 @@ public class BaseUriUnitTests {
 	@Test // DATAREST-276
 	public void doesNotMatchNonOverlap() {
 
-		assertThat(new BaseUri(URI.create("foo")).getRepositoryLookupPath("/bar"), is(nullValue()));
-		assertThat(new BaseUri(URI.create("http://localhost:8080/foo/")).getRepositoryLookupPath("/bar"), is(nullValue()));
+		assertThat(new BaseUri(URI.create("foo")).getRepositoryLookupPath("/bar")).isNull();
+		assertThat(new BaseUri(URI.create("http://localhost:8080/foo/")).getRepositoryLookupPath("/bar")).isNull();
 	}
 
 	@Test // DATAREST-276
@@ -69,12 +70,12 @@ public class BaseUriUnitTests {
 
 		assertThat(uri.getRepositoryLookupPath("/foo"), isEmptyString());
 		assertThat(uri.getRepositoryLookupPath("/foo/"), isEmptyString());
-		assertThat(uri.getRepositoryLookupPath("/foo/people"), is("/people"));
-		assertThat(uri.getRepositoryLookupPath("/foo/people/"), is("/people"));
+		assertThat(uri.getRepositoryLookupPath("/foo/people")).isEqualTo("/people");
+		assertThat(uri.getRepositoryLookupPath("/foo/people/")).isEqualTo("/people");
 	}
 
 	@Test // DATAREST-674, SPR-13455
 	public void repositoryLookupPathHandlesDoubleSlashes() {
-		assertThat(BaseUri.NONE.getRepositoryLookupPath("/books//1"), is("/books/1"));
+		assertThat(BaseUri.NONE.getRepositoryLookupPath("/books//1")).isEqualTo("/books/1");
 	}
 }

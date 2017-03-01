@@ -1,6 +1,5 @@
-package org.springframework.data.rest.tests;
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +13,11 @@ package org.springframework.data.rest.tests;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.springframework.data.rest.tests;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -80,18 +81,18 @@ public abstract class AbstractWebIntegrationTests {
 	}
 
 	protected void setupMockMvc() {
-		this.mvc = MockMvcBuilders.webAppContextSetup(context).//
-				defaultRequest(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)).build();
+		this.mvc = MockMvcBuilders.webAppContextSetup(context)//
+				.defaultRequest(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)).build();
 	}
 
 	protected MockHttpServletResponse postAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
 
 		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
-		MockHttpServletResponse response = mvc.perform(post(href).content(payload.toString()).contentType(mediaType)).//
-				andExpect(status().isCreated()).//
-				andExpect(header().string("Location", is(notNullValue()))).//
-				andReturn().getResponse();
+		MockHttpServletResponse response = mvc.perform(post(href).content(payload.toString()).contentType(mediaType))//
+				.andExpect(status().isCreated())//
+				.andExpect(header().string("Location", is(notNullValue())))//
+				.andReturn().getResponse();
 
 		String content = response.getContentAsString();
 
@@ -106,9 +107,9 @@ public abstract class AbstractWebIntegrationTests {
 
 		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
-		MockHttpServletResponse response = mvc.perform(put(href).content(payload.toString()).contentType(mediaType)).//
-				andExpect(status().is2xxSuccessful()).//
-				andReturn().getResponse();
+		MockHttpServletResponse response = mvc.perform(put(href).content(payload.toString()).contentType(mediaType))//
+				.andExpect(status().is2xxSuccessful())//
+				.andReturn().getResponse();
 
 		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(link);
 	}
@@ -120,9 +121,8 @@ public abstract class AbstractWebIntegrationTests {
 		MockHttpServletResponse response = mvc
 				.perform(MockMvcRequestBuilders.request(HttpMethod.PATCH, href).//
 						content(payload.toString()).contentType(mediaType))
-				.//
-				andExpect(status().is2xxSuccessful()).//
-				andReturn().getResponse();
+				.andExpect(status().is2xxSuccessful())//
+				.andReturn().getResponse();
 
 		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(href);
 	}
@@ -131,13 +131,13 @@ public abstract class AbstractWebIntegrationTests {
 
 		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
-		mvc.perform(delete(href)).//
-				andExpect(status().isNoContent()).//
-				andReturn().getResponse();
+		mvc.perform(delete(href))//
+				.andExpect(status().isNoContent())//
+				.andReturn().getResponse();
 
 		// Check that the resource is unavailable after a DELETE
-		mvc.perform(get(href)).//
-				andExpect(status().isNotFound());
+		mvc.perform(get(href))//
+				.andExpect(status().isNotFound());
 	}
 
 	protected Link assertHasContentLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
@@ -157,8 +157,13 @@ public abstract class AbstractWebIntegrationTests {
 
 			String href = JsonPath.<JSONArray> read(content, String.format(CONTENT_LINK_JSONPATH, rel)).get(0).toString();
 
-			assertThat("Expected to find a link with rel" + rel + " in the content section of the response!", href,
-					is(expected ? notNullValue() : nullValue()));
+			String message = "Expected to%s find a link with rel %s in the content section of the response!";
+
+			if (expected) {
+				assertThat(href).as(message, "", rel).isNotNull();
+			} else {
+				assertThat(href).as(message, " not", rel).isNull();
+			}
 
 			return new Link(href, rel);
 
@@ -177,7 +182,7 @@ public abstract class AbstractWebIntegrationTests {
 		String content = response.getContentAsString();
 		Link link = client.getDiscoverer(response).findLinkWithRel(rel, content);
 
-		assertThat("Expected not to find link with rel " + rel + " but found " + link + "!", link, is(nullValue()));
+		assertThat(link).as("Expected not to find link with rel %s but found %s!", rel, link).isNull();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -186,12 +191,11 @@ public abstract class AbstractWebIntegrationTests {
 		String content = response.getContentAsString();
 		Object jsonPathResult = JsonPath.read(content, path);
 
-		assertThat(String.format("JSONPath lookup for %s did return null in %s.", path, content), jsonPathResult,
-				is(notNullValue()));
+		assertThat(jsonPathResult).as("JSONPath lookup for %s did return null in %s.", path, content).isNotNull();
 
 		if (jsonPathResult instanceof JSONArray) {
 			JSONArray array = (JSONArray) jsonPathResult;
-			assertThat(array, hasSize(greaterThan(0)));
+			assertThat(array.size()).isGreaterThan(0);
 		}
 
 		return (T) jsonPathResult;
@@ -223,7 +227,7 @@ public abstract class AbstractWebIntegrationTests {
 			jsonString = jsonQueryResults != null ? jsonQueryResults.toString() : null;
 		}
 
-		assertThat(jsonString, is(expected));
+		assertThat(jsonString).isEqualTo(expected);
 		return jsonString;
 	}
 
@@ -237,8 +241,9 @@ public abstract class AbstractWebIntegrationTests {
 				MockHttpServletResponse response = result.getResponse();
 				String s = response.getContentAsString();
 
-				assertThat("Expected not to find link with rel " + rel + " but found one in " + s, //
-						client.getDiscoverer(response).findLinkWithRel(rel, s), nullValue());
+				assertThat(client.getDiscoverer(response).findLinkWithRel(rel, s))//
+						.as("Expected not to find link with rel %s but found one in %s!", rel, s)//
+						.isNull();
 			}
 		};
 	}

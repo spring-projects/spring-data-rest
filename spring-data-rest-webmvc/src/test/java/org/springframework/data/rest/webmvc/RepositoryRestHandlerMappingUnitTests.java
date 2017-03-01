@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
@@ -25,7 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
@@ -46,7 +45,7 @@ import org.springframework.web.method.HandlerMethod;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class RepositoryRestHandlerMappingUnitTests {
 
 	static final AnnotationConfigWebApplicationContext CONTEXT = new AnnotationConfigWebApplicationContext();
@@ -95,7 +94,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	public void returnsNullForUriNotMapped() throws Exception {
 
 		handlerMapping.afterPropertiesSet();
-		assertThat(handlerMapping.lookupHandlerMethod("/foo", mockRequest), is(nullValue()));
+		assertThat(handlerMapping.lookupHandlerMethod("/foo", mockRequest)).isNull();
 	}
 
 	@Test // DATAREST-111
@@ -107,8 +106,8 @@ public class RepositoryRestHandlerMappingUnitTests {
 		handlerMapping.afterPropertiesSet();
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/people", mockRequest);
 
-		assertThat(method, is(notNullValue()));
-		assertThat(method.getMethod(), is(listEntitiesMethod));
+		assertThat(method).isNotNull();
+		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
 	}
 
 	@Test // DATAREST-292
@@ -122,14 +121,13 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base/people", mockRequest);
 
-		assertThat(method, is(notNullValue()));
-		assertThat(method.getMethod(), is(listEntitiesMethod));
+		assertThat(method).isNotNull();
+		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
 	}
 
 	@Test // DATAREST-292
 	public void returnsRootHandlerMethodWithBaseUriConfigured() throws Exception {
 
-		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/base");
 
 		configuration.setBasePath("/base");
@@ -137,8 +135,8 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base", mockRequest);
 
-		assertThat(method, is(notNullValue()));
-		assertThat(method.getMethod(), is(rootHandlerMethod));
+		assertThat(method).isNotNull();
+		assertThat(method.getMethod()).isEqualTo(rootHandlerMethod);
 	}
 
 	@Test // DATAREST-276
@@ -152,8 +150,8 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base/people/", mockRequest);
 
-		assertThat(method, is(notNullValue()));
-		assertThat(method.getMethod(), is(listEntitiesMethod));
+		assertThat(method).isNotNull();
+		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
 	}
 
 	@Test // DATAREST-276
@@ -168,14 +166,13 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base/people", mockRequest);
 
-		assertThat(method, is(notNullValue()));
-		assertThat(method.getMethod(), is(listEntitiesMethod));
+		assertThat(method).isNotNull();
+		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
 	}
 
 	@Test // DATAREST-276
 	public void refrainsFromMappingIfTheRequestDoesNotPointIntoAbsolutelyDefinedUriSpace() throws Exception {
 
-		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/servlet-path");
 		mockRequest.setServletPath("/servlet-path");
 
@@ -183,7 +180,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/servlet-path", mockRequest);
 
-		assertThat(method, is(nullValue()));
+		assertThat(method).isNull();
 	}
 
 	@Test // DATAREST-276
@@ -200,7 +197,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/people", mockRequest);
 
-		assertThat(method, is(nullValue()));
+		assertThat(method).isNull();
 	}
 
 	@Test // DATAREST-609
@@ -210,7 +207,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		mockRequest = new MockHttpServletRequest("GET", "/people{?projection}");
 
-		assertThat(handlerMapping.getHandler(mockRequest), is(nullValue()));
+		assertThat(handlerMapping.getHandler(mockRequest)).isNull();
 	}
 
 	@Test // DATAREST-994

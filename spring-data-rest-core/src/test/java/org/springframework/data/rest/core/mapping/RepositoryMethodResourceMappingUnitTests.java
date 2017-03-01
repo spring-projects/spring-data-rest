@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 
@@ -49,7 +48,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
 		ResourceMapping mapping = getMappingFor(method);
 
-		assertThat(mapping.getPath(), is(new Path("findByLastname")));
+		assertThat(mapping.getPath()).isEqualTo(new Path("findByLastname"));
 	}
 
 	@Test
@@ -58,16 +57,16 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
 		ResourceMapping mapping = getMappingFor(method);
 
-		assertThat(mapping.getPath(), is(new Path("bar")));
+		assertThat(mapping.getPath()).isEqualTo(new Path("bar"));
 	}
 
 	@Test // DATAREST-31
-	public void doesNotDiscoverAnyParametersIfNotAnnotated() throws Exception {
+	public void discoversParametersIfCompiledWithCorrespondingFlag() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
 		MethodResourceMapping mapping = getMappingFor(method);
 
-		assertThat(mapping.getParametersMetadata().getParameterNames(), is(emptyIterable()));
+		assertThat(mapping.getParametersMetadata().getParameterNames()).contains("lastname");
 	}
 
 	@Test // DATAREST-31
@@ -76,8 +75,8 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
 		MethodResourceMapping mapping = getMappingFor(method);
 
-		assertThat(mapping.getParametersMetadata().getParameterNames(), hasSize(1));
-		assertThat(mapping.getParametersMetadata().getParameterNames(), hasItem("firstname"));
+		assertThat(mapping.getParametersMetadata().getParameterNames()).hasSize(1);
+		assertThat(mapping.getParametersMetadata().getParameterNames()).contains("firstname");
 	}
 
 	@Test // DATAREST-229
@@ -86,7 +85,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
 		MethodResourceMapping mapping = getMappingFor(method);
 
-		assertThat(mapping.isPagingResource(), is(true));
+		assertThat(mapping.isPagingResource()).isTrue();
 	}
 
 	@Test
@@ -95,7 +94,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
 		MethodResourceMapping mapping = getMappingFor(method);
 
-		assertThat(mapping.getRel(), is("findByEmailAddress"));
+		assertThat(mapping.getRel()).isEqualTo("findByEmailAddress");
 	}
 
 	@Test // DATAREST-384
@@ -104,12 +103,12 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Sort.class);
 		RepositoryMethodResourceMapping mapping = getMappingFor(method);
 
-		assertThat(mapping.isSortableResource(), is(true));
+		assertThat(mapping.isSortableResource()).isTrue();
 
 		method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
 		mapping = getMappingFor(method);
 
-		assertThat(mapping.isSortableResource(), is(false));
+		assertThat(mapping.isSortableResource()).isFalse();
 	}
 
 	@Test // DATAREST-467
@@ -119,7 +118,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
 		MethodResourceMapping mapping = getMappingFor(method);
 
-		assertThat(mapping.getReturnedDomainType(), is(equalTo((Class) Person.class)));
+		assertThat(mapping.getReturnedDomainType()).isEqualTo((Class) Person.class);
 	}
 
 	@Test // DATAREST-699
@@ -128,7 +127,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class, Pageable.class);
 		RepositoryMethodResourceMapping mapping = getMappingFor(method);
 
-		assertThat(mapping.getParametersMetadata().getParameterNames(), not(hasItem("pageable")));
+		assertThat(mapping.getParametersMetadata().getParameterNames()).doesNotContain("pageable");
 	}
 
 	private RepositoryMethodResourceMapping getMappingFor(Method method) {

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
 import java.util.Date;
@@ -85,8 +84,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	@Test // DATAREST-210
 	public void assertEnableHypermediaSupportWorkingCorrectly() {
 
-		assertThat(context.getBean("entityLinksPluginRegistry"), is(notNullValue()));
-		assertThat(context.getBean(LinkDiscoverers.class), is(notNullValue()));
+		assertThat(context.getBean("entityLinksPluginRegistry")).isNotNull();
+		assertThat(context.getBean(LinkDiscoverers.class)).isNotNull();
 	}
 
 	@Test
@@ -107,15 +106,15 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 				.getBean(HateoasPageableHandlerMethodArgumentResolver.class);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
-		resolver.enhance(builder, null, new PageRequest(0, 9000, Direction.ASC, "firstname"));
+		resolver.enhance(builder, null, PageRequest.of(0, 9000, Direction.ASC, "firstname"));
 
 		MultiValueMap<String, String> params = builder.build().getQueryParams();
 
-		assertThat(params.containsKey("myPage"), is(true));
-		assertThat(params.containsKey("mySort"), is(true));
+		assertThat(params.containsKey("myPage")).isTrue();
+		assertThat(params.containsKey("mySort")).isTrue();
 
-		assertThat(params.get("mySize"), hasSize(1));
-		assertThat(params.get("mySize").get(0), is("7000"));
+		assertThat(params.get("mySize")).hasSize(1);
+		assertThat(params.get("mySize").get(0)).isEqualTo("7000");
 	}
 
 	@Test // DATAREST-336
@@ -131,8 +130,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
 		Object result = JsonPath.read(mapper.writeValueAsString(sample), "$.date");
-		assertThat(result, is(instanceOf(String.class)));
-		assertThat(result, is((Object) formatter.print(sample.date, Locale.US)));
+		assertThat(result).isInstanceOf(String.class);
+		assertThat(result).isEqualTo(formatter.print(sample.date, Locale.US));
 	}
 
 	@Test(expected = NoSuchBeanDefinitionException.class) // DATAREST-362
@@ -146,10 +145,10 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		Collection<MappingJackson2HttpMessageConverter> converters = context
 				.getBeansOfType(MappingJackson2HttpMessageConverter.class).values();
 
-		for (HttpMessageConverter<?> converter : converters) {
-			assertThat(converter, is(anyOf(instanceOf(TypeConstrainedMappingJackson2HttpMessageConverter.class),
-					instanceOf(AlpsJsonHttpMessageConverter.class))));
-		}
+		converters.forEach(converter -> {
+			assertThat(converter).isInstanceOfAny(TypeConstrainedMappingJackson2HttpMessageConverter.class,
+					AlpsJsonHttpMessageConverter.class);
+		});
 	}
 
 	@Test // DATAREST-424
@@ -158,8 +157,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		CollectingComponent component = context.getBean(CollectingComponent.class);
 		List<HttpMessageConverter<?>> converters = component.converters;
 
-		assertThat(converters.get(0).getSupportedMediaTypes(), hasItem(MediaTypes.HAL_JSON));
-		assertThat(converters.get(1).getSupportedMediaTypes(), hasItem(RestMediaTypes.SCHEMA_JSON));
+		assertThat(converters.get(0).getSupportedMediaTypes()).contains(MediaTypes.HAL_JSON);
+		assertThat(converters.get(1).getSupportedMediaTypes()).contains(RestMediaTypes.SCHEMA_JSON);
 	}
 
 	@Test // DATAREST-424
@@ -171,8 +170,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 
 		List<HttpMessageConverter<?>> converters = component.converters;
 
-		assertThat(converters.get(0).getSupportedMediaTypes(), hasItem(RestMediaTypes.SCHEMA_JSON));
-		assertThat(converters.get(1).getSupportedMediaTypes(), hasItem(MediaTypes.HAL_JSON));
+		assertThat(converters.get(0).getSupportedMediaTypes()).contains(RestMediaTypes.SCHEMA_JSON);
+		assertThat(converters.get(1).getSupportedMediaTypes()).contains(MediaTypes.HAL_JSON);
 	}
 
 	@Test // DATAREST-431, DATACMNS-626
@@ -180,10 +179,10 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 
 		ConversionService service = context.getBean("defaultConversionService", ConversionService.class);
 
-		assertThat(service.canConvert(String.class, Point.class), is(true));
-		assertThat(service.canConvert(Point.class, String.class), is(true));
-		assertThat(service.canConvert(String.class, Distance.class), is(true));
-		assertThat(service.canConvert(Distance.class, String.class), is(true));
+		assertThat(service.canConvert(String.class, Point.class)).isTrue();
+		assertThat(service.canConvert(Point.class, String.class)).isTrue();
+		assertThat(service.canConvert(String.class, Distance.class)).isTrue();
+		assertThat(service.canConvert(Distance.class, String.class)).isTrue();
 	}
 
 	@Test // DATAREST-686
@@ -193,7 +192,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 				MessageSourceAccessor.class);
 		Object messageSource = ReflectionTestUtils.getField(accessor, "messageSource");
 
-		assertThat((String) ReflectionTestUtils.getField(messageSource, "defaultEncoding"), is("UTF-8"));
+		assertThat((String) ReflectionTestUtils.getField(messageSource, "defaultEncoding")).isEqualTo("UTF-8");
 	}
 
 	@Configuration

@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
@@ -62,7 +61,7 @@ public class ProjectionJacksonIntegrationTests {
 		CustomerProjection projection = factory.createProjection(CustomerProjection.class, customer);
 
 		String result = mapper.writeValueAsString(projection);
-		assertThat(JsonPath.read(result, "$.firstname"), is((Object) "Dave"));
+		assertThat(JsonPath.<String> read(result, "$.firstname")).isEqualTo((Object) "Dave");
 	}
 
 	@Test // DATAREST-221
@@ -83,7 +82,7 @@ public class ProjectionJacksonIntegrationTests {
 
 		String result = mapper.writeValueAsString(resources);
 
-		assertThat(JsonPath.read(result, "$._embedded.customers[0].firstname"), is((Object) "Dave"));
+		assertThat(JsonPath.<String> read(result, "$._embedded.customers[0].firstname")).isEqualTo((Object) "Dave");
 	}
 
 	static class Customer {

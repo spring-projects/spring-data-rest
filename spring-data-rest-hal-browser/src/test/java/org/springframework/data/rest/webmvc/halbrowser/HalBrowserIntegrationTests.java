@@ -22,9 +22,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
@@ -57,6 +60,10 @@ public class HalBrowserIntegrationTests {
 	@Configuration
 	@EnableWebMvc
 	static class TestConfiguration extends RepositoryRestMvcConfiguration {
+
+		public TestConfiguration(ApplicationContext context, ObjectFactory<ConversionService> conversionService) {
+			super(context, conversionService);
+		}
 
 		@Bean
 		RepositoryRestConfigurerAdapter configExtension() {

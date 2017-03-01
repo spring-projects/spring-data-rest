@@ -70,6 +70,6 @@ public class MappingAwarePageableArgumentResolver implements HandlerMethodArgume
 		}
 
 		Sort translated = translator.translateSort(pageable.getSort(), methodParameter, webRequest);
-		return new PageRequest(pageable.getPageNumber(), pageable.getPageSize(), translated);
+		return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), translated);
 	}
 }

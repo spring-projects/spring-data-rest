@@ -15,8 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.halbrowser;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
 
@@ -48,14 +49,14 @@ public class HalBrowserUnitTests {
 
 		View view = new HalBrowser().browser(request);
 
-		assertThat(view, is(instanceOf(RedirectView.class)));
+		assertThat(view).isInstanceOf(RedirectView.class);
 
 		((AbstractView) view).render(Collections.<String, Object> emptyMap(), request, response);
 
 		UriComponents components = UriComponentsBuilder.fromUriString(response.getHeader(HttpHeaders.LOCATION)).build();
 
 		assertThat(components.getPath(), startsWith("/context"));
-		assertThat(components.getFragment(), is("/context"));
+		assertThat(components.getFragment()).isEqualTo("/context");
 	}
 
 	@Test
@@ -69,7 +70,7 @@ public class HalBrowserUnitTests {
 
 		View view = new HalBrowser().browser(request);
 
-		assertThat(view, is(instanceOf(RedirectView.class)));
+		assertThat(view).isInstanceOf(RedirectView.class);
 
 		String url = ((RedirectView) view).getUrl();
 

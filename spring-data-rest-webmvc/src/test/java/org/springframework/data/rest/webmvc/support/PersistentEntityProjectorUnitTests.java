@@ -15,15 +15,14 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
@@ -61,7 +60,7 @@ public class PersistentEntityProjectorUnitTests {
 
 		Object object = new Object();
 
-		assertThat(projector.project(object), is(object));
+		assertThat(projector.project(object)).isEqualTo(object);
 	}
 
 	@Test // DATAREST-221
@@ -69,7 +68,7 @@ public class PersistentEntityProjectorUnitTests {
 
 		configuration.addProjection(Sample.class, Object.class);
 
-		assertThat(projector.project(new Object()), is(instanceOf(Sample.class)));
+		assertThat(projector.project(new Object())).isInstanceOf(Sample.class);
 	}
 
 	@Test // DATAREST-806
@@ -77,12 +76,12 @@ public class PersistentEntityProjectorUnitTests {
 
 		configuration.addProjection(Sample.class, Object.class);
 
-		assertThat(projector.projectExcerpt(new Object()), is(instanceOf(Sample.class)));
+		assertThat(projector.projectExcerpt(new Object())).isInstanceOf(Sample.class);
 	}
 
 	@Test // DATAREST-806
 	public void excerptProjectionIsUsedForExcerpt() {
-		assertThat(projector.projectExcerpt(new Object()), is(instanceOf(Excerpt.class)));
+		assertThat(projector.projectExcerpt(new Object())).isInstanceOf(Excerpt.class);
 	}
 
 	@Test // DATAREST-806
@@ -92,7 +91,7 @@ public class PersistentEntityProjectorUnitTests {
 
 		PersistentEntityProjector projector = new PersistentEntityProjector(configuration, factory, null, mappings);
 
-		assertThat(projector.projectExcerpt(new Object()), is(instanceOf(Excerpt.class)));
+		assertThat(projector.projectExcerpt(new Object())).isInstanceOf(Excerpt.class);
 	}
 
 	interface Sample {}

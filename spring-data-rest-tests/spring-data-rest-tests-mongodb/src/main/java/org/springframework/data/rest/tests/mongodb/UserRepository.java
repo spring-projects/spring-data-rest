@@ -18,14 +18,14 @@ package org.springframework.data.rest.tests.mongodb;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.springframework.data.querydsl.QueryDslPredicateExecutor;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 /**
  * @author Oliver Gierke
  */
-public interface UserRepository extends CrudRepository<User, BigInteger>, QueryDslPredicateExecutor<User> {
+public interface UserRepository extends CrudRepository<User, BigInteger>, QuerydslPredicateExecutor<User> {
 
 	List<User> findByFirstname(String firstname);
 

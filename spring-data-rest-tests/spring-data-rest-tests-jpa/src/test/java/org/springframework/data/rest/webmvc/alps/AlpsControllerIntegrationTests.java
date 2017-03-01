@@ -15,8 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.alps;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import net.minidev.json.JSONArray;
@@ -135,7 +137,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link profileLink = client.discoverUnique("profile");
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
 
-		assertThat(itemsLink, is(notNullValue()));
+		assertThat(itemsLink).isNotNull();
 
 		String result = client.follow(itemsLink, RestMediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
 		String href = JsonPath.<JSONArray> read(result, "$.alps.descriptors[?(@.id == 'item-representation')].href").get(0)
@@ -158,7 +160,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		String result = client.follow(usersLink, RestMediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
 		String rt = JsonPath.<JSONArray> read(result, jsonPath).get(0).toString();
 
-		assertThat(rt, allOf(containsString(ProfileController.PROFILE_ROOT_MAPPING), endsWith("-representation")));
+		assertThat(rt).contains(ProfileController.PROFILE_ROOT_MAPPING).endsWith("-representation");
 	}
 
 	@Test // DATAREST-630
@@ -187,7 +189,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 						"$.alps.descriptors[?(@.id == 'person-representation')].descriptors[?(@.name == 'gender')].doc.value")
 				.get(0).toString();
 
-		assertThat(value, is("Male, Female, Undefined"));
+		assertThat(value).isEqualTo("Male, Female, Undefined");
 	}
 
 	@Test // DATAREST-753
@@ -203,6 +205,6 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 						"$.alps.descriptors[?(@.id == 'simulatedGroovyDomainClass-representation')].descriptors[0].name")
 				.get(0).toString();
 
-		assertThat(name, is("name"));
+		assertThat(name).isEqualTo("name");
 	}
 }

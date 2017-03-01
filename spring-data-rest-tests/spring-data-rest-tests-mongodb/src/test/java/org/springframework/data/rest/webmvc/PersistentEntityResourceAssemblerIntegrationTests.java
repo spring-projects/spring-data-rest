@@ -15,15 +15,13 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.math.BigInteger;
 import java.util.Collections;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +36,6 @@ import org.springframework.data.rest.tests.mongodb.User;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.Projector;
 import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -62,7 +59,7 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 
 		Projector projector = mock(Projector.class);
 
-		when(projector.projectExcerpt(anyObject())).thenAnswer(new ReturnsArgumentAt(0));
+		when(projector.projectExcerpt(any())).thenAnswer(new ReturnsArgumentAt(0));
 
 		PersistentEntityResourceAssembler assembler = new PersistentEntityResourceAssembler(entities, projector,
 				associations, new DefaultSelfLinkProvider(entities, entityLinks, Collections.<EntityLookup<?>> emptyList()));
@@ -74,8 +71,8 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 
 		Links links = new Links(resource.getLinks());
 
-		assertThat(links, is(Matchers.<Link> iterableWithSize(2)));
-		assertThat(links.getLink("self").getVariables(), is(Matchers.empty()));
-		assertThat(links.getLink("user").getVariableNames(), is(hasItem("projection")));
+		assertThat(links).hasSize(2);
+		assertThat(links.getLink("self").getVariables()).isEmpty();
+		assertThat(links.getLink("user").getVariableNames()).contains("projection");
 	}
 }

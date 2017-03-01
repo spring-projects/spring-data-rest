@@ -22,6 +22,7 @@ import lombok.Value;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.repository.Repository;
@@ -188,11 +189,15 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			Assert.notNull(repositories, "Repositories must not be null!");
 			Assert.notNull(lookupInformation, "LookupInformation must not be null!");
 
-			RepositoryInformation information = repositories.getRepositoryInformation(lookupInformation.repositoryType);
+			RepositoryInformation information = repositories.getRepositoryInformation(lookupInformation.repositoryType)//
+					.orElseThrow(() -> new IllegalStateException(
+							"No repository found for type " + lookupInformation.repositoryType.getName() + "!"));
 
-			this.repository = (Repository<? extends T, ?>) repositories.getRepositoryFor(information.getDomainType());
 			this.domainType = information.getDomainType();
 			this.lookupInfo = lookupInformation;
+			this.repository = (Repository<? extends T, ?>) repositories.getRepositoryFor(information.getDomainType())//
+					.orElseThrow(() -> new IllegalStateException(
+							"No repository found for type " + information.getDomainType().getName() + "!"));
 		}
 
 		/* 
@@ -209,8 +214,8 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		 * @see org.springframework.data.rest.core.support.EntityLookup#lookupEntity(java.io.Serializable)
 		 */
 		@Override
-		public Object lookupEntity(Serializable id) {
-			return lookupInfo.getLookup().lookup(repository, id);
+		public Optional<Object> lookupEntity(Serializable id) {
+			return Optional.ofNullable(lookupInfo.getLookup().lookup(repository, id));
 		}
 
 		/* 

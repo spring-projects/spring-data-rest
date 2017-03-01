@@ -16,6 +16,7 @@
 package org.springframework.data.rest.core.support;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import org.springframework.plugin.core.Plugin;
 
@@ -54,5 +55,5 @@ public interface EntityLookup<T> extends Plugin<Class<?>> {
 	 * @param id will never be {@literal null}.
 	 * @return can be {@literal null}.
 	 */
-	Object lookupEntity(Serializable id);
+	Optional<Object> lookupEntity(Serializable id);
 }

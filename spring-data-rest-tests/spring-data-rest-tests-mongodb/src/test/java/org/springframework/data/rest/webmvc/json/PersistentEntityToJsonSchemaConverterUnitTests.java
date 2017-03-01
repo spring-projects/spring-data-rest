@@ -15,8 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
@@ -179,7 +180,7 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 			try {
 				assertThat(constraint.description, JsonPath.read(writeSchemaFor, constraint.selector), constraint.matcher);
 			} catch (PathNotFoundException e) {
-				assertThat(constraint.matcher.matches(null), is(true));
+				assertThat(constraint.matcher.matches(null)).isTrue();
 			} catch (RuntimeException e) {
 				assertThat(e, constraint.matcher);
 			}

@@ -15,10 +15,13 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import java.util.Optional;
+
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -31,8 +34,8 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 
 	private final PersistentProperty<?> property;
 	private final ResourceMappings mappings;
-	private final RestResource annotation;
-	private final Description description;
+	private final Optional<RestResource> annotation;
+	private final Optional<Description> description;
 
 	/**
 	 * Creates a new {@link RootPropertyResourceMapping}.
@@ -46,7 +49,7 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 
 		this.property = property;
 		this.mappings = mappings;
-		this.annotation = property.isAssociation() ? property.findAnnotation(RestResource.class) : null;
+		this.annotation = property.isAssociation() ? property.findAnnotation(RestResource.class) : Optional.empty();
 		this.description = property.findAnnotation(Description.class);
 	}
 
@@ -56,8 +59,10 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 	 */
 	@Override
 	public Path getPath() {
-		return annotation != null && StringUtils.hasText(annotation.path()) ? new Path(annotation.path()) : new Path(
-				property.getName());
+
+		return annotation.filter(it -> StringUtils.hasText(it.path()))//
+				.map(it -> new Path(it.path()))//
+				.orElseGet(() -> new Path(property.getName()));
 	}
 
 	/* 
@@ -66,7 +71,10 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 	 */
 	@Override
 	public String getRel() {
-		return annotation != null && StringUtils.hasText(annotation.rel()) ? annotation.rel() : property.getName();
+
+		return annotation.filter(it -> StringUtils.hasText(it.rel()))//
+				.map(it -> it.rel())//
+				.orElseGet(() -> property.getName());
 	}
 
 	/* 
@@ -81,7 +89,7 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 		}
 
 		ResourceMapping typeMapping = mappings.getMetadataFor(property.getActualType());
-		return !typeMapping.isExported() ? false : annotation == null ? true : annotation.exported();
+		return !typeMapping.isExported() ? false : annotation.map(it -> it.exported()).orElse(true);
 	}
 
 	/* 
@@ -103,15 +111,11 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 		CollectionResourceMapping ownerTypeMapping = mappings.getMetadataFor(property.getOwner().getType());
 		ResourceDescription fallback = TypedResourceDescription.defaultFor(ownerTypeMapping.getItemResourceRel(), property);
 
-		if (description != null) {
-			return new AnnotationBasedResourceDescription(description, fallback);
-		}
-
-		if (annotation != null) {
-			return new AnnotationBasedResourceDescription(annotation.description(), fallback);
-		}
-
-		return fallback;
+		return Optionals
+				.<ResourceDescription> firstNonEmpty(//
+						() -> description.map(it -> new AnnotationBasedResourceDescription(it, fallback)), //
+						() -> annotation.map(it -> new AnnotationBasedResourceDescription(it.description(), fallback)))
+				.orElse(fallback);
 	}
 
 	/* 

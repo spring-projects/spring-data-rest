@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.ServletException;
@@ -63,7 +64,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 	private final ResourceMappings mappings;
 	private final RepositoryRestConfiguration configuration;
-	private final Repositories repositories;
+	private final Optional<Repositories> repositories;
 
 	private RepositoryCorsConfigurationAccessor corsConfigurationAccessor;
 	private JpaHelper jpaHelper;
@@ -76,7 +77,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	 * @param config must not be {@literal null}.
 	 */
 	public RepositoryRestHandlerMapping(ResourceMappings mappings, RepositoryRestConfiguration config) {
-		this(mappings, config, null);
+		this(mappings, config, Optional.empty());
 	}
 
 	/**
@@ -85,15 +86,22 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	 *
 	 * @param mappings must not be {@literal null}.
 	 * @param config must not be {@literal null}.
-	 * @param repositories can be {@literal null} if {@link CrossOrigin} resolution is not required.
+	 * @param repositories must not be {@literal null}.
 	 */
 	public RepositoryRestHandlerMapping(ResourceMappings mappings, RepositoryRestConfiguration config,
 			Repositories repositories) {
+
+		this(mappings, config, Optional.of(repositories));
+	}
+
+	private RepositoryRestHandlerMapping(ResourceMappings mappings, RepositoryRestConfiguration config,
+			Optional<Repositories> repositories) {
 
 		super(config);
 
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
 		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null!");
 
 		this.mappings = mappings;
 		this.configuration = config;
@@ -201,19 +209,14 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	@Override
 	protected CorsConfiguration getCorsConfiguration(Object handler, HttpServletRequest request) {
 
-		CorsConfiguration corsConfiguration = super.getCorsConfiguration(handler, request);
 		String lookupPath = getUrlPathHelper().getLookupPathForRequest(request);
-
 		String repositoryLookupPath = new BaseUri(configuration.getBaseUri()).getRepositoryLookupPath(lookupPath);
+		CorsConfiguration corsConfiguration = super.getCorsConfiguration(handler, request);
 
-		if (!StringUtils.hasText(repositoryLookupPath) || repositories == null) {
-			return corsConfiguration;
-		}
-
-		CorsConfiguration repositoryCorsConfiguration = corsConfigurationAccessor.findCorsConfiguration(lookupPath);
-
-		return corsConfiguration == null ? repositoryCorsConfiguration
-				: corsConfiguration.combine(repositoryCorsConfiguration);
+		return repositories.filter(it -> StringUtils.hasText(repositoryLookupPath))//
+				.flatMap(it -> corsConfigurationAccessor.findCorsConfiguration(lookupPath))
+				.map(it -> it.combine(corsConfiguration))//
+				.orElse(corsConfiguration);
 	}
 
 	/**
@@ -262,28 +265,25 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 		private final @NonNull ResourceMappings mappings;
 		private final @NonNull StringValueResolver embeddedValueResolver;
-		private final Repositories repositories;
+		private final @NonNull Optional<Repositories> repositories;
 
-		CorsConfiguration findCorsConfiguration(String lookupPath) {
+		Optional<CorsConfiguration> findCorsConfiguration(String lookupPath) {
 
-			ResourceMetadata resource = getResourceMetadata(getRepositoryBasePath(lookupPath));
-
-			return resource != null && repositories != null ? createConfiguration(
-					repositories.getRepositoryInformationFor(resource.getDomainType()).getRepositoryInterface()) : null;
+			return getResourceMetadata(getRepositoryBasePath(lookupPath))//
+					.flatMap(it -> repositories.flatMap(foo -> foo.getRepositoryInformationFor(it.getDomainType())))//
+					.map(it -> it.getRepositoryInterface())//
+					.map(it -> createConfiguration(it));
 		}
 
-		private ResourceMetadata getResourceMetadata(String basePath) {
+		private Optional<ResourceMetadata> getResourceMetadata(String basePath) {
 
-			if (mappings.exportsTopLevelResourceFor(basePath)) {
-
-				for (ResourceMetadata metadata : mappings) {
-					if (metadata.getPath().matches(basePath) && metadata.isExported()) {
-						return metadata;
-					}
-				}
+			if (!mappings.exportsTopLevelResourceFor(basePath)) {
+				return Optional.empty();
 			}
 
-			return null;
+			return mappings.stream()//
+					.filter(it -> it.getPath().matches(basePath) && it.isExported())//
+					.findFirst();
 		}
 
 		/**

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -44,7 +45,6 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
-import org.springframework.data.rest.core.util.Supplier;
 import org.springframework.data.rest.webmvc.support.BackendId;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.ETag;
@@ -305,18 +305,16 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	public ResponseEntity<?> headForItemResource(RootResourceInformation resourceInformation, @BackendId Serializable id,
 			PersistentEntityResourceAssembler assembler) throws HttpRequestMethodNotSupportedException {
 
-		Object domainObject = getItemResource(resourceInformation, id);
+		return getItemResource(resourceInformation, id).map(it -> {
 
-		if (domainObject == null) {
-			throw new ResourceNotFoundException();
-		}
+			Links links = new Links(assembler.toResource(it).getLinks());
 
-		Links links = new Links(assembler.toResource(domainObject).getLinks());
+			HttpHeaders headers = headersPreparer.prepareHeaders(resourceInformation.getPersistentEntity(), it);
+			headers.add(LINK_HEADER, links.toString());
 
-		HttpHeaders headers = headersPreparer.prepareHeaders(resourceInformation.getPersistentEntity(), domainObject);
-		headers.add(LINK_HEADER, links.toString());
+			return new ResponseEntity<Object>(headers, HttpStatus.NO_CONTENT);
 
-		return new ResponseEntity<Object>(headers, HttpStatus.NO_CONTENT);
+		}).orElseThrow(() -> new ResourceNotFoundException());
 	}
 
 	/**
@@ -332,21 +330,14 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			@BackendId Serializable id, final PersistentEntityResourceAssembler assembler, @RequestHeader HttpHeaders headers)
 			throws HttpRequestMethodNotSupportedException {
 
-		final Object domainObj = getItemResource(resourceInformation, id);
+		return getItemResource(resourceInformation, id).map(it -> {
 
-		if (domainObj == null) {
-			return new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND);
-		}
+			PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
 
-		PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
+			return resourceStatus.getStatusAndHeaders(headers, it, entity).toResponseEntity(//
+					() -> assembler.toFullResource(it));
 
-		return resourceStatus.getStatusAndHeaders(headers, domainObj, entity).toResponseEntity(//
-				new Supplier<PersistentEntityResource>() {
-					@Override
-					public PersistentEntityResource get() {
-						return assembler.toFullResource(domainObj);
-					}
-				});
+		}).orElseGet(() -> new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND));
 	}
 
 	/**
@@ -425,21 +416,21 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		resourceInformation.verifySupportedMethod(HttpMethod.DELETE, ResourceType.ITEM);
 
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
-		Object domainObj = invoker.invokeFindOne(id);
+		Optional<Object> domainObj = invoker.invokeFindOne(id);
 
-		if (domainObj == null) {
-			throw new ResourceNotFoundException();
-		}
+		return domainObj.map(it -> {
 
-		PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
+			PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
 
-		eTag.verify(entity, domainObj);
+			eTag.verify(entity, it);
 
-		publisher.publishEvent(new BeforeDeleteEvent(domainObj));
-		invoker.invokeDelete((Serializable) entity.getIdentifierAccessor(domainObj).getIdentifier());
-		publisher.publishEvent(new AfterDeleteEvent(domainObj));
+			publisher.publishEvent(new BeforeDeleteEvent(it));
+			invoker.invokeDelete((Serializable) entity.getIdentifierAccessor(it).getIdentifier().orElse(null));
+			publisher.publishEvent(new AfterDeleteEvent(it));
 
-		return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+			return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+
+		}).orElseThrow(() -> new ResourceNotFoundException());
 	}
 
 	/**
@@ -458,7 +449,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		publisher.publishEvent(new AfterSaveEvent(obj));
 
 		PersistentEntityResource resource = assembler.toFullResource(obj);
-		HttpHeaders headers = headersPreparer.prepareHeaders(resource);
+		HttpHeaders headers = headersPreparer.prepareHeaders(Optional.of(resource));
 
 		if (PUT.equals(httpMethod)) {
 			addLocationHeader(headers, assembler, obj);
@@ -485,7 +476,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		Object savedObject = invoker.invokeSave(domainObject);
 		publisher.publishEvent(new AfterCreateEvent(savedObject));
 
-		PersistentEntityResource resource = returnBody ? assembler.toFullResource(savedObject) : null;
+		Optional<PersistentEntityResource> resource = Optional
+				.ofNullable(returnBody ? assembler.toFullResource(savedObject) : null);
 
 		HttpHeaders headers = headersPreparer.prepareHeaders(resource);
 		addLocationHeader(headers, assembler, savedObject);
@@ -516,7 +508,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @throws HttpRequestMethodNotSupportedException
 	 * @throws {@link ResourceNotFoundException}
 	 */
-	private Object getItemResource(RootResourceInformation resourceInformation, Serializable id)
+	private Optional<Object> getItemResource(RootResourceInformation resourceInformation, Serializable id)
 			throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.ITEM);

@@ -29,7 +29,7 @@ import org.springframework.util.MultiValueMap;
  * 
  * @author Oliver Gierke
  */
-public abstract class MapUtils {
+public interface MapUtils {
 
 	/**
 	 * Turns a {@link MultiValueMap} into its {@link Map} equivalent.

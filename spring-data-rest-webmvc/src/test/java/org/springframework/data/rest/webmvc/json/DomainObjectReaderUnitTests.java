@@ -15,8 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 import lombok.AllArgsConstructor;
@@ -42,7 +43,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -82,7 +83,7 @@ public class DomainObjectReaderUnitTests {
 	@Before
 	public void setUp() {
 
-		KeyValueMappingContext mappingContext = new KeyValueMappingContext();
+		KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
 		mappingContext.getPersistentEntity(SampleUser.class);
 		mappingContext.getPersistentEntity(Person.class);
 		mappingContext.getPersistentEntity(TypeWithGenericMap.class);
@@ -112,8 +113,8 @@ public class DomainObjectReaderUnitTests {
 
 		SampleUser result = reader.readPut((ObjectNode) node, user, new ObjectMapper());
 
-		assertThat(result.name, is(nullValue()));
-		assertThat(result.password, is("password"));
+		assertThat(result.name).isNull();
+		assertThat(result.password).isEqualTo("password");
 	}
 
 	@Test // DATAREST-556
@@ -126,8 +127,8 @@ public class DomainObjectReaderUnitTests {
 
 		Person result = reader.readPut((ObjectNode) node, new Person("Dave", "Matthews"), mapper);
 
-		assertThat(result.firstName, is("Carter"));
-		assertThat(result.lastName, is("Beauford"));
+		assertThat(result.firstName).isEqualTo("Carter");
+		assertThat(result.lastName).isEqualTo("Beauford");
 	}
 
 	@Test // DATAREST-605
@@ -142,8 +143,8 @@ public class DomainObjectReaderUnitTests {
 		SampleUser result = reader.readPut((ObjectNode) node, user, new ObjectMapper());
 
 		// Assert that the nested Map values also consider ignored properties
-		assertThat(result.relatedUsers.get("parent").password, is("password"));
-		assertThat(result.relatedUsers.get("parent").name, is("Oliver"));
+		assertThat(result.relatedUsers.get("parent").password).isEqualTo("password");
+		assertThat(result.relatedUsers.get("parent").name).isEqualTo("Oliver");
 	}
 
 	@Test // DATAREST-701
@@ -159,11 +160,11 @@ public class DomainObjectReaderUnitTests {
 
 		TypeWithGenericMap result = reader.readPut((ObjectNode) node, target, mapper);
 
-		assertThat(result.map.get("a"), is((Object) "1"));
+		assertThat(result.map.get("a")).isEqualTo((Object) "1");
 
 		Object object = result.map.get("b");
-		assertThat(object, is(instanceOf(Map.class)));
-		assertThat(((Map<Object, Object>) object).get("c"), is((Object) "2"));
+		assertThat(object).isInstanceOf(Map.class);
+		assertThat(((Map<Object, Object>) object).get("c")).isEqualTo((Object) "2");
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATAREST-701
@@ -188,10 +189,10 @@ public class DomainObjectReaderUnitTests {
 
 		VersionedType result = reader.readPut(node, type, mapper);
 
-		assertThat(result.lastname, is("Matthews"));
-		assertThat(result.firstname, is(nullValue()));
-		assertThat(result.id, is(1L));
-		assertThat(result.version, is(1L));
+		assertThat(result.lastname).isEqualTo("Matthews");
+		assertThat(result.firstname).isNull();
+		assertThat(result.id).isEqualTo(1L);
+		assertThat(result.version).isEqualTo(1L);
 	}
 
 	@Test // DATAREST-873
@@ -205,7 +206,7 @@ public class DomainObjectReaderUnitTests {
 		SampleWithCreatedDate sample = new SampleWithCreatedDate();
 		sample.createdDate = reference;
 
-		assertThat(reader.readPut(node, sample, mapper).createdDate, is(reference));
+		assertThat(reader.readPut(node, sample, mapper).createdDate).isEqualTo(reference);
 	}
 
 	@Test // DATAREST-931
@@ -222,7 +223,7 @@ public class DomainObjectReaderUnitTests {
 
 		User result = reader.read(source, user, new ObjectMapper());
 
-		assertThat(result.phones.get(0).creationDate, is(notNullValue()));
+		assertThat(result.phones.get(0).creationDate).isNotNull();
 	}
 
 	@Test // DATAREST-919
@@ -249,18 +250,18 @@ public class DomainObjectReaderUnitTests {
 
 		TypeWithGenericMap result = reader.readPut(payload, map, mapper);
 
-		assertThat(result.map.get("sub1"), is((Object) "ok"));
+		assertThat(result.map.get("sub1")).isEqualTo((Object) "ok");
 
 		List<String> sub2 = as(result.map.get("sub2"), List.class);
-		assertThat(sub2.get(0), is("ok1"));
-		assertThat(sub2.get(1), is("ok2"));
+		assertThat(sub2.get(0)).isEqualTo("ok1");
+		assertThat(sub2.get(1)).isEqualTo("ok2");
 
 		List<Map<String, String>> sub3 = as(result.map.get("sub3"), List.class);
-		assertThat(sub3.get(0).get("childOk1"), is("ok"));
+		assertThat(sub3.get(0).get("childOk1")).isEqualTo("ok");
 
 		Map<Object, String> sub4 = as(result.map.get("sub4"), Map.class);
-		assertThat(sub4.get("c1"), is("v1"));
-		assertThat(sub4.get("c2"), is("new"));
+		assertThat(sub4.get("c1")).isEqualTo("v1");
+		assertThat(sub4.get("c2")).isEqualTo("new");
 	}
 
 	@Test // DATAREST-938
@@ -279,11 +280,11 @@ public class DomainObjectReaderUnitTests {
 
 		Outer result = reader.doMerge((ObjectNode) node, outer, new ObjectMapper());
 
-		assertThat(result, is(sameInstance(outer)));
-		assertThat(result.prop, is("else"));
-		assertThat(result.inner.prop, is("something"));
-		assertThat(result.inner.name, is("new inner name"));
-		assertThat(result.inner, is(sameInstance(inner)));
+		assertThat(result).isSameAs(outer);
+		assertThat(result.prop).isEqualTo("else");
+		assertThat(result.inner.prop).isEqualTo("something");
+		assertThat(result.inner.name).isEqualTo("new inner name");
+		assertThat(result.inner).isSameAs(inner);
 	}
 
 	@Test // DATAREST-937
@@ -297,8 +298,8 @@ public class DomainObjectReaderUnitTests {
 
 		SampleWithTransient result = reader.readPut((ObjectNode) node, sample, new ObjectMapper());
 
-		assertThat(result.name, is("new name"));
-		assertThat(result.temporary, is("new temp"));
+		assertThat(result.name).isEqualTo("new name");
+		assertThat(result.temporary).isEqualTo("new temp");
 	}
 
 	@Test // DATAREST-953
@@ -315,7 +316,7 @@ public class DomainObjectReaderUnitTests {
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
-		assertThat(result.inner.items.get(0).some, is("value"));
+		assertThat(result.inner.items.get(0).some).isEqualTo("value");
 	}
 
 	@Test // DATAREST-956
@@ -333,10 +334,10 @@ public class DomainObjectReaderUnitTests {
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
-		assertThat(result.inner.items.size(), is(3));
-		assertThat(result.inner.items.get(0).some, is("value1"));
-		assertThat(result.inner.items.get(1).some, is("value2"));
-		assertThat(result.inner.items.get(2).some, is("value3"));
+		assertThat(result.inner.items).hasSize(3);
+		assertThat(result.inner.items.get(0).some).isEqualTo("value1");
+		assertThat(result.inner.items.get(1).some).isEqualTo("value2");
+		assertThat(result.inner.items.get(2).some).isEqualTo("value3");
 	}
 
 	@Test // DATAREST-956
@@ -355,8 +356,8 @@ public class DomainObjectReaderUnitTests {
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
-		assertThat(result.inner.items.size(), is(1));
-		assertThat(result.inner.items.get(0).some, is("value"));
+		assertThat(result.inner.items).hasSize(1);
+		assertThat(result.inner.items.get(0).some).isEqualTo("value");
 	}
 
 	@Test // DATAREST-959
@@ -370,8 +371,8 @@ public class DomainObjectReaderUnitTests {
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
-		assertThat(result.inner.items.size(), is(1));
-		assertThat(result.inner.items.get(0).some, is("value"));
+		assertThat(result.inner.items).hasSize(1);
+		assertThat(result.inner.items.get(0).some).isEqualTo("value");
 	}
 
 	@Test // DATAREST-959
@@ -386,14 +387,14 @@ public class DomainObjectReaderUnitTests {
 				.readTree("{ \"inner\" : { \"object\" : [ { \"some\" : \"value\" }, { \"some\" : \"otherValue\" } ] } }");
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
-		assertThat(result.inner.object, is(instanceOf(Collection.class)));
+		assertThat(result.inner.object).isInstanceOf(Collection.class);
 
 		Collection<?> collection = (Collection<?>) result.inner.object;
-		assertThat(collection.size(), is(2));
+		assertThat(collection).hasSize(2);
 
 		Iterator<Map<String, Object>> iterator = (Iterator<Map<String, Object>>) collection.iterator();
-		assertThat(iterator.next().get("some"), is((Object) "value"));
-		assertThat(iterator.next().get("some"), is((Object) "otherValue"));
+		assertThat(iterator.next().get("some")).isEqualTo((Object) "value");
+		assertThat(iterator.next().get("some")).isEqualTo((Object) "otherValue");
 	}
 
 	@Test // DATAREST-965
@@ -411,8 +412,8 @@ public class DomainObjectReaderUnitTests {
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
-		assertThat(result.inner.items, is(nullValue()));
-		assertThat((String) result.inner.object, is("value"));
+		assertThat(result.inner.items).isNull();
+		assertThat((String) result.inner.object).isEqualTo("value");
 	}
 
 	@Test // DATAREST-965
@@ -428,9 +429,9 @@ public class DomainObjectReaderUnitTests {
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
-		assertThat(result.inner.items.size(), is(1));
-		assertThat(result.inner.items.get(0).some, is("value"));
-		assertThat(result.inner.object, is(nullValue()));
+		assertThat(result.inner.items).hasSize(1);
+		assertThat(result.inner.items.get(0).some).isEqualTo("value");
+		assertThat(result.inner.object).isNull();
 	}
 
 	@Test // DATAREST-986
@@ -442,8 +443,8 @@ public class DomainObjectReaderUnitTests {
 
 		Product result = reader.readPut((ObjectNode) node, new Product(), mapper);
 
-		assertThat(result.map.get(Locale.ENGLISH), is(new LocalizedValue("eventual")));
-		assertThat(result.map.get(Locale.GERMAN), is(new LocalizedValue("schlussendlich")));
+		assertThat(result.map.get(Locale.ENGLISH)).isEqualTo(new LocalizedValue("eventual"));
+		assertThat(result.map.get(Locale.GERMAN)).isEqualTo(new LocalizedValue("schlussendlich"));
 	}
 
 	@Test // DATAREST-987
@@ -478,8 +479,8 @@ public class DomainObjectReaderUnitTests {
 
 		SampleWithReference result = reader.mergeForPut(source, target, new ObjectMapper());
 
-		assertThat(result.nested, is(source.nested));
-		assertThat(result.nested == originalCollection, is(false));
+		assertThat(result.nested).isEqualTo(source.nested);
+		assertThat(result.nested == originalCollection).isFalse();
 	}
 
 	@Test // DATAREST-944
@@ -492,14 +493,14 @@ public class DomainObjectReaderUnitTests {
 
 		SampleWithReference result = reader.mergeForPut(source, target, new ObjectMapper());
 
-		assertThat(result.nested, is(source.nested));
-		assertThat(result.nested == originalCollection, is(true));
+		assertThat(result.nested).isEqualTo(source.nested);
+		assertThat(result.nested).isSameAs(originalCollection);
 	}
 
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
-		assertThat(source, is(instanceOf(type)));
+		assertThat(source).isInstanceOf(type);
 		return (T) source;
 	}
 

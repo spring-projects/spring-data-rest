@@ -50,7 +50,7 @@ import org.springframework.data.geo.GeoModule;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
-import org.springframework.data.querydsl.QueryDslUtils;
+import org.springframework.data.querydsl.QuerydslUtils;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
@@ -72,6 +72,7 @@ import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.RepositoryRelProvider;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.core.support.UnwrappingRepositoryInvokerFactory;
+import org.springframework.data.rest.core.util.Java8PluginRegistry;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping;
 import org.springframework.data.rest.webmvc.BaseUri;
@@ -154,6 +155,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 /**
  * Main application configuration for Spring Data REST. To customize how the exporter works, subclass this and override
@@ -188,6 +190,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Autowired(required = false) CurieProvider curieProvider;
 
 	private RepositoryRestConfigurerDelegate configurerDelegate;
+
+	public RepositoryRestMvcConfiguration(ApplicationContext context,
+			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
+		super(context, conversionService);
+	}
 
 	/* 
 	 * (non-Javadoc)
@@ -335,7 +342,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public RootResourceInformationHandlerMethodArgumentResolver repoRequestArgumentResolver() {
 
-		if (QueryDslUtils.QUERY_DSL_PRESENT) {
+		if (QuerydslUtils.QUERY_DSL_PRESENT) {
 
 			QuerydslBindingsFactory factory = applicationContext.getBean(QuerydslBindingsFactory.class);
 			QuerydslPredicateBuilder predicateBuilder = new QuerydslPredicateBuilder(defaultConversionService(),
@@ -357,7 +364,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public BackendIdHandlerMethodArgumentResolver backendIdHandlerMethodArgumentResolver() {
-		return new BackendIdHandlerMethodArgumentResolver(backendIdConverterRegistry(),
+		return new BackendIdHandlerMethodArgumentResolver(Java8PluginRegistry.of(backendIdConverterRegistry()),
 				resourceMetadataHandlerMethodArgumentResolver(), baseUri());
 	}
 
@@ -380,7 +387,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				pageableResolver(), sortResolver());
 
 		return new RepositoryEntityLinks(repositories(), resourceMappings(), config(), templateVariables,
-				backendIdConverterRegistry());
+				Java8PluginRegistry.of(backendIdConverterRegistry()));
 	}
 
 	/**
@@ -443,8 +450,12 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public ObjectMapper objectMapper() {
 
+		Jdk8Module jdk8Module = new Jdk8Module();
+		jdk8Module.configureAbsentsAsNulls(true);
+
 		ObjectMapper mapper = basicObjectMapper();
 		mapper.registerModule(persistentEntityJackson2Module());
+		mapper.registerModule(jdk8Module);
 
 		return mapper;
 	}
@@ -635,7 +646,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		EmbeddedResourcesAssembler assembler = new EmbeddedResourcesAssembler(entities, associationLinks(),
 				excerptProjector());
 		LookupObjectSerializer lookupObjectSerializer = new LookupObjectSerializer(
-				OrderAwarePluginRegistry.create(getEntityLookups()));
+				Java8PluginRegistry.of(getEntityLookups()));
 
 		return new PersistentEntityJackson2Module(associationLinks(), entities, uriToEntityConverter, linkCollector(),
 				repositoryInvokerFactory, lookupObjectSerializer, resourceProcessorInvoker(), assembler);
@@ -655,7 +666,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 		projectionFactory.setBeanFactory(applicationContext);
-		projectionFactory.setResourceLoader(applicationContext);
 
 		return new DefaultExcerptProjector(projectionFactory, resourceMappings());
 	}
@@ -732,7 +742,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		HateoasPageableHandlerMethodArgumentResolver resolver = super.pageableResolver();
 		resolver.setPageParameterName(config().getPageParamName());
 		resolver.setSizeParameterName(config().getLimitParamName());
-		resolver.setFallbackPageable(new PageRequest(0, config().getDefaultPageSize()));
+		resolver.setFallbackPageable(PageRequest.of(0, config().getDefaultPageSize()));
 		resolver.setMaxPageSize(config().getMaxPageSize());
 
 		return resolver;

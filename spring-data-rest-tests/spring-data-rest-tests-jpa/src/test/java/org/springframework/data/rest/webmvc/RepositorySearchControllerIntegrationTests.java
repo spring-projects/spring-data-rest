@@ -15,14 +15,14 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.tests.TestMvcClient.*;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.tests.ResourceTester;
@@ -56,7 +56,7 @@ import org.springframework.util.MultiValueMap;
 @Transactional
 public class RepositorySearchControllerIntegrationTests extends AbstractControllerIntegrationTests {
 
-	static final DefaultedPageable PAGEABLE = new DefaultedPageable(new PageRequest(0, 10), true);
+	static final DefaultedPageable PAGEABLE = new DefaultedPageable(PageRequest.of(0, 10), true);
 
 	@Autowired TestDataPopulator loader;
 	@Autowired RepositorySearchController controller;
@@ -101,12 +101,12 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>(1);
 		parameters.add("firstname", "John");
 
-		ResponseEntity<?> response = controller.executeSearch(resourceInformation, parameters, "firstname", PAGEABLE, null,
-				assembler, new HttpHeaders());
+		ResponseEntity<?> response = controller.executeSearch(resourceInformation, parameters, "firstname", PAGEABLE,
+				Sort.unsorted(), assembler, new HttpHeaders());
 
 		ResourceTester tester = ResourceTester.of(response.getBody());
 		PagedResources<Object> pagedResources = tester.assertIsPage();
-		assertThat(pagedResources.getContent().size(), is(1));
+		assertThat(pagedResources.getContent()).hasSize(1);
 
 		ResourceMetadata metadata = getMetadata(Person.class);
 		tester.withContentResource(new HasSelfLink(BASE.slash(metadata.getPath()).slash("{id}")));
@@ -165,9 +165,9 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		RootResourceInformation resourceInformation = getResourceInformation(Book.class);
 
 		ResponseEntity<?> result = controller.executeSearch(resourceInformation, parameters, "findByAuthorsContains",
-				PAGEABLE, null, assembler, new HttpHeaders());
+				PAGEABLE, Sort.unsorted(), assembler, new HttpHeaders());
 
-		assertThat(result.getBody(), is(instanceOf(Resources.class)));
+		assertThat(result.getBody()).isInstanceOf(Resources.class);
 	}
 
 	@Test // DATAREST-515
@@ -175,6 +175,6 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 
 		RepositorySearchesResource searches = controller.listSearches(getResourceInformation(Person.class));
 
-		assertThat(searches.getDomainType(), is(typeCompatibleWith(Person.class)));
+		assertThat(searches.getDomainType()).isAssignableFrom(Person.class);
 	}
 }

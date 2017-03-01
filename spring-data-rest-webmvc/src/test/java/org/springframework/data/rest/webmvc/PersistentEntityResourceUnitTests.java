@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collections;
 
@@ -24,7 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
@@ -68,7 +67,7 @@ public class PersistentEntityResourceUnitTests {
 
 		PersistentEntityResource resource = PersistentEntityResource.build(payload, entity).build();
 
-		assertThat(resource.getEmbeddeds(), is(notNullValue()));
-		assertThat(resource.getEmbeddeds(), is(emptyIterable()));
+		assertThat(resource.getEmbeddeds()).isNotNull();
+		assertThat(resource.getEmbeddeds()).isEmpty();
 	}
 }

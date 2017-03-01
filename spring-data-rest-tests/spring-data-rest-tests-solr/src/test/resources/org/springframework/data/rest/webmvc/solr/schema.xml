@@ -4,8 +4,7 @@
 		<fieldType name="string" class="solr.StrField" />
 	</types>
 	<fields>
-		<field name="id" type="string" indexed="true" stored="true"
-			required="true" />
+		<field name="id" type="string" indexed="true" stored="true" required="true" />
 		<field name="name" type="string" indexed="true" stored="true" />
 		<field name="cat" type="string" indexed="true" stored="true" multiValued="true" />
 	</fields>

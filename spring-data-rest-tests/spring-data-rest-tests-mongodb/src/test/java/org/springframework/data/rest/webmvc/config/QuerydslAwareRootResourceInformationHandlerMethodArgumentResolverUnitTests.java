@@ -15,22 +15,22 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.querydsl.QueryDslPredicateExecutor;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
@@ -70,7 +70,7 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 	public void setUp() {
 
 		QuerydslBindingsFactory factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
-		ReflectionTestUtils.setField(factory, "repositories", repositories);
+		ReflectionTestUtils.setField(factory, "repositories", Optional.of(repositories));
 		QuerydslPredicateBuilder builder = new QuerydslPredicateBuilder(new DefaultConversionService(),
 				factory.getEntityPathResolver());
 
@@ -84,39 +84,38 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 	public void returnsInvokerIfRepositoryIsNotQuerydslAware() {
 
 		ReceiptRepository repository = mock(ReceiptRepository.class);
-		when(repositories.getRepositoryFor(Receipt.class)).thenReturn(repository);
+		when(repositories.getRepositoryFor(Receipt.class)).thenReturn(Optional.of(repository));
 
 		RepositoryInvoker result = resolver.postProcess(parameter, invoker, Receipt.class, NO_PARAMETERS);
 
-		assertThat(result, is(invoker));
+		assertThat(result).isEqualTo(invoker);
 	}
 
 	@Test // DATAREST-616
 	public void wrapsInvokerInQuerydslAdapter() {
 
 		Object repository = mock(QuerydslUserRepository.class);
-		when(repositories.getRepositoryFor(User.class)).thenReturn(repository);
+		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(repository));
 
 		RepositoryInvoker result = resolver.postProcess(parameter, invoker, User.class, NO_PARAMETERS);
 
-		assertThat(result, is(instanceOf(QuerydslRepositoryInvokerAdapter.class)));
+		assertThat(result).isInstanceOf(QuerydslRepositoryInvokerAdapter.class);
 	}
 
 	@Test // DATAREST-616
 	public void invokesCustomizationOnRepositoryIfItImplementsCustomizer() {
 
 		QuerydslCustomizingUserRepository repository = mock(QuerydslCustomizingUserRepository.class);
-		when(repositories.hasRepositoryFor(User.class)).thenReturn(true);
-		when(repositories.getRepositoryFor(User.class)).thenReturn(repository);
+		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(repository));
 
 		RepositoryInvoker result = resolver.postProcess(parameter, invoker, User.class, NO_PARAMETERS);
 
-		assertThat(result, is(instanceOf(QuerydslRepositoryInvokerAdapter.class)));
+		assertThat(result).isInstanceOf(QuerydslRepositoryInvokerAdapter.class);
 		verify(repository, times(1)).customize(Mockito.any(QuerydslBindings.class), Mockito.any(QUser.class));
 	}
 
-	interface QuerydslUserRepository extends QueryDslPredicateExecutor<User> {}
+	interface QuerydslUserRepository extends QuerydslPredicateExecutor<User> {}
 
 	interface QuerydslCustomizingUserRepository
-			extends QueryDslPredicateExecutor<User>, QuerydslBinderCustomizer<QUser> {}
+			extends QuerydslPredicateExecutor<User>, QuerydslBinderCustomizer<QUser> {}
 }

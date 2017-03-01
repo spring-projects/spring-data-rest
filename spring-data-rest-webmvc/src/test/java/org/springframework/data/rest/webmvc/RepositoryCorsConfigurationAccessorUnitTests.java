@@ -15,20 +15,20 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static java.util.Collections.*;
-import static org.hamcrest.MatcherAssert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
+
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.NoOpStringValueResolver;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.RepositoryCorsConfigurationAccessor;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -53,7 +53,8 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 
 	@Before
 	public void before() throws Exception {
-		accessor = new RepositoryCorsConfigurationAccessor(mappings, NoOpStringValueResolver.INSTANCE, repositories);
+		accessor = new RepositoryCorsConfigurationAccessor(mappings, NoOpStringValueResolver.INSTANCE,
+				Optional.of(repositories));
 	}
 
 	@Test // DATAREST-573
@@ -61,13 +62,13 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 
 		CorsConfiguration configuration = accessor.createConfiguration(AnnotatedRepository.class);
 
-		assertThat(configuration, is(notNullValue()));
-		assertThat(configuration.getAllowCredentials(), is(true));
-		assertThat(configuration.getAllowedHeaders(), hasItem("*"));
-		assertThat(configuration.getAllowedOrigins(), hasItem("*"));
+		assertThat(configuration).isNotNull();
+		assertThat(configuration.getAllowCredentials()).isTrue();
+		assertThat(configuration.getAllowedHeaders()).contains("*");
+		assertThat(configuration.getAllowedOrigins()).contains("*");
 		assertThat(configuration.getAllowedMethods(),
 				hasItems("OPTIONS", "HEAD", "GET", "PATCH", "POST", "PUT", "DELETE", "TRACE"));
-		assertThat(configuration.getMaxAge(), is(1800L));
+		assertThat(configuration.getMaxAge()).isEqualTo(1800L);
 	}
 
 	@Test // DATAREST-573
@@ -75,30 +76,25 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 
 		CorsConfiguration configuration = accessor.createConfiguration(FullyConfiguredCorsRepository.class);
 
-		assertThat(configuration, is(notNullValue()));
-		assertThat(configuration.getAllowCredentials(), is(true));
-		assertThat(configuration.getAllowedHeaders(), hasItem("Content-type"));
-		assertThat(configuration.getExposedHeaders(), hasItem("Accept"));
-		assertThat(configuration.getAllowedOrigins(), hasItem("http://far.far.away"));
-		assertThat(configuration.getAllowedMethods(), hasItem("PATCH"));
-		assertThat(configuration.getAllowedMethods(), not(hasItem("DELETE")));
-		assertThat(configuration.getAllowCredentials(), is(true));
-		assertThat(configuration.getMaxAge(), is(1234L));
+		assertThat(configuration).isNotNull();
+		assertThat(configuration.getAllowCredentials()).isTrue();
+		assertThat(configuration.getAllowedHeaders()).contains("Content-type");
+		assertThat(configuration.getExposedHeaders()).contains("Accept");
+		assertThat(configuration.getAllowedOrigins()).contains("http://far.far.away");
+		assertThat(configuration.getAllowedMethods()).contains("PATCH");
+		assertThat(configuration.getAllowedMethods()).doesNotContain("DELETE");
+		assertThat(configuration.getAllowCredentials()).isTrue();
+		assertThat(configuration.getMaxAge()).isEqualTo(1234L);
 	}
 
 	@Test // DATAREST-994
-	public void returnsNullCorsConfigurationWithNullRepositories() {
+	public void returnsNoCorsConfigurationWithNoRepositories() {
 
-		accessor = new RepositoryCorsConfigurationAccessor(mappings, NoOpStringValueResolver.INSTANCE, null);
-
-		ResourceMetadata resourceMetadata = mock(ResourceMetadata.class);
-		when(resourceMetadata.getPath()).thenReturn(new Path("/people"));
-		when(resourceMetadata.isExported()).thenReturn(true);
+		accessor = new RepositoryCorsConfigurationAccessor(mappings, NoOpStringValueResolver.INSTANCE, Optional.empty());
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
-		when(mappings.iterator()).thenReturn(singletonList(resourceMetadata).iterator());
 
-		assertThat(accessor.findCorsConfiguration("/people"), is(nullValue()));
+		assertThat(accessor.findCorsConfiguration("/people")).isEmpty();
 	}
 
 	interface PlainRepository {}

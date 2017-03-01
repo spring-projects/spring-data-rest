@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.tests.TestMvcClient.*;
 
 import org.junit.Test;
@@ -50,7 +49,7 @@ public class RepositoryControllerIntegrationTests extends AbstractControllerInte
 
 	@Test // DATAREST-333, DATAREST-330
 	public void headRequestReturnsNoContent() {
-		assertThat(controller.headForRepositories().getStatusCode(), is(HttpStatus.NO_CONTENT));
+		assertThat(controller.headForRepositories().getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
 	@Test // DATAREST-160, DATAREST-333, DATAREST-463
@@ -58,14 +57,14 @@ public class RepositoryControllerIntegrationTests extends AbstractControllerInte
 
 		RepositoryLinksResource resource = controller.listRepositories().getBody();
 
-		assertThat(resource.getLinks(), hasSize(8));
+		assertThat(resource.getLinks()).hasSize(8);
 
-		assertThat(resource.hasLink("people"), is(true));
-		assertThat(resource.hasLink("orders"), is(true));
-		assertThat(resource.hasLink("addresses"), is(true));
-		assertThat(resource.hasLink("books"), is(true));
-		assertThat(resource.hasLink("authors"), is(true));
-		assertThat(resource.hasLink("receipts"), is(true));
-		assertThat(resource.hasLink("items"), is(true));
+		assertThat(resource.hasLink("people")).isTrue();
+		assertThat(resource.hasLink("orders")).isTrue();
+		assertThat(resource.hasLink("addresses")).isTrue();
+		assertThat(resource.hasLink("books")).isTrue();
+		assertThat(resource.hasLink("authors")).isTrue();
+		assertThat(resource.hasLink("receipts")).isTrue();
+		assertThat(resource.hasLink("items")).isTrue();
 	}
 }
