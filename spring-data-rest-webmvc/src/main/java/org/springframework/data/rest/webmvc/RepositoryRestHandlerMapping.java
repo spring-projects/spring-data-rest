@@ -28,7 +28,6 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -47,9 +46,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @author Oliver Gierke
  */
 public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
-
-	private static final MediaType EVERYTHING_JSON_MEDIA_TYPE = new MediaType("application", "*+json",
-			AbstractJackson2HttpMessageConverter.DEFAULT_CHARSET);
 
 	private final ResourceMappings mappings;
 	private final RepositoryRestConfiguration configuration;
@@ -150,7 +146,6 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		HashSet<String> mediaTypes = new LinkedHashSet<String>();
 		mediaTypes.add(configuration.getDefaultMediaType().toString());
 		mediaTypes.add(MediaType.APPLICATION_JSON_VALUE);
-		mediaTypes.add(EVERYTHING_JSON_MEDIA_TYPE.toString());
 
 		return new ProducesRequestCondition(mediaTypes.toArray(new String[mediaTypes.size()]));
 	}
