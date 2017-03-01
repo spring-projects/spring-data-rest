@@ -239,4 +239,17 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 		// PATCH to non-existing resource
 		mvc.perform(patch(URI.create(uri))).andExpect(status().isNotFound());
 	}
+
+	@Test // DATAREST-1003
+	public void rejectsUnsupportedAcceptTypeForResources() throws Exception {
+
+		for (String string : expectedRootLinkRels()) {
+
+			Link link = client.discoverUnique(string);
+
+			mvc.perform(get(link.expand().getHref())//
+					.accept(MediaType.valueOf("application/schema+json")))//
+					.andExpect(status().isNotAcceptable());
+		}
+	}
 }
