@@ -72,7 +72,7 @@ public class DefaultSelfLinkProviderUnitTests {
 			}
 		});
 
-		KeyValueMappingContext context = new KeyValueMappingContext();
+		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 		context.getPersistentEntity(Profile.class);
 		context.afterPropertiesSet();
 

@@ -41,7 +41,7 @@ public class ValidationErrorsUnitTests {
 	@Before
 	public void setUp() {
 
-		KeyValueMappingContext context = new KeyValueMappingContext();
+		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 		context.getPersistentEntity(Foo.class);
 
 		this.entities = new PersistentEntities(Arrays.asList(context));

@@ -18,6 +18,7 @@ package org.springframework.data.rest.core;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.core.convert.ConversionFailedException;
@@ -66,9 +67,9 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 		for (TypeInformation<?> domainType : entities.getManagedTypes()) {
 
 			Class<?> rawType = domainType.getType();
-			PersistentEntity<?, ?> entity = entities.getPersistentEntity(rawType);
+			Optional<PersistentEntity<?, ?>> entity = entities.getPersistentEntity(rawType);
 
-			if (entity != null && entity.hasIdProperty()) {
+			if (entity.map(it -> it.hasIdProperty()).orElse(false)) {
 				convertiblePairs.add(new ConvertiblePair(URI.class, domainType.getType()));
 			}
 		}
@@ -105,9 +106,9 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 	@Override
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(targetType.getType());
+		Optional<PersistentEntity<?, ?>> entity = entities.getPersistentEntity(targetType.getType());
 
-		if (entity == null) {
+		if (!entity.isPresent()) {
 			throw new ConversionFailedException(sourceType, targetType, source,
 					new IllegalArgumentException("No PersistentEntity information available for " + targetType.getType()));
 		}

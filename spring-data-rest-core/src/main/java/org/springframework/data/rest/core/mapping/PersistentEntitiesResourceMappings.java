@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -84,23 +85,23 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	MappingResourceMetadata getMappingMetadataFor(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null!");
-		type = ClassUtils.getUserClass(type);
+		Class<?> userType = ClassUtils.getUserClass(type);
 
-		MappingResourceMetadata mappingMetadata = mappingCache.get(type);
+		MappingResourceMetadata mappingMetadata = mappingCache.get(userType);
 
 		if (mappingMetadata != null) {
 			return mappingMetadata;
 		}
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
+		Optional<PersistentEntity<?, ?>> entity = entities.getPersistentEntity(userType);
 
-		if (entity == null) {
-			return null;
-		}
+		return entity.map(it -> {
 
-		mappingMetadata = new MappingResourceMetadata(entity, this);
-		mappingCache.put(type, mappingMetadata);
-		return mappingMetadata;
+			MappingResourceMetadata metadata = new MappingResourceMetadata(it, this);
+			mappingCache.put(userType, metadata);
+			return metadata;
+
+		}).orElse(null);
 	}
 
 	/* 

@@ -21,6 +21,7 @@ import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Test;
@@ -88,21 +89,21 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 	@Test // DATAREST-523
 	public void exposesMethodsForProperties() {
 
-		KeyValueMappingContext context = new KeyValueMappingContext();
-		KeyValuePersistentEntity<?> entity = context.getPersistentEntity(Entity.class);
+		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
+		KeyValuePersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(Entity.class);
 
 		SupportedHttpMethods methods = getSupportedHttpMethodsFor(EntityRepository.class);
 
-		assertThat(methods.getMethodsFor(entity.getPersistentProperty("embedded")), is(empty()));
-		assertThat(methods.getMethodsFor(entity.getPersistentProperty("embeddedCollection")), is(empty()));
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("embedded")), is(empty()));
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("embeddedCollection")), is(empty()));
 
-		assertThat(methods.getMethodsFor(entity.getPersistentProperty("related")),
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("related")),
 				allOf(hasItems(GET, DELETE, PATCH, PUT), not(hasItem(POST))));
 
-		assertThat(methods.getMethodsFor(entity.getPersistentProperty("relatedCollection")),
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("relatedCollection")),
 				hasItems(GET, DELETE, PATCH, PUT, POST));
 
-		assertThat(methods.getMethodsFor(entity.getPersistentProperty("readOnlyReference")),
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("readOnlyReference")),
 				allOf(hasItem(GET), not(hasItems(DELETE, PATCH, PUT, POST))));
 	}
 
@@ -150,7 +151,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 
 		@Override
 		@RestResource(exported = false)
-		Object findOne(Long id);
+		Optional<Object> findOne(Long id);
 	}
 
 	interface NoFindOne extends Repository<Object, Long> {

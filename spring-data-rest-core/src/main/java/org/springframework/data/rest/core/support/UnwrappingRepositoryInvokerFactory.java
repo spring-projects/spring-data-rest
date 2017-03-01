@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.core.convert.converter.Converter;
@@ -104,7 +103,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 	@Override
 	public RepositoryInvoker getInvokerFor(Class<?> domainType) {
 
-		EntityLookup<?> lookup = lookups.getPluginFor(domainType);
+		Optional<EntityLookup<?>> lookup = lookups.getPluginFor(domainType);
 
 		return new UnwrappingRepositoryInvoker(delegate.getInvokerFor(domainType), CONVERTERS, lookup);
 	}
@@ -120,24 +119,14 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 
 		private final @NonNull RepositoryInvoker delegate;
 		private final @NonNull Collection<Converter<Object, Object>> converters;
-		private final EntityLookup<?> lookup;
+		private final @NonNull Optional<EntityLookup<?>> lookup;
 
 		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 		 */
 		public <T> T invokeFindOne(Serializable id) {
-			return postProcess(lookup != null ? lookup.lookupEntity(id) : delegate.invokeFindOne(id));
-		}
-
-		/* 
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, java.util.Map, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
-		 */
-		@Override
-		@SuppressWarnings("deprecation")
-		public Object invokeQueryMethod(Method method, Map<String, String[]> parameters, Pageable pageable, Sort sort) {
-			return postProcess(delegate.invokeQueryMethod(method, parameters, pageable, sort));
+			return postProcess(lookup.map(it -> it.lookupEntity(id)).orElseGet(() -> delegate.invokeFindOne(id)));
 		}
 
 		/* 

@@ -56,14 +56,13 @@ public class UriToEntityConverterUnitTests {
 	@Mock Repositories repositories;
 	@Mock RepositoryInvokerFactory invokerFactory;
 
-	KeyValueMappingContext context;
+	KeyValueMappingContext<?, ?> context;
 	UriToEntityConverter converter;
 
 	@Before
-	@SuppressWarnings("unchecked")
 	public void setUp() {
 
-		this.context = new KeyValueMappingContext();
+		this.context = new KeyValueMappingContext<>();
 		this.context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.asList(Entity.class, NonEntity.class)));
 		this.context.afterPropertiesSet();
 

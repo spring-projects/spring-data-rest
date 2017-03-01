@@ -17,6 +17,8 @@ package org.springframework.data.rest.core.support;
 
 import static org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy.*;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.Association;
@@ -99,7 +101,7 @@ public class DomainObjectMerger {
 				}
 
 				if (nullPolicy == APPLY_NULLS || sourceValue != null) {
-					targetWrapper.setProperty(persistentProperty, sourceValue);
+					targetWrapper.setProperty(persistentProperty, Optional.ofNullable(sourceValue));
 				}
 			}
 		});
@@ -117,7 +119,7 @@ public class DomainObjectMerger {
 				Object fromVal = sourceWrapper.getProperty(persistentProperty);
 
 				if (!isNullOrEmpty(fromVal) && !fromVal.equals(targetWrapper.getProperty(persistentProperty))) {
-					targetWrapper.setProperty(persistentProperty, fromVal);
+					targetWrapper.setProperty(persistentProperty, Optional.ofNullable(fromVal));
 				}
 			}
 		});

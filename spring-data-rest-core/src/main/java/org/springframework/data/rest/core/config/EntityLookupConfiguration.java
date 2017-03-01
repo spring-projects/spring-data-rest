@@ -188,11 +188,15 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			Assert.notNull(repositories, "Repositories must not be null!");
 			Assert.notNull(lookupInformation, "LookupInformation must not be null!");
 
-			RepositoryInformation information = repositories.getRepositoryInformation(lookupInformation.repositoryType);
+			RepositoryInformation information = repositories.getRepositoryInformation(lookupInformation.repositoryType)//
+					.orElseThrow(() -> new IllegalStateException(
+							"No repository found for type " + lookupInformation.repositoryType.getName() + "!"));
 
-			this.repository = (Repository<? extends T, ?>) repositories.getRepositoryFor(information.getDomainType());
 			this.domainType = information.getDomainType();
 			this.lookupInfo = lookupInformation;
+			this.repository = (Repository<? extends T, ?>) repositories.getRepositoryFor(information.getDomainType())//
+					.orElseThrow(() -> new IllegalStateException(
+							"No repository found for type " + information.getDomainType().getName() + "!"));
 		}
 
 		/* 

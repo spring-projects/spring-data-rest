@@ -17,7 +17,6 @@ package org.springframework.data.rest.core.support;
 
 import java.util.List;
 
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
@@ -81,19 +80,9 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 
 		Class<? extends Object> instanceType = instance.getClass();
 
-		EntityLookup<Object> lookup = (EntityLookup<Object>) lookups.getPluginFor(instanceType);
-
-		if (lookup != null) {
-			return lookup.getResourceIdentifier(instance);
-		}
-
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(instanceType);
-
-		if (entity == null) {
-			throw new IllegalArgumentException(
-					String.format("Cannot create self link for %s! No persistent entity found!", instanceType));
-		}
-
-		return entity.getIdentifierAccessor(instance).getIdentifier();
+		return lookups.getPluginFor(instanceType).map(it -> it.getClass().cast(it))//
+				.map(it -> (Object) it.getResourceIdentifier(instance))//
+				.orElseGet(
+						() -> entities.getRequiredPersistentEntity(instanceType).getIdentifierAccessor(instance).getIdentifier());
 	}
 }

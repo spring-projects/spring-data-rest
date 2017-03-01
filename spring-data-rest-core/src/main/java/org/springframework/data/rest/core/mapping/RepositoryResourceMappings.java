@@ -81,7 +81,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 
 		for (Class<?> type : repositories) {
 
-			RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(type);
+			RepositoryInformation repositoryInformation = repositories.getRequiredRepositoryInformation(type);
 			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
 			PersistentEntity<?, ?> entity = repositories.getPersistentEntity(type);
 
@@ -111,7 +111,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 			return searchCache.get(domainType);
 		}
 
-		RepositoryInformation repositoryInformation = repositories.getRepositoryInformationFor(domainType);
+		RepositoryInformation repositoryInformation = repositories.getRequiredRepositoryInformation(domainType);
 		List<MethodResourceMapping> mappings = new ArrayList<MethodResourceMapping>();
 		ResourceMetadata resourceMapping = getMetadataFor(domainType);
 

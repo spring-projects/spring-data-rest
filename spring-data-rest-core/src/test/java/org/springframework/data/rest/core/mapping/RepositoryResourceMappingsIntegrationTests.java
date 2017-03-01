@@ -38,6 +38,7 @@ import org.springframework.data.rest.core.domain.Author;
 import org.springframework.data.rest.core.domain.CreditCard;
 import org.springframework.data.rest.core.domain.JpaRepositoryConfig;
 import org.springframework.data.rest.core.domain.Person;
+import org.springframework.data.rest.core.domain.Profile;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.test.context.ContextConfiguration;
@@ -54,12 +55,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class RepositoryResourceMappingsIntegrationTests {
 
 	@Autowired ListableBeanFactory factory;
-	@Autowired KeyValueMappingContext mappingContext;
+	@Autowired KeyValueMappingContext<?, ?> mappingContext;
 
 	ResourceMappings mappings;
 
 	@Before
 	public void setUp() {
+
+		mappingContext.getPersistentEntity(Profile.class);
 
 		Repositories repositories = new Repositories(factory);
 		this.mappings = new RepositoryResourceMappings(repositories, new PersistentEntities(Arrays.asList(mappingContext)),
@@ -94,7 +97,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 
 		Repositories repositories = new Repositories(factory);
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(Person.class);
-		PersistentProperty<?> property = entity.getPersistentProperty("siblings");
+		PersistentProperty<?> property = entity.getRequiredPersistentProperty("siblings");
 
 		ResourceMetadata metadata = mappings.getMetadataFor(Person.class);
 		ResourceMapping mapping = metadata.getMappingFor(property);

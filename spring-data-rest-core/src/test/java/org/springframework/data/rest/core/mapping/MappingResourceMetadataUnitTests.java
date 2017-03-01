@@ -38,9 +38,9 @@ import org.springframework.data.rest.core.annotation.RestResource;
 @RunWith(MockitoJUnitRunner.class)
 public class MappingResourceMetadataUnitTests {
 
-	KeyValueMappingContext context = new KeyValueMappingContext();
+	KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 
-	KeyValuePersistentEntity<?> entity = context.getPersistentEntity(Entity.class);
+	KeyValuePersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(Entity.class);
 	ResourceMappings resourceMappings = new PersistentEntitiesResourceMappings(
 			new PersistentEntities(Arrays.asList(context)));
 	MappingResourceMetadata metadata = new MappingResourceMetadata(entity, resourceMappings);
@@ -48,7 +48,7 @@ public class MappingResourceMetadataUnitTests {
 	@Test // DATAREST-514
 	public void allowsLookupOfPropertyByMappedName() {
 
-		KeyValuePersistentProperty property = entity.getPersistentProperty("related");
+		KeyValuePersistentProperty<?> property = entity.getRequiredPersistentProperty("related");
 
 		PropertyAwareResourceMapping propertyMapping = metadata.getProperty("foo");
 
@@ -66,7 +66,7 @@ public class MappingResourceMetadataUnitTests {
 	@Test // DATAREST-518
 	public void isExportedIfExplicitlyAnnotated() {
 
-		MappingResourceMetadata metadata = new MappingResourceMetadata(context.getPersistentEntity(Related.class),
+		MappingResourceMetadata metadata = new MappingResourceMetadata(context.getRequiredPersistentEntity(Related.class),
 				resourceMappings);
 		assertThat(metadata.isExported(), is(true));
 	}

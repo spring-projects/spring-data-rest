@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.core.annotation.AnnotationUtils;
@@ -179,14 +180,14 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 			return exposes(crudMethods.getFindAllMethod());
 		}
 
-		private static boolean exposes(Method method) {
+		private static boolean exposes(Optional<Method> method) {
 
-			if (method == null) {
-				return false;
-			}
+			return method.map(it -> {
 
-			RestResource annotation = AnnotationUtils.findAnnotation(method, RestResource.class);
-			return annotation == null ? true : annotation.exported();
+				RestResource annotation = AnnotationUtils.findAnnotation(it, RestResource.class);
+				return annotation == null ? true : annotation.exported();
+
+			}).orElse(false);
 		}
 	}
 
