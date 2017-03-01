@@ -46,6 +46,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
 import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
@@ -61,7 +62,7 @@ import com.jayway.jsonpath.JsonPath;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = RepositoryRestMvcConfiguration.class)
+@ContextConfiguration(classes = { RepositoryRestMvcConfiguration.class, DelegatingWebMvcConfiguration.class })
 public abstract class AbstractWebIntegrationTests {
 
 	private static final String CONTENT_LINK_JSONPATH = "$._embedded.._links.%s.href";

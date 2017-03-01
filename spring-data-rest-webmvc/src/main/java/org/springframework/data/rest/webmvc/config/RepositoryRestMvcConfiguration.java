@@ -142,6 +142,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
@@ -659,13 +660,12 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new DefaultExcerptProjector(projectionFactory, resourceMappings());
 	}
 
-	/**
-	 * Bean for looking up methods annotated with {@link org.springframework.web.bind.annotation.ExceptionHandler}.
-	 * 
-	 * @return
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#extendHandlerExceptionResolvers(java.util.List)
 	 */
-	@Bean
-	public ExceptionHandlerExceptionResolver exceptionHandlerExceptionResolver() {
+	@Override
+	public void extendHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
 
 		ExceptionHandlerExceptionResolver er = new ExceptionHandlerExceptionResolver();
 		er.setCustomArgumentResolvers(defaultMethodArgumentResolvers());
@@ -673,7 +673,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		configurerDelegate.configureExceptionHandlerExceptionResolver(er);
 
-		return er;
+		exceptionResolvers.add(0, er);
 	}
 
 	@Bean
