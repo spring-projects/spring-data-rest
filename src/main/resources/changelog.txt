@@ -1,6 +1,14 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.1.RELEASE (2017-03-02)
+---------------------------------------------
+* DATAREST-1003 - Implementation details serialized for requests requesting arbitrary JSON response.
+* DATAREST-994 - RepositoryRestHandlerMapping 2 arg constructor broken.
+* DATAREST-992 - Remove references to single-argument assertion methods of Spring.
+* DATAREST-990 - Release 2.6.1 (Ingalls SR1).
+
+
 Changes in version 2.5.7.RELEASE (2017-01-26)
 ---------------------------------------------
 * DATAREST-987 - PUT requests fail for transient properties not backed by a field.
