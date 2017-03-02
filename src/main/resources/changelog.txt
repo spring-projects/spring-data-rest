@@ -41,6 +41,13 @@ Changes in version 3.0.0.M2 (2017-04-04)
 * DATAREST-793 - Some setter methods in RepositoryRestConfiguration do not return RepositoryRestConfiguration.
 
 
+Changes in version 2.5.8.RELEASE (2017-03-02)
+---------------------------------------------
+* DATAREST-1003 - Implementation details serialized for requests requesting arbitrary JSON response.
+* DATAREST-992 - Remove references to single-argument assertion methods of Spring.
+* DATAREST-989 - Release 2.5.8 (Hopper SR8).
+
+
 Changes in version 2.6.1.RELEASE (2017-03-02)
 ---------------------------------------------
 * DATAREST-1003 - Implementation details serialized for requests requesting arbitrary JSON response.
