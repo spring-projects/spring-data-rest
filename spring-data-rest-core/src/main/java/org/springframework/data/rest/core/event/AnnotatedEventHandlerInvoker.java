@@ -166,7 +166,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 			return;
 		}
 
-		if (method.getParameterCount() == 0) {
+		if (method.getParameterTypes().length == 0) {
 			throw new IllegalStateException(String.format(PARAMETER_MISSING, method));
 		}
 
