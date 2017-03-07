@@ -39,6 +39,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
+import org.springframework.data.util.ClassTypeInformation;
 
 /**
  * Unit tests for {@link UriToEntityConverter}.
@@ -132,6 +133,19 @@ public class UriToEntityConverterUnitTests {
 	@Test(expected = IllegalArgumentException.class) // DATAREST-741
 	public void rejectsNullRepositories() {
 		new UriToEntityConverter(mock(PersistentEntities.class), invokerFactory, null);
+	}
+
+	/**
+	 * @see DATAREST-1018
+	 */
+	@Test
+	@SuppressWarnings("unchecked")
+	public void doesNotRegisterTypeWithUnmanagedRawType() {
+
+		PersistentEntities entities = mock(PersistentEntities.class);
+		doReturn(Arrays.asList(ClassTypeInformation.OBJECT)).when(entities).getManagedTypes();
+
+		new UriToEntityConverter(entities, invokerFactory, repositories);
 	}
 
 	static class Entity {
