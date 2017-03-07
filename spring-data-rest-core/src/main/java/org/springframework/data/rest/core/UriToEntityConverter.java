@@ -68,7 +68,7 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 			Class<?> rawType = domainType.getType();
 			PersistentEntity<?, ?> entity = entities.getPersistentEntity(rawType);
 
-			if (entity.hasIdProperty()) {
+			if (entity != null && entity.hasIdProperty()) {
 				convertiblePairs.add(new ConvertiblePair(URI.class, domainType.getType()));
 			}
 		}
