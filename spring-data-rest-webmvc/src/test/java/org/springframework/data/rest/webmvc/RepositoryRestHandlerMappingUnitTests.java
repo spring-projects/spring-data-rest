@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,11 +29,13 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -45,6 +48,7 @@ import org.springframework.web.method.HandlerMethod;
  *
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Mark Paluch
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryRestHandlerMappingUnitTests {
@@ -58,6 +62,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Mock ResourceMappings mappings;
+	@Mock ResourceMetadata resourceMetadata;
 	@Mock Repositories repositories;
 
 	RepositoryRestConfiguration configuration;
@@ -211,6 +216,43 @@ public class RepositoryRestHandlerMappingUnitTests {
 		mockRequest = new MockHttpServletRequest("GET", "/people{?projection}");
 
 		assertThat(handlerMapping.getHandler(mockRequest), is(nullValue()));
+	}
+
+	@Test // DATAREST-1019
+	public void resolvesCorsConfigurationFromRequestUri() {
+
+		String uri = "/people";
+
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
+		when(mappings.iterator()).thenReturn(Collections.singleton(resourceMetadata).iterator());
+		when(resourceMetadata.getPath()).thenReturn(new Path("/people"));
+
+		mockRequest = new MockHttpServletRequest("GET", uri);
+		mockRequest.setServletPath(uri);
+
+		handlerMapping.getCorsConfiguration(uri, mockRequest);
+
+		verify(mappings).exportsTopLevelResourceFor("/people");
+	}
+
+	@Test // DATAREST-1019
+	public void stripsBaseUriForCorsConfigurationResolution() {
+
+		String baseUri = "/foo";
+		String uri = baseUri.concat("/people");
+
+		configuration.setBasePath(baseUri);
+
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
+		when(mappings.iterator()).thenReturn(Collections.singleton(resourceMetadata).iterator());
+		when(resourceMetadata.getPath()).thenReturn(new Path("/people"));
+
+		mockRequest = new MockHttpServletRequest("GET", uri);
+		mockRequest.setServletPath(uri);
+
+		handlerMapping.getCorsConfiguration(uri, mockRequest);
+
+		verify(mappings).exportsTopLevelResourceFor("/people");
 	}
 
 	@Test // DATAREST-994

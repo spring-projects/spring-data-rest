@@ -145,7 +145,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		return mappings.exportsTopLevelResourceFor(getRepositoryBasePath(repositoryLookupPath)) ? handlerMethod : null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping#handleNoMatch(java.util.Set, java.lang.String, javax.servlet.http.HttpServletRequest)
 	 */
@@ -177,7 +177,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping#process(org.springframework.web.servlet.mvc.condition.ProducesRequestCondition)
 	 */
@@ -210,7 +210,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 			return corsConfiguration;
 		}
 
-		CorsConfiguration repositoryCorsConfiguration = corsConfigurationAccessor.findCorsConfiguration(lookupPath);
+		CorsConfiguration repositoryCorsConfiguration = corsConfigurationAccessor.findCorsConfiguration(repositoryLookupPath);
 
 		return corsConfiguration == null ? repositoryCorsConfiguration
 				: corsConfiguration.combine(repositoryCorsConfiguration);
@@ -238,7 +238,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 		INSTANCE;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.util.StringValueResolver#resolveStringValue(java.lang.String)
 		 */
