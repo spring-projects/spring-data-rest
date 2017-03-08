@@ -210,7 +210,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 			return corsConfiguration;
 		}
 
-		CorsConfiguration repositoryCorsConfiguration = corsConfigurationAccessor.findCorsConfiguration(lookupPath);
+		CorsConfiguration repositoryCorsConfiguration = corsConfigurationAccessor.findCorsConfiguration(repositoryLookupPath);
 
 		return corsConfiguration == null ? repositoryCorsConfiguration
 				: corsConfiguration.combine(repositoryCorsConfiguration);
