@@ -61,7 +61,7 @@ public class SpringDataRestCustomization extends RepositoryRestConfigurerAdapter
   @Override
   public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 
-    config.getCorsRegistry().addCorsMapping("/person/**")
+    config.getCorsRegistry().addMapping("/person/**")
       .allowedOrigins("http://domain2.com")
       .allowedMethods("PUT", "DELETE")
       .allowedHeaders("header1", "header2", "header3")
