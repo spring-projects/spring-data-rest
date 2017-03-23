@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.config;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.core.support.ResourceMappingUtils.*;
 
 import java.lang.reflect.Method;
@@ -43,16 +42,17 @@ public class ResourceMappingUnitTests {
 
 	@Test
 	public void shouldDetectPathAndRemoveLeadingSlashIfAny() {
+
 		org.springframework.data.rest.core.config.ResourceMapping mapping = new org.springframework.data.rest.core.config.ResourceMapping(
 				findRel(AnnotatedWithLeadingSlashPersonRepository.class),
 				findPath(AnnotatedWithLeadingSlashPersonRepository.class),
 				findExported(AnnotatedWithLeadingSlashPersonRepository.class));
 
 		// The rel attribute defaults to class name
-		assertThat(mapping.getRel(), is("annotatedWithLeadingSlashPerson"));
-		assertThat(mapping.getPath(), is("people"));
+		assertThat(mapping.getRel()).isEqualTo("annotatedWithLeadingSlashPerson");
+		assertThat(mapping.getPath()).isEqualTo("people");
 		// The exported defaults to true
-		assertThat(mapping.isExported(), is(true));
+		assertThat(mapping.isExported()).isTrue();
 	}
 
 	@Test
@@ -63,10 +63,10 @@ public class ResourceMappingUnitTests {
 				findRel(method), findPath(method), findExported(method));
 
 		// The rel attribute defaults to class name
-		assertThat(mapping.getRel(), is("findByFirstName"));
-		assertThat(mapping.getPath(), is("firstname"));
+		assertThat(mapping.getRel()).isEqualTo("findByFirstName");
+		assertThat(mapping.getPath()).isEqualTo("firstname");
 		// The exported defaults to true
-		assertThat(mapping.isExported(), is(true));
+		assertThat(mapping.isExported()).isTrue();
 	}
 
 	@Test
@@ -77,11 +77,11 @@ public class ResourceMappingUnitTests {
 				findRel(method), findPath(method), findExported(method));
 
 		// The rel defaults to method name
-		assertThat(mapping.getRel(), is("findByLastName"));
+		assertThat(mapping.getRel()).isEqualTo("findByLastName");
 		// The path contains only a leading slash therefore defaults to method name
-		assertThat(mapping.getPath(), is("findByLastName"));
+		assertThat(mapping.getPath()).isEqualTo("findByLastName");
 		// The exported defaults to true
-		assertThat(mapping.isExported(), is(true));
+		assertThat(mapping.isExported()).isTrue();
 	}
 
 	@RestResource(path = "/people")

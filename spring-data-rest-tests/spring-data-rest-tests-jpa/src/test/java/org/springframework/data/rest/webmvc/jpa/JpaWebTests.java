@@ -15,8 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -149,7 +151,7 @@ public class JpaWebTests extends CommonWebTests {
 		MockHttpServletResponse orders = client.request(ordersLink);
 		Link creatorLink = assertHasContentLinkWithRel("creator", orders);
 
-		assertThat(client.request(creatorLink), is(notNullValue()));
+		assertThat(client.request(creatorLink)).isNotNull();
 	}
 
 	@Test // DATAREST-200
@@ -201,18 +203,18 @@ public class JpaWebTests extends CommonWebTests {
 
 		Link bilboLink = client.assertHasLinkWithRel("self", bilbo);
 
-		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName"), is("Bilbo"));
-		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName"), is("Baggins"));
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName")).isEqualTo("Bilbo");
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName")).isEqualTo("Baggins");
 
 		MockHttpServletResponse frodo = patchAndGet(bilboLink, "{ \"firstName\" : \"Frodo\" }", MediaType.APPLICATION_JSON);
 
-		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), is("Frodo"));
-		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName"), is("Baggins"));
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName")).isEqualTo("Frodo");
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName")).isEqualTo("Baggins");
 
 		frodo = patchAndGet(bilboLink, "{ \"firstName\" : null }", MediaType.APPLICATION_JSON);
 
-		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), is(nullValue()));
-		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName"), is("Baggins"));
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName")).isNull();
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName")).isEqualTo("Baggins");
 	}
 
 	@Test // DATAREST-150
@@ -411,17 +413,17 @@ public class JpaWebTests extends CommonWebTests {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(orderLink.getHref());
 		String uri = builder.queryParam("projection", "summary").build().toUriString();
 
-		response = mvc.perform(get(uri)). //
-				andExpect(status().isOk()). //
-				andExpect(jsonPath("$.price", is(2.5))).//
-				andReturn().getResponse();
+		response = mvc.perform(get(uri))//
+				.andExpect(status().isOk())//
+				.andExpect(jsonPath("$.price", is(2.5)))//
+				.andReturn().getResponse();
 
 		assertJsonPathDoesntExist("$.lineItems", response);
 	}
 
 	@Test // DATAREST-261
 	public void relProviderDetectsCustomizedMapping() {
-		assertThat(relProvider.getCollectionResourceRelFor(Person.class), is("people"));
+		assertThat(relProvider.getCollectionResourceRelFor(Person.class)).isEqualTo("people");
 	}
 
 	@Test // DATAREST-311
@@ -445,9 +447,9 @@ public class JpaWebTests extends CommonWebTests {
 
 		JSONArray personLinks = JsonPath.<JSONArray> read(responseBody, "$.links[?(@.rel=='person')].href");
 
-		assertThat(personLinks, hasSize(1));
-		assertThat(personLinks.get(0), is((Object) daenerysLink.getHref()));
-		assertThat(JsonPath.<JSONArray> read(responseBody, "$.content"), hasSize(0));
+		assertThat(personLinks).hasSize(1);
+		assertThat(personLinks.get(0)).isEqualTo((Object) daenerysLink.getHref());
+		assertThat(JsonPath.<JSONArray> read(responseBody, "$.content")).hasSize(0);
 	}
 
 	@Test // DATAREST-317
@@ -490,8 +492,8 @@ public class JpaWebTests extends CommonWebTests {
 		Link findBySortedLink = client.discoverUnique(searchLink, "find-by-sorted");
 
 		// Assert sort options advertised
-		assertThat(findBySortedLink.isTemplated(), is(true));
-		assertThat(findBySortedLink.getVariableNames(), hasItems("sort", "projection"));
+		assertThat(findBySortedLink.isTemplated()).isTrue();
+		assertThat(findBySortedLink.getVariableNames()).contains("sort", "projection");
 
 		// Assert results returned as specified
 		client.follow(findBySortedLink.expand("title,desc")).//
@@ -575,8 +577,8 @@ public class JpaWebTests extends CommonWebTests {
 				.andReturn().getResponse();
 
 		Links links = Links.valueOf(response.getHeader("Link"));
-		assertThat(links.hasLink("self"), is(true));
-		assertThat(links.hasLink("person"), is(true));
+		assertThat(links.hasLink("self")).isTrue();
+		assertThat(links.hasLink("person")).isTrue();
 	}
 
 	@Test // DATAREST-883
@@ -585,8 +587,8 @@ public class JpaWebTests extends CommonWebTests {
 		Link findBySortedLink = client.discoverUnique("books", "search", "find-by-sorted");
 
 		// Assert sort options advertised
-		assertThat(findBySortedLink.isTemplated(), is(true));
-		assertThat(findBySortedLink.getVariableNames(), hasItems("sort", "projection"));
+		assertThat(findBySortedLink.isTemplated()).isTrue();
+		assertThat(findBySortedLink.getVariableNames()).contains("sort", "projection");
 
 		// Assert results returned as specified
 		client.follow(findBySortedLink.expand("sales,desc")).//
@@ -606,7 +608,7 @@ public class JpaWebTests extends CommonWebTests {
 		Link findByLink = client.discoverUnique("books", "search", "find-spring-books-sorted");
 
 		// Assert sort options advertised
-		assertThat(findByLink.isTemplated(), is(true));
+		assertThat(findByLink.isTemplated()).isTrue();
 
 		// Assert results returned as specified
 		client.follow(findByLink.expand("0", "10", "sales,desc")).//
@@ -635,8 +637,8 @@ public class JpaWebTests extends CommonWebTests {
 		Link findBySortedLink = client.discoverUnique(searchLink, "find-by-sorted");
 
 		// Assert sort options advertised
-		assertThat(findBySortedLink.isTemplated(), is(true));
-		assertThat(findBySortedLink.getVariableNames(), hasItems("sort", "projection"));
+		assertThat(findBySortedLink.isTemplated()).isTrue();
+		assertThat(findBySortedLink.getVariableNames()).contains("sort", "projection");
 
 		// Assert results returned as specified
 		client.follow(findBySortedLink.expand("offer.price,desc")).//
@@ -682,8 +684,8 @@ public class JpaWebTests extends CommonWebTests {
 		String responseBody = client.request(link).getContentAsString();
 		List<String> persons = JsonPath.read(responseBody, "$._embedded.people[*].firstName");
 
-		assertThat(persons, hasSize(siblingNames.length));
-		assertThat(persons, hasItems(siblingNames));
+		assertThat(persons).hasSize(siblingNames.length);
+		assertThat(persons).contains(siblingNames);
 	}
 
 	private void assertPersonWithNameAndSiblingLink(String name) throws Exception {
@@ -694,8 +696,8 @@ public class JpaWebTests extends CommonWebTests {
 
 		// Assert content inlined
 		Object john = JsonPath.<JSONArray> read(response.getContentAsString(), jsonPath).get(0);
-		assertThat(john, is(notNullValue()));
-		assertThat(JsonPath.read(john, "$.firstName"), is(notNullValue()));
+		assertThat(john).isNotNull();
+		assertThat(JsonPath.<String> read(john, "$.firstName")).isNotNull();
 
 		// Assert sibling link exposed in resource pointed to
 		Link selfLink = new Link(JsonPath.<String> read(john, "$._links.self.href"));

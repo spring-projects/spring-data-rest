@@ -21,9 +21,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.rest.core.util.Supplier;
 import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;

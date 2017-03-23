@@ -16,7 +16,7 @@
 package org.springframework.data.rest.core.support;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -31,9 +31,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.domain.Profile;
@@ -60,16 +58,12 @@ public class DefaultSelfLinkProviderUnitTests {
 	@Before
 	public void setUp() {
 
-		when(entityLinks.linkToSingleResource((Class<?>) any(), any())).then(new Answer<Link>() {
+		when(entityLinks.linkToSingleResource((Class<?>) any(), any())).then(invocation -> {
 
-			@Override
-			public Link answer(InvocationOnMock invocation) throws Throwable {
+			Class<?> type = invocation.getArgument(0);
+			Serializable id = invocation.getArgument(1);
 
-				Class<?> type = invocation.getArgumentAt(0, Class.class);
-				Serializable id = invocation.getArgumentAt(1, Serializable.class);
-
-				return new Link("/".concat(type.getName()).concat("/").concat(id.toString()));
-			}
+			return new Link("/".concat(type.getName()).concat("/").concat(id.toString()));
 		});
 
 		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
@@ -125,7 +119,7 @@ public class DefaultSelfLinkProviderUnitTests {
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage(Object.class.getName());
-		exception.expectMessage("No persistent entity found!");
+		exception.expectMessage("Couldn't find PersistentEntity for");
 
 		provider.createSelfLinkFor(new Object());
 	}

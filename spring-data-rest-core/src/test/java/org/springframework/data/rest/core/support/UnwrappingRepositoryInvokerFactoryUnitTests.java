@@ -15,9 +15,7 @@
  */
 package org.springframework.data.rest.core.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
@@ -25,8 +23,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Consumer;
 
-import org.hamcrest.Matcher;
+import org.assertj.core.api.AbstractOptionalAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +35,6 @@ import org.junit.runners.Parameterized.Parameters;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.domain.Profile;
-import org.springframework.util.LinkedMultiValueMap;
 
 /**
  * Unit tests for {@link UnwrappingRepositoryInvokerFactory}.
@@ -54,8 +52,8 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 	RepositoryInvokerFactory factory;
 	Method method;
 
-	public @Parameter(value = 0) Object source;
-	public @Parameter(value = 1) Matcher<Object> value;
+	public @Parameter(0) Object source;
+	public @Parameter(1) Consumer<AbstractOptionalAssert<?, Object>> value;
 
 	@Before
 	public void setUp() throws Exception {
@@ -68,22 +66,14 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 
 	@Parameters
 	public static Collection<Object[]> data() {
+
 		return Arrays.asList(new Object[][] { //
-				{ Optional.empty(), is(nullValue()) }, //
-				{ Optional.of(REFERENCE), is(REFERENCE) }, //
-				{ com.google.common.base.Optional.absent(), is(nullValue()) }, //
-				{ com.google.common.base.Optional.of(REFERENCE), is(REFERENCE) } //
+				{ null, $(it -> it.isEmpty()) }, //
+				{ Optional.empty(), $(it -> it.isEmpty()) }, //
+				{ Optional.of(REFERENCE), $(it -> it.hasValue(REFERENCE)) }, //
+				{ com.google.common.base.Optional.absent(), $(it -> it.isEmpty()) }, //
+				{ com.google.common.base.Optional.of(REFERENCE), $(it -> it.hasValue(REFERENCE)) } //
 		});
-	}
-
-	@Test // DATAREST-511
-	public void unwrapsValuesForFindOne() {
-		assertFindOneValueForSource(source, value);
-	}
-
-	@Test // DATAREST-511
-	public void unwrapsValuesForQuery() {
-		assertQueryValueForSource(source, value);
 	}
 
 	@Test // DATAREST-724
@@ -91,8 +81,8 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 	public void usesRegisteredEntityLookup() {
 
 		EntityLookup<Object> lookup = mock(EntityLookup.class);
-		when(lookup.supports(Profile.class)).thenReturn(true);
 
+		when(lookup.supports(Profile.class)).thenReturn(true);
 		when(delegate.getInvokerFor(Profile.class)).thenReturn(invoker);
 
 		factory = new UnwrappingRepositoryInvokerFactory(delegate, Arrays.asList(lookup));
@@ -101,16 +91,7 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 		verify(lookup, times(1)).lookupEntity(eq(1L));
 	}
 
-	private void assertFindOneValueForSource(Object source, Matcher<Object> value) {
-
-		when(invoker.invokeFindOne(1L)).thenReturn(source);
-		assertThat(factory.getInvokerFor(Object.class).invokeFindOne(1L), value);
-	}
-
-	private void assertQueryValueForSource(Object source, Matcher<Object> value) {
-
-		when(invoker.invokeQueryMethod(method, new LinkedMultiValueMap<String, Object>(), null, null)).thenReturn(source);
-		assertThat(factory.getInvokerFor(Object.class).invokeQueryMethod(method, new LinkedMultiValueMap<String, Object>(),
-				null, null), value);
+	private static Consumer<AbstractOptionalAssert<?, Object>> $(Consumer<AbstractOptionalAssert<?, Object>> consumer) {
+		return consumer;
 	}
 }

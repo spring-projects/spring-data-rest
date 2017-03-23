@@ -18,12 +18,12 @@ package org.springframework.data.rest.webmvc.config;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.webmvc.IncomingRequest;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
@@ -124,16 +124,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 			}
 
 			Serializable id = idResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
-			Object objectToUpdate = getObjectToUpdate(id, resourceInformation);
-
-			boolean forUpdate = false;
-			Object entityIdentifier = null;
-			PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
-
-			if (objectToUpdate != null) {
-				forUpdate = true;
-				entityIdentifier = entity.getIdentifierAccessor(objectToUpdate).getIdentifier();
-			}
+			Optional<Object> objectToUpdate = getObjectToUpdate(id, resourceInformation);
 
 			Object obj = read(resourceInformation, incoming, converter, objectToUpdate);
 
@@ -141,8 +132,13 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 				throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType));
 			}
 
-			if (entityIdentifier != null) {
-				entity.getPropertyAccessor(obj).setProperty(entity.getIdProperty(), entityIdentifier);
+			PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
+			boolean forUpdate = objectToUpdate.isPresent();
+			Optional<Object> entityIdentifier = objectToUpdate
+					.flatMap(it -> entity.getIdentifierAccessor(it).getIdentifier());
+
+			if (entityIdentifier.isPresent()) {
+				entity.getPropertyAccessor(obj).setProperty(entity.getRequiredIdProperty(), entityIdentifier);
 			}
 
 			Builder build = PersistentEntityResource.build(obj, entity);
@@ -163,27 +159,25 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	 * @return
 	 */
 	private Object read(RootResourceInformation information, IncomingRequest request,
-			HttpMessageConverter<Object> converter, Object objectToUpdate) {
+			HttpMessageConverter<Object> converter, Optional<Object> objectToUpdate) {
 
 		// JSON + PATCH request
 		if (request.isPatchRequest() && converter instanceof MappingJackson2HttpMessageConverter) {
 
-			if (objectToUpdate == null) {
-				throw new ResourceNotFoundException();
-			}
+			return objectToUpdate.map(it -> {
 
-			ObjectMapper mapper = ((MappingJackson2HttpMessageConverter) converter).getObjectMapper();
-			Object result = readPatch(request, mapper, objectToUpdate);
+				ObjectMapper mapper = ((MappingJackson2HttpMessageConverter) converter).getObjectMapper();
+				return readPatch(request, mapper, it);
 
-			return result;
+			}).orElseThrow(() -> new ResourceNotFoundException());
 
 			// JSON + PUT request
 		} else if (converter instanceof MappingJackson2HttpMessageConverter) {
 
 			ObjectMapper mapper = ((MappingJackson2HttpMessageConverter) converter).getObjectMapper();
 
-			return objectToUpdate == null ? read(request, converter, information)
-					: readPutForUpdate(request, mapper, objectToUpdate);
+			return objectToUpdate.map(it -> readPutForUpdate(request, mapper, it))//
+					.orElseGet(() -> read(request, converter, information));
 		}
 
 		// Catch all
@@ -238,13 +232,12 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	 * @param information must not be {@literal null}.
 	 * @return
 	 */
-	private static Object getObjectToUpdate(Serializable id, RootResourceInformation information) {
+	private static Optional<Object> getObjectToUpdate(Serializable id, RootResourceInformation information) {
 
 		if (id == null) {
-			return null;
+			return Optional.empty();
 		}
 
-		RepositoryInvoker invoker = information.getInvoker();
-		return invoker.invokeFindOne(id);
+		return information.getInvoker().invokeFindOne(id);
 	}
 }

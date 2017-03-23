@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,13 +46,13 @@ public class RepositoryRestHandlerMappingIntegrationTests extends AbstractContro
 
 		HandlerExecutionChain chain = mapping.getHandler(mockRequest);
 
-		assertThat(chain, is(notNullValue()));
+		assertThat(chain).isNotNull();
 
 		Object handler = chain.getHandler();
-		assertThat(handler, is(instanceOf(HandlerMethod.class)));
+		assertThat(handler).isInstanceOf(HandlerMethod.class);
 
 		HandlerMethod method = (HandlerMethod) handler;
-		assertThat(method.getMethod().getDeclaringClass(), is(typeCompatibleWith(RepositoryEntityController.class)));
-		assertThat(method.getMethod().getName(), is("getCollectionResource"));
+		assertThat(method.getMethod().getDeclaringClass()).isAssignableFrom(RepositoryEntityController.class);
+		assertThat(method.getMethod().getName()).isEqualTo("getCollectionResource");
 	}
 }

@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorFactory;
@@ -107,9 +108,7 @@ public class DomainObjectReader {
 
 		Class<? extends Object> type = target.getClass();
 
-		final PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
-
-		Assert.notNull(entity, "No PersistentEntity found for ".concat(type.getName()).concat("!"));
+		entities.getRequiredPersistentEntity(type);
 
 		try {
 
@@ -139,24 +138,20 @@ public class DomainObjectReader {
 
 		Class<? extends Object> type = target.getClass();
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
+		return entities.getPersistentEntity(type).map(it -> {
 
-		if (entity == null) {
-			return source;
-		}
+			MergingPropertyHandler propertyHandler = new MergingPropertyHandler(source, target, it, mapper);
 
-		Assert.notNull(entity, "No PersistentEntity found for ".concat(type.getName()).concat("!"));
+			it.doWithProperties(propertyHandler);
+			it.doWithAssociations(new LinkedAssociationSkippingAssociationHandler(associationLinks, propertyHandler));
 
-		MergingPropertyHandler propertyHandler = new MergingPropertyHandler(source, target, entity, mapper);
+			// Need to copy unmapped properties as the PersistentProperty model currently does not contain any transient
+			// properties
+			copyRemainingProperties(propertyHandler.getProperties(), source, target);
 
-		entity.doWithProperties(propertyHandler);
-		entity.doWithAssociations(new LinkedAssociationSkippingAssociationHandler(associationLinks, propertyHandler));
+			return target;
 
-		// Need to copy unmapped properties as the PersistentProperty model currently does not contain any transient
-		// properties
-		copyRemainingProperties(propertyHandler.getProperties(), source, target);
-
-		return target;
+		}).orElse(source);
 	}
 
 	/**
@@ -213,12 +208,14 @@ public class DomainObjectReader {
 		Assert.notNull(target, "Target object instance must not be null!");
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(target.getClass());
+		Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> candidate = entities
+				.getPersistentEntity(target.getClass());
 
-		if (entity == null) {
+		if (!candidate.isPresent()) {
 			return mapper.readerForUpdating(target).readValue(root);
 		}
 
+		PersistentEntity<?, ?> entity = candidate.get();
 		MappedProperties mappedProperties = MappedProperties.fromJacksonProperties(entity, mapper);
 
 		for (Iterator<Entry<String, JsonNode>> i = root.fields(); i.hasNext();) {
@@ -233,51 +230,57 @@ public class DomainObjectReader {
 
 			PersistentProperty<?> property = mappedProperties.getPersistentProperty(fieldName);
 			PersistentPropertyAccessor accessor = entity.getPropertyAccessor(target);
-			Object rawValue = accessor.getProperty(property);
+			Optional<Object> rawValue = accessor.getProperty(property);
 
-			if (rawValue == null) {
+			if (!rawValue.isPresent()) {
 				continue;
 			}
 
-			if (child.isArray()) {
+			rawValue.ifPresent(it -> {
 
-				if (handleArray(child, rawValue, mapper, property.getTypeInformation())) {
-					i.remove();
-				}
+				if (child.isArray()) {
 
-				continue;
-			}
-
-			if (child.isObject()) {
-
-				if (associationLinks.isLinkableAssociation(property)) {
-					continue;
-				}
-
-				ObjectNode objectNode = (ObjectNode) child;
-
-				if (property.isMap()) {
-
-					// Keep empty Map to wipe it as expected
-					if (!objectNode.fieldNames().hasNext()) {
-						continue;
-					}
-
-					doMergeNestedMap((Map<Object, Object>) rawValue, objectNode, mapper, property.getTypeInformation());
-
-					// Remove potentially emptied Map as values have been handled recursively
-					if (!objectNode.fieldNames().hasNext()) {
+					if (handleArray(child, it, mapper, property.getTypeInformation())) {
 						i.remove();
 					}
 
-					continue;
+					return;
 				}
 
-				if (property.isEntity()) {
-					i.remove();
-					doMerge(objectNode, rawValue, mapper);
+				if (child.isObject()) {
+
+					if (associationLinks.isLinkableAssociation(property)) {
+						return;
+					}
+
+					ObjectNode objectNode = (ObjectNode) child;
+
+					if (property.isMap()) {
+
+						// Keep empty Map to wipe it as expected
+						if (!objectNode.fieldNames().hasNext()) {
+							return;
+						}
+
+						execute(
+								() -> doMergeNestedMap((Map<Object, Object>) it, objectNode, mapper, property.getTypeInformation()));
+
+						// Remove potentially emptied Map as values have been handled recursively
+						if (!objectNode.fieldNames().hasNext()) {
+							i.remove();
+						}
+
+						return;
+					}
+
+					if (property.isEntity()) {
+						i.remove();
+						execute(() -> doMerge(objectNode, it, mapper));
+					}
 				}
-			}
+
+			});
+
 		}
 
 		return mapper.readerForUpdating(target).readValue(root);
@@ -295,8 +298,7 @@ public class DomainObjectReader {
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean handleArray(JsonNode node, Object source, ObjectMapper mapper, TypeInformation<?> collectionType)
-			throws Exception {
+	private boolean handleArray(JsonNode node, Object source, ObjectMapper mapper, TypeInformation<?> collectionType) {
 
 		Collection<Object> collection = ifCollection(source);
 
@@ -304,7 +306,7 @@ public class DomainObjectReader {
 			return false;
 		}
 
-		return handleArrayNode((ArrayNode) node, collection, mapper, collectionType.getComponentType());
+		return execute(() -> handleArrayNode((ArrayNode) node, collection, mapper, collectionType.getComponentType()));
 	}
 
 	/**
@@ -317,7 +319,7 @@ public class DomainObjectReader {
 	 * @return whether an object merge has been applied to the {@link ArrayNode}.
 	 */
 	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, ObjectMapper mapper,
-			TypeInformation<?> componentType) throws Exception {
+			Optional<TypeInformation<?>> componentType) throws Exception {
 
 		Assert.notNull(array, "ArrayNode must not be null!");
 		Assert.notNull(collection, "Source collection must not be null!");
@@ -375,7 +377,7 @@ public class DomainObjectReader {
 
 		Iterator<Entry<String, JsonNode>> fields = node.fields();
 		Class<?> keyType = typeOrObject(type.getComponentType());
-		TypeInformation<?> valueType = type.getMapValueType();
+		Optional<TypeInformation<?>> valueType = type.getMapValueType();
 
 		while (fields.hasNext()) {
 
@@ -393,7 +395,7 @@ public class DomainObjectReader {
 
 			} else if (value instanceof ArrayNode && sourceValue != null) {
 
-				handleArray(value, sourceValue, mapper, getTypeToMap(sourceValue, typeToMap));
+				handleArray(value, sourceValue, mapper, getTypeToMap(sourceValue, Optional.of(typeToMap)));
 
 			} else {
 
@@ -405,89 +407,84 @@ public class DomainObjectReader {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Map<Object, Object> mergeMaps(PersistentProperty<?> property, Object source, Object target,
-			ObjectMapper mapper) {
+	private Optional<Map<Object, Object>> mergeMaps(PersistentProperty<?> property, Optional<Object> source,
+			Optional<Object> target, ObjectMapper mapper) {
 
-		Map<Object, Object> sourceMap = (Map<Object, Object>) source;
+		return source.map(it -> {
 
-		if (sourceMap == null) {
-			return null;
-		}
+			Map<Object, Object> sourceMap = (Map<Object, Object>) it;
+			Map<Object, Object> targetMap = (Map<Object, Object>) target.orElse(null);
 
-		Map<Object, Object> targetMap = (Map<Object, Object>) target;
-		Map<Object, Object> result = targetMap == null ? CollectionFactory.createMap(Map.class, sourceMap.size())
-				: CollectionFactory.createApproximateMap(targetMap, sourceMap.size());
+			Map<Object, Object> result = targetMap == null ? CollectionFactory.createMap(Map.class, sourceMap.size())
+					: CollectionFactory.createApproximateMap(targetMap, sourceMap.size());
 
-		for (Entry<Object, Object> entry : sourceMap.entrySet()) {
+			for (Entry<Object, Object> entry : sourceMap.entrySet()) {
 
-			Object targetValue = targetMap == null ? null : targetMap.get(entry.getKey());
-			result.put(entry.getKey(), mergeForPut(entry.getValue(), targetValue, mapper));
-		}
+				Object targetValue = targetMap == null ? null : targetMap.get(entry.getKey());
+				result.put(entry.getKey(), mergeForPut(entry.getValue(), targetValue, mapper));
+			}
 
-		if (targetMap == null) {
-			return result;
-		}
+			if (targetMap == null) {
+				return result;
+			}
 
-		try {
+			try {
 
-			targetMap.clear();
-			targetMap.putAll(result);
+				targetMap.clear();
+				targetMap.putAll(result);
 
-			return targetMap;
+				return targetMap;
 
-		} catch (UnsupportedOperationException o_O) {
-			return result;
-		}
+			} catch (UnsupportedOperationException o_O) {
+				return result;
+			}
+		});
 	}
 
-	private Collection<Object> mergeCollections(PersistentProperty<?> property, Object source, Object target,
-			ObjectMapper mapper) {
+	private Optional<Collection<Object>> mergeCollections(PersistentProperty<?> property, Optional<Object> source,
+			Optional<Object> target, ObjectMapper mapper) {
 
-		Collection<Object> sourceCollection = asCollection(source);
+		return source.map(it -> {
 
-		if (sourceCollection == null) {
-			return null;
-		}
+			Collection<Object> sourceCollection = asCollection(it);
+			Collection<Object> targetCollection = asCollection(target.orElse(null));
+			Collection<Object> result = targetCollection == null
+					? CollectionFactory.createCollection(Collection.class, sourceCollection.size())
+					: CollectionFactory.createApproximateCollection(targetCollection, sourceCollection.size());
 
-		Collection<Object> targetCollection = asCollection(target);
-		Collection<Object> result = targetCollection == null
-				? CollectionFactory.createCollection(Collection.class, sourceCollection.size())
-				: CollectionFactory.createApproximateCollection(targetCollection, sourceCollection.size());
+			Iterator<Object> sourceIterator = sourceCollection.iterator();
+			Iterator<Object> targetIterator = targetCollection == null ? Collections.emptyIterator()
+					: targetCollection.iterator();
 
-		Iterator<Object> sourceIterator = sourceCollection.iterator();
-		Iterator<Object> targetIterator = targetCollection == null ? Collections.emptyIterator()
-				: targetCollection.iterator();
+			while (sourceIterator.hasNext()) {
 
-		while (sourceIterator.hasNext()) {
+				Object sourceElement = sourceIterator.next();
+				Object targetElement = targetIterator.hasNext() ? targetIterator.next() : null;
 
-			Object sourceElement = sourceIterator.next();
-			Object targetElement = targetIterator.hasNext() ? targetIterator.next() : null;
+				result.add(mergeForPut(sourceElement, targetElement, mapper));
+			}
 
-			result.add(mergeForPut(sourceElement, targetElement, mapper));
-		}
+			if (targetCollection == null) {
+				return result;
+			}
 
-		if (targetCollection == null) {
-			return result;
-		}
+			try {
 
-		try {
+				targetCollection.clear();
+				targetCollection.addAll(result);
 
-			targetCollection.clear();
-			targetCollection.addAll(result);
+				return targetCollection;
 
-			return targetCollection;
-
-		} catch (UnsupportedOperationException o_O) {
-			return result;
-		}
+			} catch (UnsupportedOperationException o_O) {
+				return result;
+			}
+		});
 	}
 
 	@SuppressWarnings("unchecked")
 	private static Collection<Object> asCollection(Object source) {
 
-		if (source == null) {
-			return null;
-		} else if (source instanceof Collection) {
+		if (source instanceof Collection) {
 			return (Collection<Object>) source;
 		} else if (source.getClass().isArray()) {
 			return Arrays.asList(ObjectUtils.toObjectArray(source));
@@ -535,8 +532,9 @@ public class DomainObjectReader {
 	 * @param type can be {@literal null}.
 	 * @return
 	 */
-	private static Class<?> typeOrObject(TypeInformation<?> type) {
-		return type == null ? Object.class : type.getType();
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private static Class<?> typeOrObject(Optional<TypeInformation<?>> type) {
+		return type.map(it -> it.getType()).orElse((Class) Object.class);
 	}
 
 	/**
@@ -548,21 +546,21 @@ public class DomainObjectReader {
 	 * @param type can be {@literal null}.
 	 * @return
 	 */
-	private static TypeInformation<?> getTypeToMap(Object value, TypeInformation<?> type) {
+	private static TypeInformation<?> getTypeToMap(Object value, Optional<TypeInformation<?>> type) {
 
-		if (type == null) {
-			type = ClassTypeInformation.OBJECT;
-		}
+		return type.map(it -> {
 
-		if (value == null) {
-			return type;
-		}
+			if (value == null) {
+				return it;
+			}
 
-		if (Enum.class.isInstance(value)) {
-			return ClassTypeInformation.from(((Enum<?>) value).getDeclaringClass());
-		}
+			if (Enum.class.isInstance(value)) {
+				return ClassTypeInformation.from(((Enum<?>) value).getDeclaringClass());
+			}
 
-		return value.getClass().equals(type.getType()) ? type : ClassTypeInformation.from(value.getClass());
+			return value.getClass().equals(it.getType()) ? it : ClassTypeInformation.from(value.getClass());
+
+		}).orElse(ClassTypeInformation.OBJECT);
 	}
 
 	/**
@@ -642,9 +640,9 @@ public class DomainObjectReader {
 				return;
 			}
 
-			Object sourceValue = sourceAccessor.getProperty(property);
-			Object targetValue = targetAccessor.getProperty(property);
-			Object result = null;
+			Optional<Object> sourceValue = sourceAccessor.getProperty(property);
+			Optional<Object> targetValue = targetAccessor.getProperty(property);
+			Optional<?> result = Optional.empty();
 
 			if (property.isMap()) {
 				result = mergeMaps(property, sourceValue, targetValue, mapper);
@@ -658,5 +656,31 @@ public class DomainObjectReader {
 
 			targetAccessor.setProperty(property, result);
 		}
+	}
+
+	private static <T> T execute(SupplierWithException<T> block) {
+
+		try {
+			return block.execute();
+		} catch (Exception o_O) {
+			throw new RuntimeException(o_O);
+		}
+	}
+
+	private static void execute(RunnableWithException block) {
+
+		try {
+			block.execute();
+		} catch (Exception o_O) {
+			throw new RuntimeException(o_O);
+		}
+	}
+
+	interface RunnableWithException {
+		void execute() throws Exception;
+	}
+
+	interface SupplierWithException<T> {
+		T execute() throws Exception;
 	}
 }

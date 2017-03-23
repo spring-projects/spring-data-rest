@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.util;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -25,7 +24,6 @@ import java.util.Set;
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
  * Unit tests for {@link Methods}.
@@ -41,18 +39,12 @@ public class MethodsUnitTests {
 		factory.setTarget(new Sample());
 		factory.setProxyTargetClass(true);
 
-		final Set<Method> methods = new HashSet<Method>();
+		Set<Method> methods = new HashSet<Method>();
 
-		ReflectionUtils.doWithMethods(factory.getProxy().getClass(), new MethodCallback() {
+		ReflectionUtils.doWithMethods(factory.getProxy().getClass(), method -> methods.add(method), Methods.USER_METHODS);
 
-			@Override
-			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-				methods.add(method);
-			}
-		}, Methods.USER_METHODS);
-
-		assertThat(methods, hasSize(1));
-		assertThat(methods, contains(Sample.class.getMethod("method")));
+		assertThat(methods).hasSize(1);
+		assertThat(methods).contains(Sample.class.getMethod("method"));
 	}
 
 	static class Sample {

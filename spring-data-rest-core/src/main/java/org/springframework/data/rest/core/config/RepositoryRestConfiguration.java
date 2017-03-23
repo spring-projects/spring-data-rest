@@ -64,7 +64,6 @@ public class RepositoryRestConfiguration {
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
 	private final MetadataConfiguration metadataConfiguration;
 	private final EntityLookupConfiguration entityLookupConfiguration;
-	private final List<Class<?>> valueTypes = new ArrayList<Class<?>>();
 
 	private final EnumTranslationConfiguration enumTranslationConfiguration;
 	private boolean enableEnumTranslation = false;

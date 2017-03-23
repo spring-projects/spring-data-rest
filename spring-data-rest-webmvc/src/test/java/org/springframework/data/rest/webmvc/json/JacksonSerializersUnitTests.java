@@ -15,8 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 import java.util.Collection;
@@ -53,7 +54,7 @@ public class JacksonSerializersUnitTests {
 
 		Sample result = mapper.readValue("{ \"property\" : \"value\"}", Sample.class);
 
-		assertThat(result.property, is(SampleEnum.VALUE));
+		assertThat(result.property).isEqualTo(SampleEnum.VALUE);
 	}
 
 	@Test // DATAREST-929
@@ -61,7 +62,7 @@ public class JacksonSerializersUnitTests {
 
 		Sample result = mapper.readValue("{ \"collection\" : [ \"value\" ] }", Sample.class);
 
-		assertThat(result.collection, hasItem(SampleEnum.VALUE));
+		assertThat(result.collection).contains(SampleEnum.VALUE);
 	}
 
 	@Test // DATAREST-929
@@ -77,7 +78,7 @@ public class JacksonSerializersUnitTests {
 
 		Sample result = mapper.readValue("{ \"mapToEnum\" : { \"foo\" : \"value\" } }", Sample.class);
 
-		assertThat(result.mapToEnum.get("foo"), is(SampleEnum.VALUE));
+		assertThat(result.mapToEnum.get("foo")).isEqualTo(SampleEnum.VALUE);
 	}
 
 	static class Sample {

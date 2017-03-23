@@ -15,13 +15,16 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.tests.TestMvcClient.*;
 import static org.springframework.http.HttpMethod.*;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -89,7 +92,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		RootResourceInformation information = getResourceInformation(Order.class);
 
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
-				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler,
 				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
@@ -101,7 +104,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	public void exposesHeadForCollectionResourceIfExported() throws Exception {
 		ResponseEntity<?> entity = controller.headCollectionResource(getResourceInformation(Person.class),
 				new DefaultedPageable(null, false));
-		assertThat(entity.getStatusCode(), is(HttpStatus.NO_CONTENT));
+		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
 	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
@@ -117,7 +120,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		ResponseEntity<?> entity = controller.headForItemResource(getResourceInformation(Address.class), address.id,
 				assembler);
 
-		assertThat(entity.getStatusCode(), is(HttpStatus.NO_CONTENT));
+		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
 	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
@@ -153,7 +156,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		List<String> value = entity.getHeaders().get("Accept-Patch");
 
-		assertThat(value, hasSize(3));
+		assertThat(value).hasSize(3);
 		assertThat(value,
 				hasItems(//
 						RestMediaTypes.JSON_PATCH_JSON.toString(), //
@@ -168,7 +171,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		Order order = request.getInvoker().invokeSave(new Order(new Person()));
 
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
-				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		assertThat(controller.putItemResource(request, persistentEntityResource, order.getId(), assembler, ETag.NO_ETAG,
 				MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
@@ -179,7 +182,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
-				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		assertThat(controller.putItemResource(request, persistentEntityResource, 1L, assembler, ETag.NO_ETAG,
 				MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
@@ -190,7 +193,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
-				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		assertThat(controller
 				.postCollectionResource(request, persistentEntityResource, assembler, MediaType.APPLICATION_JSON_VALUE)
@@ -202,7 +205,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
-				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, null).hasBody(),
 				is(false));
@@ -220,32 +223,32 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 				.createProjection(AddressProjection.class);
 
 		PersistentEntityResource resource = PersistentEntityResource
-				.build(addressProjection, entities.getPersistentEntity(Address.class)).build();
+				.build(addressProjection, entities.getRequiredPersistentEntity(Address.class)).build();
 
 		Mockito.when(assembler.toFullResource(Mockito.any(Object.class))).thenReturn(resource);
 
 		ResponseEntity<Resource<?>> entity = controller.getItemResource(getResourceInformation(Address.class), address.id,
 				assembler, new HttpHeaders());
 
-		assertThat(entity.getHeaders().getETag(), is(notNullValue()));
+		assertThat(entity.getHeaders().getETag()).isNotNull();
 	}
 
 	@Test // DATAREST-724
 	public void deletesEntityWithCustomLookupCorrectly() throws Exception {
 
 		Address address = repository.save(new Address());
-		assertThat(repository.findOne(address.id), is(notNullValue()));
+		assertThat(repository.findOne(address.id)).isNotNull();
 
 		RootResourceInformation resourceInformation = getResourceInformation(Address.class);
 		RepositoryInvoker invoker = spy(resourceInformation.getInvoker());
-		doReturn(address).when(invoker).invokeFindOne("foo");
+		doReturn(Optional.of(address)).when(invoker).invokeFindOne("foo");
 
 		RootResourceInformation informationSpy = Mockito.spy(resourceInformation);
 		doReturn(invoker).when(informationSpy).getInvoker();
 
 		controller.deleteItemResource(informationSpy, "foo", ETag.from("0"));
 
-		assertThat(repository.findOne(address.id), is(nullValue()));
+		assertThat(repository.findOne(address.id)).isEmpty();
 	}
 
 	interface AddressProjection {}

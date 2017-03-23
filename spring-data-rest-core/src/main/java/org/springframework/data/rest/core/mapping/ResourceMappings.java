@@ -15,10 +15,12 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import org.springframework.data.util.Streamable;
+
 /**
  * @author Oliver Gierke
  */
-public interface ResourceMappings extends Iterable<ResourceMetadata> {
+public interface ResourceMappings extends Streamable<ResourceMetadata> {
 
 	/**
 	 * Returns a {@link ResourceMetadata} for the given type if available.

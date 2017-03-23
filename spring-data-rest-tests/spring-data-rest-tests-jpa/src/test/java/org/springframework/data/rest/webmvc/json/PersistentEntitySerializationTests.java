@@ -15,7 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.MatcherAssert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import java.io.IOException;
@@ -121,9 +122,9 @@ public class PersistentEntitySerializationTests {
 
 		Person p = mapper.readValue(PERSON_JSON_IN, Person.class);
 
-		assertThat(p.getFirstName(), is("John"));
-		assertThat(p.getLastName(), is("Doe"));
-		assertThat(p.getSiblings(), is(Collections.EMPTY_LIST));
+		assertThat(p.getFirstName()).isEqualTo("John");
+		assertThat(p.getLastName()).isEqualTo("Doe");
+		assertThat(p.getSiblings()).isEqualTo(Collections.EMPTY_LIST);
 	}
 
 	@Test // DATAREST-238
@@ -170,7 +171,7 @@ public class PersistentEntitySerializationTests {
 		String child = String.format("{ \"firstName\" : \"Bilbo\", \"father\" : \"/persons/%s\"}", father.getId());
 		Person result = mapper.readValue(child, Person.class);
 
-		assertThat(result.getFather(), is(father));
+		assertThat(result.getFather()).isEqualTo(father);
 	}
 
 	@Test // DATAREST-248
@@ -183,7 +184,7 @@ public class PersistentEntitySerializationTests {
 				firstSibling.getId(), secondSibling.getId());
 		Person result = mapper.readValue(child, Person.class);
 
-		assertThat(result.getSiblings(), hasItems(firstSibling, secondSibling));
+		assertThat(result.getSiblings()).contains(firstSibling, secondSibling);
 	}
 
 	@Test // DATAREST-248
@@ -192,7 +193,7 @@ public class PersistentEntitySerializationTests {
 		String content = TestUtils.readFileFromClasspath("order.json");
 
 		Order order = mapper.readValue(content, Order.class);
-		assertThat(order.getLineItems(), hasSize(2));
+		assertThat(order.getLineItems()).hasSize(2);
 	}
 
 	@Test // DATAREST-250
@@ -214,7 +215,7 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
 
-		assertThat(JsonPath.read(result, "$._embedded.orders[*].lineItems"), is(notNullValue()));
+		assertThat(JsonPath.<Object> read(result, "$._embedded.orders[*].lineItems")).isNotNull();
 	}
 
 	@Test // DATAREST-521
@@ -237,7 +238,7 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(resource);
 
-		assertThat(JsonPath.read(result, "$._embedded.father[*]._links.self"), is(notNullValue()));
+		assertThat(JsonPath.<Object> read(result, "$._embedded.father[*]._links.self")).isNotNull();
 	}
 
 	@Test // DATAREST-521
@@ -253,7 +254,7 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(resource);
 
-		assertThat(JsonPath.read(result, "$._links.processed"), is(notNullValue()));
+		assertThat(JsonPath.<Object> read(result, "$._links.processed")).isNotNull();
 	}
 
 	@Test // DATAREST-697
@@ -267,7 +268,7 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(new Resource<PersonSummary>(projection));
 
-		assertThat(JsonPath.read(result, "$._links.self"), is(notNullValue()));
+		assertThat(JsonPath.<Object> read(result, "$._links.self")).isNotNull();
 	}
 
 	@Test // DATAREST-880
@@ -275,7 +276,7 @@ public class PersistentEntitySerializationTests {
 
 		CreditCard creditCard = new CreditCard(new CreditCard.CCN("1234123412341234"));
 
-		assertThat(JsonPath.read(mapper.writeValueAsString(creditCard), "$.ccn"), is("1234123412341234"));
+		assertThat(JsonPath.<Object> read(mapper.writeValueAsString(creditCard), "$.ccn")).isEqualTo("1234123412341234");
 	}
 
 	@Test // DATAREST-872
@@ -292,12 +293,12 @@ public class PersistentEntitySerializationTests {
 		guest.addMeal(dinner);
 
 		PersistentEntityResource resource = PersistentEntityResource//
-				.build(guest, context.getPersistentEntity(Guest.class))//
+				.build(guest, context.getRequiredPersistentEntity(Guest.class))//
 				.withLink(new Link("/guests/1")).build();
 
 		String result = mapper.writeValueAsString(resource);
 
-		assertThat(JsonPath.read(result, "$.room.type"), equalTo("suite"));
-		assertThat(JsonPath.read(result, "$.meals[0].type"), equalTo("dinner"));
+		assertThat(JsonPath.<Object> read(result, "$.room.type")).isEqualTo("suite");
+		assertThat(JsonPath.<Object> read(result, "$.meals[0].type")).isEqualTo("dinner");
 	}
 }

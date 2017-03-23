@@ -16,12 +16,12 @@
 
 package org.springframework.data.rest.webmvc.json.patch;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * @author Roy Clarkson

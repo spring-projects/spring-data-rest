@@ -20,9 +20,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,10 +28,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
-import org.springframework.plugin.core.OrderAwarePluginRegistry;
-import org.springframework.plugin.core.PluginRegistry;
+import org.springframework.data.rest.core.util.Java8PluginRegistry;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.MultiValueMap;
 
 /**
@@ -45,42 +40,8 @@ import org.springframework.util.MultiValueMap;
  */
 public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFactory {
 
-	private static final List<Converter<Object, Object>> CONVERTERS;
-
-	static {
-
-		List<Converter<Object, Object>> converters = new ArrayList<Converter<Object, Object>>();
-		ClassLoader classLoader = UnwrappingRepositoryInvokerFactory.class.getClassLoader();
-
-		// Add unwrapper for Java 8 Optional
-
-		if (ClassUtils.isPresent("java.util.Optional", classLoader)) {
-			converters.add(new Converter<Object, Object>() {
-				@Override
-				public Object convert(Object source) {
-					return source instanceof Optional ? ((Optional<?>) source).orElse(null) : source;
-				}
-			});
-		}
-
-		// Add unwrapper for Guava Optional
-
-		if (ClassUtils.isPresent("com.google.common.base.Optional", classLoader)) {
-
-			converters.add(new Converter<Object, Object>() {
-				@Override
-				public Object convert(Object source) {
-					return source instanceof com.google.common.base.Optional
-							? ((com.google.common.base.Optional<?>) source).orNull() : source;
-				}
-			});
-		}
-
-		CONVERTERS = Collections.unmodifiableList(converters);
-	}
-
 	private final RepositoryInvokerFactory delegate;
-	private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
+	private final Java8PluginRegistry<EntityLookup<?>, Class<?>> lookups;
 
 	/**
 	 * @param delegate must not be {@literal null}.
@@ -93,7 +54,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 		Assert.notNull(lookups, "EntityLookups must not be null!");
 
 		this.delegate = delegate;
-		this.lookups = OrderAwarePluginRegistry.create(lookups);
+		this.lookups = Java8PluginRegistry.of(lookups);
 	}
 
 	/* 
@@ -105,7 +66,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 
 		Optional<EntityLookup<?>> lookup = lookups.getPluginFor(domainType);
 
-		return new UnwrappingRepositoryInvoker(delegate.getInvokerFor(domainType), CONVERTERS, lookup);
+		return new UnwrappingRepositoryInvoker(delegate.getInvokerFor(domainType), lookup);
 	}
 
 	/**
@@ -118,15 +79,18 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 	private static class UnwrappingRepositoryInvoker implements RepositoryInvoker {
 
 		private final @NonNull RepositoryInvoker delegate;
-		private final @NonNull Collection<Converter<Object, Object>> converters;
 		private final @NonNull Optional<EntityLookup<?>> lookup;
 
 		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 		 */
-		public <T> T invokeFindOne(Serializable id) {
-			return postProcess(lookup.map(it -> it.lookupEntity(id)).orElseGet(() -> delegate.invokeFindOne(id)));
+		@SuppressWarnings("unchecked")
+		public <T> Optional<T> invokeFindOne(Serializable id) {
+
+			return (Optional<T>) lookup//
+					.map(it -> it.lookupEntity(id).orElse(Optional.empty()))//
+					.orElseGet(() -> delegate.invokeFindOne(id));
 		}
 
 		/* 
@@ -134,9 +98,9 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, org.springframework.util.MultiValueMap, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
 		 */
 		@Override
-		public Object invokeQueryMethod(Method method, MultiValueMap<String, ? extends Object> parameters,
+		public Optional<Object> invokeQueryMethod(Method method, MultiValueMap<String, ? extends Object> parameters,
 				Pageable pageable, Sort sort) {
-			return postProcess(delegate.invokeQueryMethod(method, parameters, pageable, sort));
+			return delegate.invokeQueryMethod(method, parameters, pageable, sort);
 		}
 
 		/* 
@@ -209,22 +173,6 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 		@Override
 		public <T> T invokeSave(T object) {
 			return delegate.invokeSave(object);
-		}
-
-		/**
-		 * Invokes the configured converters for the given result.
-		 * 
-		 * @param result can be {@literal null}.
-		 * @return
-		 */
-		@SuppressWarnings("unchecked")
-		private <T> T postProcess(Object result) {
-
-			for (Converter<Object, Object> converter : converters) {
-				result = converter.convert(result);
-			}
-
-			return (T) result;
 		}
 	}
 }

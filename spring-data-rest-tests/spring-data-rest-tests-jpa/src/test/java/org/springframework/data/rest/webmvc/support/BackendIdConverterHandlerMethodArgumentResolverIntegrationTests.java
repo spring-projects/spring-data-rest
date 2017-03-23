@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -53,7 +52,7 @@ public class BackendIdConverterHandlerMethodArgumentResolverIntegrationTests
 
 		Object resolvedId = resolver.resolveArgument(parameter, null, request, null);
 
-		assertThat(resolvedId, is((Object) 5L));
+		assertThat(resolvedId).isEqualTo(5L);
 	}
 
 	static class SampleController {

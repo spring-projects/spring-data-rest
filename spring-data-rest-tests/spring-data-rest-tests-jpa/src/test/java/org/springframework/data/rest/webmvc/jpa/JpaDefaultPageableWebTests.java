@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -96,8 +95,8 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 		Link findBySortedLink = client.discoverUnique("books", "search", "find-spring-books-sorted");
 
 		// Assert sort options advertised
-		assertThat(findBySortedLink.isTemplated(), is(true));
-		assertThat(findBySortedLink.getVariableNames(), hasItems("sort", "projection"));
+		assertThat(findBySortedLink.isTemplated()).isTrue();
+		assertThat(findBySortedLink.getVariableNames()).contains("sort", "projection");
 
 		// Assert results returned as specified
 		client.follow(findBySortedLink.expand()).//

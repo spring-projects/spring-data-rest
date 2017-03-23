@@ -15,14 +15,13 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
@@ -52,15 +51,15 @@ public class MappingResourceMetadataUnitTests {
 
 		PropertyAwareResourceMapping propertyMapping = metadata.getProperty("foo");
 
-		assertThat(propertyMapping, is(notNullValue()));
-		assertThat(propertyMapping.getProperty(), is((Object) property));
-		assertThat(metadata.getMappingFor(property).getPath().matches("foo"), is(true));
+		assertThat(propertyMapping).isNotNull();
+		assertThat(propertyMapping.getProperty()).isEqualTo((Object) property);
+		assertThat(metadata.getMappingFor(property).getPath().matches("foo")).isTrue();
 	}
 
 	@Test // DATAREST-518
 	public void isNotExportedByDefault() {
 
-		assertThat(metadata.isExported(), is(false));
+		assertThat(metadata.isExported()).isFalse();
 	}
 
 	@Test // DATAREST-518
@@ -68,7 +67,7 @@ public class MappingResourceMetadataUnitTests {
 
 		MappingResourceMetadata metadata = new MappingResourceMetadata(context.getRequiredPersistentEntity(Related.class),
 				resourceMappings);
-		assertThat(metadata.isExported(), is(true));
+		assertThat(metadata.isExported()).isTrue();
 	}
 
 	static class Entity {

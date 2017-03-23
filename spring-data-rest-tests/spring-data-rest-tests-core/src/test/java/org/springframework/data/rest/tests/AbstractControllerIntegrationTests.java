@@ -19,9 +19,12 @@ import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
@@ -57,6 +60,10 @@ public abstract class AbstractControllerIntegrationTests {
 
 	@Configuration
 	public static class TestConfiguration extends RepositoryRestMvcConfiguration {
+
+		public TestConfiguration(ApplicationContext context, ObjectFactory<ConversionService> conversionService) {
+			super(context, conversionService);
+		}
 
 		@Bean
 		public PersistentEntityResourceAssembler persistentEntityResourceAssembler() {

@@ -15,8 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +53,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		Link link = entityLinks.linkToSingleResource(Person.class, 1);
 
 		assertThat(link.getHref(), endsWith("/people/1{?projection}"));
-		assertThat(link.getRel(), is("person"));
+		assertThat(link.getRel()).isEqualTo("person");
 	}
 
 	@Test
@@ -59,9 +61,9 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		Link link = entityLinks.linkToCollectionResource(Person.class);
 
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItems("page", "size", "sort"));
-		assertThat(link.getRel(), is("people"));
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains("page", "size", "sort");
+		assertThat(link.getRel()).isEqualTo("people");
 	}
 
 	@Test // DATAREST-221
@@ -69,8 +71,8 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		Link link = entityLinks.linkToSingleResource(Order.class, 1);
 
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItem(configuration.getProjectionConfiguration().getParameterName()));
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains(configuration.getProjectionConfiguration().getParameterName());
 	}
 
 	@Test // DATAREST-155
@@ -83,11 +85,11 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	@Test // DATAREST-317
 	public void adaptsToExistingPageable() {
 
-		Link link = entityLinks.linkToPagedResource(Person.class, new PageRequest(0, 10));
+		Link link = entityLinks.linkToPagedResource(Person.class, PageRequest.of(0, 10));
 
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasSize(2));
-		assertThat(link.getVariableNames(), hasItems("sort", "projection"));
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).hasSize(2);
+		assertThat(link.getVariableNames()).contains("sort", "projection");
 	}
 
 	@Test // DATAREST-467
@@ -95,11 +97,11 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		Links links = entityLinks.linksToSearchResources(Person.class);
 
-		assertThat(links.hasLink("firstname"), is(true));
+		assertThat(links.hasLink("firstname")).isTrue();
 
 		Link firstnameLink = links.getLink("firstname");
-		assertThat(firstnameLink.isTemplated(), is(true));
-		assertThat(firstnameLink.getVariableNames(), hasItems("page", "size"));
+		assertThat(firstnameLink.isTemplated()).isTrue();
+		assertThat(firstnameLink.getVariableNames()).contains("page", "size");
 	}
 
 	@Test // DATAREST-467
@@ -107,20 +109,20 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		Link link = entityLinks.linkToSearchResource(Person.class, "firstname");
 
-		assertThat(link, is(notNullValue()));
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItems("firstname", "page", "size"));
+		assertThat(link).isNotNull();
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains("firstname", "page", "size");
 	}
 
 	@Test // DATAREST-467, DATAREST-519
 	public void prepopulatesPaginationInformationForSearchResourceLink() {
 
-		Link link = entityLinks.linkToSearchResource(Person.class, "firstname", new PageRequest(0, 10));
+		Link link = entityLinks.linkToSearchResource(Person.class, "firstname", PageRequest.of(0, 10));
 
-		assertThat(link, is(notNullValue()));
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItem("firstname"));
-		assertThat(link.getVariableNames(), not(hasItems("page", "size")));
+		assertThat(link).isNotNull();
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains("firstname");
+		assertThat(link.getVariableNames()).doesNotContain("page", "size");
 
 		UriComponents components = UriComponentsBuilder.fromUriString(link.getHref()).build();
 		assertThat(components.getQueryParams(), allOf(hasKey("page"), hasKey("size")));
@@ -131,19 +133,19 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		Link link = entityLinks.linkToSearchResource(Person.class, "lastname");
 
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItems("lastname", "sort"));
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains("lastname", "sort");
 	}
 
 	@Test // DATAREST-467, DATAREST-519
 	public void prepopulatesSortInformationForSearchResourceLink() {
 
-		Link link = entityLinks.linkToSearchResource(Person.class, "lastname", new Sort("firstname"));
+		Link link = entityLinks.linkToSearchResource(Person.class, "lastname", Sort.by("firstname"));
 
-		assertThat(link, is(notNullValue()));
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItem("lastname"));
-		assertThat(link.getVariableNames(), not(hasItems("sort")));
+		assertThat(link).isNotNull();
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains("lastname");
+		assertThat(link.getVariableNames()).doesNotContain("sort");
 
 		UriComponents components = UriComponentsBuilder.fromUriString(link.getHref()).build();
 		assertThat(components.getQueryParams(), hasKey("sort"));
@@ -153,7 +155,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	public void addsProjectVariableToSearchResourceIfAvailable() {
 
 		for (Link link : entityLinks.linksToSearchResources(Book.class)) {
-			assertThat(link.getVariableNames(), hasItem("projection"));
+			assertThat(link.getVariableNames()).contains("projection");
 		}
 	}
 }

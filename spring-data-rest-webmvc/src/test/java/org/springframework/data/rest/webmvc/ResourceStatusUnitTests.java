@@ -15,23 +15,22 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import lombok.Value;
 
+import java.util.function.Supplier;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
-import org.springframework.data.rest.core.util.Supplier;
 import org.springframework.data.rest.webmvc.ResourceStatus.StatusAndHeaders;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -45,7 +44,7 @@ import org.springframework.http.HttpStatus;
 public class ResourceStatusUnitTests {
 
 	ResourceStatus status;
-	KeyValuePersistentEntity<?> entity;
+	KeyValuePersistentEntity<?, ?> entity;
 
 	@Mock HttpHeadersPreparer preparer;
 	@Mock Supplier<PersistentEntityResource> supplier;
@@ -55,10 +54,10 @@ public class ResourceStatusUnitTests {
 
 		this.status = ResourceStatus.of(preparer);
 
-		KeyValueMappingContext context = new KeyValueMappingContext();
-		this.entity = context.getPersistentEntity(Sample.class);
+		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
+		this.entity = context.getRequiredPersistentEntity(Sample.class);
 
-		doReturn(new HttpHeaders()).when(preparer).prepareHeaders(eq(entity), Matchers.any());
+		doReturn(new HttpHeaders()).when(preparer).prepareHeaders(eq(entity), any());
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATAREST-835
@@ -83,22 +82,22 @@ public class ResourceStatusUnitTests {
 	@Test // DATAREST-835
 	public void returnsNotModifiedIfEntityIsStillConsideredValid() {
 
-		doReturn(true).when(preparer).isObjectStillValid(Matchers.any(), Matchers.any(HttpHeaders.class));
+		doReturn(true).when(preparer).isObjectStillValid(any(), any(HttpHeaders.class));
 
 		assertNotModified(status.getStatusAndHeaders(new HttpHeaders(), new Sample(0), entity));
 	}
 
 	private void assertModified(StatusAndHeaders statusAndHeaders) {
 
-		assertThat(statusAndHeaders.isModified(), is(true));
-		assertThat(statusAndHeaders.toResponseEntity(supplier).getStatusCode(), is(HttpStatus.OK));
+		assertThat(statusAndHeaders.isModified()).isTrue();
+		assertThat(statusAndHeaders.toResponseEntity(supplier).getStatusCode()).isEqualTo(HttpStatus.OK);
 		verify(supplier).get();
 	}
 
 	private void assertNotModified(StatusAndHeaders statusAndHeaders) {
 
-		assertThat(statusAndHeaders.isModified(), is(false));
-		assertThat(statusAndHeaders.toResponseEntity(supplier).getStatusCode(), is(HttpStatus.NOT_MODIFIED));
+		assertThat(statusAndHeaders.isModified()).isFalse();
+		assertThat(statusAndHeaders.toResponseEntity(supplier).getStatusCode()).isEqualTo(HttpStatus.NOT_MODIFIED);
 	}
 
 	@Value

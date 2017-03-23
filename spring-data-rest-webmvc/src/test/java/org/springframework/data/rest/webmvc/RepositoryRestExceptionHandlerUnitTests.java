@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -63,7 +62,7 @@ public class RepositoryRestExceptionHandlerUnitTests {
 		ResponseEntity<ExceptionMessage> result = HANDLER
 				.handleNotReadable(new HttpMessageNotReadableException("Message!"));
 
-		assertThat(result.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 	}
 
 	@Test // DATAREST-507
@@ -71,7 +70,7 @@ public class RepositoryRestExceptionHandlerUnitTests {
 
 		ResponseEntity<ExceptionMessage> result = HANDLER.handleConflict(new DataIntegrityViolationException("Message!"));
 
-		assertThat(result.getStatusCode(), is(HttpStatus.CONFLICT));
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
 	}
 
 	@Test // DATAREST-706
@@ -81,7 +80,7 @@ public class RepositoryRestExceptionHandlerUnitTests {
 
 		ResponseEntity<ExceptionMessage> result = HANDLER.handleMiscFailures(new Exception(message));
 
-		assertThat(result.getBody(), is(notNullValue()));
-		assertThat(result.getBody().getMessage(), is(message));
+		assertThat(result.getBody()).isNotNull();
+		assertThat(result.getBody().getMessage()).isEqualTo(message);
 	}
 }

@@ -26,11 +26,9 @@ import org.springframework.util.ReflectionUtils;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public abstract class Methods {
+public interface Methods {
 
-	private Methods() {}
-
-	public static final ReflectionUtils.MethodFilter USER_METHODS = new ReflectionUtils.MethodFilter() {
+	static final ReflectionUtils.MethodFilter USER_METHODS = new ReflectionUtils.MethodFilter() {
 
 		/*
 		 * (non-Javadoc)
@@ -38,12 +36,12 @@ public abstract class Methods {
 		 */
 		@Override
 		public boolean matches(Method method) {
-			
+
 			return !method.isSynthetic() && //
-					!method.isBridge() && //
-					!ReflectionUtils.isObjectMethod(method) && //
-					!ClassUtils.isCglibProxyClass(method.getDeclaringClass()) && //
-					!ReflectionUtils.isCglibRenamedMethod(method);
+			!method.isBridge() && //
+			!ReflectionUtils.isObjectMethod(method) && //
+			!ClassUtils.isCglibProxyClass(method.getDeclaringClass()) && //
+			!ReflectionUtils.isCglibRenamedMethod(method);
 		}
 	};
 }

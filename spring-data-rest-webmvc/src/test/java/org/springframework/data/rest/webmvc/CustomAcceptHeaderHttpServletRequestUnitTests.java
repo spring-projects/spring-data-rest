@@ -15,8 +15,9 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,7 +53,7 @@ public class CustomAcceptHeaderHttpServletRequestUnitTests {
 
 		List<String> expected = Collections.list(servletRequest.getHeaders(HttpHeaders.ACCEPT));
 
-		assertThat(expected, hasSize(2));
-		assertThat(expected, hasItems(MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_ATOM_XML_VALUE));
+		assertThat(expected).hasSize(2);
+		assertThat(expected).contains(MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_ATOM_XML_VALUE);
 	}
 }

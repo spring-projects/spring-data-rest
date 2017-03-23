@@ -22,6 +22,7 @@ import lombok.Value;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.repository.Repository;
@@ -213,8 +214,8 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		 * @see org.springframework.data.rest.core.support.EntityLookup#lookupEntity(java.io.Serializable)
 		 */
 		@Override
-		public Object lookupEntity(Serializable id) {
-			return lookupInfo.getLookup().lookup(repository, id);
+		public Optional<Object> lookupEntity(Serializable id) {
+			return Optional.ofNullable(lookupInfo.getLookup().lookup(repository, id));
 		}
 
 		/* 

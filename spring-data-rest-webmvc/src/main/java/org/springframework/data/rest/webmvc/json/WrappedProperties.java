@@ -24,10 +24,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -81,6 +83,10 @@ class WrappedProperties {
 		return new WrappedProperties(resolver.findUnwrappedPropertyPaths(entity.getType()));
 	}
 
+	public static WrappedProperties none() {
+		return new WrappedProperties(Collections.emptyMap());
+	}
+
 	/**
 	 * @param fieldName must not be empty or {@literal null}.
 	 * @return {@literal true} if the field name resolves to a {@literal PersistentProperty}.
@@ -132,28 +138,28 @@ class WrappedProperties {
 		private Map<String, List<PersistentProperty<?>>> findUnwrappedPropertyPaths(Class<?> type,
 				NameTransformer nameTransformer, boolean considerRegularProperties) {
 
-			PersistentEntity<?, ?> entity = persistentEntities.getPersistentEntity(type);
+			return persistentEntities.getPersistentEntity(type).map(entity -> {
 
-			if (entity == null) {
-				return Collections.emptyMap();
-			}
+				Map<String, List<PersistentProperty<?>>> mapping = new HashMap<String, List<PersistentProperty<?>>>();
 
-			Map<String, List<PersistentProperty<?>>> mapping = new HashMap<String, List<PersistentProperty<?>>>();
+				for (BeanPropertyDefinition property : getMappedProperties(entity)) {
 
-			for (BeanPropertyDefinition property : getMappedProperties(entity)) {
+					Optionals.ifAllPresent(entity.getPersistentProperty(property.getInternalName()), //
+							findAnnotatedMember(property), //
+							(prop, member) -> {
 
-				AnnotatedMember annotatedMember = findAnnotatedMember(property);
-				PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getInternalName());
-
-				if (isJsonUnwrapped(annotatedMember)) {
-					mapping.putAll(findUnwrappedPropertyPaths(nameTransformer, annotatedMember, persistentProperty));
-				} else if (considerRegularProperties) {
-					mapping.put(nameTransformer.transform(property.getName()),
-							Collections.<PersistentProperty<?>> singletonList(persistentProperty));
+								if (isJsonUnwrapped(member)) {
+									mapping.putAll(findUnwrappedPropertyPaths(nameTransformer, member, prop));
+								} else if (considerRegularProperties) {
+									mapping.put(nameTransformer.transform(property.getName()),
+											Collections.<PersistentProperty<?>> singletonList(prop));
+								}
+							});
 				}
-			}
 
-			return mapping;
+				return mapping;
+
+			}).orElse(Collections.emptyMap());
 		}
 
 		private Map<String, List<PersistentProperty<?>>> findUnwrappedPropertyPaths(NameTransformer nameTransformer,
@@ -187,13 +193,9 @@ class WrappedProperties {
 
 			for (BeanPropertyDefinition property : properties) {
 
-				AnnotatedMember annotatedMember = findAnnotatedMember(property);
-
-				if (annotatedMember == null || entity.getPersistentProperty(property.getInternalName()) == null) {
-					continue;
-				}
-
-				withInternalName.add(property);
+				Optionals.ifAllPresent(findAnnotatedMember(property), //
+						entity.getPersistentProperty(property.getInternalName()), //
+						(member, prop) -> withInternalName.add(property));
 			}
 
 			return withInternalName;
@@ -204,21 +206,21 @@ class WrappedProperties {
 					mapper.getDeserializationConfig());
 		}
 
-		private static AnnotatedMember findAnnotatedMember(BeanPropertyDefinition property) {
+		private static Optional<AnnotatedMember> findAnnotatedMember(BeanPropertyDefinition property) {
 
 			if (property.getPrimaryMember() != null) {
-				return property.getPrimaryMember();
+				return Optional.of(property.getPrimaryMember());
 			}
 
 			if (property.getGetter() != null) {
-				return property.getGetter();
+				return Optional.of(property.getGetter());
 			}
 
 			if (property.getSetter() != null) {
-				return property.getSetter();
+				return Optional.of(property.getSetter());
 			}
 
-			return null;
+			return Optional.empty();
 		}
 
 		private static boolean isJsonUnwrapped(AnnotatedMember primaryMember) {

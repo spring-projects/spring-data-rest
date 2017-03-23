@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,7 +55,7 @@ public class ValidationErrorsUnitTests {
 		errors.rejectValue("field", "asdf");
 		errors.popNestedPath();
 
-		assertThat(errors.getFieldError().getField(), is("bars[0].field"));
+		assertThat(errors.getFieldError().getField()).isEqualTo("bars[0].field");
 	}
 
 	@Test // DATAREST-801
@@ -66,7 +65,7 @@ public class ValidationErrorsUnitTests {
 
 	private static void expectedErrorBehavior(Errors errors) {
 
-		assertThat(errors.getFieldValue("bars"), is(notNullValue()));
+		assertThat(errors.getFieldValue("bars")).isNotNull();
 
 		errors.pushNestedPath("bars[0]");
 
@@ -75,7 +74,7 @@ public class ValidationErrorsUnitTests {
 			fail("Expected NotReadablePropertyException!");
 		} catch (NotReadablePropertyException e) {}
 
-		assertThat(errors.getFieldValue("field"), is((Object) "Hello"));
+		assertThat(errors.getFieldValue("field")).isEqualTo((Object) "Hello");
 	}
 
 	static class Foo {

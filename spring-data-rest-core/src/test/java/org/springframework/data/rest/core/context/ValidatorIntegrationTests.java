@@ -60,7 +60,7 @@ public class ValidatorIntegrationTests {
 	}
 
 	@Autowired ConfigurableApplicationContext context;
-	@Autowired KeyValueMappingContext mappingContext;
+	@Autowired KeyValueMappingContext<?, ?> mappingContext;
 
 	@Test(expected = RepositoryConstraintViolationException.class)
 	public void shouldValidateLastName() throws Exception {

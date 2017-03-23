@@ -15,7 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.MatcherAssert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import java.util.Arrays;
@@ -113,12 +114,12 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
 
-		assertThat(JsonPath.read(result, "$._embedded.users[*].address"), is(notNullValue()));
+		assertThat(JsonPath.<Object> read(result, "$._embedded.users[*].address")).isNotNull();
 	}
 
 	@Test // DATAREST-654
 	public void deserializesTranslatedEnumProperty() throws Exception {
-		assertThat(mapper.readValue("{ \"gender\" : \"Male\" }", User.class).gender, is(Gender.MALE));
+		assertThat(mapper.readValue("{ \"gender\" : \"Male\" }", User.class).gender).isEqualTo(Gender.MALE);
 	}
 
 	@Test // DATAREST-864

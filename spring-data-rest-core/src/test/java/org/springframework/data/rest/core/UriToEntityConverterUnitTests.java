@@ -15,20 +15,20 @@
  */
 package org.springframework.data.rest.core;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
@@ -40,6 +40,7 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link UriToEntityConverter}.
@@ -75,26 +76,27 @@ public class UriToEntityConverterUnitTests {
 
 		Set<ConvertiblePair> result = converter.getConvertibleTypes();
 
-		assertThat(result, hasItem(new ConvertiblePair(URI.class, Entity.class)));
-		assertThat(result, not(hasItem(new ConvertiblePair(URI.class, NonEntity.class))));
+		assertThat(result).contains(new ConvertiblePair(URI.class, Entity.class));
+		assertThat(result).doesNotContain(new ConvertiblePair(URI.class, NonEntity.class));
 	}
 
 	@Test // DATAREST-427
 	public void cannotConvertEntityWithIdPropertyIfStringConversionMissing() {
-		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE), is(false));
+		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE)).isFalse();
 	}
 
 	@Test // DATAREST-427
 	public void canConvertEntityWithIdPropertyAndFromStringConversionPossible() {
 
-		doReturn(mock(RepositoryInformation.class)).when(repositories).getRepositoryInformationFor(ENTITY_TYPE.getType());
+		doReturn(Optional.of(mock(RepositoryInformation.class))).when(repositories)
+				.getRepositoryInformationFor(ENTITY_TYPE.getType());
 
-		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE), is(true));
+		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE)).isTrue();
 	}
 
 	@Test // DATAREST-427
 	public void cannotConvertEntityWithoutIdentifier() {
-		assertThat(converter.matches(URI_TYPE, TypeDescriptor.valueOf(NonEntity.class)), is(false));
+		assertThat(converter.matches(URI_TYPE, TypeDescriptor.valueOf(NonEntity.class))).isFalse();
 	}
 
 	@Test // DATAREST-427
@@ -103,10 +105,10 @@ public class UriToEntityConverterUnitTests {
 		Entity reference = new Entity();
 
 		RepositoryInvoker invoker = mock(RepositoryInvoker.class);
-		doReturn(reference).when(invoker).invokeFindOne("1");
+		doReturn(Optional.of(reference)).when(invoker).invokeFindOne("1");
 		doReturn(invoker).when(invokerFactory).getInvokerFor(ENTITY_TYPE.getType());
 
-		assertThat(converter.convert(URI.create("/foo/bar/1"), URI_TYPE, ENTITY_TYPE), is((Object) reference));
+		assertThat(converter.convert(URI.create("/foo/bar/1"), URI_TYPE, ENTITY_TYPE)).isEqualTo((Object) reference);
 	}
 
 	@Test(expected = ConversionFailedException.class) // DATAREST-427
@@ -138,11 +140,10 @@ public class UriToEntityConverterUnitTests {
 	 * @see DATAREST-1018
 	 */
 	@Test
-	@SuppressWarnings("unchecked")
 	public void doesNotRegisterTypeWithUnmanagedRawType() {
 
 		PersistentEntities entities = mock(PersistentEntities.class);
-		doReturn(Arrays.asList(ClassTypeInformation.OBJECT)).when(entities).getManagedTypes();
+		doReturn(Streamable.of(ClassTypeInformation.OBJECT)).when(entities).getManagedTypes();
 
 		new UriToEntityConverter(entities, invokerFactory, repositories);
 	}

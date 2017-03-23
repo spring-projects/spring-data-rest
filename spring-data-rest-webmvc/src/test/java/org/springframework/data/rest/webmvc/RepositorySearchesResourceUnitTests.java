@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 
@@ -35,6 +34,6 @@ public class RepositorySearchesResourceUnitTests {
 
 	@Test // DATAREST-515
 	public void returnsConfiguredDomainType() {
-		assertThat(new RepositorySearchesResource(String.class).getDomainType(), is(typeCompatibleWith(String.class)));
+		assertThat(new RepositorySearchesResource(String.class).getDomainType()).isAssignableFrom(String.class);
 	}
 }

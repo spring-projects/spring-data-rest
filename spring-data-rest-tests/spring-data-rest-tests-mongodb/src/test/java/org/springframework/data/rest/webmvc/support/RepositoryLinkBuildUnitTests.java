@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
@@ -61,6 +60,6 @@ public class RepositoryLinkBuildUnitTests {
 				new BaseUri(baseUri));
 		Link link = builder.withSelfRel();
 
-		assertThat(link.getHref(), is(expectedUri));
+		assertThat(link.getHref()).isEqualTo(expectedUri);
 	}
 }

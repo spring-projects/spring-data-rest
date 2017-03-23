@@ -15,8 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
@@ -54,7 +54,6 @@ public class DelegatingHandlerMappingUnitTests {
 		assertHandlerTriedButExceptionThrown(mapping, UnsatisfiedServletRequestParameterException.class);
 	}
 
-	@SuppressWarnings("unchecked")
 	private final void assertHandlerTriedButExceptionThrown(HandlerMapping mapping, Class<? extends Exception> type)
 			throws Exception {
 
@@ -66,7 +65,7 @@ public class DelegatingHandlerMappingUnitTests {
 			fail(String.format("Expected %s!", type.getSimpleName()));
 
 		} catch (Exception o_O) {
-			assertThat(o_O, is(instanceOf(type)));
+			assertThat(o_O).isInstanceOf(type);
 			verify(second, times(1)).getHandler(request);
 		} finally {
 			reset(first, second);

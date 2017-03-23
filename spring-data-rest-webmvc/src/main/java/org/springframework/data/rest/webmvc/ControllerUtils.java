@@ -16,12 +16,14 @@
 package org.springframework.data.rest.webmvc;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
 
 /**
  * @author Oliver Gierke
@@ -30,6 +32,18 @@ import org.springframework.http.ResponseEntity;
 public class ControllerUtils {
 
 	public static final Iterable<Resource<?>> EMPTY_RESOURCE_LIST = Collections.emptyList();
+
+	public static <R extends ResourceSupport> ResponseEntity<ResourceSupport> toResponseEntity(HttpStatus status,
+			HttpHeaders headers, Optional<R> resource) {
+
+		HttpHeaders hdrs = new HttpHeaders();
+
+		if (headers != null) {
+			hdrs.putAll(headers);
+		}
+
+		return new ResponseEntity<ResourceSupport>(resource.orElse(null), hdrs, status);
+	}
 
 	/**
 	 * Wrap a resource as a {@link ResourceEntity} and attach given headers and status.
@@ -43,13 +57,11 @@ public class ControllerUtils {
 	public static <R extends ResourceSupport> ResponseEntity<ResourceSupport> toResponseEntity(HttpStatus status,
 			HttpHeaders headers, R resource) {
 
-		HttpHeaders hdrs = new HttpHeaders();
+		Assert.notNull(status, "Http status must not be null!");
+		Assert.notNull(headers, "Http headers must not be null!");
+		Assert.notNull(resource, "Payload must not be null!");
 
-		if (headers != null) {
-			hdrs.putAll(headers);
-		}
-
-		return new ResponseEntity<ResourceSupport>(resource, hdrs, status);
+		return toResponseEntity(status, headers, Optional.of(resource));
 	}
 
 	/**
@@ -59,7 +71,7 @@ public class ControllerUtils {
 	 * @return
 	 */
 	public static ResponseEntity<ResourceSupport> toEmptyResponse(HttpStatus status) {
-		return toEmptyResponse(status, null);
+		return toEmptyResponse(status, new HttpHeaders());
 	}
 
 	/**
@@ -70,6 +82,6 @@ public class ControllerUtils {
 	 * @return
 	 */
 	public static ResponseEntity<ResourceSupport> toEmptyResponse(HttpStatus status, HttpHeaders headers) {
-		return toResponseEntity(status, headers, null);
+		return toResponseEntity(status, headers, Optional.empty());
 	}
 }

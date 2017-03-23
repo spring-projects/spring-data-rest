@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
@@ -35,7 +36,6 @@ import org.springframework.data.rest.core.mapping.MethodResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
-import org.springframework.data.rest.core.util.Supplier;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.util.ClassTypeInformation;
@@ -180,7 +180,8 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			Sort sort, PersistentEntityResourceAssembler assembler, @RequestHeader HttpHeaders headers) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		Object result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort, assembler);
+		Optional<Object> result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort,
+				assembler);
 
 		SearchResourceMappings searchMappings = resourceInformation.getSearchMappings();
 		MethodResourceMapping methodMapping = searchMappings.getExportedMethodMappingForPath(search);
@@ -199,27 +200,23 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @param baseLink can be {@literal null}.
 	 * @return
 	 */
-	protected ResponseEntity<?> toResource(final Object source, final PersistentEntityResourceAssembler assembler,
+	protected ResponseEntity<?> toResource(Optional<Object> source, final PersistentEntityResourceAssembler assembler,
 			Class<?> domainType, Link baseLink, HttpHeaders headers, RootResourceInformation information) {
 
-		if (source instanceof Iterable) {
-			return ResponseEntity.ok(toResources((Iterable<?>) source, assembler, domainType, baseLink));
-		} else if (source == null) {
-			throw new ResourceNotFoundException();
-		} else if (ClassUtils.isPrimitiveOrWrapper(source.getClass())) {
-			return ResponseEntity.ok(source);
-		}
+		return source.map(it -> {
 
-		PersistentEntity<?, ?> entity = information.getPersistentEntity();
+			if (it instanceof Iterable) {
+				return ResponseEntity.ok(toResources((Iterable<?>) it, assembler, domainType, baseLink));
+			} else if (ClassUtils.isPrimitiveOrWrapper(it.getClass())) {
+				return ResponseEntity.ok(it);
+			}
 
-		return resourceStatus.getStatusAndHeaders(headers, source, entity).toResponseEntity(//
-				new Supplier<PersistentEntityResource>() {
+			PersistentEntity<?, ?> entity = information.getPersistentEntity();
 
-					@Override
-					public PersistentEntityResource get() {
-						return assembler.toFullResource(source);
-					}
-				});
+			return resourceStatus.getStatusAndHeaders(headers, it, entity).toResponseEntity(//
+					() -> assembler.toFullResource(it));
+
+		}).orElseThrow(() -> new ResourceNotFoundException());
 	}
 
 	/**
@@ -243,7 +240,8 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			PersistentEntityResourceAssembler assembler) {
 
 		Method method = checkExecutability(resourceInformation, search);
-		Object result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort, assembler);
+		Optional<Object> result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort,
+				assembler);
 		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
 		ResponseEntity<?> entity = toResource(result, assembler, metadata.getDomainType(), null, headers,
 				resourceInformation);
@@ -331,7 +329,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @param pageable
 	 * @return
 	 */
-	private Object executeQueryMethod(final RepositoryInvoker invoker,
+	private Optional<Object> executeQueryMethod(final RepositoryInvoker invoker,
 			@RequestParam MultiValueMap<String, Object> parameters, Method method, DefaultedPageable pageable, Sort sort,
 			PersistentEntityResourceAssembler assembler) {
 

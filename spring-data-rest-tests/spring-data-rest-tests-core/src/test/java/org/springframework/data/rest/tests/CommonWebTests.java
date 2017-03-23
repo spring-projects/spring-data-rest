@@ -1,4 +1,3 @@
-package org.springframework.data.rest.tests;
 /*
  * Copyright 2013-2017 the original author or authors.
  *
@@ -14,9 +13,10 @@ package org.springframework.data.rest.tests;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.springframework.data.rest.tests;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -215,8 +215,8 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 			Links links = Links.valueOf(response.getHeader("Link"));
 
-			assertThat(links.hasLink(Link.REL_SELF), is(true));
-			assertThat(links.hasLink("profile"), is(true));
+			assertThat(links.hasLink(Link.REL_SELF)).isTrue();
+			assertThat(links.hasLink("profile")).isTrue();
 		}
 	}
 

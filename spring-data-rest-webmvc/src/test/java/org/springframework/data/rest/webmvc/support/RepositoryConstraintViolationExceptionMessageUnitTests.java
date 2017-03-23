@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -84,7 +83,7 @@ public class RepositoryConstraintViolationExceptionMessageUnitTests {
 
 		List<ValidationError> result = message.getErrors();
 
-		assertThat(result, hasSize(1));
-		assertThat(result.get(0).getInvalidValue(), is(value));
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getInvalidValue()).isEqualTo(value);
 	}
 }

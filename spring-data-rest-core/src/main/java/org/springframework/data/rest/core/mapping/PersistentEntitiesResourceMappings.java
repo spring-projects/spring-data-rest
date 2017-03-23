@@ -93,7 +93,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 			return mappingMetadata;
 		}
 
-		Optional<PersistentEntity<?, ?>> entity = entities.getPersistentEntity(userType);
+		Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> entity = entities.getPersistentEntity(userType);
 
 		return entity.map(it -> {
 

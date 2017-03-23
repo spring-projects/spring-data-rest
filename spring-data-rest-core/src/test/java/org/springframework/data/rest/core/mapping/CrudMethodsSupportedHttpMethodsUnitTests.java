@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
@@ -26,7 +25,7 @@ import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
@@ -94,17 +93,19 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 
 		SupportedHttpMethods methods = getSupportedHttpMethodsFor(EntityRepository.class);
 
-		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("embedded")), is(empty()));
-		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("embeddedCollection")), is(empty()));
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("embedded"))).isEmpty();
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("embeddedCollection"))).isEmpty();
 
-		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("related")),
-				allOf(hasItems(GET, DELETE, PATCH, PUT), not(hasItem(POST))));
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("related")))//
+				.contains(GET, DELETE, PATCH, PUT)//
+				.doesNotContain(POST);
 
-		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("relatedCollection")),
-				hasItems(GET, DELETE, PATCH, PUT, POST));
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("relatedCollection")))//
+				.contains(GET, DELETE, PATCH, PUT, POST);
 
-		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("readOnlyReference")),
-				allOf(hasItem(GET), not(hasItems(DELETE, PATCH, PUT, POST))));
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("readOnlyReference")))//
+				.contains(GET)//
+				.doesNotContain(DELETE, PATCH, PUT, POST);
 	}
 
 	@Test // DATAREST-825
@@ -130,10 +131,10 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 
 		Set<HttpMethod> result = methods.getMethodsFor(type);
 
-		assertThat(result, supported ? hasItems(httpMethods) : not(hasItems(httpMethods)));
-
 		if (supported) {
-			assertThat(result, hasSize(httpMethods.length));
+			assertThat(result).containsExactlyInAnyOrder(httpMethods);
+		} else {
+			assertThat(result).doesNotContain(httpMethods);
 		}
 	}
 

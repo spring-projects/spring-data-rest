@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.data.querydsl.QueryDslPredicateExecutor;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
@@ -76,22 +76,26 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 	 */
 	@Override
 	@SuppressWarnings({ "unchecked" })
-	protected RepositoryInvoker postProcess(MethodParameter parameter, RepositoryInvoker invoker,
-			Class<?> domainType, Map<String, String[]> parameters) {
+	protected RepositoryInvoker postProcess(MethodParameter parameter, RepositoryInvoker invoker, Class<?> domainType,
+			Map<String, String[]> parameters) {
 
-		Object repository = repositories.getRepositoryFor(domainType);
-
-		if (!QueryDslPredicateExecutor.class.isInstance(repository)
-				|| !parameter.hasParameterAnnotation(QuerydslPredicate.class)) {
+		if (!parameter.hasParameterAnnotation(QuerydslPredicate.class)) {
 			return invoker;
 		}
 
-		ClassTypeInformation<?> type = ClassTypeInformation.from(domainType);
+		return repositories.getRepositoryFor(domainType)//
+				.filter(it -> QuerydslPredicateExecutor.class.isInstance(it))//
+				.map(it -> {
 
-		QuerydslBindings bindings = factory.createBindingsFor(null, type);
-		Predicate predicate = predicateBuilder.getPredicate(type, toMultiValueMap(parameters), bindings);
+					ClassTypeInformation<?> type = ClassTypeInformation.from(domainType);
 
-		return new QuerydslRepositoryInvokerAdapter(invoker, (QueryDslPredicateExecutor<Object>) repository, predicate);
+					QuerydslBindings bindings = factory.createBindingsFor(type);
+					Predicate predicate = predicateBuilder.getPredicate(type, toMultiValueMap(parameters), bindings);
+
+					return (RepositoryInvoker) new QuerydslRepositoryInvokerAdapter(invoker,
+							(QuerydslPredicateExecutor<Object>) it, predicate);
+
+				}).orElse(invoker);
 	}
 
 	/**

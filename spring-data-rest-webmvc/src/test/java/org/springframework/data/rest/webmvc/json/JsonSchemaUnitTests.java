@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
@@ -37,7 +36,7 @@ public class JsonSchemaUnitTests {
 
 		JsonSchemaProperty property = new JsonSchemaProperty("foo", null, "bar", false);
 
-		assertThat(property.with(type.getProperty("foo")).type, is("number"));
+		assertThat(property.with(type.getRequiredProperty("foo")).type).isEqualTo("number");
 	}
 
 	static class Sample {

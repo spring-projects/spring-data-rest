@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.event;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
@@ -51,7 +50,7 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 		MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> methods = (MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod>) ReflectionTestUtils
 				.getField(invoker, "handlerMethods");
 
-		assertThat(methods.get(BeforeCreateEvent.class), hasSize(1));
+		assertThat(methods.get(BeforeCreateEvent.class)).hasSize(1);
 	}
 
 	@Test // DATAREST-606
@@ -64,7 +63,7 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 
 		invoker.onApplicationEvent(new BeforeCreateEvent(new Person("Dave", "Matthews")));
 
-		assertThat(sampleHandler.wasCalled, is(true));
+		assertThat(sampleHandler.wasCalled).isTrue();
 	}
 
 	@Test // DATAREST-970
@@ -79,10 +78,10 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 
 		invoker.onApplicationEvent(new BeforeCreateEvent(new Person("Dave", "Matthews")));
 
-		assertThat(orderHandler1.wasCalled, is(true));
-		assertThat(orderHandler2.wasCalled, is(true));
+		assertThat(orderHandler1.wasCalled).isTrue();
+		assertThat(orderHandler2.wasCalled).isTrue();
 
-		assertThat(orderHandler1.timestamp, is(greaterThan(orderHandler2.timestamp)));
+		assertThat(orderHandler1.timestamp).isGreaterThan(orderHandler2.timestamp);
 	}
 
 	@Test // DATAREST-983
@@ -98,8 +97,8 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 		invoker.onApplicationEvent(new BeforeCreateEvent(new FirstEntity()));
 		invoker.onApplicationEvent(new BeforeCreateEvent(new SecondEntity()));
 
-		assertThat(firstHandler.callCount, is(1));
-		assertThat(secondHandler.callCount, is(1));
+		assertThat(firstHandler.callCount).isEqualTo(1);
+		assertThat(secondHandler.callCount).isEqualTo(1);
 	}
 
 	@RepositoryEventHandler

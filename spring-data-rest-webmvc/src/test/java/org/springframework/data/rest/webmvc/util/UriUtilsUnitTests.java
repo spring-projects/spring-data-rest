@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.util;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -38,7 +37,7 @@ public class UriUtilsUnitTests {
 		Method method = ClassUtils.getMethod(MappedMethod.class, "method");
 		List<String> pathSegments = UriUtils.getPathSegments(method);
 
-		assertThat(pathSegments, hasItems("hello", "world"));
+		assertThat(pathSegments).contains("hello", "world");
 	}
 
 	@Test // DATAREST-910
@@ -47,7 +46,7 @@ public class UriUtilsUnitTests {
 		Method method = ClassUtils.getMethod(MappedClassAndMethod.class, "method");
 		List<String> pathSegments = UriUtils.getPathSegments(method);
 
-		assertThat(pathSegments, hasItems("hello", "world"));
+		assertThat(pathSegments).contains("hello", "world");
 	}
 
 	static class MappedMethod {

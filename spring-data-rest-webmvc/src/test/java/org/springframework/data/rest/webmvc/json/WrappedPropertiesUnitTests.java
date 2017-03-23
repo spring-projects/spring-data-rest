@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -46,13 +45,13 @@ public class WrappedPropertiesUnitTests {
 
 	static final ObjectMapper MAPPER = new ObjectMapper();
 
-	KeyValueMappingContext mappingContext;
+	KeyValueMappingContext<?, ?> mappingContext;
 	PersistentEntities persistentEntities;
 
 	@Before
 	public void setUp() {
 
-		mappingContext = new KeyValueMappingContext();
+		mappingContext = new KeyValueMappingContext<>();
 		mappingContext.getPersistentEntity(MultiLevelNesting.class);
 		mappingContext.getPersistentEntity(SyntheticProperties.class);
 
@@ -62,72 +61,72 @@ public class WrappedPropertiesUnitTests {
 	@Test // DATAREST-910
 	public void wrappedPropertiesShouldConsiderSingleLevelUnwrapping() {
 
-		PersistentEntity<?, ?> persistentEntity = persistentEntities.getPersistentEntity(OneLevelNesting.class);
+		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(OneLevelNesting.class);
 		WrappedProperties wrappedProperties = WrappedProperties.fromJacksonProperties(persistentEntities, persistentEntity,
 				MAPPER);
 
-		assertThat(wrappedProperties.hasPersistentPropertiesForField("street"), is(true));
-		assertThat(wrappedProperties.hasPersistentPropertiesForField("one"), is(false));
+		assertThat(wrappedProperties.hasPersistentPropertiesForField("street")).isTrue();
+		assertThat(wrappedProperties.hasPersistentPropertiesForField("one")).isFalse();
 
 		List<PersistentProperty<?>> street = wrappedProperties.getPersistentProperties("street");
 
-		PersistentProperty<?> addressProperty = persistentEntity.getPersistentProperty("address");
-		PersistentProperty<?> streetProperty = persistentEntities.getPersistentEntity(Address.class)
-				.getPersistentProperty("street");
+		PersistentProperty<?> addressProperty = persistentEntity.getRequiredPersistentProperty("address");
+		PersistentProperty<?> streetProperty = persistentEntities.getRequiredPersistentEntity(Address.class)
+				.getRequiredPersistentProperty("street");
 
-		assertThat(street, contains(addressProperty, streetProperty));
+		assertThat(street).contains(addressProperty, streetProperty);
 	}
 
 	@Test // DATAREST-910
 	public void wrappedPropertiesShouldConsiderMultiLevelUnwrapping() {
 
-		PersistentEntity<?, ?> persistentEntity = persistentEntities.getPersistentEntity(MultiLevelNesting.class);
+		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(MultiLevelNesting.class);
 		WrappedProperties wrappedProperties = WrappedProperties.fromJacksonProperties(persistentEntities, persistentEntity,
 				new ObjectMapper());
 
-		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-one-post"), is(true));
-		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-street-post"), is(true));
-		assertThat(wrappedProperties.hasPersistentPropertiesForField("nested"), is(false));
+		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-one-post")).isTrue();
+		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-street-post")).isTrue();
+		assertThat(wrappedProperties.hasPersistentPropertiesForField("nested")).isFalse();
 
 		List<PersistentProperty<?>> street = wrappedProperties.getPersistentProperties("pre-street-post");
 
-		PersistentProperty<?> oneLevelNestingProperty = persistentEntity.getPersistentProperty("unwrapped");
-		PersistentProperty<?> addressProperty = persistentEntities.getPersistentEntity(OneLevelNesting.class)
-				.getPersistentProperty("address");
-		PersistentProperty<?> streetProperty = persistentEntities.getPersistentEntity(Address.class)
-				.getPersistentProperty("street");
+		PersistentProperty<?> oneLevelNestingProperty = persistentEntity.getRequiredPersistentProperty("unwrapped");
+		PersistentProperty<?> addressProperty = persistentEntities.getRequiredPersistentEntity(OneLevelNesting.class)
+				.getRequiredPersistentProperty("address");
+		PersistentProperty<?> streetProperty = persistentEntities.getRequiredPersistentEntity(Address.class)
+				.getRequiredPersistentProperty("street");
 
-		assertThat(street, contains(oneLevelNestingProperty, addressProperty, streetProperty));
+		assertThat(street).contains(oneLevelNestingProperty, addressProperty, streetProperty);
 	}
 
 	@Test // DATAREST-910
 	public void wrappedPropertiesShouldConsiderJacksonFieldNames() {
 
-		PersistentEntity<?, ?> persistentEntity = persistentEntities.getPersistentEntity(MultiLevelNesting.class);
+		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(MultiLevelNesting.class);
 		WrappedProperties wrappedProperties = WrappedProperties.fromJacksonProperties(persistentEntities, persistentEntity,
 				new ObjectMapper());
 
-		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-zip-post"), is(true));
+		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-zip-post")).isTrue();
 	}
 
 	@Test // DATAREST-910
 	public void wrappedPropertiesShouldIgnoreIgnoredJacksonFields() {
 
-		PersistentEntity<?, ?> persistentEntity = persistentEntities.getPersistentEntity(MultiLevelNesting.class);
+		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(MultiLevelNesting.class);
 		WrappedProperties wrappedProperties = WrappedProperties.fromJacksonProperties(persistentEntities, persistentEntity,
 				new ObjectMapper());
 
-		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-street-ignored"), is(false));
+		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-street-ignored")).isFalse();
 	}
 
 	@Test // DATAREST-910
 	public void wrappedPropertiesShouldIgnoreSyntheticProperties() {
 
-		PersistentEntity<?, ?> persistentEntity = persistentEntities.getPersistentEntity(SyntheticProperties.class);
+		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(SyntheticProperties.class);
 		WrappedProperties wrappedProperties = WrappedProperties.fromJacksonProperties(persistentEntities, persistentEntity,
 				new ObjectMapper());
 
-		assertThat(wrappedProperties.hasPersistentPropertiesForField("street"), is(false));
+		assertThat(wrappedProperties.hasPersistentPropertiesForField("street")).isFalse();
 	}
 
 	@Data

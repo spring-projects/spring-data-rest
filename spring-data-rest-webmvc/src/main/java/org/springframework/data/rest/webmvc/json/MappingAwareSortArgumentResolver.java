@@ -63,6 +63,6 @@ public class MappingAwareSortArgumentResolver implements HandlerMethodArgumentRe
 
 		Sort sort = delegate.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
 
-		return sort == null ? null : translator.translateSort(sort, methodParameter, webRequest);
+		return sort.isUnsorted() ? sort : translator.translateSort(sort, methodParameter, webRequest);
 	}
 }

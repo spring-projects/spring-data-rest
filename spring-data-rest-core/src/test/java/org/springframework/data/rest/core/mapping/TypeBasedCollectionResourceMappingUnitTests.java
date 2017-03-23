@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.rest.core.Path;
@@ -34,10 +33,10 @@ public class TypeBasedCollectionResourceMappingUnitTests {
 
 		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(Sample.class);
 
-		assertThat(mapping.getPath(), is(new Path("sample")));
-		assertThat(mapping.getRel(), is("samples"));
-		assertThat(mapping.getItemResourceRel(), is("sample"));
-		assertThat(mapping.isExported(), is(true));
+		assertThat(mapping.getPath()).isEqualTo(new Path("sample"));
+		assertThat(mapping.getRel()).isEqualTo("samples");
+		assertThat(mapping.getItemResourceRel()).isEqualTo("sample");
+		assertThat(mapping.isExported()).isTrue();
 	}
 
 	@Test
@@ -45,10 +44,10 @@ public class TypeBasedCollectionResourceMappingUnitTests {
 
 		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(CustomizedSample.class);
 
-		assertThat(mapping.getPath(), is(new Path("customizedSample")));
-		assertThat(mapping.getRel(), is("myRel"));
-		assertThat(mapping.getItemResourceRel(), is("customizedSample"));
-		assertThat(mapping.isExported(), is(true));
+		assertThat(mapping.getPath()).isEqualTo(new Path("customizedSample"));
+		assertThat(mapping.getRel()).isEqualTo("myRel");
+		assertThat(mapping.getItemResourceRel()).isEqualTo("customizedSample");
+		assertThat(mapping.isExported()).isTrue();
 	}
 
 	@Test // DATAREST-99
@@ -56,7 +55,7 @@ public class TypeBasedCollectionResourceMappingUnitTests {
 
 		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(HiddenSample.class);
 
-		assertThat(mapping.isExported(), is(false));
+		assertThat(mapping.isExported()).isFalse();
 	}
 
 	/**
@@ -68,13 +67,13 @@ public class TypeBasedCollectionResourceMappingUnitTests {
 		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(Sample.class);
 		ResourceDescription description = mapping.getDescription();
 
-		assertThat(description.isDefault(), is(true));
-		assertThat(description.getMessage(), is("rest.description.samples"));
+		assertThat(description.isDefault()).isTrue();
+		assertThat(description.getMessage()).isEqualTo("rest.description.samples");
 
 		ResourceDescription itemDescription = mapping.getItemResourceDescription();
 
-		assertThat(itemDescription.isDefault(), is(true));
-		assertThat(itemDescription.getMessage(), is("rest.description.sample"));
+		assertThat(itemDescription.isDefault()).isTrue();
+		assertThat(itemDescription.getMessage()).isEqualTo("rest.description.sample");
 	}
 
 	public interface Sample {}
