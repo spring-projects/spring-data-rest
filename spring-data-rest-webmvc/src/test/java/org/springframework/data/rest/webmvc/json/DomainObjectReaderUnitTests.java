@@ -72,6 +72,9 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -115,6 +118,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(SampleWithReference.class);
 		mappingContext.getPersistentEntity(Note.class);
 		mappingContext.getPersistentEntity(WithNullCollection.class);
+		mappingContext.getPersistentEntity(WidgetContainer.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -788,5 +792,102 @@ public class DomainObjectReaderUnitTests {
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class WithNullCollection {
 		List<String> strings;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class WidgetContainer {
+		AbstractWidget widget;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
+	@JsonSubTypes({ @Type(name = "Curly", value = CurlyWidget.class), @Type(name = "Bendy", value = BendyWidget.class) })
+	static abstract class AbstractWidget {
+		public abstract String getType();
+
+		String name;
+		String color;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class CurlyWidget extends AbstractWidget {
+		@Override
+		public String getType() {
+			return "Curly";
+		}
+
+		int curls;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class BendyWidget extends AbstractWidget {
+		@Override
+		public String getType() {
+			return "Bendy";
+		}
+
+		int bends;
+	}
+
+	@Test // DATAREST-XXX
+	public void polymorphicUpdateSameType() throws Exception {
+		final ObjectMapper mapper = new ObjectMapper();
+
+		final CurlyWidget targetWidget = new CurlyWidget();
+		targetWidget.curls = 5;
+		targetWidget.name = "Reasonably curly";
+		targetWidget.color = "red";
+
+		final JsonNode node = mapper.readTree("{ \"curls\" : 10, \"name\": \"Very curly\", \"type\": \"Curly\" }");
+
+		final CurlyWidget result = reader.merge((ObjectNode) node, targetWidget, mapper);
+
+		// type didn't change so the same object should be returned
+		assertThat(result, sameInstance(targetWidget));
+
+		assertThat(result.curls, is(10));
+		assertThat(result.color, is("red"));
+		assertThat(result.name, is("Very curly"));
+	}
+
+	@Test // DATAREST-1033
+	public void polymorphicUpdateDifferentType() throws Exception {
+		final ObjectMapper mapper = new ObjectMapper();
+
+		final CurlyWidget targetWidget = new CurlyWidget();
+		targetWidget.curls = 5;
+		targetWidget.name = "Reasonably curly";
+		targetWidget.color = "red";
+
+		final JsonNode node = mapper.readTree("{ \"bends\" : 1, \"name\": \"Not very bendy\", \"type\": \"Bendy\" }");
+
+		final BendyWidget result = (BendyWidget) reader.merge((ObjectNode) node, (AbstractWidget) targetWidget, mapper);
+
+		assertThat(result.bends, is(1));
+		assertThat(result.color, is("red"));
+		assertThat(result.name, is("Not very bendy"));
+	}
+
+	@Test // DATAREST-1033
+	public void polymorphicUpdateDifferentTypeInContainer() throws Exception {
+		final ObjectMapper mapper = new ObjectMapper();
+
+		final CurlyWidget targetWidget = new CurlyWidget();
+		targetWidget.curls = 5;
+		targetWidget.name = "Reasonably curly";
+		targetWidget.color = "red";
+
+		final JsonNode node = mapper
+				.readTree("{ \"widget\" : { \"bends\" : 1, \"name\": \"Not very bendy\", \"type\": \"Bendy\" } }");
+
+		final WidgetContainer target = new WidgetContainer();
+		target.widget = targetWidget;
+
+		final WidgetContainer result = reader.merge((ObjectNode) node, target, mapper);
+
+		assertThat(result.widget.name, is("Not very bendy"));
+		assertThat(result.widget.color, is("red"));
+		assertThat(result.widget, instanceOf(BendyWidget.class));
+		assertThat(((BendyWidget) result.widget).bends, is(1));
 	}
 }
