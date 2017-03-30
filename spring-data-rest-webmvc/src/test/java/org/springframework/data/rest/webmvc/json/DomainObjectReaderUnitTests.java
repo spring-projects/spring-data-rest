@@ -38,6 +38,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.OneToMany;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +64,8 @@ import org.springframework.data.rest.webmvc.mapping.Associations;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -97,6 +105,11 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(TransientReadOnlyProperty.class);
 		mappingContext.getPersistentEntity(CollectionOfEnumWithMethods.class);
 		mappingContext.getPersistentEntity(SampleWithReference.class);
+		mappingContext.getPersistentEntity(Basket.class);
+		mappingContext.getPersistentEntity(Fruit.class);
+		mappingContext.getPersistentEntity(Apple.class);
+		mappingContext.getPersistentEntity(Pear.class);
+		mappingContext.getPersistentEntity(Orange.class);
 		mappingContext.afterPropertiesSet();
 
 		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -496,6 +509,29 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.nested == originalCollection, is(true));
 	}
 
+	@Test // DATAREST-1012
+	public void writesPolymorphicArrayWithSwitchedItemForPut() throws Exception {
+
+		Basket basket = new Basket();
+		basket.fruits = new ArrayList<Fruit>();
+		basket.fruits.add(new Apple());
+		basket.fruits.add(new Pear());
+
+		JsonNode node = new ObjectMapper().readTree("{ \"fruits\" : [ "
+				+ "{ \"@class\" : \"Pear\", \"color\" : \"green\" }," + "{ \"@class\" : \"Orange\",  \"color\" : \"orange\" },"
+				+ "{ \"@class\" : \"Apple\",  \"color\" : \"red\" } ] }");
+
+		Basket result = reader.readPut((ObjectNode) node, basket, new ObjectMapper());
+
+		assertThat(result.fruits.size(), is(3));
+		assertThat(result.fruits.get(0).color, is("green"));
+		assertThat(result.fruits.get(0) instanceof Pear, is(true));
+		assertThat(result.fruits.get(1).color, is("orange"));
+		assertThat(result.fruits.get(1) instanceof Orange, is(true));
+		assertThat(result.fruits.get(2).color, is("red"));
+		assertThat(result.fruits.get(2) instanceof Apple, is(true));
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -606,6 +642,33 @@ public class DomainObjectReaderUnitTests {
 	static class Item {
 		String some;
 	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Basket {
+		@Id @GeneratedValue(strategy = GenerationType.AUTO) Long id;
+
+		@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) List<Fruit> fruits;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+	@JsonSubTypes({ @JsonSubTypes.Type(name = "Apple", value = Apple.class),
+			@JsonSubTypes.Type(name = "Pear", value = Pear.class),
+			@JsonSubTypes.Type(name = "Orange", value = Orange.class) })
+	static class Fruit {
+		@Id @GeneratedValue(strategy = GenerationType.AUTO) Long id;
+
+		@Basic String color;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Apple extends Fruit {}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Pear extends Fruit {}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Orange extends Fruit {}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Product {
