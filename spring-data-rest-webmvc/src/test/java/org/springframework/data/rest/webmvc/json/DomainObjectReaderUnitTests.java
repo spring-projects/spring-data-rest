@@ -80,6 +80,7 @@ import com.google.common.base.Charsets;
  * @author Craig Andrews
  * @author Mathias Düsterhöft
  * @author Ken Dombeck
+ * @author Stefan Reichert
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainObjectReaderUnitTests {
