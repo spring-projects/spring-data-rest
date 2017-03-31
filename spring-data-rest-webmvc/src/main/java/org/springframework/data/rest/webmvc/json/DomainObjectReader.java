@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -448,24 +449,24 @@ public class DomainObjectReader {
 
 			Collection<Object> sourceCollection = asCollection(it);
 			Collection<Object> targetCollection = asCollection(target.orElse(null));
+			
 			Collection<Object> result = targetCollection == null
 					? CollectionFactory.createCollection(Collection.class, sourceCollection.size())
 					: CollectionFactory.createApproximateCollection(targetCollection, sourceCollection.size());
 
 			Iterator<Object> sourceIterator = sourceCollection.iterator();
-			Iterator<Object> targetIterator = targetCollection == null ? Collections.emptyIterator()
-					: targetCollection.iterator();
+			
+			Map<Class<?>, Iterator<Object>> targetIteratorByTypeMap = createTargetIteratorByTypeMap(targetCollection);
 
 			while (sourceIterator.hasNext()) {
 
 				Object sourceElement = sourceIterator.next();
+				boolean sourceElementTypeExists = targetIteratorByTypeMap.containsKey(sourceElement.getClass());
+				Iterator<Object> targetIterator = sourceElementTypeExists ? targetIteratorByTypeMap.get(sourceElement.getClass())
+						: Collections.emptyListIterator();
 				Object targetElement = targetIterator.hasNext() ? targetIterator.next() : null;
 
 				result.add(mergeForPut(sourceElement, targetElement, mapper));
-			}
-
-			if (targetCollection == null) {
-				return result;
 			}
 
 			try {
@@ -479,6 +480,30 @@ public class DomainObjectReader {
 				return result;
 			}
 		});
+	}
+	
+	private Map<Class<?>, Iterator<Object>> createTargetIteratorByTypeMap(Collection<Object> targetCollection) {
+		if (targetCollection == null) {
+			return Collections.emptyMap();
+		}
+		// group the target collection by concrete type
+		Map<Class<?>, Collection<Object>> targetCollectionByTypeMap = new HashMap<Class<?>, Collection<Object>>();
+		for (Object object : targetCollection) {
+			if (!targetCollectionByTypeMap.containsKey(object.getClass())) {
+				ArrayList<Object> targetCollectionByType = new ArrayList<Object>();
+				targetCollectionByTypeMap.put(object.getClass(), targetCollectionByType);
+			}
+			targetCollectionByTypeMap.get(object.getClass()).add(object);
+		}
+
+		// convert the homogeneous collections to iterators
+		Map<Class<?>, Iterator<Object>> targetIteratorByTypeMap = new HashMap<Class<?>, Iterator<Object>>();
+		for (Entry<Class<?>, Collection<Object>> targetCollectionByTypeEntry : targetCollectionByTypeMap.entrySet()) {
+			Class<?> type = targetCollectionByTypeEntry.getKey();
+			Collection<Object> collection = targetCollectionByTypeEntry.getValue();
+			targetIteratorByTypeMap.put(type, collection.iterator());
+		}
+		return targetIteratorByTypeMap;
 	}
 
 	@SuppressWarnings("unchecked")
