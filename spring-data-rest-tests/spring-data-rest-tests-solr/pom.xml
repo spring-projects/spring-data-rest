@@ -35,9 +35,15 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${jackson}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-core</artifactId>
-			<version>5.5.0</version>
+			<version>6.5.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
