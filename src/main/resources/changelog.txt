@@ -1,6 +1,46 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.0.M2 (2017-04-04)
+----------------------------------------
+* DATAREST-1044 - Update Solr test module after changes in Spring Data Solr.
+* DATAREST-1020 - Obsolete Global CORS configuration example.
+* DATAREST-1018 - Potential NullPointerException in UriToEntityConverter.
+* DATAREST-1008 - Adapt to Java 8 API changes in Spring Data Commons.
+* DATAREST-1003 - Implementation details serialized for requests requesting arbitrary JSON response.
+* DATAREST-994 - RepositoryRestHandlerMapping 2 arg constructor broken.
+* DATAREST-992 - Remove references to single-argument assertion methods of Spring.
+* DATAREST-987 - PUT requests fail for transient properties not backed by a field.
+* DATAREST-986 - DomainObjectReader doesn't read complex Maps properly.
+* DATAREST-983 - Annotated event handlers do not resolve generic parameter types.
+* DATAREST-982 - Fix test case of rendering ISO dates after change in Jackson.
+* DATAREST-979 - Update project documentation with the CLA tool integration.
+* DATAREST-978 - Migrate ticket references in test code to Spring Framework style.
+* DATAREST-977 - Patch fails on collection containing nested enums with class body.
+* DATAREST-976 - Sorting by an embedded property no longer works in Ingalls RC1.
+* DATAREST-970 - Repository event handlers don't respect @Order annotations.
+* DATAREST-965 - PUT does not remove nested properties.
+* DATAREST-964 - Remove deprecations in RepositoryRestMvcConfiguration.
+* DATAREST-962 - Fix imports in Gemfire integration tests after move to Geode.
+* DATAREST-959 - PUT error when merging a previously undefined array.
+* DATAREST-957 - Polish most critical Sonar warnings.
+* DATAREST-956 - PUT does not apply new items in nested collection.
+* DATAREST-954 - Patching on nested @ElementCollection Map<> using application/merge-patch+json throws org.springframework.orm.jpa.JpaSystemException.
+* DATAREST-953 - PUT empties nested collection.
+* DATAREST-951 - Fix example in reference documentation.
+* DATAREST-950 - Fix typos in reference documentation.
+* DATAREST-946 - Release 3.0 M2 (Kay).
+* DATAREST-944 - Unable to add to a nested collection.
+* DATAREST-941 - Upgrade to HAL browser version that supports nested _embedded declarations.
+* DATAREST-938 - Nested entities are replaced with new instances instead of being updated when merging.
+* DATAREST-937 - Transient properties in JSON should be included in merge.
+* DATAREST-925 - ResourceProcessor not used for nested Projection.
+* DATAREST-910 - Support nested Sort properties.
+* DATAREST-899 - User registered Hibernate 5 Jackson module should be preferred over the one registered by default.
+* DATAREST-835 - Add persistent entity headers to single entity searches.
+* DATAREST-793 - Some setter methods in RepositoryRestConfiguration do not return RepositoryRestConfiguration.
+
+
 Changes in version 2.5.8.RELEASE (2017-03-02)
 ---------------------------------------------
 * DATAREST-1003 - Implementation details serialized for requests requesting arbitrary JSON response.
