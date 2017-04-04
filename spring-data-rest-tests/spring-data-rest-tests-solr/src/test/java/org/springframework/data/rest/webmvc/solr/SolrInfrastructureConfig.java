@@ -53,6 +53,7 @@ import org.xml.sax.SAXException;
 public class SolrInfrastructureConfig {
 
 	private static final String CORE_PROPERTIES = "name=collection1";
+	private static final Resource MANAGED_SCHEMA = new ClassPathResource("managed-schema", SolrInfrastructureConfig.class);
 	private static final Resource SOLR_CONFIG = new ClassPathResource("solrconfig.xml", SolrInfrastructureConfig.class);
 	private static final Resource SOLR_SCHEMA = new ClassPathResource("schema.xml", SolrInfrastructureConfig.class);
 	private static final Resource SOLR_XML = new ClassPathResource("solr.xml", SolrInfrastructureConfig.class);
@@ -81,6 +82,7 @@ public class SolrInfrastructureConfig {
 		Resource solrConfig = filterResource(SOLR_CONFIG, configParams);
 		Resource solrSchema = SOLR_SCHEMA;
 		Resource solrXml = SOLR_XML;
+		Resource solrManagedSchema = MANAGED_SCHEMA;
 
 		File solrHomeDir = new File(solrHomePath);
 		File collectionDir = new File(solrHomeDir, "collection1");
@@ -90,6 +92,7 @@ public class SolrInfrastructureConfig {
 		FileCopyUtils.copy(solrXml.getInputStream(), new FileOutputStream(createFile(solrHomeDir, "solr.xml")));
 		FileCopyUtils.copy(CORE_PROPERTIES.getBytes(), new FileOutputStream(createFile(collectionDir, "core.properties")));
 		FileCopyUtils.copy(solrSchema.getInputStream(), new FileOutputStream(createFile(confDir, "schema.xml")));
+		FileCopyUtils.copy(solrManagedSchema.getInputStream(), new FileOutputStream(createFile(confDir, "managed-schema")));
 		FileCopyUtils.copy(solrConfig.getInputStream(), new FileOutputStream(createFile(confDir, "solrconfig.xml")));
 	}
 
