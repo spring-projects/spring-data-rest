@@ -20,7 +20,6 @@ import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 
 /**
@@ -55,7 +54,7 @@ public class MongoDbRepositoryConfig extends AbstractMongoConfiguration {
 	 * @see org.springframework.data.mongodb.config.AbstractMongoConfiguration#mongo()
 	 */
 	@Override
-	public Mongo mongo() throws Exception {
+	public MongoClient mongoClient() {
 		return new MongoClient();
 	}
 }
