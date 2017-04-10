@@ -22,9 +22,11 @@ import static org.mockito.Mockito.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -37,10 +39,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.CreatedDate;
@@ -50,6 +55,7 @@ import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -58,9 +64,14 @@ import org.springframework.data.rest.webmvc.mapping.Associations;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 
@@ -78,6 +89,7 @@ public class DomainObjectReaderUnitTests {
 	@Mock ResourceMappings mappings;
 
 	DomainObjectReader reader;
+	PersistentEntities entities;
 
 	@Before
 	public void setUp() {
@@ -97,10 +109,10 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(TransientReadOnlyProperty.class);
 		mappingContext.getPersistentEntity(CollectionOfEnumWithMethods.class);
 		mappingContext.getPersistentEntity(SampleWithReference.class);
+		mappingContext.getPersistentEntity(Note.class);
 		mappingContext.afterPropertiesSet();
 
-		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
-
+		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
 		this.reader = new DomainObjectReader(entities, new Associations(mappings, mock(RepositoryRestConfiguration.class)));
 	}
 
@@ -496,6 +508,34 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.nested == originalCollection, is(true));
 	}
 
+	@Test // DATAREST-1030
+	public void patchWithReferenceToRelatedEntityIsResolvedCorrectly() throws Exception {
+
+		Associations associations = mock(Associations.class);
+		when(associations.isLinkableAssociation(Matchers.any(PersistentProperty.class))).thenReturn(true);
+
+		DomainObjectReader reader = new DomainObjectReader(entities, associations);
+
+		Tag first = new Tag();
+		Tag second = new Tag();
+
+		Note note = new Note();
+		note.tags.add(first);
+		note.tags.add(second);
+
+		SimpleModule module = new SimpleModule();
+		module.addDeserializer(Tag.class, new SelectValueByIdSerializer<Tag>(Collections.singletonMap(second.id, second)));
+
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(module);
+
+		ObjectNode readTree = (ObjectNode) mapper.readTree(String.format("{ \"tags\" : [ \"%s\"]}", second.id));
+
+		Note result = reader.doMerge(readTree, note, mapper);
+
+		assertThat(result.tags, contains(second));
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -668,5 +708,43 @@ public class DomainObjectReaderUnitTests {
 	@Value
 	static class Nested {
 		int x, y;
+	}
+
+	// DATAREST-1030
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Note {
+		@Id UUID id = UUID.randomUUID();
+		@Reference List<Tag> tags = new ArrayList<Tag>();
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Tag {
+		@Id UUID id = UUID.randomUUID();
+		String name;
+	}
+
+	@RequiredArgsConstructor
+	static class SelectValueByIdSerializer<T> extends JsonDeserializer<T> {
+
+		private final Map<? extends Object, T> values;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
+		 */
+		@Override
+		public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+
+			String text = p.getText();
+
+			for (Entry<? extends Object, T> entry : values.entrySet()) {
+				if (entry.getKey().toString().equals(text)) {
+					return entry.getValue();
+				}
+			}
+
+			return null;
+		}
 	}
 }
