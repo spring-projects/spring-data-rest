@@ -232,7 +232,7 @@ public class DomainObjectReader {
 			PersistentPropertyAccessor accessor = entity.getPropertyAccessor(target);
 			Optional<Object> rawValue = accessor.getProperty(property);
 
-			if (!rawValue.isPresent()) {
+			if (!rawValue.isPresent() || associationLinks.isLinkableAssociation(property)) {
 				continue;
 			}
 
@@ -248,10 +248,6 @@ public class DomainObjectReader {
 				}
 
 				if (child.isObject()) {
-
-					if (associationLinks.isLinkableAssociation(property)) {
-						return;
-					}
 
 					ObjectNode objectNode = (ObjectNode) child;
 
