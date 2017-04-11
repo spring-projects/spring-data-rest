@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,10 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.webmvc.IncomingRequest;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
@@ -59,10 +62,10 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	private static final String NO_CONVERTER_FOUND = "No suitable HttpMessageConverter found to read request body into object of type %s from request with content type of %s!";
 
 	private final RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver;
-
 	private final BackendIdHandlerMethodArgumentResolver idResolver;
 	private final DomainObjectReader reader;
 	private final List<HttpMessageConverter<?>> messageConverters;
+	private final ConversionService conversionService = new DefaultConversionService();
 
 	/**
 	 * Creates a new {@link PersistentEntityResourceHandlerMethodArgumentResolver} for the given
@@ -143,6 +146,11 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 			if (entityIdentifier != null) {
 				entity.getPropertyAccessor(obj).setProperty(entity.getIdProperty(), entityIdentifier);
+			} else if (id != null) {
+
+				ConvertingPropertyAccessor accessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(obj),
+						conversionService);
+				accessor.setProperty(entity.getIdProperty(), id);
 			}
 
 			Builder build = PersistentEntityResource.build(obj, entity);
