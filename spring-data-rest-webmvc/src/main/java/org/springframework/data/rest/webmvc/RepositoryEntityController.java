@@ -203,8 +203,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 				: invoker.invokeFindAll(sort);
 
 		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
-		Link baseLink = entityLinks.linkToPagedResource(resourceInformation.getDomainType(),
-				pageable.isDefault() ? null : pageable.getPageable());
+		Optional<Link> baseLink = Optional.of(entityLinks.linkToPagedResource(resourceInformation.getDomainType(),
+				pageable.isDefault() ? null : pageable.getPageable()));
 
 		Resources<?> result = toResources(results, assembler, metadata.getDomainType(), baseLink);
 		result.add(getCollectionResourceLinks(resourceInformation, pageable));

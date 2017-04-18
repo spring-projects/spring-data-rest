@@ -187,7 +187,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		MethodResourceMapping methodMapping = searchMappings.getExportedMethodMappingForPath(search);
 		Class<?> domainType = methodMapping.getReturnedDomainType();
 
-		return toResource(result, assembler, domainType, null, headers, resourceInformation);
+		return toResource(result, assembler, domainType, Optional.empty(), headers, resourceInformation);
 	}
 
 	/**
@@ -201,7 +201,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @return
 	 */
 	protected ResponseEntity<?> toResource(Optional<Object> source, final PersistentEntityResourceAssembler assembler,
-			Class<?> domainType, Link baseLink, HttpHeaders headers, RootResourceInformation information) {
+			Class<?> domainType, Optional<Link> baseLink, HttpHeaders headers, RootResourceInformation information) {
 
 		return source.map(it -> {
 
@@ -243,7 +243,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		Optional<Object> result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort,
 				assembler);
 		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
-		ResponseEntity<?> entity = toResource(result, assembler, metadata.getDomainType(), null, headers,
+		ResponseEntity<?> entity = toResource(result, assembler, metadata.getDomainType(), Optional.empty(), headers,
 				resourceInformation);
 		Object resource = entity.getBody();
 

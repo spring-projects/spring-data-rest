@@ -119,7 +119,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 			if (prop.property.isCollectionLike()) {
 
-				return toResources((Iterable<?>) it, assembler, prop.propertyType, null);
+				return toResources((Iterable<?>) it, assembler, prop.propertyType, Optional.empty());
 
 			} else if (prop.property.isMap()) {
 

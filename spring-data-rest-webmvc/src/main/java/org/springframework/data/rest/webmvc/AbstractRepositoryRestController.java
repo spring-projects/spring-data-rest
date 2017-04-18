@@ -20,12 +20,14 @@ import static org.springframework.data.rest.webmvc.ControllerUtils.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.core.EmbeddedWrappers;
@@ -69,7 +71,7 @@ class AbstractRepositoryRestController {
 
 	@SuppressWarnings({ "unchecked" })
 	protected Resources<?> toResources(Iterable<?> source, PersistentEntityResourceAssembler assembler,
-			Class<?> domainType, Link baseLink) {
+			Class<?> domainType, Optional<Link> baseLink) {
 
 		if (source instanceof Page) {
 			Page<Object> page = (Page<Object>) source;
@@ -82,14 +84,15 @@ class AbstractRepositoryRestController {
 	}
 
 	protected Resources<?> entitiesToResources(Page<Object> page, PersistentEntityResourceAssembler assembler,
-			Class<?> domainType, Link baseLink) {
+			Class<?> domainType, Optional<Link> baseLink) {
 
 		if (page.getContent().isEmpty()) {
-			return pagedResourcesAssembler.toEmptyResource(page, domainType, baseLink);
+			return baseLink.<PagedResources<?>> map(it -> pagedResourcesAssembler.toEmptyResource(page, domainType, it))//
+					.orElseGet(() -> pagedResourcesAssembler.toEmptyResource(page, domainType));
 		}
 
-		return baseLink == null ? pagedResourcesAssembler.toResource(page, assembler)
-				: pagedResourcesAssembler.toResource(page, assembler, baseLink);
+		return baseLink.map(it -> pagedResourcesAssembler.toResource(page, assembler, it))//
+				.orElseGet(() -> pagedResourcesAssembler.toResource(page, assembler));
 	}
 
 	protected Resources<?> entitiesToResources(Iterable<Object> entities, PersistentEntityResourceAssembler assembler,
