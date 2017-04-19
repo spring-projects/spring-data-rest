@@ -1,6 +1,18 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.2.RELEASE (2017-04-19)
+---------------------------------------------
+* DATAREST-1050 - Deserialization of request body for creating PUT requests has to consider identifier derived from the URI.
+* DATAREST-1046 - Instructions in "Assigning Validators manually" are not correct in reference documentation.
+* DATAREST-1030 - PATCH requests do not handle links to associations properly.
+* DATAREST-1020 - Obsolete Global CORS configuration example.
+* DATAREST-1019 - @CrossOrigin on rest repositories does not work with configured base path.
+* DATAREST-1018 - Potential NullPointerException in UriToEntityConverter.
+* DATAREST-1016 - Release 2.6.2 (Ingalls SR2).
+* DATAREST-1014 - Java 7 compatibility broken due to usage of Java 8 API in AnnotatedEventHandlerInvoker.
+
+
 Changes in version 3.0.0.M2 (2017-04-04)
 ----------------------------------------
 * DATAREST-1044 - Update Solr test module after changes in Spring Data Solr.
