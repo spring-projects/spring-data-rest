@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.config;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
@@ -35,6 +36,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
+import com.mysema.commons.lang.Pair;
 import com.querydsl.core.types.Predicate;
 
 /**
@@ -75,7 +77,6 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 	 * @see org.springframework.data.rest.webmvc.config.RootResourceInformationHandlerMethodArgumentResolver#postProcess(org.springframework.data.repository.support.RepositoryInvoker, java.lang.Class, java.util.Map)
 	 */
 	@Override
-	@SuppressWarnings({ "unchecked" })
 	protected RepositoryInvoker postProcess(MethodParameter parameter, RepositoryInvoker invoker, Class<?> domainType,
 			Map<String, String[]> parameters) {
 
@@ -85,17 +86,27 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 
 		return repositories.getRepositoryFor(domainType)//
 				.filter(it -> QuerydslPredicateExecutor.class.isInstance(it))//
-				.map(it -> {
+				.map(it -> QuerydslPredicateExecutor.class.cast(it))//
+				.flatMap(it -> getRepositoryAndPredicate(it, domainType, parameters))//
+				.map(it -> getQuerydslAdapter(invoker, it.getFirst(), it.getSecond()))//
+				.orElse(invoker);
+	}
 
-					ClassTypeInformation<?> type = ClassTypeInformation.from(domainType);
+	private Optional<Pair<QuerydslPredicateExecutor<?>, Predicate>> getRepositoryAndPredicate(
+			QuerydslPredicateExecutor<?> repository, Class<?> domainType, Map<String, String[]> parameters) {
 
-					QuerydslBindings bindings = factory.createBindingsFor(type);
-					Predicate predicate = predicateBuilder.getPredicate(type, toMultiValueMap(parameters), bindings);
+		ClassTypeInformation<?> type = ClassTypeInformation.from(domainType);
 
-					return (RepositoryInvoker) new QuerydslRepositoryInvokerAdapter(invoker,
-							(QuerydslPredicateExecutor<Object>) it, predicate);
+		QuerydslBindings bindings = factory.createBindingsFor(type);
+		Predicate predicate = predicateBuilder.getPredicate(type, toMultiValueMap(parameters), bindings);
 
-				}).orElse(invoker);
+		return Optional.ofNullable(predicate).map(it -> Pair.of(repository, it));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static RepositoryInvoker getQuerydslAdapter(RepositoryInvoker invoker,
+			QuerydslPredicateExecutor<?> repository, Predicate predicate) {
+		return new QuerydslRepositoryInvokerAdapter(invoker, (QuerydslPredicateExecutor<Object>) repository, predicate);
 	}
 
 	/**

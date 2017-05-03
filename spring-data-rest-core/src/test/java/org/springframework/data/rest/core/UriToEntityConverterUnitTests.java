@@ -105,7 +105,7 @@ public class UriToEntityConverterUnitTests {
 		Entity reference = new Entity();
 
 		RepositoryInvoker invoker = mock(RepositoryInvoker.class);
-		doReturn(Optional.of(reference)).when(invoker).invokeFindOne("1");
+		doReturn(Optional.of(reference)).when(invoker).invokeFindById("1");
 		doReturn(invoker).when(invokerFactory).getInvokerFor(ENTITY_TYPE.getType());
 
 		assertThat(converter.convert(URI.create("/foo/bar/1"), URI_TYPE, ENTITY_TYPE)).isEqualTo((Object) reference);

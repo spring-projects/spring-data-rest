@@ -85,12 +85,13 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 		 * (non-Javadoc)
 		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindOne(java.io.Serializable)
 		 */
+		@Override
 		@SuppressWarnings("unchecked")
-		public <T> Optional<T> invokeFindOne(Serializable id) {
+		public <T> Optional<T> invokeFindById(Object id) {
 
 			return (Optional<T>) lookup//
 					.map(it -> it.lookupEntity(id).orElse(Optional.empty()))//
-					.orElseGet(() -> delegate.invokeFindOne(id));
+					.orElseGet(() -> delegate.invokeFindById(id));
 		}
 
 		/* 
@@ -139,13 +140,13 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 			return delegate.hasSaveMethod();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeDelete(java.io.Serializable)
+		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeDeleteById(java.lang.Object)
 		 */
 		@Override
-		public void invokeDelete(Serializable id) {
-			delegate.invokeDelete(id);
+		public void invokeDeleteById(Object id) {
+			delegate.invokeDeleteById(id);
 		}
 
 		/* 

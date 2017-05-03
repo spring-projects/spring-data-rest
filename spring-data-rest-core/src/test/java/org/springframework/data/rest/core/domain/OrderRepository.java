@@ -32,10 +32,10 @@ public interface OrderRepository extends CrudRepository<Order, UUID> {
 	@Override
 	<S extends Order> S save(S entity);
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
+	 * @see org.springframework.data.repository.CrudRepository#findById(java.lang.Object)
 	 */
 	@Override
-	Optional<Order> findOne(UUID id);
+	Optional<Order> findById(UUID id);
 }

@@ -69,7 +69,7 @@ public class SolrWebTests extends CommonWebTests {
 	public void setUp() {
 
 		super.setUp();
-		repo.save(Arrays.asList(PLAYSTATION, GAMEBOY, AMIGA500));
+		repo.saveAll(Arrays.asList(PLAYSTATION, GAMEBOY, AMIGA500));
 	}
 
 	@After

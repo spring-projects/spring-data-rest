@@ -80,8 +80,8 @@ public class RepositoryPropertyReferenceControllerUnitTests {
 		controller.setApplicationEventPublisher(publisher);
 
 		doReturn(invoker).when(invokerFactory).getInvokerFor(Reference.class);
-		doReturn(Optional.of(new Sample())).when(invoker).invokeFindOne(4711);
-		doReturn(Optional.of(new Reference())).when(invoker).invokeFindOne("some-id");
+		doReturn(Optional.of(new Sample())).when(invoker).invokeFindById(4711);
+		doReturn(Optional.of(new Reference())).when(invoker).invokeFindById("some-id");
 		doReturn(new Sample()).when(invoker).invokeSave(any(Object.class));
 
 		RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
@@ -90,7 +90,7 @@ public class RepositoryPropertyReferenceControllerUnitTests {
 		controller.createPropertyReference(information, HttpMethod.POST, request, 4711, "references");
 
 		verify(invokerFactory).getInvokerFor(Reference.class);
-		verify(invoker).invokeFindOne("some-id");
+		verify(invoker).invokeFindById("some-id");
 	}
 
 	@RestResource

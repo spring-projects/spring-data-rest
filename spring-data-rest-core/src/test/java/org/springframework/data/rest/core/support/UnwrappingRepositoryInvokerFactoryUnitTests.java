@@ -86,7 +86,7 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 		when(delegate.getInvokerFor(Profile.class)).thenReturn(invoker);
 
 		factory = new UnwrappingRepositoryInvokerFactory(delegate, Arrays.asList(lookup));
-		factory.getInvokerFor(Profile.class).invokeFindOne(1L);
+		factory.getInvokerFor(Profile.class).invokeFindById(1L);
 
 		verify(lookup, times(1)).lookupEntity(eq(1L));
 	}

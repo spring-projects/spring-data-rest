@@ -237,18 +237,18 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	public void deletesEntityWithCustomLookupCorrectly() throws Exception {
 
 		Address address = repository.save(new Address());
-		assertThat(repository.findOne(address.id)).isNotNull();
+		assertThat(repository.findById(address.id)).isNotNull();
 
 		RootResourceInformation resourceInformation = getResourceInformation(Address.class);
 		RepositoryInvoker invoker = spy(resourceInformation.getInvoker());
-		doReturn(Optional.of(address)).when(invoker).invokeFindOne("foo");
+		doReturn(Optional.of(address)).when(invoker).invokeFindById("foo");
 
 		RootResourceInformation informationSpy = Mockito.spy(resourceInformation);
 		doReturn(invoker).when(informationSpy).getInvoker();
 
 		controller.deleteItemResource(informationSpy, "foo", ETag.from("0"));
 
-		assertThat(repository.findOne(address.id)).isEmpty();
+		assertThat(repository.findById(address.id)).isEmpty();
 	}
 
 	interface AddressProjection {}

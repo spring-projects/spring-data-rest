@@ -397,7 +397,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 		RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(type);
 
-		return invoker.invokeFindOne(id);
+		return invoker.invokeFindById(id);
 	}
 
 	private Optional<ResourceSupport> doWithReferencedProperty(RootResourceInformation resourceInformation,
@@ -415,7 +415,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		resourceInformation.verifySupportedMethod(method, property);
 
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
-		Optional<Object> domainObj = invoker.invokeFindOne(id);
+		Optional<Object> domainObj = invoker.invokeFindById(id);
 
 		domainObj.orElseThrow(() -> new ResourceNotFoundException());
 

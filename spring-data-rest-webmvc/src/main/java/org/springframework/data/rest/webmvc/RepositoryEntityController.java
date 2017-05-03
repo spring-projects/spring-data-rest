@@ -416,7 +416,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		resourceInformation.verifySupportedMethod(HttpMethod.DELETE, ResourceType.ITEM);
 
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
-		Optional<Object> domainObj = invoker.invokeFindOne(id);
+		Optional<Object> domainObj = invoker.invokeFindById(id);
 
 		return domainObj.map(it -> {
 
@@ -425,7 +425,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			eTag.verify(entity, it);
 
 			publisher.publishEvent(new BeforeDeleteEvent(it));
-			invoker.invokeDelete((Serializable) entity.getIdentifierAccessor(it).getIdentifier().orElse(null));
+			invoker.invokeDeleteById((Serializable) entity.getIdentifierAccessor(it).getIdentifier().orElse(null));
 			publisher.publishEvent(new AfterDeleteEvent(it));
 
 			return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
@@ -513,6 +513,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.ITEM);
 
-		return resourceInformation.getInvoker().invokeFindOne(id);
+		return resourceInformation.getInvoker().invokeFindById(id);
 	}
 }

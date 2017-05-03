@@ -53,7 +53,7 @@ public class TestDataPopulator {
 		Author john = new Author("John");
 		Author thomas = new Author("Thomas");
 
-		Iterable<Author> authors = this.authors.save(Arrays.asList(ollie, mark, michael, david, john, thomas));
+		Iterable<Author> authors = this.authors.saveAll(Arrays.asList(ollie, mark, michael, david, john, thomas));
 
 		books.save(new Book("1449323952", "Spring Data", 1000, authors, new Offer(21.21, "EUR")));
 		books.save(new Book("1449323953", "Spring Data (Second Edition)", 2000, authors, new Offer(30.99, "EUR")));
@@ -79,6 +79,6 @@ public class TestDataPopulator {
 		jane.addSibling(john);
 		jane.setFather(billyBob);
 
-		people.save(Arrays.asList(john, jane));
+		people.saveAll(Arrays.asList(john, jane));
 	}
 }

@@ -128,7 +128,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 			Optional<Serializable> id = Optional
 					.ofNullable(idResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory));
-			Optional<Object> objectToUpdate = id.flatMap(it -> resourceInformation.getInvoker().invokeFindOne(it));
+			Optional<Object> objectToUpdate = id.flatMap(it -> resourceInformation.getInvoker().invokeFindById(it));
 
 			Object obj = read(resourceInformation, incoming, converter, objectToUpdate);
 

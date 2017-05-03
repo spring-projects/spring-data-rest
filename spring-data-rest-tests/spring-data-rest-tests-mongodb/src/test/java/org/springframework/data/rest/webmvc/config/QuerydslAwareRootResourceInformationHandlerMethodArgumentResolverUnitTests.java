@@ -16,6 +16,7 @@
 package org.springframework.data.rest.webmvc.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
@@ -29,7 +30,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.MethodParameter;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
@@ -47,6 +47,8 @@ import org.springframework.data.rest.tests.mongodb.ReceiptRepository;
 import org.springframework.data.rest.tests.mongodb.User;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.querydsl.core.types.Predicate;
+
 /**
  * Unit tests for {@link QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver}.
  * 
@@ -60,6 +62,7 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 	@Mock Repositories repositories;
 	@Mock RepositoryInvokerFactory invokerFactory;
 	@Mock ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver;
+	@Mock QuerydslPredicateBuilder builder;
 
 	@Mock RepositoryInvoker invoker;
 	@Mock MethodParameter parameter;
@@ -71,12 +74,11 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 
 		QuerydslBindingsFactory factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
 		ReflectionTestUtils.setField(factory, "repositories", Optional.of(repositories));
-		QuerydslPredicateBuilder builder = new QuerydslPredicateBuilder(new DefaultConversionService(),
-				factory.getEntityPathResolver());
 
 		this.resolver = new QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver(repositories, invokerFactory,
 				resourceMetadataResolver, builder, factory);
 
+		when(builder.getPredicate(any(), any(), any())).thenReturn(mock(Predicate.class));
 		when(parameter.hasParameterAnnotation(QuerydslPredicate.class)).thenReturn(true);
 	}
 

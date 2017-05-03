@@ -123,6 +123,6 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 					"Cannot resolve URI " + uri + ". Is it local or remote? Only local URIs are resolvable."));
 		}
 
-		return invokerFactory.getInvokerFor(targetType.getType()).invokeFindOne(parts[parts.length - 1]).orElse(null);
+		return invokerFactory.getInvokerFor(targetType.getType()).invokeFindById(parts[parts.length - 1]).orElse(null);
 	}
 }

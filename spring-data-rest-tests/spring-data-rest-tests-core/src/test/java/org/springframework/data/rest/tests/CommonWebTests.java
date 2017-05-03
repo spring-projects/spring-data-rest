@@ -37,6 +37,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -62,7 +63,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 		ResultActions actions = mvc.perform(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)).andExpect(status().isOk());
 
 		for (String rel : expectedRootLinkRels()) {
-			actions.andExpect(client.hasLinkWithRel(rel));
+			actions.andDo(MockMvcResultHandlers.print()).andExpect(client.hasLinkWithRel(rel));
 		}
 	}
 

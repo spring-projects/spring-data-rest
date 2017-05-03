@@ -71,7 +71,7 @@ public class MongoWebTests extends CommonWebTests {
 		linkedIn.setPerson(1L);
 		linkedIn.setType("LinkedIn");
 
-		repository.save(Arrays.asList(twitter, linkedIn));
+		repository.saveAll(Arrays.asList(twitter, linkedIn));
 
 		Address address = new Address();
 		address.street = "ETagDoesntMatchExceptionUnitTests";
@@ -288,7 +288,7 @@ public class MongoWebTests extends CommonWebTests {
 
 		Profile profile = repository.findAll().iterator().next();
 
-		Link link = client.discoverUnique("profiles", "search", "findById");
+		Link link = client.discoverUnique("profiles", "search", "findProfileById");
 
 		mvc.perform(get(link.expand(profile.getId()).getHref())).//
 				andExpect(status().isOk());
@@ -297,7 +297,7 @@ public class MongoWebTests extends CommonWebTests {
 	@Test // DATAREST-517
 	public void returnsNotFoundIfQueryExecutionDoesNotReturnResult() throws Exception {
 
-		Link link = client.discoverUnique("profiles", "search", "findById");
+		Link link = client.discoverUnique("profiles", "search", "findProfileById");
 
 		mvc.perform(get(link.expand("").getHref())).//
 				andExpect(status().isNotFound());
@@ -319,7 +319,7 @@ public class MongoWebTests extends CommonWebTests {
 	@Test // DATAREST-835
 	public void exposesETagHeaderForSearchResourceYieldingItemResource() throws Exception {
 
-		Link link = client.discoverUnique("profiles", "search", "findById");
+		Link link = client.discoverUnique("profiles", "search", "findProfileById");
 
 		Profile profile = repository.findAll().iterator().next();
 

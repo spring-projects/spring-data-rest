@@ -33,5 +33,5 @@ public interface ProfileRepository extends PagingAndSortingRepository<Profile, S
 	long countByType(@Param("type") String type);
 
 	// DATAREST-511
-	Optional<Profile> findById(@Param("id") String id);
+	Optional<Profile> findProfileById(@Param("id") String id);
 }

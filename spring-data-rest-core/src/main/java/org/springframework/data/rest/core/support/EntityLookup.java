@@ -15,7 +15,6 @@
  */
 package org.springframework.data.rest.core.support;
 
-import java.io.Serializable;
 import java.util.Optional;
 
 import org.springframework.plugin.core.Plugin;
@@ -42,7 +41,7 @@ public interface EntityLookup<T> extends Plugin<Class<?>> {
 	 * @param entity will never be {@literal null}.
 	 * @return must not be {@literal null}.
 	 */
-	Serializable getResourceIdentifier(T entity);
+	Object getResourceIdentifier(T entity);
 
 	/**
 	 * Returns the entity instance to be used if an entity with the given identifier value is requested. Implementations
@@ -55,5 +54,5 @@ public interface EntityLookup<T> extends Plugin<Class<?>> {
 	 * @param id will never be {@literal null}.
 	 * @return can be {@literal null}.
 	 */
-	Optional<Object> lookupEntity(Serializable id);
+	Optional<Object> lookupEntity(Object id);
 }

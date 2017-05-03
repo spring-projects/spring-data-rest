@@ -762,7 +762,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 */
 		@Override
 		public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-			return invoker.invokeFindOne(p.getValueAsString());
+			return invoker.invokeFindById(p.getValueAsString());
 		}
 	}
 

@@ -152,7 +152,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 
 		@Override
 		@RestResource(exported = false)
-		Optional<Object> findOne(Long id);
+		Optional<Object> findById(Long id);
 	}
 
 	interface NoFindOne extends Repository<Object, Long> {
