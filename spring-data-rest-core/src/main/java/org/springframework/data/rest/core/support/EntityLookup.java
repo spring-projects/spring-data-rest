@@ -54,5 +54,5 @@ public interface EntityLookup<T> extends Plugin<Class<?>> {
 	 * @param id will never be {@literal null}.
 	 * @return can be {@literal null}.
 	 */
-	Optional<Object> lookupEntity(Object id);
+	Optional<T> lookupEntity(Object id);
 }

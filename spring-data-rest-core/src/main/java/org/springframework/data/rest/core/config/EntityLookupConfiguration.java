@@ -208,8 +208,12 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		 * @see org.springframework.data.rest.core.support.EntityLookup#lookupEntity(java.io.Serializable)
 		 */
 		@Override
-		public Optional<Object> lookupEntity(Object id) {
-			return Optional.ofNullable(lookupInfo.getLookup().lookup(repository, id));
+		@SuppressWarnings("unchecked")
+		public Optional<T> lookupEntity(Object id) {
+
+			Object result = lookupInfo.getLookup().lookup(repository, id);
+
+			return Optional.class.isInstance(result) ? (Optional<T>) result : Optional.ofNullable((T) result);
 		}
 
 		/* 
