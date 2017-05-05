@@ -26,16 +26,20 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Central abstraction obtain {@link ResourceMetadata} and {@link ResourceMapping} instances for domain types and
  * repositories.
  * 
  * @author Oliver Gierke
+ * @author Diego Baldani
  */
 public class RepositoryResourceMappings extends PersistentEntitiesResourceMappings {
 
@@ -123,6 +127,18 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 					mappings.add(methodMapping);
 				}
 			}
+			
+         for (Method queryMethod : repositoryInformation.getRepositoryInterface().getMethods()) {
+            queryMethod = ClassUtils.getMostSpecificMethod(queryMethod, repositoryInformation.getRepositoryInterface());
+            if (!repositoryInformation.isQueryMethod(queryMethod) && queryMethod.isAnnotationPresent(RestResource.class)) {
+               RepositoryMethodResourceMapping methodMapping = new RepositoryMethodResourceMapping(queryMethod,
+                     resourceMapping, repositoryInformation);
+               if (methodMapping.isExported()) {
+                  ReflectionUtils.makeAccessible(queryMethod);
+                  mappings.add(methodMapping);
+               }
+            }
+         } 			
 		}
 
 		SearchResourceMappings searchResourceMappings = new SearchResourceMappings(mappings);
