@@ -59,6 +59,7 @@ import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -194,6 +195,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			Resource<Object> resourceToRender = new Resource<Object>(resource.getContent(), links) {
 
+				@JsonProperty
 				@JsonUnwrapped
 				public Iterable<?> getEmbedded() {
 					return resource.getEmbeddeds();
