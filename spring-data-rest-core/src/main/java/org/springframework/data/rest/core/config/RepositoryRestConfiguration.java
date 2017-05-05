@@ -92,7 +92,9 @@ public class RepositoryRestConfiguration {
 	 * The base URI against which the exporter should calculate its links.
 	 * 
 	 * @return The base URI.
+	 * @deprecated use {@link #getBasePath()} instead.
 	 */
+	@Deprecated
 	public URI getBaseUri() {
 		return basePath != NO_URI ? basePath : baseUri;
 	}
