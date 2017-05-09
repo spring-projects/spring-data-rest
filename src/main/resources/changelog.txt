@@ -1,6 +1,18 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.0.M3 (2017-05-09)
+----------------------------------------
+* DATAREST-1067 - Improve generics on EntityLookup.lookupEntity(...).
+* DATAREST-1064 - Adapt to API changes in repository interfaces.
+* DATAREST-1055 - Java8ify interaction with PagedResourcesAssembler.
+* DATAREST-1052 - Release 3.0 M3 (Kay).
+* DATAREST-1050 - Deserialization of request body for creating PUT requests has to consider identifier derived from the URI.
+* DATAREST-1046 - Instructions in "Assigning Validators manually" are not correct in reference documentation.
+* DATAREST-1030 - PATCH requests do not handle links to associations properly.
+* DATAREST-1019 - @CrossOrigin on rest repositories does not work with configured base path.
+
+
 Changes in version 2.5.10.RELEASE (2017-04-19)
 ----------------------------------------------
 * DATAREST-1057 - Release 2.5.10 (Hopper SR10).
