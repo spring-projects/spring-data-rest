@@ -79,7 +79,12 @@ public class PathToSpEL {
 			}
 
 			if (APPEND_CHARACTERS.contains(pathNode)) {
-				spelBuilder.append("[size() - 1]");
+
+				if (spelBuilder.length() > 0) {
+					spelBuilder.append(".");
+				}
+
+				spelBuilder.append("$[true]");
 				continue;
 			}
 
