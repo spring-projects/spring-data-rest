@@ -17,8 +17,11 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.springframework.data.rest.webmvc.json.patch.PathToSpEL.*;
 
+import java.util.Collection;
 import java.util.List;
 
+import org.springframework.core.CollectionFactory;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionException;
 
@@ -129,7 +132,21 @@ public abstract class PatchOperation {
 		Integer listIndex = targetListIndex(path);
 
 		if (parent == null || !(parent instanceof List) || listIndex == null) {
-			spelExpression.setValue(target, value);
+
+			TypeDescriptor descriptor = parentExpression.getValueTypeDescriptor(target);
+
+			// Set as new collection if necessary
+			if (descriptor.isCollection() && !Collection.class.isInstance(value)) {
+
+				Collection<Object> collection = CollectionFactory.createCollection(descriptor.getType(), 1);
+				collection.add(value);
+
+				parentExpression.setValue(target, collection);
+
+			} else {
+				spelExpression.setValue(target, value);
+			}
+
 		} else {
 
 			List<Object> list = (List<Object>) parentExpression.getValue(target);
