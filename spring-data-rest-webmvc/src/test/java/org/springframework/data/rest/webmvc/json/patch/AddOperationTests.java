@@ -23,6 +23,9 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class AddOperationTests {
 
 	@Test
@@ -83,5 +86,30 @@ public class AddOperationTests {
 		new AddOperation("/items/-", "Some text.").perform(todo, Todo.class);
 
 		assertThat(todo.getItems().get(0), is("Some text."));
+	}
+
+	@Test // DATAREST-1039
+	public void addsLazilyEvaluatedObjectToList() throws Exception {
+
+		Todo todo = new Todo(1L, "description", false);
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = mapper.readTree("\"Some text.\"");
+		JsonLateObjectEvaluator evaluator = new JsonLateObjectEvaluator(mapper, node);
+
+		new AddOperation("/items/-", evaluator).perform(todo, Todo.class);
+
+		assertThat(todo.getItems().get(0), is("Some text."));
+	}
+
+	@Test // DATAREST-1039
+	public void initializesNullCollectionsOnAppend() {
+
+		Todo todo = new Todo(1L, "description", false);
+
+		new AddOperation("/uninitialized/-", "Text").perform(todo, Todo.class);
+
+		assertThat(todo.getUninitialized(), is(notNullValue()));
+		assertThat(todo.getUninitialized(), hasItem("Text"));
 	}
 }

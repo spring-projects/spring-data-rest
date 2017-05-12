@@ -15,6 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.data.mapping.PropertyPath;
+import org.springframework.util.StringUtils;
+
 /**
  * Operation to add a new value to the given "path". Will throw a {@link PatchException} if the path is invalid or if
  * the given value is not assignable to the given path.
@@ -41,5 +47,30 @@ class AddOperation extends PatchOperation {
 	@Override
 	<T> void perform(Object targetObject, Class<T> type) {
 		addValue(targetObject, evaluateValueFromTarget(targetObject, type));
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#evaluateValueFromTarget(java.lang.Object, java.lang.Class)
+	 */
+	@Override
+	protected <T> Object evaluateValueFromTarget(Object targetObject, Class<T> entityType) {
+
+		if (!path.endsWith("-")) {
+			return super.evaluateValueFromTarget(targetObject, entityType);
+		}
+
+		List<String> segments = new ArrayList<String>();
+
+		for (String segment : path.split("/")) {
+			if (!(segment.matches("\\d+") || segment.equals("-") || segment.isEmpty())) {
+				segments.add(segment);
+			}
+		}
+
+		PropertyPath propertyPath = PropertyPath.from(StringUtils.collectionToDelimitedString(segments, "."), entityType);
+
+		return value instanceof LateObjectEvaluator ? ((LateObjectEvaluator) value).evaluate(propertyPath.getType())
+				: value;
 	}
 }
