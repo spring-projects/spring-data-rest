@@ -5,7 +5,7 @@
  * NOTE: Because JSON Schema lists all properties, including those that are links, they have to be filtered out.
  * Links have to be set via a PUT operation with the proper media type.
  *
- * @author Greg Turnquist
+ * @author Greg Turnquist, Gregory Frank
  * @since 2.4
  * @see DATAREST-627
  */
@@ -39,7 +39,7 @@ var CustomPostForm = Backbone.View.extend({
 
 		var opts = {
 			url: this.$('.url').val(),
-			headers: {'Content-Type': 'application/json'},
+			headers: _.defaults({'Content-Type': 'application/json'}, HAL.client.getHeaders()),
 			method: this.$('.method').val(),
 			data: this.getNewResourceData()
 		};
@@ -69,6 +69,7 @@ var CustomPostForm = Backbone.View.extend({
 		try {
 			HAL.client.request({
 				method: 'HEAD',
+				headers: HAL.client.getHeaders(),
 				url: this.href
 			}).done(function (message, text, jqXHR) {
 				self.$el.html(self.template({href: self.href}));
@@ -79,7 +80,7 @@ var CustomPostForm = Backbone.View.extend({
 					HAL.client.request({
 						method: 'GET',
 						url: hal._links.profile.href,
-						headers: {'Accept': 'application/schema+json'}
+						headers: _.defaults({'Accept': 'application/schema+json'}, HAL.client.getHeaders())
 					}).done(function (schema) {
 						self.loadJsonEditor(schema);
 					});
