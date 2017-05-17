@@ -63,7 +63,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 
 		Repositories repositories = new Repositories(factory);
 		this.mappings = new RepositoryResourceMappings(repositories, new PersistentEntities(Arrays.asList(mappingContext)),
-				new EvoInflectorRelProvider(), RepositoryDetectionStrategies.DEFAULT);
+				RepositoryDetectionStrategies.DEFAULT, new EvoInflectorRelProvider());
 	}
 
 	@Test
