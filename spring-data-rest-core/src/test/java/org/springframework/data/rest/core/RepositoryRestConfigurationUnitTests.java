@@ -131,4 +131,9 @@ public class RepositoryRestConfigurationUnitTests {
 		CorsConfiguration corsConfiguration = corsConfigurations.get("/hello");
 		assertThat(corsConfiguration.getMaxAge()).isEqualTo(1234L);
 	}
+
+	@Test // DATAREST-1076
+	public void rejectsNullRelProvider() {
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> configuration.setRelProvider(null));
+	}
 }

@@ -52,7 +52,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 	 */
 	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities,
 			RepositoryDetectionStrategy strategy) {
-		this(repositories, entities, new EvoInflectorRelProvider(), strategy);
+		this(repositories, entities, strategy, new EvoInflectorRelProvider());
 	}
 
 	/**
@@ -61,11 +61,11 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 	 * 
 	 * @param repositories must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
-	 * @param relProvider must not be {@literal null}.
 	 * @param strategy must not be {@literal null}.
+	 * @param relProvider must not be {@literal null}.
 	 */
-	RepositoryResourceMappings(Repositories repositories, PersistentEntities entities, RelProvider relProvider,
-			RepositoryDetectionStrategy strategy) {
+	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities, RepositoryDetectionStrategy strategy,
+			RelProvider relProvider) {
 
 		super(entities);
 
@@ -85,8 +85,8 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
 			PersistentEntity<?, ?> entity = repositories.getPersistentEntity(type);
 
-			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInformation, provider,
-					strategy);
+			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInformation, strategy,
+					provider);
 			RepositoryAwareResourceMetadata information = new RepositoryAwareResourceMetadata(entity, mapping, this,
 					repositoryInformation);
 
