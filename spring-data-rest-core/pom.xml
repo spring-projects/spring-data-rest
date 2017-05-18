@@ -17,7 +17,7 @@
 
 	<properties>
 		<springplugin>1.2.0.RELEASE</springplugin>
-		<evoinflector>1.2.1</evoinflector>
+		<evoinflector>1.2.2</evoinflector>
 	</properties>
 
 	<dependencies>
