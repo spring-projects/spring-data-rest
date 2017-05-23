@@ -18,13 +18,6 @@ package org.springframework.data.rest.core.event;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -50,6 +43,12 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Component to discover annotated repository event handlers and trigger them on {@link ApplicationEvent}s.
@@ -158,7 +157,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 	 * @param eventType must not be {@literal null}.
 	 */
 	private <T extends Annotation> void inspect(Object handler, Method method, Class<T> annotationType,
-			Class<? extends RepositoryEvent> eventType) {
+												Class<? extends RepositoryEvent> eventType) {
 
 		T annotation = AnnotationUtils.findAnnotation(method, annotationType);
 
@@ -189,8 +188,28 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		}
 
 		events.add(handlerMethod);
+
+		filterOverriddenMethods(events);
+
 		Collections.sort(events);
 		handlerMethods.put(eventType, events);
+	}
+
+	private void filterOverriddenMethods(List<EventHandlerMethod> events) {
+		List<EventHandlerMethod> overriddenHandlerMethods = new ArrayList<>();
+		for (EventHandlerMethod currentHandler : events) {
+			for (EventHandlerMethod comparedHandler : events) {
+				if (!currentHandler.equals(comparedHandler)) {
+					if (currentHandler.method.getName().equals(comparedHandler.method.getName())
+							&& currentHandler.targetType.equals(comparedHandler.targetType)
+							&& ClassUtils.isAssignable(currentHandler.method.getDeclaringClass(), comparedHandler.method.getDeclaringClass())) {
+						overriddenHandlerMethods.add(currentHandler); //currentHandler method is overridden by comparedHandler.method so we keep only the subclass method
+					}
+				}
+			}
+		}
+
+		events.removeAll(overriddenHandlerMethods);
 	}
 
 	@ToString
