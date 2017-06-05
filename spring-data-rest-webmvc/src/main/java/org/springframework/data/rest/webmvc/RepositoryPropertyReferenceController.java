@@ -263,7 +263,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			links.add(linkBuilder.withRel(propertyMapping.getRel()));
 		}
 
-		return ControllerUtils.toResponseEntity(HttpStatus.OK, null, new Resource<Object>(EMPTY_RESOURCE_LIST, links));
+		return ControllerUtils.toResponseEntity(HttpStatus.OK, null, new Resources<Object>(EMPTY_RESOURCE_LIST, links));
 	}
 
 	@RequestMapping(value = BASE_MAPPING, method = { PATCH, PUT, POST }, //
