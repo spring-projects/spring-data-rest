@@ -98,6 +98,16 @@
 
 		</profile>
 
+		<profile>
+
+			<id>spring5-next</id>
+
+			<properties>
+				<spring>5.0.0.BUILD-SNAPSHOT</spring>
+				<spring-hateoas>0.24.0.BUILD-SNAPSHOT</spring-hateoas>
+			</properties>
+
+		</profile>
 	</profiles>
 
 	<dependencies>

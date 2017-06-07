@@ -104,7 +104,9 @@ public abstract class PatchOperation {
 			try {
 				expression.setValue(target, null);
 				return value;
-			} catch (NullPointerException e) {
+			} catch (NullPointerException e) { // Supports Spring 4
+				throw new PatchException("Path '" + removePath + "' is not nullable.");
+			} catch (ExpressionException e) { // Supports Spring 5+
 				throw new PatchException("Path '" + removePath + "' is not nullable.");
 			}
 
