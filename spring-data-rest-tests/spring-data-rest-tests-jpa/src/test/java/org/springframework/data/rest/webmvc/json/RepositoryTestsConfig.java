@@ -44,7 +44,6 @@ import org.springframework.data.rest.webmvc.ResourceProcessorInvoker;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
@@ -131,12 +130,10 @@ public class RepositoryTestsConfig {
 		Associations associations = new Associations(mappings, config());
 		LinkCollector collector = new LinkCollector(persistentEntities(), selfLinkProvider, associations);
 
-		NestedEntitySerializer nestedEntitySerializer = new NestedEntitySerializer(persistentEntities(),
-				new EmbeddedResourcesAssembler(persistentEntities(), associations, mock(ExcerptProjector.class)),
-				new ResourceProcessorInvoker(Collections.<ResourceProcessor<?>> emptyList()));
-
 		return new PersistentEntityJackson2Module(associations, persistentEntities(), uriToEntityConverter, collector,
-				invokerFactory, nestedEntitySerializer, mock(LookupObjectSerializer.class));
+				invokerFactory, mock(LookupObjectSerializer.class),
+				new ResourceProcessorInvoker(Collections.<ResourceProcessor<?>> emptyList()),
+				new EmbeddedResourcesAssembler(persistentEntities(), associations, mock(ExcerptProjector.class)));
 	}
 
 	@Bean
