@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.5.11.RELEASE (2017-06-07)
+----------------------------------------------
+* DATAREST-1058 - Release 2.5.11 (Hopper SR11).
+* DATAREST-1039 - JSON Patch to subresource collection results in SpelEvaluationException: Method size() cannot be found.
+
+
 Changes in version 3.0.0.M3 (2017-05-09)
 ----------------------------------------
 * DATAREST-1067 - Improve generics on EntityLookup.lookupEntity(...).
