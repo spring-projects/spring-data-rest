@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.9.4.BUILD-SNAPSHOT</version>
+		<version>1.9.4.RELEASE</version>
 		<relativePath/>
 	</parent>
 
@@ -28,13 +28,13 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-rest</dist.id>
 
-		<springdata.commons>1.13.4.BUILD-SNAPSHOT</springdata.commons>
-		<springdata.jpa>1.11.4.BUILD-SNAPSHOT</springdata.jpa>
-		<springdata.mongodb>1.10.4.BUILD-SNAPSHOT</springdata.mongodb>
-		<springdata.gemfire>1.9.4.BUILD-SNAPSHOT</springdata.gemfire>
-		<springdata.solr>2.1.4.BUILD-SNAPSHOT</springdata.solr>
-		<springdata.cassandra>1.5.4.BUILD-SNAPSHOT</springdata.cassandra>
-		<springdata.keyvalue>1.2.4.BUILD-SNAPSHOT</springdata.keyvalue>
+		<springdata.commons>1.13.4.RELEASE</springdata.commons>
+		<springdata.jpa>1.11.4.RELEASE</springdata.jpa>
+		<springdata.mongodb>1.10.4.RELEASE</springdata.mongodb>
+		<springdata.gemfire>1.9.4.RELEASE</springdata.gemfire>
+		<springdata.solr>2.1.4.RELEASE</springdata.solr>
+		<springdata.cassandra>1.5.4.RELEASE</springdata.cassandra>
+		<springdata.keyvalue>1.2.4.RELEASE</springdata.keyvalue>
 
 		<hibernate.version>4.3.10.Final</hibernate.version>
 		<jsonpath>1.1.0</jsonpath>
@@ -114,8 +114,8 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-snapshot</id>
-			<url>https://repo.spring.io/libs-snapshot</url>
+			<id>spring-libs-release</id>
+			<url>https://repo.spring.io/libs-release</url>
 		</repository>
 	</repositories>
 
