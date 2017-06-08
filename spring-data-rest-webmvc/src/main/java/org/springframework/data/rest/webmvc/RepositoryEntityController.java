@@ -74,6 +74,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Jeremy Rickard
+ * @author Marc Easen
  */
 @RepositoryRestController
 class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
@@ -363,9 +364,11 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
 		Object objectToSave = payload.getContent();
 		eTag.verify(resourceInformation.getPersistentEntity(), objectToSave);
+		if (payload.isNew()) {
+			throw new ResourceNotFoundException();
+		}
 
-		return payload.isNew() ? createAndReturn(objectToSave, invoker, assembler, config.returnBodyOnCreate(acceptHeader))
-				: saveAndReturn(objectToSave, invoker, PUT, assembler, config.returnBodyOnUpdate(acceptHeader));
+		return saveAndReturn(objectToSave, invoker, PUT, assembler, config.returnBodyOnUpdate(acceptHeader));
 	}
 
 	/**
