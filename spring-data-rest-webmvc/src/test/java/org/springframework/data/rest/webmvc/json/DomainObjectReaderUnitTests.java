@@ -414,6 +414,49 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	/**
+	 * @see DATAREST-965
+	 */
+	@Test
+	public void writesObjectWithRemovedItemsForPut() throws Exception {
+
+		Child inner = new Child();
+		inner.items = new ArrayList<Item>();
+		inner.items.add(new Item("test1"));
+		inner.items.add(new Item("test2"));
+
+		Parent source = new Parent();
+		source.inner = inner;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"object\" : \"value\" } }");
+
+		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
+
+		assertThat(result.inner.items, is(isNull()));
+		assertThat((String) result.inner.object, is("value"));
+	}
+
+	/**
+	 * @see DATAREST-965
+	 */
+	@Test
+	public void writesArrayWithRemovedObjectForPut() throws Exception {
+
+		Child inner = new Child();
+		inner.object = "value";
+
+		Parent source = new Parent();
+		source.inner = inner;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"items\" : [ { \"some\" : \"value\" } ] } }");
+
+		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
+
+		assertThat(result.inner.items.size(), is(1));
+		assertThat(result.inner.items.get(0).some, is("value"));
+		assertThat(result.inner.object, is(isNull()));
+	}
+
+	/**
 	 * @see DATAREST-959
 	 */
 	@Test
