@@ -31,7 +31,7 @@
 		<springdata.commons>2.0.0.BUILD-SNAPSHOT</springdata.commons>
 		<springdata.jpa>2.0.0.BUILD-SNAPSHOT</springdata.jpa>
 		<springdata.mongodb>2.0.0.BUILD-SNAPSHOT</springdata.mongodb>
-		<springdata.gemfire>2.0.0.BUILD-SNAPSHOT</springdata.gemfire>
+		<springdata.geode>2.0.0.BUILD-SNAPSHOT</springdata.geode>
 		<springdata.solr>3.0.0.BUILD-SNAPSHOT</springdata.solr>
 		<springdata.cassandra>2.0.0.BUILD-SNAPSHOT</springdata.cassandra>
 		<springdata.keyvalue>2.0.0.BUILD-SNAPSHOT</springdata.keyvalue>

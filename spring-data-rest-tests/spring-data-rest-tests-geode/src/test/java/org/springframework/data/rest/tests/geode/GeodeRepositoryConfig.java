@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.tests.gemfire;
+package org.springframework.data.rest.tests.geode;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +32,7 @@ import org.springframework.data.util.AnnotatedTypeScanner;
 @Configuration
 @ImportResource("classpath:META-INF/spring/cache-config.xml")
 @EnableGemfireRepositories
-public class GemfireRepositoryConfig {
+public class GeodeRepositoryConfig {
 
 	/**
 	 * TODO: Remove, once Spring Data Gemfire exposes a mapping context.
@@ -44,7 +44,7 @@ public class GemfireRepositoryConfig {
 		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(Region.class);
 
 		GemfireMappingContext context = new GemfireMappingContext();
-		context.setInitialEntitySet(scanner.findTypes(GemfireRepositoryConfig.class.getPackage().getName()));
+		context.setInitialEntitySet(scanner.findTypes(GeodeRepositoryConfig.class.getPackage().getName()));
 		context.initialize();
 
 		return context;

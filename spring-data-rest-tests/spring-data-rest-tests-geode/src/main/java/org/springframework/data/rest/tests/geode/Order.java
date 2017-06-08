@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.tests.gemfire;
+package org.springframework.data.rest.tests.geode;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -37,7 +37,7 @@ public class Order extends AbstractPersistentEntity {
 	private Set<LineItem> lineItems = new HashSet<LineItem>();
 
 	/**
-	 * Creates a new {@link Order} for the given {@link org.springframework.data.rest.tests.gemfire.Customer}.
+	 * Creates a new {@link Order} for the given {@link Customer}.
 	 * 
 	 * @param id order ID
 	 * @param customerId must not be {@literal null}.
@@ -64,7 +64,7 @@ public class Order extends AbstractPersistentEntity {
 	}
 
 	/**
-	 * Returns the id of the {@link org.springframework.data.rest.tests.gemfire.Customer} who placed the
+	 * Returns the id of the {@link Customer} who placed the
 	 * {@link Order}.
 	 * 
 	 * @return

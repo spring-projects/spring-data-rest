@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.tests.gemfire;
+package org.springframework.data.rest.tests.geode;
 
 import java.util.Arrays;
 
@@ -23,8 +23,8 @@ import org.springframework.test.context.ContextConfiguration;
 /**
  * @author Oliver Gierke
  */
-@ContextConfiguration(classes = GemfireRepositoryConfig.class)
-public class GemfireWebTests extends CommonWebTests {
+@ContextConfiguration(classes = GeodeRepositoryConfig.class)
+public class GeodeWebTests extends CommonWebTests {
 
 	/* 
 	 * (non-Javadoc)
