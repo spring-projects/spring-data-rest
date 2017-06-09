@@ -673,6 +673,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		configurerDelegate.configureExceptionHandlerExceptionResolver(er);
 
+		er.afterPropertiesSet();
+
 		exceptionResolvers.add(0, er);
 	}
 
