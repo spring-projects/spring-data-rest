@@ -1,6 +1,16 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.0.M4 (2017-06-14)
+----------------------------------------
+* DATAREST-1092 - MoveOperationUnitTests fail on Spring 5 RC1.
+* DATAREST-1077 - HAL Browser: Custom Request Headers are lost in NON-GET requests.
+* DATAREST-1076 - Allow configuration of RelProvider in RepositoryResourceMappings.
+* DATAREST-1071 - Release 3.0 M4 (Kay).
+* DATAREST-1039 - JSON Patch to subresource collection results in SpelEvaluationException: Method size() cannot be found.
+* DATAREST-1031 - NullPointerException in ServletInvocableHandlerMethod.invokeAndHandle when using @ExceptionHandler.
+
+
 Changes in version 2.6.4.RELEASE (2017-06-08)
 ---------------------------------------------
 * DATAREST-1076 - Allow configuration of RelProvider in RepositoryResourceMappings.
