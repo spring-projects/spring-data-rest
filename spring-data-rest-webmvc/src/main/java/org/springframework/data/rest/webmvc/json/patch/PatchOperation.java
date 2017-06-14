@@ -24,6 +24,7 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionException;
+import org.springframework.expression.spel.SpelEvaluationException;
 
 /**
  * Abstract base class representing and providing support methods for patch operations.
@@ -104,8 +105,10 @@ public abstract class PatchOperation {
 			try {
 				expression.setValue(target, null);
 				return value;
-			} catch (NullPointerException e) {
-				throw new PatchException("Path '" + removePath + "' is not nullable.");
+			} catch (NullPointerException o_O) {
+				throw new PatchException("Path '" + removePath + "' is not nullable.", o_O);
+			} catch (SpelEvaluationException o_O) {
+				throw new PatchException("Path '" + removePath + "' is not nullable.", o_O);
 			}
 
 		} else {
