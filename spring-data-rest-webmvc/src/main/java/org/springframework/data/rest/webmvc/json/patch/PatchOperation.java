@@ -105,8 +105,6 @@ public abstract class PatchOperation {
 			try {
 				expression.setValue(target, null);
 				return value;
-			} catch (NullPointerException o_O) {
-				throw new PatchException("Path '" + removePath + "' is not nullable.", o_O);
 			} catch (SpelEvaluationException o_O) {
 				throw new PatchException("Path '" + removePath + "' is not nullable.", o_O);
 			}
