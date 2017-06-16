@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.expression.EvaluationContext;
 
 /**
  * Operation to add a new value to the given "path". Will throw a {@link PatchException} if the path is invalid or if
@@ -47,6 +48,15 @@ class AddOperation extends PatchOperation {
 	<T> void perform(Object targetObject, Class<T> type) {
 		addValue(targetObject, evaluateValueFromTarget(targetObject, type));
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class, org.springframework.expression.EvaluationContext)
+	 */
+	@Override
+	<T> void perform(Object targetObject, Class<T> type, EvaluationContext context) {
+		addValue(targetObject, evaluateValueFromTarget(targetObject, type), context);
+	}
 
 	/* 
 	 * (non-Javadoc)
@@ -54,9 +64,22 @@ class AddOperation extends PatchOperation {
 	 */
 	@Override
 	protected <T> Object evaluateValueFromTarget(Object targetObject, Class<T> entityType) {
+		return evaluateValueFromTarget(targetObject, entityType, null);
+	}
+	
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#evaluateValueFromTarget(java.lang.Object, java.lang.Class, org.springframework.expression.EvaluationContext)
+	 */
+	@Override
+	protected <T> Object evaluateValueFromTarget(Object targetObject, Class<T> entityType, EvaluationContext context) {
 
 		if (!path.endsWith("-")) {
-			return super.evaluateValueFromTarget(targetObject, entityType);
+			if(context == null){
+			    return super.evaluateValueFromTarget(targetObject, entityType);
+			}else{
+				return super.evaluateValueFromTarget(targetObject, entityType, context);
+			}
 		}
 
 		String pathSource = Arrays.stream(path.split("/"))//
@@ -70,4 +93,5 @@ class AddOperation extends PatchOperation {
 		return value instanceof LateObjectEvaluator ? ((LateObjectEvaluator) value).evaluate(propertyPath.getType())
 				: value;
 	}
+	
 }

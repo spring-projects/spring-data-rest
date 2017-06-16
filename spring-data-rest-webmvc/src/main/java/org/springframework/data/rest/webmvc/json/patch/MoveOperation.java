@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import org.springframework.expression.EvaluationContext;
+
 /**
  * <p>
  * Operation that moves a value from the given "from" path to the given "path". Will throw a {@link PatchException} if
@@ -49,5 +51,14 @@ class MoveOperation extends FromOperation {
 	@Override
 	<T> void perform(Object target, Class<T> type) {
 		addValue(target, popValueAtPath(target, getFrom()));
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class, org.springframework.expression.EvaluationContext)
+	 */
+	@Override
+	<T> void perform(Object target, Class<T> type, EvaluationContext context) {
+		addValue(target, popValueAtPath(target, getFrom()), context);
 	}
 }

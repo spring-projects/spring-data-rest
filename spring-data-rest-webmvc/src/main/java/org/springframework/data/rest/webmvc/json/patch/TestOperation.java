@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.json.patch;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.springframework.expression.EvaluationContext;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -57,6 +58,22 @@ class TestOperation extends PatchOperation {
 			throw new PatchException("Test against path '" + path + "' failed.");
 		}
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class,org.springframework.expression.EvaluationContext)
+	 */
+	@Override
+	<T> void perform(Object target, Class<T> type, EvaluationContext context) {
+
+		Object expected = normalizeIfNumber(evaluateValueFromTarget(target, type, context));
+		Object actual = normalizeIfNumber(getValueFromTarget(target, context));
+
+		if (!ObjectUtils.nullSafeEquals(expected, actual)) {
+			throw new PatchException("Test against path '" + path + "' failed.");
+		}
+	}
+
 
 	private Object normalizeIfNumber(Object expected) {
 

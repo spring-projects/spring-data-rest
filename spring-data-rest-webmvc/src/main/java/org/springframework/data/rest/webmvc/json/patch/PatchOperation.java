@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionException;
 import org.springframework.expression.spel.SpelEvaluationException;
@@ -127,6 +128,19 @@ public abstract class PatchOperation {
 	 */
 	@SuppressWarnings({ "unchecked", "null" })
 	protected void addValue(Object target, Object value) {
+        addValue(target, value, null);
+	}
+	
+	/**
+	 * Adds a value to the operation's path. If the path references a list index, the value is added to the list at the
+	 * given index. If the path references an object property, the property is set to the value.
+	 * 
+	 * @param target The target object.
+	 * @param value The value to add.
+	 * @param context The EvaluationContext
+	 */
+	@SuppressWarnings({ "unchecked", "null" })
+	protected void addValue(Object target, Object value, EvaluationContext context) {
 
 		Expression parentExpression = pathToParentExpression(path);
 		Object parent = parentExpression != null ? parentExpression.getValue(target) : null;
@@ -145,7 +159,11 @@ public abstract class PatchOperation {
 				parentExpression.setValue(target, collection);
 
 			} else {
-				spelExpression.setValue(target, value);
+				if(context == null){
+					spelExpression.setValue(target, value);
+				}else{
+					spelExpression.setValue(context, target, value);
+				}
 			}
 
 		} else {
@@ -164,6 +182,17 @@ public abstract class PatchOperation {
 	protected void setValueOnTarget(Object target, Object value) {
 		spelExpression.setValue(target, value);
 	}
+	
+	/**
+	 * Sets a value to the operation's path.
+	 * 
+	 * @param target The target object.
+	 * @param value The value to set.
+	 * @param context The EvaluationContext
+	 */
+	protected void setValueOnTarget(Object target, Object value, EvaluationContext context) {
+		spelExpression.setValue(context, target, value);
+	}
 
 	/**
 	 * Retrieves a value from the operation's path.
@@ -175,6 +204,22 @@ public abstract class PatchOperation {
 
 		try {
 			return spelExpression.getValue(target);
+		} catch (ExpressionException e) {
+			throw new PatchException("Unable to get value from target", e);
+		}
+	}
+	
+	/**
+	 * Retrieves a value from the operation's path.
+	 * 
+	 * @param target the target object.
+	 * @param context the EvaluationContext
+	 * @return the value at the path on the given target object.
+	 */
+	protected Object getValueFromTarget(Object target, EvaluationContext context) {
+
+		try {
+			return spelExpression.getValue(context, target);
 		} catch (ExpressionException e) {
 			throw new PatchException("Unable to get value from target", e);
 		}
@@ -196,11 +241,34 @@ public abstract class PatchOperation {
 	}
 
 	/**
+	 * Performs late-value evaluation on the operation value if the value is a {@link LateObjectEvaluator}.
+	 * 
+	 * @param targetObject the target object, used as assistance in determining the evaluated object's type.
+	 * @param entityType the entityType
+	 * @param <T> the entity type
+	 * @param context The EvaluationContext
+	 * @return the result of late-value evaluation if the value is a {@link LateObjectEvaluator}; the value itself
+	 *         otherwise.
+	 */
+	protected <T> Object evaluateValueFromTarget(Object targetObject, Class<T> entityType, EvaluationContext context) {
+
+		return value instanceof LateObjectEvaluator
+				? ((LateObjectEvaluator) value).evaluate(spelExpression.getValueType(targetObject)) : value;
+	}	
+	
+	/**
 	 * Perform the operation.
 	 * 
 	 * @param target the target of the operation.
 	 */
 	abstract <T> void perform(Object target, Class<T> type);
+	
+	/**
+	 * Perform the operation with an EvaluationContext
+	 * 
+	 * @param target the target of the operation.
+	 */
+	abstract <T> void perform(Object target, Class<T> type, EvaluationContext context);
 
 	private Integer targetListIndex(String path) {
 

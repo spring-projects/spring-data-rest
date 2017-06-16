@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import org.springframework.expression.EvaluationContext;
+
 /**
  * Operation that removes the value at the given path. Will throw a {@link PatchException} if the given path isn't valid
  * or if the path is non-nullable.
@@ -39,6 +41,15 @@ public class RemoveOperation extends PatchOperation {
 	 */
 	@Override
 	<T> void perform(Object target, Class<T> type) {
+		popValueAtPath(target, path);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class, org.springframework.expression.EvaluationContext)
+	 */
+	@Override
+	<T> void perform(Object target, Class<T> type, EvaluationContext context) {
 		popValueAtPath(target, path);
 	}
 }

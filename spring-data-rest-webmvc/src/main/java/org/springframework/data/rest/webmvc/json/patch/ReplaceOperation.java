@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import org.springframework.expression.EvaluationContext;
+
 /**
  * Operation that replaces the value at the given path with a new value.
  * 
@@ -39,5 +41,14 @@ public class ReplaceOperation extends PatchOperation {
 	@Override
 	<T> void perform(Object target, Class<T> type) {
 		setValueOnTarget(target, evaluateValueFromTarget(target, type));
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class, org.springframework.expression.EvaluationContext)
+	 */
+	@Override
+	<T> void perform(Object target, Class<T> type, EvaluationContext context) {
+		setValueOnTarget(target, evaluateValueFromTarget(target, type), context);
 	}
 }
