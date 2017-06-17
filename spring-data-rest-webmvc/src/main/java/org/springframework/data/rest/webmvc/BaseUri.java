@@ -145,7 +145,7 @@ public class BaseUri {
 	}
 
 	/**
-	 * Returns a new {@link UriComponentsBuilder} for the base URI. If the base URI is not absolute, it'll lokup the URI
+	 * Returns a new {@link UriComponentsBuilder} for the base URI. If the base URI is not absolute, it'll lookup the URI
 	 * for the current servlet mapping and extend it accordingly.
 	 * 
 	 * @return
