@@ -27,6 +27,7 @@ import org.springframework.expression.EvaluationContext;
  * 
  * @author Craig Walls
  * @author Oliver Gierke
+ * @author Scott Davies
  */
 class AddOperation extends PatchOperation {
 

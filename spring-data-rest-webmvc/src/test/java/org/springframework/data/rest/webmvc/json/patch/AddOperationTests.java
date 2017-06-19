@@ -19,9 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
+import org.springframework.data.rest.webmvc.json.patch.CustomConverterEvaluationContext.StringToDateConverter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -111,4 +113,19 @@ public class AddOperationTests {
 
 		assertThat(todo.getUninitialized()).containsExactly("Text");
 	}
+	
+	@Test // DATAREST-1094
+	public void addDateProperty() throws Exception {
+
+		Todo todo = new Todo();
+
+		Date expectedDate  = new CustomConverterEvaluationContext.StringToDateConverter().convert("2020-08-23T18:25:43.511Z");
+
+		new AddOperation("/date", "2020-08-23T18:25:43.511Z").perform(todo, Todo.class, CustomConverterEvaluationContext.stringToDateEvaluationContext());
+
+		assertNotNull(todo.getDate());
+		assertEquals(todo.getDate(), expectedDate);
+	}
+	
+	
 }

@@ -21,6 +21,7 @@ import org.springframework.expression.EvaluationContext;
  * Operation that replaces the value at the given path with a new value.
  * 
  * @author Craig Walls
+ * @author Scott Davies
  */
 public class ReplaceOperation extends PatchOperation {
 
@@ -49,6 +50,6 @@ public class ReplaceOperation extends PatchOperation {
 	 */
 	@Override
 	<T> void perform(Object target, Class<T> type, EvaluationContext context) {
-		setValueOnTarget(target, evaluateValueFromTarget(target, type), context);
+		setValueOnTarget(target, evaluateValueFromTarget(target, type, context), context);
 	}
 }

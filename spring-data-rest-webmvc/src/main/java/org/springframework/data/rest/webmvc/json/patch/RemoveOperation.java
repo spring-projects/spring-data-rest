@@ -23,6 +23,7 @@ import org.springframework.expression.EvaluationContext;
  * 
  * @author Craig Walls
  * @author Oliver Gierke
+ * @author Scott Davies
  */
 public class RemoveOperation extends PatchOperation {
 

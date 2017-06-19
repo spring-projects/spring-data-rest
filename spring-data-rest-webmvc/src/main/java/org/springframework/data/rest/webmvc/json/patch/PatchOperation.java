@@ -33,6 +33,7 @@ import org.springframework.expression.spel.SpelEvaluationException;
  * @author Craig Walls
  * @author Mathias Düsterhöft
  * @author Oliver Gierke
+ * @author Scott Davies
  */
 public abstract class PatchOperation {
 
@@ -253,7 +254,7 @@ public abstract class PatchOperation {
 	protected <T> Object evaluateValueFromTarget(Object targetObject, Class<T> entityType, EvaluationContext context) {
 
 		return value instanceof LateObjectEvaluator
-				? ((LateObjectEvaluator) value).evaluate(spelExpression.getValueType(targetObject)) : value;
+				? ((LateObjectEvaluator) value).evaluate(spelExpression.getValueType(context, targetObject)) : value;
 	}	
 	
 	/**

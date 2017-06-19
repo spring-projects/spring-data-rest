@@ -31,6 +31,7 @@ import org.springframework.util.ObjectUtils;
  * </p>
  * 
  * @author Craig Walls
+ * @author Scott Davies
  */
 class TestOperation extends PatchOperation {
 
