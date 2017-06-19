@@ -83,7 +83,6 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.ser.BeanSerializerBuilder;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -236,21 +235,21 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		/* 
 		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.ser.BeanSerializerModifier#updateBuilder(com.fasterxml.jackson.databind.SerializationConfig, com.fasterxml.jackson.databind.BeanDescription, com.fasterxml.jackson.databind.ser.BeanSerializerBuilder)
+		 * @see com.fasterxml.jackson.databind.ser.BeanSerializerModifier#changeProperties(com.fasterxml.jackson.databind.SerializationConfig, com.fasterxml.jackson.databind.BeanDescription, java.util.List)
 		 */
 		@Override
-		public BeanSerializerBuilder updateBuilder(SerializationConfig config, BeanDescription beanDesc,
-				BeanSerializerBuilder builder) {
+		public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc,
+				List<BeanPropertyWriter> beanProperties) {
 
 			PersistentEntity<?, ?> entity = entities.getPersistentEntity(beanDesc.getBeanClass());
 
 			if (entity == null) {
-				return builder;
+				return beanProperties;
 			}
 
 			List<BeanPropertyWriter> result = new ArrayList<BeanPropertyWriter>();
 
-			for (BeanPropertyWriter writer : builder.getProperties()) {
+			for (BeanPropertyWriter writer : beanProperties) {
 
 				// Skip exported associations
 				PersistentProperty<?> persistentProperty = findProperty(writer.getName(), entity, beanDesc);
@@ -293,9 +292,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				result.add(writer);
 			}
 
-			builder.setProperties(result);
-
-			return builder;
+			return result;
 		}
 
 		/**
