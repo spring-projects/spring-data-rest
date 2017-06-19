@@ -84,7 +84,6 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.ser.BeanSerializerBuilder;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -237,64 +236,63 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		/* 
 		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.ser.BeanSerializerModifier#updateBuilder(com.fasterxml.jackson.databind.SerializationConfig, com.fasterxml.jackson.databind.BeanDescription, com.fasterxml.jackson.databind.ser.BeanSerializerBuilder)
+		 * @see com.fasterxml.jackson.databind.ser.BeanSerializerModifier#changeProperties(com.fasterxml.jackson.databind.SerializationConfig, com.fasterxml.jackson.databind.BeanDescription, java.util.List)
 		 */
 		@Override
-		public BeanSerializerBuilder updateBuilder(SerializationConfig config, BeanDescription beanDesc,
-				BeanSerializerBuilder builder) {
+		public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc,
+				List<BeanPropertyWriter> beanProperties) {
 
-			entities.getPersistentEntity(beanDesc.getBeanClass()).ifPresent(entity -> {
+			return entities.getPersistentEntity(beanDesc.getBeanClass()).map(entity -> {
 
 				List<BeanPropertyWriter> result = new ArrayList<BeanPropertyWriter>();
 
-				for (BeanPropertyWriter writer : builder.getProperties()) {
+				for (BeanPropertyWriter writer : beanProperties) {
 
 					Optional<? extends PersistentProperty<?>> findProperty = findProperty(writer.getName(), entity, beanDesc);
 
-					findProperty.ifPresent(it -> {
+					if (!findProperty.isPresent()) {
+						result.add(writer);
+						continue;
+					}
+
+					findProperty.flatMap(it -> {
 
 						if (associations.isLookupType(it)) {
 
 							LOG.debug("Assigning lookup object serializer for {}.", it);
 							writer.assignSerializer(lookupObjectSerializer);
-							result.add(writer);
-							return;
+
+							return Optional.of(writer);
 						}
 
 						// Is there a default projection?
 
 						if (associations.isLinkableAssociation(it)) {
-							return;
+							return Optional.empty();
 						}
 
 						// Skip ids unless explicitly configured to expose
 						if (it.isIdProperty() && !associations.isIdExposed(entity)) {
-							return;
+							return Optional.empty();
 						}
 
 						if (it.isVersionProperty()) {
-							return;
+							return Optional.empty();
 						}
 
 						if (it.isEntity() && !writer.isUnwrapping()) {
-
 							LOG.debug("Assigning nested entity serializer for {}.", it);
-
 							writer.assignSerializer(nestedEntitySerializer);
 						}
 
-						result.add(writer);
-					});
+						return Optional.of(writer);
 
-					if (!findProperty.isPresent()) {
-						result.add(writer);
-					}
+					}).ifPresent(result::add);
 				}
 
-				builder.setProperties(result);
-			});
+				return result;
 
-			return builder;
+			}).orElse(beanProperties);
 		}
 
 		/**
