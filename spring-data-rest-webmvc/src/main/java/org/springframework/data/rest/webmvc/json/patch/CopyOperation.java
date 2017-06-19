@@ -17,6 +17,8 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.springframework.data.rest.webmvc.json.patch.PathToSpEL.*;
 
+import org.springframework.expression.EvaluationContext;
+
 /**
  * <p>
  * Operation to copy a value from the given "from" path to the given "path". Will throw a {@link PatchException} if
@@ -38,6 +40,7 @@ import static org.springframework.data.rest.webmvc.json.patch.PathToSpEL.*;
  * 
  * @author Craig Walls
  * @author Oliver Gierke
+ * @author Scott Davies
  */
 class CopyOperation extends FromOperation {
 
@@ -58,5 +61,14 @@ class CopyOperation extends FromOperation {
 	@Override
 	<T> void perform(Object target, Class<T> type) {
 		addValue(target, pathToExpression(getFrom()).getValue(target));
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class, org.springframework.expression.EvaluationContext)
+	 */
+	@Override
+	<T> void perform(Object target, Class<T> type, EvaluationContext context) {
+		addValue(target, pathToExpression(getFrom()).getValue(target), context);
 	}
 }

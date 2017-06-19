@@ -16,18 +16,20 @@
 
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author Roy Clarkson
  * @author Craig Walls
  * @author Mathias Düsterhöft
  * @author Oliver Gierke
+ * @author Scott Davies
  */
 @Data
 @NoArgsConstructor
@@ -40,7 +42,8 @@ class Todo {
 	private List<String> items = new ArrayList<String>();
 	private List<String> uninitialized;
 	private BigInteger amount;
-
+	private Date date;
+	
 	public Todo(Long id, String description, boolean complete) {
 
 		this.id = id;

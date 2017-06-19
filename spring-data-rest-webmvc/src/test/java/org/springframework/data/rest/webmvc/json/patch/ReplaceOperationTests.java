@@ -17,10 +17,16 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.junit.Assert.*;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
+import org.springframework.data.rest.webmvc.json.patch.CustomConverterEvaluationContext.StringToDateConverter;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -81,5 +87,18 @@ public class ReplaceOperationTests {
 		assertNotNull(todo.getType());
 		assertNotNull(todo.getType().getValue());
 		assertTrue(todo.getType().getValue().equals("new"));
+	}
+	
+	@Test // DATAREST-1094
+	public void replaceDateProperty() throws Exception {
+
+		Todo todo = new Todo();
+
+		Date expectedDate  = new CustomConverterEvaluationContext.StringToDateConverter().convert("2020-08-23T18:25:43.511Z");
+
+		new ReplaceOperation("/date", "2020-08-23T18:25:43.511Z").perform(todo, Todo.class, CustomConverterEvaluationContext.stringToDateEvaluationContext());
+
+		assertNotNull(todo.getDate());
+		assertEquals(todo.getDate(), expectedDate);
 	}
 }
