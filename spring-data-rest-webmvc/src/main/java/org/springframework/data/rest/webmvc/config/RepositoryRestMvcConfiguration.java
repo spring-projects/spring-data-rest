@@ -269,7 +269,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * Main configuration for the REST exporter.
 	 */
 	@Bean
-	public RepositoryRestConfiguration config() {
+	public RepositoryRestConfiguration repositoryRestConfiguration() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
 
@@ -298,7 +298,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public BaseUri baseUri() {
-		return new BaseUri(config().getBaseUri());
+		return new BaseUri(repositoryRestConfiguration().getBaseUri());
 	}
 
 	/**
@@ -386,8 +386,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		PagingAndSortingTemplateVariables templateVariables = new ArgumentResolverPagingAndSortingTemplateVariables(
 				pageableResolver(), sortResolver());
 
-		return new RepositoryEntityLinks(repositories(), resourceMappings(), config(), templateVariables,
-				Java8PluginRegistry.of(backendIdConverterRegistry()));
+		return new RepositoryEntityLinks(repositories(), resourceMappings(), repositoryRestConfiguration(),
+				templateVariables, Java8PluginRegistry.of(backendIdConverterRegistry()));
 	}
 
 	/**
@@ -412,7 +412,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public PersistentEntityToJsonSchemaConverter jsonSchemaConverter() {
 
 		return new PersistentEntityToJsonSchemaConverter(persistentEntities(), associationLinks(),
-				resourceDescriptionMessageSourceAccessor(), objectMapper(), config(),
+				resourceDescriptionMessageSourceAccessor(), objectMapper(), repositoryRestConfiguration(),
 				new ValueTypeSchemaPropertyCustomizerFactory(repositoryInvokerFactory(defaultConversionService())));
 	}
 
@@ -471,11 +471,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		List<MediaType> mediaTypes = new ArrayList<MediaType>();
 
 		// Configure this mapper to be used if HAL is not the default media type
-		if (!config().useHalAsDefaultJsonMediaType()) {
+		if (!repositoryRestConfiguration().useHalAsDefaultJsonMediaType()) {
 			mediaTypes.add(MediaType.APPLICATION_JSON);
 		}
 
-		int order = config().useHalAsDefaultJsonMediaType() ? Ordered.LOWEST_PRECEDENCE - 1
+		int order = repositoryRestConfiguration().useHalAsDefaultJsonMediaType() ? Ordered.LOWEST_PRECEDENCE - 1
 				: Ordered.LOWEST_PRECEDENCE - 10;
 
 		mediaTypes.addAll(Arrays.asList(RestMediaTypes.SCHEMA_JSON, //
@@ -501,11 +501,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		mediaTypes.add(MediaTypes.HAL_JSON);
 
 		// Enable returning HAL if application/json is asked if it's configured to be the default type
-		if (config().useHalAsDefaultJsonMediaType()) {
+		if (repositoryRestConfiguration().useHalAsDefaultJsonMediaType()) {
 			mediaTypes.add(MediaType.APPLICATION_JSON);
 		}
 
-		int order = config().useHalAsDefaultJsonMediaType() ? Ordered.LOWEST_PRECEDENCE - 10
+		int order = repositoryRestConfiguration().useHalAsDefaultJsonMediaType() ? Ordered.LOWEST_PRECEDENCE - 10
 				: Ordered.LOWEST_PRECEDENCE - 1;
 
 		TypeConstrainedMappingJackson2HttpMessageConverter converter = new ResourceSupportHttpMessageConverter(order);
@@ -575,7 +575,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		handlerAdapter.setWebBindingInitializer(initializer);
 		handlerAdapter.setMessageConverters(defaultMessageConverters());
 
-		if (config().getMetadataConfiguration().alpsEnabled()) {
+		if (repositoryRestConfiguration().getMetadataConfiguration().alpsEnabled()) {
 			handlerAdapter.setResponseBodyAdvice(Arrays.<ResponseBodyAdvice<?>> asList(alpsJsonHttpMessageConverter()));
 		}
 
@@ -603,16 +603,17 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public DelegatingHandlerMapping restHandlerMapping() {
 
-		Map<String, CorsConfiguration> corsConfigurations = config().getCorsRegistry().getCorsConfigurations();
+		Map<String, CorsConfiguration> corsConfigurations = repositoryRestConfiguration().getCorsRegistry()
+				.getCorsConfigurations();
 
-		RepositoryRestHandlerMapping repositoryMapping = new RepositoryRestHandlerMapping(resourceMappings(), config(),
-				repositories());
+		RepositoryRestHandlerMapping repositoryMapping = new RepositoryRestHandlerMapping(resourceMappings(),
+				repositoryRestConfiguration(), repositories());
 		repositoryMapping.setJpaHelper(jpaHelper());
 		repositoryMapping.setApplicationContext(applicationContext);
 		repositoryMapping.setCorsConfigurations(corsConfigurations);
 		repositoryMapping.afterPropertiesSet();
 
-		BasePathAwareHandlerMapping basePathMapping = new BasePathAwareHandlerMapping(config());
+		BasePathAwareHandlerMapping basePathMapping = new BasePathAwareHandlerMapping(repositoryRestConfiguration());
 		basePathMapping.setApplicationContext(applicationContext);
 		basePathMapping.setCorsConfigurations(corsConfigurations);
 		basePathMapping.afterPropertiesSet();
@@ -627,7 +628,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public RepositoryResourceMappings resourceMappings() {
 		return new RepositoryResourceMappings(repositories(), persistentEntities(),
-				config().getRepositoryDetectionStrategy(), config().getRelProvider());
+				repositoryRestConfiguration().getRepositoryDetectionStrategy(), repositoryRestConfiguration().getRelProvider());
 	}
 
 	/**
@@ -705,11 +706,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
 
-		if (config().getMetadataConfiguration().alpsEnabled()) {
+		if (repositoryRestConfiguration().getMetadataConfiguration().alpsEnabled()) {
 			messageConverters.add(alpsJsonHttpMessageConverter());
 		}
 
-		if (config().getDefaultMediaType().equals(MediaTypes.HAL_JSON)) {
+		if (repositoryRestConfiguration().getDefaultMediaType().equals(MediaTypes.HAL_JSON)) {
 			messageConverters.add(halJacksonHttpMessageConverter());
 			messageConverters.add(jacksonHttpMessageConverter());
 		} else {
@@ -742,10 +743,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public HateoasPageableHandlerMethodArgumentResolver pageableResolver() {
 
 		HateoasPageableHandlerMethodArgumentResolver resolver = super.pageableResolver();
-		resolver.setPageParameterName(config().getPageParamName());
-		resolver.setSizeParameterName(config().getLimitParamName());
-		resolver.setFallbackPageable(PageRequest.of(0, config().getDefaultPageSize()));
-		resolver.setMaxPageSize(config().getMaxPageSize());
+		resolver.setPageParameterName(repositoryRestConfiguration().getPageParamName());
+		resolver.setSizeParameterName(repositoryRestConfiguration().getLimitParamName());
+		resolver.setFallbackPageable(PageRequest.of(0, repositoryRestConfiguration().getDefaultPageSize()));
+		resolver.setMaxPageSize(repositoryRestConfiguration().getMaxPageSize());
 
 		return resolver;
 	}
@@ -759,7 +760,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public HateoasSortHandlerMethodArgumentResolver sortResolver() {
 
 		HateoasSortHandlerMethodArgumentResolver resolver = super.sortResolver();
-		resolver.setSortParameter(config().getSortParamName());
+		resolver.setSortParameter(repositoryRestConfiguration().getSortParamName());
 
 		return resolver;
 	}
@@ -791,13 +792,13 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public Associations associationLinks() {
-		return new Associations(resourceMappings(), config());
+		return new Associations(resourceMappings(), repositoryRestConfiguration());
 	}
 
 	protected List<EntityLookup<?>> getEntityLookups() {
 
 		List<EntityLookup<?>> lookups = new ArrayList<EntityLookup<?>>();
-		lookups.addAll(config().getEntityLookups(repositories()));
+		lookups.addAll(repositoryRestConfiguration().getEntityLookups(repositories()));
 		lookups.addAll(this.lookups);
 
 		return lookups;
@@ -810,8 +811,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		projectionFactory.setResourceLoader(applicationContext);
 
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
-				persistentEntities(), selfLinkProvider(), config().getProjectionConfiguration(), projectionFactory,
-				associationLinks());
+				persistentEntities(), selfLinkProvider(), repositoryRestConfiguration().getProjectionConfiguration(),
+				projectionFactory, associationLinks());
 
 		PageableHandlerMethodArgumentResolver pageableResolver = pageableResolver();
 
@@ -846,7 +847,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		objectMapper.registerModule(geoModule);
 
-		if (config().isEnableEnumTranslation()) {
+		if (repositoryRestConfiguration().isEnableEnumTranslation()) {
 			objectMapper.registerModule(new JacksonSerializers(enumTranslator()));
 		}
 
@@ -887,7 +888,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		PersistentEntities persistentEntities = persistentEntities();
 		RepositoryEntityLinks entityLinks = entityLinks();
 		MessageSourceAccessor messageSourceAccessor = resourceDescriptionMessageSourceAccessor();
-		RepositoryRestConfiguration config = config();
+		RepositoryRestConfiguration config = repositoryRestConfiguration();
 
 		return new RootResourceInformationToAlpsDescriptorConverter(associationLinks(), repositories, persistentEntities,
 				entityLinks, messageSourceAccessor, config, objectMapper(), enumTranslator());
@@ -914,7 +915,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		if (ClassUtils.isPresent("org.springframework.data.rest.webmvc.halbrowser.HalBrowser",
 				getClass().getClassLoader())) {
 
-			String basePath = config().getBasePath().toString().concat("/browser");
+			String basePath = repositoryRestConfiguration().getBasePath().toString().concat("/browser");
 			String rootLocation = "classpath:META-INF/spring-data-rest/hal-browser/";
 
 			registry.addResourceHandler(basePath.concat("/**")).addResourceLocations(rootLocation);
