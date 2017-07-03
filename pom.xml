@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-rest-parent</artifactId>
-	<version>3.0.0.BUILD-SNAPSHOT</version>
+	<version>3.0.0.DATAREST-1104-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Spring Data REST</name>
@@ -28,13 +28,13 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-rest</dist.id>
 
-		<springdata.commons>2.0.0.BUILD-SNAPSHOT</springdata.commons>
-		<springdata.jpa>2.0.0.BUILD-SNAPSHOT</springdata.jpa>
-		<springdata.mongodb>2.0.0.BUILD-SNAPSHOT</springdata.mongodb>
-		<springdata.gemfire>2.0.0.BUILD-SNAPSHOT</springdata.gemfire>
-		<springdata.solr>3.0.0.BUILD-SNAPSHOT</springdata.solr>
-		<springdata.cassandra>2.0.0.BUILD-SNAPSHOT</springdata.cassandra>
-		<springdata.keyvalue>2.0.0.BUILD-SNAPSHOT</springdata.keyvalue>
+		<springdata.commons>2.0.0.DATACMNS-1101-SNAPSHOT</springdata.commons>
+		<springdata.jpa>2.0.0.DATAJPA-1143-SNAPSHOT</springdata.jpa>
+		<springdata.mongodb>2.0.0.DATAMONGO-1730-SNAPSHOT</springdata.mongodb>
+		<springdata.gemfire>2.0.0.SGF-640-SNAPSHOT</springdata.gemfire>
+		<springdata.solr>3.0.0.DATASOLR-406-SNAPSHOT</springdata.solr>
+		<springdata.cassandra>2.0.0.DATACASS-473-SNAPSHOT</springdata.cassandra>
+		<springdata.keyvalue>2.0.0.DATAKV-184-SNAPSHOT</springdata.keyvalue>
 
 		<hibernate.version>4.3.10.Final</hibernate.version>
 		<jsonpath>1.1.0</jsonpath>
