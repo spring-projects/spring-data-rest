@@ -56,8 +56,9 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		this.entity.doWithAssociations(propertyMappings);
 		this.entity.doWithProperties(propertyMappings);
 
-		Optional<RestResource> annotation = entity.findAnnotation(RestResource.class);
-		this.explicitlyExported = annotation.map(it -> it.exported()).orElse(false);
+		this.explicitlyExported = Optional.ofNullable(entity.findAnnotation(RestResource.class))//
+				.map(it -> it.exported())//
+				.orElse(false);
 	}
 
 	/* 

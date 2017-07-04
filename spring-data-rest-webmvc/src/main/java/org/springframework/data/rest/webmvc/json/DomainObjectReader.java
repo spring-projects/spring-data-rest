@@ -230,7 +230,7 @@ public class DomainObjectReader {
 
 			PersistentProperty<?> property = mappedProperties.getPersistentProperty(fieldName);
 			PersistentPropertyAccessor accessor = entity.getPropertyAccessor(target);
-			Optional<Object> rawValue = accessor.getProperty(property);
+			Optional<Object> rawValue = Optional.ofNullable(accessor.getProperty(property));
 
 			if (!rawValue.isPresent() || associationLinks.isLinkableAssociation(property)) {
 				continue;
@@ -315,7 +315,7 @@ public class DomainObjectReader {
 	 * @return whether an object merge has been applied to the {@link ArrayNode}.
 	 */
 	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, ObjectMapper mapper,
-			Optional<TypeInformation<?>> componentType) throws Exception {
+			TypeInformation<?> componentType) throws Exception {
 
 		Assert.notNull(array, "ArrayNode must not be null!");
 		Assert.notNull(collection, "Source collection must not be null!");
@@ -373,7 +373,7 @@ public class DomainObjectReader {
 
 		Iterator<Entry<String, JsonNode>> fields = node.fields();
 		Class<?> keyType = typeOrObject(type.getComponentType());
-		Optional<TypeInformation<?>> valueType = type.getMapValueType();
+		TypeInformation<?> valueType = type.getMapValueType();
 
 		while (fields.hasNext()) {
 
@@ -391,7 +391,7 @@ public class DomainObjectReader {
 
 			} else if (value instanceof ArrayNode && sourceValue != null) {
 
-				handleArray(value, sourceValue, mapper, getTypeToMap(sourceValue, Optional.of(typeToMap)));
+				handleArray(value, sourceValue, mapper, getTypeToMap(sourceValue, typeToMap));
 
 			} else {
 
@@ -528,9 +528,8 @@ public class DomainObjectReader {
 	 * @param type can be {@literal null}.
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static Class<?> typeOrObject(Optional<TypeInformation<?>> type) {
-		return type.map(it -> it.getType()).orElse((Class) Object.class);
+	private static Class<?> typeOrObject(TypeInformation<?> type) {
+		return type == null ? Object.class : type.getType();
 	}
 
 	/**
@@ -542,21 +541,22 @@ public class DomainObjectReader {
 	 * @param type can be {@literal null}.
 	 * @return
 	 */
-	private static TypeInformation<?> getTypeToMap(Object value, Optional<TypeInformation<?>> type) {
+	private static TypeInformation<?> getTypeToMap(Object value, TypeInformation<?> type) {
 
-		return type.map(it -> {
+		if (type == null) {
+			return ClassTypeInformation.OBJECT;
+		}
 
-			if (value == null) {
-				return it;
-			}
+		if (value == null) {
+			return type;
+		}
 
-			if (Enum.class.isInstance(value)) {
-				return ClassTypeInformation.from(((Enum<?>) value).getDeclaringClass());
-			}
+		if (Enum.class.isInstance(value)) {
+			return ClassTypeInformation.from(((Enum<?>) value).getDeclaringClass());
+		}
 
-			return value.getClass().equals(it.getType()) ? it : ClassTypeInformation.from(value.getClass());
+		return value.getClass().equals(type.getType()) ? type : ClassTypeInformation.from(value.getClass());
 
-		}).orElse(ClassTypeInformation.OBJECT);
 	}
 
 	/**
@@ -636,8 +636,8 @@ public class DomainObjectReader {
 				return;
 			}
 
-			Optional<Object> sourceValue = sourceAccessor.getProperty(property);
-			Optional<Object> targetValue = targetAccessor.getProperty(property);
+			Optional<Object> sourceValue = Optional.ofNullable(sourceAccessor.getProperty(property));
+			Optional<Object> targetValue = Optional.ofNullable(targetAccessor.getProperty(property));
 			Optional<?> result = Optional.empty();
 
 			if (property.isMap()) {
@@ -650,7 +650,7 @@ public class DomainObjectReader {
 				result = sourceValue;
 			}
 
-			targetAccessor.setProperty(property, result);
+			targetAccessor.setProperty(property, result.orElse(null));
 		}
 	}
 

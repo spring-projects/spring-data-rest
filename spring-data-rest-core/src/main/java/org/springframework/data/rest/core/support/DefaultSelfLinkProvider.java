@@ -88,7 +88,6 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 	private Object identifierOrNull(Object instance) {
 
 		return entities.getRequiredPersistentEntity(instance.getClass())//
-				.getIdentifierAccessor(instance).getIdentifier()//
-				.orElse(null);
+				.getIdentifierAccessor(instance).getIdentifier();
 	}
 }

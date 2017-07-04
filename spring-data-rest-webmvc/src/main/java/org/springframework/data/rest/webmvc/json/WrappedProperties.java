@@ -144,7 +144,7 @@ class WrappedProperties {
 
 				for (BeanPropertyDefinition property : getMappedProperties(entity)) {
 
-					Optionals.ifAllPresent(entity.getPersistentProperty(property.getInternalName()), //
+					Optionals.ifAllPresent(Optional.ofNullable(entity.getPersistentProperty(property.getInternalName())), //
 							findAnnotatedMember(property), //
 							(prop, member) -> {
 
@@ -194,7 +194,7 @@ class WrappedProperties {
 			for (BeanPropertyDefinition property : properties) {
 
 				Optionals.ifAllPresent(findAnnotatedMember(property), //
-						entity.getPersistentProperty(property.getInternalName()), //
+						Optional.ofNullable(entity.getPersistentProperty(property.getInternalName())), //
 						(member, prop) -> withInternalName.add(property));
 			}
 

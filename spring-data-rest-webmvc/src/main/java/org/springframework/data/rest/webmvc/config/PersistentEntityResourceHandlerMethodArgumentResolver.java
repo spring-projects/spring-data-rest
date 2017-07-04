@@ -138,16 +138,15 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 			PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
 			boolean forUpdate = objectToUpdate.isPresent();
-			Optional<Object> entityIdentifier = objectToUpdate
-					.flatMap(it -> entity.getIdentifierAccessor(it).getIdentifier());
+			Optional<Object> entityIdentifier = objectToUpdate.map(it -> entity.getIdentifierAccessor(it).getIdentifier());
 
-			entityIdentifier.ifPresent(
-					it -> entity.getPropertyAccessor(obj).setProperty(entity.getRequiredIdProperty(), entityIdentifier));
+			entityIdentifier.ifPresent(it -> entity.getPropertyAccessor(obj).setProperty(entity.getRequiredIdProperty(),
+					entityIdentifier.orElse(null)));
 
 			id.ifPresent(it -> {
 				ConvertingPropertyAccessor accessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(obj),
 						conversionService);
-				accessor.setProperty(entity.getRequiredIdProperty(), id);
+				accessor.setProperty(entity.getRequiredIdProperty(), it);
 			});
 
 			Builder build = PersistentEntityResource.build(obj, entity);

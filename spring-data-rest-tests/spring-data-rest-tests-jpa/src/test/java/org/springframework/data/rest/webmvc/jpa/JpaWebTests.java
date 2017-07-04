@@ -526,7 +526,7 @@ public class JpaWebTests extends CommonWebTests {
 		String concurrencyTag = createdReceipt.getHeader("ETag");
 
 		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
-				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag))
+				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag)) //
 				.andExpect(status().is2xxSuccessful());
 
 		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")

@@ -175,10 +175,10 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 			for (BeanPropertyDefinition definition : jackson) {
 
-				JacksonProperty jacksonProperty = new JacksonProperty(jackson,
-						entity.getPersistentProperty(definition.getInternalName()), definition);
+				Optional<? extends PersistentProperty<?>> prop = Optional
+						.ofNullable(entity.getPersistentProperty(definition.getInternalName()));
 
-				Optional<? extends PersistentProperty<?>> prop = entity.getPersistentProperty(definition.getInternalName());
+				JacksonProperty jacksonProperty = new JacksonProperty(jackson, prop, definition);
 
 				// First pass, early drops to avoid unnecessary calculation
 				if (prop.isPresent()) {

@@ -74,32 +74,35 @@ public class EmbeddedResourcesAssembler {
 				return;
 			}
 
-			accessor.getProperty(association.getInverse()).ifPresent(it -> {
+			Object value = accessor.getProperty(association.getInverse());
 
-				String rel = metadata.getMappingFor(property).getRel();
+			if (value == null) {
+				return;
+			}
 
-				if (it instanceof Collection) {
+			String rel = metadata.getMappingFor(property).getRel();
 
-					Collection<?> collection = (Collection<?>) it;
+			if (value instanceof Collection) {
 
-					if (collection.isEmpty()) {
-						return;
-					}
+				Collection<?> collection = (Collection<?>) value;
 
-					List<Object> nestedCollection = new ArrayList<Object>();
-
-					for (Object element : collection) {
-						if (element != null) {
-							nestedCollection.add(projector.projectExcerpt(element));
-						}
-					}
-
-					associationProjections.add(wrappers.wrap(nestedCollection, rel));
-
-				} else {
-					associationProjections.add(wrappers.wrap(projector.projectExcerpt(it), rel));
+				if (collection.isEmpty()) {
+					return;
 				}
-			});
+
+				List<Object> nestedCollection = new ArrayList<Object>();
+
+				for (Object element : collection) {
+					if (element != null) {
+						nestedCollection.add(projector.projectExcerpt(element));
+					}
+				}
+
+				associationProjections.add(wrappers.wrap(nestedCollection, rel));
+
+			} else {
+				associationProjections.add(wrappers.wrap(projector.projectExcerpt(value), rel));
+			}
 		});
 
 		return associationProjections;

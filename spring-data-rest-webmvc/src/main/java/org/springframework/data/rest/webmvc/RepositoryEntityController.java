@@ -425,7 +425,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			eTag.verify(entity, it);
 
 			publisher.publishEvent(new BeforeDeleteEvent(it));
-			invoker.invokeDeleteById((Serializable) entity.getIdentifierAccessor(it).getIdentifier().orElse(null));
+			invoker.invokeDeleteById(entity.getIdentifierAccessor(it).getIdentifier());
 			publisher.publishEvent(new AfterDeleteEvent(it));
 
 			return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
