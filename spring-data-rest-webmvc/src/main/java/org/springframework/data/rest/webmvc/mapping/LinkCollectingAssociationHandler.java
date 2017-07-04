@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.rest.core.Path;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;

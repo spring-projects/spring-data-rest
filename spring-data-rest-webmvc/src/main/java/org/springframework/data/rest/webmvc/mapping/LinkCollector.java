@@ -25,12 +25,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -216,16 +216,20 @@ public class LinkCollector {
 
 			PersistentProperty<?> property = association.getInverse();
 
-			accessor.getProperty(property).ifPresent(it -> {
+			Object value = accessor.getProperty(property);
 
-				ResourceMetadata metadata = associations.getMappings().getMetadataFor(property.getOwner().getType());
-				ResourceMapping propertyMapping = metadata.getMappingFor(property);
+			if (value == null) {
+				return;
+			}
 
-				for (Object element : asCollection(it)) {
-					if (element != null)
-						links.add(getLinkFor(element, propertyMapping));
+			ResourceMetadata metadata = associations.getMappings().getMetadataFor(property.getOwner().getType());
+			ResourceMapping propertyMapping = metadata.getMappingFor(property);
+
+			for (Object element : asCollection(value)) {
+				if (element != null) {
+					links.add(getLinkFor(element, propertyMapping));
 				}
-			});
+			}
 		}
 
 		/**

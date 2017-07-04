@@ -20,7 +20,6 @@ import static org.springframework.data.rest.core.support.DomainObjectMerger.*;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Optional;
 
 import org.junit.Test;
 
@@ -34,16 +33,16 @@ public class DomainObjectMergerUnitTests {
 	@Test // DATAREST-327
 	public void considersEmptyObjectsEmpty() {
 
-		assertThat(isNullOrEmpty(Optional.empty())).isTrue();
-		assertThat(isNullOrEmpty(Optional.of(Collections.emptyList()))).isTrue();
-		assertThat(isNullOrEmpty(Optional.of(new Object[0]))).isTrue();
-		assertThat(isNullOrEmpty(Optional.of(new String[0]))).isTrue();
-		assertThat(isNullOrEmpty(Optional.of(new MyIterable()))).isTrue();
+		assertThat(isNullOrEmpty(null)).isTrue();
+		assertThat(isNullOrEmpty(Collections.emptyList())).isTrue();
+		assertThat(isNullOrEmpty(new Object[0])).isTrue();
+		assertThat(isNullOrEmpty(new String[0])).isTrue();
+		assertThat(isNullOrEmpty(new MyIterable())).isTrue();
 
-		assertThat(isNullOrEmpty(Optional.of(new Object()))).isFalse();
-		assertThat(isNullOrEmpty(Optional.of(Collections.singleton(new Object())))).isFalse();
-		assertThat(isNullOrEmpty(Optional.of(new Object[] { "1" }))).isFalse();
-		assertThat(isNullOrEmpty(Optional.of(new String[] { "1" }))).isFalse();
+		assertThat(isNullOrEmpty(new Object())).isFalse();
+		assertThat(isNullOrEmpty(Collections.singleton(new Object()))).isFalse();
+		assertThat(isNullOrEmpty(new Object[] { "1" })).isFalse();
+		assertThat(isNullOrEmpty(new String[] { "1" })).isFalse();
 	}
 
 	class MyIterable implements Iterable<Object> {

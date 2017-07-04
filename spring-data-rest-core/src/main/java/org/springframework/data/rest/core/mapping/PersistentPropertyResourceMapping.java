@@ -49,8 +49,9 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 
 		this.property = property;
 		this.mappings = mappings;
-		this.annotation = property.isAssociation() ? property.findAnnotation(RestResource.class) : Optional.empty();
-		this.description = property.findAnnotation(Description.class);
+		this.annotation = Optional
+				.ofNullable(property.isAssociation() ? property.findAnnotation(RestResource.class) : null);
+		this.description = Optional.ofNullable(property.findAnnotation(Description.class));
 	}
 
 	/* 
@@ -111,10 +112,9 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 		CollectionResourceMapping ownerTypeMapping = mappings.getMetadataFor(property.getOwner().getType());
 		ResourceDescription fallback = TypedResourceDescription.defaultFor(ownerTypeMapping.getItemResourceRel(), property);
 
-		return Optionals
-				.<ResourceDescription> firstNonEmpty(//
-						() -> description.map(it -> new AnnotationBasedResourceDescription(it, fallback)), //
-						() -> annotation.map(it -> new AnnotationBasedResourceDescription(it.description(), fallback)))
+		return Optionals.<ResourceDescription> firstNonEmpty(//
+				() -> description.map(it -> new AnnotationBasedResourceDescription(it, fallback)), //
+				() -> annotation.map(it -> new AnnotationBasedResourceDescription(it.description(), fallback)))
 				.orElse(fallback);
 	}
 

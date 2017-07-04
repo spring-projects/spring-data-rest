@@ -69,8 +69,8 @@ class MappedProperties {
 
 		for (BeanPropertyDefinition property : description.findProperties()) {
 
-			Optional<? extends PersistentProperty<?>> persistentProperty = entity
-					.getPersistentProperty(property.getInternalName());
+			Optional<? extends PersistentProperty<?>> persistentProperty = //
+					Optional.ofNullable(entity.getPersistentProperty(property.getInternalName()));
 
 			persistentProperty.ifPresent(it -> {
 				propertyToFieldName.put(it, property);

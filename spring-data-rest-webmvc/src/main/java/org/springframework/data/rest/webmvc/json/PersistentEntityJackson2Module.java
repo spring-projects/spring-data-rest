@@ -309,7 +309,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			return description.findProperties().stream()//
 					.filter(it -> it.getName().equals(finalName))//
-					.findFirst().flatMap(it -> entity.getPersistentProperty(it.getInternalName()));
+					.findFirst().map(it -> entity.getPersistentProperty(it.getInternalName()));
 		}
 	}
 
@@ -422,28 +422,31 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 					SettableBeanProperty property = properties.next();
 
-					entity.getPersistentProperty(property.getName()).ifPresent(persistentProperty -> {
+					PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getName());
 
-						if (associationLinks.isLookupType(persistentProperty)) {
+					if (persistentProperty == null) {
+						continue;
+					}
 
-							RepositoryInvokingDeserializer repositoryInvokingDeserializer = new RepositoryInvokingDeserializer(
-									factory, persistentProperty);
-							JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, repositoryInvokingDeserializer,
-									config);
+					if (associationLinks.isLookupType(persistentProperty)) {
 
-							builder.addOrReplaceProperty(property.withValueDeserializer(deserializer), false);
-							return;
-						}
-
-						if (!associationLinks.isLinkableAssociation(persistentProperty)) {
-							return;
-						}
-
-						UriStringDeserializer uriStringDeserializer = new UriStringDeserializer(persistentProperty, converter);
-						JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, uriStringDeserializer, config);
+						RepositoryInvokingDeserializer repositoryInvokingDeserializer = new RepositoryInvokingDeserializer(factory,
+								persistentProperty);
+						JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, repositoryInvokingDeserializer,
+								config);
 
 						builder.addOrReplaceProperty(property.withValueDeserializer(deserializer), false);
-					});
+						continue;
+					}
+
+					if (!associationLinks.isLinkableAssociation(persistentProperty)) {
+						continue;
+					}
+
+					UriStringDeserializer uriStringDeserializer = new UriStringDeserializer(persistentProperty, converter);
+					JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, uriStringDeserializer, config);
+
+					builder.addOrReplaceProperty(property.withValueDeserializer(deserializer), false);
 				}
 			});
 

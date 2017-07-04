@@ -86,7 +86,7 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 					String segment = iterator.next();
 
 					Optional<? extends PersistentProperty<?>> property = entities.getPersistentEntity(value.getClass())//
-							.flatMap(it -> it.getPersistentProperty(PropertyAccessorUtils.getPropertyName(segment)));
+							.map(it -> it.getPersistentProperty(PropertyAccessorUtils.getPropertyName(segment)));
 
 					value = getValue(value, property, segment, propertyName);
 
