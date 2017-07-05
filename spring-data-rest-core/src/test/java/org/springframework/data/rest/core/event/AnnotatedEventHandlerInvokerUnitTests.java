@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.core.event;
 
-import static org.assertj.core.api.Assertions.*;
-
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.annotation.Order;
@@ -26,6 +24,8 @@ import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.event.AnnotatedEventHandlerInvoker.EventHandlerMethod;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link AnnotatedEventHandlerInvoker}.
@@ -101,6 +101,19 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 		assertThat(secondHandler.callCount).isEqualTo(1);
 	}
 
+	@Test // DATAREST-1075
+	public void invokesEventHandlerOnceForOverriddenHandlerMethod() {
+
+		final OverridingEventHandler overridingEventHandler = new OverridingEventHandler();
+
+		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
+		invoker.postProcessAfterInitialization(overridingEventHandler, "overridingEventHandler");
+
+		invoker.onApplicationEvent(new BeforeCreateEvent(new SecondEntity()));
+
+		assertThat(overridingEventHandler.callCount).isEqualTo(1);
+	}
+
 	@RepositoryEventHandler
 	static class Sample {
 
@@ -163,6 +176,15 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 
 	@RepositoryEventHandler
 	static class SecondEventHandler extends AbstractBaseEntityEventHandler<SecondEntity> {}
+
+	@RepositoryEventHandler
+	static class OverridingEventHandler extends AbstractBaseEntityEventHandler<SecondEntity> {
+		@HandleBeforeCreate
+		private void method(SecondEntity entity) {
+			callCount += 1;
+		}
+	}
+
 
 	static abstract class BaseEntity {}
 
