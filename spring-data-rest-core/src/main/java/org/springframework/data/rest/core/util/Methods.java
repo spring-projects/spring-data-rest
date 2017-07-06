@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@ import org.springframework.util.ReflectionUtils;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @deprecated prefer {@link ReflectionUtils#getUniqueDeclaredMethods(Class)}, to be removed with 3.0
  */
+@Deprecated
 public abstract class Methods {
 
 	private Methods() {}
@@ -38,12 +40,12 @@ public abstract class Methods {
 		 */
 		@Override
 		public boolean matches(Method method) {
-			
+
 			return !method.isSynthetic() && //
-					!method.isBridge() && //
-					!ReflectionUtils.isObjectMethod(method) && //
-					!ClassUtils.isCglibProxyClass(method.getDeclaringClass()) && //
-					!ReflectionUtils.isCglibRenamedMethod(method);
+			!method.isBridge() && //
+			!ReflectionUtils.isObjectMethod(method) && //
+			!ClassUtils.isCglibProxyClass(method.getDeclaringClass()) && //
+			!ReflectionUtils.isCglibRenamedMethod(method);
 		}
 	};
 }
