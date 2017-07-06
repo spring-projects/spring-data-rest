@@ -45,7 +45,6 @@ import org.springframework.data.rest.core.annotation.HandleBeforeLinkDelete;
 import org.springframework.data.rest.core.annotation.HandleBeforeLinkSave;
 import org.springframework.data.rest.core.annotation.HandleBeforeSave;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
-import org.springframework.data.rest.core.util.Methods;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -123,27 +122,19 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 			return bean;
 		}
 
-		ReflectionUtils.doWithMethods(beanType, new ReflectionUtils.MethodCallback() {
+		for (Method method : ReflectionUtils.getUniqueDeclaredMethods(beanType)) {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.util.ReflectionUtils.MethodCallback#doWith(java.lang.reflect.Method)
-			 */
-			@Override
-			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-
-				inspect(bean, method, HandleBeforeCreate.class, BeforeCreateEvent.class);
-				inspect(bean, method, HandleAfterCreate.class, AfterCreateEvent.class);
-				inspect(bean, method, HandleBeforeSave.class, BeforeSaveEvent.class);
-				inspect(bean, method, HandleAfterSave.class, AfterSaveEvent.class);
-				inspect(bean, method, HandleBeforeLinkSave.class, BeforeLinkSaveEvent.class);
-				inspect(bean, method, HandleAfterLinkSave.class, AfterLinkSaveEvent.class);
-				inspect(bean, method, HandleBeforeDelete.class, BeforeDeleteEvent.class);
-				inspect(bean, method, HandleAfterDelete.class, AfterDeleteEvent.class);
-				inspect(bean, method, HandleBeforeLinkDelete.class, BeforeLinkDeleteEvent.class);
-				inspect(bean, method, HandleAfterLinkDelete.class, AfterLinkDeleteEvent.class);
-			}
-		}, Methods.USER_METHODS);
+			inspect(bean, method, HandleBeforeCreate.class, BeforeCreateEvent.class);
+			inspect(bean, method, HandleAfterCreate.class, AfterCreateEvent.class);
+			inspect(bean, method, HandleBeforeSave.class, BeforeSaveEvent.class);
+			inspect(bean, method, HandleAfterSave.class, AfterSaveEvent.class);
+			inspect(bean, method, HandleBeforeLinkSave.class, BeforeLinkSaveEvent.class);
+			inspect(bean, method, HandleAfterLinkSave.class, AfterLinkSaveEvent.class);
+			inspect(bean, method, HandleBeforeDelete.class, BeforeDeleteEvent.class);
+			inspect(bean, method, HandleAfterDelete.class, AfterDeleteEvent.class);
+			inspect(bean, method, HandleBeforeLinkDelete.class, BeforeLinkDeleteEvent.class);
+			inspect(bean, method, HandleAfterLinkDelete.class, AfterLinkDeleteEvent.class);
+		}
 
 		return bean;
 	}
