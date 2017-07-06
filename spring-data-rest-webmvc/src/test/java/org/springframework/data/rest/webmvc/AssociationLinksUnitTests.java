@@ -33,6 +33,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -56,10 +57,11 @@ public class AssociationLinksUnitTests {
 	ResourceMetadata sampleResourceMetadata;
 
 	@Mock RepositoryRestConfiguration config;
+	@Mock ProjectionDefinitionConfiguration projectionDefinitionConfig;
 
 	@Before
 	public void setUp() {
-
+		doReturn(projectionDefinitionConfig).when(config).getProjectionConfiguration();
 		this.mappingContext = new KeyValueMappingContext<>();
 		this.entity = mappingContext.getRequiredPersistentEntity(Sample.class);
 		this.mappings = new PersistentEntitiesResourceMappings(new PersistentEntities(Arrays.asList(mappingContext)));

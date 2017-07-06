@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,23 +21,31 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.Path;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.TemplateVariable;
+import org.springframework.hateoas.TemplateVariables;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
+
+import static org.springframework.hateoas.TemplateVariable.VariableType.REQUEST_PARAM;
 
 /**
  * A value object to for {@link Link}s representing associations.
- * 
+ *
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Haroun Pacquee
  * @since 2.1
  */
 @RequiredArgsConstructor
@@ -48,7 +56,7 @@ public class Associations {
 
 	/**
 	 * Returns the links to render for the given {@link Association}.
-	 * 
+	 *
 	 * @param association must not be {@literal null}.
 	 * @param path must not be {@literal null}.
 	 * @return
@@ -65,12 +73,29 @@ public class Associations {
 			ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 			String href = path.slash(propertyMapping.getPath()).toString();
-			String rel = propertyMapping.getRel();
-
-			return Collections.singletonList(new Link(href, rel));
+			String uri = new UriTemplate(href, getProjectionVariable(property)).toString();
+			return Collections.singletonList(new Link(uri, propertyMapping.getRel()));
 		}
 
 		return Collections.emptyList();
+	}
+
+	private TemplateVariables getProjectionVariable(PersistentProperty<?> property) {
+		ProjectionDefinitionConfiguration projectionConfiguration = config.getProjectionConfiguration();
+		if (isProjectionPresent(property, projectionConfiguration)) {
+			return new TemplateVariables(new TemplateVariable(projectionConfiguration.getParameterName(), REQUEST_PARAM));
+		} else {
+			return TemplateVariables.NONE;
+		}
+	}
+
+	private boolean isProjectionPresent(PersistentProperty<?> property, ProjectionDefinitionConfiguration projectionConfiguration) {
+		return Stream.of(property.getType(),
+						property.getActualType(),
+						property.getRawType(),
+						property.getComponentType(),
+						property.getMapValueType())
+				.anyMatch(projectionConfiguration::hasProjectionFor);
 	}
 
 	/**
