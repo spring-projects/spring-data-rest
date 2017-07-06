@@ -17,10 +17,12 @@ package org.springframework.data.rest.core.event;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.annotation.Order;
+import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.data.rest.core.domain.Person;
@@ -102,6 +104,19 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 		assertThat(secondHandler.callCount, is(1));
 	}
 
+	@Test // DATAREST-1075
+	public void doesInvokeMethodOnlyOnceForMockitoSpy() {
+
+		EventHandler handler = spy(new EventHandler());
+		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
+		invoker.postProcessAfterInitialization(handler, "handler");
+
+		Payload payload = new Payload();
+		invoker.onApplicationEvent(new AfterCreateEvent(payload));
+
+		verify(handler, times(1)).doAfterCreate(payload);
+	}
+
 	@RepositoryEventHandler
 	static class Sample {
 
@@ -170,4 +185,13 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 	static class FirstEntity extends BaseEntity {}
 
 	static class SecondEntity extends BaseEntity {}
+
+	@RepositoryEventHandler
+	static class EventHandler {
+
+		@HandleAfterCreate
+		public void doAfterCreate(Payload bar) {}
+	}
+
+	static class Payload {}
 }
