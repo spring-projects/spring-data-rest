@@ -36,6 +36,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -48,6 +49,7 @@ import org.springframework.hateoas.Link;
 public class AssociationsUnitTests {
 
 	@Mock RepositoryRestConfiguration configuration;
+	@Mock ProjectionDefinitionConfiguration projectionDefinitionConfiguration;
 
 	@Mock PersistentEntity<?, ?> entity;
 	@Mock PersistentProperty<?> property;
@@ -59,6 +61,7 @@ public class AssociationsUnitTests {
 
 	@Before
 	public void setUp() {
+		doReturn(projectionDefinitionConfiguration).when(configuration).getProjectionConfiguration();
 
 		this.mappingContext = new KeyValueMappingContext<>();
 		this.mappingContext.getPersistentEntity(Root.class);
@@ -128,6 +131,17 @@ public class AssociationsUnitTests {
 		List<Link> links = associations.getLinksFor(getAssociation(Root.class, "relatedButNotExported"), new Path(""));
 
 		assertThat(links).hasSize(0);
+	}
+
+	@Test
+	public void detectsProjectionsForAssociationLinks() {
+		String projectionParameterName = "projection";
+		doReturn(true).when(projectionDefinitionConfiguration).hasProjectionFor(RelatedAndExported.class);
+		doReturn(projectionParameterName).when(projectionDefinitionConfiguration).getParameterName();
+		List<Link> links = associations.getLinksFor(getAssociation(Root.class, "relatedAndExported"), new Path(""));
+
+		assertThat(links).hasSize(1);
+		assertThat(links).contains(new Link("/relatedAndExported{?" + projectionParameterName + "}", "relatedAndExported"));
 	}
 
 	private Association<? extends PersistentProperty<?>> getAssociation(Class<?> type, String name) {
