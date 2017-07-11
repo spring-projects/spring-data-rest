@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -175,7 +176,8 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 		includeFilters = @Filter(BasePathAwareController.class), useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 @Import({ SpringDataJacksonConfiguration.class, EnableSpringDataWebSupport.QuerydslActivator.class })
-public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration implements InitializingBean {
+public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration
+		implements InitializingBean, BeanClassLoaderAware {
 
 	private static final boolean IS_JPA_AVAILABLE = ClassUtils.isPresent("javax.persistence.EntityManager",
 			RepositoryRestMvcConfiguration.class.getClassLoader());
@@ -190,10 +192,20 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Autowired(required = false) CurieProvider curieProvider;
 
 	private RepositoryRestConfigurerDelegate configurerDelegate;
+	private ClassLoader beanClassLoader;
 
 	public RepositoryRestMvcConfiguration(ApplicationContext context,
 			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
 		super(context, conversionService);
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
+	 */
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
 	}
 
 	/* 
@@ -808,7 +820,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 		projectionFactory.setBeanFactory(applicationContext);
-		projectionFactory.setResourceLoader(applicationContext);
+		projectionFactory.setBeanClassLoader(beanClassLoader);
 
 		PersistentEntityResourceAssemblerArgumentResolver peraResolver = new PersistentEntityResourceAssemblerArgumentResolver(
 				persistentEntities(), selfLinkProvider(), repositoryRestConfiguration().getProjectionConfiguration(),
@@ -861,10 +873,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new EnumTranslator(resourceDescriptionMessageSourceAccessor());
 	}
 
-	@SuppressWarnings("unchecked")
 	private Set<Class<?>> getProjections(Repositories repositories) {
 
-		Set<String> packagesToScan = new HashSet<String>();
+		Set<String> packagesToScan = new HashSet<>();
 
 		for (Class<?> domainType : repositories) {
 			packagesToScan.add(domainType.getPackage().getName());
