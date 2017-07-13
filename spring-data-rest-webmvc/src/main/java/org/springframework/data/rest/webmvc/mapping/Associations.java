@@ -100,7 +100,7 @@ public class Associations {
 
 	/**
 	 * Returns the {@link ResourceMetadata} for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -113,7 +113,7 @@ public class Associations {
 
 	/**
 	 * Returns whether the type of the given {@link PersistentProperty} is configured as lookup type.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return
 	 */
@@ -130,7 +130,7 @@ public class Associations {
 
 	/**
 	 * Returns whether the given {@link Association} is linkable.
-	 * 
+	 *
 	 * @param association must not be {@literal null}.
 	 * @return
 	 */
@@ -143,7 +143,7 @@ public class Associations {
 
 	/**
 	 * Returns whether the given property is an association that is linkable.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return
 	 */
