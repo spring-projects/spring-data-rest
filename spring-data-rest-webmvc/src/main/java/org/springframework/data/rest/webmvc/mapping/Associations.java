@@ -15,13 +15,14 @@
  */
 package org.springframework.data.rest.webmvc.mapping;
 
+import static org.springframework.hateoas.TemplateVariable.VariableType.*;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
@@ -37,8 +38,6 @@ import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
-
-import static org.springframework.hateoas.TemplateVariable.VariableType.REQUEST_PARAM;
 
 /**
  * A value object to for {@link Link}s representing associations.
@@ -73,29 +72,12 @@ public class Associations {
 			ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 			String href = path.slash(propertyMapping.getPath()).toString();
-			String uri = new UriTemplate(href, getProjectionVariable(property)).toString();
-			return Collections.singletonList(new Link(uri, propertyMapping.getRel()));
+			UriTemplate template = new UriTemplate(href, getProjectionVariable(property));
+
+			return Collections.singletonList(new Link(template, propertyMapping.getRel()));
 		}
 
 		return Collections.emptyList();
-	}
-
-	private TemplateVariables getProjectionVariable(PersistentProperty<?> property) {
-		ProjectionDefinitionConfiguration projectionConfiguration = config.getProjectionConfiguration();
-		if (isProjectionPresent(property, projectionConfiguration)) {
-			return new TemplateVariables(new TemplateVariable(projectionConfiguration.getParameterName(), REQUEST_PARAM));
-		} else {
-			return TemplateVariables.NONE;
-		}
-	}
-
-	private boolean isProjectionPresent(PersistentProperty<?> property, ProjectionDefinitionConfiguration projectionConfiguration) {
-		return Stream.of(property.getType(),
-						property.getActualType(),
-						property.getRawType(),
-						property.getComponentType(),
-						property.getMapValueType())
-				.anyMatch(projectionConfiguration::hasProjectionFor);
 	}
 
 	/**
@@ -163,5 +145,14 @@ public class Associations {
 
 		metadata = mappings.getMetadataFor(property.getActualType());
 		return metadata == null ? false : metadata.isExported();
+	}
+
+	private TemplateVariables getProjectionVariable(PersistentProperty<?> property) {
+
+		ProjectionDefinitionConfiguration projectionConfiguration = config.getProjectionConfiguration();
+
+		return projectionConfiguration.hasProjectionFor(property.getActualType()) //
+				? new TemplateVariables(new TemplateVariable(projectionConfiguration.getParameterName(), REQUEST_PARAM)) //
+				: TemplateVariables.NONE;
 	}
 }

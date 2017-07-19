@@ -335,7 +335,7 @@ public class JpaWebTests extends CommonWebTests {
 		patchAndGet(frodosSiblingsLink, links.get(3).getHref(), TEXT_URI_LIST);
 
 		String pippinId = new UriTemplate("/people/{id}").match(links.get(3).getHref()).get("id");
-		deleteAndVerify(new Link(frodosSiblingsLink.getHref() + "/" + pippinId));
+		deleteAndVerify(new Link(frodosSiblingsLink.expand().getHref() + "/" + pippinId));
 
 		assertSiblingNames(frodosSiblingsLink, "Bilbo", "Merry");
 	}

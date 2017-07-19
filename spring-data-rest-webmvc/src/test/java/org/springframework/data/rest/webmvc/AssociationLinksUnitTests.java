@@ -45,6 +45,7 @@ import org.springframework.hateoas.Link;
  * Unit tests for {@link Associations}.
  * 
  * @author Oliver Gierke
+ * @author Haroun Pacquee
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AssociationLinksUnitTests {
@@ -61,7 +62,9 @@ public class AssociationLinksUnitTests {
 
 	@Before
 	public void setUp() {
+
 		doReturn(projectionDefinitionConfig).when(config).getProjectionConfiguration();
+
 		this.mappingContext = new KeyValueMappingContext<>();
 		this.entity = mappingContext.getRequiredPersistentEntity(Sample.class);
 		this.mappings = new PersistentEntitiesResourceMappings(new PersistentEntities(Arrays.asList(mappingContext)));

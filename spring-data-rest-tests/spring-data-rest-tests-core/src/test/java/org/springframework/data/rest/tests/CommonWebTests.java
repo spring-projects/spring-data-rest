@@ -173,8 +173,8 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 				for (Object href : uris) {
 
-					client.follow(href.toString()). //
-							andExpect(status().isOk());
+					client.follow(new Link(href.toString())) //
+							.andExpect(status().isOk());
 				}
 			}
 		}

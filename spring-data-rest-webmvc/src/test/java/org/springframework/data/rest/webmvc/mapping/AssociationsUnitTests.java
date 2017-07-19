@@ -133,11 +133,14 @@ public class AssociationsUnitTests {
 		assertThat(links).hasSize(0);
 	}
 
-	@Test
+	@Test // DATAREST-1105
 	public void detectsProjectionsForAssociationLinks() {
+
 		String projectionParameterName = "projection";
+
 		doReturn(true).when(projectionDefinitionConfiguration).hasProjectionFor(RelatedAndExported.class);
 		doReturn(projectionParameterName).when(projectionDefinitionConfiguration).getParameterName();
+
 		List<Link> links = associations.getLinksFor(getAssociation(Root.class, "relatedAndExported"), new Path(""));
 
 		assertThat(links).hasSize(1);
