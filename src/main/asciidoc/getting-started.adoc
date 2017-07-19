@@ -80,7 +80,7 @@ Make sure you also configure Spring Data repositories for the store you use. For
 [[getting-started.basic-settings]]
 == Basic settings for Spring Data REST
 
-=== Which repositories get exposed by defaults?
+=== Which repositories get exposed by default?
 
 Spring Data REST uses a `RepositoryDetectionStrategy` to determine if a repository will be exported as REST resource or not. The following strategies (enumeration values of `RepositoryDiscoveryStrategies`) are available:
 
