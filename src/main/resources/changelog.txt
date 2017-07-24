@@ -1,6 +1,16 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.5.RELEASE (2017-07-24)
+---------------------------------------------
+* DATAREST-1092 - MoveOperationUnitTests fail on Spring 5 RC1.
+* DATAREST-1090 - Release 2.6.5 (Ingalls SR5).
+* DATAREST-1079 - Upgrade to EvoInflector 1.2.2.
+* DATAREST-1075 - AnnotatedEventHandlerInvoker registers event handler twice with Mockito2 and SpyBean.
+* DATAREST-1060 - HttpMessageNotWritableException when JPA entity has enum attribute.
+* DATAREST-1031 - NullPointerException in ServletInvocableHandlerMethod.invokeAndHandle when using @ExceptionHandler.
+
+
 Changes in version 3.0.0.M4 (2017-06-14)
 ----------------------------------------
 * DATAREST-1092 - MoveOperationUnitTests fail on Spring 5 RC1.
