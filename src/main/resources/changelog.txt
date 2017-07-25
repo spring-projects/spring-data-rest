@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.0.RC2 (2017-07-25)
+-----------------------------------------
+* DATAREST-1111 - Release 3.0 RC2 (Kay).
+
+
 Changes in version 3.0.0.RC1 (2017-07-25)
 -----------------------------------------
 * DATAREST-1106 - Move off deprecations for ProjectionFactory setup in configuration.
