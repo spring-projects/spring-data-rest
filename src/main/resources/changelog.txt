@@ -1,6 +1,18 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.0.RC1 (2017-07-25)
+-----------------------------------------
+* DATAREST-1106 - Move off deprecations for ProjectionFactory setup in configuration.
+* DATAREST-1105 - Association links should advertise projections if available.
+* DATAREST-1104 - Adapt to API changes in mapping subsystem.
+* DATAREST-1093 - Release 3.0 RC1 (Kay).
+* DATAREST-1079 - Upgrade to EvoInflector 1.2.2.
+* DATAREST-1075 - AnnotatedEventHandlerInvoker registers event handler twice with Mockito2 and SpyBean.
+* DATAREST-1060 - HttpMessageNotWritableException when JPA entity has enum attribute.
+* DATAREST-540 - Use a less generic name for RepositoryRestConfiguration bean created by RepositoryRestMvcConfiguration.
+
+
 Changes in version 2.6.5.RELEASE (2017-07-24)
 ---------------------------------------------
 * DATAREST-1092 - MoveOperationUnitTests fail on Spring 5 RC1.
