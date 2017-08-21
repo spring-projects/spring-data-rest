@@ -155,6 +155,12 @@
 										<replacevalue>The HAL Browser (for Spring Data REST)</replacevalue>
 									</replacefilter>
 								</replace>
+								<replace file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/login.html">
+									<replacefilter>
+										<replacetoken>browser.html</replacetoken>
+										<replacevalue>index.html</replacevalue>
+									</replacefilter>
+								</replace>
 								<delete file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-browser/browser.html" />
 							</target>
 						</configuration>
