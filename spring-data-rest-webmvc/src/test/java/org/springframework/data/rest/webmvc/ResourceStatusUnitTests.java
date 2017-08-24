@@ -21,10 +21,13 @@ import static org.mockito.Mockito.*;
 
 import lombok.Value;
 
+import java.util.Date;
 import java.util.function.Supplier;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -48,6 +51,8 @@ public class ResourceStatusUnitTests {
 
 	@Mock HttpHeadersPreparer preparer;
 	@Mock Supplier<PersistentEntityResource> supplier;
+
+	public @Rule ExpectedException exception = ExpectedException.none();
 
 	@Before
 	public void setUp() {
@@ -85,6 +90,15 @@ public class ResourceStatusUnitTests {
 		doReturn(true).when(preparer).isObjectStillValid(any(), any(HttpHeaders.class));
 
 		assertNotModified(status.getStatusAndHeaders(new HttpHeaders(), new Sample(0), entity));
+	}
+
+	@Test // DATAREST-1121
+	public void rejectsInvalidPersistentEntityDomainObjectCombination() {
+
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage(entity.getType().getName());
+
+		assertModified(status.getStatusAndHeaders(new HttpHeaders(), new Date(), entity));
 	}
 
 	private void assertModified(StatusAndHeaders statusAndHeaders) {

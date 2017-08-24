@@ -41,6 +41,7 @@ import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,7 +75,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		ResourceSupport resource = controller.listSearches(request);
 
 		ResourceTester tester = ResourceTester.of(resource);
-		tester.assertNumberOfLinks(6); // Self link included
+		tester.assertNumberOfLinks(7); // Self link included
 		tester.assertHasLinkEndingWith("findFirstPersonByFirstName", "findFirstPersonByFirstName{?firstname,projection}");
 		tester.assertHasLinkEndingWith("firstname", "firstname{?firstname,page,size,sort,projection}");
 		tester.assertHasLinkEndingWith("lastname", "lastname{?lastname,sort,projection}");
@@ -82,6 +83,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 				"findByCreatedUsingISO8601Date{?date,page,size,sort,projection}");
 		tester.assertHasLinkEndingWith("findByCreatedGreaterThan",
 				"findByCreatedGreaterThan{?date,page,size,sort,projection}");
+		tester.assertHasLinkEndingWith("findCreatedDateByLastName", "findCreatedDateByLastName{?lastname}");
 	}
 
 	@Test(expected = ResourceNotFoundException.class)
@@ -176,5 +178,18 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		RepositorySearchesResource searches = controller.listSearches(getResourceInformation(Person.class));
 
 		assertThat(searches.getDomainType()).isAssignableFrom(Person.class);
+	}
+
+	@Test // DATAREST-1121
+	public void returnsSimpleResponseEntityForQueryMethod() {
+
+		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
+		parameters.add("lastname", "Thornton");
+
+		ResponseEntity<?> entity = controller.executeSearch(getResourceInformation(Person.class), parameters,
+				"findCreatedDateByLastName", PAGEABLE, Sort.unsorted(), assembler, new HttpHeaders());
+
+		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(entity.getHeaders()).isEmpty();
 	}
 }
