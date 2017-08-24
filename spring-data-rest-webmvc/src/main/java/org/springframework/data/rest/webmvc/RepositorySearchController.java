@@ -212,6 +212,11 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		PersistentEntity<?, ?> entity = information.getPersistentEntity();
 
+		// Returned value is not of the aggregates type - probably some projection
+		if (!entity.getType().isInstance(source)) {
+			return ResponseEntity.ok(source);
+		}
+
 		return resourceStatus.getStatusAndHeaders(headers, source, entity).toResponseEntity(//
 				new Supplier<PersistentEntityResource>() {
 

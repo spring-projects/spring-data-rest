@@ -60,6 +60,9 @@ public class HttpHeadersPreparer {
 	 */
 	public HttpHeaders prepareHeaders(PersistentEntity<?, ?> entity, Object value) {
 
+		Assert.notNull(entity, "PersistentEntity must not be null!");
+		Assert.notNull(value, "Entity value must not be null!");
+
 		// Add ETag
 		HttpHeaders headers = ETag.from(entity, value).addTo(new HttpHeaders());
 
