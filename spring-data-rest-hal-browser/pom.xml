@@ -13,7 +13,7 @@
 	<name>Spring Data REST - HAL Browser</name>
 
 	<properties>
-		<browser.version>3325375</browser.version>
+		<browser.version>ad9b865</browser.version>
 		<json-editor.version>0.7.21</json-editor.version>
 	</properties>
 
