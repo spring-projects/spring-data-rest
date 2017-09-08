@@ -171,6 +171,11 @@ public class JsonPatchTests {
 		patch.apply(todo, Todo.class);
 	}
 
+	@Test(expected = PatchException.class) // DATAREST-1127
+	public void rejectsInvalidPaths() throws Exception {
+		readJsonPatch("patch-invalid-path.json").apply(new Todo(), Todo.class);
+	}
+
 	private Patch readJsonPatch(String jsonPatchFile) throws IOException, JsonParseException, JsonMappingException {
 
 		ClassPathResource resource = new ClassPathResource(jsonPatchFile, getClass());
