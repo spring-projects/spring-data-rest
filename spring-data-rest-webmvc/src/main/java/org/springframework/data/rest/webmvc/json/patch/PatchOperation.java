@@ -17,11 +17,16 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.springframework.data.rest.webmvc.json.patch.PathToSpEL.*;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionException;
 import org.springframework.expression.spel.SpelEvaluationException;
@@ -34,6 +39,8 @@ import org.springframework.expression.spel.SpelEvaluationException;
  * @author Oliver Gierke
  */
 public abstract class PatchOperation {
+
+	private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s (from source %s)!";
 
 	protected final String op;
 	protected final String path;
@@ -191,8 +198,39 @@ public abstract class PatchOperation {
 	 */
 	protected <T> Object evaluateValueFromTarget(Object targetObject, Class<T> entityType) {
 
-		return value instanceof LateObjectEvaluator
-				? ((LateObjectEvaluator) value).evaluate(spelExpression.getValueType(targetObject)) : value;
+		verifyPath(entityType);
+
+		return evaluate(spelExpression.getValueType(targetObject));
+	}
+
+	protected final <T> Object evaluate(Class<T> type) {
+		return value instanceof LateObjectEvaluator ? ((LateObjectEvaluator) value).evaluate(type) : value;
+	}
+
+	/**
+	 * Verifies that the current path is available on the given type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 * @return the {@link PropertyPath} representing the path. Empty if the path only consists of index lookups or append
+	 *         characters.
+	 */
+	protected final Optional<PropertyPath> verifyPath(Class<?> type) {
+
+		String pathSource = Arrays.stream(path.split("/"))//
+				.filter(it -> !it.matches("\\d")) // no digits
+				.filter(it -> !it.equals("-")) // no "last element"s
+				.filter(it -> !it.isEmpty()) //
+				.collect(Collectors.joining("."));
+
+		if (pathSource.isEmpty()) {
+			return Optional.empty();
+		}
+
+		try {
+			return Optional.of(PropertyPath.from(pathSource, type));
+		} catch (PropertyReferenceException o_O) {
+			throw new PatchException(String.format(INVALID_PATH_REFERENCE, pathSource, type, path), o_O);
+		}
 	}
 
 	/**
