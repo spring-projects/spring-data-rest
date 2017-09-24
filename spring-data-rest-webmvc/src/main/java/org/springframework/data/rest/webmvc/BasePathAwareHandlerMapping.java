@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -168,7 +169,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 	 */
 	@Override
 	protected boolean isHandler(Class<?> beanType) {
-		return beanType.getAnnotation(BasePathAwareController.class) != null;
+		return AnnotationUtils.findAnnotation(beanType, BasePathAwareController.class) != null;
 	}
 
 	/* 
