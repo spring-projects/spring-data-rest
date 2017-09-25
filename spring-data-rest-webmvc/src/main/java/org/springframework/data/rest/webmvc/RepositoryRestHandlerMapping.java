@@ -39,6 +39,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
@@ -169,7 +170,10 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	 */
 	@Override
 	protected boolean isHandler(Class<?> beanType) {
-		return AnnotationUtils.findAnnotation(beanType, RepositoryRestController.class) != null;
+
+		Class<?> type = ClassUtils.getUserClass(beanType);
+
+		return AnnotationUtils.findAnnotation(type, RepositoryRestController.class) != null;
 	}
 
 	/*
