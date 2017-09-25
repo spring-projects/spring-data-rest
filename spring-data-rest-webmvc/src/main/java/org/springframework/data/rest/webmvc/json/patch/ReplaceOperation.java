@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ package org.springframework.data.rest.webmvc.json.patch;
  * Operation that replaces the value at the given path with a new value.
  * 
  * @author Craig Walls
+ * @author Oliver Gierke
  */
-public class ReplaceOperation extends PatchOperation {
+class ReplaceOperation extends PatchOperation {
 
 	/**
 	 * Constructs the replace operation
@@ -34,10 +35,10 @@ public class ReplaceOperation extends PatchOperation {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#doPerform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void perform(Object target, Class<T> type) {
+	<T> void doPerform(Object target, Class<T> type) {
 		setValueOnTarget(target, evaluateValueFromTarget(target, type));
 	}
 }

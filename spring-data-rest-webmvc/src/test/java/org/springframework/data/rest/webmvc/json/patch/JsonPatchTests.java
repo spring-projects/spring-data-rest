@@ -15,7 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -162,9 +164,12 @@ public class JsonPatchTests {
 		patch.apply(todo, Todo.class);
 	}
 
-	@Test(expected = PatchException.class) // DATAREST-1127
+	@Test // DATAREST-1127
 	public void rejectsInvalidPaths() throws Exception {
-		readJsonPatch("patch-invalid-path.json").apply(new Todo(), Todo.class);
+
+		assertThatExceptionOfType(PatchException.class).isThrownBy(() -> {
+			readJsonPatch("patch-invalid-path.json").apply(new Todo(), Todo.class);
+		});
 	}
 
 	private Patch readJsonPatch(String jsonPatchFile) throws IOException, JsonParseException, JsonMappingException {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.springframework.util.ObjectUtils;
  * </p>
  * 
  * @author Craig Walls
+ * @author Oliver Gierke
  */
 class TestOperation extends PatchOperation {
 
@@ -45,10 +46,10 @@ class TestOperation extends PatchOperation {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#doPerform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void perform(Object target, Class<T> type) {
+	<T> void doPerform(Object target, Class<T> type) {
 
 		Object expected = normalizeIfNumber(evaluateValueFromTarget(target, type));
 		Object actual = normalizeIfNumber(getValueFromTarget(target));
@@ -58,7 +59,7 @@ class TestOperation extends PatchOperation {
 		}
 	}
 
-	private Object normalizeIfNumber(Object expected) {
+	private static Object normalizeIfNumber(Object expected) {
 
 		if (expected instanceof Double || expected instanceof Float) {
 			expected = BigDecimal.valueOf(((Number) expected).doubleValue());
