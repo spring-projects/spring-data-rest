@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import lombok.Getter;
+
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +38,7 @@ import org.springframework.web.servlet.HandlerMapping;
  */
 public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
 
-	private final List<HandlerMapping> delegates;
+	private final @Getter List<HandlerMapping> delegates;
 
 	/**
 	 * Creates a new {@link DelegatingHandlerMapping} for the given delegates.
