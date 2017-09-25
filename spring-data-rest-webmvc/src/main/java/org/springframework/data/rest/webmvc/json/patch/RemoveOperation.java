@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ package org.springframework.data.rest.webmvc.json.patch;
  * @author Craig Walls
  * @author Oliver Gierke
  */
-public class RemoveOperation extends PatchOperation {
+class RemoveOperation extends PatchOperation {
 
 	/**
 	 * Constructs the remove operation
@@ -35,10 +35,10 @@ public class RemoveOperation extends PatchOperation {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#doPerform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void perform(Object target, Class<T> type) {
+	<T> void doPerform(Object target, Class<T> type) {
 		popValueAtPath(target, path);
 	}
 }

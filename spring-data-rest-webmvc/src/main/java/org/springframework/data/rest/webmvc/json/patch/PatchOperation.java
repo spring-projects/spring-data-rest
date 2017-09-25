@@ -209,11 +209,25 @@ public abstract class PatchOperation {
 	}
 
 	/**
-	 * Perform the operation.
+	 * Perform the operation in the given target object.
 	 * 
-	 * @param target the target of the operation.
+	 * @param target the target of the operation, must not be {@literal null}.
+	 * @param type must not be {@literal null}.
 	 */
-	abstract <T> void perform(Object target, Class<T> type);
+	final <T> void perform(Object target, Class<T> type) {
+
+		verifyPath(type);
+
+		doPerform(target, type);
+	}
+
+	/**
+	 * Implements the actually application of the operation.
+	 * 
+	 * @param target must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 */
+	abstract <T> void doPerform(Object target, Class<T> type);
 
 	private Integer targetListIndex(String path) {
 
@@ -241,7 +255,7 @@ public abstract class PatchOperation {
 		List<String> segments = new ArrayList<String>();
 
 		for (String segment : path.split("/")) {
-			if (!(segment.matches("\\d+") || segment.equals("-") || segment.isEmpty())) {
+			if (!(segment.matches("\\d+") || segment.equals("-") || segment.equals("~") || segment.isEmpty())) {
 				segments.add(segment);
 			}
 		}
