@@ -51,4 +51,8 @@ public interface PersonRepository extends PagingAndSortingRepository<Person, Lon
 	@Query("select p from Person p where p.created > :date")
 	Page<Person> findByCreatedUsingISO8601Date(@Param("date") @DateTimeFormat(iso = ISO.DATE_TIME) Date date,
 			Pageable pageable);
+
+	// DATAREST-1121
+	@Query("select p.created from Person p where p.lastName = :lastname")
+	Date findCreatedDateByLastName(@Param("lastname") String lastName);
 }

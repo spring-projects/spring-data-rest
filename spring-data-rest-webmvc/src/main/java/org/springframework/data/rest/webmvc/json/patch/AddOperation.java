@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.data.mapping.PropertyPath;
-import org.springframework.util.StringUtils;
 
 /**
  * Operation to add a new value to the given "path". Will throw a {@link PatchException} if the path is invalid or if
@@ -42,10 +38,10 @@ class AddOperation extends PatchOperation {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#doPerform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void perform(Object targetObject, Class<T> type) {
+	<T> void doPerform(Object targetObject, Class<T> type) {
 		addValue(targetObject, evaluateValueFromTarget(targetObject, type));
 	}
 
@@ -60,17 +56,8 @@ class AddOperation extends PatchOperation {
 			return super.evaluateValueFromTarget(targetObject, entityType);
 		}
 
-		List<String> segments = new ArrayList<String>();
+		PropertyPath path = verifyPath(entityType);
 
-		for (String segment : path.split("/")) {
-			if (!(segment.matches("\\d+") || segment.equals("-") || segment.isEmpty())) {
-				segments.add(segment);
-			}
-		}
-
-		PropertyPath propertyPath = PropertyPath.from(StringUtils.collectionToDelimitedString(segments, "."), entityType);
-
-		return value instanceof LateObjectEvaluator ? ((LateObjectEvaluator) value).evaluate(propertyPath.getType())
-				: value;
+		return evaluate(path == null ? entityType : path.getType());
 	}
 }

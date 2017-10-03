@@ -17,14 +17,18 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.springframework.data.rest.webmvc.json.patch.PathToSpEL.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionException;
 import org.springframework.expression.spel.SpelEvaluationException;
+import org.springframework.util.StringUtils;
 
 /**
  * Abstract base class representing and providing support methods for patch operations.
@@ -34,6 +38,8 @@ import org.springframework.expression.spel.SpelEvaluationException;
  * @author Oliver Gierke
  */
 public abstract class PatchOperation {
+
+	private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s (from source %s)!";
 
 	protected final String op;
 	protected final String path;
@@ -193,16 +199,35 @@ public abstract class PatchOperation {
 	 */
 	protected <T> Object evaluateValueFromTarget(Object targetObject, Class<T> entityType) {
 
-		return value instanceof LateObjectEvaluator
-				? ((LateObjectEvaluator) value).evaluate(spelExpression.getValueType(targetObject)) : value;
+		verifyPath(entityType);
+
+		return evaluate(spelExpression.getValueType(targetObject));
+	}
+
+	protected final <T> Object evaluate(Class<T> targetType) {
+		return value instanceof LateObjectEvaluator ? ((LateObjectEvaluator) value).evaluate(targetType) : value;
 	}
 
 	/**
-	 * Perform the operation.
+	 * Perform the operation in the given target object.
 	 * 
-	 * @param target the target of the operation.
+	 * @param target the target of the operation, must not be {@literal null}.
+	 * @param type must not be {@literal null}.
 	 */
-	abstract <T> void perform(Object target, Class<T> type);
+	final <T> void perform(Object target, Class<T> type) {
+
+		verifyPath(type);
+
+		doPerform(target, type);
+	}
+
+	/**
+	 * Implements the actually application of the operation.
+	 * 
+	 * @param target must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 */
+	abstract <T> void doPerform(Object target, Class<T> type);
 
 	private Integer targetListIndex(String path) {
 
@@ -217,6 +242,34 @@ public abstract class PatchOperation {
 			return Integer.parseInt(lastNode);
 		} catch (NumberFormatException e) {
 			return null;
+		}
+	}
+
+	/**
+	 * Verifies, that the path for the current operation is a valid property path on the given target type.
+	 * 
+	 * @param type must not be {@literal null}.
+	 */
+	protected PropertyPath verifyPath(Class<?> type) {
+
+		List<String> segments = new ArrayList<String>();
+
+		for (String segment : path.split("/")) {
+			if (!(segment.matches("\\d+") || segment.equals("-") || segment.equals("~") || segment.isEmpty())) {
+				segments.add(segment);
+			}
+		}
+
+		if (segments.isEmpty()) {
+			return null;
+		}
+
+		String pathSource = StringUtils.collectionToDelimitedString(segments, ".");
+
+		try {
+			return PropertyPath.from(pathSource, type);
+		} catch (PropertyReferenceException o_O) {
+			throw new PatchException(String.format(INVALID_PATH_REFERENCE, pathSource, type, path), o_O);
 		}
 	}
 }

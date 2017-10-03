@@ -1,6 +1,30 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.0.RELEASE (2017-10-02)
+---------------------------------------------
+* DATAREST-1138 - Adapt to changed Spring Framework 5 documentation structure.
+* DATAREST-1137 - All patch operations should verify paths before application.
+* DATAREST-1136 - Provide access to DelegatingHandlerMapping's delegates.
+* DATAREST-1135 - Add explicit automatic module name for Java 9.
+* DATAREST-1132 - @BasePathAwareController detection fails for CGLib-proxied controllers.
+* DATAREST-1129 - Release 3.0 GA (Kay).
+
+
+Changes in version 3.0.0.RC3 (2017-09-11)
+-----------------------------------------
+* DATAREST-1126 - Upgrade to latest HAL browser (ad9b865).
+* DATAREST-1121 - Last modification header detection fails for projected query method executions.
+* DATAREST-1112 - Release 3.0 RC3 (Kay).
+
+
+Changes in version 2.6.7.RELEASE (2017-09-11)
+---------------------------------------------
+* DATAREST-1127 - Path expressions in JSON Patch allow references to non-properties.
+* DATAREST-1121 - Last modification header detection fails for projected query method executions.
+* DATAREST-1114 - Release 2.6.7 (Ingalls SR7).
+
+
 Changes in version 2.6.6.RELEASE (2017-07-26)
 ---------------------------------------------
 * DATAREST-1110 - Release 2.6.6 (Ingalls SR6).

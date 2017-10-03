@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
@@ -40,6 +41,7 @@ import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguratio
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.method.HandlerMethod;
 
@@ -258,5 +260,41 @@ public class RepositoryRestHandlerMappingUnitTests {
 	@Test // DATAREST-994
 	public void twoArgumentConstructorDoesNotThrowException() {
 		new RepositoryRestHandlerMapping(mappings, configuration);
+	}
+
+	@Test // DATAREST-1132
+	public void detectsAnnotationsOnProxies() {
+
+		Class<?> type = createProxy(new SomeController());
+
+		HandlerMappingStub mapping = new HandlerMappingStub(mock(ResourceMappings.class),
+				mock(RepositoryRestConfiguration.class));
+
+		assertThat(mapping.isHandler(type), is(true));
+	}
+
+	private static Class<?> createProxy(Object source) {
+
+		ProxyFactory factory = new ProxyFactory(source);
+		Object proxy = factory.getProxy();
+
+		assertThat(ClassUtils.isCglibProxy(proxy), is(true));
+
+		return proxy.getClass();
+	}
+
+	@RepositoryRestController
+	static class SomeController {}
+
+	static class HandlerMappingStub extends RepositoryRestHandlerMapping {
+
+		public HandlerMappingStub(ResourceMappings mappings, RepositoryRestConfiguration configuration) {
+			super(mappings, configuration);
+		}
+
+		@Override
+		public boolean isHandler(Class<?> beanType) {
+			return super.isHandler(beanType);
+		}
 	}
 }
