@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -64,6 +65,7 @@ import org.springframework.data.rest.webmvc.mapping.Associations;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -204,6 +206,22 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.firstname, is(nullValue()));
 		assertThat(result.id, is(1L));
 		assertThat(result.version, is(1L));
+	}
+
+	@Test //DATAREST-1006
+	public void doesNotWipeReadOnlyJsonPropertyForPut() throws Exception {
+
+		SampleUser sampleUser = new SampleUser("name", "password");
+		sampleUser.lastLogin = new Date();
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = (ObjectNode) mapper.readTree("{ \"name\" : \"another\" }");
+
+		SampleUser result = reader.readPut(node, sampleUser, mapper);
+
+		assertThat(result.name, is("another"));
+		assertThat(result.password, notNullValue());
+		assertThat(result.lastLogin, notNullValue());
 	}
 
 	@Test // DATAREST-873
@@ -549,6 +567,9 @@ public class DomainObjectReaderUnitTests {
 		String name;
 		@JsonIgnore String password;
 		Map<String, SampleUser> relatedUsers;
+
+		@JsonProperty(access = READ_ONLY)
+		private Date lastLogin;
 
 		public SampleUser(String name, String password) {
 
