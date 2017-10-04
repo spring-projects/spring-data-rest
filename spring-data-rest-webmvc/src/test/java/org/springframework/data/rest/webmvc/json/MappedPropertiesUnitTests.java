@@ -25,6 +25,7 @@ import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingCon
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -68,11 +69,19 @@ public class MappedPropertiesUnitTests {
 		assertThat(properties.getMappedName(entity.getPersistentProperty("emailAddress")), is("email"));
 	}
 
+	@Test // DATAREST-1006
+	public void doesNotExposeIgnoredPropertyViaJsonProperty() {
+
+		assertThat(properties.hasPersistentPropertyForField("readOnlyProperty")).isFalse();
+		assertThat(properties.getPersistentProperty("readOnlyProperty")).isNull();
+	}
+
 	static class Sample {
 
 		public @Transient String notExposedBySpringData;
 		public @JsonIgnore String notExposedByJackson;
 		public String exposedProperty;
 		public @JsonProperty("email") String emailAddress;
+		public @JsonProperty(access = Access.READ_ONLY) String readOnlyProperty;
 	}
 }
