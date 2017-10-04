@@ -42,6 +42,7 @@ import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Mathias Düsterhöft
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 class MappedProperties {
@@ -68,6 +69,10 @@ class MappedProperties {
 		this.unmappedProperties = new HashSet<BeanPropertyDefinition>();
 
 		for (BeanPropertyDefinition property : description.findProperties()) {
+
+			if (description.getIgnoredPropertyNames().contains(property.getName())) {
+				continue;
+			}
 
 			Optional<? extends PersistentProperty<?>> persistentProperty = //
 					Optional.ofNullable(entity.getPersistentProperty(property.getInternalName()));
