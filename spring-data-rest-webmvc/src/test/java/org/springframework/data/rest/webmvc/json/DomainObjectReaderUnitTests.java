@@ -736,7 +736,8 @@ public class DomainObjectReaderUnitTests {
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Note {
-		@Id UUID id = UUID.randomUUID();
+		@Id
+		UUID id = UUID.randomUUID();
 		@Reference List<Tag> tags = new ArrayList<Tag>();
 	}
 
