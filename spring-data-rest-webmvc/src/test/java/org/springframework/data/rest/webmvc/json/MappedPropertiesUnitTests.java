@@ -72,8 +72,8 @@ public class MappedPropertiesUnitTests {
 	@Test // DATAREST-1006
 	public void doesNotExposeIgnoredPropertyViaJsonProperty() {
 
-		assertThat(properties.hasPersistentPropertyForField("readOnlyProperty")).isFalse();
-		assertThat(properties.getPersistentProperty("readOnlyProperty")).isNull();
+		assertThat(properties.hasPersistentPropertyForField("readOnlyProperty"), is(false));
+		assertThat(properties.getPersistentProperty("readOnlyProperty"), is(nullValue()));
 	}
 
 	static class Sample {
