@@ -61,8 +61,10 @@ class ResourceStatus {
 		Assert.notNull(requestHeaders, "Request headers must not be null!");
 		Assert.notNull(domainObject, "Domain object must not be null!");
 		Assert.notNull(entity, "PersistentEntity must not be null!");
-		Assert.isTrue(entity.getType().isInstance(domainObject),
-				String.format(INVALID_DOMAIN_OBJECT, domainObject, entity.getType()));
+
+		if (!entity.getType().isInstance(domainObject)) {
+			throw new IllegalArgumentException(String.format(INVALID_DOMAIN_OBJECT, domainObject, entity.getType()));
+		}
 
 		// Check ETag for If-Non-Match
 
