@@ -25,7 +25,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
- * {@link HandlerMethodArgumentResolver} to provide {@link HttpMethod} instances for innjection into MVC controller
+ * {@link HandlerMethodArgumentResolver} to provide {@link HttpMethod} instances for injection into MVC controller
  * methods.
  * 
  * @author Oliver Gierke

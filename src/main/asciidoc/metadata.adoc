@@ -141,7 +141,7 @@ You will also find a "profile" link shown in the collection of *_links* when you
 }
 ----
 
-<1> This HAL document respresents the `Person` collection.
+<1> This HAL document represents the `Person` collection.
 <2> It has a *profile* link to the same URI for metadata.
 
 The *profile* link, again, will serve up ALPS by default or if you use an http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[Accept header] of *application/alps+json*.
@@ -222,7 +222,7 @@ the alternate version of the *get-persons* subsection:
 Relationships rendered inside a projection result in inlining the data fields.
 <3> Also found is *noAddresses*, which serves up a subset containing *firstName* and *lastName*.
 
-With all this information, a client should be able to deduce not only the RESTful transitions avaiable, but also, to some degree, the
+With all this information, a client should be able to deduce not only the RESTful transitions available, but also, to some degree, the
 data elements needed to interact.
 
 [[metadata.alps.descriptions]]
@@ -394,7 +394,7 @@ You will also find a "profile" link shown in the collection of *_links* when you
 }
 ----
 
-<1> This HAL document respresents the `Person` collection.
+<1> This HAL document represents the `Person` collection.
 <2> It has a *profile* link to the same URI for metadata.
 
 The *profile* link, again, will serve up <<metadata.alps,ALPS>> by default. If you supply it with an http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[Accept header] of *application/schema+json*, it will render the JSON Schema representation.

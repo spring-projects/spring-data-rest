@@ -50,7 +50,7 @@ public final class ParameterMetadata {
 	}
 
 	/**
-	 * Return sthe name of the method parameter.
+	 * Return the name of the method parameter.
 	 * 
 	 * @return the name
 	 */

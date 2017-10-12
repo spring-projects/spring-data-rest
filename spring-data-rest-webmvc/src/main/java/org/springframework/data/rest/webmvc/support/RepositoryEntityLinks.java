@@ -98,7 +98,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	}
 
 	/**
-	 * Returns the link to to the paged colelction resource for the given type, pre-expanding the
+	 * Returns the link to to the paged collection resource for the given type, pre-expanding the
 	 * 
 	 * @param type must not be {@literal null}.
 	 * @param pageable the pageable to can be {@literal null}.
@@ -244,7 +244,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	/**
 	 * Returns the link pointing to the search resource with the given rel of the given type and pre-expands the
-	 * calculated URi tempalte with the given {@link Pageable} and {@link Sort}.
+	 * calculated URi template with the given {@link Pageable} and {@link Sort}.
 	 * 
 	 * @param type must not be {@literal null}.
 	 * @param rel must not be {@literal null} or empty.
@@ -316,7 +316,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	}
 
 	/**
-	 * Returns the {@link TemplateVariables} for the projection parameter if projections are vonfigured for the given
+	 * Returns the {@link TemplateVariables} for the projection parameter if projections are configured for the given
 	 * type.
 	 * 
 	 * @param type must not be {@literal null}.

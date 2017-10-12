@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * {@link CollectionResourceMapping} based on a type. Will derive default relation types and pathes from the type but
+ * {@link CollectionResourceMapping} based on a type. Will derive default relation types and paths from the type but
  * inspect it for {@link RestResource} annotations for customization.
  * 
  * @author Oliver Gierke
