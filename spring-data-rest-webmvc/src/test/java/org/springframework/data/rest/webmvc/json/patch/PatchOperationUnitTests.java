@@ -17,29 +17,47 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Arrays;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * General unit tests for {@link PatchOperation} implementations.
  * 
  * @author Oliver Gierke
  */
+@RunWith(Parameterized.class)
 public class PatchOperationUnitTests {
+
+	@Parameters
+	public static Iterable<? extends PatchOperation> operations() {
+
+		String invalidPath = "/nonExistant";
+		String validPath = "/1/description";
+
+		return Arrays.asList( //
+
+				AddOperation.of(invalidPath, null), //
+				RemoveOperation.valueAt(invalidPath), //
+				ReplaceOperation.valueAt(invalidPath).with(null), //
+				TestOperation.whetherValueAt(invalidPath).hasValue(null), //
+
+				CopyOperation.from(invalidPath).to(validPath), //
+				CopyOperation.from(validPath).to(invalidPath), //
+
+				MoveOperation.from(invalidPath).to(validPath), //
+				MoveOperation.from(validPath).to(invalidPath) //
+		);
+	}
+
+	public @Parameter(0) PatchOperation operation;
 
 	@Test // DATAREST-1137
 	public void invalidPathGetsRejected() {
-
-		String invalidPath = "/nonExistant";
-
-		verifyIllegalPath(new AddOperation(invalidPath, null));
-		verifyIllegalPath(new CopyOperation(invalidPath, null));
-		verifyIllegalPath(new MoveOperation(invalidPath, null));
-		verifyIllegalPath(new RemoveOperation(invalidPath));
-		verifyIllegalPath(new ReplaceOperation(invalidPath, null));
-		verifyIllegalPath(new TestOperation(invalidPath, null));
-	}
-
-	private static void verifyIllegalPath(PatchOperation operation) {
 
 		Todo todo = new Todo(1L, "A", false);
 

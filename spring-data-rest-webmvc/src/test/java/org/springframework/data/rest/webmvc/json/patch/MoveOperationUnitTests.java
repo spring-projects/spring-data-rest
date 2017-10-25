@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-public class MoveOperationTests {
+public class MoveOperationUnitTests {
 
 	@Test
 	public void moveBooleanPropertyValue() throws Exception {
@@ -33,14 +33,14 @@ public class MoveOperationTests {
 		todos.add(new Todo(3L, "C", false));
 
 		try {
-			MoveOperation move = new MoveOperation("/1/complete", "/0/complete");
+			MoveOperation move = MoveOperation.from("/0/complete").to("/1/complete");
 			move.perform(todos, Todo.class);
 			fail();
 		} catch (PatchException e) {
 			assertEquals("Path '/0/complete' is not nullable.", e.getMessage());
 		}
-		assertFalse(todos.get(1).isComplete());
 
+		assertFalse(todos.get(1).isComplete());
 	}
 
 	@Test
@@ -51,7 +51,7 @@ public class MoveOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		MoveOperation move = new MoveOperation("/1/description", "/0/description");
+		MoveOperation move = MoveOperation.from("/0/description").to("/1/description");
 		move.perform(todos, Todo.class);
 
 		assertEquals("A", todos.get(1).getDescription());
@@ -66,7 +66,7 @@ public class MoveOperationTests {
 		todos.add(new Todo(3L, "C", false));
 
 		try {
-			MoveOperation move = new MoveOperation("/1/description", "/0/complete");
+			MoveOperation move = MoveOperation.from("/0/complete").to("/1/description");
 			move.perform(todos, Todo.class);
 			fail();
 		} catch (PatchException e) {
@@ -91,7 +91,7 @@ public class MoveOperationTests {
 		todos.add(new Todo(2L, "B", true));
 		todos.add(new Todo(3L, "C", false));
 
-		MoveOperation move = new MoveOperation("/0", "/1");
+		MoveOperation move = MoveOperation.from("/1").to("/0");
 		move.perform(todos, Todo.class);
 
 		assertEquals(3, todos.size());
@@ -108,7 +108,7 @@ public class MoveOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		MoveOperation move = new MoveOperation("/2", "/0");
+		MoveOperation move = MoveOperation.from("/0").to("/2");
 		move.perform(todos, Todo.class);
 
 		assertEquals(3, todos.size());
@@ -125,7 +125,7 @@ public class MoveOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		MoveOperation move = new MoveOperation("/2", "/0");
+		MoveOperation move = MoveOperation.from("/0").to("/2");
 		move.perform(todos, Todo.class);
 
 		assertEquals(3, todos.size());
@@ -149,7 +149,7 @@ public class MoveOperationTests {
 		expected.add(new Todo(3L, "C", false));
 		expected.add(new Todo(4L, "E", false));
 
-		MoveOperation move = new MoveOperation("/1", "/-");
+		MoveOperation move = MoveOperation.from("/-").to("/1");
 		move.perform(todos, Todo.class);
 		assertEquals(expected, todos);
 	}
@@ -169,7 +169,7 @@ public class MoveOperationTests {
 		expected.add(new Todo(4L, "E", false));
 		expected.add(new Todo(2L, "G", false));
 
-		MoveOperation move = new MoveOperation("/-", "/1");
+		MoveOperation move = MoveOperation.from("/1").to("/-");
 		move.perform(todos, Todo.class);
 		assertEquals(expected, todos);
 	}

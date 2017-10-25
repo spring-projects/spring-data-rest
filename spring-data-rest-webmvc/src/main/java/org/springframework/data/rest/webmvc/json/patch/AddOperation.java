@@ -30,17 +30,21 @@ class AddOperation extends PatchOperation {
 	 * @param path The path where the value will be added. (e.g., '/foo/bar/4')
 	 * @param value The value to add.
 	 */
-	public AddOperation(String path, Object value) {
+	private AddOperation(SpelPath path, Object value) {
 		super("add", path, value);
+	}
+
+	public static AddOperation of(String path, Object value) {
+		return new AddOperation(SpelPath.of(path), value);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#doPerform(java.lang.Object, java.lang.Class)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void doPerform(Object targetObject, Class<T> type) {
-		addValue(targetObject, evaluateValueFromTarget(targetObject, type));
+	void perform(Object targetObject, Class<?> type) {
+		path.bindTo(type).addValue(targetObject, evaluateValueFromTarget(targetObject, type));
 	}
 
 	/* 
@@ -48,12 +52,12 @@ class AddOperation extends PatchOperation {
 	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#evaluateValueFromTarget(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	protected <T> Object evaluateValueFromTarget(Object targetObject, Class<T> entityType) {
+	protected Object evaluateValueFromTarget(Object targetObject, Class<?> entityType) {
 
-		if (!path.endsWith("-")) {
+		if (!path.isAppend()) {
 			return super.evaluateValueFromTarget(targetObject, entityType);
 		}
 
-		return evaluate(verifyPath(entityType).<Class<?>> map(it -> it.getType()).orElse(entityType));
+		return evaluate(path.getLeafType(entityType));
 	}
 }
