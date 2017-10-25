@@ -41,12 +41,4 @@ public interface PatchConverter<T> {
 	 * @return the {@link Patch} object that the document represents.
 	 */
 	Patch convert(T patchRepresentation);
-
-	/**
-	 * Convert a {@link Patch} to a representation object.
-	 * 
-	 * @param patch the {@link Patch} to convert.
-	 * @return the patch representation object.
-	 */
-	T convert(Patch patch);
 }

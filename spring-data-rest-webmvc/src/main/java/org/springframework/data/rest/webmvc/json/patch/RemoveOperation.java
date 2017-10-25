@@ -29,16 +29,20 @@ class RemoveOperation extends PatchOperation {
 	 * 
 	 * @param path The path of the value to be removed. (e.g., '/foo/bar/4')
 	 */
-	public RemoveOperation(String path) {
+	private RemoveOperation(SpelPath path) {
 		super("remove", path);
+	}
+
+	public static RemoveOperation valueAt(String path) {
+		return new RemoveOperation(SpelPath.of(path));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#doPerform(java.lang.Object, java.lang.Class)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void doPerform(Object target, Class<T> type) {
-		popValueAtPath(target, path);
+	void perform(Object target, Class<?> type) {
+		path.bindTo(type).removeFrom(target);
 	}
 }

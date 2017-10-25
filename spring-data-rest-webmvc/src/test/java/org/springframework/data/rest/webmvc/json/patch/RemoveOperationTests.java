@@ -32,7 +32,7 @@ public class RemoveOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		new RemoveOperation("/1/description").perform(todos, Todo.class);
+		RemoveOperation.valueAt("/1/description").perform(todos, Todo.class);
 
 		assertNull(todos.get(1).getDescription());
 	}
@@ -45,7 +45,7 @@ public class RemoveOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		new RemoveOperation("/1").perform(todos, Todo.class);
+		RemoveOperation.valueAt("/1").perform(todos, Todo.class);
 
 		assertEquals(2, todos.size());
 		assertEquals("A", todos.get(0).getDescription());

@@ -21,33 +21,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.expression.Expression;
+import org.springframework.data.rest.webmvc.json.patch.SpelPath.TypedSpelPath;
 
-public class PathToSpelTests {
+public class SpelPathUnitTests {
 
 	@Test
 	public void listIndex() {
 
-		Expression expr = PathToSpEL.pathToExpression("/1/description");
+		SpelPath expr = SpelPath.of("/1/description");
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		assertEquals("B", (String) expr.getValue(todos));
+		assertEquals("B", (String) expr.bindTo(Todo.class).getValue(todos));
 	}
 
 	@Test
 	public void accessesLastCollectionElementWithDash() {
 
-		Expression expr = PathToSpEL.pathToExpression("/-/description");
+		SpelPath expr = SpelPath.of("/-/description");
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		assertEquals("C", (String) expr.getValue(todos));
+		assertEquals("C", (String) expr.bindTo(Todo.class).getValue(todos));
+	}
+
+	@Test // DATAREST-1152
+	public void cachesSpelPath() {
+
+		SpelPath left = SpelPath.of("/description");
+		SpelPath right = SpelPath.of("/description");
+
+		assertSame(left, right);
+	}
+
+	@Test // DATAREST-1152
+	public void cachesTypedSpelPath() {
+
+		SpelPath source = SpelPath.of("/description");
+		TypedSpelPath left = source.bindTo(Todo.class);
+		TypedSpelPath right = source.bindTo(Todo.class);
+
+		assertSame(left, right);
 	}
 }
