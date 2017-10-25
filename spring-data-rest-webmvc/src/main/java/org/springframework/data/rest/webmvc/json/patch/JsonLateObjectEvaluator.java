@@ -39,12 +39,12 @@ class JsonLateObjectEvaluator implements LateObjectEvaluator {
 	 * @see org.springframework.data.rest.webmvc.json.patch.LateObjectEvaluator#evaluate(java.lang.Class)
 	 */
 	@Override
-	public <T> Object evaluate(Class<T> type) {
+	public Object evaluate(Class<?> type) {
 
 		try {
 			return mapper.readValue(valueNode.traverse(), type);
-		} catch (Exception e) {
-			throw new PatchException(String.format("Could not read %s into %s!", valueNode, type), e);
+		} catch (Exception o_O) {
+			throw new PatchException(String.format("Could not read %s into %s!", valueNode, type), o_O);
 		}
 	}
 }

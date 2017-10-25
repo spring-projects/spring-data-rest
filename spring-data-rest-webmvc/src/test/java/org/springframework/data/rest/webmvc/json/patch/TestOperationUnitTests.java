@@ -15,39 +15,50 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.expression.Expression;
 
-public class PathToSpelTests {
+public class TestOperationUnitTests {
 
 	@Test
-	public void listIndex() {
-
-		Expression expr = PathToSpEL.pathToExpression("/1/description");
+	public void testPropertyValueEquals() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
-		todos.add(new Todo(2L, "B", false));
+		todos.add(new Todo(2L, "B", true));
 		todos.add(new Todo(3L, "C", false));
 
-		assertEquals("B", (String) expr.getValue(todos));
+		TestOperation test = TestOperation.whetherValueAt("/0/complete").hasValue(false);
+		test.perform(todos, Todo.class);
+
+		TestOperation test2 = TestOperation.whetherValueAt("/1/complete").hasValue(true);
+		test2.perform(todos, Todo.class);
+
+	}
+
+	@Test(expected = PatchException.class)
+	public void testPropertyValueNotEquals() throws Exception {
+
+		List<Todo> todos = new ArrayList<Todo>();
+		todos.add(new Todo(1L, "A", false));
+		todos.add(new Todo(2L, "B", true));
+		todos.add(new Todo(3L, "C", false));
+
+		TestOperation test = TestOperation.whetherValueAt("/0/complete").hasValue(true);
+		test.perform(todos, Todo.class);
 	}
 
 	@Test
-	public void listTilde() {
-
-		Expression expr = PathToSpEL.pathToExpression("/~/description");
+	public void testListElementEquals() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
-		todos.add(new Todo(2L, "B", false));
+		todos.add(new Todo(2L, "B", true));
 		todos.add(new Todo(3L, "C", false));
 
-		assertEquals("C", (String) expr.getValue(todos));
+		TestOperation test = TestOperation.whetherValueAt("/1").hasValue(new Todo(2L, "B", true));
+		test.perform(todos, Todo.class);
 	}
 }

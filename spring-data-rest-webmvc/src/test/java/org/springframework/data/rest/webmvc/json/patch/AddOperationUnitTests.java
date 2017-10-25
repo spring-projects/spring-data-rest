@@ -26,7 +26,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AddOperationTests {
+public class AddOperationUnitTests {
 
 	@Test
 	public void addBooleanPropertyValue() throws Exception {
@@ -36,7 +36,7 @@ public class AddOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		AddOperation add = new AddOperation("/1/complete", true);
+		AddOperation add = AddOperation.of("/1/complete", true);
 		add.perform(todos, Todo.class);
 
 		assertTrue(todos.get(1).isComplete());
@@ -50,7 +50,7 @@ public class AddOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		AddOperation add = new AddOperation("/1/description", "BBB");
+		AddOperation add = AddOperation.of("/1/description", "BBB");
 		add.perform(todos, Todo.class);
 
 		assertEquals("BBB", todos.get(1).getDescription());
@@ -64,7 +64,7 @@ public class AddOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		AddOperation add = new AddOperation("/1", new Todo(null, "D", true));
+		AddOperation add = AddOperation.of("/1", new Todo(null, "D", true));
 		add.perform(todos, Todo.class);
 
 		assertEquals(4, todos.size());
@@ -83,7 +83,7 @@ public class AddOperationTests {
 
 		Todo todo = new Todo(1L, "description", false);
 
-		new AddOperation("/items/-", "Some text.").perform(todo, Todo.class);
+		AddOperation.of("/items/-", "Some text.").perform(todo, Todo.class);
 
 		assertThat(todo.getItems().get(0), is("Some text."));
 	}
@@ -97,7 +97,7 @@ public class AddOperationTests {
 		JsonNode node = mapper.readTree("\"Some text.\"");
 		JsonLateObjectEvaluator evaluator = new JsonLateObjectEvaluator(mapper, node);
 
-		new AddOperation("/items/-", evaluator).perform(todo, Todo.class);
+		AddOperation.of("/items/-", evaluator).perform(todo, Todo.class);
 
 		assertThat(todo.getItems().get(0), is("Some text."));
 	}
@@ -107,7 +107,7 @@ public class AddOperationTests {
 
 		Todo todo = new Todo(1L, "description", false);
 
-		new AddOperation("/uninitialized/-", "Text").perform(todo, Todo.class);
+		AddOperation.of("/uninitialized/-", "Text").perform(todo, Todo.class);
 
 		assertThat(todo.getUninitialized(), is(notNullValue()));
 		assertThat(todo.getUninitialized(), hasItem("Text"));

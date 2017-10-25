@@ -15,39 +15,56 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import org.junit.Assert;
+import java.util.Arrays;
+
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * General unit tests for {@link PatchOperation} implementations.
  * 
  * @author Oliver Gierke
  */
+@RunWith(Parameterized.class)
 public class PatchOperationUnitTests {
+
+	public @Rule ExpectedException exception = ExpectedException.none();
+
+	@Parameters
+	public static Iterable<? extends PatchOperation> operations() {
+
+		String invalidPath = "/nonExistant";
+		String validPath = "/1/description";
+
+		return Arrays.asList( //
+
+				AddOperation.of(invalidPath, null), //
+				RemoveOperation.valueAt(invalidPath), //
+				ReplaceOperation.valueAt(invalidPath).with(null), //
+				TestOperation.whetherValueAt(invalidPath).hasValue(null), //
+
+				CopyOperation.from(invalidPath).to(validPath), //
+				CopyOperation.from(validPath).to(invalidPath), //
+
+				MoveOperation.from(invalidPath).to(validPath), //
+				MoveOperation.from(validPath).to(invalidPath) //
+		);
+	}
+
+	public @Parameter(0) PatchOperation operation;
 
 	@Test // DATAREST-1137
 	public void invalidPathGetsRejected() {
 
-		String invalidPath = "/nonExistant";
+		Todo todo = new Todo(1L, "A", false);
 
-		verifyIllegalPath(new AddOperation(invalidPath, null));
-		verifyIllegalPath(new CopyOperation(invalidPath, null));
-		verifyIllegalPath(new MoveOperation(invalidPath, null));
-		verifyIllegalPath(new RemoveOperation(invalidPath));
-		verifyIllegalPath(new ReplaceOperation(invalidPath, null));
-		verifyIllegalPath(new TestOperation(invalidPath, null));
-	}
+		exception.expect(PatchException.class);
 
-	private static void verifyIllegalPath(PatchOperation operation) {
-
-		try {
-
-			Todo todo = new Todo(1L, "A", false);
-			operation.perform(todo, Todo.class);
-
-			Assert.fail("Expected PatchException!");
-
-		} catch (PatchException o_O) {}
-
+		operation.perform(todo, Todo.class);
 	}
 }

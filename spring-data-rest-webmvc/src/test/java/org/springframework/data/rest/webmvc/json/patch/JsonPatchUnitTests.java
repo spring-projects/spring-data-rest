@@ -41,7 +41,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Mathias Düsterhöft
  * @author Oliver Trosien
  */
-public class JsonPatchTests {
+public class JsonPatchUnitTests {
 
 	public @Rule ExpectedException exception = ExpectedException.none();
 

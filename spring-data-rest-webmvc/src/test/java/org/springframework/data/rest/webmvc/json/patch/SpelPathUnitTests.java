@@ -15,50 +15,58 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.springframework.data.rest.webmvc.json.patch.SpelPath.TypedSpelPath;
 
-public class TestOperationTests {
+public class SpelPathUnitTests {
 
 	@Test
-	public void testPropertyValueEquals() throws Exception {
+	public void listIndex() {
+
+		SpelPath expr = SpelPath.of("/1/description");
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
-		todos.add(new Todo(2L, "B", true));
+		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		TestOperation test = new TestOperation("/0/complete", false);
-		test.perform(todos, Todo.class);
-
-		TestOperation test2 = new TestOperation("/1/complete", true);
-		test2.perform(todos, Todo.class);
-
-	}
-
-	@Test(expected = PatchException.class)
-	public void testPropertyValueNotEquals() throws Exception {
-
-		List<Todo> todos = new ArrayList<Todo>();
-		todos.add(new Todo(1L, "A", false));
-		todos.add(new Todo(2L, "B", true));
-		todos.add(new Todo(3L, "C", false));
-
-		TestOperation test = new TestOperation("/0/complete", true);
-		test.perform(todos, Todo.class);
+		assertEquals("B", (String) expr.bindTo(Todo.class).getValue(todos));
 	}
 
 	@Test
-	public void testListElementEquals() throws Exception {
+	public void listTilde() {
+
+		SpelPath expr = SpelPath.of("/~/description");
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
-		todos.add(new Todo(2L, "B", true));
+		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		TestOperation test = new TestOperation("/1", new Todo(2L, "B", true));
-		test.perform(todos, Todo.class);
+		assertEquals("C", (String) expr.bindTo(Todo.class).getValue(todos));
+	}
+
+	@Test // DATAREST-1152
+	public void cachesSpelPath() {
+
+		SpelPath left = SpelPath.of("/description");
+		SpelPath right = SpelPath.of("/description");
+
+		assertSame(left, right);
+	}
+
+	@Test // DATAREST-1152
+	public void cachesTypedSpelPath() {
+
+		SpelPath source = SpelPath.of("/description");
+		TypedSpelPath left = source.bindTo(Todo.class);
+		TypedSpelPath right = source.bindTo(Todo.class);
+
+		assertSame(left, right);
 	}
 }

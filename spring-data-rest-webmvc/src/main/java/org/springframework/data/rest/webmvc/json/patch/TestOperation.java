@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -40,19 +43,33 @@ class TestOperation extends PatchOperation {
 	 * @param path The path to test. (e.g., '/foo/bar/4')
 	 * @param value The value to test the path against.
 	 */
-	public TestOperation(String path, Object value) {
+	private TestOperation(SpelPath path, Object value) {
 		super("test", path, value);
+	}
+
+	public static TestOperationBuilder whetherValueAt(String path) {
+		return new TestOperationBuilder(path);
+	}
+
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	static class TestOperationBuilder {
+
+		private final String path;
+
+		public TestOperation hasValue(Object value) {
+			return new TestOperation(SpelPath.of(path), value);
+		}
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#doPerform(java.lang.Object, java.lang.Class)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void doPerform(Object target, Class<T> type) {
+	void perform(Object target, Class<?> type) {
 
 		Object expected = normalizeIfNumber(evaluateValueFromTarget(target, type));
-		Object actual = normalizeIfNumber(getValueFromTarget(target));
+		Object actual = normalizeIfNumber(path.bindTo(type).getValue(target));
 
 		if (!ObjectUtils.nullSafeEquals(expected, actual)) {
 			throw new PatchException("Test against path '" + path + "' failed.");

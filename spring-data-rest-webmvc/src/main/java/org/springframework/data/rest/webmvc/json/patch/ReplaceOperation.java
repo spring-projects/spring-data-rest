@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Operation that replaces the value at the given path with a new value.
  * 
@@ -29,16 +32,30 @@ class ReplaceOperation extends PatchOperation {
 	 * @param path The path whose value is to be replaced. (e.g., '/foo/bar/4')
 	 * @param value The value that will replace the current path value.
 	 */
-	public ReplaceOperation(String path, Object value) {
+	private ReplaceOperation(SpelPath path, Object value) {
 		super("replace", path, value);
+	}
+
+	public static ReplaceOperationBuilder valueAt(String path) {
+		return new ReplaceOperationBuilder(path);
+	}
+
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	static class ReplaceOperationBuilder {
+
+		private final String path;
+
+		public ReplaceOperation with(Object value) {
+			return new ReplaceOperation(SpelPath.of(path), value);
+		}
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#doPerform(java.lang.Object, java.lang.Class)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void doPerform(Object target, Class<T> type) {
-		setValueOnTarget(target, evaluateValueFromTarget(target, type));
+	void perform(Object target, Class<?> type) {
+		path.bindTo(type).setValue(target, evaluateValueFromTarget(target, type));
 	}
 }

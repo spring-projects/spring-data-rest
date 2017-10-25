@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
 /**
  * <p>
  * Operation that moves a value from the given "from" path to the given "path". Will throw a {@link PatchException} if
@@ -30,7 +33,9 @@ package org.springframework.data.rest.webmvc.json.patch;
  * @author Craig Walls
  * @author Oliver Gierke
  */
-class MoveOperation extends FromOperation {
+class MoveOperation extends PatchOperation {
+
+	private final SpelPath from;
 
 	/**
 	 * Constructs the move operation.
@@ -38,16 +43,33 @@ class MoveOperation extends FromOperation {
 	 * @param path The path to move the source value to. (e.g., '/foo/bar/4')
 	 * @param from The source path from which a value will be moved. (e.g., '/foo/bar/5')
 	 */
-	public MoveOperation(String path, String from) {
-		super("move", path, from);
+	private MoveOperation(SpelPath path, SpelPath from) {
+
+		super("move", path);
+
+		this.from = from;
+	}
+
+	static MoveOperationBuilder from(String from) {
+		return new MoveOperationBuilder(from);
+	}
+
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	static class MoveOperationBuilder {
+
+		private final String from;
+
+		public MoveOperation to(String to) {
+			return new MoveOperation(SpelPath.of(to), SpelPath.of(from));
+		}
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#doPerform(java.lang.Object, java.lang.Class)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void doPerform(Object target, Class<T> type) {
-		addValue(target, popValueAtPath(target, getFrom()));
+	void perform(Object target, Class<?> type) {
+		path.bindTo(type).moveFrom(from, target);
 	}
 }

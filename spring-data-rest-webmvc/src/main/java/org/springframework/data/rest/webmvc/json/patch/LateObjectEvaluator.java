@@ -32,7 +32,7 @@ package org.springframework.data.rest.webmvc.json.patch;
  * 
  * @author Craig Walls
  */
-public interface LateObjectEvaluator {
+interface LateObjectEvaluator {
 
-	<T> Object evaluate(Class<T> type);
+	Object evaluate(Class<?> type);
 }
