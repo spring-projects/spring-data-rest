@@ -1,6 +1,14 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.1.RELEASE (2017-10-27)
+---------------------------------------------
+* DATAREST-1152 - Improve design of patch expression evaluation.
+* DATAREST-1148 - Single entity GET causes unnecessary toString call on domain object.
+* DATAREST-1140 - Release 3.0.1 (Kay SR1).
+* DATAREST-1006 - PUT nulls Json read-only property.
+
+
 Changes in version 2.6.8.RELEASE (2017-10-11)
 ---------------------------------------------
 * DATAREST-1137 - All patch operations should verify paths before application.
