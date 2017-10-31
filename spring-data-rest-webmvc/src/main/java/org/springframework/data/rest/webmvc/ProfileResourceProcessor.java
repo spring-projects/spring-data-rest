@@ -55,7 +55,9 @@ public class ProfileResourceProcessor implements ResourceProcessor<RepositoryLin
 	@Override
 	public RepositoryLinksResource process(RepositoryLinksResource resource) {
 
-		resource.add(new Link(ProfileController.getRootPath(this.configuration), PROFILE_REL));
+		if(configuration.getMetadataConfiguration().alpsEnabled()) {
+			resource.add(new Link(ProfileController.getRootPath(this.configuration), PROFILE_REL));
+		}
 
 		return resource;
 	}
