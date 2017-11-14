@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Jeremy Rickard
+ * @author Jeroen Reijn
  */
 @RepositoryRestController
 class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
@@ -103,7 +104,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 * @param config must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
-	 * @param auditableBeanWrapperFactory must not be {@literal null}.
 	 */
 	@Autowired
 	public RepositoryEntityController(Repositories repositories, RepositoryRestConfiguration config,
@@ -337,7 +337,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			return resourceStatus.getStatusAndHeaders(headers, it, entity).toResponseEntity(//
 					() -> assembler.toFullResource(it));
 
-		}).orElseGet(() -> new ResponseEntity<Resource<?>>(HttpStatus.NOT_FOUND));
+		}).orElseThrow(() -> new ResourceNotFoundException());
 	}
 
 	/**
