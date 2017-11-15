@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2014 the original author or authors.
  *
@@ -16,6 +17,9 @@
 package org.springframework.data.rest.webmvc.spi;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 
 import org.springframework.plugin.core.Plugin;
 
@@ -45,13 +49,21 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 	String toRequestId(Serializable id, Class<?> entityType);
 
 	/**
-	 * The default {@link BackendIdConverter} that will simply use ids as they are.
+	 * The default {@link BackendIdConverter} that will use URL encoding/decoding of ids to ensure valid URL generation.
+	 * 
+	 * This class applies a simple UrlEncode/Decode to the presented id with the exception of any id which contains a
+	 * '/' character. Encoded '/'s are generally rejected by web servers (404) as a security risk. As it is perfectly
+	 * valid (though potentially a rare occurrence) for an id to contain '/'s, we avoid the issue by double encoding the
+	 * '/' --> %2F --> %252F.
 	 * 
 	 * @author Oliver Gierke
+	 * @author Andrew Walters
 	 */
 	public enum DefaultIdConverter implements BackendIdConverter {
 
 		INSTANCE;
+
+		private static final String UTF8_ENCODING = "UTF-8";
 
 		/* 
 		 * (non-Javadoc)
@@ -59,7 +71,11 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 		 */
 		@Override
 		public Serializable fromRequestId(String id, Class<?> entityType) {
-			return id;
+			try {
+				return URLDecoder.decode(id, UTF8_ENCODING).replaceAll("%2F", "/");
+			} catch (UnsupportedEncodingException e) {
+				return id;
+			}
 		}
 
 		/* 
@@ -68,7 +84,11 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 		 */
 		@Override
 		public String toRequestId(Serializable id, Class<?> entityType) {
-			return id.toString();
+			try {
+				return URLEncoder.encode(id.toString(), UTF8_ENCODING).replaceAll("%2F", "%252F");
+			} catch (UnsupportedEncodingException e) {
+				return id.toString();
+			}
 		}
 
 		/* 
@@ -76,7 +96,7 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 		 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
 		 */
 		@Override
-		public boolean supports(Class<?> delimiter) {
+		public boolean supports(Class<?> entityType) {
 			return true;
 		}
 	}
