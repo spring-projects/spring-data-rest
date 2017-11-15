@@ -427,11 +427,14 @@ public class JsonSchema {
 		 * @return
 		 */
 		public JsonSchemaProperty asAssociation() {
-
-			this.items = null;
-			this.uniqueItems = null;
-
-			return withFormat(JsonSchemaFormat.URI);
+			if (this.type.equals("array")) {
+				this.items = new HashMap<>();
+				this.items.put("type", "string");
+				this.items.put("format", "uri");
+				return this;
+			} else {
+				return withFormat(JsonSchemaFormat.URI);
+			}
 		}
 
 		JsonSchemaProperty with(TypeInformation<?> type, String reference) {
