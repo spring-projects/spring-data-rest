@@ -63,7 +63,7 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 		CorsConfiguration configuration = accessor.createConfiguration(AnnotatedRepository.class);
 
 		assertThat(configuration).isNotNull();
-		assertThat(configuration.getAllowCredentials()).isTrue();
+		assertThat(configuration.getAllowCredentials()).isFalse();
 		assertThat(configuration.getAllowedHeaders()).contains("*");
 		assertThat(configuration.getAllowedOrigins()).contains("*");
 		assertThat(configuration.getAllowedMethods(),
