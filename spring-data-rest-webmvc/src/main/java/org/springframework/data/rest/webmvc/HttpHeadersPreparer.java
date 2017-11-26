@@ -18,10 +18,15 @@ package org.springframework.data.rest.webmvc;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Calendar;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Optional;
 
+import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.auditing.AuditableBeanWrapper;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
+import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.http.HttpHeaders;
@@ -38,6 +43,11 @@ import org.springframework.util.Assert;
 public class HttpHeadersPreparer {
 
 	private final @NonNull AuditableBeanWrapperFactory auditableBeanWrapperFactory;
+	private final ConfigurableConversionService conversionService = new DefaultConversionService();
+
+	{
+		Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
+	}
 
 	/**
 	 * Returns the default headers to be returned for the given {@link PersistentEntityResource}. Will set {@link ETag}
@@ -46,8 +56,11 @@ public class HttpHeadersPreparer {
 	 * @param resource can be {@literal null}.
 	 * @return
 	 */
-	public HttpHeaders prepareHeaders(PersistentEntityResource resource) {
-		return resource == null ? new HttpHeaders() : prepareHeaders(resource.getPersistentEntity(), resource.getContent());
+	public HttpHeaders prepareHeaders(Optional<PersistentEntityResource> resource) {
+
+		return resource//
+				.map(it -> prepareHeaders(it.getPersistentEntity(), it.getContent()))//
+				.orElseGet(() -> new HttpHeaders());
 	}
 
 	/**
@@ -60,21 +73,14 @@ public class HttpHeadersPreparer {
 	 */
 	public HttpHeaders prepareHeaders(PersistentEntity<?, ?> entity, Object value) {
 
+		Assert.notNull(entity, "PersistentEntity must not be null!");
+		Assert.notNull(value, "Entity value must not be null!");
+
 		// Add ETag
 		HttpHeaders headers = ETag.from(entity, value).addTo(new HttpHeaders());
 
 		// Add Last-Modified
-		AuditableBeanWrapper wrapper = getAuditableBeanWrapper(value);
-
-		if (wrapper == null) {
-			return headers;
-		}
-
-		Calendar lastModifiedDate = wrapper.getLastModifiedDate();
-
-		if (lastModifiedDate != null) {
-			headers.setLastModified(lastModifiedDate.getTimeInMillis());
-		}
+		getLastModifiedInMilliseconds(value).ifPresent(it -> headers.setLastModified(it));
 
 		return headers;
 	}
@@ -95,10 +101,9 @@ public class HttpHeadersPreparer {
 			return false;
 		}
 
-		AuditableBeanWrapper wrapper = auditableBeanWrapperFactory.getBeanWrapperFor(source);
-		long current = wrapper.getLastModifiedDate().getTimeInMillis() / 1000 * 1000;
-
-		return current <= headers.getIfModifiedSince();
+		return getLastModifiedInMilliseconds(source)//
+				.map(it -> it / 1000 * 1000 <= headers.getIfModifiedSince())//
+				.orElse(true);
 	}
 
 	/**
@@ -107,7 +112,16 @@ public class HttpHeadersPreparer {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	private AuditableBeanWrapper getAuditableBeanWrapper(Object source) {
+	private Optional<AuditableBeanWrapper> getAuditableBeanWrapper(Object source) {
 		return auditableBeanWrapperFactory.getBeanWrapperFor(source);
+	}
+
+	private Optional<Long> getLastModifiedInMilliseconds(Object object) {
+
+		return getAuditableBeanWrapper(object)//
+				.flatMap(it -> it.getLastModifiedDate())//
+				.map(it -> conversionService.convert(it, Date.class))//
+				.map(it -> conversionService.convert(it, Instant.class))//
+				.map(it -> it.toEpochMilli());
 	}
 }

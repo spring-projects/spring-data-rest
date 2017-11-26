@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package org.springframework.data.rest.tests.mongodb;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.assertj.core.api.Condition;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +71,7 @@ public class MongoWebTests extends CommonWebTests {
 		linkedIn.setPerson(1L);
 		linkedIn.setType("LinkedIn");
 
-		repository.save(Arrays.asList(twitter, linkedIn));
+		repository.saveAll(Arrays.asList(twitter, linkedIn));
 
 		Address address = new Address();
 		address.street = "ETagDoesntMatchExceptionUnitTests";
@@ -126,21 +127,18 @@ public class MongoWebTests extends CommonWebTests {
 				andExpect(jsonPath("$.address.zipCode").value(is(notNullValue())));
 	}
 
-	/**
-	 * @see DATAREST-247
-	 */
-	@Test
+	@Test // DATAREST-247
 	public void executeQueryMethodWithPrimitiveReturnType() throws Exception {
 
 		Link profiles = client.discoverUnique("profiles");
 		Link profileSearches = client.discoverUnique(profiles, "search");
 		Link countByTypeLink = client.discoverUnique(profileSearches, "countByType");
 
-		assertThat(countByTypeLink.isTemplated(), is(true));
-		assertThat(countByTypeLink.getVariableNames(), hasItem("type"));
+		assertThat(countByTypeLink.isTemplated()).isTrue();
+		assertThat(countByTypeLink.getVariableNames()).contains("type");
 
 		MockHttpServletResponse response = client.request(countByTypeLink.expand("Twitter"));
-		assertThat(response.getContentAsString(), is("1"));
+		assertThat(response.getContentAsString()).isEqualTo("1");
 	}
 
 	@Test
@@ -150,10 +148,11 @@ public class MongoWebTests extends CommonWebTests {
 		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
 
 		MockHttpServletResponse response = patchAndGet(userLink,
-				"{\"lastname\" : null, \"address\" : { \"zipCode\" : \"ZIP\"}}", MediaType.APPLICATION_JSON);
+				"{\"lastname\" : null, \"address\" : { \"zipCode\" : \"ZIP\"}}",
+				org.springframework.http.MediaType.APPLICATION_JSON);
 
-		assertThat(JsonPath.read(response.getContentAsString(), "$.lastname"), is(nullValue()));
-		assertThat(JsonPath.read(response.getContentAsString(), "$.address.zipCode"), is((Object) "ZIP"));
+		assertThat(JsonPath.<String> read(response.getContentAsString(), "$.lastname")).isNull();
+		assertThat(JsonPath.<String> read(response.getContentAsString(), "$.address.zipCode")).isEqualTo("ZIP");
 	}
 
 	@Test
@@ -168,14 +167,11 @@ public class MongoWebTests extends CommonWebTests {
 						+ "{ \"op\": \"remove\", \"path\": \"/lastname\" }]", //
 				RestMediaTypes.JSON_PATCH_JSON);
 
-		assertThat(JsonPath.read(response.getContentAsString(), "$.lastname"), is(nullValue()));
-		assertThat(JsonPath.read(response.getContentAsString(), "$.address.zipCode"), is((Object) "ZIP"));
+		assertThat(JsonPath.<String> read(response.getContentAsString(), "$.lastname")).isNull();
+		assertThat(JsonPath.<String> read(response.getContentAsString(), "$.address.zipCode")).isEqualTo("ZIP");
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
 
 		Link receiptLink = client.discoverUnique("receipts");
@@ -202,10 +198,7 @@ public class MongoWebTests extends CommonWebTests {
 				.andExpect(status().isPreconditionFailed());
 	}
 
-	/**
-	 * @see DATAREST-471
-	 */
-	@Test
+	@Test // DATAREST-471
 	public void auditableResourceHasLastModifiedHeaderSet() throws Exception {
 
 		Profile profile = repository.findAll().iterator().next();
@@ -213,13 +206,10 @@ public class MongoWebTests extends CommonWebTests {
 		String header = mvc.perform(get("/profiles/{id}", profile.getId())).//
 				andReturn().getResponse().getHeader("Last-Modified");
 
-		assertThat(header, not(isEmptyOrNullString()));
+		assertThat(header).isNot(new Condition<String>(it -> it == null || it.isEmpty(), "Foo"));
 	}
 
-	/**
-	 * @see DATAREST-482
-	 */
-	@Test
+	@Test // DATAREST-482
 	public void putDoesNotRemoveAssociations() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
@@ -242,10 +232,7 @@ public class MongoWebTests extends CommonWebTests {
 				andExpect(jsonPath("$.embedded.users[0].address").doesNotExist());
 	}
 
-	/**
-	 * @see DATAREST-482
-	 */
-	@Test
+	@Test // DATAREST-482
 	public void emptiesAssociationForEmptyUriList() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
@@ -259,10 +246,7 @@ public class MongoWebTests extends CommonWebTests {
 				andExpect(jsonPath("$").exists());
 	}
 
-	/**
-	 * @see DATAREST-491
-	 */
-	@Test
+	@Test // DATAREST-491
 	public void updatesMapPropertyCorrectly() throws Exception {
 
 		Link profilesLink = client.discoverUnique("profiles");
@@ -276,10 +260,7 @@ public class MongoWebTests extends CommonWebTests {
 		client.follow(profileLink).andExpect(jsonPath("$.metadata.Key").value("Value"));
 	}
 
-	/**
-	 * @see DATAREST-506
-	 */
-	@Test
+	@Test // DATAREST-506
 	public void supportsConditionalGetsOnItemResource() throws Exception {
 
 		Receipt receipt = new Receipt();
@@ -302,36 +283,27 @@ public class MongoWebTests extends CommonWebTests {
 				andExpect(header().string(ETAG, is(notNullValue())));
 	}
 
-	/**
-	 * @see DATAREST-511
-	 */
-	@Test
+	@Test // DATAREST-511
 	public void invokesQueryResourceReturningAnOptional() throws Exception {
 
 		Profile profile = repository.findAll().iterator().next();
 
-		Link link = client.discoverUnique("profiles", "search", "findById");
+		Link link = client.discoverUnique("profiles", "search", "findProfileById");
 
 		mvc.perform(get(link.expand(profile.getId()).getHref())).//
 				andExpect(status().isOk());
 	}
 
-	/**
-	 * @see DATAREST-517
-	 */
-	@Test
+	@Test // DATAREST-517
 	public void returnsNotFoundIfQueryExecutionDoesNotReturnResult() throws Exception {
 
-		Link link = client.discoverUnique("profiles", "search", "findById");
+		Link link = client.discoverUnique("profiles", "search", "findProfileById");
 
 		mvc.perform(get(link.expand("").getHref())).//
 				andExpect(status().isNotFound());
 	}
 
-	/**
-	 * @see DATAREST-712
-	 */
-	@Test
+	@Test // DATAREST-712
 	public void invokesQueryMethodTakingAReferenceCorrectly() throws Exception {
 
 		Link link = client.discoverUnique("users", "search", "findByColleaguesContains");
@@ -344,13 +316,10 @@ public class MongoWebTests extends CommonWebTests {
 		mvc.perform(get(href)).andExpect(status().isOk());
 	}
 
-	/**
-	 * @see DATAREST-835
-	 */
-	@Test
+	@Test // DATAREST-835
 	public void exposesETagHeaderForSearchResourceYieldingItemResource() throws Exception {
 
-		Link link = client.discoverUnique("profiles", "search", "findById");
+		Link link = client.discoverUnique("profiles", "search", "findProfileById");
 
 		Profile profile = repository.findAll().iterator().next();
 
@@ -359,10 +328,7 @@ public class MongoWebTests extends CommonWebTests {
 				.andExpect(header().string("Last-Modified", is(notNullValue())));
 	}
 
-	/**
-	 * @see DATAREST-835
-	 */
-	@Test
+	@Test // DATAREST-835
 	public void doesNotAddETagHeaderForCollectionQueryResource() throws Exception {
 
 		Link link = client.discoverUnique("profiles", "search", "findByType");

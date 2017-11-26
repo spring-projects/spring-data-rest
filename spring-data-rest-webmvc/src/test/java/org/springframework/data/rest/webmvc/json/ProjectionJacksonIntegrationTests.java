@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
@@ -51,10 +50,7 @@ public class ProjectionJacksonIntegrationTests {
 		this.mapper.setHandlerInstantiator(new HalHandlerInstantiator(new EvoInflectorRelProvider(), null, null));
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void considersJacksonAnnotationsOnProjectionInterfaces() throws Exception {
 
 		Customer customer = new Customer();
@@ -65,13 +61,10 @@ public class ProjectionJacksonIntegrationTests {
 		CustomerProjection projection = factory.createProjection(CustomerProjection.class, customer);
 
 		String result = mapper.writeValueAsString(projection);
-		assertThat(JsonPath.read(result, "$.firstname"), is((Object) "Dave"));
+		assertThat(JsonPath.<String> read(result, "$.firstname")).isEqualTo((Object) "Dave");
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void rendersHalContentCorrectly() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -89,7 +82,7 @@ public class ProjectionJacksonIntegrationTests {
 
 		String result = mapper.writeValueAsString(resources);
 
-		assertThat(JsonPath.read(result, "$._embedded.customers[0].firstname"), is((Object) "Dave"));
+		assertThat(JsonPath.<String> read(result, "$._embedded.customers[0].firstname")).isEqualTo((Object) "Dave");
 	}
 
 	static class Customer {

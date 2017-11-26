@@ -127,4 +127,4 @@ To have your results sorted on a particular property, add a `sort` URL parameter
 curl -v "http://localhost:8080/people/search/nameStartsWith?name=K&sort=name,desc"
 ----
 
-To sort the results by more than one property, keep adding as many `sort=PROPERTY` parameters as you need. They will be added to the `Pageable` in the order they appear in the query string.
+To sort the results by more than one property, keep adding as many `sort=PROPERTY` parameters as you need. They will be added to the `Pageable` in the order they appear in the query string. Results can be sorted by top-level and nested properties. Use property path notation to express a nested sort property. Sorting by linkable associations (i.e. resources to top-level resources) is not supported.

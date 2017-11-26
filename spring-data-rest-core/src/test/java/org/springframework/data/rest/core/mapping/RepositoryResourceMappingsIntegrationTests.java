@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +36,7 @@ import org.springframework.data.rest.core.domain.Author;
 import org.springframework.data.rest.core.domain.CreditCard;
 import org.springframework.data.rest.core.domain.JpaRepositoryConfig;
 import org.springframework.data.rest.core.domain.Person;
+import org.springframework.data.rest.core.domain.Profile;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.test.context.ContextConfiguration;
@@ -54,21 +53,23 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class RepositoryResourceMappingsIntegrationTests {
 
 	@Autowired ListableBeanFactory factory;
-	@Autowired KeyValueMappingContext mappingContext;
+	@Autowired KeyValueMappingContext<?, ?> mappingContext;
 
 	ResourceMappings mappings;
 
 	@Before
 	public void setUp() {
 
+		mappingContext.getPersistentEntity(Profile.class);
+
 		Repositories repositories = new Repositories(factory);
 		this.mappings = new RepositoryResourceMappings(repositories, new PersistentEntities(Arrays.asList(mappingContext)),
-				new EvoInflectorRelProvider(), RepositoryDetectionStrategies.DEFAULT);
+				RepositoryDetectionStrategies.DEFAULT, new EvoInflectorRelProvider());
 	}
 
 	@Test
 	public void detectsAllMappings() {
-		assertThat(mappings, is(Matchers.<ResourceMetadata> iterableWithSize(5)));
+		assertThat(mappings).hasSize(5);
 	}
 
 	@Test
@@ -76,8 +77,8 @@ public class RepositoryResourceMappingsIntegrationTests {
 
 		ResourceMetadata personMappings = mappings.getMetadataFor(Person.class);
 
-		assertThat(personMappings.isExported(), is(true));
-		assertThat(personMappings.getSearchResourceMappings().isExported(), is(true));
+		assertThat(personMappings.isExported()).isTrue();
+		assertThat(personMappings.getSearchResourceMappings().isExported()).isTrue();
 	}
 
 	@Test
@@ -85,54 +86,45 @@ public class RepositoryResourceMappingsIntegrationTests {
 
 		ResourceMetadata creditCardMapping = mappings.getMetadataFor(CreditCard.class);
 
-		assertThat(creditCardMapping.isExported(), is(false));
-		assertThat(creditCardMapping.getSearchResourceMappings().isExported(), is(false));
+		assertThat(creditCardMapping.isExported()).isFalse();
+		assertThat(creditCardMapping.getSearchResourceMappings().isExported()).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-112
-	 */
-	@Test
+	@Test // DATAREST-112
 	public void usesPropertyNameAsRelForPropertyResourceMapping() {
 
 		Repositories repositories = new Repositories(factory);
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(Person.class);
-		PersistentProperty<?> property = entity.getPersistentProperty("siblings");
+		PersistentProperty<?> property = entity.getRequiredPersistentProperty("siblings");
 
 		ResourceMetadata metadata = mappings.getMetadataFor(Person.class);
 		ResourceMapping mapping = metadata.getMappingFor(property);
 
-		assertThat(mapping.getRel(), is("siblings"));
-		assertThat(mapping.getPath(), is(new Path("siblings")));
-		assertThat(mapping.isExported(), is(true));
+		assertThat(mapping.getRel()).isEqualTo("siblings");
+		assertThat(mapping.getPath()).isEqualTo(new Path("siblings"));
+		assertThat(mapping.isExported()).isTrue();
 	}
 
-	/**
-	 * @see DATAREST-111
-	 */
-	@Test
+	@Test // DATAREST-111
 	public void exposesResourceByPath() {
 
-		assertThat(mappings.exportsTopLevelResourceFor("people"), is(true));
-		assertThat(mappings.exportsTopLevelResourceFor("orders"), is(true));
+		assertThat(mappings.exportsTopLevelResourceFor("people")).isTrue();
+		assertThat(mappings.exportsTopLevelResourceFor("orders")).isTrue();
 
 		ResourceMetadata creditCardMapping = mappings.getMetadataFor(CreditCard.class);
-		assertThat(creditCardMapping, is(notNullValue()));
-		assertThat(creditCardMapping.getPath(), is(new Path("creditCards")));
-		assertThat(creditCardMapping.isExported(), is(false));
-		assertThat(mappings.exportsTopLevelResourceFor("creditCards"), is(false));
+		assertThat(creditCardMapping).isNotNull();
+		assertThat(creditCardMapping.getPath()).isEqualTo(new Path("creditCards"));
+		assertThat(creditCardMapping.isExported()).isFalse();
+		assertThat(mappings.exportsTopLevelResourceFor("creditCards")).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-107
-	 */
-	@Test
+	@Test // DATAREST-107
 	public void skipsSearchMethodsNotExported() {
 
 		ResourceMetadata creditCardMetadata = mappings.getMetadataFor(CreditCard.class);
 		SearchResourceMappings searchResourceMappings = creditCardMetadata.getSearchResourceMappings();
 
-		assertThat(searchResourceMappings, is(Matchers.<MethodResourceMapping> iterableWithSize(0)));
+		assertThat(searchResourceMappings).isEmpty();
 
 		ResourceMetadata personMetadata = mappings.getMetadataFor(Person.class);
 		List<String> methodNames = new ArrayList<String>();
@@ -141,28 +133,25 @@ public class RepositoryResourceMappingsIntegrationTests {
 			methodNames.add(method.getMethod().getName());
 		}
 
-		assertThat(methodNames, hasSize(2));
-		assertThat(methodNames, hasItems("findByFirstName", "findByCreatedGreaterThan"));
+		assertThat(methodNames).hasSize(2);
+		assertThat(methodNames).contains("findByFirstName", "findByCreatedGreaterThan");
 	}
 
-	/**
-	 * @see DATAREST-325
-	 */
-	@Test
+	@Test // DATAREST-325
 	public void exposesMethodResourceMappingInPackageProtectedButExportedRepo() {
 
 		ResourceMetadata metadata = mappings.getMetadataFor(Author.class);
-		assertThat(metadata.isExported(), is(true));
+		assertThat(metadata.isExported()).isTrue();
 
 		SearchResourceMappings searchMappings = metadata.getSearchResourceMappings();
 
-		assertThat(searchMappings.isExported(), is(true));
-		assertThat(searchMappings.getMappedMethod("findByFirstnameContaining"), is(notNullValue()));
+		assertThat(searchMappings.isExported()).isTrue();
+		assertThat(searchMappings.getMappedMethod("findByFirstnameContaining")).isNotNull();
 
 		for (MethodResourceMapping methodMapping : searchMappings) {
 
 			System.out.println(methodMapping.getMethod().getName());
-			assertThat(methodMapping.isExported(), is(true));
+			assertThat(methodMapping.isExported()).isTrue();
 		}
 	}
 
@@ -173,7 +162,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 
 		PropertyAwareResourceMapping propertyMapping = metadata.getProperty("father-mapped");
 
-		assertThat(propertyMapping.getRel(), is("father"));
-		assertThat(propertyMapping.getPath(), is(new Path("father-mapped")));
+		assertThat(propertyMapping.getRel()).isEqualTo("father");
+		assertThat(propertyMapping.getPath()).isEqualTo(new Path("father-mapped"));
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,14 @@
  */
 package org.springframework.data.rest.core.event;
 
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,6 +31,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleAfterDelete;
@@ -38,7 +45,6 @@ import org.springframework.data.rest.core.annotation.HandleBeforeLinkDelete;
 import org.springframework.data.rest.core.annotation.HandleBeforeLinkSave;
 import org.springframework.data.rest.core.annotation.HandleBeforeSave;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
-import org.springframework.data.rest.core.util.Methods;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -116,27 +122,19 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 			return bean;
 		}
 
-		ReflectionUtils.doWithMethods(beanType, new ReflectionUtils.MethodCallback() {
+		for (Method method : ReflectionUtils.getUniqueDeclaredMethods(beanType)) {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.util.ReflectionUtils.MethodCallback#doWith(java.lang.reflect.Method)
-			 */
-			@Override
-			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-
-				inspect(bean, method, HandleBeforeCreate.class, BeforeCreateEvent.class);
-				inspect(bean, method, HandleAfterCreate.class, AfterCreateEvent.class);
-				inspect(bean, method, HandleBeforeSave.class, BeforeSaveEvent.class);
-				inspect(bean, method, HandleAfterSave.class, AfterSaveEvent.class);
-				inspect(bean, method, HandleBeforeLinkSave.class, BeforeLinkSaveEvent.class);
-				inspect(bean, method, HandleAfterLinkSave.class, AfterLinkSaveEvent.class);
-				inspect(bean, method, HandleBeforeDelete.class, BeforeDeleteEvent.class);
-				inspect(bean, method, HandleAfterDelete.class, AfterDeleteEvent.class);
-				inspect(bean, method, HandleBeforeLinkDelete.class, BeforeLinkDeleteEvent.class);
-				inspect(bean, method, HandleAfterLinkDelete.class, AfterLinkDeleteEvent.class);
-			}
-		}, Methods.USER_METHODS);
+			inspect(bean, method, HandleBeforeCreate.class, BeforeCreateEvent.class);
+			inspect(bean, method, HandleAfterCreate.class, AfterCreateEvent.class);
+			inspect(bean, method, HandleBeforeSave.class, BeforeSaveEvent.class);
+			inspect(bean, method, HandleAfterSave.class, AfterSaveEvent.class);
+			inspect(bean, method, HandleBeforeLinkSave.class, BeforeLinkSaveEvent.class);
+			inspect(bean, method, HandleAfterLinkSave.class, AfterLinkSaveEvent.class);
+			inspect(bean, method, HandleBeforeDelete.class, BeforeDeleteEvent.class);
+			inspect(bean, method, HandleAfterDelete.class, AfterDeleteEvent.class);
+			inspect(bean, method, HandleBeforeLinkDelete.class, BeforeLinkDeleteEvent.class);
+			inspect(bean, method, HandleAfterLinkDelete.class, AfterLinkDeleteEvent.class);
+		}
 
 		return bean;
 	}
@@ -159,43 +157,55 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 			return;
 		}
 
-		Class<?>[] parameterTypes = method.getParameterTypes();
-
-		if (parameterTypes.length == 0) {
+		if (method.getParameterCount() == 0) {
 			throw new IllegalStateException(String.format(PARAMETER_MISSING, method));
 		}
 
-		EventHandlerMethod handlerMethod = new EventHandlerMethod(parameterTypes[0], handler, method);
+		ResolvableType parameter = ResolvableType.forMethodParameter(method, 0, handler.getClass());
+		EventHandlerMethod handlerMethod = EventHandlerMethod.of(parameter.resolve(), handler, method);
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Annotated handler method found: {}", handlerMethod);
 		}
 
-		handlerMethods.add(eventType, handlerMethod);
+		List<EventHandlerMethod> events = handlerMethods.get(eventType);
+
+		if (events == null) {
+			events = new ArrayList<EventHandlerMethod>();
+		}
+
+		if (events.isEmpty()) {
+			handlerMethods.add(eventType, handlerMethod);
+			return;
+		}
+
+		events.add(handlerMethod);
+		Collections.sort(events);
+		handlerMethods.put(eventType, events);
 	}
 
-	static class EventHandlerMethod {
+	@ToString
+	@EqualsAndHashCode
+	@RequiredArgsConstructor
+	static class EventHandlerMethod implements Comparable<EventHandlerMethod> {
 
 		final Class<?> targetType;
 		final Method method;
 		final Object handler;
 
-		private EventHandlerMethod(Class<?> targetType, Object handler, Method method) {
+		public static EventHandlerMethod of(Class<?> targetType, Object handler, Method method) {
 
-			this.targetType = targetType;
-			this.method = method;
-			this.handler = handler;
-
-			ReflectionUtils.makeAccessible(this.method);
+			ReflectionUtils.makeAccessible(method);
+			return new EventHandlerMethod(targetType, method, handler);
 		}
 
-		/*
+		/* 
 		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
+		 * @see java.lang.Comparable#compareTo(java.lang.Object)
 		 */
 		@Override
-		public String toString() {
-			return String.format("EventHandlerMethod{ targetType=%s, method=%s, handler=%s }", targetType, method, handler);
+		public int compareTo(EventHandlerMethod o) {
+			return AnnotationAwareOrderComparator.INSTANCE.compare(this.method, o.method);
 		}
 	}
 }

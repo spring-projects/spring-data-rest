@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.core.domain;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.repository.CrudRepository;
@@ -29,12 +30,12 @@ public interface OrderRepository extends CrudRepository<Order, UUID> {
 	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Object)
 	 */
 	@Override
-	public <S extends Order> S save(S entity);
+	<S extends Order> S save(S entity);
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findOne(java.io.Serializable)
+	 * @see org.springframework.data.repository.CrudRepository#findById(java.lang.Object)
 	 */
 	@Override
-	public Order findOne(UUID id);
+	Optional<Order> findById(UUID id);
 }

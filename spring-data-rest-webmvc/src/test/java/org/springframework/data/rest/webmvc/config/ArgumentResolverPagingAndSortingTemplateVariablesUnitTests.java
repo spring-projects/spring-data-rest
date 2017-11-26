@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,15 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,50 +46,35 @@ public class ArgumentResolverPagingAndSortingTemplateVariablesUnitTests {
 	@Mock HateoasSortHandlerMethodArgumentResolver sortResolver;
 	@Mock UriComponentsBuilder builder;
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-467
 	public void rejectsNullArgumentResolverForPageable() {
 		new ArgumentResolverPagingAndSortingTemplateVariables(null, sortResolver);
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-467
 	public void rejectsNullArgumentResolverForSort() {
 		new ArgumentResolverPagingAndSortingTemplateVariables(pageableResolver, null);
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void supportsPageableAndSortMethodParameters() {
 
 		PagingAndSortingTemplateVariables variables = new ArgumentResolverPagingAndSortingTemplateVariables(
 				pageableResolver, sortResolver);
 
-		assertThat(variables.supportsParameter(getParameterMock(Pageable.class)), is(true));
-		assertThat(variables.supportsParameter(getParameterMock(Sort.class)), is(true));
-		assertThat(variables.supportsParameter(getParameterMock(Object.class)), is(false));
+		assertThat(variables.supportsParameter(getParameterMock(Pageable.class))).isTrue();
+		assertThat(variables.supportsParameter(getParameterMock(Sort.class))).isTrue();
+		assertThat(variables.supportsParameter(getParameterMock(Object.class))).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void forwardsEnhanceRequestForPageable() {
-		assertForwardsEnhanceFor(new PageRequest(0, 10), pageableResolver, sortResolver);
+		assertForwardsEnhanceFor(PageRequest.of(0, 10), pageableResolver, sortResolver);
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void forwardsEnhanceRequestForSort() {
-		assertForwardsEnhanceFor(new Sort("property"), sortResolver, pageableResolver);
+		assertForwardsEnhanceFor(Sort.by("property"), sortResolver, pageableResolver);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -112,6 +96,6 @@ public class ArgumentResolverPagingAndSortingTemplateVariablesUnitTests {
 
 		verify(expected, times(1)).enhance(builder, null, value);
 		verify(unexpected, times(0)).enhance(Mockito.any(UriComponentsBuilder.class), Mockito.any(MethodParameter.class),
-				anyObject());
+				any());
 	}
 }

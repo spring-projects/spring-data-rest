@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -26,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
@@ -37,6 +36,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -49,19 +49,21 @@ import org.springframework.hateoas.Link;
 public class AssociationsUnitTests {
 
 	@Mock RepositoryRestConfiguration configuration;
+	@Mock ProjectionDefinitionConfiguration projectionDefinitionConfiguration;
 
 	@Mock PersistentEntity<?, ?> entity;
 	@Mock PersistentProperty<?> property;
 
 	Associations associations;
 
-	KeyValueMappingContext mappingContext;
+	KeyValueMappingContext<?, ?> mappingContext;
 	ResourceMappings mappings;
 
 	@Before
 	public void setUp() {
+		doReturn(projectionDefinitionConfiguration).when(configuration).getProjectionConfiguration();
 
-		this.mappingContext = new KeyValueMappingContext();
+		this.mappingContext = new KeyValueMappingContext<>();
 		this.mappingContext.getPersistentEntity(Root.class);
 
 		this.mappings = new PersistentEntitiesResourceMappings(new PersistentEntities(Arrays.asList(mappingContext)));
@@ -81,37 +83,37 @@ public class AssociationsUnitTests {
 
 	@Test
 	public void handlesNullPropertyForLookupTypeCheck() {
-		assertThat(associations.isLookupType(null), is(false));
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> associations.isLookupType(null));
 	}
 
 	@Test
 	public void forwardsLookupTypeCheckToConfiguration() {
 
 		doReturn(Root.class).when(property).getActualType();
-		assertThat(associations.isLookupType(property), is(false));
+		assertThat(associations.isLookupType(property)).isFalse();
 
 		doReturn(true).when(configuration).isLookupType(Root.class);
-		assertThat(associations.isLookupType(property), is(true));
+		assertThat(associations.isLookupType(property)).isTrue();
 	}
 
 	@Test
 	public void forwardsIdExposureCheckToConfiguration() {
 
 		doReturn(Root.class).when(entity).getType();
-		assertThat(associations.isIdExposed(entity), is(false));
+		assertThat(associations.isIdExposed(entity)).isFalse();
 
 		doReturn(true).when(configuration).isIdExposedFor(Root.class);
-		assertThat(associations.isIdExposed(entity), is(true));
+		assertThat(associations.isIdExposed(entity)).isTrue();
 	}
 
 	@Test
 	public void exposesConfiguredMapping() {
-		assertThat(associations.getMappings(), is(mappings));
+		assertThat(associations.getMappings()).isEqualTo(mappings);
 	}
 
 	@Test
 	public void forwardsMetadataLookupToMappings() {
-		assertThat(associations.getMetadataFor(Root.class), is(notNullValue()));
+		assertThat(associations.getMetadataFor(Root.class)).isNotNull();
 	}
 
 	@Test
@@ -119,8 +121,8 @@ public class AssociationsUnitTests {
 
 		List<Link> links = associations.getLinksFor(getAssociation(Root.class, "relatedAndExported"), new Path(""));
 
-		assertThat(links, hasSize(1));
-		assertThat(links, hasItem(new Link("/relatedAndExported", "relatedAndExported")));
+		assertThat(links).hasSize(1);
+		assertThat(links).contains(new Link("/relatedAndExported", "relatedAndExported"));
 	}
 
 	@Test
@@ -128,13 +130,30 @@ public class AssociationsUnitTests {
 
 		List<Link> links = associations.getLinksFor(getAssociation(Root.class, "relatedButNotExported"), new Path(""));
 
-		assertThat(links, hasSize(0));
+		assertThat(links).hasSize(0);
+	}
+
+	@Test // DATAREST-1105
+	public void detectsProjectionsForAssociationLinks() {
+
+		String projectionParameterName = "projection";
+
+		doReturn(true).when(projectionDefinitionConfiguration).hasProjectionFor(RelatedAndExported.class);
+		doReturn(projectionParameterName).when(projectionDefinitionConfiguration).getParameterName();
+
+		List<Link> links = associations.getLinksFor(getAssociation(Root.class, "relatedAndExported"), new Path(""));
+
+		assertThat(links).hasSize(1);
+		assertThat(links).contains(new Link("/relatedAndExported{?" + projectionParameterName + "}", "relatedAndExported"));
 	}
 
 	private Association<? extends PersistentProperty<?>> getAssociation(Class<?> type, String name) {
 
-		KeyValuePersistentEntity<?> rootEntity = mappingContext.getPersistentEntity(type);
-		return new Association<KeyValuePersistentProperty>(rootEntity.getPersistentProperty(name), null);
+		KeyValuePersistentEntity<?, ? extends KeyValuePersistentProperty<?>> rootEntity = mappingContext
+				.getRequiredPersistentEntity(type);
+		KeyValuePersistentProperty<?> property = rootEntity.getRequiredPersistentProperty(name);
+
+		return new Association(property, null);
 	}
 
 	static class Root {

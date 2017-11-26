@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-public class TestOperationTests {
+public class TestOperationUnitTests {
 
 	@Test
 	public void testPropertyValueEquals() throws Exception {
@@ -30,10 +30,10 @@ public class TestOperationTests {
 		todos.add(new Todo(2L, "B", true));
 		todos.add(new Todo(3L, "C", false));
 
-		TestOperation test = new TestOperation("/0/complete", false);
+		TestOperation test = TestOperation.whetherValueAt("/0/complete").hasValue(false);
 		test.perform(todos, Todo.class);
 
-		TestOperation test2 = new TestOperation("/1/complete", true);
+		TestOperation test2 = TestOperation.whetherValueAt("/1/complete").hasValue(true);
 		test2.perform(todos, Todo.class);
 
 	}
@@ -46,7 +46,7 @@ public class TestOperationTests {
 		todos.add(new Todo(2L, "B", true));
 		todos.add(new Todo(3L, "C", false));
 
-		TestOperation test = new TestOperation("/0/complete", true);
+		TestOperation test = TestOperation.whetherValueAt("/0/complete").hasValue(true);
 		test.perform(todos, Todo.class);
 	}
 
@@ -58,7 +58,7 @@ public class TestOperationTests {
 		todos.add(new Todo(2L, "B", true));
 		todos.add(new Todo(3L, "C", false));
 
-		TestOperation test = new TestOperation("/1", new Todo(2L, "B", true));
+		TestOperation test = TestOperation.whetherValueAt("/1").hasValue(new Todo(2L, "B", true));
 		test.perform(todos, Todo.class);
 	}
 }

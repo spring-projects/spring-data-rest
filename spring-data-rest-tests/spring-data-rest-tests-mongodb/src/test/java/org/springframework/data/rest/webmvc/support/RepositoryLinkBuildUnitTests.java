@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
@@ -39,10 +38,7 @@ public class RepositoryLinkBuildUnitTests {
 
 	MongoMappingContext context = new MongoMappingContext();
 
-	/**
-	 * @see DATAREST-292
-	 */
-	@Test
+	@Test // DATAREST-292
 	public void usesCurrentRequestsUriBaseForRelativeBaseUri() {
 
 		TestMvcClient.initWebTest();
@@ -50,10 +46,7 @@ public class RepositoryLinkBuildUnitTests {
 		assertRootUriFor("api", "http://localhost/api/profile");
 	}
 
-	/**
-	 * @see DATAREST-292, DATAREST-296
-	 */
-	@Test
+	@Test // DATAREST-292, DATAREST-296
 	public void usesBaseUriOnlyIfItIsAbsolute() {
 		assertRootUriFor("http://foobar/api", "http://foobar/api/profile");
 	}
@@ -67,6 +60,6 @@ public class RepositoryLinkBuildUnitTests {
 				new BaseUri(baseUri));
 		Link link = builder.withSelfRel();
 
-		assertThat(link.getHref(), is(expectedUri));
+		assertThat(link.getHref()).isEqualTo(expectedUri);
 	}
 }

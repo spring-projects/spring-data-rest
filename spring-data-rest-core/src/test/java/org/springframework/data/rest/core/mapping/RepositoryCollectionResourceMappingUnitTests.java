@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.domain.Page;
@@ -41,10 +40,10 @@ public class RepositoryCollectionResourceMappingUnitTests {
 
 		CollectionResourceMapping mapping = getResourceMappingFor(PersonRepository.class);
 
-		assertThat(mapping.getPath(), is(new Path("persons")));
-		assertThat(mapping.getRel(), is("persons"));
-		assertThat(mapping.getItemResourceRel(), is("person"));
-		assertThat(mapping.isExported(), is(true));
+		assertThat(mapping.getPath()).isEqualTo(new Path("persons"));
+		assertThat(mapping.getRel()).isEqualTo("persons");
+		assertThat(mapping.getItemResourceRel()).isEqualTo("person");
+		assertThat(mapping.isExported()).isTrue();
 	}
 
 	@Test
@@ -52,10 +51,10 @@ public class RepositoryCollectionResourceMappingUnitTests {
 
 		CollectionResourceMapping mapping = getResourceMappingFor(AnnotatedPersonRepository.class);
 
-		assertThat(mapping.getPath(), is(new Path("bar")));
-		assertThat(mapping.getRel(), is("foo"));
-		assertThat(mapping.getItemResourceRel(), is("annotatedPerson"));
-		assertThat(mapping.isExported(), is(false));
+		assertThat(mapping.getPath()).isEqualTo(new Path("bar"));
+		assertThat(mapping.getRel()).isEqualTo("foo");
+		assertThat(mapping.getItemResourceRel()).isEqualTo("annotatedPerson");
+		assertThat(mapping.isExported()).isFalse();
 	}
 
 	@Test
@@ -63,39 +62,33 @@ public class RepositoryCollectionResourceMappingUnitTests {
 
 		CollectionResourceMapping mapping = getResourceMappingFor(AnnotatedAnnotatedPersonRepository.class);
 
-		assertThat(mapping.getPath(), is(new Path("/trumpsAll")));
-		assertThat(mapping.getRel(), is("foo"));
-		assertThat(mapping.getItemResourceRel(), is("annotatedPerson"));
-		assertThat(mapping.isExported(), is(true));
+		assertThat(mapping.getPath()).isEqualTo(new Path("/trumpsAll"));
+		assertThat(mapping.getRel()).isEqualTo("foo");
+		assertThat(mapping.getItemResourceRel()).isEqualTo("annotatedPerson");
+		assertThat(mapping.isExported()).isTrue();
 	}
 
 	@Test
 	public void doesNotExposeRepositoryForPublicDomainTypeIfRepoIsPackageProtected() {
 
 		ResourceMapping mapping = getResourceMappingFor(PackageProtectedRepository.class);
-		assertThat(mapping.isExported(), is(false));
+		assertThat(mapping.isExported()).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-229
-	 */
-	@Test
+	@Test // DATAREST-229
 	public void detectsPagingRepository() {
-		assertThat(getResourceMappingFor(PersonRepository.class).isPagingResource(), is(true));
+		assertThat(getResourceMappingFor(PersonRepository.class).isPagingResource()).isTrue();
 	}
 
 	@Test
 	public void discoversCustomizationsUsingRestRepositoryResource() {
 
 		CollectionResourceMapping mapping = getResourceMappingFor(RepositoryAnnotatedRepository.class);
-		assertThat(mapping.getRel(), is("foo"));
-		assertThat(mapping.getItemResourceRel(), is("bar"));
+		assertThat(mapping.getRel()).isEqualTo("foo");
+		assertThat(mapping.getItemResourceRel()).isEqualTo("bar");
 	}
 
-	/**
-	 * @see DATAREST-445
-	 */
-	@Test
+	@Test // DATAREST-445
 	public void usesDomainTypeFromRepositoryMetadata() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PersonRepository.class) {
@@ -109,7 +102,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 		RepositoryCollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(metadata,
 				RepositoryDetectionStrategies.DEFAULT);
 
-		assertThat(mapping.getPath(), is(new Path("/objects")));
+		assertThat(mapping.getPath()).isEqualTo(new Path("/objects"));
 	}
 
 	private static CollectionResourceMapping getResourceMappingFor(Class<?> repositoryInterface) {

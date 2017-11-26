@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-rest-tests</artifactId>
-		<version>2.6.0.BUILD-SNAPSHOT</version>
+		<version>3.1.0.BUILD-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-rest-tests-core</artifactId>
-			<version>2.6.0.BUILD-SNAPSHOT</version>
+			<version>3.1.0.BUILD-SNAPSHOT</version>
 			<type>test-jar</type>
 		</dependency>
 
@@ -73,7 +73,7 @@
 							<goal>process</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>target/generated-sources/test-querydsl</outputDirectory>
+							<outputDirectory>target/generated-sources/querydsl</outputDirectory>
 							<processor>org.springframework.data.mongodb.repository.support.MongoAnnotationProcessor</processor>
 							<options>
 								<querydsl.excludedPackages>org.springframework.data.rest.tests.mongodb.groovy,groovy.lang</querydsl.excludedPackages>

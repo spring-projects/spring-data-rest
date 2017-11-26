@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-rest-parent</artifactId>
-		<version>2.6.0.BUILD-SNAPSHOT</version>
+		<version>3.1.0.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>spring-data-rest-hal-browser</artifactId>
@@ -13,8 +13,9 @@
 	<name>Spring Data REST - HAL Browser</name>
 
 	<properties>
-		<browser.version>3325375</browser.version>
+		<browser.version>ad9b865</browser.version>
 		<json-editor.version>0.7.21</json-editor.version>
+		<java-module-name>spring.data.rest.hal.browser</java-module-name>
 	</properties>
 
 	<dependencies>

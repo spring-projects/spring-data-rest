@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,16 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
+import org.springframework.data.mapping.PersistentEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -35,49 +35,44 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class MappedPropertiesUnitTests {
 
 	ObjectMapper mapper = new ObjectMapper();
-	KeyValueMappingContext context = new KeyValueMappingContext();
-	KeyValuePersistentEntity<?> entity = context.getPersistentEntity(Sample.class);
+	KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
+	PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(Sample.class);
 	MappedProperties properties = MappedProperties.fromJacksonProperties(entity, mapper);
 
-	/**
-	 * @see DATAREST-575
-	 */
-	@Test
+	@Test // DATAREST-575
 	public void doesNotExposeMappedPropertyForNonSpringDataPersistentProperty() {
 
-		assertThat(properties.hasPersistentPropertyForField("notExposedBySpringData"), is(false));
-		assertThat(properties.getPersistentProperty("notExposedBySpringData"), is(nullValue()));
+		assertThat(properties.hasPersistentPropertyForField("notExposedBySpringData")).isFalse();
+		assertThat(properties.getPersistentProperty("notExposedBySpringData")).isNull();
 	}
 
-	/**
-	 * @see DATAREST-575
-	 */
-	@Test
+	@Test // DATAREST-575
 	public void doesNotExposeMappedPropertyForNonJacksonProperty() {
 
-		assertThat(properties.hasPersistentPropertyForField("notExposedByJackson"), is(false));
-		assertThat(properties.getPersistentProperty("notExposedByJackson"), is(nullValue()));
+		assertThat(properties.hasPersistentPropertyForField("notExposedByJackson")).isFalse();
+		assertThat(properties.getPersistentProperty("notExposedByJackson")).isNull();
 	}
 
-	/**
-	 * @see DATAREST-575
-	 */
-	@Test
+	@Test // DATAREST-575
 	public void exposesProperty() {
 
-		assertThat(properties.hasPersistentPropertyForField("exposedProperty"), is(true));
-		assertThat(properties.getPersistentProperty("exposedProperty"), is(notNullValue()));
+		assertThat(properties.hasPersistentPropertyForField("exposedProperty")).isTrue();
+		assertThat(properties.getPersistentProperty("exposedProperty")).isNotNull();
 	}
 
-	/**
-	 * @see DATAREST-575
-	 */
-	@Test
+	@Test // DATAREST-575
 	public void exposesRenamedPropertyByExternalName() {
 
-		assertThat(properties.hasPersistentPropertyForField("email"), is(true));
-		assertThat(properties.getPersistentProperty("email"), is(notNullValue()));
-		assertThat(properties.getMappedName(entity.getPersistentProperty("emailAddress")), is("email"));
+		assertThat(properties.hasPersistentPropertyForField("email")).isTrue();
+		assertThat(properties.getPersistentProperty("email")).isNotNull();
+		assertThat(properties.getMappedName(entity.getRequiredPersistentProperty("emailAddress"))).isEqualTo("email");
+	}
+
+	@Test // DATAREST-1006
+	public void doesNotExposeIgnoredPropertyViaJsonProperty() {
+
+		assertThat(properties.hasPersistentPropertyForField("readOnlyProperty")).isFalse();
+		assertThat(properties.getPersistentProperty("readOnlyProperty")).isNull();
 	}
 
 	static class Sample {
@@ -86,5 +81,6 @@ public class MappedPropertiesUnitTests {
 		public @JsonIgnore String notExposedByJackson;
 		public String exposedProperty;
 		public @JsonProperty("email") String emailAddress;
+		public @JsonProperty(access = Access.READ_ONLY) String readOnlyProperty;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -57,40 +56,31 @@ public class RepositoryRestExceptionHandlerUnitTests {
 		logger.setLevel(logLevel);
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void handlesHttpMessageNotReadableException() {
 
 		ResponseEntity<ExceptionMessage> result = HANDLER
 				.handleNotReadable(new HttpMessageNotReadableException("Message!"));
 
-		assertThat(result.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 	}
 
-	/**
-	 * @see DATAREST-507
-	 */
-	@Test
+	@Test // DATAREST-507
 	public void handlesConflictCorrectly() {
 
 		ResponseEntity<ExceptionMessage> result = HANDLER.handleConflict(new DataIntegrityViolationException("Message!"));
 
-		assertThat(result.getStatusCode(), is(HttpStatus.CONFLICT));
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
 	}
 
-	/**
-	 * @see DATAREST-706
-	 */
-	@Test
+	@Test // DATAREST-706
 	public void forwardsExceptionForMiscellaneousFailure() {
 
 		String message = "My Message!";
 
 		ResponseEntity<ExceptionMessage> result = HANDLER.handleMiscFailures(new Exception(message));
 
-		assertThat(result.getBody(), is(notNullValue()));
-		assertThat(result.getBody().getMessage(), is(message));
+		assertThat(result.getBody()).isNotNull();
+		assertThat(result.getBody().getMessage()).isEqualTo(message);
 	}
 }

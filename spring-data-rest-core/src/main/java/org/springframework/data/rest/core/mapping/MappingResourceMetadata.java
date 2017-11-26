@@ -18,6 +18,7 @@ package org.springframework.data.rest.core.mapping;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
@@ -55,8 +56,9 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		this.entity.doWithAssociations(propertyMappings);
 		this.entity.doWithProperties(propertyMappings);
 
-		RestResource annotation = entity.findAnnotation(RestResource.class);
-		this.explicitlyExported = annotation != null && annotation.exported();
+		this.explicitlyExported = Optional.ofNullable(entity.findAnnotation(RestResource.class))//
+				.map(it -> it.exported())//
+				.orElse(false);
 	}
 
 	/* 

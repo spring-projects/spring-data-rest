@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.tests.TestMvcClient.*;
 
 import org.junit.Test;
@@ -41,40 +40,31 @@ public class RepositoryControllerIntegrationTests extends AbstractControllerInte
 
 	@Autowired RepositoryController controller;
 
-	/**
-	 * @see DATAREST-333
-	 */
-	@Test
+	@Test // DATAREST-333
 	public void rootResourceExposesGetOnly() {
 
 		HttpEntity<?> response = controller.optionsForRepositories();
 		assertAllowHeaders(response, HttpMethod.GET);
 	}
 
-	/**
-	 * @see DATAREST-333, DATAREST-330
-	 */
-	@Test
+	@Test // DATAREST-333, DATAREST-330
 	public void headRequestReturnsNoContent() {
-		assertThat(controller.headForRepositories().getStatusCode(), is(HttpStatus.NO_CONTENT));
+		assertThat(controller.headForRepositories().getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
-	/**
-	 * @see DATAREST-160, DATAREST-333, DATAREST-463
-	 */
-	@Test
+	@Test // DATAREST-160, DATAREST-333, DATAREST-463
 	public void exposesLinksToRepositories() {
 
 		RepositoryLinksResource resource = controller.listRepositories().getBody();
 
-		assertThat(resource.getLinks(), hasSize(8));
+		assertThat(resource.getLinks()).hasSize(8);
 
-		assertThat(resource.hasLink("people"), is(true));
-		assertThat(resource.hasLink("orders"), is(true));
-		assertThat(resource.hasLink("addresses"), is(true));
-		assertThat(resource.hasLink("books"), is(true));
-		assertThat(resource.hasLink("authors"), is(true));
-		assertThat(resource.hasLink("receipts"), is(true));
-		assertThat(resource.hasLink("items"), is(true));
+		assertThat(resource.hasLink("people")).isTrue();
+		assertThat(resource.hasLink("orders")).isTrue();
+		assertThat(resource.hasLink("addresses")).isTrue();
+		assertThat(resource.hasLink("books")).isTrue();
+		assertThat(resource.hasLink("authors")).isTrue();
+		assertThat(resource.hasLink("receipts")).isTrue();
+		assertThat(resource.hasLink("items")).isTrue();
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.util;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -32,28 +31,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 public class UriUtilsUnitTests {
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void pathSegmentsShouldDiscoverPathUsingMethodMapping() throws Exception {
 
 		Method method = ClassUtils.getMethod(MappedMethod.class, "method");
 		List<String> pathSegments = UriUtils.getPathSegments(method);
 
-		assertThat(pathSegments, hasItems("hello", "world"));
+		assertThat(pathSegments).contains("hello", "world");
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void pathSegmentsShouldDiscoverPathUsingTypeAndMethodMapping() throws Exception {
 
 		Method method = ClassUtils.getMethod(MappedClassAndMethod.class, "method");
 		List<String> pathSegments = UriUtils.getPathSegments(method);
 
-		assertThat(pathSegments, hasItems("hello", "world"));
+		assertThat(pathSegments).contains("hello", "world");
 	}
 
 	static class MappedMethod {

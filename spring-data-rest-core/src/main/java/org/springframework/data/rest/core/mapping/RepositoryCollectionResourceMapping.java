@@ -47,19 +47,19 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	private final RepositoryMetadata metadata;
 
 	public RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RepositoryDetectionStrategy strategy) {
-		this(metadata, new EvoInflectorRelProvider(), strategy);
+		this(metadata, strategy, new EvoInflectorRelProvider());
 	}
 
 	/**
 	 * Creates a new {@link RepositoryCollectionResourceMapping} for the given repository using the given
 	 * {@link RelProvider}.
 	 * 
-	 * @param repositoryType must not be {@literal null}.
-	 * @param relProvider must not be {@literal null}.
 	 * @param strategy must not be {@literal null}.
+	 * @param relProvider must not be {@literal null}.
+	 * @param repositoryType must not be {@literal null}.
 	 */
-	RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RelProvider relProvider,
-			RepositoryDetectionStrategy strategy) {
+	RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RepositoryDetectionStrategy strategy,
+			RelProvider relProvider) {
 
 		Assert.notNull(metadata, "Repository metadata must not be null!");
 		Assert.notNull(relProvider, "RelProvider must not be null!");

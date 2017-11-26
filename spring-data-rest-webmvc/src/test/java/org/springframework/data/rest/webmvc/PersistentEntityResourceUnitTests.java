@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collections;
 
@@ -24,7 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
@@ -53,31 +52,22 @@ public class PersistentEntityResourceUnitTests {
 		this.resources = new Resources<EmbeddedWrapper>(Collections.singleton(wrapper));
 	}
 
-	/**
-	 * @see DATAREST-317
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-317
 	public void rejectsNullPayload() {
 		PersistentEntityResource.build(null, entity);
 	}
 
-	/**
-	 * @see DATAREST-317
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-317
 	public void rejectsNullPersistentEntity() {
 		PersistentEntityResource.build(payload, null);
 	}
 
-	/**
-	 * @see DATAREST-317
-	 */
-	@Test
+	@Test // DATAREST-317
 	public void defaultsEmbeddedsToEmptyResources() {
 
 		PersistentEntityResource resource = PersistentEntityResource.build(payload, entity).build();
 
-		assertThat(resource.getEmbeddeds(), is(notNullValue()));
-		assertThat(resource.getEmbeddeds(), is(emptyIterable()));
+		assertThat(resource.getEmbeddeds()).isNotNull();
+		assertThat(resource.getEmbeddeds()).isEmpty();
 	}
 }

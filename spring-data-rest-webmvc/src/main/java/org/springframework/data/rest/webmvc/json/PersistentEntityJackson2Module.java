@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,16 +45,17 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
+import org.springframework.data.rest.core.util.Java8PluginRegistry;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
+import org.springframework.data.util.CastUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
-import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -78,12 +80,10 @@ import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.deser.std.CollectionDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.ser.BeanSerializerBuilder;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -236,66 +236,63 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		/* 
 		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.ser.BeanSerializerModifier#updateBuilder(com.fasterxml.jackson.databind.SerializationConfig, com.fasterxml.jackson.databind.BeanDescription, com.fasterxml.jackson.databind.ser.BeanSerializerBuilder)
+		 * @see com.fasterxml.jackson.databind.ser.BeanSerializerModifier#changeProperties(com.fasterxml.jackson.databind.SerializationConfig, com.fasterxml.jackson.databind.BeanDescription, java.util.List)
 		 */
 		@Override
-		public BeanSerializerBuilder updateBuilder(SerializationConfig config, BeanDescription beanDesc,
-				BeanSerializerBuilder builder) {
+		public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc,
+				List<BeanPropertyWriter> beanProperties) {
 
-			PersistentEntity<?, ?> entity = entities.getPersistentEntity(beanDesc.getBeanClass());
+			return entities.getPersistentEntity(beanDesc.getBeanClass()).map(entity -> {
 
-			if (entity == null) {
-				return builder;
-			}
+				List<BeanPropertyWriter> result = new ArrayList<BeanPropertyWriter>();
 
-			List<BeanPropertyWriter> result = new ArrayList<BeanPropertyWriter>();
+				for (BeanPropertyWriter writer : beanProperties) {
 
-			for (BeanPropertyWriter writer : builder.getProperties()) {
+					Optional<? extends PersistentProperty<?>> findProperty = findProperty(writer.getName(), entity, beanDesc);
 
-				// Skip exported associations
-				PersistentProperty<?> persistentProperty = findProperty(writer.getName(), entity, beanDesc);
+					if (!findProperty.isPresent()) {
+						result.add(writer);
+						continue;
+					}
 
-				if (persistentProperty == null) {
-					result.add(writer);
-					continue;
+					findProperty.flatMap(it -> {
+
+						if (associations.isLookupType(it)) {
+
+							LOG.debug("Assigning lookup object serializer for {}.", it);
+							writer.assignSerializer(lookupObjectSerializer);
+
+							return Optional.of(writer);
+						}
+
+						// Is there a default projection?
+
+						if (associations.isLinkableAssociation(it)) {
+							return Optional.empty();
+						}
+
+						// Skip ids unless explicitly configured to expose
+						if (it.isIdProperty() && !associations.isIdExposed(entity)) {
+							return Optional.empty();
+						}
+
+						if (it.isVersionProperty()) {
+							return Optional.empty();
+						}
+
+						if (it.isEntity() && !writer.isUnwrapping()) {
+							LOG.debug("Assigning nested entity serializer for {}.", it);
+							writer.assignSerializer(nestedEntitySerializer);
+						}
+
+						return Optional.of(writer);
+
+					}).ifPresent(result::add);
 				}
 
-				if (associations.isLookupType(persistentProperty)) {
+				return result;
 
-					LOG.debug("Assigning lookup object serializer for {}.", persistentProperty);
-					writer.assignSerializer(lookupObjectSerializer);
-					result.add(writer);
-					continue;
-				}
-
-				// Is there a default projection?
-
-				if (associations.isLinkableAssociation(persistentProperty)) {
-					continue;
-				}
-
-				// Skip ids unless explicitly configured to expose
-				if (persistentProperty.isIdProperty() && !associations.isIdExposed(entity)) {
-					continue;
-				}
-
-				if (persistentProperty.isVersionProperty()) {
-					continue;
-				}
-
-				if (persistentProperty.isEntity() && !writer.isUnwrapping()) {
-
-					LOG.debug("Assigning nested entity serializer for {}.", persistentProperty);
-
-					writer.assignSerializer(nestedEntitySerializer);
-				}
-
-				result.add(writer);
-			}
-
-			builder.setProperties(result);
-
-			return builder;
+			}).orElse(beanProperties);
 		}
 
 		/**
@@ -307,16 +304,12 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @param description the Jackson {@link BeanDescription}.
 		 * @return
 		 */
-		private PersistentProperty<?> findProperty(String finalName, PersistentEntity<?, ?> entity,
-				BeanDescription description) {
+		private Optional<? extends PersistentProperty<?>> findProperty(String finalName,
+				PersistentEntity<?, ? extends PersistentProperty<?>> entity, BeanDescription description) {
 
-			for (BeanPropertyDefinition definition : description.findProperties()) {
-				if (definition.getName().equals(finalName)) {
-					return entity.getPersistentProperty(definition.getInternalName());
-				}
-			}
-
-			return null;
+			return description.findProperties().stream()//
+					.filter(it -> it.getName().equals(finalName))//
+					.findFirst().map(it -> entity.getPersistentProperty(it.getInternalName()));
 		}
 	}
 
@@ -390,7 +383,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		private Resource<Object> toResource(Object value) {
 
-			PersistentEntity<?, ?> entity = entities.getPersistentEntity(value.getClass());
+			PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(value.getClass());
 
 			return invoker.invokeProcessorsFor(PersistentEntityResource.build(value, entity).//
 					withEmbedded(assembler.getEmbeddedResources(value)).//
@@ -422,37 +415,40 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				BeanDeserializerBuilder builder) {
 
 			Iterator<SettableBeanProperty> properties = builder.getProperties();
-			PersistentEntity<?, ?> entity = entities.getPersistentEntity(beanDesc.getBeanClass());
 
-			if (entity == null) {
-				return builder;
-			}
+			entities.getPersistentEntity(beanDesc.getBeanClass()).ifPresent(entity -> {
 
-			while (properties.hasNext()) {
+				while (properties.hasNext()) {
 
-				SettableBeanProperty property = properties.next();
-				PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getName());
+					SettableBeanProperty property = properties.next();
 
-				if (associationLinks.isLookupType(persistentProperty)) {
+					PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getName());
 
-					RepositoryInvokingDeserializer repositoryInvokingDeserializer = new RepositoryInvokingDeserializer(factory,
-							persistentProperty);
-					JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, repositoryInvokingDeserializer,
-							config);
+					if (persistentProperty == null) {
+						continue;
+					}
+
+					if (associationLinks.isLookupType(persistentProperty)) {
+
+						RepositoryInvokingDeserializer repositoryInvokingDeserializer = new RepositoryInvokingDeserializer(factory,
+								persistentProperty);
+						JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, repositoryInvokingDeserializer,
+								config);
+
+						builder.addOrReplaceProperty(property.withValueDeserializer(deserializer), false);
+						continue;
+					}
+
+					if (!associationLinks.isLinkableAssociation(persistentProperty)) {
+						continue;
+					}
+
+					UriStringDeserializer uriStringDeserializer = new UriStringDeserializer(persistentProperty, converter);
+					JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, uriStringDeserializer, config);
 
 					builder.addOrReplaceProperty(property.withValueDeserializer(deserializer), false);
-					continue;
 				}
-
-				if (!associationLinks.isLinkableAssociation(persistentProperty)) {
-					continue;
-				}
-
-				UriStringDeserializer uriStringDeserializer = new UriStringDeserializer(persistentProperty, converter);
-				JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, uriStringDeserializer, config);
-
-				builder.addOrReplaceProperty(property.withValueDeserializer(deserializer), false);
-			}
+			});
 
 			return builder;
 		}
@@ -767,7 +763,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 */
 		@Override
 		public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-			return invoker.invokeFindOne(p.getValueAsString());
+			return invoker.invokeFindById(p.getValueAsString());
 		}
 	}
 
@@ -775,7 +771,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	public static class LookupObjectSerializer extends ToStringSerializer {
 
 		private static final long serialVersionUID = -3033458643050330913L;
-		private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
+		private final Java8PluginRegistry<EntityLookup<?>, Class<?>> lookups;
 
 		/*
 		 * (non-Javadoc)
@@ -799,11 +795,13 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 		}
 
-		@SuppressWarnings("unchecked")
 		private String getLookupKey(Object value) {
 
-			EntityLookup<Object> lookup = (EntityLookup<Object>) lookups.getPluginFor(value.getClass());
-			return lookup.getResourceIdentifier(value).toString();
+			Optional<EntityLookup<Object>> map = lookups.getPluginFor(value.getClass()).map(CastUtils::cast);
+
+			return map
+					.orElseThrow(() -> new IllegalArgumentException("No EntityLookup found for " + value.getClass().getName()))
+					.getResourceIdentifier(value).toString();
 		}
 	}
 }

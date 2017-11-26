@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.RepositoryInvoker;
@@ -54,10 +54,7 @@ public class RootResourceInformationUnitTests {
 		this.information = new RootResourceInformation(metadata, entity, invoker);
 	}
 
-	/**
-	 * @see DATAREST-330
-	 */
-	@Test(expected = ResourceNotFoundException.class)
+	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
 	public void throwsExceptionOnVerificationIfResourceIsNotExported() throws HttpRequestMethodNotSupportedException {
 
 		when(metadata.isExported()).thenReturn(false);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.MatcherAssert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import java.io.IOException;
@@ -121,15 +122,12 @@ public class PersistentEntitySerializationTests {
 
 		Person p = mapper.readValue(PERSON_JSON_IN, Person.class);
 
-		assertThat(p.getFirstName(), is("John"));
-		assertThat(p.getLastName(), is("Doe"));
-		assertThat(p.getSiblings(), is(Collections.EMPTY_LIST));
+		assertThat(p.getFirstName()).isEqualTo("John");
+		assertThat(p.getLastName()).isEqualTo("Doe");
+		assertThat(p.getSiblings()).isEqualTo(Collections.EMPTY_LIST);
 	}
 
-	/**
-	 * @see DATAREST-238
-	 */
-	@Test
+	@Test // DATAREST-238
 	public void deserializePersonWithLinks() throws IOException {
 
 		String bilbo = "{\n" + "  \"_links\" : {\n" + "    \"self\" : {\n"
@@ -144,10 +142,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(p.getLastName(), equalTo("Baggins"));
 	}
 
-	/**
-	 * @see DATAREST-238
-	 */
-	@Test
+	@Test // DATAREST-238
 	public void serializesPersonEntity() throws IOException, InterruptedException {
 
 		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(Person.class);
@@ -168,10 +163,7 @@ public class PersistentEntitySerializationTests {
 		assertThat(siblingLink.getHref(), endsWith(new UriTemplate("/{id}/siblings").expand(person.getId()).toString()));
 	}
 
-	/**
-	 * @see DATAREST-248
-	 */
-	@Test
+	@Test // DATAREST-248
 	public void deserializesPersonWithLinkToOtherPersonCorrectly() throws Exception {
 
 		Person father = people.save(new Person("John", "Doe"));
@@ -179,13 +171,10 @@ public class PersistentEntitySerializationTests {
 		String child = String.format("{ \"firstName\" : \"Bilbo\", \"father\" : \"/persons/%s\"}", father.getId());
 		Person result = mapper.readValue(child, Person.class);
 
-		assertThat(result.getFather(), is(father));
+		assertThat(result.getFather()).isEqualTo(father);
 	}
 
-	/**
-	 * @see DATAREST-248
-	 */
-	@Test
+	@Test // DATAREST-248
 	public void deserializesPersonWithLinkToOtherPersonsCorrectly() throws Exception {
 
 		Person firstSibling = people.save(new Person("John", "Doe"));
@@ -195,25 +184,19 @@ public class PersistentEntitySerializationTests {
 				firstSibling.getId(), secondSibling.getId());
 		Person result = mapper.readValue(child, Person.class);
 
-		assertThat(result.getSiblings(), hasItems(firstSibling, secondSibling));
+		assertThat(result.getSiblings()).contains(firstSibling, secondSibling);
 	}
 
-	/**
-	 * @see DATAREST-248
-	 */
-	@Test
+	@Test // DATAREST-248
 	public void deserializesEmbeddedAssociationsCorrectly() throws Exception {
 
 		String content = TestUtils.readFileFromClasspath("order.json");
 
 		Order order = mapper.readValue(content, Order.class);
-		assertThat(order.getLineItems(), hasSize(2));
+		assertThat(order.getLineItems()).hasSize(2);
 	}
 
-	/**
-	 * @see DATAREST-250
-	 */
-	@Test
+	@Test // DATAREST-250
 	public void serializesReferencesWithinPagedResourceCorrectly() throws Exception {
 
 		Person creator = new Person("Dave", "Matthews");
@@ -232,13 +215,10 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
 
-		assertThat(JsonPath.read(result, "$._embedded.orders[*].lineItems"), is(notNullValue()));
+		assertThat(JsonPath.<Object> read(result, "$._embedded.orders[*].lineItems")).isNotNull();
 	}
 
-	/**
-	 * @see DATAREST-521
-	 */
-	@Test
+	@Test // DATAREST-521
 	public void serializesLinksForExcerpts() throws Exception {
 
 		Person dave = new Person("Dave", "Matthews");
@@ -258,13 +238,10 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(resource);
 
-		assertThat(JsonPath.read(result, "$._embedded.father[*]._links.self"), is(notNullValue()));
+		assertThat(JsonPath.<Object> read(result, "$._embedded.father[*]._links.self")).isNotNull();
 	}
 
-	/**
-	 * @see DATAREST-521
-	 */
-	@Test
+	@Test // DATAREST-521
 	public void rendersAdditionalLinksRegisteredWithResource() throws Exception {
 
 		Person dave = new Person("Dave", "Matthews");
@@ -277,13 +254,10 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(resource);
 
-		assertThat(JsonPath.read(result, "$._links.processed"), is(notNullValue()));
+		assertThat(JsonPath.<Object> read(result, "$._links.processed")).isNotNull();
 	}
 
-	/**
-	 * @see DATAREST-697
-	 */
-	@Test
+	@Test // DATAREST-697
 	public void rendersProjectionWithinSimpleResourceCorrectly() throws Exception {
 
 		Person person = new Person("Dave", "Matthews");
@@ -294,24 +268,18 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(new Resource<PersonSummary>(projection));
 
-		assertThat(JsonPath.read(result, "$._links.self"), is(notNullValue()));
+		assertThat(JsonPath.<Object> read(result, "$._links.self")).isNotNull();
 	}
 
-	/**
-	 * @see DATAREST-880
-	 */
-	@Test
+	@Test // DATAREST-880
 	public void unwrapsNestedTypeCorrectly() throws Exception {
 
 		CreditCard creditCard = new CreditCard(new CreditCard.CCN("1234123412341234"));
 
-		assertThat(JsonPath.read(mapper.writeValueAsString(creditCard), "$.ccn"), is("1234123412341234"));
+		assertThat(JsonPath.<Object> read(mapper.writeValueAsString(creditCard), "$.ccn")).isEqualTo("1234123412341234");
 	}
 
-	/**
-	 * @see DATAREST-872
-	 */
-	@Test
+	@Test // DATAREST-872
 	public void serializesInheritance() throws Exception {
 
 		Suite suite = new Suite();
@@ -325,12 +293,12 @@ public class PersistentEntitySerializationTests {
 		guest.addMeal(dinner);
 
 		PersistentEntityResource resource = PersistentEntityResource//
-				.build(guest, context.getPersistentEntity(Guest.class))//
+				.build(guest, context.getRequiredPersistentEntity(Guest.class))//
 				.withLink(new Link("/guests/1")).build();
 
 		String result = mapper.writeValueAsString(resource);
 
-		assertThat(JsonPath.read(result, "$.room.type"), equalTo("suite"));
-		assertThat(JsonPath.read(result, "$.meals[0].type"), equalTo("dinner"));
+		assertThat(JsonPath.<Object> read(result, "$.room.type")).isEqualTo("suite");
+		assertThat(JsonPath.<Object> read(result, "$.meals[0].type")).isEqualTo("dinner");
 	}
 }

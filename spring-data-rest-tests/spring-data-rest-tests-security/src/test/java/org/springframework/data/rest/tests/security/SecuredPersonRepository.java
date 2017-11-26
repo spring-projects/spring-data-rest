@@ -28,7 +28,7 @@ public interface SecuredPersonRepository extends CrudRepository<Person, UUID> {
 
 	@Secured("ROLE_ADMIN") // <2>
 	@Override
-	void delete(UUID aLong);
+	void deleteById(UUID aLong);
 
 	@Secured("ROLE_ADMIN")
 	@Override
@@ -36,7 +36,7 @@ public interface SecuredPersonRepository extends CrudRepository<Person, UUID> {
 
 	@Secured("ROLE_ADMIN")
 	@Override
-	void delete(Iterable<? extends Person> persons);
+	void deleteAll(Iterable<? extends Person> persons);
 
 	@Secured("ROLE_ADMIN")
 	@Override

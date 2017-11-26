@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.jpa;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.jpa.Book.Offer;
 
 /**
  * @author Jon Brisbin
@@ -52,10 +53,10 @@ public class TestDataPopulator {
 		Author john = new Author("John");
 		Author thomas = new Author("Thomas");
 
-		Iterable<Author> authors = this.authors.save(Arrays.asList(ollie, mark, michael, david, john, thomas));
+		Iterable<Author> authors = this.authors.saveAll(Arrays.asList(ollie, mark, michael, david, john, thomas));
 
-		books.save(new Book("1449323952", "Spring Data", 1000, authors));
-		books.save(new Book("1449323953", "Spring Data (Second Edition)", 2000, authors));
+		books.save(new Book("1449323952", "Spring Data", 1000, authors, new Offer(21.21, "EUR")));
+		books.save(new Book("1449323953", "Spring Data (Second Edition)", 2000, authors, new Offer(30.99, "EUR")));
 	}
 
 	private void populateOrders() {
@@ -78,6 +79,6 @@ public class TestDataPopulator {
 		jane.addSibling(john);
 		jane.setFather(billyBob);
 
-		people.save(Arrays.asList(john, jane));
+		people.saveAll(Arrays.asList(john, jane));
 	}
 }

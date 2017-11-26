@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.tests.TestMvcClient.*;
 import static org.springframework.http.HttpMethod.*;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -66,10 +69,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	@Autowired PersistentEntityResourceAssembler assembler;
 	@Autowired PersistentEntities entities;
 
-	/**
-	 * @see DATAREST-217
-	 */
-	@Test(expected = HttpRequestMethodNotSupportedException.class)
+	@Test(expected = HttpRequestMethodNotSupportedException.class) // DATAREST-217
 	public void returnsNotFoundForListingEntitiesIfFindAllNotExported() throws Exception {
 
 		repository.save(new Address());
@@ -78,10 +78,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		controller.getCollectionResource(request, null, null, null);
 	}
 
-	/**
-	 * @see DATAREST-217
-	 */
-	@Test(expected = HttpRequestMethodNotSupportedException.class)
+	@Test(expected = HttpRequestMethodNotSupportedException.class) // DATAREST-217
 	public void rejectsEntityCreationIfSaveIsNotExported() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Address.class);
@@ -89,16 +86,13 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		controller.postCollectionResource(request, null, null, MediaType.APPLICATION_JSON_VALUE);
 	}
 
-	/**
-	 * @see DATAREST-301
-	 */
-	@Test
+	@Test // DATAREST-301
 	public void setsExpandedSelfUriInLocationHeader() throws Exception {
 
 		RootResourceInformation information = getResourceInformation(Order.class);
 
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
-				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler,
 				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
@@ -106,28 +100,19 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		assertThat(entity.getHeaders().getLocation().toString(), not(Matchers.endsWith("{?projection}")));
 	}
 
-	/**
-	 * @see DATAREST-330
-	 */
-	@Test
+	@Test // DATAREST-330
 	public void exposesHeadForCollectionResourceIfExported() throws Exception {
 		ResponseEntity<?> entity = controller.headCollectionResource(getResourceInformation(Person.class),
 				new DefaultedPageable(null, false));
-		assertThat(entity.getStatusCode(), is(HttpStatus.NO_CONTENT));
+		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
-	/**
-	 * @see DATAREST-330
-	 */
-	@Test(expected = ResourceNotFoundException.class)
+	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
 	public void doesNotExposeHeadForCollectionResourceIfNotExported() throws Exception {
 		controller.headCollectionResource(getResourceInformation(CreditCard.class), new DefaultedPageable(null, false));
 	}
 
-	/**
-	 * @see DATAREST-330
-	 */
-	@Test
+	@Test // DATAREST-330
 	public void exposesHeadForItemResourceIfExported() throws Exception {
 
 		Address address = repository.save(new Address());
@@ -135,58 +120,43 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		ResponseEntity<?> entity = controller.headForItemResource(getResourceInformation(Address.class), address.id,
 				assembler);
 
-		assertThat(entity.getStatusCode(), is(HttpStatus.NO_CONTENT));
+		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
-	/**
-	 * @see DATAREST-330
-	 */
-	@Test(expected = ResourceNotFoundException.class)
+	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
 	public void doesNotExposeHeadForItemResourceIfNotExisting() throws Exception {
 		controller.headForItemResource(getResourceInformation(CreditCard.class), 1L, assembler);
 	}
 
-	/**
-	 * @see DATAREST-333
-	 */
-	@Test
+	@Test // DATAREST-333
 	public void doesNotExposeMethodsForOptionsIfNotHttpMethodsSupportedForCollectionResource() {
 
 		HttpEntity<?> response = controller.optionsForCollectionResource(getResourceInformation(Address.class));
 		assertAllowHeaders(response, OPTIONS);
 	}
 
-	/**
-	 * @see DATAREST-333
-	 */
-	@Test
+	@Test // DATAREST-333
 	public void exposesSupportedHttpMethodsInAllowHeaderForOptionsRequestToCollectionResource() {
 
 		HttpEntity<?> response = controller.optionsForCollectionResource(getResourceInformation(Person.class));
 		assertAllowHeaders(response, GET, POST, HEAD, OPTIONS);
 	}
 
-	/**
-	 * @see DATAREST-333
-	 */
-	@Test
+	@Test // DATAREST-333
 	public void exposesSupportedHttpMethodsInAllowHeaderForOptionsRequestToItemResource() {
 
 		HttpEntity<?> response = controller.optionsForItemResource(getResourceInformation(Person.class));
 		assertAllowHeaders(response, GET, PUT, PATCH, DELETE, HEAD, OPTIONS);
 	}
 
-	/**
-	 * @see DATAREST-333, DATAREST-348
-	 */
-	@Test
+	@Test // DATAREST-333, DATAREST-348
 	public void optionsForItermResourceSetsAllowPatchHeader() {
 
 		ResponseEntity<?> entity = controller.optionsForItemResource(getResourceInformation(Person.class));
 
 		List<String> value = entity.getHeaders().get("Accept-Patch");
 
-		assertThat(value, hasSize(3));
+		assertThat(value).hasSize(3);
 		assertThat(value,
 				hasItems(//
 						RestMediaTypes.JSON_PATCH_JSON.toString(), //
@@ -194,60 +164,48 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 						MediaType.APPLICATION_JSON_VALUE));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void returnsBodyOnPutForUpdateIfAcceptHeaderPresentByDefault() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		Order order = request.getInvoker().invokeSave(new Order(new Person()));
 
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
-				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		assertThat(controller.putItemResource(request, persistentEntityResource, order.getId(), assembler, ETag.NO_ETAG,
 				MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void returnsBodyForCreatingPutIfAcceptHeaderPresentByDefault() throws HttpRequestMethodNotSupportedException {
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
-				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		assertThat(controller.putItemResource(request, persistentEntityResource, 1L, assembler, ETag.NO_ETAG,
 				MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void returnsBodyForPostIfAcceptHeaderIsPresentByDefault() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
-				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		assertThat(controller
 				.postCollectionResource(request, persistentEntityResource, assembler, MediaType.APPLICATION_JSON_VALUE)
 				.hasBody(), is(true));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void doesNotReturnBodyForPostIfNoAcceptHeaderPresentByDefault() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
-				.build(new Order(new Person()), entities.getPersistentEntity(Order.class)).build();
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, null).hasBody(),
 				is(false));
@@ -255,10 +213,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 				is(false));
 	}
 
-	/**
-	 * @see DATAREST-581
-	 */
-	@Test
+	@Test // DATAREST-581
 	public void createsEtagForProjectedEntityCorrectly() throws Exception {
 
 		Address address = repository.save(new Address());
@@ -268,35 +223,32 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 				.createProjection(AddressProjection.class);
 
 		PersistentEntityResource resource = PersistentEntityResource
-				.build(addressProjection, entities.getPersistentEntity(Address.class)).build();
+				.build(addressProjection, entities.getRequiredPersistentEntity(Address.class)).build();
 
 		Mockito.when(assembler.toFullResource(Mockito.any(Object.class))).thenReturn(resource);
 
 		ResponseEntity<Resource<?>> entity = controller.getItemResource(getResourceInformation(Address.class), address.id,
 				assembler, new HttpHeaders());
 
-		assertThat(entity.getHeaders().getETag(), is(notNullValue()));
+		assertThat(entity.getHeaders().getETag()).isNotNull();
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test
+	@Test // DATAREST-724
 	public void deletesEntityWithCustomLookupCorrectly() throws Exception {
 
 		Address address = repository.save(new Address());
-		assertThat(repository.findOne(address.id), is(notNullValue()));
+		assertThat(repository.findById(address.id)).isNotNull();
 
 		RootResourceInformation resourceInformation = getResourceInformation(Address.class);
 		RepositoryInvoker invoker = spy(resourceInformation.getInvoker());
-		doReturn(address).when(invoker).invokeFindOne("foo");
+		doReturn(Optional.of(address)).when(invoker).invokeFindById("foo");
 
 		RootResourceInformation informationSpy = Mockito.spy(resourceInformation);
 		doReturn(invoker).when(informationSpy).getInvoker();
 
 		controller.deleteItemResource(informationSpy, "foo", ETag.from("0"));
 
-		assertThat(repository.findOne(address.id), is(nullValue()));
+		assertThat(repository.findById(address.id)).isEmpty();
 	}
 
 	interface AddressProjection {}

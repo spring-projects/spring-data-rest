@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,12 @@ class AddOperation extends PatchOperation {
 	 * @param path The path where the value will be added. (e.g., '/foo/bar/4')
 	 * @param value The value to add.
 	 */
-	public AddOperation(String path, Object value) {
+	private AddOperation(SpelPath path, Object value) {
 		super("add", path, value);
+	}
+
+	public static AddOperation of(String path, Object value) {
+		return new AddOperation(SpelPath.of(path), value);
 	}
 
 	/*
@@ -39,7 +43,21 @@ class AddOperation extends PatchOperation {
 	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void perform(Object targetObject, Class<T> type) {
-		addValue(targetObject, evaluateValueFromTarget(targetObject, type));
+	void perform(Object targetObject, Class<?> type) {
+		path.bindTo(type).addValue(targetObject, evaluateValueFromTarget(targetObject, type));
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#evaluateValueFromTarget(java.lang.Object, java.lang.Class)
+	 */
+	@Override
+	protected Object evaluateValueFromTarget(Object targetObject, Class<?> entityType) {
+
+		if (!path.isAppend()) {
+			return super.evaluateValueFromTarget(targetObject, entityType);
+		}
+
+		return evaluate(path.getLeafType(entityType));
 	}
 }

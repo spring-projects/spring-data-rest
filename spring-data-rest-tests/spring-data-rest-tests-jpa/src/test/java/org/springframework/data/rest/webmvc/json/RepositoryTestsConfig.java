@@ -39,13 +39,13 @@ import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
+import org.springframework.data.rest.core.util.Java8PluginRegistry;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
-import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
 import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables;
@@ -58,7 +58,6 @@ import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
-import org.springframework.plugin.core.OrderAwarePluginRegistry;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -119,7 +118,7 @@ public class RepositoryTestsConfig {
 				config().getRepositoryDetectionStrategy());
 		EntityLinks entityLinks = new RepositoryEntityLinks(repositories(), mappings, config(),
 				mock(PagingAndSortingTemplateVariables.class),
-				OrderAwarePluginRegistry.<Class<?>, BackendIdConverter> create(Arrays.asList(DefaultIdConverter.INSTANCE)));
+				Java8PluginRegistry.of(Arrays.asList(DefaultIdConverter.INSTANCE)));
 		SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks,
 				Collections.<EntityLookup<?>> emptyList());
 

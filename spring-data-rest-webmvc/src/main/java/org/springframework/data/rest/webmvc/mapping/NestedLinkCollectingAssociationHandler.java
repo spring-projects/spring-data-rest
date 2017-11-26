@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.IdentifierAccessor;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimpleAssociationHandler;
@@ -64,8 +65,8 @@ public class NestedLinkCollectingAssociationHandler implements SimpleAssociation
 
 			for (Object element : (Collection<?>) propertyValue) {
 
-				IdentifierAccessor identifierAccessor = entities.getPersistentEntity(element.getClass())
-						.getIdentifierAccessor(element);
+				PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(element.getClass());
+				IdentifierAccessor identifierAccessor = entity.getIdentifierAccessor(element);
 
 				links.add(entityLinks.linkForSingleResource(element.getClass(), identifierAccessor.getIdentifier())
 						.withRel(propertyMapping.getRel()));
@@ -73,8 +74,8 @@ public class NestedLinkCollectingAssociationHandler implements SimpleAssociation
 			}
 
 		} else {
-			IdentifierAccessor identifierAccessor = entities.getPersistentEntity(propertyValue.getClass())
-					.getIdentifierAccessor(propertyValue);
+			PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(propertyValue.getClass());
+			IdentifierAccessor identifierAccessor = entity.getIdentifierAccessor(propertyValue);
 
 			links.add(entityLinks.linkForSingleResource(propertyValue.getClass(), identifierAccessor.getIdentifier())
 					.withRel(propertyMapping.getRel()));

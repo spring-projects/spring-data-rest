@@ -25,8 +25,6 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Convert {@link JsonNode}s containing JSON Patch to/from {@link Patch} objects.
@@ -68,59 +66,23 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 			String from = opNode.has("from") ? opNode.get("from").textValue() : null;
 
 			if (opType.equals("test")) {
-				ops.add(new TestOperation(path, value));
+				ops.add(TestOperation.whetherValueAt(path).hasValue(value));
 			} else if (opType.equals("replace")) {
-				ops.add(new ReplaceOperation(path, value));
+				ops.add(ReplaceOperation.valueAt(path).with(value));
 			} else if (opType.equals("remove")) {
-				ops.add(new RemoveOperation(path));
+				ops.add(RemoveOperation.valueAt(path));
 			} else if (opType.equals("add")) {
-				ops.add(new AddOperation(path, value));
+				ops.add(AddOperation.of(path, value));
 			} else if (opType.equals("copy")) {
-				ops.add(new CopyOperation(path, from));
+				ops.add(CopyOperation.from(from).to(path));
 			} else if (opType.equals("move")) {
-				ops.add(new MoveOperation(path, from));
+				ops.add(MoveOperation.from(from).to(path));
 			} else {
 				throw new PatchException("Unrecognized operation type: " + opType);
 			}
 		}
 
 		return new Patch(ops);
-	}
-
-	/**
-	 * Renders a {@link Patch} as a {@link JsonNode}.
-	 * 
-	 * @param patch the patch
-	 * @return a {@link JsonNode} containing JSON Patch.
-	 */
-	public JsonNode convert(Patch patch) {
-
-		List<PatchOperation> operations = patch.getOperations();
-		JsonNodeFactory nodeFactory = JsonNodeFactory.instance;
-		ArrayNode patchNode = nodeFactory.arrayNode();
-
-		for (PatchOperation operation : operations) {
-
-			ObjectNode opNode = nodeFactory.objectNode();
-			opNode.set("op", nodeFactory.textNode(operation.getOp()));
-			opNode.set("path", nodeFactory.textNode(operation.getPath()));
-
-			if (operation instanceof FromOperation) {
-
-				FromOperation fromOp = (FromOperation) operation;
-				opNode.set("from", nodeFactory.textNode(fromOp.getFrom()));
-			}
-
-			Object value = operation.getValue();
-
-			if (value != null) {
-				opNode.set("value", mapper.valueToTree(value));
-			}
-
-			patchNode.add(opNode);
-		}
-
-		return patchNode;
 	}
 
 	private Object valueFromJsonNode(String path, JsonNode valueNode) {

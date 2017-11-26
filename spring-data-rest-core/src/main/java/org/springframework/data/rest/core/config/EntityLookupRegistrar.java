@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.core.config;
 
-import java.io.Serializable;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupRegistrar.Lookup;
@@ -36,7 +34,7 @@ public interface EntityLookupRegistrar {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	<T, ID extends Serializable, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forRepository(Class<R> type);
+	<T, ID, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forRepository(Class<R> type);
 
 	/**
 	 * Starts building a custom {@link EntityLookup} for the given repository type and registers the domain type of the
@@ -45,7 +43,7 @@ public interface EntityLookupRegistrar {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	<T, ID extends Serializable, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forLookupRepository(Class<R> type);
+	<T, ID, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forLookupRepository(Class<R> type);
 
 	interface IdMappingRegistrar<T, R extends Repository<T, ?>> {
 
@@ -55,7 +53,7 @@ public interface EntityLookupRegistrar {
 		 * @param mapping must not be {@literal null}.
 		 * @return
 		 */
-		<ID extends Serializable> LookupRegistrar<T, ID, R> withIdMapping(Converter<T, ID> mapping);
+		<ID> LookupRegistrar<T, ID, R> withIdMapping(Converter<T, ID> mapping);
 	}
 
 	/**
@@ -65,7 +63,7 @@ public interface EntityLookupRegistrar {
 	 * @param identifierMapping must not be {@literal null}.
 	 * @param lookup must not be {@literal null}.
 	 */
-	<T, ID extends Serializable, R extends Repository<T, ?>> EntityLookupRegistrar forRepository(Class<R> type,
+	<T, ID, R extends Repository<T, ?>> EntityLookupRegistrar forRepository(Class<R> type,
 			Converter<T, ID> identifierMapping, Lookup<R, ID> lookup);
 
 	/**
@@ -76,10 +74,10 @@ public interface EntityLookupRegistrar {
 	 * @param identifierMapping must not be {@literal null}.
 	 * @param lookup must not be {@literal null}.
 	 */
-	<T, ID extends Serializable, R extends Repository<T, ?>> EntityLookupRegistrar forValueRepository(Class<R> type,
+	<T, ID, R extends Repository<T, ?>> EntityLookupRegistrar forValueRepository(Class<R> type,
 			Converter<T, ID> identifierMapping, Lookup<R, ID> lookup);
 
-	interface LookupRegistrar<T, ID extends Serializable, R extends Repository<T, ?>> {
+	interface LookupRegistrar<T, ID, R extends Repository<T, ?>> {
 
 		/**
 		 * Registers the given {@link Lookup} to obtain entity instances.

@@ -25,12 +25,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimpleAssociationHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.mapping.model.MappingException;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -90,8 +90,6 @@ public class LinkCollector {
 		Assert.notNull(object, "Object must not be null!");
 		Assert.notNull(existingLinks, "Existing links must not be null!");
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(object.getClass());
-
 		Links links = new Links(existingLinks);
 		Link selfLink = createSelfLink(object, links);
 
@@ -102,7 +100,7 @@ public class LinkCollector {
 		Path path = new Path(selfLink.expand().getHref());
 
 		LinkCollectingAssociationHandler handler = new LinkCollectingAssociationHandler(entities, path, associationLinks);
-		entity.doWithAssociations(handler);
+		entities.getRequiredPersistentEntity(object.getClass()).doWithAssociations(handler);
 
 		List<Link> result = new ArrayList<Link>(existingLinks);
 		result.addAll(handler.getLinks());
@@ -112,7 +110,7 @@ public class LinkCollector {
 
 	public Links getLinksForNested(Object object, List<Link> existing) {
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(object.getClass());
+		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(object.getClass());
 
 		NestedLinkCollectingAssociationHandler handler = new NestedLinkCollectingAssociationHandler(links,
 				entity.getPropertyAccessor(object), associationLinks);
@@ -217,6 +215,7 @@ public class LinkCollector {
 			}
 
 			PersistentProperty<?> property = association.getInverse();
+
 			Object value = accessor.getProperty(property);
 
 			if (value == null) {
@@ -227,8 +226,9 @@ public class LinkCollector {
 			ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 			for (Object element : asCollection(value)) {
-				if (element != null)
+				if (element != null) {
 					links.add(getLinkFor(element, propertyMapping));
+				}
 			}
 		}
 

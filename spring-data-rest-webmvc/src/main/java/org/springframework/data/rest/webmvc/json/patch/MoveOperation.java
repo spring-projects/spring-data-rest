@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 package org.springframework.data.rest.webmvc.json.patch;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 
 /**
  * <p>
@@ -30,7 +33,9 @@ package org.springframework.data.rest.webmvc.json.patch;
  * @author Craig Walls
  * @author Oliver Gierke
  */
-class MoveOperation extends FromOperation {
+class MoveOperation extends PatchOperation {
+
+	private final SpelPath from;
 
 	/**
 	 * Constructs the move operation.
@@ -38,8 +43,25 @@ class MoveOperation extends FromOperation {
 	 * @param path The path to move the source value to. (e.g., '/foo/bar/4')
 	 * @param from The source path from which a value will be moved. (e.g., '/foo/bar/5')
 	 */
-	public MoveOperation(String path, String from) {
-		super("move", path, from);
+	private MoveOperation(SpelPath path, SpelPath from) {
+
+		super("move", path);
+
+		this.from = from;
+	}
+
+	static MoveOperationBuilder from(String from) {
+		return new MoveOperationBuilder(from);
+	}
+
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	static class MoveOperationBuilder {
+
+		private final String from;
+
+		public MoveOperation to(String to) {
+			return new MoveOperation(SpelPath.of(to), SpelPath.of(from));
+		}
 	}
 
 	/*
@@ -47,7 +69,7 @@ class MoveOperation extends FromOperation {
 	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void perform(Object target, Class<T> type) {
-		addValue(target, popValueAtPath(target, getFrom()));
+	void perform(Object target, Class<?> type) {
+		path.bindTo(type).moveFrom(from, target);
 	}
 }

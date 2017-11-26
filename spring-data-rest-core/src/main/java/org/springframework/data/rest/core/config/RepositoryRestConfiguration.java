@@ -15,6 +15,10 @@
  */
 package org.springframework.data.rest.core.config;
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +29,8 @@ import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.RelProvider;
+import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -60,11 +66,15 @@ public class RepositoryRestConfiguration {
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
 	private RepositoryDetectionStrategy repositoryDetectionStrategy = RepositoryDetectionStrategies.DEFAULT;
 
+	/**
+	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
+	 */
+	private @Getter @Setter @NonNull RelProvider relProvider = new EvoInflectorRelProvider();
+
 	private final RepositoryCorsRegistry corsRegistry = new RepositoryCorsRegistry();
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
 	private final MetadataConfiguration metadataConfiguration;
 	private final EntityLookupConfiguration entityLookupConfiguration;
-	private final List<Class<?>> valueTypes = new ArrayList<Class<?>>();
 
 	private final EnumTranslationConfiguration enumTranslationConfiguration;
 	private boolean enableEnumTranslation = false;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -46,7 +46,6 @@ import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.format.datetime.DateFormatter;
 import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.hateoas.MediaTypes;
@@ -82,14 +81,11 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		}
 	}
 
-	/**
-	 * @see DATAREST-210
-	 */
-	@Test
+	@Test // DATAREST-210
 	public void assertEnableHypermediaSupportWorkingCorrectly() {
 
-		assertThat(context.getBean("entityLinksPluginRegistry"), is(notNullValue()));
-		assertThat(context.getBean(LinkDiscoverers.class), is(notNullValue()));
+		assertThat(context.getBean("entityLinksPluginRegistry")).isNotNull();
+		assertThat(context.getBean(LinkDiscoverers.class)).isNotNull();
 	}
 
 	@Test
@@ -103,31 +99,25 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		mapper.writeValueAsString(new RepositoryLinksResource());
 	}
 
-	/**
-	 * @see DATAREST-271
-	 */
-	@Test
+	@Test // DATAREST-271
 	public void assetConsidersPaginationCustomization() {
 
 		HateoasPageableHandlerMethodArgumentResolver resolver = context
 				.getBean(HateoasPageableHandlerMethodArgumentResolver.class);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
-		resolver.enhance(builder, null, new PageRequest(0, 9000, Direction.ASC, "firstname"));
+		resolver.enhance(builder, null, PageRequest.of(0, 9000, Direction.ASC, "firstname"));
 
 		MultiValueMap<String, String> params = builder.build().getQueryParams();
 
-		assertThat(params.containsKey("myPage"), is(true));
-		assertThat(params.containsKey("mySort"), is(true));
+		assertThat(params.containsKey("myPage")).isTrue();
+		assertThat(params.containsKey("mySort")).isTrue();
 
-		assertThat(params.get("mySize"), hasSize(1));
-		assertThat(params.get("mySize").get(0), is("7000"));
+		assertThat(params.get("mySize")).hasSize(1);
+		assertThat(params.get("mySize").get(0)).isEqualTo("7000");
 	}
 
-	/**
-	 * @see DATAREST-336
-	 */
-	@Test
+	@Test // DATAREST-336
 	public void objectMapperRendersDatesInIsoByDefault() throws Exception {
 
 		Sample sample = new Sample();
@@ -136,53 +126,42 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		ObjectMapper mapper = context.getBean("objectMapper", ObjectMapper.class);
 
 		DateFormatter formatter = new DateFormatter();
-		formatter.setIso(ISO.DATE_TIME);
+		formatter.setPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
 		Object result = JsonPath.read(mapper.writeValueAsString(sample), "$.date");
-		assertThat(result, is(instanceOf(String.class)));
-		assertThat(result, is((Object) formatter.print(sample.date, Locale.US)));
+		assertThat(result).isInstanceOf(String.class);
+		assertThat(result).isEqualTo(formatter.print(sample.date, Locale.US));
 	}
 
-	/**
-	 * @see DATAREST-362
-	 */
-	@Test(expected = NoSuchBeanDefinitionException.class)
+	@Test(expected = NoSuchBeanDefinitionException.class) // DATAREST-362
 	public void doesNotExposePersistentEntityJackson2ModuleAsBean() {
 		context.getBean(PersistentEntityJackson2Module.class);
 	}
 
-	/**
-	 * @see DATAREST-362
-	 */
-	@Test
+	@Test // DATAREST-362
 	public void registeredHttpMessageConvertersAreTypeConstrained() {
 
 		Collection<MappingJackson2HttpMessageConverter> converters = context
 				.getBeansOfType(MappingJackson2HttpMessageConverter.class).values();
 
-		for (HttpMessageConverter<?> converter : converters) {
-			assertThat(converter, is(anyOf(instanceOf(TypeConstrainedMappingJackson2HttpMessageConverter.class),
-					instanceOf(AlpsJsonHttpMessageConverter.class))));
-		}
+		converters.forEach(converter -> {
+			assertThat(converter).isInstanceOfAny(TypeConstrainedMappingJackson2HttpMessageConverter.class,
+					AlpsJsonHttpMessageConverter.class);
+		});
 	}
 
-	/**
-	 * @see DATAREST-424
-	 */
-	@Test
+	@Test // DATAREST-424
 	public void halHttpMethodConverterIsRegisteredBeforeTheGeneralOne() {
 
 		CollectingComponent component = context.getBean(CollectingComponent.class);
 		List<HttpMessageConverter<?>> converters = component.converters;
 
-		assertThat(converters.get(0).getSupportedMediaTypes(), hasItem(MediaTypes.HAL_JSON));
-		assertThat(converters.get(1).getSupportedMediaTypes(), hasItem(RestMediaTypes.SCHEMA_JSON));
+		assertThat(converters.get(0).getSupportedMediaTypes()).contains(MediaTypes.HAL_JSON);
+		assertThat(converters.get(1).getSupportedMediaTypes()).contains(RestMediaTypes.SCHEMA_JSON);
 	}
 
-	/**
-	 * @see DATAREST-424
-	 */
-	@Test
+	@Test // DATAREST-424
 	public void halHttpMethodConverterIsRegisteredAfterTheGeneralOneIfHalIsDisabledAsDefaultMediaType() {
 
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(NonHalConfiguration.class);
@@ -191,35 +170,29 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 
 		List<HttpMessageConverter<?>> converters = component.converters;
 
-		assertThat(converters.get(0).getSupportedMediaTypes(), hasItem(RestMediaTypes.SCHEMA_JSON));
-		assertThat(converters.get(1).getSupportedMediaTypes(), hasItem(MediaTypes.HAL_JSON));
+		assertThat(converters.get(0).getSupportedMediaTypes()).contains(RestMediaTypes.SCHEMA_JSON);
+		assertThat(converters.get(1).getSupportedMediaTypes()).contains(MediaTypes.HAL_JSON);
 	}
 
-	/**
-	 * @see DATAREST-431, DATACMNS-626
-	 */
-	@Test
+	@Test // DATAREST-431, DATACMNS-626
 	public void hasConvertersForPointAndDistance() {
 
 		ConversionService service = context.getBean("defaultConversionService", ConversionService.class);
 
-		assertThat(service.canConvert(String.class, Point.class), is(true));
-		assertThat(service.canConvert(Point.class, String.class), is(true));
-		assertThat(service.canConvert(String.class, Distance.class), is(true));
-		assertThat(service.canConvert(Distance.class, String.class), is(true));
+		assertThat(service.canConvert(String.class, Point.class)).isTrue();
+		assertThat(service.canConvert(Point.class, String.class)).isTrue();
+		assertThat(service.canConvert(String.class, Distance.class)).isTrue();
+		assertThat(service.canConvert(Distance.class, String.class)).isTrue();
 	}
 
-	/**
-	 * @see DATAREST-686
-	 */
-	@Test
+	@Test // DATAREST-686
 	public void defaultsEncodingForMessageSourceToUtfEight() {
 
 		MessageSourceAccessor accessor = context.getBean("resourceDescriptionMessageSourceAccessor",
 				MessageSourceAccessor.class);
 		Object messageSource = ReflectionTestUtils.getField(accessor, "messageSource");
 
-		assertThat((String) ReflectionTestUtils.getField(messageSource, "defaultEncoding"), is("UTF-8"));
+		assertThat((String) ReflectionTestUtils.getField(messageSource, "defaultEncoding")).isEqualTo("UTF-8");
 	}
 
 	@Configuration

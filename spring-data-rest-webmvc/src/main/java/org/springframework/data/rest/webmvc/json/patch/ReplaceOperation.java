@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,16 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Operation that replaces the value at the given path with a new value.
  * 
  * @author Craig Walls
+ * @author Oliver Gierke
  */
-public class ReplaceOperation extends PatchOperation {
+class ReplaceOperation extends PatchOperation {
 
 	/**
 	 * Constructs the replace operation
@@ -28,8 +32,22 @@ public class ReplaceOperation extends PatchOperation {
 	 * @param path The path whose value is to be replaced. (e.g., '/foo/bar/4')
 	 * @param value The value that will replace the current path value.
 	 */
-	public ReplaceOperation(String path, Object value) {
+	private ReplaceOperation(SpelPath path, Object value) {
 		super("replace", path, value);
+	}
+
+	public static ReplaceOperationBuilder valueAt(String path) {
+		return new ReplaceOperationBuilder(path);
+	}
+
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	static class ReplaceOperationBuilder {
+
+		private final String path;
+
+		public ReplaceOperation with(Object value) {
+			return new ReplaceOperation(SpelPath.of(path), value);
+		}
 	}
 
 	/*
@@ -37,7 +55,7 @@ public class ReplaceOperation extends PatchOperation {
 	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void perform(Object target, Class<T> type) {
-		setValueOnTarget(target, evaluateValueFromTarget(target, type));
+	void perform(Object target, Class<?> type) {
+		path.bindTo(type).setValue(target, evaluateValueFromTarget(target, type));
 	}
 }

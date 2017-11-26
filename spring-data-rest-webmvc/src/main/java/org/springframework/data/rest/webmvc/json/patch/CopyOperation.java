@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import static org.springframework.data.rest.webmvc.json.patch.PathToSpEL.*;
+import lombok.RequiredArgsConstructor;
 
 /**
  * <p>
@@ -39,7 +39,9 @@ import static org.springframework.data.rest.webmvc.json.patch.PathToSpEL.*;
  * @author Craig Walls
  * @author Oliver Gierke
  */
-class CopyOperation extends FromOperation {
+class CopyOperation extends PatchOperation {
+
+	private final SpelPath from;
 
 	/**
 	 * Constructs the copy operation
@@ -47,8 +49,25 @@ class CopyOperation extends FromOperation {
 	 * @param path The path to copy the source value to. (e.g., '/foo/bar/4')
 	 * @param from The source path from which a value will be copied. (e.g., '/foo/bar/5')
 	 */
-	public CopyOperation(String path, String from) {
-		super("copy", path, from);
+	public CopyOperation(SpelPath path, SpelPath from) {
+
+		super("copy", path);
+
+		this.from = from;
+	}
+
+	public static CopyOperationBuilder from(String from) {
+		return new CopyOperationBuilder(from);
+	}
+
+	@RequiredArgsConstructor
+	static class CopyOperationBuilder {
+
+		private final String from;
+
+		CopyOperation to(String to) {
+			return new CopyOperation(SpelPath.of(to), SpelPath.of(from));
+		}
 	}
 
 	/*
@@ -56,7 +75,7 @@ class CopyOperation extends FromOperation {
 	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	<T> void perform(Object target, Class<T> type) {
-		addValue(target, pathToExpression(getFrom()).getValue(target));
+	void perform(Object target, Class<?> type) {
+		path.bindTo(type).copyFrom(from, target);
 	}
 }

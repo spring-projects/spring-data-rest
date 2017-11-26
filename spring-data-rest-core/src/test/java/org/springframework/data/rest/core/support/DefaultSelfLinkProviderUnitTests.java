@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package org.springframework.data.rest.core.support;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -31,9 +31,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.domain.Profile;
@@ -60,19 +58,15 @@ public class DefaultSelfLinkProviderUnitTests {
 	@Before
 	public void setUp() {
 
-		when(entityLinks.linkToSingleResource((Class<?>) any(), any())).then(new Answer<Link>() {
+		when(entityLinks.linkToSingleResource((Class<?>) any(), any())).then(invocation -> {
 
-			@Override
-			public Link answer(InvocationOnMock invocation) throws Throwable {
+			Class<?> type = invocation.getArgument(0);
+			Serializable id = invocation.getArgument(1);
 
-				Class<?> type = invocation.getArgumentAt(0, Class.class);
-				Serializable id = invocation.getArgumentAt(1, Serializable.class);
-
-				return new Link("/".concat(type.getName()).concat("/").concat(id.toString()));
-			}
+			return new Link("/".concat(type.getName()).concat("/").concat(id.toString()));
 		});
 
-		KeyValueMappingContext context = new KeyValueMappingContext();
+		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 		context.getPersistentEntity(Profile.class);
 		context.afterPropertiesSet();
 
@@ -81,34 +75,22 @@ public class DefaultSelfLinkProviderUnitTests {
 		this.provider = new DefaultSelfLinkProvider(entities, entityLinks, lookups);
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-724
 	public void rejectsNullEntities() {
 		new DefaultSelfLinkProvider(null, entityLinks, lookups);
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-724
 	public void rejectsNullEntityLinks() {
 		new DefaultSelfLinkProvider(entities, null, lookups);
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-724
 	public void rejectsNullEntityLookups() {
 		new DefaultSelfLinkProvider(entities, entityLinks, null);
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test
+	@Test // DATAREST-724
 	public void usesEntityIdIfNoLookupDefined() {
 
 		Profile profile = new Profile("Name", "Type");
@@ -117,10 +99,7 @@ public class DefaultSelfLinkProviderUnitTests {
 		assertThat(link.getHref(), Matchers.endsWith(profile.getId().toString()));
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test
+	@Test // DATAREST-724
 	@SuppressWarnings("unchecked")
 	public void usesEntityLookupIfDefined() {
 
@@ -135,15 +114,12 @@ public class DefaultSelfLinkProviderUnitTests {
 		assertThat(link.getHref(), Matchers.endsWith("foo"));
 	}
 
-	/**
-	 * @see DATAREST-724
-	 */
-	@Test
+	@Test // DATAREST-724
 	public void rejectsLinkCreationForUnknownEntity() {
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage(Object.class.getName());
-		exception.expectMessage("No persistent entity found!");
+		exception.expectMessage("Couldn't find PersistentEntity for");
 
 		provider.createSelfLinkFor(new Object());
 	}

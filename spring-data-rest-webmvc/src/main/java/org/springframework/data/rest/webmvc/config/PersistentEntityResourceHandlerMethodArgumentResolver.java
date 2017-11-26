@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,15 @@ package org.springframework.data.rest.webmvc.config;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.rest.webmvc.IncomingRequest;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
@@ -59,10 +62,10 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	private static final String NO_CONVERTER_FOUND = "No suitable HttpMessageConverter found to read request body into object of type %s from request with content type of %s!";
 
 	private final RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver;
-
 	private final BackendIdHandlerMethodArgumentResolver idResolver;
 	private final DomainObjectReader reader;
 	private final List<HttpMessageConverter<?>> messageConverters;
+	private final ConversionService conversionService = new DefaultConversionService();
 
 	/**
 	 * Creates a new {@link PersistentEntityResourceHandlerMethodArgumentResolver} for the given
@@ -123,17 +126,9 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 				continue;
 			}
 
-			Serializable id = idResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
-			Object objectToUpdate = getObjectToUpdate(id, resourceInformation);
-
-			boolean forUpdate = false;
-			Object entityIdentifier = null;
-			PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
-
-			if (objectToUpdate != null) {
-				forUpdate = true;
-				entityIdentifier = entity.getIdentifierAccessor(objectToUpdate).getIdentifier();
-			}
+			Optional<Serializable> id = Optional
+					.ofNullable(idResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory));
+			Optional<Object> objectToUpdate = id.flatMap(it -> resourceInformation.getInvoker().invokeFindById(it));
 
 			Object obj = read(resourceInformation, incoming, converter, objectToUpdate);
 
@@ -141,9 +136,18 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 				throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType));
 			}
 
-			if (entityIdentifier != null) {
-				entity.getPropertyAccessor(obj).setProperty(entity.getIdProperty(), entityIdentifier);
-			}
+			PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
+			boolean forUpdate = objectToUpdate.isPresent();
+			Optional<Object> entityIdentifier = objectToUpdate.map(it -> entity.getIdentifierAccessor(it).getIdentifier());
+
+			entityIdentifier.ifPresent(it -> entity.getPropertyAccessor(obj).setProperty(entity.getRequiredIdProperty(),
+					entityIdentifier.orElse(null)));
+
+			id.ifPresent(it -> {
+				ConvertingPropertyAccessor accessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(obj),
+						conversionService);
+				accessor.setProperty(entity.getRequiredIdProperty(), it);
+			});
 
 			Builder build = PersistentEntityResource.build(obj, entity);
 			return forUpdate ? build.build() : build.forCreation();
@@ -163,27 +167,25 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	 * @return
 	 */
 	private Object read(RootResourceInformation information, IncomingRequest request,
-			HttpMessageConverter<Object> converter, Object objectToUpdate) {
+			HttpMessageConverter<Object> converter, Optional<Object> objectToUpdate) {
 
 		// JSON + PATCH request
 		if (request.isPatchRequest() && converter instanceof MappingJackson2HttpMessageConverter) {
 
-			if (objectToUpdate == null) {
-				throw new ResourceNotFoundException();
-			}
+			return objectToUpdate.map(it -> {
 
-			ObjectMapper mapper = ((MappingJackson2HttpMessageConverter) converter).getObjectMapper();
-			Object result = readPatch(request, mapper, objectToUpdate);
+				ObjectMapper mapper = ((MappingJackson2HttpMessageConverter) converter).getObjectMapper();
+				return readPatch(request, mapper, it);
 
-			return result;
+			}).orElseThrow(() -> new ResourceNotFoundException());
 
 			// JSON + PUT request
 		} else if (converter instanceof MappingJackson2HttpMessageConverter) {
 
 			ObjectMapper mapper = ((MappingJackson2HttpMessageConverter) converter).getObjectMapper();
 
-			return objectToUpdate == null ? read(request, converter, information)
-					: readPutForUpdate(request, mapper, objectToUpdate);
+			return objectToUpdate.map(it -> readPutForUpdate(request, mapper, it))//
+					.orElseGet(() -> read(request, converter, information));
 		}
 
 		// Catch all
@@ -229,22 +231,5 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 		} catch (IOException o_O) {
 			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, information.getDomainType()), o_O);
 		}
-	}
-
-	/**
-	 * Returns the object to be updated identified by the given id using the given {@link RootResourceInformation}.
-	 * 
-	 * @param id can be {@literal null}.
-	 * @param information must not be {@literal null}.
-	 * @return
-	 */
-	private static Object getObjectToUpdate(Serializable id, RootResourceInformation information) {
-
-		if (id == null) {
-			return null;
-		}
-
-		RepositoryInvoker invoker = information.getInvoker();
-		return invoker.invokeFindOne(id);
 	}
 }

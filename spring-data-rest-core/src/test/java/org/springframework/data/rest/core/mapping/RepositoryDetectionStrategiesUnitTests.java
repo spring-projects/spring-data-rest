@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies.*;
 
 import java.util.HashMap;
@@ -38,10 +37,7 @@ import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.Re
 @SuppressWarnings("serial")
 public class RepositoryDetectionStrategiesUnitTests {
 
-	/**
-	 * @see DATAREST-473
-	 */
-	@Test
+	@Test // DATAREST-473
 	public void allExposesAllRepositories() {
 
 		assertExposures(ALL, new HashMap<Class<?>, Boolean>() {
@@ -54,10 +50,7 @@ public class RepositoryDetectionStrategiesUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATAREST-473
-	 */
-	@Test
+	@Test // DATAREST-473
 	public void defaultHonorsVisibilityAndAnnotations() {
 
 		assertExposures(DEFAULT, new HashMap<Class<?>, Boolean>() {
@@ -70,10 +63,7 @@ public class RepositoryDetectionStrategiesUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATAREST-473
-	 */
-	@Test
+	@Test // DATAREST-473
 	public void visibilityHonorsTypeVisibilityOnly() {
 
 		assertExposures(VISIBILITY, new HashMap<Class<?>, Boolean>() {
@@ -86,11 +76,7 @@ public class RepositoryDetectionStrategiesUnitTests {
 		});
 	}
 
-	/**
-	 * @see DATAREST-473
-	 */
-
-	@Test
+	@Test // DATAREST-473
 	public void annotatedHonorsAnnotationsOnly() {
 
 		assertExposures(ANNOTATED, new HashMap<Class<?>, Boolean>() {
@@ -106,7 +92,7 @@ public class RepositoryDetectionStrategiesUnitTests {
 	private static void assertExposures(RepositoryDetectionStrategy strategy, Map<Class<?>, Boolean> expected) {
 
 		for (Entry<Class<?>, Boolean> entry : expected.entrySet()) {
-			assertThat(strategy.isExported(new DefaultRepositoryMetadata(entry.getKey())), is(entry.getValue()));
+			assertThat(strategy.isExported(new DefaultRepositoryMetadata(entry.getKey()))).isEqualTo(entry.getValue());
 		}
 	}
 

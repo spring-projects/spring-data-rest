@@ -19,9 +19,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.repository.Repository;
@@ -30,6 +30,7 @@ import org.springframework.data.repository.core.support.AbstractRepositoryMetada
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupRegistrar.Lookup;
 import org.springframework.data.rest.core.support.EntityLookup;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -41,16 +42,16 @@ import org.springframework.util.Assert;
  */
 class EntityLookupConfiguration implements EntityLookupRegistrar {
 
-	private final List<LookupInformation<Object, Serializable, Repository<? extends Object, ?>>> lookupInformation = new ArrayList<LookupInformation<Object, Serializable, Repository<?, ?>>>();
-	private final List<Class<?>> lookupTypes = new ArrayList<Class<?>>();
+	private final List<LookupInformation<Object, Object, Repository<? extends Object, ?>>> lookupInformation = new ArrayList<>();
+	private final List<Class<?>> lookupTypes = new ArrayList<>();
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar#forRepository(java.lang.Class, org.springframework.core.convert.converter.Converter, org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupRegistrar.Lookup)
 	 */
 	@Override
-	public <T, ID extends Serializable, R extends Repository<T, ?>> EntityLookupRegistrar forRepository(
-			Class<R> repositoryType, Converter<T, ID> converter, Lookup<R, ID> lookup) {
+	public <T, ID, R extends Repository<T, ?>> EntityLookupRegistrar forRepository(Class<R> repositoryType,
+			Converter<T, ID> converter, Lookup<R, ID> lookup) {
 
 		new MappingBuilder<T, ID, R>(repositoryType).withIdMapping(converter).withLookup(lookup);
 		return this;
@@ -61,8 +62,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 	 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar#forValueRepository(java.lang.Class)
 	 */
 	@Override
-	public <T, ID extends Serializable, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forLookupRepository(
-			Class<R> type) {
+	public <T, ID, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forLookupRepository(Class<R> type) {
 		this.lookupTypes.add(AbstractRepositoryMetadata.getMetadata(type).getDomainType());
 		return forRepository(type);
 	}
@@ -72,8 +72,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 	 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar#forRepository(java.lang.Class)
 	 */
 	@Override
-	public <T, ID extends Serializable, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forRepository(
-			Class<R> type) {
+	public <T, ID, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forRepository(Class<R> type) {
 		return new MappingBuilder<T, ID, R>(type);
 	}
 
@@ -82,8 +81,8 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 	 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar#forValueRepository(java.lang.Class, org.springframework.core.convert.converter.Converter, org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupRegistrar.Lookup)
 	 */
 	@Override
-	public <T, ID extends Serializable, R extends Repository<T, ?>> EntityLookupRegistrar forValueRepository(
-			Class<R> type, Converter<T, ID> identifierMapping, Lookup<R, ID> lookup) {
+	public <T, ID, R extends Repository<T, ?>> EntityLookupRegistrar forValueRepository(Class<R> type,
+			Converter<T, ID> identifierMapping, Lookup<R, ID> lookup) {
 
 		this.lookupTypes.add(AbstractRepositoryMetadata.getMetadata(type).getDomainType());
 		return forRepository(type, identifierMapping, lookup);
@@ -95,7 +94,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 	 * @author Oliver Gierke
 	 */
 	@RequiredArgsConstructor
-	private class MappingBuilder<T, ID extends Serializable, R extends Repository<T, ?>>
+	private class MappingBuilder<T, ID, R extends Repository<T, ?>>
 			implements LookupRegistrar<T, ID, R>, IdMappingRegistrar<T, R> {
 
 		private @NonNull final Class<R> repositoryType;
@@ -124,8 +123,8 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		@SuppressWarnings("unchecked")
 		public EntityLookupRegistrar withLookup(Lookup<R, ID> lookup) {
 
-			EntityLookupConfiguration.this.lookupInformation.add(
-					(LookupInformation<Object, Serializable, Repository<? extends Object, ?>>) new LookupInformation<T, ID, R>(
+			EntityLookupConfiguration.this.lookupInformation
+					.add((LookupInformation<Object, Object, Repository<? extends Object, ?>>) new LookupInformation<T, ID, R>(
 							repositoryType, idMapping, lookup));
 
 			return EntityLookupConfiguration.this;
@@ -136,7 +135,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar.IdMappingRegistrar#withIdMapping(org.springframework.core.convert.converter.Converter)
 		 */
 		@Override
-		public <ID2 extends Serializable> LookupRegistrar<T, ID2, R> withIdMapping(Converter<T, ID2> idMapping) {
+		public <ID2> LookupRegistrar<T, ID2, R> withIdMapping(Converter<T, ID2> idMapping) {
 			return new MappingBuilder<T, ID2, R>(repositoryType, idMapping);
 		}
 	}
@@ -151,13 +150,9 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 
-		List<EntityLookup<?>> lookups = new ArrayList<EntityLookup<?>>(lookupInformation.size());
-
-		for (LookupInformation<Object, Serializable, Repository<? extends Object, ?>> information : lookupInformation) {
-			lookups.add(new RepositoriesEntityLookup<Object>(repositories, information));
-		}
-
-		return lookups;
+		return lookupInformation.stream()//
+				.map(it -> new RepositoriesEntityLookup<>(repositories, it))//
+				.collect(StreamUtils.toUnmodifiableList());
 	}
 
 	public boolean isLookupType(Class<?> type) {
@@ -171,7 +166,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 	 */
 	private static class RepositoriesEntityLookup<T> implements EntityLookup<T> {
 
-		private final LookupInformation<Object, Serializable, Repository<? extends T, ?>> lookupInfo;
+		private final LookupInformation<Object, Object, Repository<? extends T, ?>> lookupInfo;
 		private final Repository<? extends T, ?> repository;
 		private final Class<?> domainType;
 
@@ -183,16 +178,20 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		 */
 		@SuppressWarnings("unchecked")
 		public RepositoriesEntityLookup(Repositories repositories,
-				LookupInformation<Object, Serializable, Repository<? extends T, ?>> lookupInformation) {
+				LookupInformation<Object, Object, Repository<? extends T, ?>> lookupInformation) {
 
 			Assert.notNull(repositories, "Repositories must not be null!");
 			Assert.notNull(lookupInformation, "LookupInformation must not be null!");
 
-			RepositoryInformation information = repositories.getRepositoryInformation(lookupInformation.repositoryType);
+			RepositoryInformation information = repositories.getRepositoryInformation(lookupInformation.repositoryType)//
+					.orElseThrow(() -> new IllegalStateException(
+							"No repository found for type " + lookupInformation.repositoryType.getName() + "!"));
 
-			this.repository = (Repository<? extends T, ?>) repositories.getRepositoryFor(information.getDomainType());
 			this.domainType = information.getDomainType();
 			this.lookupInfo = lookupInformation;
+			this.repository = (Repository<? extends T, ?>) repositories.getRepositoryFor(information.getDomainType())//
+					.orElseThrow(() -> new IllegalStateException(
+							"No repository found for type " + information.getDomainType().getName() + "!"));
 		}
 
 		/* 
@@ -200,7 +199,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		 * @see org.springframework.data.rest.core.support.EntityLookup#getResourceIdentifier(java.lang.Object)
 		 */
 		@Override
-		public Serializable getResourceIdentifier(T entity) {
+		public Object getResourceIdentifier(T entity) {
 			return lookupInfo.getIdentifierMapping().convert(entity);
 		}
 
@@ -209,8 +208,12 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		 * @see org.springframework.data.rest.core.support.EntityLookup#lookupEntity(java.io.Serializable)
 		 */
 		@Override
-		public Object lookupEntity(Serializable id) {
-			return lookupInfo.getLookup().lookup(repository, id);
+		@SuppressWarnings("unchecked")
+		public Optional<T> lookupEntity(Object id) {
+
+			Object result = lookupInfo.getLookup().lookup(repository, id);
+
+			return Optional.class.isInstance(result) ? (Optional<T>) result : Optional.ofNullable((T) result);
 		}
 
 		/* 
@@ -224,7 +227,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 	}
 
 	@Value
-	private static class LookupInformation<T, ID extends Serializable, R extends Repository<? extends T, ?>> {
+	private static class LookupInformation<T, ID, R extends Repository<? extends T, ?>> {
 
 		private final Class<R> repositoryType;
 		private final Converter<T, ID> identifierMapping;

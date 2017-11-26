@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,10 +42,7 @@ public class CustomAcceptHeaderHttpServletRequestUnitTests {
 
 	HttpServletRequest request = new MockHttpServletRequest();
 
-	/**
-	 * @see DATAREST-863
-	 */
-	@Test
+	@Test // DATAREST-863
 	public void returnsRegisterdHeadersOnAccessForMultipleOnes() {
 
 		List<MediaType> mediaTypes = Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_ATOM_XML);
@@ -55,7 +53,7 @@ public class CustomAcceptHeaderHttpServletRequestUnitTests {
 
 		List<String> expected = Collections.list(servletRequest.getHeaders(HttpHeaders.ACCEPT));
 
-		assertThat(expected, hasSize(2));
-		assertThat(expected, hasItems(MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_ATOM_XML_VALUE));
+		assertThat(expected).hasSize(2);
+		assertThat(expected).contains(MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_ATOM_XML_VALUE);
 	}
 }

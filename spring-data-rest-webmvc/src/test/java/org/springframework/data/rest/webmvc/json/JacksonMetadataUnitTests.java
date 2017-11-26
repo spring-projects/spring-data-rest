@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 
@@ -51,51 +50,42 @@ public class JacksonMetadataUnitTests {
 	@Before
 	public void setUp() {
 
-		this.context = new KeyValueMappingContext();
+		this.context = new KeyValueMappingContext<>();
 
 		this.mapper = new ObjectMapper();
 		this.mapper.disable(MapperFeature.INFER_PROPERTY_MUTATORS);
 	}
 
-	/**
-	 * @see DATAREST-644
-	 */
-	@Test
+	@Test // DATAREST-644
 	public void detectsReadOnlyProperty() {
 
 		JacksonMetadata metadata = new JacksonMetadata(mapper, User.class);
 
-		PersistentEntity<?, ?> entity = context.getPersistentEntity(User.class);
-		PersistentProperty<?> property = entity.getPersistentProperty("username");
+		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(User.class);
+		PersistentProperty<?> property = entity.getRequiredPersistentProperty("username");
 
-		assertThat(metadata.isExported(property), is(true));
-		assertThat(metadata.isReadOnly(property), is(true));
+		assertThat(metadata.isExported(property)).isTrue();
+		assertThat(metadata.isReadOnly(property)).isTrue();
 	}
 
-	/**
-	 * @see DATAREST-644
-	 */
-	@Test
+	@Test // DATAREST-644
 	public void reportsConstructorArgumentAsJacksonWritable() {
 
 		JacksonMetadata metadata = new JacksonMetadata(mapper, Value.class);
 
-		PersistentEntity<?, ?> entity = context.getPersistentEntity(Value.class);
-		PersistentProperty<?> property = entity.getPersistentProperty("value");
+		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(Value.class);
+		PersistentProperty<?> property = entity.getRequiredPersistentProperty("value");
 
-		assertThat(metadata.isReadOnly(property), is(false));
+		assertThat(metadata.isReadOnly(property)).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-644
-	 */
-	@Test
+	@Test // DATAREST-644
 	public void detectsCustomSerializerFortType() {
 
 		JsonSerializer<?> serializer = new JacksonMetadata(new ObjectMapper(), SomeBean.class)
 				.getTypeSerializer(SomeBean.class);
 
-		assertThat(serializer, is(instanceOf(SomeBeanSerializer.class)));
+		assertThat(serializer).isInstanceOf(SomeBeanSerializer.class);
 	}
 
 	static class User {

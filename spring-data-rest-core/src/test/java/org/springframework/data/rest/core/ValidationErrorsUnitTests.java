@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,16 +40,13 @@ public class ValidationErrorsUnitTests {
 	@Before
 	public void setUp() {
 
-		KeyValueMappingContext context = new KeyValueMappingContext();
+		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 		context.getPersistentEntity(Foo.class);
 
 		this.entities = new PersistentEntities(Arrays.asList(context));
 	}
 
-	/**
-	 * @see DATAREST-798
-	 */
-	@Test
+	@Test // DATAREST-798
 	public void exposesNestedViolationsCorrectly() {
 
 		ValidationErrors errors = new ValidationErrors(new Foo(), entities);
@@ -59,20 +55,17 @@ public class ValidationErrorsUnitTests {
 		errors.rejectValue("field", "asdf");
 		errors.popNestedPath();
 
-		assertThat(errors.getFieldError().getField(), is("bars[0].field"));
+		assertThat(errors.getFieldError().getField()).isEqualTo("bars[0].field");
 	}
 
-	/**
-	 * @see DATAREST-801
-	 */
-	@Test
+	@Test // DATAREST-801
 	public void getsTheNestedFieldsValue() {
 		expectedErrorBehavior(new ValidationErrors(new Foo(), entities));
 	}
 
 	private static void expectedErrorBehavior(Errors errors) {
 
-		assertThat(errors.getFieldValue("bars"), is(notNullValue()));
+		assertThat(errors.getFieldValue("bars")).isNotNull();
 
 		errors.pushNestedPath("bars[0]");
 
@@ -81,7 +74,7 @@ public class ValidationErrorsUnitTests {
 			fail("Expected NotReadablePropertyException!");
 		} catch (NotReadablePropertyException e) {}
 
-		assertThat(errors.getFieldValue("field"), is((Object) "Hello"));
+		assertThat(errors.getFieldValue("field")).isEqualTo((Object) "Hello");
 	}
 
 	static class Foo {

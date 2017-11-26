@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -44,10 +43,7 @@ public class BackendIdConverterHandlerMethodArgumentResolverIntegrationTests
 
 	@Autowired BackendIdHandlerMethodArgumentResolver resolver;
 
-	/**
-	 * @see DATAREST-155
-	 */
-	@Test
+	@Test // DATAREST-155
 	public void translatesUriToBackendId() throws Exception {
 
 		Method method = ReflectionUtils.findMethod(SampleController.class, "resolveId", Serializable.class);
@@ -56,7 +52,7 @@ public class BackendIdConverterHandlerMethodArgumentResolverIntegrationTests
 
 		Object resolvedId = resolver.resolveArgument(parameter, null, request, null);
 
-		assertThat(resolvedId, is((Object) 5L));
+		assertThat(resolvedId).isEqualTo(5L);
 	}
 
 	static class SampleController {

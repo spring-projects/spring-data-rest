@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.core.support.DomainObjectMerger.*;
 
 import java.util.Collections;
@@ -31,22 +30,19 @@ import org.junit.Test;
  */
 public class DomainObjectMergerUnitTests {
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void considersEmptyObjectsEmpty() {
 
-		assertThat(isNullOrEmpty(null), is(true));
-		assertThat(isNullOrEmpty(Collections.emptyList()), is(true));
-		assertThat(isNullOrEmpty(new Object[0]), is(true));
-		assertThat(isNullOrEmpty(new String[0]), is(true));
-		assertThat(isNullOrEmpty(new MyIterable()), is(true));
+		assertThat(isNullOrEmpty(null)).isTrue();
+		assertThat(isNullOrEmpty(Collections.emptyList())).isTrue();
+		assertThat(isNullOrEmpty(new Object[0])).isTrue();
+		assertThat(isNullOrEmpty(new String[0])).isTrue();
+		assertThat(isNullOrEmpty(new MyIterable())).isTrue();
 
-		assertThat(isNullOrEmpty(new Object()), is(false));
-		assertThat(isNullOrEmpty(Collections.singleton(new Object())), is(false));
-		assertThat(isNullOrEmpty(new Object[] { "1" }), is(false));
-		assertThat(isNullOrEmpty(new String[] { "1" }), is(false));
+		assertThat(isNullOrEmpty(new Object())).isFalse();
+		assertThat(isNullOrEmpty(Collections.singleton(new Object()))).isFalse();
+		assertThat(isNullOrEmpty(new Object[] { "1" })).isFalse();
+		assertThat(isNullOrEmpty(new String[] { "1" })).isFalse();
 	}
 
 	class MyIterable implements Iterable<Object> {

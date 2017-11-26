@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -22,7 +23,10 @@ import java.util.List;
 
 import org.junit.Test;
 
-public class AddOperationTests {
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class AddOperationUnitTests {
 
 	@Test
 	public void addBooleanPropertyValue() throws Exception {
@@ -32,7 +36,7 @@ public class AddOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		AddOperation add = new AddOperation("/1/complete", true);
+		AddOperation add = AddOperation.of("/1/complete", true);
 		add.perform(todos, Todo.class);
 
 		assertTrue(todos.get(1).isComplete());
@@ -46,7 +50,7 @@ public class AddOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		AddOperation add = new AddOperation("/1/description", "BBB");
+		AddOperation add = AddOperation.of("/1/description", "BBB");
 		add.perform(todos, Todo.class);
 
 		assertEquals("BBB", todos.get(1).getDescription());
@@ -60,7 +64,7 @@ public class AddOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		AddOperation add = new AddOperation("/1", new Todo(null, "D", true));
+		AddOperation add = AddOperation.of("/1", new Todo(null, "D", true));
 		add.perform(todos, Todo.class);
 
 		assertEquals(4, todos.size());
@@ -72,5 +76,39 @@ public class AddOperationTests {
 		assertFalse(todos.get(2).isComplete());
 		assertEquals("C", todos.get(3).getDescription());
 		assertFalse(todos.get(3).isComplete());
+	}
+
+	@Test // DATAREST-995
+	public void addsItemsToNestedList() {
+
+		Todo todo = new Todo(1L, "description", false);
+
+		AddOperation.of("/items/-", "Some text.").perform(todo, Todo.class);
+
+		assertThat(todo.getItems().get(0)).isEqualTo("Some text.");
+	}
+
+	@Test // DATAREST-1039
+	public void addsLazilyEvaluatedObjectToList() throws Exception {
+
+		Todo todo = new Todo(1L, "description", false);
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = mapper.readTree("\"Some text.\"");
+		JsonLateObjectEvaluator evaluator = new JsonLateObjectEvaluator(mapper, node);
+
+		AddOperation.of("/items/-", evaluator).perform(todo, Todo.class);
+
+		assertThat(todo.getItems().get(0)).isEqualTo("Some text.");
+	}
+
+	@Test // DATAREST-1039
+	public void initializesNullCollectionsOnAppend() {
+
+		Todo todo = new Todo(1L, "description", false);
+
+		AddOperation.of("/uninitialized/-", "Text").perform(todo, Todo.class);
+
+		assertThat(todo.getUninitialized()).containsExactly("Text");
 	}
 }

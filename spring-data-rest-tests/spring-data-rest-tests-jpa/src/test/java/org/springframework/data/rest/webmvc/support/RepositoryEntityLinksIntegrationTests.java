@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +53,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		Link link = entityLinks.linkToSingleResource(Person.class, 1);
 
 		assertThat(link.getHref(), endsWith("/people/1{?projection}"));
-		assertThat(link.getRel(), is("person"));
+		assertThat(link.getRel()).isEqualTo("person");
 	}
 
 	@Test
@@ -59,132 +61,101 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		Link link = entityLinks.linkToCollectionResource(Person.class);
 
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItems("page", "size", "sort"));
-		assertThat(link.getRel(), is("people"));
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains("page", "size", "sort");
+		assertThat(link.getRel()).isEqualTo("people");
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void returnsLinkWithProjectionTemplateVariableIfProjectionIsDefined() {
 
 		Link link = entityLinks.linkToSingleResource(Order.class, 1);
 
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItem(configuration.getProjectionConfiguration().getParameterName()));
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains(configuration.getProjectionConfiguration().getParameterName());
 	}
 
-	/**
-	 * @see DATAREST-155
-	 */
-	@Test
+	@Test // DATAREST-155
 	public void usesCustomGeneratedBackendId() {
 
 		Link link = entityLinks.linkToSingleResource(Book.class, 7L);
 		assertThat(link.expand().getHref(), endsWith("/7-7-7-7-7-7-7"));
 	}
 
-	/**
-	 * @see DATAREST-317
-	 */
-	@Test
+	@Test // DATAREST-317
 	public void adaptsToExistingPageable() {
 
-		Link link = entityLinks.linkToPagedResource(Person.class, new PageRequest(0, 10));
+		Link link = entityLinks.linkToPagedResource(Person.class, PageRequest.of(0, 10));
 
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasSize(2));
-		assertThat(link.getVariableNames(), hasItems("sort", "projection"));
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).hasSize(2);
+		assertThat(link.getVariableNames()).contains("sort", "projection");
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void returnsLinksToSearchResources() {
 
 		Links links = entityLinks.linksToSearchResources(Person.class);
 
-		assertThat(links.hasLink("firstname"), is(true));
+		assertThat(links.hasLink("firstname")).isTrue();
 
 		Link firstnameLink = links.getLink("firstname");
-		assertThat(firstnameLink.isTemplated(), is(true));
-		assertThat(firstnameLink.getVariableNames(), hasItems("page", "size"));
+		assertThat(firstnameLink.isTemplated()).isTrue();
+		assertThat(firstnameLink.getVariableNames()).contains("page", "size");
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void returnsLinkToSearchResource() {
 
 		Link link = entityLinks.linkToSearchResource(Person.class, "firstname");
 
-		assertThat(link, is(notNullValue()));
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItems("firstname", "page", "size"));
+		assertThat(link).isNotNull();
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains("firstname", "page", "size");
 	}
 
-	/**
-	 * @see DATAREST-467
-	 * @see DATAREST-519
-	 */
-	@Test
+	@Test // DATAREST-467, DATAREST-519
 	public void prepopulatesPaginationInformationForSearchResourceLink() {
 
-		Link link = entityLinks.linkToSearchResource(Person.class, "firstname", new PageRequest(0, 10));
+		Link link = entityLinks.linkToSearchResource(Person.class, "firstname", PageRequest.of(0, 10));
 
-		assertThat(link, is(notNullValue()));
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItem("firstname"));
-		assertThat(link.getVariableNames(), not(hasItems("page", "size")));
+		assertThat(link).isNotNull();
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains("firstname");
+		assertThat(link.getVariableNames()).doesNotContain("page", "size");
 
 		UriComponents components = UriComponentsBuilder.fromUriString(link.getHref()).build();
 		assertThat(components.getQueryParams(), allOf(hasKey("page"), hasKey("size")));
 	}
 
-	/**
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-467
 	public void returnsTemplatedLinkForSortedSearchResource() {
 
 		Link link = entityLinks.linkToSearchResource(Person.class, "lastname");
 
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItems("lastname", "sort"));
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains("lastname", "sort");
 	}
 
-	/**
-	 * @see DATAREST-467
-	 * @see DATAREST-519
-	 */
-	@Test
+	@Test // DATAREST-467, DATAREST-519
 	public void prepopulatesSortInformationForSearchResourceLink() {
 
-		Link link = entityLinks.linkToSearchResource(Person.class, "lastname", new Sort("firstname"));
+		Link link = entityLinks.linkToSearchResource(Person.class, "lastname", Sort.by("firstname"));
 
-		assertThat(link, is(notNullValue()));
-		assertThat(link.isTemplated(), is(true));
-		assertThat(link.getVariableNames(), hasItem("lastname"));
-		assertThat(link.getVariableNames(), not(hasItems("sort")));
+		assertThat(link).isNotNull();
+		assertThat(link.isTemplated()).isTrue();
+		assertThat(link.getVariableNames()).contains("lastname");
+		assertThat(link.getVariableNames()).doesNotContain("sort");
 
 		UriComponents components = UriComponentsBuilder.fromUriString(link.getHref()).build();
 		assertThat(components.getQueryParams(), hasKey("sort"));
 	}
 
-	/**
-	 * @see DATAREST-668
-	 * @see DATAREST-519
-	 * @see DATAREST-467
-	 */
-	@Test
+	@Test // DATAREST-668, DATAREST-519, DATAREST-467
 	public void addsProjectVariableToSearchResourceIfAvailable() {
 
 		for (Link link : entityLinks.linksToSearchResources(Book.class)) {
-			assertThat(link.getVariableNames(), hasItem("projection"));
+			assertThat(link.getVariableNames()).contains("projection");
 		}
 	}
 }

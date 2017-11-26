@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -53,6 +54,7 @@ import org.springframework.data.rest.webmvc.json.JsonSchema.Item;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -78,10 +80,10 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	private final Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
 	private final Associations associations;
 	private final PersistentEntities entities;
-	private final MessageSourceAccessor accessor;
 	private final ObjectMapper objectMapper;
 	private final RepositoryRestConfiguration configuration;
 	private final ValueTypeSchemaPropertyCustomizerFactory customizerFactory;
+	private final MessageResolver resolver;
 
 	/**
 	 * Creates a new {@link PersistentEntityToJsonSchemaConverter} for the given {@link PersistentEntities} and
@@ -105,10 +107,10 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		this.entities = entities;
 		this.associations = associations;
-		this.accessor = accessor;
 		this.objectMapper = objectMapper;
 		this.configuration = configuration;
 		this.customizerFactory = customizerFactory;
+		this.resolver = new DefaultMessageResolver(accessor, configuration);
 
 		for (TypeInformation<?> domainType : entities.getManagedTypes()) {
 			convertiblePairs.add(new ConvertiblePair(domainType.getType(), JsonSchema.class));
@@ -151,121 +153,116 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	@Override
 	public JsonSchema convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		final PersistentEntity<?, ?> persistentEntity = entities.getPersistentEntity((Class<?>) source);
+		final PersistentEntity<?, ?> persistentEntity = entities.getRequiredPersistentEntity((Class<?>) source);
 		final ResourceMetadata metadata = associations.getMappings().getMetadataFor(persistentEntity.getType());
 
 		Definitions definitions = new Definitions();
 		List<AbstractJsonSchemaProperty<?>> propertiesFor = getPropertiesFor(persistentEntity.getType(), metadata,
 				definitions);
 
-		String title = resolveMessageWithDefault(new ResolvableType(persistentEntity.getType()));
+		String title = resolver.resolveWithDefault(new ResolvableType(persistentEntity.getType()));
 
-		return new JsonSchema(title, resolveMessage(metadata.getItemResourceDescription()), propertiesFor, definitions);
+		return new JsonSchema(title, resolver.resolve(metadata.getItemResourceDescription()), propertiesFor, definitions);
 	}
 
 	private List<AbstractJsonSchemaProperty<?>> getPropertiesFor(Class<?> type, final ResourceMetadata metadata,
 			final Definitions definitions) {
 
-		final PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
-		final JacksonMetadata jackson = new JacksonMetadata(objectMapper, type);
+		return entities.getPersistentEntity(type).map(entity -> {
 
-		if (entity == null) {
-			return Collections.<AbstractJsonSchemaProperty<?>> emptyList();
-		}
+			final JacksonMetadata jackson = new JacksonMetadata(objectMapper, type);
+			JsonSchemaPropertyRegistrar registrar = new JsonSchemaPropertyRegistrar(jackson);
 
-		JsonSchemaPropertyRegistrar registrar = new JsonSchemaPropertyRegistrar(jackson);
+			for (BeanPropertyDefinition definition : jackson) {
 
-		for (BeanPropertyDefinition definition : jackson) {
+				Optional<? extends PersistentProperty<?>> prop = Optional
+						.ofNullable(entity.getPersistentProperty(definition.getInternalName()));
 
-			PersistentProperty<?> persistentProperty = entity.getPersistentProperty(definition.getInternalName());
+				JacksonProperty jacksonProperty = new JacksonProperty(jackson, prop, definition);
 
-			// First pass, early drops to avoid unnecessary calculation
-			if (persistentProperty != null) {
+				// First pass, early drops to avoid unnecessary calculation
+				if (prop.isPresent()) {
 
-				if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(type)) {
-					continue;
-				}
+					PersistentProperty<?> persistentProperty = prop.get();
 
-				if (persistentProperty.isVersionProperty()) {
-					continue;
-				}
-
-				if (!definition.couldSerialize()) {
-					continue;
-				}
-			}
-
-			AnnotatedMember primaryMember = definition.getPrimaryMember();
-
-			if (primaryMember == null) {
-				continue;
-			}
-
-			TypeInformation<?> propertyType = persistentProperty == null
-					? ClassTypeInformation.from(primaryMember.getRawType()) : persistentProperty.getTypeInformation();
-			TypeInformation<?> actualPropertyType = propertyType.getActualType();
-			Class<?> rawPropertyType = propertyType.getType();
-
-			JsonSchemaFormat format = configuration.getMetadataConfiguration().getSchemaFormatFor(rawPropertyType);
-			ResourceDescription description = persistentProperty == null
-					? jackson.getFallbackDescription(metadata, definition) : getDescriptionFor(persistentProperty, metadata);
-			JsonSchemaProperty property = getSchemaProperty(definition, propertyType, description);
-
-			boolean isSyntheticProperty = persistentProperty == null;
-			boolean isNotWritable = !isSyntheticProperty && !persistentProperty.isWritable();
-			boolean isJacksonReadOnly = !isSyntheticProperty && jackson.isReadOnly(persistentProperty);
-
-			if (isSyntheticProperty || isNotWritable || isJacksonReadOnly) {
-				property = property.withReadOnly();
-			}
-
-			if (format != null) {
-
-				// Types with explicitly registered format -> value object with format
-				registrar.register(property.withFormat(format), actualPropertyType);
-				continue;
-			}
-
-			Pattern pattern = configuration.getMetadataConfiguration().getPatternFor(rawPropertyType);
-
-			if (pattern != null) {
-				registrar.register(property.withPattern(pattern), actualPropertyType);
-				continue;
-			}
-
-			if (jackson.isValueType()) {
-				registrar.register(property.with(STRING_TYPE_INFORMATION), actualPropertyType);
-				continue;
-			}
-
-			if (persistentProperty == null) {
-				registrar.register(property, actualPropertyType);
-				continue;
-			}
-
-			if (configuration.isLookupType(persistentProperty.getActualType())) {
-				registrar.register(property.with(propertyType), actualPropertyType);
-			} else if (associations.isLinkableAssociation(persistentProperty)) {
-				registrar.register(property.asAssociation(), null);
-			} else {
-
-				if (persistentProperty.isEntity()) {
-
-					if (!definitions.hasDefinitionFor(propertyType)) {
-						definitions.addDefinition(propertyType,
-								new Item(propertyType, getNestedPropertiesFor(persistentProperty, definitions)));
+					if (persistentProperty.isIdProperty() && !configuration.isIdExposedFor(type)) {
+						continue;
 					}
 
-					registrar.register(property.with(propertyType, Definitions.getReference(propertyType)), actualPropertyType);
+					if (persistentProperty.isVersionProperty()) {
+						continue;
+					}
 
-				} else {
-
-					registrar.register(property.with(propertyType), actualPropertyType);
+					if (!definition.couldSerialize()) {
+						continue;
+					}
 				}
-			}
-		}
 
-		return registrar.getProperties();
+				AnnotatedMember primaryMember = definition.getPrimaryMember();
+
+				if (primaryMember == null) {
+					continue;
+				}
+
+				TypeInformation<?> propertyType = jacksonProperty.getPropertyType();
+				TypeInformation<?> actualPropertyType = propertyType.getActualType();
+				Class<?> rawPropertyType = propertyType.getType();
+
+				JsonSchemaFormat format = configuration.getMetadataConfiguration().getSchemaFormatFor(rawPropertyType);
+
+				ResourceDescription description = prop.map(it -> getDescriptionFor(it, metadata))
+						.orElseGet(() -> jackson.getFallbackDescription(metadata, definition));
+				JsonSchemaProperty property = jacksonProperty.getSchemaProperty(description, resolver);
+
+				if (format != null) {
+
+					// Types with explicitly registered format -> value object with format
+					registrar.register(property.withFormat(format), actualPropertyType);
+					continue;
+				}
+
+				Pattern pattern = configuration.getMetadataConfiguration().getPatternFor(rawPropertyType);
+
+				if (pattern != null) {
+					registrar.register(property.withPattern(pattern), actualPropertyType);
+					continue;
+				}
+
+				if (jackson.isValueType()) {
+					registrar.register(property.with(STRING_TYPE_INFORMATION), actualPropertyType);
+					continue;
+				}
+
+				Optionals.ifPresentOrElse(prop, it -> {
+
+					if (configuration.isLookupType(it.getActualType())) {
+						registrar.register(property.with(propertyType), actualPropertyType);
+					} else if (associations.isLinkableAssociation(it)) {
+						registrar.register(property.asAssociation(), null);
+					} else {
+
+						if (it.isEntity()) {
+
+							if (!definitions.hasDefinitionFor(propertyType)) {
+								definitions.addDefinition(propertyType,
+										new Item(propertyType, getNestedPropertiesFor(it, definitions)));
+							}
+
+							registrar.register(property.with(propertyType, Definitions.getReference(propertyType)),
+									actualPropertyType);
+
+						} else {
+
+							registrar.register(property.with(propertyType), actualPropertyType);
+						}
+					}
+
+				}, () -> registrar.register(property, actualPropertyType));
+			}
+
+			return registrar.getProperties();
+
+		}).orElse(Collections.emptyList());
 	}
 
 	private Collection<AbstractJsonSchemaProperty<?>> getNestedPropertiesFor(PersistentProperty<?> property,
@@ -278,52 +275,30 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		return getPropertiesFor(property.getActualType(),
 				associations.getMappings().getMetadataFor(property.getActualType()), descriptors);
 	}
-
-	private JsonSchemaProperty getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,
-			ResourceDescription description) {
-
-		String name = definition.getName();
-		String title = resolveMessageWithDefault(new ResolvableProperty(definition));
-		String resolvedDescription = resolveMessage(description);
-		boolean required = definition.isRequired();
-		Class<?> rawType = type.getType();
-
-		if (!rawType.isEnum()) {
-			return new JsonSchemaProperty(name, title, resolvedDescription, required).with(type);
-		}
-
-		String message = resolveMessage(new DefaultMessageSourceResolvable(description.getMessage()));
-
-		return new EnumProperty(name, title, rawType,
-				description.getDefaultMessage().equals(resolvedDescription) ? message : resolvedDescription, required);
-	}
+	//
+	// private JsonSchemaProperty getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,
+	// ResourceDescription description) {
+	//
+	// String name = definition.getName();
+	// String title = resolver.resolveWithDefault(new ResolvableProperty(definition));
+	// String resolvedDescription = resolver.resolve(description);
+	// boolean required = definition.isRequired();
+	// Class<?> rawType = type.getType();
+	//
+	// if (!rawType.isEnum()) {
+	// return new JsonSchemaProperty(name, title, resolvedDescription, required).with(type);
+	// }
+	//
+	// String message = resolver.resolve(new DefaultMessageSourceResolvable(description.getMessage()));
+	//
+	// return new EnumProperty(name, title, rawType,
+	// description.getDefaultMessage().equals(resolvedDescription) ? message : resolvedDescription, required);
+	// }
 
 	private ResourceDescription getDescriptionFor(PersistentProperty<?> property, ResourceMetadata metadata) {
 
 		ResourceMapping propertyMapping = metadata.getMappingFor(property);
 		return propertyMapping.getDescription();
-	}
-
-	private String resolveMessageWithDefault(MessageSourceResolvable resolvable) {
-		return resolveMessage(new DefaultingMessageSourceResolvable(resolvable));
-	}
-
-	private String resolveMessage(MessageSourceResolvable resolvable) {
-
-		if (resolvable == null) {
-			return null;
-		}
-
-		try {
-			return accessor.getMessage(resolvable);
-		} catch (NoSuchMessageException o_O) {
-
-			if (configuration.getMetadataConfiguration().omitUnresolvableDescriptionKeys()) {
-				return null;
-			} else {
-				throw o_O;
-			}
-		}
 	}
 
 	/**
@@ -408,6 +383,148 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	}
 
 	/**
+	 * A {@link BeanPropertyDefinition} that can be resolved via a {@link MessageSource}.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.4.1
+	 */
+	private static class ResolvableProperty extends DefaultMessageSourceResolvable {
+
+		private static final long serialVersionUID = -5603381674553244480L;
+
+		/**
+		 * Creates a new {@link ResolvableProperty} for the given {@link BeanPropertyDefinition}.
+		 * 
+		 * @param property must not be {@literal null}.
+		 */
+		public ResolvableProperty(BeanPropertyDefinition property) {
+			super(getCodes(property));
+		}
+
+		private static String[] getCodes(BeanPropertyDefinition property) {
+
+			Assert.notNull(property, "BeanPropertyDefinition must not be null!");
+
+			Class<?> owner = property.getPrimaryMember().getDeclaringClass();
+
+			String propertyTitle = property.getInternalName().concat("._title");
+			String localName = owner.getSimpleName().concat(".").concat(propertyTitle);
+			String fullName = owner.getName().concat(".").concat(propertyTitle);
+
+			return new String[] { fullName, localName, propertyTitle };
+		}
+	}
+
+	/**
+	 * A type whose title can be resolved through a {@link MessageSource}.
+	 *
+	 * @author Oliver Gierke
+	 * @since 2.4.1
+	 */
+	private static class ResolvableType extends DefaultMessageSourceResolvable {
+
+		private static final long serialVersionUID = -7199875272753949857L;
+
+		/**
+		 * Creates a new {@link ResolvableType} for the given type.
+		 * 
+		 * @param type must not be {@literal null}.
+		 */
+		public ResolvableType(Class<?> type) {
+			super(getTitleCodes(type));
+		}
+
+		private static String[] getTitleCodes(Class<?> type) {
+
+			Assert.notNull(type, "Type must not be null!");
+
+			return new String[] { type.getName().concat("._title"), type.getSimpleName().concat("._title") };
+		}
+	}
+
+	@RequiredArgsConstructor
+	private static class JacksonProperty {
+
+		private final JacksonMetadata metadata;
+		private final Optional<? extends PersistentProperty<?>> property;
+		private final BeanPropertyDefinition definition;
+
+		@SuppressWarnings("rawtypes")
+		public TypeInformation<?> getPropertyType() {
+			return property.map(it -> (TypeInformation) it.getTypeInformation())
+					.orElseGet(() -> ClassTypeInformation.from(definition.getPrimaryMember().getRawType()));
+		}
+
+		public JsonSchemaProperty getSchemaProperty(ResourceDescription description, MessageResolver resolver) {
+
+			JsonSchemaProperty result = getSchemaProperty(definition, getPropertyType(), description, resolver);
+
+			boolean isSyntheticProperty = !property.isPresent();
+			boolean isNotWritable = property.map(it -> !it.isWritable()).orElse(false);
+			boolean isJacksonReadOnly = property.map(it -> metadata.isReadOnly(it)).orElse(false);
+
+			if (isSyntheticProperty || isNotWritable || isJacksonReadOnly) {
+				result = result.withReadOnly();
+			}
+
+			return result;
+		}
+
+		private JsonSchemaProperty getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,
+				ResourceDescription description, MessageResolver resolver) {
+
+			String name = definition.getName();
+			String title = resolver.resolveWithDefault(new ResolvableProperty(definition));
+			String resolvedDescription = resolver.resolve(description);
+			boolean required = definition.isRequired();
+			Class<?> rawType = type.getType();
+
+			if (!rawType.isEnum()) {
+				return new JsonSchemaProperty(name, title, resolvedDescription, required).with(type);
+			}
+
+			String message = resolver.resolve(new DefaultMessageSourceResolvable(description.getMessage()));
+
+			return new EnumProperty(name, title, rawType,
+					description.getDefaultMessage().equals(resolvedDescription) ? message : resolvedDescription, required);
+		}
+	}
+
+	private interface MessageResolver {
+
+		String resolve(MessageSourceResolvable resolvable);
+
+		default String resolveWithDefault(MessageSourceResolvable resolvable) {
+			return resolve(new DefaultingMessageSourceResolvable(resolvable));
+		}
+	}
+
+	@RequiredArgsConstructor
+	private static class DefaultMessageResolver implements MessageResolver {
+
+		private final MessageSourceAccessor accessor;
+		private final RepositoryRestConfiguration configuration;
+
+		public String resolve(MessageSourceResolvable resolvable) {
+
+			if (resolvable == null) {
+				return null;
+			}
+
+			try {
+				return accessor.getMessage(resolvable);
+			} catch (NoSuchMessageException o_O) {
+
+				if (configuration.getMetadataConfiguration().omitUnresolvableDescriptionKeys()) {
+					return null;
+				} else {
+					throw o_O;
+				}
+			}
+		}
+	}
+
+	/**
 	 * Message source resolvable that defaults the messages to the last segment of the dot-separated code in case the
 	 * configured delegate doesn't return a default message itself.
 	 *
@@ -466,66 +583,6 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 			return StringUtils.capitalize(StringUtils
 					.collectionToDelimitedString(Arrays.asList(SPLIT_CAMEL_CASE.split(tail)), " ").toLowerCase(Locale.US));
-		}
-	}
-
-	/**
-	 * A {@link BeanPropertyDefinition} that can be resolved via a {@link MessageSource}.
-	 *
-	 * @author Oliver Gierke
-	 * @since 2.4.1
-	 */
-	private static class ResolvableProperty extends DefaultMessageSourceResolvable {
-
-		private static final long serialVersionUID = -5603381674553244480L;
-
-		/**
-		 * Creates a new {@link ResolvableProperty} for the given {@link BeanPropertyDefinition}.
-		 * 
-		 * @param property must not be {@literal null}.
-		 */
-		public ResolvableProperty(BeanPropertyDefinition property) {
-			super(getCodes(property));
-		}
-
-		private static String[] getCodes(BeanPropertyDefinition property) {
-
-			Assert.notNull(property, "BeanPropertyDefinition must not be null!");
-
-			Class<?> owner = property.getPrimaryMember().getDeclaringClass();
-
-			String propertyTitle = property.getInternalName().concat("._title");
-			String localName = owner.getSimpleName().concat(".").concat(propertyTitle);
-			String fullName = owner.getName().concat(".").concat(propertyTitle);
-
-			return new String[] { fullName, localName, propertyTitle };
-		}
-	}
-
-	/**
-	 * A type whose title can be resolved through a {@link MessageSource}.
-	 *
-	 * @author Oliver Gierke
-	 * @since 2.4.1
-	 */
-	private static class ResolvableType extends DefaultMessageSourceResolvable {
-
-		private static final long serialVersionUID = -7199875272753949857L;
-
-		/**
-		 * Creates a new {@link ResolvableType} for the given type.
-		 * 
-		 * @param type must not be {@literal null}.
-		 */
-		public ResolvableType(Class<?> type) {
-			super(getTitleCodes(type));
-		}
-
-		private static String[] getTitleCodes(Class<?> type) {
-
-			Assert.notNull(type, "Type must not be null!");
-
-			return new String[] { type.getName().concat("._title"), type.getSimpleName().concat("._title") };
 		}
 	}
 }

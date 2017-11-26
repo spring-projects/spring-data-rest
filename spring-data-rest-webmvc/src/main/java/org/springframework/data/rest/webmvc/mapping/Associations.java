@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.mapping;
 
+import static org.springframework.hateoas.TemplateVariable.VariableType.*;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -26,18 +28,23 @@ import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.Path;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.TemplateVariable;
+import org.springframework.hateoas.TemplateVariables;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.util.Assert;
 
 /**
  * A value object to for {@link Link}s representing associations.
- * 
+ *
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Haroun Pacquee
  * @since 2.1
  */
 @RequiredArgsConstructor
@@ -48,7 +55,7 @@ public class Associations {
 
 	/**
 	 * Returns the links to render for the given {@link Association}.
-	 * 
+	 *
 	 * @param association must not be {@literal null}.
 	 * @param path must not be {@literal null}.
 	 * @return
@@ -65,9 +72,9 @@ public class Associations {
 			ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 			String href = path.slash(propertyMapping.getPath()).toString();
-			String rel = propertyMapping.getRel();
+			UriTemplate template = new UriTemplate(href, getProjectionVariable(property));
 
-			return Collections.singletonList(new Link(href, rel));
+			return Collections.singletonList(new Link(template, propertyMapping.getRel()));
 		}
 
 		return Collections.emptyList();
@@ -89,11 +96,14 @@ public class Associations {
 	/**
 	 * Returns whether the type of the given {@link PersistentProperty} is configured as lookup type.
 	 * 
-	 * @param property can be {@literal null}.
+	 * @param property must not be {@literal null}.
 	 * @return
 	 */
 	public boolean isLookupType(PersistentProperty<?> property) {
-		return property == null ? false : config.isLookupType(property.getActualType());
+
+		Assert.notNull(property, "Persistent property must not be null!");
+
+		return config.isLookupType(property.getActualType());
 	}
 
 	public boolean isIdExposed(PersistentEntity<?, ?> entity) {
@@ -116,12 +126,14 @@ public class Associations {
 	/**
 	 * Returns whether the given property is an association that is linkable.
 	 * 
-	 * @param property can be {@literal null}.
+	 * @param property must not be {@literal null}.
 	 * @return
 	 */
 	public boolean isLinkableAssociation(PersistentProperty<?> property) {
 
-		if (property == null || !property.isAssociation() || config.isLookupType(property.getActualType())) {
+		Assert.notNull(property, "PersistentProperty must not be null!");
+
+		if (!property.isAssociation() || config.isLookupType(property.getActualType())) {
 			return false;
 		}
 
@@ -133,5 +145,14 @@ public class Associations {
 
 		metadata = mappings.getMetadataFor(property.getActualType());
 		return metadata == null ? false : metadata.isExported();
+	}
+
+	private TemplateVariables getProjectionVariable(PersistentProperty<?> property) {
+
+		ProjectionDefinitionConfiguration projectionConfiguration = config.getProjectionConfiguration();
+
+		return projectionConfiguration.hasProjectionFor(property.getActualType()) //
+				? new TemplateVariables(new TemplateVariable(projectionConfiguration.getParameterName(), REQUEST_PARAM)) //
+				: TemplateVariables.NONE;
 	}
 }

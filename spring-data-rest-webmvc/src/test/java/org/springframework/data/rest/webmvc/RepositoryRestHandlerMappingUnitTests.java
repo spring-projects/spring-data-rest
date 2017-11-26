@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,38 +15,43 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.method.HandlerMethod;
 
 /**
  * Unit tests for {@link RepositoryRestHandlerMapping}.
- * 
+ *
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class RepositoryRestHandlerMappingUnitTests {
 
 	static final AnnotationConfigWebApplicationContext CONTEXT = new AnnotationConfigWebApplicationContext();
@@ -58,6 +63,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Mock ResourceMappings mappings;
+	@Mock ResourceMetadata resourceMetadata;
 	@Mock Repositories repositories;
 
 	RepositoryRestConfiguration configuration;
@@ -91,20 +97,14 @@ public class RepositoryRestHandlerMappingUnitTests {
 		new RepositoryRestHandlerMapping(mappings, null);
 	}
 
-	/**
-	 * @see DATAREST-111
-	 */
-	@Test
+	@Test // DATAREST-111
 	public void returnsNullForUriNotMapped() throws Exception {
 
 		handlerMapping.afterPropertiesSet();
-		assertThat(handlerMapping.lookupHandlerMethod("/foo", mockRequest), is(nullValue()));
+		assertThat(handlerMapping.lookupHandlerMethod("/foo", mockRequest)).isNull();
 	}
 
-	/**
-	 * @see DATAREST-111
-	 */
-	@Test
+	@Test // DATAREST-111
 	public void looksUpRepositoryEntityControllerMethodCorrectly() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
@@ -113,14 +113,11 @@ public class RepositoryRestHandlerMappingUnitTests {
 		handlerMapping.afterPropertiesSet();
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/people", mockRequest);
 
-		assertThat(method, is(notNullValue()));
-		assertThat(method.getMethod(), is(listEntitiesMethod));
+		assertThat(method).isNotNull();
+		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
 	}
 
-	/**
-	 * @see DATAREST-292
-	 */
-	@Test
+	@Test // DATAREST-292
 	public void returnsRepositoryHandlerMethodWithBaseUriConfigured() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
@@ -131,17 +128,13 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base/people", mockRequest);
 
-		assertThat(method, is(notNullValue()));
-		assertThat(method.getMethod(), is(listEntitiesMethod));
+		assertThat(method).isNotNull();
+		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
 	}
 
-	/**
-	 * @see DATAREST-292
-	 */
-	@Test
+	@Test // DATAREST-292
 	public void returnsRootHandlerMethodWithBaseUriConfigured() throws Exception {
 
-		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/base");
 
 		configuration.setBasePath("/base");
@@ -149,14 +142,11 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base", mockRequest);
 
-		assertThat(method, is(notNullValue()));
-		assertThat(method.getMethod(), is(rootHandlerMethod));
+		assertThat(method).isNotNull();
+		assertThat(method.getMethod()).isEqualTo(rootHandlerMethod);
 	}
 
-	/**
-	 * @see DATAREST-276
-	 */
-	@Test
+	@Test // DATAREST-276
 	public void returnsRepositoryHandlerMethodForAbsoluteBaseUri() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
@@ -167,14 +157,11 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base/people/", mockRequest);
 
-		assertThat(method, is(notNullValue()));
-		assertThat(method.getMethod(), is(listEntitiesMethod));
+		assertThat(method).isNotNull();
+		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
 	}
 
-	/**
-	 * @see DATAREST-276
-	 */
-	@Test
+	@Test // DATAREST-276
 	public void returnsRepositoryHandlerMethodForAbsoluteBaseUriWithServletMapping() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
@@ -186,17 +173,13 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/base/people", mockRequest);
 
-		assertThat(method, is(notNullValue()));
-		assertThat(method.getMethod(), is(listEntitiesMethod));
+		assertThat(method).isNotNull();
+		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
 	}
 
-	/**
-	 * @see DATAREST-276
-	 */
-	@Test
+	@Test // DATAREST-276
 	public void refrainsFromMappingIfTheRequestDoesNotPointIntoAbsolutelyDefinedUriSpace() throws Exception {
 
-		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/servlet-path");
 		mockRequest.setServletPath("/servlet-path");
 
@@ -204,13 +187,10 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/servlet-path", mockRequest);
 
-		assertThat(method, is(nullValue()));
+		assertThat(method).isNull();
 	}
 
-	/**
-	 * @see DATAREST-276
-	 */
-	@Test
+	@Test // DATAREST-276
 	public void refrainsFromMappingWhenUrisDontMatch() throws Exception {
 
 		String baseUri = "foo";
@@ -224,19 +204,94 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		HandlerMethod method = handlerMapping.lookupHandlerMethod("/people", mockRequest);
 
-		assertThat(method, is(nullValue()));
+		assertThat(method).isNull();
 	}
 
-	/**
-	 * @see DATAREST-609
-	 */
-	@Test
+	@Test // DATAREST-609
 	public void rejectsUnexpandedUriTemplateWithNotFound() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 
 		mockRequest = new MockHttpServletRequest("GET", "/people{?projection}");
 
-		assertThat(handlerMapping.getHandler(mockRequest), is(nullValue()));
+		assertThat(handlerMapping.getHandler(mockRequest)).isNull();
+	}
+
+	@Test // DATAREST-1019
+	public void resolvesCorsConfigurationFromRequestUri() {
+
+		String uri = "/people";
+
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
+		when(mappings.iterator()).thenReturn(Collections.singleton(resourceMetadata).iterator());
+		when(resourceMetadata.getPath()).thenReturn(new Path("/people"));
+
+		mockRequest = new MockHttpServletRequest("GET", uri);
+		mockRequest.setServletPath(uri);
+
+		handlerMapping.getCorsConfiguration(uri, mockRequest);
+
+		verify(mappings).exportsTopLevelResourceFor("/people");
+	}
+
+	@Test // DATAREST-1019
+	public void stripsBaseUriForCorsConfigurationResolution() {
+
+		String baseUri = "/foo";
+		String uri = baseUri.concat("/people");
+
+		configuration.setBasePath(baseUri);
+
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
+		when(mappings.iterator()).thenReturn(Collections.singleton(resourceMetadata).iterator());
+		when(resourceMetadata.getPath()).thenReturn(new Path("/people"));
+
+		mockRequest = new MockHttpServletRequest("GET", uri);
+		mockRequest.setServletPath(uri);
+
+		handlerMapping.getCorsConfiguration(uri, mockRequest);
+
+		verify(mappings).exportsTopLevelResourceFor("/people");
+	}
+
+	@Test // DATAREST-994
+	public void twoArgumentConstructorDoesNotThrowException() {
+		new RepositoryRestHandlerMapping(mappings, configuration);
+	}
+
+	@Test // DATAREST-1132
+	public void detectsAnnotationsOnProxies() {
+
+		Class<?> type = createProxy(new SomeController());
+
+		HandlerMappingStub mapping = new HandlerMappingStub(mock(ResourceMappings.class),
+				mock(RepositoryRestConfiguration.class));
+
+		assertThat(mapping.isHandler(type)).isTrue();
+	}
+
+	private static Class<?> createProxy(Object source) {
+
+		ProxyFactory factory = new ProxyFactory(source);
+		Object proxy = factory.getProxy();
+
+		assertThat(ClassUtils.isCglibProxy(proxy)).isTrue();
+
+		return proxy.getClass();
+	}
+
+	@RepositoryRestController
+	static class SomeController {}
+
+	static class HandlerMappingStub extends RepositoryRestHandlerMapping {
+
+		public HandlerMappingStub(ResourceMappings mappings, RepositoryRestConfiguration configuration) {
+			super(mappings, configuration);
+		}
+
+		@Override
+		public boolean isHandler(Class<?> beanType) {
+			return super.isHandler(beanType);
+		}
 	}
 }

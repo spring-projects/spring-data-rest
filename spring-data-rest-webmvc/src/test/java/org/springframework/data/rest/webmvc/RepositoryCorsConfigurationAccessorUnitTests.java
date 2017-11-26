@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,18 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.MatcherAssert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.NoOpStringValueResolver;
@@ -49,43 +53,48 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 
 	@Before
 	public void before() throws Exception {
-		accessor = new RepositoryCorsConfigurationAccessor(mappings, repositories, NoOpStringValueResolver.INSTANCE);
+		accessor = new RepositoryCorsConfigurationAccessor(mappings, NoOpStringValueResolver.INSTANCE,
+				Optional.of(repositories));
 	}
 
-	/**
-	 * @see DATAREST-573
-	 */
-	@Test
+	@Test // DATAREST-573
 	public void createConfigurationShouldConstructCorsConfiguration() {
 
 		CorsConfiguration configuration = accessor.createConfiguration(AnnotatedRepository.class);
 
-		assertThat(configuration, is(notNullValue()));
-		assertThat(configuration.getAllowCredentials(), is(true));
-		assertThat(configuration.getAllowedHeaders(), hasItem("*"));
-		assertThat(configuration.getAllowedOrigins(), hasItem("*"));
+		assertThat(configuration).isNotNull();
+		assertThat(configuration.getAllowCredentials()).isTrue();
+		assertThat(configuration.getAllowedHeaders()).contains("*");
+		assertThat(configuration.getAllowedOrigins()).contains("*");
 		assertThat(configuration.getAllowedMethods(),
 				hasItems("OPTIONS", "HEAD", "GET", "PATCH", "POST", "PUT", "DELETE", "TRACE"));
-		assertThat(configuration.getMaxAge(), is(1800L));
+		assertThat(configuration.getMaxAge()).isEqualTo(1800L);
 	}
 
-	/**
-	 * @see DATAREST-573
-	 */
-	@Test
+	@Test // DATAREST-573
 	public void createConfigurationShouldConstructFullCorsConfiguration() {
 
 		CorsConfiguration configuration = accessor.createConfiguration(FullyConfiguredCorsRepository.class);
 
-		assertThat(configuration, is(notNullValue()));
-		assertThat(configuration.getAllowCredentials(), is(true));
-		assertThat(configuration.getAllowedHeaders(), hasItem("Content-type"));
-		assertThat(configuration.getExposedHeaders(), hasItem("Accept"));
-		assertThat(configuration.getAllowedOrigins(), hasItem("http://far.far.away"));
-		assertThat(configuration.getAllowedMethods(), hasItem("PATCH"));
-		assertThat(configuration.getAllowedMethods(), not(hasItem("DELETE")));
-		assertThat(configuration.getAllowCredentials(), is(true));
-		assertThat(configuration.getMaxAge(), is(1234L));
+		assertThat(configuration).isNotNull();
+		assertThat(configuration.getAllowCredentials()).isTrue();
+		assertThat(configuration.getAllowedHeaders()).contains("Content-type");
+		assertThat(configuration.getExposedHeaders()).contains("Accept");
+		assertThat(configuration.getAllowedOrigins()).contains("http://far.far.away");
+		assertThat(configuration.getAllowedMethods()).contains("PATCH");
+		assertThat(configuration.getAllowedMethods()).doesNotContain("DELETE");
+		assertThat(configuration.getAllowCredentials()).isTrue();
+		assertThat(configuration.getMaxAge()).isEqualTo(1234L);
+	}
+
+	@Test // DATAREST-994
+	public void returnsNoCorsConfigurationWithNoRepositories() {
+
+		accessor = new RepositoryCorsConfigurationAccessor(mappings, NoOpStringValueResolver.INSTANCE, Optional.empty());
+
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
+
+		assertThat(accessor.findCorsConfiguration("/people")).isEmpty();
 	}
 
 	interface PlainRepository {}

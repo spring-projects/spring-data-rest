@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,11 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -66,7 +64,7 @@ public class AugmentingHandlerMappingUnitTests {
 		Map<RequestMappingInfo, HandlerMethod> handlerMethods = mapping.getHandlerMethods();
 
 		for (RequestMappingInfo info : handlerMethods.keySet()) {
-			assertThat(info.getPatternsCondition().getPatterns(), hasItem(Matchers.startsWith("/api")));
+			assertThat(info.getPatternsCondition().getPatterns()).allMatch(it -> it.startsWith("/api"));
 		}
 	}
 

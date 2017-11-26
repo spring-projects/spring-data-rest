@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -51,112 +50,90 @@ public class RepositoryRestConfigurationUnitTests {
 				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void returnsBodiesIfAcceptHeaderPresentByDefault() {
 
-		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE), is(true));
-		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE), is(true));
+		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE)).isTrue();
+		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE)).isTrue();
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void doesNotReturnBodiesIfNoAcceptHeaderPresentByDefault() {
 
-		assertThat(configuration.returnBodyOnCreate(null), is(false));
-		assertThat(configuration.returnBodyOnUpdate(null), is(false));
+		assertThat(configuration.returnBodyOnCreate(null)).isFalse();
+		assertThat(configuration.returnBodyOnUpdate(null)).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void doesNotReturnBodiesIfEmptyAcceptHeaderPresentByDefault() {
 
-		assertThat(configuration.returnBodyOnCreate(""), is(false));
-		assertThat(configuration.returnBodyOnUpdate(""), is(false));
+		assertThat(configuration.returnBodyOnCreate("")).isFalse();
+		assertThat(configuration.returnBodyOnUpdate("")).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void doesNotReturnBodyForUpdateIfExplicitlyDeactivated() {
 
 		configuration.setReturnBodyOnUpdate(false);
 
-		assertThat(configuration.returnBodyOnUpdate(null), is(false));
-		assertThat(configuration.returnBodyOnUpdate(""), is(false));
-		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE), is(false));
+		assertThat(configuration.returnBodyOnUpdate(null)).isFalse();
+		assertThat(configuration.returnBodyOnUpdate("")).isFalse();
+		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE)).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void doesNotReturnBodyForCreateIfExplicitlyDeactivated() {
 
 		configuration.setReturnBodyOnCreate(false);
 
-		assertThat(configuration.returnBodyOnCreate(null), is(false));
-		assertThat(configuration.returnBodyOnCreate(""), is(false));
-		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE), is(false));
+		assertThat(configuration.returnBodyOnCreate(null)).isFalse();
+		assertThat(configuration.returnBodyOnCreate("")).isFalse();
+		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE)).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void returnsBodyForUpdateIfExplicitlyActivated() {
 
 		configuration.setReturnBodyOnUpdate(true);
 
-		assertThat(configuration.returnBodyOnUpdate(null), is(true));
-		assertThat(configuration.returnBodyOnUpdate(""), is(true));
-		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE), is(true));
+		assertThat(configuration.returnBodyOnUpdate(null)).isTrue();
+		assertThat(configuration.returnBodyOnUpdate("")).isTrue();
+		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE)).isTrue();
 	}
 
-	/**
-	 * @see DATAREST-34
-	 */
-	@Test
+	@Test // DATAREST-34
 	public void returnsBodyForCreateIfExplicitlyActivated() {
 
 		configuration.setReturnBodyOnCreate(true);
 
-		assertThat(configuration.returnBodyOnCreate(null), is(true));
-		assertThat(configuration.returnBodyOnCreate(""), is(true));
-		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE), is(true));
+		assertThat(configuration.returnBodyOnCreate(null)).isTrue();
+		assertThat(configuration.returnBodyOnCreate("")).isTrue();
+		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE)).isTrue();
 	}
 
-	/**
-	 * @see DATAREST-776
-	 */
-	@Test
+	@Test // DATAREST-776
 	public void considersDomainTypeOfValueRepositoryLookupTypes() {
 
 		configuration.withEntityLookup().forLookupRepository(ProfileRepository.class);
 
-		assertThat(configuration.isLookupType(Profile.class), is(true));
+		assertThat(configuration.isLookupType(Profile.class)).isTrue();
 	}
 
-	/**
-	 * @see DATAREST-573
-	 */
-	@Test
+	@Test // DATAREST-573
 	public void configuresCorsProcessing() {
 
 		RepositoryCorsRegistry registry = configuration.getCorsRegistry();
 		registry.addMapping("/hello").maxAge(1234);
 
 		Map<String, CorsConfiguration> corsConfigurations = registry.getCorsConfigurations();
-		assertThat(corsConfigurations, hasKey("/hello"));
+		assertThat(corsConfigurations).containsKey("/hello");
 
 		CorsConfiguration corsConfiguration = corsConfigurations.get("/hello");
-		assertThat(corsConfiguration.getMaxAge(), is(1234L));
+		assertThat(corsConfiguration.getMaxAge()).isEqualTo(1234L);
+	}
+
+	@Test // DATAREST-1076
+	public void rejectsNullRelProvider() {
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> configuration.setRelProvider(null));
 	}
 }

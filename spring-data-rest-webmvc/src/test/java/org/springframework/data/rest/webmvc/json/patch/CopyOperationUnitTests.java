@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-public class CopyOperationTests {
+public class CopyOperationUnitTests {
 
 	@Test
 	public void copyBooleanPropertyValue() throws Exception {
@@ -32,7 +32,7 @@ public class CopyOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		CopyOperation copy = new CopyOperation("/1/complete", "/0/complete");
+		CopyOperation copy = CopyOperation.from("/0/complete").to("/1/complete");
 		copy.perform(todos, Todo.class);
 
 		assertTrue(todos.get(1).isComplete());
@@ -46,7 +46,7 @@ public class CopyOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		CopyOperation copy = new CopyOperation("/1/description", "/0/description");
+		CopyOperation copy = CopyOperation.from("/0/description").to("/1/description");
 		copy.perform(todos, Todo.class);
 
 		assertEquals("A", todos.get(1).getDescription());
@@ -60,7 +60,7 @@ public class CopyOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		CopyOperation copy = new CopyOperation("/1/description", "/0/complete");
+		CopyOperation copy = CopyOperation.from("/0/complete").to("/1/description");
 		copy.perform(todos, Todo.class);
 
 		assertEquals("true", todos.get(1).getDescription());
@@ -74,7 +74,7 @@ public class CopyOperationTests {
 		todos.add(new Todo(2L, "B", true));
 		todos.add(new Todo(3L, "C", false));
 
-		CopyOperation copy = new CopyOperation("/0", "/1");
+		CopyOperation copy = CopyOperation.from("/1").to("/0");
 		copy.perform(todos, Todo.class);
 
 		assertEquals(4, todos.size());
@@ -92,7 +92,7 @@ public class CopyOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		CopyOperation copy = new CopyOperation("/2", "/0");
+		CopyOperation copy = CopyOperation.from("/0").to("/2");
 		copy.perform(todos, Todo.class);
 
 		assertEquals(4, todos.size());
@@ -110,7 +110,7 @@ public class CopyOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		CopyOperation copy = new CopyOperation("/3", "/0");
+		CopyOperation copy = CopyOperation.from("/0").to("/3");
 		copy.perform(todos, Todo.class);
 
 		assertEquals(4, todos.size());
@@ -121,14 +121,14 @@ public class CopyOperationTests {
 	}
 
 	@Test
-	public void copyListElementToEndOfList_usingTilde() throws Exception {
+	public void copyListElementToEndOfList_usingDash() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		CopyOperation copy = new CopyOperation("/~", "/0");
+		CopyOperation copy = CopyOperation.from("/0").to("/-");
 		copy.perform(todos, Todo.class);
 
 		assertEquals(4, todos.size());
@@ -137,14 +137,14 @@ public class CopyOperationTests {
 	}
 
 	@Test
-	public void copyListElementFromEndOfList_usingTilde() throws Exception {
+	public void copyListElementFromEndOfList_usingDash() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		CopyOperation copy = new CopyOperation("/0", "/~");
+		CopyOperation copy = CopyOperation.from("/-").to("/0");
 		copy.perform(todos, Todo.class);
 
 		assertEquals(4, todos.size());

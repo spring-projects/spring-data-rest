@@ -30,7 +30,7 @@ public interface PreAuthorizedOrderRepository extends CrudRepository<Order, UUID
 
 	@PreAuthorize("hasRole('ROLE_ADMIN')") // <2>
 	@Override
-	void delete(UUID aLong);
+	void deleteById(UUID aLong);
 
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@Override
@@ -38,7 +38,7 @@ public interface PreAuthorizedOrderRepository extends CrudRepository<Order, UUID
 
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@Override
-	void delete(Iterable<? extends Order> orders);
+	void deleteAll(Iterable<? extends Order> orders);
 
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@Override

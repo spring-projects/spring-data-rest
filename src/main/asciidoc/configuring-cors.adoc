@@ -3,7 +3,7 @@
 
 For security reasons, browsers prohibit AJAX calls to resources residing outside the current origin. When working with client-side HTTP requests issued by a browser you want to enable specific HTTP resources to be accessible.
 
-Spring Data REST supports as of 2.6 http://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-origin resource sharing] (CORS) through http://docs.spring.io/spring/docs/{version}/spring-framework-reference/html/cors.html[Spring's CORS] support.
+Spring Data REST supports as of 2.6 http://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-origin resource sharing] (CORS) through http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/web.html#mvc-cors[Spring's CORS] support.
 
 
 == Repository interface CORS configuration
@@ -30,7 +30,7 @@ This example enables CORS support for the whole `PersonRepository` providing one
 
 == Repository REST Controller method CORS configuration
 
-Spring Data REST fully supports http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cors.html#_controller_method_cors_configuration[Spring Web MVC's Controller method configuration] on custom REST Controllers sharing repository base paths.
+Spring Data REST fully supports http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/web.html#controller-method-cors-configuration[Spring Web MVC's Controller method configuration] on custom REST Controllers sharing repository base paths.
 
 [source, java]
 ----
@@ -61,7 +61,7 @@ public class SpringDataRestCustomization extends RepositoryRestConfigurerAdapter
   @Override
   public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 
-    config.getCorsRegistry().addCorsMapping("/person/**")
+    config.getCorsRegistry().addMapping("/person/**")
       .allowedOrigins("http://domain2.com")
       .allowedMethods("PUT", "DELETE")
       .allowedHeaders("header1", "header2", "header3")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.halbrowser;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
 
@@ -38,11 +39,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 public class HalBrowserUnitTests {
 
-	/**
-	 * @see DATAREST-565
-	 * @see DATAREST-720
-	 */
-	@Test
+	@Test // DATAREST-565, DATAREST-720
 	public void createsContextRelativeRedirectForBrowser() throws Exception {
 
 		MockHttpServletResponse response = new MockHttpServletResponse();
@@ -52,14 +49,14 @@ public class HalBrowserUnitTests {
 
 		View view = new HalBrowser().browser(request);
 
-		assertThat(view, is(instanceOf(RedirectView.class)));
+		assertThat(view).isInstanceOf(RedirectView.class);
 
 		((AbstractView) view).render(Collections.<String, Object> emptyMap(), request, response);
 
 		UriComponents components = UriComponentsBuilder.fromUriString(response.getHeader(HttpHeaders.LOCATION)).build();
 
 		assertThat(components.getPath(), startsWith("/context"));
-		assertThat(components.getFragment(), is("/context"));
+		assertThat(components.getFragment()).isEqualTo("/context");
 	}
 
 	@Test
@@ -73,7 +70,7 @@ public class HalBrowserUnitTests {
 
 		View view = new HalBrowser().browser(request);
 
-		assertThat(view, is(instanceOf(RedirectView.class)));
+		assertThat(view).isInstanceOf(RedirectView.class);
 
 		String url = ((RedirectView) view).getUrl();
 

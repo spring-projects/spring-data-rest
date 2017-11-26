@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,20 @@
  */
 package org.springframework.data.rest.core;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
@@ -39,6 +39,8 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Streamable;
 
 /**
  * Unit tests for {@link UriToEntityConverter}.
@@ -55,14 +57,13 @@ public class UriToEntityConverterUnitTests {
 	@Mock Repositories repositories;
 	@Mock RepositoryInvokerFactory invokerFactory;
 
-	KeyValueMappingContext context;
+	KeyValueMappingContext<?, ?> context;
 	UriToEntityConverter converter;
 
 	@Before
-	@SuppressWarnings("unchecked")
 	public void setUp() {
 
-		this.context = new KeyValueMappingContext();
+		this.context = new KeyValueMappingContext<>();
 		this.context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.asList(Entity.class, NonEntity.class)));
 		this.context.afterPropertiesSet();
 
@@ -70,98 +71,81 @@ public class UriToEntityConverterUnitTests {
 				repositories);
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void supportsOnlyEntitiesWithIdProperty() {
 
 		Set<ConvertiblePair> result = converter.getConvertibleTypes();
 
-		assertThat(result, hasItem(new ConvertiblePair(URI.class, Entity.class)));
-		assertThat(result, not(hasItem(new ConvertiblePair(URI.class, NonEntity.class))));
+		assertThat(result).contains(new ConvertiblePair(URI.class, Entity.class));
+		assertThat(result).doesNotContain(new ConvertiblePair(URI.class, NonEntity.class));
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void cannotConvertEntityWithIdPropertyIfStringConversionMissing() {
-		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE), is(false));
+		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE)).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void canConvertEntityWithIdPropertyAndFromStringConversionPossible() {
 
-		doReturn(mock(RepositoryInformation.class)).when(repositories).getRepositoryInformationFor(ENTITY_TYPE.getType());
+		doReturn(Optional.of(mock(RepositoryInformation.class))).when(repositories)
+				.getRepositoryInformationFor(ENTITY_TYPE.getType());
 
-		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE), is(true));
+		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE)).isTrue();
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void cannotConvertEntityWithoutIdentifier() {
-		assertThat(converter.matches(URI_TYPE, TypeDescriptor.valueOf(NonEntity.class)), is(false));
+		assertThat(converter.matches(URI_TYPE, TypeDescriptor.valueOf(NonEntity.class))).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test
+	@Test // DATAREST-427
 	public void invokesConverterWithLastUriPathSegment() {
 
 		Entity reference = new Entity();
 
 		RepositoryInvoker invoker = mock(RepositoryInvoker.class);
-		doReturn(reference).when(invoker).invokeFindOne("1");
+		doReturn(Optional.of(reference)).when(invoker).invokeFindById("1");
 		doReturn(invoker).when(invokerFactory).getInvokerFor(ENTITY_TYPE.getType());
 
-		assertThat(converter.convert(URI.create("/foo/bar/1"), URI_TYPE, ENTITY_TYPE), is((Object) reference));
+		assertThat(converter.convert(URI.create("/foo/bar/1"), URI_TYPE, ENTITY_TYPE)).isEqualTo((Object) reference);
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test(expected = ConversionFailedException.class)
+	@Test(expected = ConversionFailedException.class) // DATAREST-427
 	public void rejectsUnknownType() {
 		converter.convert(URI.create("/foo/1"), URI_TYPE, STRING_TYPE);
 	}
 
-	/**
-	 * @see DATAREST-427
-	 */
-	@Test(expected = ConversionFailedException.class)
+	@Test(expected = ConversionFailedException.class) // DATAREST-427
 	public void rejectsUriWithLessThanTwoSegments() {
 		converter.convert(URI.create("1"), URI_TYPE, ENTITY_TYPE);
 	}
 
-	/**
-	 * @see DATAREST-741
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-741
 	public void rejectsNullPersistentEntities() {
 		new UriToEntityConverter(null, invokerFactory, repositories);
 	}
 
-	/**
-	 * @see DATAREST-741
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-741
 	public void rejectsNullRepositoryInvokerFactory() {
 		new UriToEntityConverter(mock(PersistentEntities.class), null, repositories);
 	}
 
-	/**
-	 * @see DATAREST-741
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-741
 	public void rejectsNullRepositories() {
 		new UriToEntityConverter(mock(PersistentEntities.class), invokerFactory, null);
+	}
+
+	/**
+	 * @see DATAREST-1018
+	 */
+	@Test
+	public void doesNotRegisterTypeWithUnmanagedRawType() {
+
+		PersistentEntities entities = mock(PersistentEntities.class);
+		doReturn(Streamable.of(ClassTypeInformation.OBJECT)).when(entities).getManagedTypes();
+
+		new UriToEntityConverter(entities, invokerFactory, repositories);
 	}
 
 	static class Entity {

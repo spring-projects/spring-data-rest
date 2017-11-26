@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.alps;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import net.minidev.json.JSONArray;
@@ -91,10 +93,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		configuration.setEnableEnumTranslation(false);
 	}
 
-	/**
-	 * @see DATAREST-230
-	 */
-	@Test
+	@Test // DATAREST-230
 	public void exposesAlpsCollectionResources() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -105,10 +104,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 				.andExpect(jsonPath("$.alps.descriptors[*].name", hasItems("people", "person")));
 	}
 
-	/**
-	 * @see DATAREST-638
-	 */
-	@Test
+	@Test // DATAREST-638
 	public void verifyThatAlpsIsDefaultProfileFormat() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -120,10 +116,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 	}
 
-	/**
-	 * @see DATAREST-463
-	 */
-	@Test
+	@Test // DATAREST-463
 	public void verifyThatAttributesIgnoredDontAppearInAlps() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -138,16 +131,13 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", not(hasItems("manager", "curator"))));
 	}
 
-	/**
-	 * @see DATAREST-494
-	 */
-	@Test
+	@Test // DATAREST-494
 	public void linksToJsonSchemaFromRepresentationDescriptor() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
 
-		assertThat(itemsLink, is(notNullValue()));
+		assertThat(itemsLink).isNotNull();
 
 		String result = client.follow(itemsLink, RestMediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
 		String href = JsonPath.<JSONArray> read(result, "$.alps.descriptors[?(@.id == 'item-representation')].href").get(0)
@@ -156,10 +146,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		assertThat(href, endsWith("/profile/items"));
 	}
 
-	/**
-	 * @see DATAREST-516
-	 */
-	@Test
+	@Test // DATAREST-516
 	public void referenceToAssociatedEntityDesciptorPointsToRepresentationDescriptor() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -173,13 +160,10 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		String result = client.follow(usersLink, RestMediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
 		String rt = JsonPath.<JSONArray> read(result, jsonPath).get(0).toString();
 
-		assertThat(rt, allOf(containsString(ProfileController.PROFILE_ROOT_MAPPING), endsWith("-representation")));
+		assertThat(rt).contains(ProfileController.PROFILE_ROOT_MAPPING).endsWith("-representation");
 	}
 
-	/**
-	 * @see DATAREST-630
-	 */
-	@Test
+	@Test // DATAREST-630
 	public void onlyExposesIdAttributesWhenExposedInTheConfiguration() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -190,10 +174,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", hasItems("id", "name")));
 	}
 
-	/**
-	 * @see DATAREST-683
-	 */
-	@Test
+	@Test // DATAREST-683
 	public void enumValueListingsAreTranslatedIfEnabled() throws Exception {
 
 		configuration.setEnableEnumTranslation(true);
@@ -208,13 +189,10 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 						"$.alps.descriptors[?(@.id == 'person-representation')].descriptors[?(@.name == 'gender')].doc.value")
 				.get(0).toString();
 
-		assertThat(value, is("Male, Female, Undefined"));
+		assertThat(value).isEqualTo("Male, Female, Undefined");
 	}
 
-	/**
-	 * @see DATAREST-753
-	 */
-	@Test
+	@Test // DATAREST-753
 	public void alpsCanHandleGroovyDomainObjects() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
@@ -227,6 +205,6 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 						"$.alps.descriptors[?(@.id == 'simulatedGroovyDomainClass-representation')].descriptors[0].name")
 				.get(0).toString();
 
-		assertThat(name, is("name"));
+		assertThat(name).isEqualTo("name");
 	}
 }

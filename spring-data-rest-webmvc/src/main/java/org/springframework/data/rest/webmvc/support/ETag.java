@@ -17,18 +17,23 @@ package org.springframework.data.rest.webmvc.support;
 
 import static org.springframework.util.StringUtils.*;
 
+import lombok.EqualsAndHashCode;
+
+import java.util.Optional;
+
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 
 /**
  * A value object to represent ETags.
  * 
  * @author Oliver Gierke
  */
+@EqualsAndHashCode
 public final class ETag {
 
 	public static final ETag NO_ETAG = new ETag(null);
@@ -48,21 +53,28 @@ public final class ETag {
 	 * Creates a new {@link ETag} for the given {@link String} value. Falls back to {@link #NO_ETAG} in case
 	 * {@literal null} is provided.
 	 * 
-	 * @param value the source ETag value, can be {@literal null}.
+	 * @param value the source ETag value, must not be {@literal null}.
 	 * @return
 	 */
 	public static ETag from(String value) {
-		return value == null ? NO_ETAG : new ETag(value);
+		return new ETag(value);
+	}
+
+	public static ETag from(Optional<String> value) {
+		return value.map(ETag::new).orElse(NO_ETAG);
 	}
 
 	/**
 	 * Creates a new {@link ETag} for the given {@link PersistentEntityResource}.
 	 * 
-	 * @param resource can be {@literal null}.
+	 * @param resource must not be {@literal null}.
 	 * @return
 	 */
 	public static ETag from(PersistentEntityResource resource) {
-		return resource == null ? NO_ETAG : from(resource.getPersistentEntity(), resource.getContent());
+
+		Assert.notNull(resource, "PersistentEntityResource must not be null!");
+
+		return from(resource.getPersistentEntity(), resource.getContent());
 	}
 
 	/**
@@ -72,8 +84,8 @@ public final class ETag {
 	 * @param bean must not be {@literal null}.
 	 * @return
 	 */
-	public static ETag from(PersistentEntity<?, ?> entity, Object bean) {
-		return from(getVersionInformation(entity, bean));
+	public static ETag from(PersistentEntity<?, ? extends PersistentProperty<?>> entity, Object bean) {
+		return getVersionInformation(entity, bean).map(ETag::from).orElse(NO_ETAG);
 	}
 
 	/**
@@ -142,35 +154,6 @@ public final class ETag {
 		return value == null ? null : "\"".concat(value).concat("\"");
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof ETag)) {
-			return false;
-		}
-
-		ETag that = (ETag) obj;
-
-		return ObjectUtils.nullSafeEquals(this.value, that.value);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		return value.hashCode();
-	}
-
 	/**
 	 * Returns the quoted version property of a domain object, returns null if it doesn't contains the property
 	 *
@@ -178,17 +161,16 @@ public final class ETag {
 	 * @param bean
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	private static String getVersionInformation(PersistentEntity entity, Object bean) {
+	private static Optional<String> getVersionInformation(PersistentEntity<?, ? extends PersistentProperty<?>> entity,
+			Object bean) {
 
 		Assert.notNull(entity, "PersistentEntity must not be null!");
 		Assert.notNull(bean, "Target bean must not be null!");
 
-		if (!entity.hasVersionProperty()) {
-			return null;
-		}
-
 		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(bean);
-		return accessor.getProperty(entity.getVersionProperty()).toString();
+
+		return Optional.ofNullable(entity.getVersionProperty())//
+				.map(it -> accessor.getProperty(it))//
+				.map(Object::toString);
 	}
 }

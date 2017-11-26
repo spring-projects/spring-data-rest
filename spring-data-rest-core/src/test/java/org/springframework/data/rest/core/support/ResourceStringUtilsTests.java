@@ -15,17 +15,15 @@
  */
 package org.springframework.data.rest.core.support;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.springframework.data.rest.core.support.ResourceStringUtils;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Ensures proper detection and removal of leading slash in strings.
@@ -48,23 +46,25 @@ public class ResourceStringUtilsTests {
 
 	@Parameters(name = "{0}")
 	public static Collection<?> parameters() {
-		return Arrays.asList(new Object[][] {
-				{ "empty string has no text and should remain empty", "", "", false },
-				{ "blank string has no text and should remain as is", "  ", "  ", false },
-				{ "string made of only a leading slash has no text and should be returned empty", "/", "", false },
-				{ "blank string with only slashes has no text and should be returned as is", "   /   ", "   /   ", false },
-				{ "normal string has text and should be returned as such", "hello", "hello", true },
-				{ "normal string with leading slash has text and should be returned without leading slash", "/hello", "hello",
-						true }, });
+		return Arrays
+				.asList(
+						new Object[][] { { "empty string has no text and should remain empty", "", "", false },
+								{ "blank string has no text and should remain as is", "  ", "  ", false },
+								{ "string made of only a leading slash has no text and should be returned empty", "/", "", false },
+								{ "blank string with only slashes has no text and should be returned as is", "   /   ", "   /   ",
+										false },
+								{ "normal string has text and should be returned as such", "hello", "hello", true },
+								{ "normal string with leading slash has text and should be returned without leading slash", "/hello",
+										"hello", true }, });
 	}
 
 	@Test
 	public void shouldDetectTextPresence() {
-		assertThat(ResourceStringUtils.hasTextExceptSlash(actual), is(hasText));
+		assertThat(ResourceStringUtils.hasTextExceptSlash(actual)).isEqualTo(hasText);
 	}
 
 	@Test
 	public void shouldRemoveLeadingSlashIfAny() {
-		assertThat(ResourceStringUtils.removeLeadingSlash(actual), is(expected));
+		assertThat(ResourceStringUtils.removeLeadingSlash(actual)).isEqualTo(expected);
 	}
 }

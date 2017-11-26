@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.tests.mongodb.TestUtils.*;
 
@@ -29,7 +28,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -79,10 +78,7 @@ public class JsonPatchHandlerUnitTests {
 		this.user.address = address;
 	}
 
-	/**
-	 * @see DATAREST-348
-	 */
-	@Test
+	@Test // DATAREST-348
 	public void appliesRemoveOperationCorrectly() throws Exception {
 
 		String input = "[{ \"op\": \"replace\", \"path\": \"/address/zipCode\", \"value\": \"ZIP\" },"
@@ -90,22 +86,19 @@ public class JsonPatchHandlerUnitTests {
 
 		User result = handler.applyPatch(asStream(input), user);
 
-		assertThat(result.lastname, is(nullValue()));
-		assertThat(result.address.zipCode, is("ZIP"));
+		assertThat(result.lastname).isNull();
+		assertThat(result.address.zipCode).isEqualTo("ZIP");
 	}
 
-	/**
-	 * @see DATAREST-348
-	 */
-	@Test
+	@Test // DATAREST-348
 	public void appliesMergePatchCorrectly() throws Exception {
 
 		String input = "{ \"address\" : { \"zipCode\" : \"ZIP\"}, \"lastname\" : null }";
 
 		User result = handler.applyMergePatch(asStream(input), user);
 
-		assertThat(result.lastname, is(nullValue()));
-		assertThat(result.address.zipCode, is("ZIP"));
+		assertThat(result.lastname).isNull();
+		assertThat(result.address.zipCode).isEqualTo("ZIP");
 	}
 
 	/**
@@ -126,14 +119,11 @@ public class JsonPatchHandlerUnitTests {
 
 		handler.applyPatch(asStream(input), user);
 
-		assertThat(user.colleagues, hasSize(1));
-		assertThat(user.colleagues.get(0).firstname, is(christoph.firstname));
+		assertThat(user.colleagues).hasSize(1);
+		assertThat(user.colleagues.get(0).firstname).isEqualTo(christoph.firstname);
 	}
 
-	/**
-	 * @see DATAREST-609
-	 */
-	@Test
+	@Test // DATAREST-609
 	public void hintsToMediaTypeIfBodyCantBeRead() throws Exception {
 
 		exception.expect(HttpMessageNotReadableException.class);

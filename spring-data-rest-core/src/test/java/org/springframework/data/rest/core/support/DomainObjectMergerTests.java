@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.core.support;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.core.support.DomainObjectMerger.NullHandlingPolicy.*;
 
 import java.util.Arrays;
@@ -52,10 +51,7 @@ public class DomainObjectMergerTests {
 		this.merger = new DomainObjectMerger(new Repositories(context.getBeanFactory()), new DefaultConversionService());
 	}
 
-	/**
-	 * @see DATAREST-130
-	 */
-	@Test
+	@Test // DATAREST-130
 	public void mergeNewValue() {
 
 		Person incoming = new Person("Bilbo", "Baggins");
@@ -63,14 +59,11 @@ public class DomainObjectMergerTests {
 
 		merger.merge(incoming, existingDomainObject, APPLY_NULLS);
 
-		assertThat(existingDomainObject.getFirstName(), is(incoming.getFirstName()));
-		assertThat(existingDomainObject.getLastName(), is(incoming.getLastName()));
+		assertThat(existingDomainObject.getFirstName()).isEqualTo(incoming.getFirstName());
+		assertThat(existingDomainObject.getLastName()).isEqualTo(incoming.getLastName());
 	}
 
-	/**
-	 * @see DATAREST-130
-	 */
-	@Test
+	@Test // DATAREST-130
 	public void mergeNullValue() {
 
 		Person incoming = new Person(null, null);
@@ -78,14 +71,11 @@ public class DomainObjectMergerTests {
 
 		merger.merge(incoming, existingDomainObject, APPLY_NULLS);
 
-		assertThat(existingDomainObject.getFirstName(), is(incoming.getFirstName()));
-		assertThat(existingDomainObject.getLastName(), is(incoming.getLastName()));
+		assertThat(existingDomainObject.getFirstName()).isEqualTo(incoming.getFirstName());
+		assertThat(existingDomainObject.getLastName()).isEqualTo(incoming.getLastName());
 	}
 
-	/**
-	 * @see DATAREST-327
-	 */
-	@Test
+	@Test // DATAREST-327
 	public void doesNotMergeEmptyCollectionsForReferences() {
 
 		Person bilbo = new Person("Bilbo", "Baggins");
@@ -95,6 +85,6 @@ public class DomainObjectMergerTests {
 
 		merger.merge(new Person("Sam", null), frodo, IGNORE_NULLS);
 
-		assertThat(frodo.getSiblings(), is(not(emptyIterable())));
+		assertThat(frodo.getSiblings()).isNotEmpty();
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -115,10 +117,7 @@ public class JpaWebTests extends CommonWebTests {
 		return map;
 	}
 
-	/**
-	 * @see DATAREST-99
-	 */
-	@Test
+	@Test // DATAREST-99
 	public void doesNotExposeCreditCardRepository() throws Exception {
 
 		mvc.perform(get("/")). //
@@ -143,10 +142,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);
 	}
 
-	/**
-	 * @see DATAREST-169
-	 */
-	@Test
+	@Test // DATAREST-169
 	public void exposesLinkForRelatedResource() throws Exception {
 
 		MockHttpServletResponse response = client.request("/");
@@ -155,13 +151,10 @@ public class JpaWebTests extends CommonWebTests {
 		MockHttpServletResponse orders = client.request(ordersLink);
 		Link creatorLink = assertHasContentLinkWithRel("creator", orders);
 
-		assertThat(client.request(creatorLink), is(notNullValue()));
+		assertThat(client.request(creatorLink)).isNotNull();
 	}
 
-	/**
-	 * @see DATAREST-200
-	 */
-	@Test
+	@Test // DATAREST-200
 	public void exposesInlinedEntities() throws Exception {
 
 		MockHttpServletResponse response = client.request("/");
@@ -171,10 +164,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertHasJsonPathValue("$..lineItems", orders);
 	}
 
-	/**
-	 * @see DATAREST-199
-	 */
-	@Test
+	@Test // DATAREST-199
 	public void createsOrderUsingPut() throws Exception {
 
 		mvc.perform(//
@@ -183,10 +173,7 @@ public class JpaWebTests extends CommonWebTests {
 		).andExpect(status().isCreated());
 	}
 
-	/**
-	 * @see DATAREST-117
-	 */
-	@Test
+	@Test // DATAREST-117
 	public void createPersonThenVerifyIgnoredAttributesDontExist() throws Exception {
 
 		Link peopleLink = client.discoverUnique("people");
@@ -206,10 +193,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertJsonPathDoesntExist("$.weight", response);
 	}
 
-	/**
-	 * @see DATAREST-95
-	 */
-	@Test
+	@Test // DATAREST-95
 	public void createThenPatch() throws Exception {
 
 		Link peopleLink = client.discoverUnique("people");
@@ -219,24 +203,21 @@ public class JpaWebTests extends CommonWebTests {
 
 		Link bilboLink = client.assertHasLinkWithRel("self", bilbo);
 
-		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName"), is("Bilbo"));
-		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName"), is("Baggins"));
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName")).isEqualTo("Bilbo");
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName")).isEqualTo("Baggins");
 
 		MockHttpServletResponse frodo = patchAndGet(bilboLink, "{ \"firstName\" : \"Frodo\" }", MediaType.APPLICATION_JSON);
 
-		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), is("Frodo"));
-		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName"), is("Baggins"));
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName")).isEqualTo("Frodo");
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName")).isEqualTo("Baggins");
 
 		frodo = patchAndGet(bilboLink, "{ \"firstName\" : null }", MediaType.APPLICATION_JSON);
 
-		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), is(nullValue()));
-		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName"), is("Baggins"));
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName")).isNull();
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.lastName")).isEqualTo("Baggins");
 	}
 
-	/**
-	 * @see DATAREST-150
-	 */
-	@Test
+	@Test // DATAREST-150
 	public void createThenPut() throws Exception {
 
 		Link peopleLink = client.discoverUnique("people");
@@ -268,10 +249,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertPersonWithNameAndSiblingLink("Billy Bob");
 	}
 
-	/**
-	 * @see DATAREST-219
-	 */
-	@Test
+	@Test // DATAREST-219
 	public void manipulatePropertyCollectionRestfullyWithMultiplePosts() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
@@ -288,10 +266,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertSiblingNames(frodosSiblingLink, "Bilbo", "Merry", "Pippin");
 	}
 
-	/**
-	 * @see DATAREST-219
-	 */
-	@Test
+	@Test // DATAREST-219
 	public void manipulatePropertyCollectionRestfullyWithSinglePost() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
@@ -306,10 +281,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertSiblingNames(frodosSiblingLink, "Bilbo", "Merry", "Pippin");
 	}
 
-	/**
-	 * @see DATAREST-219
-	 */
-	@Test
+	@Test // DATAREST-219
 	public void manipulatePropertyCollectionRestfullyWithMultiplePuts() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
@@ -328,10 +300,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertSiblingNames(frodosSiblingsLink, "Merry", "Pippin");
 	}
 
-	/**
-	 * @see DATAREST-219
-	 */
-	@Test
+	@Test // DATAREST-219
 	public void manipulatePropertyCollectionRestfullyWithSinglePut() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
@@ -351,10 +320,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertSiblingNames(frodoSiblingLink, "Merry", "Pippin");
 	}
 
-	/**
-	 * @see DATAREST-219
-	 */
-	@Test
+	@Test // DATAREST-219
 	public void manipulatePropertyCollectionRestfullyWithDelete() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
@@ -369,15 +335,12 @@ public class JpaWebTests extends CommonWebTests {
 		patchAndGet(frodosSiblingsLink, links.get(3).getHref(), TEXT_URI_LIST);
 
 		String pippinId = new UriTemplate("/people/{id}").match(links.get(3).getHref()).get("id");
-		deleteAndVerify(new Link(frodosSiblingsLink.getHref() + "/" + pippinId));
+		deleteAndVerify(new Link(frodosSiblingsLink.expand().getHref() + "/" + pippinId));
 
 		assertSiblingNames(frodosSiblingsLink, "Bilbo", "Merry");
 	}
 
-	/**
-	 * @see DATAREST-50
-	 */
-	@Test
+	@Test // DATAREST-50
 	public void propertiesCanHaveNulls() throws Exception {
 
 		Link peopleLink = client.discoverUnique("people");
@@ -394,10 +357,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertNull(JsonPath.read(responseBody, "$.lastName"));
 	}
 
-	/**
-	 * @see DATAREST-238
-	 */
-	@Test
+	@Test // DATAREST-238
 	public void putShouldWorkDespiteExistingLinks() throws Exception {
 
 		Link peopleLink = client.discoverUnique("people");
@@ -419,10 +379,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertJsonPathEquals("$.firstName", "Bilbo", overwrittenResponse);
 	}
 
-	/**
-	 * @see DATAREST-217
-	 */
-	@Test
+	@Test // DATAREST-217
 	public void doesNotAllowGetToCollectionResourceIfFindAllIsNotExported() throws Exception {
 
 		Link link = client.discoverUnique("addresses");
@@ -431,10 +388,7 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(status().isMethodNotAllowed());
 	}
 
-	/**
-	 * @see DATAREST-217
-	 */
-	@Test
+	@Test // DATAREST-217
 	public void doesNotAllowPostToCollectionResourceIfSaveIsNotExported() throws Exception {
 
 		Link link = client.discoverUnique("addresses");
@@ -447,9 +401,8 @@ public class JpaWebTests extends CommonWebTests {
 	 * Checks, that the server only returns the properties contained in the projection requested.
 	 * 
 	 * @see OrderSummary
-	 * @see DATAREST-221
 	 */
-	@Test
+	@Test // DATAREST-221
 	public void returnsProjectionIfRequested() throws Exception {
 
 		Link orders = client.discoverUnique("orders");
@@ -460,26 +413,20 @@ public class JpaWebTests extends CommonWebTests {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(orderLink.getHref());
 		String uri = builder.queryParam("projection", "summary").build().toUriString();
 
-		response = mvc.perform(get(uri)). //
-				andExpect(status().isOk()). //
-				andExpect(jsonPath("$.price", is(2.5))).//
-				andReturn().getResponse();
+		response = mvc.perform(get(uri))//
+				.andExpect(status().isOk())//
+				.andExpect(jsonPath("$.price", is(2.5)))//
+				.andReturn().getResponse();
 
 		assertJsonPathDoesntExist("$.lineItems", response);
 	}
 
-	/**
-	 * @see DATAREST-261
-	 */
-	@Test
+	@Test // DATAREST-261
 	public void relProviderDetectsCustomizedMapping() {
-		assertThat(relProvider.getCollectionResourceRelFor(Person.class), is("people"));
+		assertThat(relProvider.getCollectionResourceRelFor(Person.class)).isEqualTo("people");
 	}
 
-	/**
-	 * @see DATAREST-311
-	 */
-	@Test
+	@Test // DATAREST-311
 	public void onlyLinksShouldAppearWhenExecuteSearchCompact() throws Exception {
 
 		Link peopleLink = client.discoverUnique("people");
@@ -500,15 +447,12 @@ public class JpaWebTests extends CommonWebTests {
 
 		JSONArray personLinks = JsonPath.<JSONArray> read(responseBody, "$.links[?(@.rel=='person')].href");
 
-		assertThat(personLinks, hasSize(1));
-		assertThat(personLinks.get(0), is((Object) daenerysLink.getHref()));
-		assertThat(JsonPath.<JSONArray> read(responseBody, "$.content"), hasSize(0));
+		assertThat(personLinks).hasSize(1);
+		assertThat(personLinks.get(0)).isEqualTo((Object) daenerysLink.getHref());
+		assertThat(JsonPath.<JSONArray> read(responseBody, "$.content")).hasSize(0);
 	}
 
-	/**
-	 * @see DATAREST-317
-	 */
-	@Test
+	@Test // DATAREST-317
 	public void rendersExcerptProjectionsCorrectly() throws Exception {
 
 		Link authorsLink = client.discoverUnique("authors");
@@ -531,10 +475,7 @@ public class JpaWebTests extends CommonWebTests {
 		client.follow(new Link(href)).andExpect(client.hasLinkWithRel("books"));
 	}
 
-	/**
-	 * @see DATAREST-353
-	 */
-	@Test
+	@Test // DATAREST-353
 	public void returns404WhenTryingToDeleteANonExistingResource() throws Exception {
 
 		Link receiptsLink = client.discoverUnique("receipts");
@@ -543,10 +484,7 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(status().isNotFound());
 	}
 
-	/**
-	 * @see DATAREST-384
-	 */
-	@Test
+	@Test // DATAREST-384
 	public void exectuesSearchThatTakesASort() throws Exception {
 
 		Link booksLink = client.discoverUnique("books");
@@ -554,8 +492,8 @@ public class JpaWebTests extends CommonWebTests {
 		Link findBySortedLink = client.discoverUnique(searchLink, "find-by-sorted");
 
 		// Assert sort options advertised
-		assertThat(findBySortedLink.isTemplated(), is(true));
-		assertThat(findBySortedLink.getVariableNames(), hasItems("sort", "projection"));
+		assertThat(findBySortedLink.isTemplated()).isTrue();
+		assertThat(findBySortedLink.getVariableNames()).contains("sort", "projection");
 
 		// Assert results returned as specified
 		client.follow(findBySortedLink.expand("title,desc")).//
@@ -569,10 +507,7 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(client.hasLinkWithRel("self"));
 	}
 
-	/**
-	 * @see DATAREST-160
-	 */
-	@Test
+	@Test // DATAREST-160
 	public void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
 
 		Link receiptLink = client.discoverUnique("receipts");
@@ -591,7 +526,7 @@ public class JpaWebTests extends CommonWebTests {
 		String concurrencyTag = createdReceipt.getHeader("ETag");
 
 		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
-				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag))
+				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag)) //
 				.andExpect(status().is2xxSuccessful());
 
 		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
@@ -599,10 +534,7 @@ public class JpaWebTests extends CommonWebTests {
 				.andExpect(status().isPreconditionFailed());
 	}
 
-	/**
-	 * @see DATAREST-423
-	 */
-	@Test
+	@Test // DATAREST-423
 	public void invokesCustomControllerAndBindsDomainObjectCorrectly() throws Exception {
 
 		MockHttpServletResponse authorsResponse = client.request(client.discoverUnique("authors"));
@@ -613,10 +545,7 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(status().isIAmATeapot());
 	}
 
-	/**
-	 * @see DATAREST-523
-	 */
-	@Test
+	@Test // DATAREST-523
 	public void augmentsCollectionAssociationUsingPost() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
@@ -637,10 +566,7 @@ public class JpaWebTests extends CommonWebTests {
 		}
 	}
 
-	/**
-	 * @see DATAREST-658
-	 */
-	@Test
+	@Test // DATAREST-658
 	public void returnsLinkHeadersForHeadRequestToItemResource() throws Exception {
 
 		MockHttpServletResponse response = client.request(client.discoverUnique("people"));
@@ -651,21 +577,18 @@ public class JpaWebTests extends CommonWebTests {
 				.andReturn().getResponse();
 
 		Links links = Links.valueOf(response.getHeader("Link"));
-		assertThat(links.hasLink("self"), is(true));
-		assertThat(links.hasLink("person"), is(true));
+		assertThat(links.hasLink("self")).isTrue();
+		assertThat(links.hasLink("person")).isTrue();
 	}
 
-	/**
-	 * @see DATAREST-883
-	 */
-	@Test
+	@Test // DATAREST-883
 	public void exectuesSearchThatTakesAMappedSortProperty() throws Exception {
 
 		Link findBySortedLink = client.discoverUnique("books", "search", "find-by-sorted");
 
 		// Assert sort options advertised
-		assertThat(findBySortedLink.isTemplated(), is(true));
-		assertThat(findBySortedLink.getVariableNames(), hasItems("sort", "projection"));
+		assertThat(findBySortedLink.isTemplated()).isTrue();
+		assertThat(findBySortedLink.getVariableNames()).contains("sort", "projection");
 
 		// Assert results returned as specified
 		client.follow(findBySortedLink.expand("sales,desc")).//
@@ -679,16 +602,13 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(client.hasLinkWithRel("self"));
 	}
 
-	/**
-	 * @see DATAREST-883
-	 */
-	@Test
+	@Test // DATAREST-883
 	public void exectuesCustomQuerySearchThatTakesAMappedSortProperty() throws Exception {
 
 		Link findByLink = client.discoverUnique("books", "search", "find-spring-books-sorted");
 
 		// Assert sort options advertised
-		assertThat(findByLink.isTemplated(), is(true));
+		assertThat(findByLink.isTemplated()).isTrue();
 
 		// Assert results returned as specified
 		client.follow(findByLink.expand("0", "10", "sales,desc")).//
@@ -702,14 +622,34 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(client.hasLinkWithRel("self"));
 	}
 
-	/**
-	 * @see DATAREST-910
-	 */
-	@Test
+	@Test // DATAREST-910
 	public void callUnmappedCustomRepositoryController() throws Exception {
 
 		mvc.perform(post("/orders/search/sort")).andExpect(status().isOk());
 		mvc.perform(post("/orders/search/sort?sort=type&page=1&size=10")).andExpect(status().isOk());
+	}
+
+	@Test // DATAREST-976
+	public void appliesSortByEmbeddedAssociation() throws Exception {
+
+		Link booksLink = client.discoverUnique("books");
+		Link searchLink = client.discoverUnique(booksLink, "search");
+		Link findBySortedLink = client.discoverUnique(searchLink, "find-by-sorted");
+
+		// Assert sort options advertised
+		assertThat(findBySortedLink.isTemplated()).isTrue();
+		assertThat(findBySortedLink.getVariableNames()).contains("sort", "projection");
+
+		// Assert results returned as specified
+		client.follow(findBySortedLink.expand("offer.price,desc")).//
+				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
+				andExpect(client.hasLinkWithRel("self"));
+
+		client.follow(findBySortedLink.expand("offer.price,asc")).//
+				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
+				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
+				andExpect(client.hasLinkWithRel("self"));
 	}
 
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
@@ -744,8 +684,8 @@ public class JpaWebTests extends CommonWebTests {
 		String responseBody = client.request(link).getContentAsString();
 		List<String> persons = JsonPath.read(responseBody, "$._embedded.people[*].firstName");
 
-		assertThat(persons, hasSize(siblingNames.length));
-		assertThat(persons, hasItems(siblingNames));
+		assertThat(persons).hasSize(siblingNames.length);
+		assertThat(persons).contains(siblingNames);
 	}
 
 	private void assertPersonWithNameAndSiblingLink(String name) throws Exception {
@@ -756,8 +696,8 @@ public class JpaWebTests extends CommonWebTests {
 
 		// Assert content inlined
 		Object john = JsonPath.<JSONArray> read(response.getContentAsString(), jsonPath).get(0);
-		assertThat(john, is(notNullValue()));
-		assertThat(JsonPath.read(john, "$.firstName"), is(notNullValue()));
+		assertThat(john).isNotNull();
+		assertThat(JsonPath.<String> read(john, "$.firstName")).isNotNull();
 
 		// Assert sibling link exposed in resource pointed to
 		Link selfLink = new Link(JsonPath.<String> read(john, "$._links.self.href"));

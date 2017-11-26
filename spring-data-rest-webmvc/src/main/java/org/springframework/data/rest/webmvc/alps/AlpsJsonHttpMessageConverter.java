@@ -76,6 +76,15 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 
 	/* 
 	 * (non-Javadoc)
+	 * @see org.springframework.http.converter.AbstractGenericHttpMessageConverter#canWrite(java.lang.reflect.Type, java.lang.Class, org.springframework.http.MediaType)
+	 */
+	@Override
+	public boolean canWrite(Type type, Class<?> clazz, MediaType mediaType) {
+		return canWrite(clazz, mediaType);
+	}
+
+	/* 
+	 * (non-Javadoc)
 	 * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter#canRead(java.lang.reflect.Type, java.lang.Class, org.springframework.http.MediaType)
 	 */
 	@Override

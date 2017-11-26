@@ -1,6 +1,5 @@
-package org.springframework.data.rest.tests;
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +13,10 @@ package org.springframework.data.rest.tests;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.springframework.data.rest.tests;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -37,6 +37,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -62,15 +63,11 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 		ResultActions actions = mvc.perform(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)).andExpect(status().isOk());
 
 		for (String rel : expectedRootLinkRels()) {
-			actions.andExpect(client.hasLinkWithRel(rel));
+			actions.andDo(MockMvcResultHandlers.print()).andExpect(client.hasLinkWithRel(rel));
 		}
 	}
 
-	/**
-	 * @see DATAREST-113
-	 * @see DATAREST-638
-	 */
-	@Test
+	@Test // DATAREST-113, DATAREST-638
 	public void exposesSchemasForResourcesExposed() throws Exception {
 
 		MockHttpServletResponse response = client.request("/");
@@ -95,10 +92,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 		}
 	}
 
-	/**
-	 * @see DATAREST-203
-	 */
-	@Test
+	@Test // DATAREST-203
 	public void servesHalWhenRequested() throws Exception {
 
 		mvc.perform(get("/")). //
@@ -106,10 +100,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 				andExpect(jsonPath("$._links", notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-203
-	 */
-	@Test
+	@Test // DATAREST-203
 	public void servesHalWhenJsonIsRequested() throws Exception {
 
 		mvc.perform(get("/").accept(MediaType.APPLICATION_JSON)). //
@@ -117,10 +108,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 				andExpect(jsonPath("$._links", notNullValue()));
 	}
 
-	/**
-	 * @see DATAREST-203
-	 */
-	@Test
+	@Test // DATAREST-203
 	public void exposesSearchesForRootResources() throws Exception {
 
 		MockHttpServletResponse response = client.request("/");
@@ -166,10 +154,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 		}
 	}
 
-	/**
-	 * @see DATAREST-198
-	 */
-	@Test
+	@Test // DATAREST-198
 	public void accessLinkedResources() throws Exception {
 
 		MockHttpServletResponse rootResource = client.request("/");
@@ -188,17 +173,14 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 				for (Object href : uris) {
 
-					client.follow(href.toString()). //
-							andExpect(status().isOk());
+					client.follow(new Link(href.toString())) //
+							.andExpect(status().isOk());
 				}
 			}
 		}
 	}
 
-	/**
-	 * @see DATAREST-230
-	 */
-	@Test
+	@Test // DATAREST-230
 	public void exposesDescriptionAsAlpsDocuments() throws Exception {
 
 		MediaType ALPS_MEDIA_TYPE = MediaType.valueOf("application/alps+json");
@@ -214,20 +196,14 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 				andExpect(content().contentTypeCompatibleWith(ALPS_MEDIA_TYPE));
 	}
 
-	/**
-	 * @see DATAREST-448
-	 */
-	@Test
+	@Test // DATAREST-448
 	public void returnsNotFoundForUriNotBackedByARepository() throws Exception {
 
 		mvc.perform(get("/index.html")).//
 				andExpect(status().isNotFound());
 	}
 
-	/**
-	 * @see DATAREST-658
-	 */
-	@Test
+	@Test // DATAREST-658
 	public void collectionResourcesExposeLinksAsHeadersForHeadRequest() throws Exception {
 
 		for (String rel : expectedRootLinkRels()) {
@@ -240,15 +216,12 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 			Links links = Links.valueOf(response.getHeader("Link"));
 
-			assertThat(links.hasLink(Link.REL_SELF), is(true));
-			assertThat(links.hasLink("profile"), is(true));
+			assertThat(links.hasLink(Link.REL_SELF)).isTrue();
+			assertThat(links.hasLink("profile")).isTrue();
 		}
 	}
 
-	/**
-	 * @see DATAREST-661
-	 */
-	@Test
+	@Test // DATAREST-661
 	public void patchToNonExistingResourceReturnsNotFound() throws Exception {
 
 		String rel = expectedRootLinkRels().iterator().next();
@@ -266,5 +239,18 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 		// PATCH to non-existing resource
 		mvc.perform(patch(URI.create(uri))).andExpect(status().isNotFound());
+	}
+
+	@Test // DATAREST-1003
+	public void rejectsUnsupportedAcceptTypeForResources() throws Exception {
+
+		for (String string : expectedRootLinkRels()) {
+
+			Link link = client.discoverUnique(string);
+
+			mvc.perform(get(link.expand().getHref())//
+					.accept(MediaType.valueOf("application/schema+json")))//
+					.andExpect(status().isNotAcceptable());
+		}
 	}
 }

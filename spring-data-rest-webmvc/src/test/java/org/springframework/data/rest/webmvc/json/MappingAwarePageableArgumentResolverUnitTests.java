@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -56,50 +55,41 @@ public class MappingAwarePageableArgumentResolverUnitTests {
 		resolver = new MappingAwarePageableArgumentResolver(translator, delegate);
 	}
 
-	/**
-	 * @see DATAREST-906
-	 */
-	@Test
+	@Test // DATAREST-906
 	public void resolveArgumentShouldReturnTranslatedPageable() throws Exception {
 
-		Sort translated = new Sort("world");
-		Pageable pageable = new PageRequest(0, 1, Direction.ASC, "hello");
+		Sort translated = Sort.by("world");
+		Pageable pageable = PageRequest.of(0, 1, Direction.ASC, "hello");
 
 		when(delegate.resolveArgument(parameter, modelAndViewContainer, webRequest, binderFactory)).thenReturn(pageable);
 		when(translator.translateSort(pageable.getSort(), parameter, webRequest)).thenReturn(translated);
 
 		Pageable result = resolver.resolveArgument(parameter, modelAndViewContainer, webRequest, binderFactory);
 
-		assertThat(result.getPageSize(), is(1));
-		assertThat(result.getPageNumber(), is(0));
-		assertThat(result.getSort(), is(equalTo(translated)));
+		assertThat(result.getPageSize()).isEqualTo(1);
+		assertThat(result.getPageNumber()).isEqualTo(0);
+		assertThat(result.getSort()).isEqualTo(translated);
 	}
 
-	/**
-	 * @see DATAREST-906
-	 */
-	@Test
+	@Test // DATAREST-906
 	public void resolveArgumentShouldReturnPageableWithoutSort() throws Exception {
 
-		Pageable pageable = new PageRequest(0, 1);
+		Pageable pageable = PageRequest.of(0, 1);
 
 		when(delegate.resolveArgument(parameter, modelAndViewContainer, webRequest, binderFactory)).thenReturn(pageable);
 
 		Pageable result = resolver.resolveArgument(parameter, modelAndViewContainer, webRequest, binderFactory);
 
-		assertThat(result.getPageSize(), is(1));
-		assertThat(result.getPageNumber(), is(0));
-		assertThat(result.getSort(), is(nullValue()));
+		assertThat(result.getPageSize()).isEqualTo(1);
+		assertThat(result.getPageNumber()).isEqualTo(0);
+		assertThat(result.getSort()).isNull();
 	}
 
-	/**
-	 * @see DATAREST-906
-	 */
-	@Test
+	@Test // DATAREST-906
 	public void resolveArgumentShouldReturnNoPageable() throws Exception {
 
 		Pageable result = resolver.resolveArgument(parameter, modelAndViewContainer, webRequest, binderFactory);
 
-		assertThat(result, is(nullValue()));
+		assertThat(result).isNull();
 	}
 }

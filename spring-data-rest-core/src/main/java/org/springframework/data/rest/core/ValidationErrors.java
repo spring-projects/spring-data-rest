@@ -18,6 +18,7 @@ package org.springframework.data.rest.core;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.ConfigurablePropertyAccessor;
@@ -83,17 +84,11 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 				do {
 
 					String segment = iterator.next();
-					PersistentEntity<?, ?> entity = entities.getPersistentEntity(value.getClass());
-					PersistentProperty<?> property = entity.getPersistentProperty(PropertyAccessorUtils.getPropertyName(segment));
 
-					if (property == null) {
-						throw new NotReadablePropertyException(source.getClass(), propertyName);
-					}
+					Optional<? extends PersistentProperty<?>> property = entities.getPersistentEntity(value.getClass())//
+							.map(it -> it.getPersistentProperty(PropertyAccessorUtils.getPropertyName(segment)));
 
-					ConfigurablePropertyAccessor accessor = property.usePropertyAccess()
-							? PropertyAccessorFactory.forBeanPropertyAccess(value)
-							: PropertyAccessorFactory.forDirectFieldAccess(value);
-					value = accessor.getPropertyValue(segment);
+					value = getValue(value, property, segment, propertyName);
 
 				} while (iterator.hasNext());
 
@@ -109,5 +104,19 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 	@Override
 	public Object getTarget() {
 		return source;
+	}
+
+	private static Object getValue(Object source, Optional<? extends PersistentProperty<?>> property, String segment,
+			String name) {
+
+		return property.map(it -> {
+
+			ConfigurablePropertyAccessor accessor = it.usePropertyAccess()
+					? PropertyAccessorFactory.forBeanPropertyAccess(source)
+					: PropertyAccessorFactory.forDirectFieldAccess(source);
+
+			return accessor.getPropertyValue(segment);
+
+		}).orElseThrow(() -> new NotReadablePropertyException(source.getClass(), name));
 	}
 }

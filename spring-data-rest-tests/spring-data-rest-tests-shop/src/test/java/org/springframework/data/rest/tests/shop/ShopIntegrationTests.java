@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,10 +62,7 @@ public class ShopIntegrationTests extends AbstractWebIntegrationTests {
 		expectRelatedResource("customer", actions);
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void renderProductNameOnlyProjection() throws Exception {
 
 		Map<String, Object> arguments = Collections.singletonMap("projection", "nameOnly");
@@ -76,10 +73,7 @@ public class ShopIntegrationTests extends AbstractWebIntegrationTests {
 				.andExpect(jsonPath("$._embedded.products[0].price").doesNotExist());
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void renderProductNameOnlyProjectionResourceProcessor() throws Exception {
 
 		Map<String, Object> arguments = Collections.singletonMap("projection", "nameOnly");
@@ -89,10 +83,7 @@ public class ShopIntegrationTests extends AbstractWebIntegrationTests {
 				.andExpect(jsonPath("$._embedded.products[0]._links.beta").exists());
 	}
 
-	/**
-	 * @see DATAREST-221
-	 */
-	@Test
+	@Test // DATAREST-221
 	public void renderOrderItemsOnlyProjectionResourceProcessor() throws Exception {
 
 		Map<String, Object> arguments = Collections.singletonMap("projection", "itemsOnly");

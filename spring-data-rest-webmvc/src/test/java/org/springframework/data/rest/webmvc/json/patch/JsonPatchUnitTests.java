@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -41,7 +43,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Mathias Düsterhöft
  * @author Oliver Trosien
  */
-public class JsonPatchTests {
+public class JsonPatchUnitTests {
 
 	public @Rule ExpectedException exception = ExpectedException.none();
 
@@ -121,10 +123,7 @@ public class JsonPatchTests {
 		assertEquals("F", todos.get(5).getDescription());
 	}
 
-	/**
-	 * @see DATAREST-889
-	 */
-	@Test
+	@Test // DATAREST-889
 	public void patchArray() throws Exception {
 
 		Todo todo = new Todo(1L, "F", false);
@@ -136,10 +135,7 @@ public class JsonPatchTests {
 		assertEquals(Arrays.asList("one", "two", "three"), patchedTodo.getItems());
 	}
 
-	/**
-	 * @see DATAREST-889
-	 */
-	@Test
+	@Test // DATAREST-889
 	public void patchUnknownType() throws Exception {
 
 		Todo todo = new Todo();
@@ -152,10 +148,7 @@ public class JsonPatchTests {
 		readJsonPatch("patch-biginteger.json");
 	}
 
-	/**
-	 * @see DATAREST-889
-	 */
-	@Test
+	@Test // DATAREST-889
 	public void failureWithInvalidPatchContent() throws Exception {
 
 		Todo todo = new Todo();
@@ -169,6 +162,14 @@ public class JsonPatchTests {
 		exception.expectMessage(String.class.toString());
 
 		patch.apply(todo, Todo.class);
+	}
+
+	@Test // DATAREST-1127
+	public void rejectsInvalidPaths() throws Exception {
+
+		assertThatExceptionOfType(PatchException.class).isThrownBy(() -> {
+			readJsonPatch("patch-invalid-path.json").apply(new Todo(), Todo.class);
+		});
 	}
 
 	private Patch readJsonPatch(String jsonPatchFile) throws IOException, JsonParseException, JsonMappingException {

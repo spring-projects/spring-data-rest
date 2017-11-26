@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,13 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
@@ -38,46 +37,37 @@ import org.springframework.data.rest.core.annotation.RestResource;
 @RunWith(MockitoJUnitRunner.class)
 public class MappingResourceMetadataUnitTests {
 
-	KeyValueMappingContext context = new KeyValueMappingContext();
+	KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 
-	KeyValuePersistentEntity<?> entity = context.getPersistentEntity(Entity.class);
+	KeyValuePersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(Entity.class);
 	ResourceMappings resourceMappings = new PersistentEntitiesResourceMappings(
 			new PersistentEntities(Arrays.asList(context)));
 	MappingResourceMetadata metadata = new MappingResourceMetadata(entity, resourceMappings);
 
-	/**
-	 * @see DATAREST-514
-	 */
-	@Test
+	@Test // DATAREST-514
 	public void allowsLookupOfPropertyByMappedName() {
 
-		KeyValuePersistentProperty property = entity.getPersistentProperty("related");
+		KeyValuePersistentProperty<?> property = entity.getRequiredPersistentProperty("related");
 
 		PropertyAwareResourceMapping propertyMapping = metadata.getProperty("foo");
 
-		assertThat(propertyMapping, is(notNullValue()));
-		assertThat(propertyMapping.getProperty(), is((Object) property));
-		assertThat(metadata.getMappingFor(property).getPath().matches("foo"), is(true));
+		assertThat(propertyMapping).isNotNull();
+		assertThat(propertyMapping.getProperty()).isEqualTo((Object) property);
+		assertThat(metadata.getMappingFor(property).getPath().matches("foo")).isTrue();
 	}
 
-	/**
-	 * @see DATAREST-518
-	 */
-	@Test
+	@Test // DATAREST-518
 	public void isNotExportedByDefault() {
 
-		assertThat(metadata.isExported(), is(false));
+		assertThat(metadata.isExported()).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-518
-	 */
-	@Test
+	@Test // DATAREST-518
 	public void isExportedIfExplicitlyAnnotated() {
 
-		MappingResourceMetadata metadata = new MappingResourceMetadata(context.getPersistentEntity(Related.class),
+		MappingResourceMetadata metadata = new MappingResourceMetadata(context.getRequiredPersistentEntity(Related.class),
 				resourceMappings);
-		assertThat(metadata.isExported(), is(true));
+		assertThat(metadata.isExported()).isTrue();
 	}
 
 	static class Entity {

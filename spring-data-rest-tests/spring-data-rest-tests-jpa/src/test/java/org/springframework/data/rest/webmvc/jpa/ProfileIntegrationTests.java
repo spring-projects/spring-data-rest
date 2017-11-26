@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.Before;
@@ -73,11 +73,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 		this.client = new TestMvcClient(mvc, this.discoverers);
 	}
 
-	/**
-	 * @see DATAREST-230
-	 * @see DATAREST-638
-	 */
-	@Test
+	@Test // DATAREST-230, DATAREST-638
 	public void exposesProfileLink() throws Exception {
 
 		client.follow(ROOT_URI)//
@@ -85,29 +81,22 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 				.andExpect(jsonPath("$._links.profile.href", endsWith(ProfileController.PROFILE_ROOT_MAPPING)));
 	}
 
-	/**
-	 * @see DATAREST-230
-	 * @see DATAREST-638
-	 */
-	@Test
+	@Test // DATAREST-230, DATAREST-638
 	public void profileRootLinkContainsMetadataForEachRepo() throws Exception {
 
 		Link profileLink = client.discoverUnique(new Link(ROOT_URI), ProfileResourceProcessor.PROFILE_REL);
 
-		assertThat(client.discoverUnique(profileLink, "self", MediaType.ALL), is(notNullValue()));
-		assertThat(client.discoverUnique(profileLink, "people", MediaType.ALL), is(notNullValue()));
-		assertThat(client.discoverUnique(profileLink, "items", MediaType.ALL), is(notNullValue()));
-		assertThat(client.discoverUnique(profileLink, "authors", MediaType.ALL), is(notNullValue()));
-		assertThat(client.discoverUnique(profileLink, "books", MediaType.ALL), is(notNullValue()));
-		assertThat(client.discoverUnique(profileLink, "orders", MediaType.ALL), is(notNullValue()));
-		assertThat(client.discoverUnique(profileLink, "receipts", MediaType.ALL), is(notNullValue()));
-		assertThat(client.discoverUnique(profileLink, "addresses", MediaType.ALL), is(notNullValue()));
+		assertThat(client.discoverUnique(profileLink, "self", MediaType.ALL)).isNotNull();
+		assertThat(client.discoverUnique(profileLink, "people", MediaType.ALL)).isNotNull();
+		assertThat(client.discoverUnique(profileLink, "items", MediaType.ALL)).isNotNull();
+		assertThat(client.discoverUnique(profileLink, "authors", MediaType.ALL)).isNotNull();
+		assertThat(client.discoverUnique(profileLink, "books", MediaType.ALL)).isNotNull();
+		assertThat(client.discoverUnique(profileLink, "orders", MediaType.ALL)).isNotNull();
+		assertThat(client.discoverUnique(profileLink, "receipts", MediaType.ALL)).isNotNull();
+		assertThat(client.discoverUnique(profileLink, "addresses", MediaType.ALL)).isNotNull();
 	}
 
-	/**
-	 * @see DATAREST-638
-	 */
-	@Test
+	@Test // DATAREST-638
 	public void profileLinkOnCollectionResourceLeadsToRepositorySpecificMetadata() throws Exception {
 
 		Link peopleLink = client.discoverUnique(new Link(ROOT_URI), "people");

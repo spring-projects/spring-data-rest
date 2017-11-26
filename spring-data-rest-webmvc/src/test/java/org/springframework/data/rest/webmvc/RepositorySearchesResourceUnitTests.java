@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 
@@ -28,19 +27,13 @@ import org.junit.Test;
  */
 public class RepositorySearchesResourceUnitTests {
 
-	/**
-	 * @see DATAREST-515
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-515
 	public void rejectsNullDomainType() {
 		new RepositorySearchesResource(null);
 	}
 
-	/**
-	 * @see DATAREST-515
-	 */
-	@Test
+	@Test // DATAREST-515
 	public void returnsConfiguredDomainType() {
-		assertThat(new RepositorySearchesResource(String.class).getDomainType(), is(typeCompatibleWith(String.class)));
+		assertThat(new RepositorySearchesResource(String.class).getDomainType()).isAssignableFrom(String.class);
 	}
 }

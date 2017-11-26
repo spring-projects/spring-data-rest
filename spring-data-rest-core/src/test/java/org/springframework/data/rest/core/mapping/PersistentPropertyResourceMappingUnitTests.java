@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
@@ -41,81 +40,66 @@ import org.springframework.data.rest.core.annotation.RestResource;
 @RunWith(MockitoJUnitRunner.class)
 public class PersistentPropertyResourceMappingUnitTests {
 
-	KeyValueMappingContext mappingContext = new KeyValueMappingContext();
+	KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
 
-	/**
-	 * @see DATAREST-175
-	 */
-	@Test
+	@Test // DATAREST-175
 	public void usesPropertyNameAsDefaultResourceMappingRelAndPath() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "first");
 
-		assertThat(mapping, is(notNullValue()));
-		assertThat(mapping.getPath(), is(new Path("first")));
-		assertThat(mapping.getRel(), is("first"));
-		assertThat(mapping.isExported(), is(false));
+		assertThat(mapping).isNotNull();
+		assertThat(mapping.getPath()).isEqualTo(new Path("first"));
+		assertThat(mapping.getRel()).isEqualTo("first");
+		assertThat(mapping.isExported()).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-175
-	 */
-	@Test
+	@Test // DATAREST-175
 	public void considersMappingAnnotationOnDomainClassProperty() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "second");
 
-		assertThat(mapping, is(notNullValue()));
-		assertThat(mapping.getPath(), is(new Path("secPath")));
-		assertThat(mapping.getRel(), is("secRel"));
-		assertThat(mapping.isExported(), is(false));
+		assertThat(mapping).isNotNull();
+		assertThat(mapping.getPath()).isEqualTo(new Path("secPath"));
+		assertThat(mapping.getRel()).isEqualTo("secRel");
+		assertThat(mapping.isExported()).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-175
-	 */
-	@Test
+	@Test // DATAREST-175
 	public void considersMappingAnnotationOnDomainClassPropertyMethod() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "third");
 
-		assertThat(mapping, is(notNullValue()));
-		assertThat(mapping.getPath(), is(new Path("thirdPath")));
-		assertThat(mapping.getRel(), is("thirdRel"));
-		assertThat(mapping.isExported(), is(false));
+		assertThat(mapping).isNotNull();
+		assertThat(mapping.getPath()).isEqualTo(new Path("thirdPath"));
+		assertThat(mapping.getRel()).isEqualTo("thirdRel");
+		assertThat(mapping.isExported()).isFalse();
 	}
 
-	/**
-	 * @see DATAREST-233
-	 */
-	@Test
+	@Test // DATAREST-233
 	public void returnsDefaultDescriptionKey() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "second");
 
 		ResourceDescription description = mapping.getDescription();
 
-		assertThat(description.isDefault(), is(true));
-		assertThat(description.getMessage(), is("rest.description.entity.second"));
+		assertThat(description.isDefault()).isTrue();
+		assertThat(description.getMessage()).isEqualTo("rest.description.entity.second");
 	}
 
-	/**
-	 * @see DATAREST-233
-	 */
-	@Test
+	@Test // DATAREST-233
 	public void considersAtDescription() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "fourth");
 
 		ResourceDescription description = mapping.getDescription();
-		assertThat(description.isDefault(), is(false));
-		assertThat(description.getMessage(), is("Some description"));
+		assertThat(description.isDefault()).isFalse();
+		assertThat(description.getMessage()).isEqualTo("Some description");
 	}
 
 	private ResourceMapping getPropertyMappingFor(Class<?> entity, String propertyName) {
 
-		KeyValuePersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(entity);
-		KeyValuePersistentProperty property = persistentEntity.getPersistentProperty(propertyName);
+		KeyValuePersistentEntity<?, ?> persistentEntity = mappingContext.getRequiredPersistentEntity(entity);
+		KeyValuePersistentProperty<?> property = persistentEntity.getRequiredPersistentProperty(propertyName);
 
 		ResourceMappings resourceMappings = new PersistentEntitiesResourceMappings(
 				new PersistentEntities(Arrays.asList(mappingContext)));

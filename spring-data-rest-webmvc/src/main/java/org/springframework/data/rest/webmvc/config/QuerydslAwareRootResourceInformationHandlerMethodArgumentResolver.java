@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ package org.springframework.data.rest.webmvc.config;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.data.querydsl.QueryDslPredicateExecutor;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
@@ -35,6 +36,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
+import com.mysema.commons.lang.Pair;
 import com.querydsl.core.types.Predicate;
 
 /**
@@ -75,23 +77,36 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 	 * @see org.springframework.data.rest.webmvc.config.RootResourceInformationHandlerMethodArgumentResolver#postProcess(org.springframework.data.repository.support.RepositoryInvoker, java.lang.Class, java.util.Map)
 	 */
 	@Override
-	@SuppressWarnings({ "unchecked" })
-	protected RepositoryInvoker postProcess(MethodParameter parameter, RepositoryInvoker invoker,
-			Class<?> domainType, Map<String, String[]> parameters) {
+	protected RepositoryInvoker postProcess(MethodParameter parameter, RepositoryInvoker invoker, Class<?> domainType,
+			Map<String, String[]> parameters) {
 
-		Object repository = repositories.getRepositoryFor(domainType);
-
-		if (!QueryDslPredicateExecutor.class.isInstance(repository)
-				|| !parameter.hasParameterAnnotation(QuerydslPredicate.class)) {
+		if (!parameter.hasParameterAnnotation(QuerydslPredicate.class)) {
 			return invoker;
 		}
 
+		return repositories.getRepositoryFor(domainType)//
+				.filter(it -> QuerydslPredicateExecutor.class.isInstance(it))//
+				.map(it -> QuerydslPredicateExecutor.class.cast(it))//
+				.flatMap(it -> getRepositoryAndPredicate(it, domainType, parameters))//
+				.map(it -> getQuerydslAdapter(invoker, it.getFirst(), it.getSecond()))//
+				.orElse(invoker);
+	}
+
+	private Optional<Pair<QuerydslPredicateExecutor<?>, Predicate>> getRepositoryAndPredicate(
+			QuerydslPredicateExecutor<?> repository, Class<?> domainType, Map<String, String[]> parameters) {
+
 		ClassTypeInformation<?> type = ClassTypeInformation.from(domainType);
 
-		QuerydslBindings bindings = factory.createBindingsFor(null, type);
+		QuerydslBindings bindings = factory.createBindingsFor(type);
 		Predicate predicate = predicateBuilder.getPredicate(type, toMultiValueMap(parameters), bindings);
 
-		return new QuerydslRepositoryInvokerAdapter(invoker, (QueryDslPredicateExecutor<Object>) repository, predicate);
+		return Optional.ofNullable(predicate).map(it -> Pair.of(repository, it));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static RepositoryInvoker getQuerydslAdapter(RepositoryInvoker invoker,
+			QuerydslPredicateExecutor<?> repository, Predicate predicate) {
+		return new QuerydslRepositoryInvokerAdapter(invoker, (QuerydslPredicateExecutor<Object>) repository, predicate);
 	}
 
 	/**

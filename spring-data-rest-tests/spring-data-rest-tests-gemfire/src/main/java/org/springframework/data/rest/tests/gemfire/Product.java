@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.data.gemfire.mapping.Region;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.util.Assert;
 
 /**
@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
  * 
  * @author Oliver Gierke
  * @author David Turanski
+ * @author Mark Paluch
  */
 @Region
 public class Product extends AbstractPersistentEntity {
@@ -77,7 +78,7 @@ public class Product extends AbstractPersistentEntity {
 	 */
 	public void setAttribute(String name, String value) {
 
-		Assert.hasText(name);
+		Assert.hasText(name, "Name must not be null or empty!");
 
 		if (value == null) {
 			this.attributes.remove(value);

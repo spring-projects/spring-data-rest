@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import javax.persistence.EntityManager;
 
@@ -69,16 +68,13 @@ public class Jackson2DatatypeHelperIntegrationTests {
 		em.clear();
 	}
 
-	/**
-	 * @see DATAREST-500
-	 */
-	@Test
-	public void configuresHIbernate4ModuleToLoadLazyLoadingProxies() throws Exception {
+	@Test // DATAREST-500
+	public void configuresHibernate4ModuleToLoadLazyLoadingProxies() throws Exception {
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(Order.class);
-		PersistentProperty<?> property = entity.getPersistentProperty("creator");
-		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(orders.findOne(this.order.getId()));
+		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(Order.class);
+		PersistentProperty<?> property = entity.getRequiredPersistentProperty("creator");
+		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(orders.findById(this.order.getId()).orElse(null));
 
-		assertThat(objectMapper.writeValueAsString(accessor.getProperty(property)), is(not("null")));
+		assertThat(objectMapper.writeValueAsString(accessor.getProperty(property))).isNotEqualTo("null");
 	}
 }

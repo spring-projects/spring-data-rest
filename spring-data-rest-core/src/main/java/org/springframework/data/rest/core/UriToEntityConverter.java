@@ -18,6 +18,7 @@ package org.springframework.data.rest.core;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.core.convert.ConversionFailedException;
@@ -25,6 +26,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
@@ -66,9 +68,9 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 		for (TypeInformation<?> domainType : entities.getManagedTypes()) {
 
 			Class<?> rawType = domainType.getType();
-			PersistentEntity<?, ?> entity = entities.getPersistentEntity(rawType);
+			Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> entity = entities.getPersistentEntity(rawType);
 
-			if (entity.hasIdProperty()) {
+			if (entity.map(it -> it.hasIdProperty()).orElse(false)) {
 				convertiblePairs.add(new ConvertiblePair(URI.class, domainType.getType()));
 			}
 		}
@@ -86,7 +88,7 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 		return !sourceType.equals(URI_TYPE) ? false
-				: repositories.getRepositoryInformationFor(targetType.getType()) != null;
+				: repositories.getRepositoryInformationFor(targetType.getType()).isPresent();
 	}
 
 	/*
@@ -105,9 +107,10 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 	@Override
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(targetType.getType());
+		Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> entity = entities
+				.getPersistentEntity(targetType.getType());
 
-		if (entity == null) {
+		if (!entity.isPresent()) {
 			throw new ConversionFailedException(sourceType, targetType, source,
 					new IllegalArgumentException("No PersistentEntity information available for " + targetType.getType()));
 		}
@@ -120,6 +123,6 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 					"Cannot resolve URI " + uri + ". Is it local or remote? Only local URIs are resolvable."));
 		}
 
-		return invokerFactory.getInvokerFor(targetType.getType()).invokeFindOne(parts[parts.length - 1]);
+		return invokerFactory.getInvokerFor(targetType.getType()).invokeFindById(parts[parts.length - 1]).orElse(null);
 	}
 }

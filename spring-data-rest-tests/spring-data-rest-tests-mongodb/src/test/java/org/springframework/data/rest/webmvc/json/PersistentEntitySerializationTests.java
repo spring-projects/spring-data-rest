@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.MatcherAssert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import java.util.Arrays;
@@ -96,10 +97,7 @@ public class PersistentEntitySerializationTests {
 		this.projectionFactory = new SpelAwareProxyProjectionFactory();
 	}
 
-	/**
-	 * @see DATAREST-250
-	 */
-	@Test
+	@Test // DATAREST-250
 	public void serializesEmbeddedReferencesCorrectly() throws Exception {
 
 		User user = new User();
@@ -116,21 +114,15 @@ public class PersistentEntitySerializationTests {
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
 
-		assertThat(JsonPath.read(result, "$._embedded.users[*].address"), is(notNullValue()));
+		assertThat(JsonPath.<Object> read(result, "$._embedded.users[*].address")).isNotNull();
 	}
 
-	/**
-	 * @see DATAREST-654
-	 */
-	@Test
+	@Test // DATAREST-654
 	public void deserializesTranslatedEnumProperty() throws Exception {
-		assertThat(mapper.readValue("{ \"gender\" : \"Male\" }", User.class).gender, is(Gender.MALE));
+		assertThat(mapper.readValue("{ \"gender\" : \"Male\" }", User.class).gender).isEqualTo(Gender.MALE);
 	}
 
-	/**
-	 * @see DATAREST-864
-	 */
-	@Test
+	@Test // DATAREST-864
 	public void createsNestedResourceForMap() throws Exception {
 
 		User dave = users.save(new User());

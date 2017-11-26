@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,20 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -33,19 +39,24 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -54,9 +65,15 @@ import org.springframework.data.rest.webmvc.mapping.Associations;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 
@@ -66,6 +83,7 @@ import com.google.common.base.Charsets;
  * @author Oliver Gierke
  * @author Craig Andrews
  * @author Mathias Düsterhöft
+ * @author Ken Dombeck
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainObjectReaderUnitTests {
@@ -73,11 +91,12 @@ public class DomainObjectReaderUnitTests {
 	@Mock ResourceMappings mappings;
 
 	DomainObjectReader reader;
+	PersistentEntities entities;
 
 	@Before
 	public void setUp() {
 
-		KeyValueMappingContext mappingContext = new KeyValueMappingContext();
+		KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
 		mappingContext.getPersistentEntity(SampleUser.class);
 		mappingContext.getPersistentEntity(Person.class);
 		mappingContext.getPersistentEntity(TypeWithGenericMap.class);
@@ -88,17 +107,18 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Inner.class);
 		mappingContext.getPersistentEntity(Outer.class);
 		mappingContext.getPersistentEntity(Parent.class);
+		mappingContext.getPersistentEntity(Product.class);
+		mappingContext.getPersistentEntity(TransientReadOnlyProperty.class);
+		mappingContext.getPersistentEntity(CollectionOfEnumWithMethods.class);
+		mappingContext.getPersistentEntity(SampleWithReference.class);
+		mappingContext.getPersistentEntity(Note.class);
 		mappingContext.afterPropertiesSet();
 
-		PersistentEntities entities = new PersistentEntities(Collections.singleton(mappingContext));
-
+		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
 		this.reader = new DomainObjectReader(entities, new Associations(mappings, mock(RepositoryRestConfiguration.class)));
 	}
 
-	/**
-	 * @see DATAREST-461
-	 */
-	@Test
+	@Test // DATAREST-461
 	public void doesNotConsiderIgnoredProperties() throws Exception {
 
 		SampleUser user = new SampleUser("firstname", "password");
@@ -106,14 +126,11 @@ public class DomainObjectReaderUnitTests {
 
 		SampleUser result = reader.readPut((ObjectNode) node, user, new ObjectMapper());
 
-		assertThat(result.name, is(nullValue()));
-		assertThat(result.password, is("password"));
+		assertThat(result.name).isNull();
+		assertThat(result.password).isEqualTo("password");
 	}
 
-	/**
-	 * @see DATAREST-556
-	 */
-	@Test
+	@Test // DATAREST-556
 	public void considersMappedFieldNamesWhenApplyingNodeToDomainObject() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -123,14 +140,11 @@ public class DomainObjectReaderUnitTests {
 
 		Person result = reader.readPut((ObjectNode) node, new Person("Dave", "Matthews"), mapper);
 
-		assertThat(result.firstName, is("Carter"));
-		assertThat(result.lastName, is("Beauford"));
+		assertThat(result.firstName).isEqualTo("Carter");
+		assertThat(result.lastName).isEqualTo("Beauford");
 	}
 
-	/**
-	 * @see DATAREST-605
-	 */
-	@Test
+	@Test // DATAREST-605
 	public void mergesMapCorrectly() throws Exception {
 
 		SampleUser user = new SampleUser("firstname", "password");
@@ -142,14 +156,11 @@ public class DomainObjectReaderUnitTests {
 		SampleUser result = reader.readPut((ObjectNode) node, user, new ObjectMapper());
 
 		// Assert that the nested Map values also consider ignored properties
-		assertThat(result.relatedUsers.get("parent").password, is("password"));
-		assertThat(result.relatedUsers.get("parent").name, is("Oliver"));
+		assertThat(result.relatedUsers.get("parent").password).isEqualTo("password");
+		assertThat(result.relatedUsers.get("parent").name).isEqualTo("Oliver");
 	}
 
-	/**
-	 * @see DATAREST-701
-	 */
-	@Test
+	@Test // DATAREST-701
 	@SuppressWarnings("unchecked")
 	public void mergesNestedMapWithoutTypeInformation() throws Exception {
 
@@ -162,17 +173,14 @@ public class DomainObjectReaderUnitTests {
 
 		TypeWithGenericMap result = reader.readPut((ObjectNode) node, target, mapper);
 
-		assertThat(result.map.get("a"), is((Object) "1"));
+		assertThat(result.map.get("a")).isEqualTo((Object) "1");
 
 		Object object = result.map.get("b");
-		assertThat(object, is(instanceOf(Map.class)));
-		assertThat(((Map<Object, Object>) object).get("c"), is((Object) "2"));
+		assertThat(object).isInstanceOf(Map.class);
+		assertThat(((Map<Object, Object>) object).get("c")).isEqualTo((Object) "2");
 	}
 
-	/**
-	 * @see DATAREST-701
-	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class) // DATAREST-701
 	public void rejectsMergingUnknownDomainObject() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -181,10 +189,7 @@ public class DomainObjectReaderUnitTests {
 		reader.readPut(node, "", mapper);
 	}
 
-	/**
-	 * @see DATAREST-705
-	 */
-	@Test
+	@Test // DATAREST-705
 	public void doesNotWipeIdAndVersionPropertyForPut() throws Exception {
 
 		VersionedType type = new VersionedType();
@@ -197,16 +202,29 @@ public class DomainObjectReaderUnitTests {
 
 		VersionedType result = reader.readPut(node, type, mapper);
 
-		assertThat(result.lastname, is("Matthews"));
-		assertThat(result.firstname, is(nullValue()));
-		assertThat(result.id, is(1L));
-		assertThat(result.version, is(1L));
+		assertThat(result.lastname).isEqualTo("Matthews");
+		assertThat(result.firstname).isNull();
+		assertThat(result.id).isEqualTo(1L);
+		assertThat(result.version).isEqualTo(1L);
 	}
 
-	/**
-	 * @see DATAREST-873
-	 */
-	@Test
+	@Test //DATAREST-1006
+	public void doesNotWipeReadOnlyJsonPropertyForPut() throws Exception {
+
+		SampleUser sampleUser = new SampleUser("name", "password");
+		sampleUser.lastLogin = new Date();
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = (ObjectNode) mapper.readTree("{ \"name\" : \"another\" }");
+
+		SampleUser result = reader.readPut(node, sampleUser, mapper);
+
+		assertThat(result.name, is("another"));
+		assertThat(result.password, notNullValue());
+		assertThat(result.lastLogin, notNullValue());
+	}
+
+	@Test // DATAREST-873
 	public void doesNotApplyInputToReadOnlyFields() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -217,13 +235,10 @@ public class DomainObjectReaderUnitTests {
 		SampleWithCreatedDate sample = new SampleWithCreatedDate();
 		sample.createdDate = reference;
 
-		assertThat(reader.readPut(node, sample, mapper).createdDate, is(reference));
+		assertThat(reader.readPut(node, sample, mapper).createdDate).isEqualTo(reference);
 	}
 
-	/**
-	 * @see DATAREST-931
-	 */
-	@Test
+	@Test // DATAREST-931
 	public void readsPatchForEntityNestedInCollection() throws Exception {
 
 		Phone phone = new Phone();
@@ -237,13 +252,10 @@ public class DomainObjectReaderUnitTests {
 
 		User result = reader.read(source, user, new ObjectMapper());
 
-		assertThat(result.phones.get(0).creationDate, is(notNullValue()));
+		assertThat(result.phones.get(0).creationDate).isNotNull();
 	}
 
-	/**
-	 * @see DATAREST-919
-	 */
-	@Test
+	@Test // DATAREST-919
 	@SuppressWarnings("unchecked")
 	public void readsComplexNestedMapsAndArrays() throws Exception {
 
@@ -267,24 +279,21 @@ public class DomainObjectReaderUnitTests {
 
 		TypeWithGenericMap result = reader.readPut(payload, map, mapper);
 
-		assertThat(result.map.get("sub1"), is((Object) "ok"));
+		assertThat(result.map.get("sub1")).isEqualTo((Object) "ok");
 
 		List<String> sub2 = as(result.map.get("sub2"), List.class);
-		assertThat(sub2.get(0), is("ok1"));
-		assertThat(sub2.get(1), is("ok2"));
+		assertThat(sub2.get(0)).isEqualTo("ok1");
+		assertThat(sub2.get(1)).isEqualTo("ok2");
 
 		List<Map<String, String>> sub3 = as(result.map.get("sub3"), List.class);
-		assertThat(sub3.get(0).get("childOk1"), is("ok"));
+		assertThat(sub3.get(0).get("childOk1")).isEqualTo("ok");
 
 		Map<Object, String> sub4 = as(result.map.get("sub4"), Map.class);
-		assertThat(sub4.get("c1"), is("v1"));
-		assertThat(sub4.get("c2"), is("new"));
+		assertThat(sub4.get("c1")).isEqualTo("v1");
+		assertThat(sub4.get("c2")).isEqualTo("new");
 	}
 
-	/**
-	 * @see DATAREST-938
-	 */
-	@Test
+	@Test // DATAREST-938
 	public void nestedEntitiesAreUpdated() throws Exception {
 
 		Inner inner = new Inner();
@@ -298,19 +307,16 @@ public class DomainObjectReaderUnitTests {
 
 		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"name\" : \"new inner name\" } }");
 
-		Outer result = reader.merge((ObjectNode) node, outer, new ObjectMapper());
+		Outer result = reader.doMerge((ObjectNode) node, outer, new ObjectMapper());
 
-		assertThat(result, is(sameInstance(outer)));
-		assertThat(result.prop, is("else"));
-		assertThat(result.inner.prop, is("something"));
-		assertThat(result.inner.name, is("new inner name"));
-		assertThat(result.inner, is(sameInstance(inner)));
+		assertThat(result).isSameAs(outer);
+		assertThat(result.prop).isEqualTo("else");
+		assertThat(result.inner.prop).isEqualTo("something");
+		assertThat(result.inner.name).isEqualTo("new inner name");
+		assertThat(result.inner).isSameAs(inner);
 	}
 
-	/**
-	 * @see DATAREST-937
-	 */
-	@Test
+	@Test // DATAREST-937
 	public void considersTransientProperties() throws Exception {
 
 		SampleWithTransient sample = new SampleWithTransient();
@@ -321,14 +327,11 @@ public class DomainObjectReaderUnitTests {
 
 		SampleWithTransient result = reader.readPut((ObjectNode) node, sample, new ObjectMapper());
 
-		assertThat(result.name, is("new name"));
-		assertThat(result.temporary, is("new temp"));
+		assertThat(result.name).isEqualTo("new name");
+		assertThat(result.temporary).isEqualTo("new temp");
 	}
 
-	/**
-	 * @see DATAREST-953
-	 */
-	@Test
+	@Test // DATAREST-953
 	public void writesArrayForPut() throws Exception {
 
 		Child inner = new Child();
@@ -342,13 +345,10 @@ public class DomainObjectReaderUnitTests {
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
-		assertThat(result.inner.items.get(0).some, is("value"));
+		assertThat(result.inner.items.get(0).some).isEqualTo("value");
 	}
 
-	/**
-	 * @see DATAREST-956
-	 */
-	@Test
+	@Test // DATAREST-956
 	public void writesArrayWithAddedItemForPut() throws Exception {
 
 		Child inner = new Child();
@@ -363,16 +363,13 @@ public class DomainObjectReaderUnitTests {
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
-		assertThat(result.inner.items.size(), is(3));
-		assertThat(result.inner.items.get(0).some, is("value1"));
-		assertThat(result.inner.items.get(1).some, is("value2"));
-		assertThat(result.inner.items.get(2).some, is("value3"));
+		assertThat(result.inner.items).hasSize(3);
+		assertThat(result.inner.items.get(0).some).isEqualTo("value1");
+		assertThat(result.inner.items.get(1).some).isEqualTo("value2");
+		assertThat(result.inner.items.get(2).some).isEqualTo("value3");
 	}
 
-	/**
-	 * @see DATAREST-956
-	 */
-	@Test
+	@Test // DATAREST-956
 	public void writesArrayWithRemovedItemForPut() throws Exception {
 
 		Child inner = new Child();
@@ -388,14 +385,11 @@ public class DomainObjectReaderUnitTests {
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
-		assertThat(result.inner.items.size(), is(1));
-		assertThat(result.inner.items.get(0).some, is("value"));
+		assertThat(result.inner.items).hasSize(1);
+		assertThat(result.inner.items.get(0).some).isEqualTo("value");
 	}
 
-	/**
-	 * @see DATAREST-959
-	 */
-	@Test
+	@Test // DATAREST-959
 	public void addsElementToPreviouslyEmptyCollection() throws Exception {
 
 		Parent source = new Parent();
@@ -406,14 +400,11 @@ public class DomainObjectReaderUnitTests {
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
 
-		assertThat(result.inner.items.size(), is(1));
-		assertThat(result.inner.items.get(0).some, is("value"));
+		assertThat(result.inner.items).hasSize(1);
+		assertThat(result.inner.items.get(0).some).isEqualTo("value");
 	}
 
-	/**
-	 * @see DATAREST-959
-	 */
-	@Test
+	@Test // DATAREST-959
 	@SuppressWarnings("unchecked")
 	public void turnsObjectIntoCollection() throws Exception {
 
@@ -425,29 +416,149 @@ public class DomainObjectReaderUnitTests {
 				.readTree("{ \"inner\" : { \"object\" : [ { \"some\" : \"value\" }, { \"some\" : \"otherValue\" } ] } }");
 
 		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
-		assertThat(result.inner.object, is(instanceOf(Collection.class)));
+		assertThat(result.inner.object).isInstanceOf(Collection.class);
 
 		Collection<?> collection = (Collection<?>) result.inner.object;
-		assertThat(collection.size(), is(2));
+		assertThat(collection).hasSize(2);
 
 		Iterator<Map<String, Object>> iterator = (Iterator<Map<String, Object>>) collection.iterator();
-		assertThat(iterator.next().get("some"), is((Object) "value"));
-		assertThat(iterator.next().get("some"), is((Object) "otherValue"));
+		assertThat(iterator.next().get("some")).isEqualTo((Object) "value");
+		assertThat(iterator.next().get("some")).isEqualTo((Object) "otherValue");
 	}
 
-	@Test
-	public void testname() throws Exception {
+	@Test // DATAREST-965
+	public void writesObjectWithRemovedItemsForPut() throws Exception {
+
+		Child inner = new Child();
+		inner.items = new ArrayList<Item>();
+		inner.items.add(new Item("test1"));
+		inner.items.add(new Item("test2"));
+
+		Parent source = new Parent();
+		source.inner = inner;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"object\" : \"value\" } }");
+
+		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
+
+		assertThat(result.inner.items).isNull();
+		assertThat((String) result.inner.object).isEqualTo("value");
+	}
+
+	@Test // DATAREST-965
+	public void writesArrayWithRemovedObjectForPut() throws Exception {
+
+		Child inner = new Child();
+		inner.object = "value";
+
+		Parent source = new Parent();
+		source.inner = inner;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"items\" : [ { \"some\" : \"value\" } ] } }");
+
+		Parent result = reader.readPut((ObjectNode) node, source, new ObjectMapper());
+
+		assertThat(result.inner.items).hasSize(1);
+		assertThat(result.inner.items.get(0).some).isEqualTo("value");
+		assertThat(result.inner.object).isNull();
+	}
+
+	@Test // DATAREST-986
+	public void readsComplexMap() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
-		JsonNode node = mapper.readTree("\"asd\"");
+		JsonNode node = mapper.readTree(
+				"{ \"map\" : { \"en\" : { \"value\" : \"eventual\" }, \"de\" : { \"value\" : \"schlussendlich\" } } }");
 
-		assertThat(mapper.treeToValue(node, Object.class), is((Object) "asd"));
+		Product result = reader.readPut((ObjectNode) node, new Product(), mapper);
+
+		assertThat(result.map.get(Locale.ENGLISH)).isEqualTo(new LocalizedValue("eventual"));
+		assertThat(result.map.get(Locale.GERMAN)).isEqualTo(new LocalizedValue("schlussendlich"));
+	}
+
+	@Test // DATAREST-987
+	public void handlesTransientPropertyWithoutFieldProperly() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = mapper.readTree("{ \"name\" : \"Foo\" }");
+
+		reader.readPut((ObjectNode) node, new TransientReadOnlyProperty(), mapper);
+	}
+
+	@Test // DATAREST-977
+	public void readsCollectionOfComplexEnum() throws Exception {
+
+		CollectionOfEnumWithMethods sample = new CollectionOfEnumWithMethods();
+		sample.enums.add(SampleEnum.FIRST);
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = mapper.readTree("{ \"enums\" : [ \"SECOND\", \"FIRST\" ] }");
+
+		CollectionOfEnumWithMethods result = reader.merge((ObjectNode) node, sample, mapper);
+
+		assertThat(result.enums, contains(SampleEnum.SECOND, SampleEnum.FIRST));
+	}
+
+	@Test // DATAREST-944
+	public void mergesAssociations() {
+
+		List<Nested> originalCollection = Arrays.asList(new Nested(2, 3));
+		SampleWithReference source = new SampleWithReference(Arrays.asList(new Nested(1, 2), new Nested(2, 3)));
+		SampleWithReference target = new SampleWithReference(originalCollection);
+
+		SampleWithReference result = reader.mergeForPut(source, target, new ObjectMapper());
+
+		assertThat(result.nested).isEqualTo(source.nested);
+		assertThat(result.nested == originalCollection).isFalse();
+	}
+
+	@Test // DATAREST-944
+	public void mergesAssociationsAndKeepsMutableCollection() {
+
+		ArrayList<Nested> originalCollection = new ArrayList<Nested>(Arrays.asList(new Nested(2, 3)));
+		SampleWithReference source = new SampleWithReference(
+				new ArrayList<Nested>(Arrays.asList(new Nested(1, 2), new Nested(2, 3))));
+		SampleWithReference target = new SampleWithReference(originalCollection);
+
+		SampleWithReference result = reader.mergeForPut(source, target, new ObjectMapper());
+
+		assertThat(result.nested).isEqualTo(source.nested);
+		assertThat(result.nested).isSameAs(originalCollection);
+	}
+
+	@Test // DATAREST-1030
+	public void patchWithReferenceToRelatedEntityIsResolvedCorrectly() throws Exception {
+
+		Associations associations = mock(Associations.class);
+		PersistentProperty<?> any = ArgumentMatchers.any(PersistentProperty.class);
+		when(associations.isLinkableAssociation(any)).thenReturn(true);
+
+		DomainObjectReader reader = new DomainObjectReader(entities, associations);
+
+		Tag first = new Tag();
+		Tag second = new Tag();
+
+		Note note = new Note();
+		note.tags.add(first);
+		note.tags.add(second);
+
+		SimpleModule module = new SimpleModule();
+		module.addDeserializer(Tag.class, new SelectValueByIdSerializer<Tag>(Collections.singletonMap(second.id, second)));
+
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(module);
+
+		ObjectNode readTree = (ObjectNode) mapper.readTree(String.format("{ \"tags\" : [ \"%s\"]}", second.id));
+
+		Note result = reader.doMerge(readTree, note, mapper);
+
+		assertThat(result.tags).contains(second);
 	}
 
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
-		assertThat(source, is(instanceOf(type)));
+		assertThat(source).isInstanceOf(type);
 		return (T) source;
 	}
 
@@ -458,15 +569,19 @@ public class DomainObjectReaderUnitTests {
 		@JsonIgnore String password;
 		Map<String, SampleUser> relatedUsers;
 
+		@JsonProperty(access = READ_ONLY)
+		private Date lastLogin;
+
 		public SampleUser(String name, String password) {
+
 			this.name = name;
 			this.password = password;
 		}
+
+		protected SampleUser() {}
 	}
 
-	/**
-	 * @see DATAREST-556
-	 */
+	// DATAREST-556
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Person {
 
@@ -476,6 +591,8 @@ public class DomainObjectReaderUnitTests {
 			this.firstName = firstName;
 			this.lastName = lastName;
 		}
+
+		protected Person() {}
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
@@ -550,5 +667,103 @@ public class DomainObjectReaderUnitTests {
 	@AllArgsConstructor
 	static class Item {
 		String some;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Product {
+		Map<Locale, LocalizedValue> map = new HashMap<Locale, LocalizedValue>();
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@EqualsAndHashCode
+	static class LocalizedValue {
+		String value;
+	}
+
+	@JsonAutoDetect(getterVisibility = Visibility.ANY)
+	static class TransientReadOnlyProperty {
+
+		@Transient
+		public String getName() {
+			return null;
+		}
+
+		public void setName(String name) {}
+	}
+
+	// DATAREST-977
+
+	interface EnumInterface {
+		String getFoo();
+	}
+
+	static enum SampleEnum implements EnumInterface {
+
+		FIRST {
+
+			@Override
+			public String getFoo() {
+				return "first";
+			}
+
+		},
+		SECOND {
+
+			public String getFoo() {
+				return "second";
+			}
+		};
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class CollectionOfEnumWithMethods {
+		List<SampleEnum> enums = new ArrayList<SampleEnum>();
+	}
+
+	@Value
+	static class SampleWithReference {
+		@Reference List<Nested> nested;
+	}
+
+	@Value
+	static class Nested {
+		int x, y;
+	}
+
+	// DATAREST-1030
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Note {
+		@Id UUID id = UUID.randomUUID();
+		@Reference List<Tag> tags = new ArrayList<Tag>();
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Tag {
+		@Id UUID id = UUID.randomUUID();
+		String name;
+	}
+
+	@RequiredArgsConstructor
+	static class SelectValueByIdSerializer<T> extends JsonDeserializer<T> {
+
+		private final Map<? extends Object, T> values;
+
+		/* 
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
+		 */
+		@Override
+		public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+
+			String text = p.getText();
+
+			return values.entrySet().stream()//
+					.filter(it -> it.getKey().toString().equals(text))//
+					.map(it -> it.getValue())//
+					.findFirst().orElse(null);
+		}
 	}
 }

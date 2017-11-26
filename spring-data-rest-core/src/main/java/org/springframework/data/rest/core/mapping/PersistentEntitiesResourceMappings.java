@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -32,6 +33,7 @@ import org.springframework.util.ClassUtils;
  * {@link ResourceMappings} for {@link PersistentEntities}.
  * 
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class PersistentEntitiesResourceMappings implements ResourceMappings {
 
@@ -83,23 +85,23 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	MappingResourceMetadata getMappingMetadataFor(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null!");
-		type = ClassUtils.getUserClass(type);
+		Class<?> userType = ClassUtils.getUserClass(type);
 
-		MappingResourceMetadata mappingMetadata = mappingCache.get(type);
+		MappingResourceMetadata mappingMetadata = mappingCache.get(userType);
 
 		if (mappingMetadata != null) {
 			return mappingMetadata;
 		}
 
-		PersistentEntity<?, ?> entity = entities.getPersistentEntity(type);
+		Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> entity = entities.getPersistentEntity(userType);
 
-		if (entity == null) {
-			return null;
-		}
+		return entity.map(it -> {
 
-		mappingMetadata = new MappingResourceMetadata(entity, this);
-		mappingCache.put(type, mappingMetadata);
-		return mappingMetadata;
+			MappingResourceMetadata metadata = new MappingResourceMetadata(it, this);
+			mappingCache.put(userType, metadata);
+			return metadata;
+
+		}).orElse(null);
 	}
 
 	/* 
@@ -133,7 +135,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	@Override
 	public boolean exportsTopLevelResourceFor(String path) {
 
-		Assert.hasText(path);
+		Assert.hasText(path, "Path must not be null or empty!");
 
 		for (ResourceMetadata metadata : this) {
 			if (metadata.getPath().matches(path)) {

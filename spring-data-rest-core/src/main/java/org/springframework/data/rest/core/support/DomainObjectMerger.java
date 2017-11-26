@@ -94,7 +94,7 @@ public class DomainObjectMerger {
 					return;
 				}
 
-				if (ObjectUtils.nullSafeEquals(sourceValue, targetValue)) {
+				if (sourceValue != null && sourceValue.equals(targetValue)) {
 					return;
 				}
 

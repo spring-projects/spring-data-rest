@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.ServletException;
@@ -36,9 +37,9 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
@@ -55,19 +56,16 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * {@link org.springframework.data.repository.Repository} is exported under that URL path segment. Also ensures the
  * {@link OpenEntityManagerInViewInterceptor} is registered in the application context. The OEMIVI is required for the
  * REST exporter to function properly.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Mark Paluch
  */
 public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
-	private static final MediaType EVERYTHING_JSON_MEDIA_TYPE = new MediaType("application", "*+json",
-			AbstractJackson2HttpMessageConverter.DEFAULT_CHARSET);
-
 	private final ResourceMappings mappings;
 	private final RepositoryRestConfiguration configuration;
-	private final Repositories repositories;
+	private final Optional<Repositories> repositories;
 
 	private RepositoryCorsConfigurationAccessor corsConfigurationAccessor;
 	private JpaHelper jpaHelper;
@@ -75,12 +73,12 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	/**
 	 * Creates a new {@link RepositoryRestHandlerMapping} for the given {@link ResourceMappings} and
 	 * {@link RepositoryRestConfiguration}.
-	 * 
+	 *
 	 * @param mappings must not be {@literal null}.
 	 * @param config must not be {@literal null}.
 	 */
 	public RepositoryRestHandlerMapping(ResourceMappings mappings, RepositoryRestConfiguration config) {
-		this(mappings, config, null);
+		this(mappings, config, Optional.empty());
 	}
 
 	/**
@@ -89,21 +87,28 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	 *
 	 * @param mappings must not be {@literal null}.
 	 * @param config must not be {@literal null}.
-	 * @param repositories can be {@literal null} if {@link CrossOrigin} resolution is not required.
+	 * @param repositories must not be {@literal null}.
 	 */
 	public RepositoryRestHandlerMapping(ResourceMappings mappings, RepositoryRestConfiguration config,
 			Repositories repositories) {
+
+		this(mappings, config, Optional.of(repositories));
+	}
+
+	private RepositoryRestHandlerMapping(ResourceMappings mappings, RepositoryRestConfiguration config,
+			Optional<Repositories> repositories) {
 
 		super(config);
 
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
 		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null!");
 
 		this.mappings = mappings;
 		this.configuration = config;
 		this.repositories = repositories;
-		this.corsConfigurationAccessor = new RepositoryCorsConfigurationAccessor(mappings, repositories,
-				NoOpStringValueResolver.INSTANCE);
+		this.corsConfigurationAccessor = new RepositoryCorsConfigurationAccessor(mappings, NoOpStringValueResolver.INSTANCE,
+				repositories);
 	}
 
 	/**
@@ -122,8 +127,8 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 		super.setEmbeddedValueResolver(resolver);
 
-		this.corsConfigurationAccessor = new RepositoryCorsConfigurationAccessor(mappings, repositories,
-				resolver == null ? NoOpStringValueResolver.INSTANCE : resolver);
+		this.corsConfigurationAccessor = new RepositoryCorsConfigurationAccessor(mappings,
+				resolver == null ? NoOpStringValueResolver.INSTANCE : resolver, repositories);
 	}
 
 	/*
@@ -165,7 +170,10 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	 */
 	@Override
 	protected boolean isHandler(Class<?> beanType) {
-		return AnnotationUtils.findAnnotation(beanType, RepositoryRestController.class) != null;
+
+		Class<?> type = ClassUtils.getUserClass(beanType);
+
+		return AnnotationUtils.findAnnotation(type, RepositoryRestController.class) != null;
 	}
 
 	/*
@@ -195,7 +203,6 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		HashSet<String> mediaTypes = new LinkedHashSet<String>();
 		mediaTypes.add(configuration.getDefaultMediaType().toString());
 		mediaTypes.add(MediaType.APPLICATION_JSON_VALUE);
-		mediaTypes.add(EVERYTHING_JSON_MEDIA_TYPE.toString());
 
 		return new ProducesRequestCondition(mediaTypes.toArray(new String[mediaTypes.size()]));
 	}
@@ -206,24 +213,19 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	@Override
 	protected CorsConfiguration getCorsConfiguration(Object handler, HttpServletRequest request) {
 
-		CorsConfiguration corsConfiguration = super.getCorsConfiguration(handler, request);
 		String lookupPath = getUrlPathHelper().getLookupPathForRequest(request);
-
 		String repositoryLookupPath = new BaseUri(configuration.getBaseUri()).getRepositoryLookupPath(lookupPath);
+		CorsConfiguration corsConfiguration = super.getCorsConfiguration(handler, request);
 
-		if (!StringUtils.hasText(repositoryLookupPath) || repositories == null) {
-			return corsConfiguration;
-		}
-
-		CorsConfiguration repositoryCorsConfiguration = corsConfigurationAccessor.findCorsConfiguration(lookupPath);
-
-		return corsConfiguration == null ? repositoryCorsConfiguration
-				: corsConfiguration.combine(repositoryCorsConfiguration);
+		return repositories.filter(it -> StringUtils.hasText(repositoryLookupPath))//
+				.flatMap(it -> corsConfigurationAccessor.findCorsConfiguration(repositoryLookupPath))
+				.map(it -> it.combine(corsConfiguration))//
+				.orElse(corsConfiguration);
 	}
 
 	/**
 	 * Returns the first segment of the given repository lookup path.
-	 * 
+	 *
 	 * @param repositoryLookupPath must not be {@literal null}.
 	 * @return
 	 */
@@ -266,29 +268,26 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	static class RepositoryCorsConfigurationAccessor {
 
 		private final @NonNull ResourceMappings mappings;
-		private final @NonNull Repositories repositories;
 		private final @NonNull StringValueResolver embeddedValueResolver;
+		private final @NonNull Optional<Repositories> repositories;
 
-		CorsConfiguration findCorsConfiguration(String lookupPath) {
+		Optional<CorsConfiguration> findCorsConfiguration(String lookupPath) {
 
-			ResourceMetadata resource = getResourceMetadata(getRepositoryBasePath(lookupPath));
-
-			return resource != null ? createConfiguration(
-					repositories.getRepositoryInformationFor(resource.getDomainType()).getRepositoryInterface()) : null;
+			return getResourceMetadata(getRepositoryBasePath(lookupPath))//
+					.flatMap(it -> repositories.flatMap(foo -> foo.getRepositoryInformationFor(it.getDomainType())))//
+					.map(it -> it.getRepositoryInterface())//
+					.map(it -> createConfiguration(it));
 		}
 
-		private ResourceMetadata getResourceMetadata(String basePath) {
+		private Optional<ResourceMetadata> getResourceMetadata(String basePath) {
 
-			if (mappings.exportsTopLevelResourceFor(basePath)) {
-
-				for (ResourceMetadata metadata : mappings) {
-					if (metadata.getPath().matches(basePath) && metadata.isExported()) {
-						return metadata;
-					}
-				}
+			if (!mappings.exportsTopLevelResourceFor(basePath)) {
+				return Optional.empty();
 			}
 
-			return null;
+			return mappings.stream()//
+					.filter(it -> it.getPath().matches(basePath) && it.isExported())//
+					.findFirst();
 		}
 
 		/**

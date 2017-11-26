@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class ReplaceOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		ReplaceOperation replace = new ReplaceOperation("/1/complete", true);
+		ReplaceOperation replace = ReplaceOperation.valueAt("/1/complete").with(true);
 		replace.perform(todos, Todo.class);
 
 		assertTrue(todos.get(1).isComplete());
@@ -48,7 +48,7 @@ public class ReplaceOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		ReplaceOperation replace = new ReplaceOperation("/1/description", "BBB");
+		ReplaceOperation replace = ReplaceOperation.valueAt("/1/description").with("BBB");
 		replace.perform(todos, Todo.class);
 
 		assertEquals("BBB", todos.get(1).getDescription());
@@ -62,23 +62,20 @@ public class ReplaceOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		ReplaceOperation replace = new ReplaceOperation("/1/description", 22);
+		ReplaceOperation replace = ReplaceOperation.valueAt("/1/description").with(22);
 		replace.perform(todos, Todo.class);
 
 		assertEquals("22", todos.get(1).getDescription());
 	}
 
-	/**
-	 * @see DATAREST-885
-	 */
-	@Test
+	@Test // DATAREST-885
 	public void replaceObjectPropertyValue() throws Exception {
 
 		Todo todo = new Todo(1L, "A", false);
 
 		ObjectMapper mapper = new ObjectMapper();
-		ReplaceOperation replace = new ReplaceOperation("/type",
-				new JsonLateObjectEvaluator(mapper, mapper.readTree("{ \"value\" : \"new\" }")));
+		ReplaceOperation replace = ReplaceOperation.valueAt("/type")
+				.with(new JsonLateObjectEvaluator(mapper, mapper.readTree("{ \"value\" : \"new\" }")));
 		replace.perform(todo, Todo.class);
 
 		assertNotNull(todo.getType());

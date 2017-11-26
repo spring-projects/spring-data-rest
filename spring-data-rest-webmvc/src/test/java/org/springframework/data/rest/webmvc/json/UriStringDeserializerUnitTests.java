@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
@@ -29,7 +28,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.UriToEntityConverter;
@@ -69,36 +68,24 @@ public class UriStringDeserializerUnitTests {
 		ReflectionTestUtils.setField(context, "_parser", parser);
 	}
 
-	/**
-	 * @see DATAREST-316
-	 */
-	@Test
+	@Test // DATAREST-316
 	public void extractsUriToForwardToConverter() throws Exception {
 		assertConverterInvokedWithUri("/foo/32", URI.create("/foo/32"));
 	}
 
-	/**
-	 * @see DATAREST-316
-	 */
-	@Test
+	@Test // DATAREST-316
 	public void extractsUriFromTemplateToForwardToConverter() throws Exception {
 		assertConverterInvokedWithUri("/foo/32{?projection}", URI.create("/foo/32"));
 	}
 
-	/**
-	 * @see DATAREST-377
-	 */
-	@Test
+	@Test // DATAREST-377
 	public void returnsNullUriIfSourceIsEmptyOrNull() throws Exception {
 
-		assertThat(invokeConverterWith(""), is(nullValue()));
-		assertThat(invokeConverterWith(null), is(nullValue()));
+		assertThat(invokeConverterWith("")).isNull();
+		assertThat(invokeConverterWith(null)).isNull();
 	}
 
-	/**
-	 * @see DATAREST-377
-	 */
-	@Test
+	@Test // DATAREST-377
 	public void rejectsNonUriValue() throws Exception {
 
 		exception.expect(JsonMappingException.class);

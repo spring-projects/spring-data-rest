@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 import java.util.Collection;
@@ -48,32 +49,23 @@ public class JacksonSerializersUnitTests {
 		this.mapper.registerModule(new JacksonSerializers(translator));
 	}
 
-	/**
-	 * @see DATAREST-929
-	 */
-	@Test
+	@Test // DATAREST-929
 	public void translatesPlainEnumCorrectly() throws Exception {
 
 		Sample result = mapper.readValue("{ \"property\" : \"value\"}", Sample.class);
 
-		assertThat(result.property, is(SampleEnum.VALUE));
+		assertThat(result.property).isEqualTo(SampleEnum.VALUE);
 	}
 
-	/**
-	 * @see DATAREST-929
-	 */
-	@Test
+	@Test // DATAREST-929
 	public void translatesCollectionOfEnumsCorrectly() throws Exception {
 
 		Sample result = mapper.readValue("{ \"collection\" : [ \"value\" ] }", Sample.class);
 
-		assertThat(result.collection, hasItem(SampleEnum.VALUE));
+		assertThat(result.collection).contains(SampleEnum.VALUE);
 	}
 
-	/**
-	 * @see DATAREST-929
-	 */
-	@Test
+	@Test // DATAREST-929
 	public void translatesEnumArraysCorrectly() throws Exception {
 
 		Sample result = mapper.readValue("{ \"array\" : [ \"value\" ] }", Sample.class);
@@ -81,15 +73,12 @@ public class JacksonSerializersUnitTests {
 		assertThat(result.array, hasItemInArray(SampleEnum.VALUE));
 	}
 
-	/**
-	 * @see DATAREST-929
-	 */
-	@Test
+	@Test // DATAREST-929
 	public void translatesMapEnumValueCorrectly() throws Exception {
 
 		Sample result = mapper.readValue("{ \"mapToEnum\" : { \"foo\" : \"value\" } }", Sample.class);
 
-		assertThat(result.mapToEnum.get("foo"), is(SampleEnum.VALUE));
+		assertThat(result.mapToEnum.get("foo")).isEqualTo(SampleEnum.VALUE);
 	}
 
 	static class Sample {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
@@ -23,12 +23,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
@@ -62,15 +63,12 @@ public class RepositoryPropertyReferenceControllerUnitTests {
 	@Mock RepositoryInvoker invoker;
 	@Mock ApplicationEventPublisher publisher;
 
-	KeyValueMappingContext mappingContext = new KeyValueMappingContext();
+	KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
 
-	/**
-	 * @see DATAREST-791
-	 */
-	@Test
+	@Test // DATAREST-791
 	public void usesRepositoryInvokerToLookupRelatedInstance() throws Exception {
 
-		KeyValuePersistentEntity<?> entity = mappingContext.getPersistentEntity(Sample.class);
+		KeyValuePersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(Sample.class);
 
 		ResourceMappings mappings = new PersistentEntitiesResourceMappings(
 				new PersistentEntities(Collections.singleton(mappingContext)));
@@ -82,8 +80,8 @@ public class RepositoryPropertyReferenceControllerUnitTests {
 		controller.setApplicationEventPublisher(publisher);
 
 		doReturn(invoker).when(invokerFactory).getInvokerFor(Reference.class);
-		doReturn(new Sample()).when(invoker).invokeFindOne(4711);
-		doReturn(new Reference()).when(invoker).invokeFindOne("some-id");
+		doReturn(Optional.of(new Sample())).when(invoker).invokeFindById(4711);
+		doReturn(Optional.of(new Reference())).when(invoker).invokeFindById("some-id");
 		doReturn(new Sample()).when(invoker).invokeSave(any(Object.class));
 
 		RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
@@ -92,7 +90,7 @@ public class RepositoryPropertyReferenceControllerUnitTests {
 		controller.createPropertyReference(information, HttpMethod.POST, request, 4711, "references");
 
 		verify(invokerFactory).getInvokerFor(Reference.class);
-		verify(invoker).invokeFindOne("some-id");
+		verify(invoker).invokeFindById("some-id");
 	}
 
 	@RestResource
