@@ -73,7 +73,6 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		mvc.perform(options(findItems.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.away")
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
 				.andExpect(status().isOk()) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.away")) //
 				.andExpect(
 						header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS,TRACE"));
 	}
