@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.2.RELEASE (2017-11-27)
+---------------------------------------------
+* DATAREST-1160 - Adapt test cases to new CORS defaults in Spring 5.0.2.
+* DATAREST-1159 - CONTRIBUTING file references wrong global contribution file.
+* DATAREST-1157 - Release 3.0.2 (Kay SR2).
+
+
 Changes in version 2.6.9.RELEASE (2017-11-27)
 ---------------------------------------------
 * DATAREST-1159 - CONTRIBUTING file references wrong global contribution file.
