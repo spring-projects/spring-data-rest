@@ -63,6 +63,14 @@ public class ValidationErrorsUnitTests {
 		expectedErrorBehavior(new ValidationErrors(new Foo(), entities));
 	}
 
+	@Test // DATAREST-1163
+	public void returnsNullForPropertyValue() {
+
+		ValidationErrors errors = new ValidationErrors(new Foo(), entities);
+
+		assertThat(errors.getFieldValue("bar")).isNull();
+	}
+
 	private static void expectedErrorBehavior(Errors errors) {
 
 		assertThat(errors.getFieldValue("bars")).isNotNull();
@@ -79,6 +87,7 @@ public class ValidationErrorsUnitTests {
 
 	static class Foo {
 		List<Bar> bars = Collections.singletonList(new Bar());
+		Bar bar = null;
 	}
 
 	static class Bar {

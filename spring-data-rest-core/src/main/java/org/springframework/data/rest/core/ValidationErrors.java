@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.springframework.data.rest.core;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Optional;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.ConfigurablePropertyAccessor;
@@ -83,16 +82,29 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 
 				do {
 
-					String segment = iterator.next();
-
-					Optional<? extends PersistentProperty<?>> property = entities.getPersistentEntity(value.getClass())//
-							.map(it -> it.getPersistentProperty(PropertyAccessorUtils.getPropertyName(segment)));
-
-					value = getValue(value, property, segment, propertyName);
+					value = lookupValueOn(value, iterator.next());
 
 				} while (iterator.hasNext());
 
 				return value;
+			}
+
+			/**
+			 * @param value the original value, must not be {@literal null}..
+			 * @param segment the property segment to look up, must not be {@literal null} or empty.
+			 * @return
+			 */
+			private Object lookupValueOn(Object value, String segment) {
+
+				PersistentProperty<?> property = entities.getPersistentEntity(value.getClass()) //
+						.map(it -> it.getPersistentProperty(PropertyAccessorUtils.getPropertyName(segment))) //
+						.orElseThrow(() -> new NotReadablePropertyException(value.getClass(), segment));
+
+				ConfigurablePropertyAccessor accessor = property.usePropertyAccess() //
+						? PropertyAccessorFactory.forBeanPropertyAccess(value) //
+						: PropertyAccessorFactory.forDirectFieldAccess(value);
+
+				return accessor.getPropertyValue(segment);
 			}
 		};
 	}
@@ -104,19 +116,5 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 	@Override
 	public Object getTarget() {
 		return source;
-	}
-
-	private static Object getValue(Object source, Optional<? extends PersistentProperty<?>> property, String segment,
-			String name) {
-
-		return property.map(it -> {
-
-			ConfigurablePropertyAccessor accessor = it.usePropertyAccess()
-					? PropertyAccessorFactory.forBeanPropertyAccess(source)
-					: PropertyAccessorFactory.forDirectFieldAccess(source);
-
-			return accessor.getPropertyValue(segment);
-
-		}).orElseThrow(() -> new NotReadablePropertyException(source.getClass(), name));
 	}
 }
