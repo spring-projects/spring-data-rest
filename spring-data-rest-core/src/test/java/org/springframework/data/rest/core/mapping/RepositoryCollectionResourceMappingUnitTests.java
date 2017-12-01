@@ -105,6 +105,16 @@ public class RepositoryCollectionResourceMappingUnitTests {
 		assertThat(mapping.getPath()).isEqualTo(new Path("/objects"));
 	}
 
+	@Test(expected = IllegalArgumentException.class) // DATAREST-79
+	public void throwsExceptionOnInvalidPathSegmentOnRepositoryRestResource(){
+		getResourceMappingFor(RepositoryRestResourceWithInvalidPathSegment.class);
+	}
+
+	@Test(expected = IllegalArgumentException.class) // DATAREST-79
+	public void throwsExceptionOnInvalidPathSegmentOnRestResource(){
+		getResourceMappingFor(RestResourceWithInvalidPathSegment.class);
+	}
+
 	private static CollectionResourceMapping getResourceMappingFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
@@ -132,4 +142,10 @@ public class RepositoryCollectionResourceMappingUnitTests {
 
 	@RepositoryRestResource(collectionResourceRel = "foo", itemResourceRel = "bar")
 	interface RepositoryAnnotatedRepository extends Repository<Person, Long> {}
+
+	@RepositoryRestResource(path = "path/with/slashes")
+	interface RepositoryRestResourceWithInvalidPathSegment extends Repository<Person, Long> {}
+
+	@RestResource(path = "path/with/slashes")
+	interface RestResourceWithInvalidPathSegment extends Repository<Person, Long> {}
 }

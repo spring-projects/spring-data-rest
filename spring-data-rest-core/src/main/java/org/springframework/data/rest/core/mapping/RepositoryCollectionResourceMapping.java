@@ -53,10 +53,10 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	/**
 	 * Creates a new {@link RepositoryCollectionResourceMapping} for the given repository using the given
 	 * {@link RelProvider}.
-	 * 
+	 *
+	 * @param metadata must not be {@literal null}.
 	 * @param strategy must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
-	 * @param repositoryType must not be {@literal null}.
 	 */
 	RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RepositoryDetectionStrategy strategy,
 			RelProvider relProvider) {
@@ -71,6 +71,13 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		this.annotation = AnnotationUtils.findAnnotation(repositoryType, RestResource.class);
 		this.repositoryAnnotation = AnnotationUtils.findAnnotation(repositoryType, RepositoryRestResource.class);
 		this.repositoryExported = strategy.isExported(metadata);
+
+		if(this.annotation != null) {
+			Assert.doesNotContain(this.annotation.path(), "/", String.format("the 'path' specified in @RestResource at %s must not contain a '/'", metadata.getRepositoryInterface().getName()));
+		}
+		if(this.repositoryAnnotation != null) {
+			Assert.doesNotContain(this.repositoryAnnotation.path(), "/", String.format("the 'path' specified in @RepositoryRestResource at %s must not contain a '/'", metadata.getRepositoryInterface().getName()));
+		}
 
 		Class<?> domainType = metadata.getDomainType();
 		this.domainTypeMapping = EVO_INFLECTOR_IS_PRESENT
