@@ -17,10 +17,6 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -31,6 +27,8 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -129,9 +127,7 @@ public class WrappedPropertiesUnitTests {
 		assertThat(wrappedProperties.hasPersistentPropertiesForField("street")).isFalse();
 	}
 
-	@Data
-	@AllArgsConstructor
-	@NoArgsConstructor
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class OneLevelNesting {
 
 		String one;
@@ -170,9 +166,7 @@ public class WrappedPropertiesUnitTests {
 	  </code>
 	 * </pre>
 	 */
-	@Data
-	@AllArgsConstructor
-	@NoArgsConstructor
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class MultiLevelNesting {
 
 		String multi;
@@ -181,9 +175,7 @@ public class WrappedPropertiesUnitTests {
 		@JsonUnwrapped(enabled = false) OneLevelNesting nested;
 	}
 
-	@Data
-	@AllArgsConstructor
-	@NoArgsConstructor
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Address {
 
 		String street;
