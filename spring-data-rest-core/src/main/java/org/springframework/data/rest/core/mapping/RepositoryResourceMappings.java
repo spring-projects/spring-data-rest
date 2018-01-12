@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
 public class RepositoryResourceMappings extends PersistentEntitiesResourceMappings {
 
 	private final Repositories repositories;
+	private final RepositoryDetectionStrategy strategy;
 	private final Map<Class<?>, SearchResourceMappings> searchCache = new HashMap<Class<?>, SearchResourceMappings>();
 
 	/**
@@ -73,6 +74,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		Assert.notNull(strategy, "RepositoryDetectionStrategy must not be null!");
 
 		this.repositories = repositories;
+		this.strategy = strategy;
 		this.populateCache(repositories, relProvider, strategy);
 	}
 
@@ -118,7 +120,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		if (resourceMapping.isExported()) {
 			for (Method queryMethod : repositoryInformation.getQueryMethods()) {
 				RepositoryMethodResourceMapping methodMapping = new RepositoryMethodResourceMapping(queryMethod,
-						resourceMapping, repositoryInformation);
+						resourceMapping, repositoryInformation, strategy);
 				if (methodMapping.isExported()) {
 					mappings.add(methodMapping);
 				}
@@ -155,5 +157,9 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 	@Override
 	public boolean isMapped(PersistentProperty<?> property) {
 		return repositories.hasRepositoryFor(property.getActualType()) && super.isMapped(property);
+	}
+
+	public RepositoryDetectionStrategy getRepositoryDetectionStrategy() {
+		return strategy;
 	}
 }
