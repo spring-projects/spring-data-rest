@@ -132,7 +132,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	private RepositoryMethodResourceMapping getMappingFor(Method method) {
-		return new RepositoryMethodResourceMapping(method, resourceMapping, metadata);
+		return new RepositoryMethodResourceMapping(method, resourceMapping, metadata, true);
 	}
 
 	static class Person {}

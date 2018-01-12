@@ -47,12 +47,14 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	 * Creates a new {@link CrudMethodsSupportedHttpMethods} for the given {@link CrudMethods}.
 	 * 
 	 * @param crudMethods must not be {@literal null}.
+	 * @param methodsExposedByDefault whether repository methods should be considered exposed by default or need to be
+	 *          annotated with {@link RestResource} to really be visible.
 	 */
-	public CrudMethodsSupportedHttpMethods(CrudMethods crudMethods) {
+	public CrudMethodsSupportedHttpMethods(CrudMethods crudMethods, boolean methodsExposedByDefault) {
 
 		Assert.notNull(crudMethods, "CrudMethods must not be null!");
+		this.exposedMethods = new DefaultExposureAwareCrudMethods(crudMethods, methodsExposedByDefault);
 
-		this.exposedMethods = new DefaultExposureAwareCrudMethods(crudMethods);
 	}
 
 	/* 
@@ -142,6 +144,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	private static class DefaultExposureAwareCrudMethods implements ExposureAwareCrudMethods {
 
 		private final @NonNull CrudMethods crudMethods;
+		private final boolean exportedDefault;
 
 		/* 
 		 * (non-Javadoc)
@@ -179,14 +182,14 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 			return exposes(crudMethods.getFindAllMethod());
 		}
 
-		private static boolean exposes(Method method) {
+		private boolean exposes(Method method) {
 
 			if (method == null) {
 				return false;
 			}
 
 			RestResource annotation = AnnotationUtils.findAnnotation(method, RestResource.class);
-			return annotation == null ? true : annotation.exported();
+			return annotation == null ? exportedDefault : annotation.exported();
 		}
 	}
 

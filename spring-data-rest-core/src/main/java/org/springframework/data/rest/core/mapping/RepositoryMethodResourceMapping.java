@@ -42,7 +42,6 @@ import org.springframework.util.StringUtils;
  */
 class RepositoryMethodResourceMapping implements MethodResourceMapping {
 
-	@SuppressWarnings("unchecked") //
 	private static final Collection<Class<?>> IMPLICIT_PARAMETER_TYPES = Arrays.asList(Pageable.class, Sort.class);
 	private static final AnnotationAttribute PARAM_VALUE = new AnnotationAttribute(Param.class);
 
@@ -61,8 +60,11 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	 * 
 	 * @param method must not be {@literal null}.
 	 * @param resourceMapping must not be {@literal null}.
+	 * @param metadata can be {@literal null}.
+	 * @param whether the methods are supposed to be exported by default.
 	 */
-	public RepositoryMethodResourceMapping(Method method, ResourceMapping resourceMapping, RepositoryMetadata metadata) {
+	public RepositoryMethodResourceMapping(Method method, ResourceMapping resourceMapping, RepositoryMetadata metadata,
+			boolean exposeMethodsByDefault) {
 
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notNull(resourceMapping, "ResourceMapping must not be null!");
@@ -70,7 +72,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		RestResource annotation = AnnotationUtils.findAnnotation(method, RestResource.class);
 		String resourceRel = resourceMapping.getRel();
 
-		this.isExported = annotation != null ? annotation.exported() : true;
+		this.isExported = annotation != null ? annotation.exported() : exposeMethodsByDefault;
 		this.rel = annotation == null || !StringUtils.hasText(annotation.rel()) ? method.getName() : annotation.rel();
 		this.path = annotation == null || !StringUtils.hasText(annotation.path()) ? new Path(method.getName())
 				: new Path(annotation.path());
