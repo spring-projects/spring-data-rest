@@ -131,7 +131,8 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	private RepositoryMethodResourceMapping getMappingFor(Method method) {
-		return new RepositoryMethodResourceMapping(method, resourceMapping, metadata);
+		RepositoryDetectionStrategy strategy = RepositoryDetectionStrategies.DEFAULT;
+		return new RepositoryMethodResourceMapping(method, resourceMapping, metadata, strategy);
 	}
 
 	static class Person {}

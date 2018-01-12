@@ -19,7 +19,6 @@ import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -49,11 +48,14 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	 *
 	 * @param crudMethods must not be {@literal null}.
 	 */
-	public CrudMethodsSupportedHttpMethods(CrudMethods crudMethods) {
+	public CrudMethodsSupportedHttpMethods(CrudMethods crudMethods, RepositoryResourceMappings provider) {
 
 		Assert.notNull(crudMethods, "CrudMethods must not be null!");
 
-		this.exposedMethods = new DefaultExposureAwareCrudMethods(crudMethods);
+		boolean exportedDefault = provider.getRepositoryDetectionStrategy()
+				!= RepositoryDetectionStrategy.RepositoryDetectionStrategies.EXPLICIT_METHOD_ANNOTATED;
+
+		this.exposedMethods = new DefaultExposureAwareCrudMethods(crudMethods, exportedDefault);
 	}
 
 	/*
@@ -139,10 +141,15 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	/**
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	private static class DefaultExposureAwareCrudMethods implements ExposureAwareCrudMethods {
 
 		private final @NonNull CrudMethods crudMethods;
+		private final boolean exportedDefault;
+
+		DefaultExposureAwareCrudMethods(CrudMethods crudMethods, boolean exportedDefault) {
+			this.crudMethods = crudMethods;
+			this.exportedDefault = exportedDefault;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -180,12 +187,12 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 			return exposes(crudMethods.getFindAllMethod());
 		}
 
-		private static boolean exposes(Optional<Method> method) {
+		private boolean exposes(Optional<Method> method) {
 
 			return method.map(it -> {
 
 				RestResource annotation = AnnotationUtils.findAnnotation(it, RestResource.class);
-				return annotation == null ? true : annotation.exported();
+				return annotation == null ? exportedDefault : annotation.exported();
 
 			}).orElse(false);
 		}
