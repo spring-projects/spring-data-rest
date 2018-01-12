@@ -89,6 +89,19 @@ public class RepositoryDetectionStrategiesUnitTests {
 		});
 	}
 
+	@Test // DATAREST-1176
+	public void onlyExplicitAnnotatedMethodsAreExposed() {
+
+		assertExposures(EXPLICIT_METHOD_ANNOTATED, new HashMap<Class<?>, Boolean>() {
+			{
+				put(AnnotatedRepository.class, true);
+				put(HiddenRepository.class, false);
+				put(PublicRepository.class, false);
+				put(PackageProtectedRepository.class, false);
+			}
+		});
+	}
+
 	private static void assertExposures(RepositoryDetectionStrategy strategy, Map<Class<?>, Boolean> expected) {
 
 		for (Entry<Class<?>, Boolean> entry : expected.entrySet()) {

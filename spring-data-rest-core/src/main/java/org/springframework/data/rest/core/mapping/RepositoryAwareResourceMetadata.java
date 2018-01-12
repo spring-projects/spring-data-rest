@@ -57,7 +57,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		this.mapping = mapping;
 		this.provider = provider;
 		this.repositoryMetadata = repositoryMetadata;
-		this.crudMethodsSupportedHttpMethods = new CrudMethodsSupportedHttpMethods(repositoryMetadata.getCrudMethods());
+		this.crudMethodsSupportedHttpMethods = new CrudMethodsSupportedHttpMethods(repositoryMetadata.getCrudMethods(), provider);
 	}
 
 	/**

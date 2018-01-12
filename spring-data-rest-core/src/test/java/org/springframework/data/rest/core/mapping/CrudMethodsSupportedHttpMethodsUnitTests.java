@@ -16,6 +16,7 @@
 package org.springframework.data.rest.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
@@ -23,8 +24,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
@@ -46,6 +49,14 @@ import org.springframework.http.HttpMethod;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CrudMethodsSupportedHttpMethodsUnitTests {
+
+	@Mock
+	private RepositoryResourceMappings mappings;
+
+	@Before
+	public void setUp() {
+		when(mappings.exposeMethodsByDefault()).thenReturn(true);
+	}
 
 	@Test // DATACMNS-589, DATAREST-409
 	public void doesNotSupportAnyHttpMethodForEmptyRepository() {
@@ -118,12 +129,12 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 		assertMethodsSupported(getSupportedHttpMethodsFor(NoFindOne.class), ITEM, false, DELETE);
 	}
 
-	private static SupportedHttpMethods getSupportedHttpMethodsFor(Class<?> repositoryInterface) {
+	private SupportedHttpMethods getSupportedHttpMethodsFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
 		CrudMethods crudMethods = new DefaultCrudMethods(metadata);
 
-		return new CrudMethodsSupportedHttpMethods(crudMethods);
+		return new CrudMethodsSupportedHttpMethods(crudMethods, mappings);
 	}
 
 	private static void assertMethodsSupported(SupportedHttpMethods methods, ResourceType type, boolean supported,
