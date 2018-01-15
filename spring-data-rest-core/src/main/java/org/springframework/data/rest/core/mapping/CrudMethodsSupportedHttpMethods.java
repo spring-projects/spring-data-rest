@@ -18,9 +18,6 @@ package org.springframework.data.rest.core.mapping;
 import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,6 +28,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.util.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 
@@ -141,11 +139,26 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	/**
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	private static class DefaultExposureAwareCrudMethods implements ExposureAwareCrudMethods {
 
-		private final @NonNull CrudMethods crudMethods;
+		private final Lazy<Boolean> exposesSave;
+		private final Lazy<Boolean> exposesDelete;
+		private final Lazy<Boolean> exposesFindOne;
+		private final Lazy<Boolean> exposesFindAll;
+
 		private final boolean exportedDefault;
+
+		DefaultExposureAwareCrudMethods(CrudMethods crudMethods, boolean exportedDefault) {
+
+			Assert.notNull(crudMethods, "CrudMethods must not be null!");
+
+			this.exposesSave = Lazy.of(() -> exposes(crudMethods.getSaveMethod()));
+			this.exposesDelete = Lazy.of(() -> exposes(crudMethods.getDeleteMethod()) && crudMethods.hasFindOneMethod());
+			this.exposesFindOne = Lazy.of(() -> exposes(crudMethods.getFindOneMethod()));
+			this.exposesFindAll = Lazy.of(() -> exposes(crudMethods.getFindAllMethod()));
+
+			this.exportedDefault = exportedDefault;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -153,7 +166,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 		 */
 		@Override
 		public boolean exposesSave() {
-			return exposes(crudMethods.getSaveMethod());
+			return exposesSave.get();
 		}
 
 		/*
@@ -162,7 +175,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 		 */
 		@Override
 		public boolean exposesDelete() {
-			return exposes(crudMethods.getDeleteMethod()) && crudMethods.hasFindOneMethod();
+			return exposesDelete.get();
 		}
 
 		/*
@@ -171,7 +184,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 		 */
 		@Override
 		public boolean exposesFindOne() {
-			return exposes(crudMethods.getFindOneMethod());
+			return exposesFindOne.get();
 		}
 
 		/*
@@ -180,7 +193,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 		 */
 		@Override
 		public boolean exposesFindAll() {
-			return exposes(crudMethods.getFindAllMethod());
+			return exposesFindAll.get();
 		}
 
 		private boolean exposes(Optional<Method> method) {
