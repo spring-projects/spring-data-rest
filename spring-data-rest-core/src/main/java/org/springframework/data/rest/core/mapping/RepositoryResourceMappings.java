@@ -26,6 +26,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
@@ -65,8 +66,8 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 	 * @param strategy must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
 	 */
-	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities, RepositoryDetectionStrategy strategy,
-			RelProvider relProvider) {
+	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities,
+			RepositoryDetectionStrategy strategy, RelProvider relProvider) {
 
 		super(entities);
 
@@ -120,7 +121,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		if (resourceMapping.isExported()) {
 			for (Method queryMethod : repositoryInformation.getQueryMethods()) {
 				RepositoryMethodResourceMapping methodMapping = new RepositoryMethodResourceMapping(queryMethod,
-						resourceMapping, repositoryInformation, strategy);
+						resourceMapping, repositoryInformation, exposeMethodsByDefault());
 				if (methodMapping.isExported()) {
 					mappings.add(methodMapping);
 				}
@@ -159,7 +160,14 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		return repositories.hasRepositoryFor(property.getActualType()) && super.isMapped(property);
 	}
 
-	public RepositoryDetectionStrategy getRepositoryDetectionStrategy() {
-		return strategy;
+	/**
+	 * Returns whether to expose repository methods by default, i.e. without the need to explicitly annotate them with
+	 * {@link RestResource}.
+	 * 
+	 * @since 3.1
+	 * @see RepositoryDetectionStrategy#exposeMethodsByDefault()
+	 */
+	public boolean exposeMethodsByDefault() {
+		return strategy.exposeMethodsByDefault();
 	}
 }

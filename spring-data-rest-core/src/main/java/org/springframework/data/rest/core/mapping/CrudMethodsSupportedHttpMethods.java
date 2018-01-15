@@ -19,6 +19,7 @@ import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -47,15 +48,14 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	 * Creates a new {@link CrudMethodsSupportedHttpMethods} for the given {@link CrudMethods}.
 	 *
 	 * @param crudMethods must not be {@literal null}.
+	 * @param methodsExposedByDefault whether repository methods should be considered exposed by default or need to be
+	 *          annotated with {@link RestResource} to really be visible.
 	 */
-	public CrudMethodsSupportedHttpMethods(CrudMethods crudMethods, RepositoryResourceMappings provider) {
+	public CrudMethodsSupportedHttpMethods(CrudMethods crudMethods, boolean methodsExposedByDefault) {
 
 		Assert.notNull(crudMethods, "CrudMethods must not be null!");
 
-		boolean exportedDefault = provider.getRepositoryDetectionStrategy()
-				!= RepositoryDetectionStrategy.RepositoryDetectionStrategies.EXPLICIT_METHOD_ANNOTATED;
-
-		this.exposedMethods = new DefaultExposureAwareCrudMethods(crudMethods, exportedDefault);
+		this.exposedMethods = new DefaultExposureAwareCrudMethods(crudMethods, methodsExposedByDefault);
 	}
 
 	/*
@@ -141,15 +141,11 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	/**
 	 * @author Oliver Gierke
 	 */
+	@RequiredArgsConstructor
 	private static class DefaultExposureAwareCrudMethods implements ExposureAwareCrudMethods {
 
 		private final @NonNull CrudMethods crudMethods;
 		private final boolean exportedDefault;
-
-		DefaultExposureAwareCrudMethods(CrudMethods crudMethods, boolean exportedDefault) {
-			this.crudMethods = crudMethods;
-			this.exportedDefault = exportedDefault;
-		}
 
 		/*
 		 * (non-Javadoc)

@@ -42,7 +42,6 @@ import org.springframework.util.StringUtils;
  */
 class RepositoryMethodResourceMapping implements MethodResourceMapping {
 
-	@SuppressWarnings("unchecked") //
 	private static final Collection<Class<?>> IMPLICIT_PARAMETER_TYPES = Arrays.asList(Pageable.class, Sort.class);
 	private static final AnnotationAttribute PARAM_VALUE = new AnnotationAttribute(Param.class);
 
@@ -61,9 +60,11 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	 *
 	 * @param method must not be {@literal null}.
 	 * @param resourceMapping must not be {@literal null}.
+	 * @param metadata can be {@literal null}.
+	 * @param whether the methods are supposed to be exported by default.
 	 */
 	public RepositoryMethodResourceMapping(Method method, ResourceMapping resourceMapping, RepositoryMetadata metadata,
-										   RepositoryDetectionStrategy strategy) {
+			boolean exposeMethodsByDefault) {
 
 		Assert.notNull(method, "Method must not be null!");
 		Assert.notNull(resourceMapping, "ResourceMapping must not be null!");
@@ -71,7 +72,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		RestResource annotation = AnnotationUtils.findAnnotation(method, RestResource.class);
 		String resourceRel = resourceMapping.getRel();
 
-		this.isExported = determineIsExported(strategy, annotation);
+		this.isExported = annotation != null ? annotation.exported() : exposeMethodsByDefault;
 		this.rel = annotation == null || !StringUtils.hasText(annotation.rel()) ? method.getName() : annotation.rel();
 		this.path = annotation == null || !StringUtils.hasText(annotation.path()) ? new Path(method.getName())
 				: new Path(annotation.path());
@@ -83,14 +84,6 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		this.paging = parameterTypes.contains(Pageable.class);
 		this.sorting = parameterTypes.contains(Sort.class);
 		this.metadata = metadata;
-	}
-
-	private boolean determineIsExported(RepositoryDetectionStrategy strategy, RestResource annotation) {
-
-		boolean exportedDefault = strategy
-				!= RepositoryDetectionStrategy.RepositoryDetectionStrategies.EXPLICIT_METHOD_ANNOTATED;
-
-		return annotation != null ? annotation.exported() : exportedDefault;
 	}
 
 	private static final List<ParameterMetadata> discoverParameterMetadata(Method method, String baseRel) {

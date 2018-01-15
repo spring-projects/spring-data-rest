@@ -26,6 +26,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
  * The strategy to determine whether a given repository is to be exported by Spring Data REST.
  *
  * @author Oliver Gierke
+ * @author Tobias Weiß
  * @since 2.5
  * @soundtrack Katinka - Ausverkauf
  */
@@ -38,6 +39,17 @@ public interface RepositoryDetectionStrategy {
 	 * @return
 	 */
 	boolean isExported(RepositoryMetadata metadata);
+
+	/**
+	 * Returns whether to expose repository methods by default, i.e. without the need to explicitly annotate them with
+	 * {@link RestResource}.
+	 * 
+	 * @return
+	 * @since 3.1
+	 */
+	default boolean exposeMethodsByDefault() {
+		return true;
+	}
 
 	/**
 	 * A variety of strategies to determine repository exposure.
@@ -99,14 +111,26 @@ public interface RepositoryDetectionStrategy {
 		},
 
 		/**
-		 * Behaves like the annotated strategy on repository level. But it does not export all methods
-		 * of an exported Repository. The methods have to be annotated explicitly too.
+		 * Behaves like the {@link RepositoryDetectionStrategies#ANNOTATED} strategy on repository level, but only exports
+		 * the methods of the repository that have been explicitly annotated with {@link RestResource}. CRUD methods need to
+		 * be annotated, too, for the default collection resource exposure to be applied.
+		 * 
+		 * @since 3.1
 		 */
-		EXPLICIT_METHOD_ANNOTATED {
+		EXPLICITLY_ANNOTATED {
 
 			@Override
 			public boolean isExported(RepositoryMetadata metadata) {
 				return isExplicitlyExported(metadata.getRepositoryInterface(), false);
+			}
+
+			/* 
+			 * (non-Javadoc)
+			 * @see org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy#exposeMethodsByDefault()
+			 */
+			@Override
+			public boolean exposeMethodsByDefault() {
+				return false;
 			}
 		};
 
