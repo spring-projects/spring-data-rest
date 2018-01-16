@@ -50,8 +50,7 @@ import org.springframework.http.HttpMethod;
 @RunWith(MockitoJUnitRunner.class)
 public class CrudMethodsSupportedHttpMethodsUnitTests {
 
-	@Mock
-	private RepositoryResourceMappings mappings;
+	@Mock private RepositoryResourceMappings mappings;
 
 	@Before
 	public void setUp() {
@@ -134,7 +133,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
 		CrudMethods crudMethods = new DefaultCrudMethods(metadata);
 
-		return new CrudMethodsSupportedHttpMethods(crudMethods, mappings);
+		return new CrudMethodsSupportedHttpMethods(crudMethods, mappings.exposeMethodsByDefault());
 	}
 
 	private static void assertMethodsSupported(SupportedHttpMethods methods, ResourceType type, boolean supported,

@@ -107,7 +107,7 @@ public class RepositoryTestsConfig {
 	public Module persistentEntityModule() {
 
 		RepositoryResourceMappings mappings = new RepositoryResourceMappings(repositories(), persistentEntities(),
-				config().getRepositoryDetectionStrategy());
+				config());
 		EntityLinks entityLinks = new RepositoryEntityLinks(repositories(), mappings, config(),
 				mock(PagingAndSortingTemplateVariables.class),
 				Java8PluginRegistry.of(Arrays.asList(DefaultIdConverter.INSTANCE)));

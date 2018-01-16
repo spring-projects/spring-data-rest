@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 import org.springframework.data.rest.core.support.EntityLookup;
@@ -65,6 +67,7 @@ public class RepositoryRestConfiguration {
 	private ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
 	private RepositoryDetectionStrategy repositoryDetectionStrategy = RepositoryDetectionStrategies.DEFAULT;
+	private boolean exposeRepositoryMethodsByDefault = true;
 
 	/**
 	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
@@ -569,6 +572,47 @@ public class RepositoryRestConfiguration {
 				: repositoryDetectionStrategy;
 
 		return this;
+	}
+
+	/**
+	 * Returns whether to expose repository methods by default.
+	 * 
+	 * @since 3.1
+	 * @see #setExposeRepositoryMethodsByDefault(boolean)
+	 */
+	public boolean exposeRepositoryMethodsByDefault() {
+		return this.exposeRepositoryMethodsByDefault;
+	}
+
+	/**
+	 * Sets whether to expose repository methods by default. If this is disabled, CRUD methods must be annotated with
+	 * {@link RestResource} explicitly to expose the default set of resources (opt-in). If this is set to {@literal true}
+	 * (default), repository methods methods are exposed unless explictly annotated with {@link RestResource} and
+	 * {@link RestResource#exported()} set to {@literal false}.
+	 * 
+	 * @since 3.1
+	 * @see #setRepositoryDetectionStrategy(RepositoryDetectionStrategy)
+	 */
+	public void setExposeRepositoryMethodsByDefault(boolean exposeRepositoryMethodsByDefault) {
+		this.exposeRepositoryMethodsByDefault = exposeRepositoryMethodsByDefault;
+	}
+
+	/**
+	 * Disables the default exposure of repositories entirely. I.e. repositories to be exported must now be explicitly
+	 * annotated with {@link RepositoryRestResource} and methods need to be annotated with {@link RestResource} to trigger
+	 * exposure of default resources. Basically a shortcut for calling both
+	 * {@link #setRepositoryDetectionStrategy(RepositoryDetectionStrategy)} to
+	 * {@link RepositoryDetectionStrategies#ANNOTATED} and setting {@link #setExposeRepositoryMethodsByDefault(boolean)}
+	 * to {@literal false}.
+	 * 
+	 * @since 3.1
+	 * @see #setRepositoryDetectionStrategy(RepositoryDetectionStrategy)
+	 * @see #setExposeRepositoryMethodsByDefault(boolean)
+	 */
+	public void disableDefaultExposure() {
+
+		setRepositoryDetectionStrategy(RepositoryDetectionStrategies.ANNOTATED);
+		setExposeRepositoryMethodsByDefault(false);
 	}
 
 	/**
