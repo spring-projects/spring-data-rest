@@ -41,17 +41,6 @@ public interface RepositoryDetectionStrategy {
 	boolean isExported(RepositoryMetadata metadata);
 
 	/**
-	 * Returns whether to expose repository methods by default, i.e. without the need to explicitly annotate them with
-	 * {@link RestResource}.
-	 * 
-	 * @return
-	 * @since 3.1
-	 */
-	default boolean exposeMethodsByDefault() {
-		return true;
-	}
-
-	/**
 	 * A variety of strategies to determine repository exposure.
 	 *
 	 * @author Oliver Gierke
@@ -107,30 +96,6 @@ public interface RepositoryDetectionStrategy {
 			@Override
 			public boolean isExported(RepositoryMetadata metadata) {
 				return isExplicitlyExported(metadata.getRepositoryInterface(), false);
-			}
-		},
-
-		/**
-		 * Behaves like the {@link RepositoryDetectionStrategies#ANNOTATED} strategy on repository level, but only exports
-		 * the methods of the repository that have been explicitly annotated with {@link RestResource}. CRUD methods need to
-		 * be annotated, too, for the default collection resource exposure to be applied.
-		 * 
-		 * @since 3.1
-		 */
-		EXPLICITLY_ANNOTATED {
-
-			@Override
-			public boolean isExported(RepositoryMetadata metadata) {
-				return isExplicitlyExported(metadata.getRepositoryInterface(), false);
-			}
-
-			/* 
-			 * (non-Javadoc)
-			 * @see org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy#exposeMethodsByDefault()
-			 */
-			@Override
-			public boolean exposeMethodsByDefault() {
-				return false;
 			}
 		};
 

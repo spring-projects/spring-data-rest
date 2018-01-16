@@ -16,6 +16,7 @@
 package org.springframework.data.rest.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,13 +33,15 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
+import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
+import org.springframework.data.rest.core.config.MetadataConfiguration;
+import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.domain.Author;
 import org.springframework.data.rest.core.domain.CreditCard;
 import org.springframework.data.rest.core.domain.JpaRepositoryConfig;
 import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.domain.Profile;
-import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
-import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -62,9 +65,12 @@ public class RepositoryResourceMappingsIntegrationTests {
 
 		mappingContext.getPersistentEntity(Profile.class);
 
+		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
+				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
+
 		Repositories repositories = new Repositories(factory);
 		this.mappings = new RepositoryResourceMappings(repositories, new PersistentEntities(Arrays.asList(mappingContext)),
-				RepositoryDetectionStrategies.DEFAULT, new EvoInflectorRelProvider());
+				configuration);
 	}
 
 	@Test

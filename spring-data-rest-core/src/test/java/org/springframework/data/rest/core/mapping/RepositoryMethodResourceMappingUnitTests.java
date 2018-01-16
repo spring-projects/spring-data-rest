@@ -38,9 +38,9 @@ import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.Re
  */
 public class RepositoryMethodResourceMappingUnitTests {
 
-	RepositoryDetectionStrategy strategy = RepositoryDetectionStrategies.DEFAULT;
 	RepositoryMetadata metadata = new DefaultRepositoryMetadata(PersonRepository.class);
-	RepositoryCollectionResourceMapping resourceMapping = new RepositoryCollectionResourceMapping(metadata, strategy);
+	RepositoryCollectionResourceMapping resourceMapping = new RepositoryCollectionResourceMapping(metadata,
+			RepositoryDetectionStrategies.DEFAULT);
 
 	@Test
 	public void defaultsMappingToMethodName() throws Exception {
@@ -131,7 +131,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	private RepositoryMethodResourceMapping getMappingFor(Method method) {
-		return new RepositoryMethodResourceMapping(method, resourceMapping, metadata, strategy.exposeMethodsByDefault());
+		return new RepositoryMethodResourceMapping(method, resourceMapping, metadata, true);
 	}
 
 	static class Person {}
