@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Craig Walls
  * @author Oliver Trosien
  * @author Oliver Gierke
+ * @author Simon Allegraud
  */
 @RequiredArgsConstructor
 class JsonLateObjectEvaluator implements LateObjectEvaluator {
@@ -42,7 +43,7 @@ class JsonLateObjectEvaluator implements LateObjectEvaluator {
 	public Object evaluate(Class<?> type) {
 
 		try {
-			return mapper.readValue(valueNode.traverse(), type);
+			return mapper.readValue(valueNode.traverse(mapper.getFactory().getCodec()), type);
 		} catch (Exception o_O) {
 			throw new PatchException(String.format("Could not read %s into %s!", valueNode, type), o_O);
 		}
