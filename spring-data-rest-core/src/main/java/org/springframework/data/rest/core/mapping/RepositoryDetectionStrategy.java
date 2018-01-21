@@ -96,6 +96,18 @@ public interface RepositoryDetectionStrategy {
 			public boolean isExported(RepositoryMetadata metadata) {
 				return isExplicitlyExported(metadata.getRepositoryInterface(), false);
 			}
+		},
+
+		/**
+		 * Behaves like the annotated strategy on repository level. But it does not export all methods
+		 * of an exported Repository. The methods have to be annotated explicitly too.
+		 */
+		EXPLICIT_METHOD_ANNOTATED {
+
+			@Override
+			public boolean isExported(RepositoryMetadata metadata) {
+				return isExplicitlyExported(metadata.getRepositoryInterface(), false);
+			}
 		};
 
 		/**
