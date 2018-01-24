@@ -26,6 +26,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
  */
 @CrossOrigin(origins = "http://not.so.far.away", //
 		allowCredentials = "true", //
-		methods = { GET, PATCH }, //
+		methods = { GET, PATCH, POST }, //
 		maxAge = 1234)
 public interface AuthorRepository extends CrudRepository<Author, Long> {}
