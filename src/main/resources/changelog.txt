@@ -1,6 +1,17 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.3.RELEASE (2018-01-24)
+---------------------------------------------
+* DATAREST-1184 - Adapt to CORS changes in Spring Framework 5.0.3.
+* DATAREST-1181 - Potential NullPointerException in JsonLateObjectEvaluator.evaluate(…).
+* DATAREST-1177 - DefaultExposureAwareCrudMethods should cache results.
+* DATAREST-1176 - Add ability to only expose repository methods explicitly declared for exposure.
+* DATAREST-1174 - Adapt WrappedProperties to changed defaults in Lombok 1.16.20.
+* DATAREST-1163 - Errors.reject() fails with NotReadablePropertyException when rejecting 'null' values.
+* DATAREST-1162 - Release 3.0.3 (Kay SR3).
+
+
 Changes in version 2.6.10.RELEASE (2018-01-24)
 ----------------------------------------------
 * DATAREST-1184 - Adapt to CORS changes in Spring Framework 5.0.3.
