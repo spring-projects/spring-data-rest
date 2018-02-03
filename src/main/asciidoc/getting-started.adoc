@@ -95,6 +95,13 @@ Spring Data REST uses a `RepositoryDetectionStrategy` to determine if a reposito
 | `VISIBILITY` | Only public repositories annotated are exposed.
 |===
 
+With Spring Boot 1.2+, strategy configurable via `application.properties`:
+
+[source,properties]
+----
+spring.data.rest.detection-strategy=annotated
+----
+
 === Changing the base URI
 
 By default, Spring Data REST serves up REST resources at the root URI, "/". There are multiple ways to change the base path.
