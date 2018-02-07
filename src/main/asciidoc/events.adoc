@@ -41,7 +41,7 @@ Another approach is to use an annotated handler, which does filter events based 
 
 To declare a handler, create a POJO and put the `@RepositoryEventHandler` annotation on it. This tells the `BeanPostProcessor` that this class needs to be inspected for handler methods.
 
-Once it finds a bean with this annotation, it iterates over the exposed methods and looks for annotations that correspond to the event you're interested in. For example, to handle `BeforeSaveEvent`s in an annotated POJO for different kinds of domain types, you'd define your class like this:
+Once it finds a bean with this annotation, it iterates over the exposed methods and looks for annotations that correspond to the event you're interested in. For example, to handle ``BeforeSaveEvent``s in an annotated POJO for different kinds of domain types, you'd define your class like this:
 
 [source,java]
 ----
