@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		this.repositoryInvokerFactory = repositoryInvokerFactory;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
 	 */
@@ -478,7 +478,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					String.format(message, parameters));
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Throwable#getMessage()
 		 */

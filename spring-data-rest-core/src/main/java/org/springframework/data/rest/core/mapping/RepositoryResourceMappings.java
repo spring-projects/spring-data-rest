@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,64 +26,55 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.hateoas.RelProvider;
-import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
 
 /**
  * Central abstraction obtain {@link ResourceMetadata} and {@link ResourceMapping} instances for domain types and
  * repositories.
- * 
+ *
  * @author Oliver Gierke
  */
 public class RepositoryResourceMappings extends PersistentEntitiesResourceMappings {
 
 	private final Repositories repositories;
+	private final RepositoryRestConfiguration configuration;
 	private final Map<Class<?>, SearchResourceMappings> searchCache = new HashMap<Class<?>, SearchResourceMappings>();
-
-	/**
-	 * Creates a new {@link RepositoryResourceMappings} using the given {@link Repositories} and
-	 * {@link PersistentEntities}.
-	 * 
-	 * @param repositories must not be {@literal null}.
-	 * @param entities must not be {@literal null}.
-	 * @param strategy must not be {@literal null}.
-	 */
-	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities,
-			RepositoryDetectionStrategy strategy) {
-		this(repositories, entities, strategy, new EvoInflectorRelProvider());
-	}
 
 	/**
 	 * Creates a new {@link RepositoryResourceMappings} from the given {@link RepositoryRestConfiguration},
 	 * {@link Repositories} and {@link RelProvider}.
-	 * 
+	 *
 	 * @param repositories must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
 	 * @param strategy must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
 	 */
-	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities, RepositoryDetectionStrategy strategy,
-			RelProvider relProvider) {
+	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities,
+			RepositoryRestConfiguration configuration) {
 
 		super(entities);
 
 		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(strategy, "RepositoryDetectionStrategy must not be null!");
+		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
 
 		this.repositories = repositories;
-		this.populateCache(repositories, relProvider, strategy);
+		this.configuration = configuration;
+		this.populateCache(repositories, configuration);
 	}
 
-	private final void populateCache(Repositories repositories, RelProvider provider,
-			RepositoryDetectionStrategy strategy) {
+	private final void populateCache(Repositories repositories, RepositoryRestConfiguration configuration) {
 
 		for (Class<?> type : repositories) {
 
 			RepositoryInformation repositoryInformation = repositories.getRequiredRepositoryInformation(type);
 			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
 			PersistentEntity<?, ?> entity = repositories.getPersistentEntity(type);
+
+			RepositoryDetectionStrategy strategy = configuration.getRepositoryDetectionStrategy();
+			RelProvider provider = configuration.getRelProvider();
 
 			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInformation, strategy,
 					provider);
@@ -98,7 +89,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#getSearchResourceMappings(java.lang.Class)
 	 */
@@ -118,7 +109,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		if (resourceMapping.isExported()) {
 			for (Method queryMethod : repositoryInformation.getQueryMethods()) {
 				RepositoryMethodResourceMapping methodMapping = new RepositoryMethodResourceMapping(queryMethod,
-						resourceMapping, repositoryInformation);
+						resourceMapping, repositoryInformation, exposeMethodsByDefault());
 				if (methodMapping.isExported()) {
 					mappings.add(methodMapping);
 				}
@@ -130,7 +121,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		return searchResourceMappings;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#hasMappingFor(java.lang.Class)
 	 */
@@ -148,12 +139,23 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings#isMapped(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@Override
 	public boolean isMapped(PersistentProperty<?> property) {
 		return repositories.hasRepositoryFor(property.getActualType()) && super.isMapped(property);
+	}
+
+	/**
+	 * Returns whether to expose repository methods by default, i.e. without the need to explicitly annotate them with
+	 * {@link RestResource}.
+	 * 
+	 * @since 3.1
+	 * @see RepositoryRestConfiguration#exposeRepositoryMethodsByDefault()
+	 */
+	public boolean exposeMethodsByDefault() {
+		return configuration.exposeRepositoryMethodsByDefault();
 	}
 }

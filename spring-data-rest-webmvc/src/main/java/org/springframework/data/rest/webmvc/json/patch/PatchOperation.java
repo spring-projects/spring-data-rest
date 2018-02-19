@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Abstract base class representing and providing support methods for patch operations.
- * 
+ *
  * @author Craig Walls
  * @author Mathias Düsterhöft
  * @author Oliver Gierke
@@ -34,7 +34,7 @@ public abstract class PatchOperation {
 
 	/**
 	 * Constructs the operation.
-	 * 
+	 *
 	 * @param op the operation name. (e.g., 'move')
 	 * @param path the path to perform the operation on. (e.g., '/1/description')
 	 */
@@ -44,7 +44,7 @@ public abstract class PatchOperation {
 
 	/**
 	 * Performs late-value evaluation on the operation value if the value is a {@link LateObjectEvaluator}.
-	 * 
+	 *
 	 * @param targetObject the target object, used as assistance in determining the evaluated object's type.
 	 * @param entityType the entityType
 	 * @param <T> the entity type
@@ -61,7 +61,7 @@ public abstract class PatchOperation {
 
 	/**
 	 * Perform the operation in the given target object.
-	 * 
+	 *
 	 * @param target the target of the operation, must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 */

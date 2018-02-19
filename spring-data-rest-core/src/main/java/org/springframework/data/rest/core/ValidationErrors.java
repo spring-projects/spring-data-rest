@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.springframework.data.rest.core;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Optional;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.ConfigurablePropertyAccessor;
@@ -37,7 +36,7 @@ import org.springframework.validation.Errors;
 /**
  * An {@link Errors} implementation for use in the events mechanism of Spring Data REST. Customizes actual field lookup
  * by using a {@link PersistentPropertyAccessor} for actual value lookups.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -50,7 +49,7 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 
 	/**
 	 * Creates a new {@link ValidationErrors} instance for the given source object and {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param source the source object to gather validation errors on, must not be {@literal null}.
 	 * @param entity the {@link PersistentEntity} for the given source instance, must not be {@literal null}.
 	 */
@@ -65,7 +64,7 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 		this.source = source;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.validation.AbstractPropertyBindingResult#getPropertyAccessor()
 	 */
@@ -83,40 +82,39 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 
 				do {
 
-					String segment = iterator.next();
-
-					Optional<? extends PersistentProperty<?>> property = entities.getPersistentEntity(value.getClass())//
-							.map(it -> it.getPersistentProperty(PropertyAccessorUtils.getPropertyName(segment)));
-
-					value = getValue(value, property, segment, propertyName);
+					value = lookupValueOn(value, iterator.next());
 
 				} while (iterator.hasNext());
 
 				return value;
 			}
+
+			/**
+			 * @param value the original value, must not be {@literal null}..
+			 * @param segment the property segment to look up, must not be {@literal null} or empty.
+			 * @return
+			 */
+			private Object lookupValueOn(Object value, String segment) {
+
+				PersistentProperty<?> property = entities.getPersistentEntity(value.getClass()) //
+						.map(it -> it.getPersistentProperty(PropertyAccessorUtils.getPropertyName(segment))) //
+						.orElseThrow(() -> new NotReadablePropertyException(value.getClass(), segment));
+
+				ConfigurablePropertyAccessor accessor = property.usePropertyAccess() //
+						? PropertyAccessorFactory.forBeanPropertyAccess(value) //
+						: PropertyAccessorFactory.forDirectFieldAccess(value);
+
+				return accessor.getPropertyValue(segment);
+			}
 		};
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.validation.AbstractBindingResult#getTarget()
 	 */
 	@Override
 	public Object getTarget() {
 		return source;
-	}
-
-	private static Object getValue(Object source, Optional<? extends PersistentProperty<?>> property, String segment,
-			String name) {
-
-		return property.map(it -> {
-
-			ConfigurablePropertyAccessor accessor = it.usePropertyAccess()
-					? PropertyAccessorFactory.forBeanPropertyAccess(source)
-					: PropertyAccessorFactory.forDirectFieldAccess(source);
-
-			return accessor.getPropertyValue(segment);
-
-		}).orElseThrow(() -> new NotReadablePropertyException(source.getClass(), name));
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link SimpleAssociationHandler} that will collect {@link Link}s for all linkable associations.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.1
  */
@@ -48,7 +48,7 @@ public class LinkCollectingAssociationHandler implements SimpleAssociationHandle
 	/**
 	 * Creates a new {@link LinkCollectingAssociationHandler} for the given {@link PersistentEntities}, {@link Path} and
 	 * {@link Associations}.
-	 * 
+	 *
 	 * @param entities must not be {@literal null}.
 	 * @param path must not be {@literal null}.
 	 * @param associations must not be {@literal null}.
@@ -78,14 +78,14 @@ public class LinkCollectingAssociationHandler implements SimpleAssociationHandle
 
 	/**
 	 * Returns the links collected after the {@link Association} has been traversed.
-	 * 
+	 *
 	 * @return the links
 	 */
 	public List<Link> getLinks() {
 		return links;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
 	 */

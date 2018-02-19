@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 /**
  * Controller exposing semantic documentation for the resources exposed using the Application Level Profile Semantics
  * format.
- * 
+ *
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @see <a href="http://alps.io">http://alps.io</a>
@@ -51,7 +51,7 @@ public class AlpsController {
 
 	/**
 	 * Creates a new {@link AlpsController} for the given {@link ResourceMappings}.
-	 * 
+	 *
 	 * @param configuration must not be {@literal null}.
 	 */
 	@Autowired
@@ -64,7 +64,7 @@ public class AlpsController {
 
 	/**
 	 * Exposes the allowed HTTP methods for the ALPS resources.
-	 * 
+	 *
 	 * @return
 	 */
 	@RequestMapping(value = ProfileController.RESOURCE_PROFILE_MAPPING, method = OPTIONS,
@@ -81,7 +81,7 @@ public class AlpsController {
 
 	/**
 	 * Exposes an ALPS resource to describe an individual repository resource.
-	 * 
+	 *
 	 * @param information
 	 * @return
 	 */

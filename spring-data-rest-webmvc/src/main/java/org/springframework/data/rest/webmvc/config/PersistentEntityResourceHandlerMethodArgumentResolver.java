@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Custom {@link HandlerMethodArgumentResolver} to create {@link PersistentEntityResource} instances.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -70,7 +70,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	/**
 	 * Creates a new {@link PersistentEntityResourceHandlerMethodArgumentResolver} for the given
 	 * {@link HttpMessageConverter}s and {@link RootResourceInformationHandlerMethodArgumentResolver}..
-	 * 
+	 *
 	 * @param messageConverters must not be {@literal null}.
 	 * @param resourceInformationResolver must not be {@literal null}.
 	 * @param idResolver must not be {@literal null}.
@@ -159,7 +159,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	/**
 	 * Reads the given {@link ServerHttpRequest} into an object of the type of the given {@link RootResourceInformation},
 	 * potentially applying the content to an object of the given id.
-	 * 
+	 *
 	 * @param information must not be {@literal null}.
 	 * @param request must not be {@literal null}.
 	 * @param converter must not be {@literal null}.

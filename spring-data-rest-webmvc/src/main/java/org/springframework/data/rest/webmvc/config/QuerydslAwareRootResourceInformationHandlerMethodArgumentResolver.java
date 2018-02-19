@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import com.querydsl.core.types.Predicate;
 /**
  * {@link HandlerMethodArgumentResolver} to create {@link RootResourceInformation} for injection into Spring MVC
  * controller methods.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.4
  */
@@ -56,7 +56,7 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 	/**
 	 * Creates a new {@link QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver} using the given
 	 * {@link Repositories}, {@link RepositoryInvokerFactory} and {@link ResourceMetadataHandlerMethodArgumentResolver}.
-	 * 
+	 *
 	 * @param repositories must not be {@literal null}.
 	 * @param invokerFactory must not be {@literal null}.
 	 * @param resourceMetadataResolver must not be {@literal null}.
@@ -72,7 +72,7 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 		this.factory = factory;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.config.RootResourceInformationHandlerMethodArgumentResolver#postProcess(org.springframework.data.repository.support.RepositoryInvoker, java.lang.Class, java.util.Map)
 	 */
@@ -111,7 +111,7 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 
 	/**
 	 * Converts the given Map into a {@link MultiValueMap}.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Component to discover annotated repository event handlers and trigger them on {@link ApplicationEvent}s.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -142,7 +142,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 	/**
 	 * Inspects the given handler method for an annotation of the given type. If the annotation present an
 	 * {@link EventHandlerMethod} is registered for the given {@link RepositoryEvent} type.
-	 * 
+	 *
 	 * @param handler must not be {@literal null}.
 	 * @param method must not be {@literal null}.
 	 * @param annotationType must not be {@literal null}.
@@ -199,7 +199,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 			return new EventHandlerMethod(targetType, method, handler);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see java.lang.Comparable#compareTo(java.lang.Object)
 		 */

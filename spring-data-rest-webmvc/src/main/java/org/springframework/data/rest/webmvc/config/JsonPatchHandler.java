@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * JSON Patch library by Francis Galiegue but applies a customization to remove operations. As the patched node set
  * needs to be applied to the existing domain objects (see {@link DomainObjectReader} for that) we turn remove calls
  * into
- * 
+ *
  * @author Oliver Gierke
  * @author Mathias Düsterhöft
  * @see <a href="http://tools.ietf.org/html/rfc6902">http://tools.ietf.org/html/rfc6902</a>
@@ -49,7 +49,7 @@ class JsonPatchHandler {
 
 	/**
 	 * Creates a new {@link JsonPatchHandler} with the given {@link ObjectMapper} and {@link DomainObjectReader}.
-	 * 
+	 *
 	 * @param mapper must not be {@literal null}.
 	 * @param reader must not be {@literal null}.
 	 */
@@ -67,7 +67,7 @@ class JsonPatchHandler {
 
 	/**
 	 * Applies the body of the given {@link IncomingRequest} as patch on the given target object.
-	 * 
+	 *
 	 * @param request must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @return
@@ -101,7 +101,7 @@ class JsonPatchHandler {
 
 	/**
 	 * Returns all {@link JsonPatchOperation}s to be applied.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 * @throws HttpMessageNotReadableException in case the payload can't be read.

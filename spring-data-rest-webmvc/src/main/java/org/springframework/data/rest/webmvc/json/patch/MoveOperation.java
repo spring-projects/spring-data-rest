@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
  * on the values of each item in the list. When the same list resource is retrieved again later, the order will again be
  * decided by the query, effectively undoing any previous move operation.
  * </p>
- * 
+ *
  * @author Craig Walls
  * @author Oliver Gierke
  */
@@ -39,7 +39,7 @@ class MoveOperation extends PatchOperation {
 
 	/**
 	 * Constructs the move operation.
-	 * 
+	 *
 	 * @param path The path to move the source value to. (e.g., '/foo/bar/4')
 	 * @param from The source path from which a value will be moved. (e.g., '/foo/bar/5')
 	 */

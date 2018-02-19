@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Operation that replaces the value at the given path with a new value.
- * 
+ *
  * @author Craig Walls
  * @author Oliver Gierke
  */
@@ -28,7 +28,7 @@ class ReplaceOperation extends PatchOperation {
 
 	/**
 	 * Constructs the replace operation
-	 * 
+	 *
 	 * @param path The path whose value is to be replaced. (e.g., '/foo/bar/4')
 	 * @param value The value that will replace the current path value.
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
 
 /**
  * A customer.
- * 
+ *
  * @author Oliver Gierke
  * @author David Turanski
  * @author Mark Paluch
@@ -37,7 +37,7 @@ public class Customer extends AbstractPersistentEntity {
 
 	/**
 	 * Creates a new {@link Customer} from the given parameters.
-	 * 
+	 *
 	 * @param id the unique id;
 	 * @param emailAddress must not be {@literal null} or empty.
 	 * @param firstname must not be {@literal null} or empty.
@@ -58,7 +58,7 @@ public class Customer extends AbstractPersistentEntity {
 
 	/**
 	 * Adds the given {@link Address} to the {@link Customer}.
-	 * 
+	 *
 	 * @param address must not be {@literal null}.
 	 */
 	public void add(Address address) {
@@ -69,7 +69,7 @@ public class Customer extends AbstractPersistentEntity {
 
 	/**
 	 * Returns the firstname of the {@link Customer}.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getFirstname() {
@@ -78,7 +78,7 @@ public class Customer extends AbstractPersistentEntity {
 
 	/**
 	 * Sets the firstname of the {@link Customer}.
-	 * 
+	 *
 	 * @param firstname
 	 */
 	public void setFirstname(String firstname) {
@@ -87,7 +87,7 @@ public class Customer extends AbstractPersistentEntity {
 
 	/**
 	 * Returns the lastname of the {@link Customer}.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getLastname() {
@@ -96,7 +96,7 @@ public class Customer extends AbstractPersistentEntity {
 
 	/**
 	 * Sets the lastname of the {@link Customer}.
-	 * 
+	 *
 	 * @param lastname
 	 */
 	public void setLastname(String lastname) {
@@ -105,7 +105,7 @@ public class Customer extends AbstractPersistentEntity {
 
 	/**
 	 * Returns the {@link EmailAddress} of the {@link Customer}.
-	 * 
+	 *
 	 * @return
 	 */
 	public EmailAddress getEmailAddress() {
@@ -114,7 +114,7 @@ public class Customer extends AbstractPersistentEntity {
 
 	/**
 	 * Sets the emailAddress of the {@link Customer}.
-	 * 
+	 *
 	 * @param emailAddress
 	 */
 	public void setEmailAddress(EmailAddress emailAddress) {
@@ -123,7 +123,7 @@ public class Customer extends AbstractPersistentEntity {
 
 	/**
 	 * Return the {@link Customer}'s addresses.
-	 * 
+	 *
 	 * @return
 	 */
 	public Set<Address> getAddresses() {

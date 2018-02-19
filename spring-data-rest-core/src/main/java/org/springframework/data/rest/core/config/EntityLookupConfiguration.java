@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.springframework.util.Assert;
 /**
  * Configuration instance to implement {@link EntityLookupRegistrar}. Exposed via
  * {@link RepositoryRestConfiguration#withEntityLookup()}.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.5
  */
@@ -57,7 +57,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		return this;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar#forValueRepository(java.lang.Class)
 	 */
@@ -76,7 +76,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		return new MappingBuilder<T, ID, R>(type);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar#forValueRepository(java.lang.Class, org.springframework.core.convert.converter.Converter, org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupRegistrar.Lookup)
 	 */
@@ -102,7 +102,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 
 		/**
 		 * Creates a new {@link MappingBuilder} using the given repository type and identifier mapping.
-		 * 
+		 *
 		 * @param repositoryType must not be {@literal null}.
 		 * @param mapping must not be {@literal null}.
 		 */
@@ -130,7 +130,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			return EntityLookupConfiguration.this;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar.IdMappingRegistrar#withIdMapping(org.springframework.core.convert.converter.Converter)
 		 */
@@ -142,7 +142,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 
 	/**
 	 * Returns the {@link EntityLookup}s registered on this configuration.
-	 * 
+	 *
 	 * @param repositories must not be {@literal null}.
 	 * @return
 	 */
@@ -172,7 +172,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 
 		/**
 		 * Creates a new {@link RepositoriesEntityLookup} for the given {@link Repositories} and {@link LookupInformation}.
-		 * 
+		 *
 		 * @param repositories must not be {@literal null}.
 		 * @param lookupInformation must not be {@literal null}.
 		 */
@@ -194,7 +194,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 							"No repository found for type " + information.getDomainType().getName() + "!"));
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.support.EntityLookup#getResourceIdentifier(java.lang.Object)
 		 */
@@ -203,7 +203,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			return lookupInfo.getIdentifierMapping().convert(entity);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.support.EntityLookup#lookupEntity(java.io.Serializable)
 		 */
@@ -216,7 +216,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			return Optional.class.isInstance(result) ? (Optional<T>) result : Optional.ofNullable((T) result);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
 		 */

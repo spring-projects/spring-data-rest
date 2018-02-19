@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * {@link PagingAndSortingTemplateVariables} implementation to delegate to the HATEOAS-enabled
  * {@link HandlerMethodArgumentResolver}s for {@link Pageable} and {@link Sort}.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.3
  */
@@ -50,7 +50,7 @@ class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSort
 	/**
 	 * Creates a new {@link ArgumentResolverPagingAndSortingTemplateVariables} using the given
 	 * {@link HateoasPageableHandlerMethodArgumentResolver} and {@link HateoasSortHandlerMethodArgumentResolver}.
-	 * 
+	 *
 	 * @param pagingResolver must not be {@literal null}.
 	 * @param sortResolver must not be {@literal null}.
 	 */
@@ -64,7 +64,7 @@ class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSort
 		this.sortResolver = sortResolver;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables#getPaginationTemplateVariables(org.springframework.core.MethodParameter, org.springframework.web.util.UriComponents)
 	 */
@@ -73,7 +73,7 @@ class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSort
 		return pagingResolver.getPaginationTemplateVariables(parameter, components);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables#getSortTemplateVariables(org.springframework.core.MethodParameter, org.springframework.web.util.UriComponents)
 	 */
@@ -82,7 +82,7 @@ class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSort
 		return sortResolver.getSortTemplateVariables(parameter, template);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.hateoas.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
 	 */
@@ -96,7 +96,7 @@ class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSort
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.hateoas.mvc.UriComponentsContributor#supportsParameter(org.springframework.core.MethodParameter)
 	 */

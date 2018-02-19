@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
 /**
  * Default implementation of SelfLinkProvider that uses an {@link EntityLinks} instance to create self links. Considers
  * the configured {@link EntityLookup}s to use the returned resource identifier to eventually create the link.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.5
  * @soundtrack Trio Rotation - Travis
@@ -40,7 +40,7 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 	/**
 	 * Creates a new {@link DefaultSelfLinkProvider} from the {@link PersistentEntities}, {@link EntityLinks} and
 	 * {@link EntityLookup}s.
-	 * 
+	 *
 	 * @param entities must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param lookups must not be {@literal null}.
@@ -70,7 +70,7 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 
 	/**
 	 * Returns the identifier to be used to create the self link URI.
-	 * 
+	 *
 	 * @param instance must not be {@literal null}.
 	 * @return
 	 */

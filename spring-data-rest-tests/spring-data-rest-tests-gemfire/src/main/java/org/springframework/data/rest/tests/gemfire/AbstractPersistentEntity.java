@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import org.springframework.data.annotation.Id;
 
 /**
  * Base class for persistent classes.
- * 
+ *
  * @author Oliver Gierke
  * @author David Turanski
  */
@@ -29,7 +29,7 @@ public class AbstractPersistentEntity {
 
 	/**
 	 * Returns the identifier of the entity.
-	 * 
+	 *
 	 * @return the id
 	 */
 	public Long getId() {
@@ -44,7 +44,7 @@ public class AbstractPersistentEntity {
 		this.id = null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -64,7 +64,7 @@ public class AbstractPersistentEntity {
 		return this.id.equals(that.getId());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */

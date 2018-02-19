@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * parameters used in the REST exporter controller. Also only looks for handler methods in the Spring Data REST provided
  * controller classes to help isolate this handler adapter from other handler adapters the user might have configured in
  * their Spring MVC context.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -40,7 +40,7 @@ public class RepositoryRestHandlerAdapter
 	/**
 	 * Creates a new {@link RepositoryRestHandlerAdapter} using the given {@link HandlerMethodArgumentResolver} and
 	 * {@link org.springframework.hateoas.mvc.ResourceProcessorInvoker}.
-	 * 
+	 *
 	 * @param argumentResolvers must not be {@literal null}.
 	 * @param invoker must not be {@literal null}.
 	 */

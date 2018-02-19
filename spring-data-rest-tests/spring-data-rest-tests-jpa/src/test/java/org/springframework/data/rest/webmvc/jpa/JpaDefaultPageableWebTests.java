@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 original author or authors.
+ * Copyright 2016-2018 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * Web integration tests specific to default {@link Pageable} handling.
- * 
+ *
  * @author Mark Paluch
  */
 @RunWith(SpringJUnit4ClassRunner.class)

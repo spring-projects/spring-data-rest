@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.springframework.http.MediaType;
 
 /**
  * A description of a resource. Resolvable to plain text by using a {@link MessageSource}.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface ResourceDescription extends MessageSourceResolvable {
@@ -29,14 +29,14 @@ public interface ResourceDescription extends MessageSourceResolvable {
 	/**
 	 * Returns the description. This can be a message source code or a custom text format. Prefer resolving the
 	 * {@link ResourceDescription} using a {@link MessageSource}.
-	 * 
+	 *
 	 * @return
 	 */
 	String getMessage();
 
 	/**
 	 * Returns whether this is the default description.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isDefault();

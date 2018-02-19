@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.springframework.util.Assert;
 
 /**
  * Value object for a list of {@link ParameterMetadata} instances.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ParametersMetadata implements Iterable<ParameterMetadata> {
@@ -32,7 +32,7 @@ public class ParametersMetadata implements Iterable<ParameterMetadata> {
 
 	/**
 	 * Creates a new {@link ParametersMetadata} instance for the given {@link ParameterMetadata} instances.
-	 * 
+	 *
 	 * @param parameterMetadata must not be {@literal null}.
 	 */
 	ParametersMetadata(List<ParameterMetadata> parameterMetadata) {
@@ -44,7 +44,7 @@ public class ParametersMetadata implements Iterable<ParameterMetadata> {
 
 	/**
 	 * Returns all parameter names.
-	 * 
+	 *
 	 * @return
 	 */
 	public List<String> getParameterNames() {
@@ -58,7 +58,7 @@ public class ParametersMetadata implements Iterable<ParameterMetadata> {
 		return names;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */

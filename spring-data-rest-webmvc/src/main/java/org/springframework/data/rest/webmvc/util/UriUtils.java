@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Utility methods to work with requests and URIs.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  */
@@ -38,7 +38,7 @@ public abstract class UriUtils {
 
 	/**
 	 * Returns the value for the mapping variable with the given name.
-	 * 
+	 *
 	 * @param variable must not be {@literal null} or empty.
 	 * @param method must not be {@literal null}.
 	 * @param lookupPath

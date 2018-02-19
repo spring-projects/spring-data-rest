@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public class SimpleResourceDescription extends ResolvableResourceDescriptionSupp
 
 	/**
 	 * Creates a new {@link SimpleResourceDescription} with the given message and {@link MediaType}.
-	 * 
+	 *
 	 * @param message must not be {@literal null} or empty.
 	 * @param mediaType must not be {@literal null} or empty.
 	 */
@@ -73,7 +73,7 @@ public class SimpleResourceDescription extends ResolvableResourceDescriptionSupp
 		return StringUtils.hasText(message) && message.startsWith(DEFAULT_KEY_PREFIX);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.MessageSourceResolvable#getCodes()
 	 */

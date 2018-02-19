@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.springframework.util.Assert;
 /**
  * Value object to prepare {@link HttpHeaders} for {@link PersistentEntityResource} and {@link PersistentEntity}
  * instances.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Ron Spielman Trio - Matchstick
  */
@@ -52,7 +52,7 @@ public class HttpHeadersPreparer {
 	/**
 	 * Returns the default headers to be returned for the given {@link PersistentEntityResource}. Will set {@link ETag}
 	 * and {@code Last-Modified} headers if applicable.
-	 * 
+	 *
 	 * @param resource can be {@literal null}.
 	 * @return
 	 */
@@ -66,7 +66,7 @@ public class HttpHeadersPreparer {
 	/**
 	 * Returns the default headers to be returned for the given {@link PersistentEntity} and value. Will set {@link ETag}
 	 * and {@code Last-Modified} headers if applicable.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 * @param value must not be {@literal null}.
 	 * @return
@@ -87,7 +87,7 @@ public class HttpHeadersPreparer {
 
 	/**
 	 * Returns whether the given object is still valid in the context of the given {@link HttpHeaders}' requirements.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param headers must not be {@literal null}.
 	 * @return
@@ -108,7 +108,7 @@ public class HttpHeadersPreparer {
 
 	/**
 	 * Returns the {@link AuditableBeanWrapper} for the given source.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @return
 	 */

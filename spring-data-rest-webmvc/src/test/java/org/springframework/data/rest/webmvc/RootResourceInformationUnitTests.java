@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 original author or authors.
+ * Copyright 2014-2018 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 /**
  * Unit tests for {@link RootResourceInformation}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -63,14 +63,14 @@ public class RootResourceInformationUnitTests {
 
 	/**
 	 * Helper class to default boolean methods to return {@literal true} instead of {@literal false} by default.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	static class DefaultBooleanToTrue implements Answer<Object> {
 
 		private static final Answer<Object> DEFAULT = Mockito.RETURNS_DEFAULTS;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.mockito.stubbing.Answer#answer(org.mockito.invocation.InvocationOnMock)
 		 */

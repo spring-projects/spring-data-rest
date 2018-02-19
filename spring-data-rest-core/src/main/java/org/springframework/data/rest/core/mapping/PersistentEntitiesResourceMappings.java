@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.springframework.util.ClassUtils;
 
 /**
  * {@link ResourceMappings} for {@link PersistentEntities}.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  */
@@ -47,14 +47,14 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 
 	/**
 	 * Creates a new {@link PersistentEntitiesResourceMappings} from the given {@link PersistentEntities}.
-	 * 
+	 *
 	 * @param entities must not be {@literal null}.
 	 */
 	public PersistentEntitiesResourceMappings(PersistentEntities entities) {
 		this.entities = entities;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#getMappingFor(java.lang.Class)
 	 */
@@ -77,7 +77,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 
 	/**
 	 * Returns the {@link MappingResourceMetadata} for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return the {@link MappingResourceMetadata} if the given type is a {@link PersistentEntity}, {@literal null}
 	 *         otherwise.
@@ -104,7 +104,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		}).orElse(null);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#getSearchResourceMappings(java.lang.Class)
 	 */
@@ -113,7 +113,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		return searchResourceMappings;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#exportsMappingFor(java.lang.Class)
 	 */
@@ -128,7 +128,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		return metadata.isExported();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#exportsTopLevelResourceFor(java.lang.String)
 	 */
@@ -146,7 +146,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#hasMappingFor(java.lang.Class)
 	 */
@@ -160,7 +160,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#getMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
@@ -185,7 +185,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		return metadata != null && metadata.isExported();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
@@ -205,7 +205,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 
 	/**
 	 * Adds the given {@link ResourceMetadata} to the cache.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param metadata can be {@literal null}.
 	 */
@@ -215,7 +215,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 
 	/**
 	 * Returns whether we currently already have {@link ResourceMetadata} for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */

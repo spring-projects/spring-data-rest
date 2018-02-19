@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class IncomingRequest {
 
 	/**
 	 * Creates a new {@link IncomingRequest} from {@link ServerHttpRequest}.
-	 * 
+	 *
 	 * @param request must not be {@literal null}.
 	 */
 	public IncomingRequest(ServerHttpRequest request) {
@@ -49,7 +49,7 @@ public class IncomingRequest {
 
 	/**
 	 * Returns whether the request is a PATCH request.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isPatchRequest() {
@@ -58,7 +58,7 @@ public class IncomingRequest {
 
 	/**
 	 * Returns whether the request is a PATCH request with a payload of type {@link RestMediaTypes#JSON_PATCH_JSON}.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isJsonPatchRequest() {
@@ -67,7 +67,7 @@ public class IncomingRequest {
 
 	/**
 	 * Returns whether the request is a PATCH request with a payload of type {@link RestMediaTypes#MERGE_PATCH_JSON}.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isJsonMergePatchRequest() {
@@ -76,7 +76,7 @@ public class IncomingRequest {
 
 	/**
 	 * Returns the body of the request.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 * @throws IOException
 	 */
@@ -86,7 +86,7 @@ public class IncomingRequest {
 
 	/**
 	 * Returns the underlying {@link ServerHttpRequest}.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	public ServerHttpRequest getServerHttpRequest() {

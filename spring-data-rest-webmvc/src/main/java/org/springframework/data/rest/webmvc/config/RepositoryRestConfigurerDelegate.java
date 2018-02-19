@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Delegating implementation of {@link RepositoryRestConfigurer} that will forward all calls to configuration methods to
  * all registered {@link RepositoryRestConfigurer}.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Florian Reichelt & Max Ender - Abschlusskonzert (https://www.youtube.com/watch?v=5WP0P-ndinY)
  */
@@ -39,7 +39,7 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 
 	/**
 	 * Creates a new {@link RepositoryRestConfigurerDelegate} for the given {@link RepositoryRestConfigurer}s.
-	 * 
+	 *
 	 * @param delegates must not be {@literal null}.
 	 */
 	public RepositoryRestConfigurerDelegate(Iterable<RepositoryRestConfigurer> delegates) {
@@ -49,7 +49,7 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		this.delegates = delegates;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration)
 	 */
@@ -61,7 +61,7 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureConversionService(org.springframework.core.convert.support.ConfigurableConversionService)
 	 */
@@ -73,7 +73,7 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureExceptionHandlerExceptionResolver(org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver)
 	 */
@@ -85,7 +85,7 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureHttpMessageConverters(java.util.List)
 	 */
@@ -97,7 +97,7 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureJacksonObjectMapper(com.fasterxml.jackson.databind.ObjectMapper)
 	 */
@@ -109,7 +109,7 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureValidatingRepositoryEventListener(org.springframework.data.rest.core.event.ValidatingRepositoryEventListener)
 	 */

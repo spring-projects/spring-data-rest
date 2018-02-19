@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
 
 /**
  * A {@link RelProvider} based on the {@link ResourceMappings} for the registered repositories.
- * 
+ *
  * @author Oliver Gierke
  */
 @Order(Ordered.LOWEST_PRECEDENCE + 10)
@@ -34,7 +34,7 @@ public class RepositoryRelProvider implements RelProvider {
 
 	/**
 	 * Creates a new {@link RepositoryRelProvider} for the given {@link ResourceMappings}.
-	 * 
+	 *
 	 * @param mappings must not be {@literal null}.
 	 */
 	public RepositoryRelProvider(ObjectFactory<ResourceMappings> mappings) {
@@ -43,7 +43,7 @@ public class RepositoryRelProvider implements RelProvider {
 		this.mappings = mappings;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.hateoas.RelProvider#getCollectionResourceRelFor(java.lang.Class)
 	 */
@@ -52,7 +52,7 @@ public class RepositoryRelProvider implements RelProvider {
 		return mappings.getObject().getMetadataFor(type).getRel();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.hateoas.RelProvider#getItemResourceRelFor(java.lang.Class)
 	 */
@@ -61,7 +61,7 @@ public class RepositoryRelProvider implements RelProvider {
 		return mappings.getObject().getMetadataFor(type).getItemResourceRel();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
 	 */

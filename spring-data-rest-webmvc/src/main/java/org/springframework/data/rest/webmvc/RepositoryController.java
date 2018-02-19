@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Controller for the root resource exposing links to the repository resources.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -48,7 +48,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	/**
 	 * Creates a new {@link RepositoryController} for the given {@link PagedResourcesAssembler}, {@link Repositories},
 	 * {@link EntityLinks} and {@link ResourceMappings}.
-	 * 
+	 *
 	 * @param assembler must not be {@literal null}.
 	 * @param repositories must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
@@ -71,7 +71,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 
 	/**
 	 * <code>OPTIONS /</code>.
-	 * 
+	 *
 	 * @return
 	 * @since 2.2
 	 */
@@ -86,7 +86,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 
 	/**
 	 * <code>HEAD /</code>
-	 * 
+	 *
 	 * @return
 	 * @since 2.2
 	 */
@@ -97,7 +97,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 
 	/**
 	 * Lists all repositories exported by creating a link list pointing to resources exposing the repositories.
-	 * 
+	 *
 	 * @return
 	 */
 	@RequestMapping(value = { "/", "" }, method = RequestMethod.GET)

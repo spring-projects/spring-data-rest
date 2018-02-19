@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.springframework.data.rest.core.config.ResourceMapping;
 
 /**
  * Helper methods to get the default rel and path values or to use values supplied by annotations.
- * 
+ *
  * @author Jon Brisbin
  * @author Florent Biville
  * @author Oliver Gierke

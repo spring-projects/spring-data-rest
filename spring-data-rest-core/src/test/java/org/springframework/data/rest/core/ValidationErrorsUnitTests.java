@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 original author or authors.
+ * Copyright 2016-2018 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.springframework.validation.Errors;
 
 /**
  * Unit tests for {@link ValidationErrors}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ValidationErrorsUnitTests {
@@ -63,6 +63,14 @@ public class ValidationErrorsUnitTests {
 		expectedErrorBehavior(new ValidationErrors(new Foo(), entities));
 	}
 
+	@Test // DATAREST-1163
+	public void returnsNullForPropertyValue() {
+
+		ValidationErrors errors = new ValidationErrors(new Foo(), entities);
+
+		assertThat(errors.getFieldValue("bar")).isNull();
+	}
+
 	private static void expectedErrorBehavior(Errors errors) {
 
 		assertThat(errors.getFieldValue("bars")).isNotNull();
@@ -79,6 +87,7 @@ public class ValidationErrorsUnitTests {
 
 	static class Foo {
 		List<Bar> bars = Collections.singletonList(new Bar());
+		Bar bar = null;
 	}
 
 	static class Bar {

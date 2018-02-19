@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * {@link HttpMessageConverter} to render {@link Alps} and {@link RootResourceInformation} instances as
  * {@code application/alps+json}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConverter
@@ -48,7 +48,7 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 
 	/**
 	 * Creates a new {@link AlpsJsonHttpMessageConverter} for the given {@link Converter}.
-	 * 
+	 *
 	 * @param converter must not be {@literal null}.
 	 */
 	public AlpsJsonHttpMessageConverter(RootResourceInformationToAlpsDescriptorConverter converter) {
@@ -64,7 +64,7 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 		setSupportedMediaTypes(Arrays.asList(RestMediaTypes.ALPS_JSON, MediaType.APPLICATION_JSON, MediaType.ALL));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
 	 */
@@ -74,7 +74,7 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 				&& super.canWrite(clazz, mediaType);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.http.converter.AbstractGenericHttpMessageConverter#canWrite(java.lang.reflect.Type, java.lang.Class, org.springframework.http.MediaType)
 	 */
@@ -83,7 +83,7 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 		return canWrite(clazz, mediaType);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter#canRead(java.lang.reflect.Type, java.lang.Class, org.springframework.http.MediaType)
 	 */
@@ -92,7 +92,7 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice#beforeBodyWrite(java.lang.Object, org.springframework.core.MethodParameter, org.springframework.http.MediaType, java.lang.Class, org.springframework.http.server.ServerHttpRequest, org.springframework.http.server.ServerHttpResponse)
 	 */
@@ -105,7 +105,7 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 				? Collections.singletonMap("alps", converter.convert((RootResourceInformation) body)) : body;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice#supports(org.springframework.core.MethodParameter, java.lang.Class)
 	 */

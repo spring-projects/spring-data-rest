@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public class SolrInfrastructureConfig {
 	 * <br />
 	 * To prevent error messages popping up we register a {@link CloseHook} re adding the index directory and removing it
 	 * after {@link SolrCore#close()}.
-	 * 
+	 *
 	 * @param factory
 	 */
 	private void attachCloseHook(SolrClientFactory factory) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.util.StringUtils;
 /**
  * A {@link ResourceDescription} that is customized based on a {@link Description} annotation. Allows to fall back on
  * another {@link ResourceDescription} to provide defaults.
- * 
+ *
  * @author Oliver Gierke
  */
 public class AnnotationBasedResourceDescription extends ResolvableResourceDescriptionSupport {
@@ -34,7 +34,7 @@ public class AnnotationBasedResourceDescription extends ResolvableResourceDescri
 
 	/**
 	 * Creates a new {@link AnnotationBasedResourceDescription} for the given {@link Description} and fallback.
-	 * 
+	 *
 	 * @param description must not be {@literal null}.
 	 * @param fallback must not be {@literal null}.
 	 */
@@ -55,7 +55,7 @@ public class AnnotationBasedResourceDescription extends ResolvableResourceDescri
 		this.fallback = fallback;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.context.MessageSourceResolvable#getCodes()
 	 */
@@ -64,7 +64,7 @@ public class AnnotationBasedResourceDescription extends ResolvableResourceDescri
 		return fallback.getCodes();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceDescription#getMessage()
 	 */
@@ -80,7 +80,7 @@ public class AnnotationBasedResourceDescription extends ResolvableResourceDescri
 		return null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceDescription#isDefault()
 	 */

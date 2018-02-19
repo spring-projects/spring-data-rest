@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link RootResourceMetadata} based on a {@link PersistentEntity}.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.1
  */
@@ -43,7 +43,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 
 	/**
 	 * Creates a new {@link MappingResourceMetadata} for the given {@link PersistentEntity}.
-	 * 
+	 *
 	 * @param entity must not be {@literal null}.
 	 */
 	public MappingResourceMetadata(PersistentEntity<?, ?> entity, ResourceMappings resourceMappings) {
@@ -61,7 +61,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 				.orElse(false);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getDomainType()
 	 */
@@ -70,7 +70,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		return entity.getType();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#isExported(org.springframework.data.mapping.PersistentProperty)
 	 */
@@ -79,7 +79,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		return getMappingFor(property).isExported();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
@@ -88,7 +88,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		return propertyMappings.getMappingFor(property);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getSearchResourceMappings()
 	 */
@@ -97,7 +97,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		return new SearchResourceMappings(Collections.<MethodResourceMapping> emptyList());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getSupportedHttpMethods()
 	 */
@@ -106,7 +106,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		return NoSupportedMethods.INSTANCE;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.RootResourceMetadata#getProperty(java.lang.String)
 	 */
@@ -115,7 +115,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		return propertyMappings.getMappingFor(mappedPath);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.TypeBasedCollectionResourceMapping#isExported()
 	 */
@@ -126,7 +126,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 
 	/**
 	 * Value object for {@link ResourceMapping}s for {@link PersistentProperty} instances.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @see 2.1
 	 */
@@ -137,7 +137,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 
 		/**
 		 * Creates a new {@link PropertyMappings} instance for the given {@link ResourceMappings}.
-		 * 
+		 *
 		 * @param resourceMappings
 		 */
 		public PropertyMappings(ResourceMappings resourceMappings) {
@@ -148,7 +148,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 			this.propertyMappings = new HashMap<PersistentProperty<?>, PropertyAwareResourceMapping>();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
 		 */
@@ -157,7 +157,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 			doWithPersistentProperty(association.getInverse());
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.mapping.SimplePropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
 		 */
@@ -172,7 +172,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 
 		/**
 		 * Returns the {@link PropertyAwareResourceMapping} for the given mapped path.
-		 * 
+		 *
 		 * @param mappedPath must not be {@literal null} or empty.
 		 * @return the {@link PropertyAwareResourceMapping} if found, {@literal null} otherwise.
 		 */
@@ -191,7 +191,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 
 		/**
 		 * Returns the {@link ResourceMapping} for the given {@link PersistentProperty}.
-		 * 
+		 *
 		 * @param property must not be {@literal null}.
 		 * @return
 		 */
