@@ -16,6 +16,8 @@
 package org.springframework.data.rest.webmvc.support;
 
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 
 import java.util.List;
 
@@ -28,6 +30,8 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.handler.MatchableHandlerMapping;
+import org.springframework.web.servlet.handler.RequestMatchResult;
 
 /**
  * A {@link HandlerMapping} that considers a {@link List} of delegates. It will keep on traversing the delegates in case
@@ -36,7 +40,7 @@ import org.springframework.web.servlet.HandlerMapping;
  * @author Oliver Gierke
  * @soundtrack Benny Greb - Stabila (Moving Parts)
  */
-public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
+public class DelegatingHandlerMapping implements HandlerMapping, Ordered, MatchableHandlerMapping {
 
 	private final @Getter List<HandlerMapping> delegates;
 
@@ -67,32 +71,81 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
 	 */
 	@Override
 	public HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		return HandlerSelectionResult.from(request, delegates).resultOrException();
+	}
 
-		Exception exception = null;
+	/* 
+	 * (non-Javadoc)
+	 * @see org.springframework.web.servlet.handler.MatchableHandlerMapping#match(javax.servlet.http.HttpServletRequest, java.lang.String)
+	 */
+	@Override
+	public RequestMatchResult match(HttpServletRequest request, String pattern) {
 
-		for (HandlerMapping delegate : delegates) {
+		try {
+			return HandlerSelectionResult.from(request, delegates).match(pattern);
+		} catch (Exception o_O) {
+			return null;
+		}
+	}
 
-			try {
+	@Value
+	private static class HandlerSelectionResult {
 
-				HandlerExecutionChain result = delegate.getHandler(request);
+		@NonNull HttpServletRequest request;
+		HandlerMapping mapping;
+		HandlerExecutionChain result;
+		Exception ignoredException;
 
-				if (result != null) {
-					return result;
+		public static HandlerSelectionResult from(HttpServletRequest request, Iterable<HandlerMapping> delegates)
+				throws Exception {
+
+			Exception ignoredException = null;
+
+			for (HandlerMapping delegate : delegates) {
+
+				try {
+
+					HandlerExecutionChain result = delegate.getHandler(request);
+
+					if (result != null) {
+						return HandlerSelectionResult.forResult(request, delegate, result);
+					}
+
+				} catch (HttpMediaTypeNotAcceptableException o_O) {
+					ignoredException = o_O;
+				} catch (HttpRequestMethodNotSupportedException o_O) {
+					ignoredException = o_O;
+				} catch (UnsatisfiedServletRequestParameterException o_O) {
+					ignoredException = o_O;
 				}
-
-			} catch (HttpMediaTypeNotAcceptableException o_O) {
-				exception = o_O;
-			} catch (HttpRequestMethodNotSupportedException o_O) {
-				exception = o_O;
-			} catch (UnsatisfiedServletRequestParameterException o_O) {
-				exception = o_O;
 			}
+
+			return HandlerSelectionResult.withoutResult(request, ignoredException);
 		}
 
-		if (exception != null) {
-			throw exception;
+		private static HandlerSelectionResult forResult(HttpServletRequest request, HandlerMapping delegate,
+				HandlerExecutionChain result) {
+			return new HandlerSelectionResult(request, delegate, result, null);
 		}
 
-		return null;
+		private static HandlerSelectionResult withoutResult(HttpServletRequest request, Exception exception) {
+			return new HandlerSelectionResult(request, null, null, exception);
+		}
+
+		public HandlerExecutionChain resultOrException() throws Exception {
+
+			if (ignoredException != null) {
+				throw ignoredException;
+			}
+
+			return result;
+		}
+
+		public RequestMatchResult match(String pattern) {
+
+			return MatchableHandlerMapping.class.isInstance(mapping) //
+					? ((MatchableHandlerMapping) mapping).match(request, pattern) //
+					: null;
+		}
 	}
 }
