@@ -83,7 +83,7 @@ public class ResourceTester {
 
 	private final Link assertHasLinkMatching(String rel, Matcher<String> hrefMatcher) {
 
-		Link link = resource.getLink(rel);
+		Link link = resource.getRequiredLink(rel);
 		assertThat("Expected link with rel '" + rel + "' but didn't find it in " + resource.getLinks(), link,
 				is(notNullValue()));
 

@@ -113,6 +113,6 @@ public class RepositoryController extends AbstractRepositoryRestController {
 			}
 		}
 
-		return new ResponseEntity<RepositoryLinksResource>(resource, HttpStatus.OK);
+		return new ResponseEntity<>(resource, HttpStatus.OK);
 	}
 }

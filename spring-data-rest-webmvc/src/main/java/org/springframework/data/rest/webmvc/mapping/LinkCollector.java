@@ -141,7 +141,7 @@ public class LinkCollector {
 	private Link createSelfLink(Object object, Links existing) {
 
 		if (existing.hasLink(Link.REL_SELF)) {
-			return existing.getLink(Link.REL_SELF);
+			return existing.getLink(Link.REL_SELF).get();
 		}
 
 		return links.createSelfLinkFor(object).withSelfRel();

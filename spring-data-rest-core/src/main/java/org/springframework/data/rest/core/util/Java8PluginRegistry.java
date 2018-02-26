@@ -46,7 +46,7 @@ public class Java8PluginRegistry<T extends Plugin<S>, S> {
 	}
 
 	public Optional<T> getPluginFor(S delimiter) {
-		return Optional.ofNullable(registry.getPluginFor(delimiter));
+		return registry.getPluginFor(delimiter);
 	}
 
 	public T getPluginOrDefaultFor(S delimiter, T fallback) {

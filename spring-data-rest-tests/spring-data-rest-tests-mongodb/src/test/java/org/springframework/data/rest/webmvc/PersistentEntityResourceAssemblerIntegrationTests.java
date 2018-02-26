@@ -68,7 +68,7 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 		Links links = new Links(resource.getLinks());
 
 		assertThat(links).hasSize(2);
-		assertThat(links.getLink("self").getVariables()).isEmpty();
-		assertThat(links.getLink("user").getVariableNames()).contains("projection");
+		assertThat(links.getLink("self").orElseThrow(() -> new RuntimeException("Unable to find 'self' link")).getVariables()).isEmpty();
+		assertThat(links.getLink("user").orElseThrow(() -> new RuntimeException("Unable to find 'user' link")).getVariableNames()).contains("projection");
 	}
 }

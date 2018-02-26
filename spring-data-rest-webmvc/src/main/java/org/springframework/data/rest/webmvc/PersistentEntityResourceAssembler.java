@@ -73,7 +73,7 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 		return PersistentEntityResource.build(instance, entity).//
 				withEmbedded(getEmbeddedResources(source)).//
-				withLink(getSelfLinkFor(source)).//
+				withLink(getExpandedSelfLink(source)).//
 				withLink(linkProvider.createSelfLinkFor(source));
 	}
 
@@ -89,14 +89,12 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 	}
 
 	/**
-	 * Creates the self link for the given domain instance.
+	 * Creates the self link for the given domain instance, with no templated parameters.
 	 *
 	 * @param instance must be a managed entity, not {@literal null}.
 	 * @return
 	 */
-	public Link getSelfLinkFor(Object instance) {
-
-		Link link = linkProvider.createSelfLinkFor(instance);
-		return new Link(link.expand().getHref(), Link.REL_SELF);
+	Link getExpandedSelfLink(Object instance) {
+		return linkProvider.createSelfLinkFor(instance).withSelfRel().expand();
 	}
 }

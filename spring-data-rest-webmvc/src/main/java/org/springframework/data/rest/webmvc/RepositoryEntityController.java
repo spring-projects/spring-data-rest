@@ -499,7 +499,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 */
 	private void addLocationHeader(HttpHeaders headers, PersistentEntityResourceAssembler assembler, Object source) {
 
-		String selfLink = assembler.getSelfLinkFor(source).getHref();
+		String selfLink = assembler.getExpandedSelfLink(source).getHref();
 		headers.setLocation(new UriTemplate(selfLink).expand());
 	}
 

@@ -344,23 +344,20 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		List<TypeInformation<?>> parameterTypeInformations = ClassTypeInformation.from(method.getDeclaringClass())
 				.getParameterTypes(method);
 
-		for (Entry<String, List<Object>> entry : parameters.entrySet()) {
+		parameters.entrySet().forEach(entry ->
 
-			MethodParameter parameter = methodParameters.getParameter(entry.getKey());
+			methodParameters.getParameter(entry.getKey()).ifPresent(parameter -> {
 
-			if (parameter == null) {
-				continue;
+				int parameterIndex = parameterList.indexOf(parameter);
+				TypeInformation<?> domainType = parameterTypeInformations.get(parameterIndex).getActualType();
+
+				ResourceMetadata metadata = mappings.getMetadataFor(domainType.getType());
+
+				if (metadata != null && metadata.isExported()) {
+					result.put(parameter.getParameterName(), prepareUris(entry.getValue()));
+				}
 			}
-
-			int parameterIndex = parameterList.indexOf(parameter);
-			TypeInformation<?> domainType = parameterTypeInformations.get(parameterIndex).getActualType();
-
-			ResourceMetadata metadata = mappings.getMetadataFor(domainType.getType());
-
-			if (metadata != null && metadata.isExported()) {
-				result.put(parameter.getParameterName(), prepareUris(entry.getValue()));
-			}
-		}
+		));
 
 		return invoker.invokeQueryMethod(method, result, pageable.getPageable(), sort);
 	}

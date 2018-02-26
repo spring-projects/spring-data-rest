@@ -530,8 +530,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	public ObjectMapper halObjectMapper() {
 
-		RelProvider defaultedRelProvider = this.relProvider.orElseGet(() -> new EvoInflectorRelProvider());
-		HalConfiguration halConfiguration = this.halConfiguration.orElseGet(() -> new HalConfiguration());
+		RelProvider defaultedRelProvider = this.relProvider.orElseGet(EvoInflectorRelProvider::new);
+		HalConfiguration halConfiguration = this.halConfiguration.orElseGet(HalConfiguration::new);
 
 		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider, curieProvider.orElse(null),
 				resourceDescriptionMessageSourceAccessor(), halConfiguration);

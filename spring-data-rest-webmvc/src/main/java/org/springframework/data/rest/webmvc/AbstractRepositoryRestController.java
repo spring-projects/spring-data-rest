@@ -63,7 +63,7 @@ class AbstractRepositoryRestController {
 
 		ResourceMetadata repoMapping = resourceLink.getResourceMetadata();
 
-		Link selfLink = resource.getLink("self");
+		Link selfLink = resource.getRequiredLink(Link.REL_SELF);
 		String rel = repoMapping.getItemResourceRel();
 
 		return new Link(selfLink.getHref(), rel);
