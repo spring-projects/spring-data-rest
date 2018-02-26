@@ -54,6 +54,7 @@ import org.springframework.data.util.CastUtils;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
 import org.springframework.util.Assert;
@@ -123,7 +124,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			LookupObjectSerializer lookupObjectSerializer, ResourceProcessorInvoker invoker,
 			EmbeddedResourcesAssembler assembler) {
 
-		super(new Version(2, 0, 0, null, "org.springframework.data.rest", "jackson-module"));
+		super("persistent-entity-resource", new Version(2, 0, 0, null, "org.springframework.data.rest", "jackson-module"));
 
 		Assert.notNull(associations, "AssociationLinks must not be null!");
 		Assert.notNull(entities, "Repositories must not be null!");

@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.MediaTypes;
@@ -79,7 +80,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 			// Resource
 			client.follow(link).andExpect(status().is2xxSuccessful());
 
-			Link profileLink = client.discoverUnique(link, "profile");
+			Link profileLink = client.discoverUnique(link, IanaLinkRelation.PROFILE.value());
 
 			// Default metadata
 			client.follow(profileLink).andExpect(status().is2xxSuccessful());
@@ -117,7 +118,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 			Link link = client.assertHasLinkWithRel(rel, response);
 			String rootResourceRepresentation = client.request(link).getContentAsString();
-			Link searchLink = client.getDiscoverer(response).findLinkWithRel("search", rootResourceRepresentation);
+			Link searchLink = client.getDiscoverer(response).findLinkWithRel(IanaLinkRelation.SEARCH.value(), rootResourceRepresentation);
 
 			if (searchLink != null) {
 				client.follow(searchLink).//
@@ -183,17 +184,15 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-230
 	public void exposesDescriptionAsAlpsDocuments() throws Exception {
 
-		MediaType ALPS_MEDIA_TYPE = MediaType.valueOf("application/alps+json");
-
 		MockHttpServletResponse response = client.request("/");
-		Link profileLink = client.assertHasLinkWithRel("profile", response);
+		Link profileLink = client.assertHasLinkWithRel(IanaLinkRelation.PROFILE.value(), response);
 
 		mvc.perform(//
 				get(profileLink.expand().getHref()).//
-						accept(ALPS_MEDIA_TYPE))
+						accept(RestMediaTypes.ALPS_JSON))
 				.//
 				andExpect(status().isOk()).//
-				andExpect(content().contentTypeCompatibleWith(ALPS_MEDIA_TYPE));
+				andExpect(content().contentTypeCompatibleWith(RestMediaTypes.ALPS_JSON));
 	}
 
 	@Test // DATAREST-448
@@ -216,8 +215,8 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 			Links links = Links.valueOf(response.getHeader("Link"));
 
-			assertThat(links.hasLink(Link.REL_SELF)).isTrue();
-			assertThat(links.hasLink("profile")).isTrue();
+			assertThat(links.hasLink(IanaLinkRelation.SELF.value())).isTrue();
+			assertThat(links.hasLink(IanaLinkRelation.PROFILE.value())).isTrue();
 		}
 	}
 

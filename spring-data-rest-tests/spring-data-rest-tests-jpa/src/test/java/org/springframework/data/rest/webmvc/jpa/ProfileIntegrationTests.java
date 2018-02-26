@@ -27,9 +27,9 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.tests.TestMvcClient;
 import org.springframework.data.rest.webmvc.ProfileController;
-import org.springframework.data.rest.webmvc.ProfileResourceProcessor;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.http.MediaType;
@@ -84,7 +84,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 	@Test // DATAREST-230, DATAREST-638
 	public void profileRootLinkContainsMetadataForEachRepo() throws Exception {
 
-		Link profileLink = client.discoverUnique(new Link(ROOT_URI), ProfileResourceProcessor.PROFILE_REL);
+		Link profileLink = client.discoverUnique(new Link(ROOT_URI), IanaLinkRelation.PROFILE.value());
 
 		assertThat(client.discoverUnique(profileLink, "self", MediaType.ALL)).isNotNull();
 		assertThat(client.discoverUnique(profileLink, "people", MediaType.ALL)).isNotNull();
@@ -100,7 +100,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 	public void profileLinkOnCollectionResourceLeadsToRepositorySpecificMetadata() throws Exception {
 
 		Link peopleLink = client.discoverUnique(new Link(ROOT_URI), "people");
-		Link profileLink = client.discoverUnique(peopleLink, ProfileResourceProcessor.PROFILE_REL);
+		Link profileLink = client.discoverUnique(peopleLink, IanaLinkRelation.PROFILE.value());
 
 		client.follow(profileLink, RestMediaTypes.ALPS_JSON).andExpect(status().is2xxSuccessful())
 				.andExpect(content().contentTypeCompatibleWith(RestMediaTypes.ALPS_JSON));

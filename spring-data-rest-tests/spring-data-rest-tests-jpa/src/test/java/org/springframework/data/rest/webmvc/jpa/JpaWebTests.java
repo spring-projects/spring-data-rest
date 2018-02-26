@@ -24,8 +24,6 @@ import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import net.minidev.json.JSONArray;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,11 +31,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import net.minidev.json.JSONArray;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.tests.CommonWebTests;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.RelProvider;
@@ -130,16 +130,16 @@ public class JpaWebTests extends CommonWebTests {
 
 		MockHttpServletResponse response = client.request("/people?page=0&size=1");
 
-		Link nextLink = client.assertHasLinkWithRel(Link.REL_NEXT, response);
-		assertDoesNotHaveLinkWithRel(Link.REL_PREVIOUS, response);
+		Link nextLink = client.assertHasLinkWithRel(IanaLinkRelation.NEXT.value(), response);
+		assertDoesNotHaveLinkWithRel(IanaLinkRelation.PREV.value(), response);
 
 		response = client.request(nextLink);
-		client.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		nextLink = client.assertHasLinkWithRel(Link.REL_NEXT, response);
+		client.assertHasLinkWithRel(IanaLinkRelation.PREV.value(), response);
+		nextLink = client.assertHasLinkWithRel(IanaLinkRelation.NEXT.value(), response);
 
 		response = client.request(nextLink);
-		client.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);
+		client.assertHasLinkWithRel(IanaLinkRelation.PREV.value(), response);
+		assertDoesNotHaveLinkWithRel(IanaLinkRelation.NEXT.value(), response);
 	}
 
 	@Test // DATAREST-169
@@ -437,7 +437,7 @@ public class JpaWebTests extends CommonWebTests {
 		Link daenerysLink = client.assertHasLinkWithRel("self", createdPerson);
 		assertJsonPathEquals("$.firstName", "Daenerys", createdPerson);
 
-		Link searchLink = client.discoverUnique(peopleLink, "search");
+		Link searchLink = client.discoverUnique(peopleLink, IanaLinkRelation.SEARCH.value());
 		Link byFirstNameLink = client.discoverUnique(searchLink, "findFirstPersonByFirstName");
 
 		MockHttpServletResponse response = client.request(byFirstNameLink.expand("Daenerys"),
@@ -488,7 +488,7 @@ public class JpaWebTests extends CommonWebTests {
 	public void exectuesSearchThatTakesASort() throws Exception {
 
 		Link booksLink = client.discoverUnique("books");
-		Link searchLink = client.discoverUnique(booksLink, "search");
+		Link searchLink = client.discoverUnique(booksLink, IanaLinkRelation.SEARCH.value());
 		Link findBySortedLink = client.discoverUnique(searchLink, "find-by-sorted");
 
 		// Assert sort options advertised
@@ -584,7 +584,7 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-883
 	public void exectuesSearchThatTakesAMappedSortProperty() throws Exception {
 
-		Link findBySortedLink = client.discoverUnique("books", "search", "find-by-sorted");
+		Link findBySortedLink = client.discoverUnique("books", IanaLinkRelation.SEARCH.value(), "find-by-sorted");
 
 		// Assert sort options advertised
 		assertThat(findBySortedLink.isTemplated()).isTrue();
@@ -605,7 +605,7 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-883
 	public void exectuesCustomQuerySearchThatTakesAMappedSortProperty() throws Exception {
 
-		Link findByLink = client.discoverUnique("books", "search", "find-spring-books-sorted");
+		Link findByLink = client.discoverUnique("books", IanaLinkRelation.SEARCH.value(), "find-spring-books-sorted");
 
 		// Assert sort options advertised
 		assertThat(findByLink.isTemplated()).isTrue();
@@ -633,7 +633,7 @@ public class JpaWebTests extends CommonWebTests {
 	public void appliesSortByEmbeddedAssociation() throws Exception {
 
 		Link booksLink = client.discoverUnique("books");
-		Link searchLink = client.discoverUnique(booksLink, "search");
+		Link searchLink = client.discoverUnique(booksLink, IanaLinkRelation.SEARCH.value());
 		Link findBySortedLink = client.discoverUnique(searchLink, "find-by-sorted");
 
 		// Assert sort options advertised
@@ -666,7 +666,7 @@ public class JpaWebTests extends CommonWebTests {
 			String payload = mapper.writeValueAsString(person);
 			MockHttpServletResponse response = postAndGet(peopleLink, payload, MediaType.APPLICATION_JSON);
 
-			links.add(client.assertHasLinkWithRel(Link.REL_SELF, response));
+			links.add(client.assertHasLinkWithRel(IanaLinkRelation.SELF.value(), response));
 		}
 
 		return links;

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.rest.core.Path;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.util.Assert;
 
 /**
@@ -37,7 +38,6 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 			+ "%s are mapped to %s! Tweak configuration to get to unambiguous paths!";
 
 	private static final Path PATH = new Path("/search");
-	private static final String REL = "search";
 
 	private final Map<Path, MethodResourceMapping> mappings;
 
@@ -155,7 +155,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	 */
 	@Override
 	public String getRel() {
-		return REL;
+		return IanaLinkRelation.SEARCH.value();
 	}
 
 	/*

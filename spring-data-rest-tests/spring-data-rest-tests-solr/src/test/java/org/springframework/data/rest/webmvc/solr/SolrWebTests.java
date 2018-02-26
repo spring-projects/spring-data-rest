@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.rest.tests.CommonWebTests;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -82,16 +83,16 @@ public class SolrWebTests extends CommonWebTests {
 
 		MockHttpServletResponse response = client.request("/products?page=0&size=1");
 
-		Link nextLink = client.assertHasLinkWithRel(Link.REL_NEXT, response);
-		assertDoesNotHaveLinkWithRel(Link.REL_PREVIOUS, response);
+		Link nextLink = client.assertHasLinkWithRel(IanaLinkRelation.NEXT.value(), response);
+		assertDoesNotHaveLinkWithRel(IanaLinkRelation.PREV.value(), response);
 
 		response = client.request(nextLink);
-		client.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		nextLink = client.assertHasLinkWithRel(Link.REL_NEXT, response);
+		client.assertHasLinkWithRel(IanaLinkRelation.PREV.value(), response);
+		nextLink = client.assertHasLinkWithRel(IanaLinkRelation.NEXT.value(), response);
 
 		response = client.request(nextLink);
-		client.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);
+		client.assertHasLinkWithRel(IanaLinkRelation.PREV.value(), response);
+		assertDoesNotHaveLinkWithRel(IanaLinkRelation.NEXT.value(), response);
 	}
 
 	@Test // DATAREST-387

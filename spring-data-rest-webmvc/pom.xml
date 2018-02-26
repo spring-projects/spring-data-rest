@@ -124,6 +124,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-jpa</artifactId>
+			<version>${springdata.jpa}</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 </project>

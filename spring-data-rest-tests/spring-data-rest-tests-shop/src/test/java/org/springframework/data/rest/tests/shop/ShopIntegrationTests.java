@@ -16,15 +16,20 @@
 package org.springframework.data.rest.tests.shop;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.StreamSupport;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.ResultActions;
@@ -41,6 +46,8 @@ import com.jayway.jsonpath.JsonPath;
 @ContextConfiguration(classes = ShopConfiguration.class)
 public class ShopIntegrationTests extends AbstractWebIntegrationTests {
 
+	@Autowired OrderRepository orders;
+	
 	@Test
 	public void rendersRepresentationCorrectly() throws Exception {
 
@@ -92,6 +99,23 @@ public class ShopIntegrationTests extends AbstractWebIntegrationTests {
 				.andExpect(status().isOk())//
 				.andExpect(jsonPath("$._embedded.orders[0].items[0].products[0].name").exists())//
 				.andExpect(jsonPath("$._embedded.orders[0].items[0].products[0]._links.beta").exists());
+	}
+
+	@Test
+	public void renderAggregateRootForHalFormsCorrectly() throws Exception {
+
+		UUID id = StreamSupport.stream(orders.findAll().spliterator(), false)
+			.map(Order::getId)
+			.findFirst()
+			.orElseThrow(() -> new RuntimeException("Unable to find a single order"));
+		
+		client.follow(/*client.discoverUnique("orders")*/"/orders/" + id.toString(), MediaTypes.HAL_JSON)//
+			.andExpect(status().isOk())
+			.andDo(print());
+
+		client.follow(/*client.discoverUnique("orders")*/"/orders/" + id.toString(), MediaTypes.HAL_FORMS_JSON)//
+			.andExpect(status().isOk())
+			.andDo(print());
 	}
 
 	private static void expectRelatedResource(String name, ResultActions actions) throws Exception {

@@ -56,6 +56,7 @@ import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.BackendId;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
@@ -134,11 +135,11 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			} else {
 
 				PersistentEntityResource resource = assembler.toResource(it);
-				headers.set("Content-Location", resource.getId().getHref());
+				headers.set("Content-Location", resource.getRequiredLink(IanaLinkRelation.SELF.value()).getHref());
 				return resource;
 			}
 
-		}).orElseThrow(() -> new ResourceNotFoundException());
+		}).orElseThrow(ResourceNotFoundException::new);
 
 		return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, //
 				doWithReferencedProperty(repoRequest, id, property, handler, HttpMethod.GET));
@@ -187,7 +188,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					if (propertyId.equals(accessor1.getIdentifier().toString())) {
 
 						PersistentEntityResource resource1 = assembler.toResource(obj);
-						headers.set("Content-Location", resource1.getId().getHref());
+						headers.set(HttpHeaders.CONTENT_LOCATION, resource1.getRequiredLink(IanaLinkRelation.SELF.value()).getHref());
 						return resource1;
 					}
 				}
@@ -200,18 +201,18 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					if (propertyId.equals(accessor2.getIdentifier().toString())) {
 
 						PersistentEntityResource resource2 = assembler.toResource(entry.getValue());
-						headers.set("Content-Location", resource2.getId().getHref());
+						headers.set(HttpHeaders.CONTENT_LOCATION, resource2.getRequiredLink(IanaLinkRelation.SELF.value()).getHref());
 						return resource2;
 					}
 				}
 
 			} else {
-				return new Resource<Object>(prop.propertyValue);
+				return new Resource<>(prop.propertyValue);
 			}
 
 			throw new ResourceNotFoundException();
 
-		}).orElseThrow(() -> new ResourceNotFoundException());
+		}).orElseThrow(ResourceNotFoundException::new);
 
 		return ControllerUtils.toResponseEntity(HttpStatus.OK, headers, //
 				doWithReferencedProperty(repoRequest, id, property, handler, HttpMethod.GET));
@@ -254,7 +255,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				Map<Object, Resource<?>> map = (Map<Object, Resource<?>>) content;
 
 				for (Entry<Object, Resource<?>> entry : map.entrySet()) {
-					Link l = new Link(entry.getValue().getLink("self").getHref(), entry.getKey().toString());
+					Link l = new Link(entry.getValue().getRequiredLink(IanaLinkRelation.SELF.value()).getHref(), entry.getKey().toString());
 					links.add(l);
 				}
 			}

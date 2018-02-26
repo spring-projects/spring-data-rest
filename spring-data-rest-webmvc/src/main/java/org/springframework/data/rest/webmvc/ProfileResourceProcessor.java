@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.util.Assert;
@@ -29,8 +30,6 @@ import org.springframework.util.Assert;
  * @since 2.4
  */
 public class ProfileResourceProcessor implements ResourceProcessor<RepositoryLinksResource> {
-
-	public static final String PROFILE_REL = "profile";
 
 	private final RepositoryRestConfiguration configuration;
 
@@ -55,7 +54,7 @@ public class ProfileResourceProcessor implements ResourceProcessor<RepositoryLin
 	@Override
 	public RepositoryLinksResource process(RepositoryLinksResource resource) {
 
-		resource.add(new Link(ProfileController.getRootPath(this.configuration), PROFILE_REL));
+		resource.add(new Link(ProfileController.getRootPath(this.configuration), IanaLinkRelation.PROFILE.value()));
 
 		return resource;
 	}

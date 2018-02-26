@@ -18,16 +18,21 @@ package org.springframework.data.rest.webmvc;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collections;
+
+import org.springframework.core.ResolvableType;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.Projector;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
+import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 
 /**
@@ -72,9 +77,11 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(source.getClass());
 
 		return PersistentEntityResource.build(instance, entity).//
-				withEmbedded(getEmbeddedResources(source)).//
-				withLink(getSelfLinkFor(source)).//
-				withLink(linkProvider.createSelfLinkFor(source));
+					withEmbedded(getEmbeddedResources(source)).//
+					withLink(getExpandedSelfLink(source)//
+						.andAffordance(HttpMethod.PUT, source.getClass(), Collections.emptyList(), null)//
+						.andAffordance(HttpMethod.PATCH, source.getClass(), Collections.emptyList(), null)).//
+					withLink(linkProvider.createSelfLinkFor(source));
 	}
 
 	/**
@@ -89,14 +96,12 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 	}
 
 	/**
-	 * Creates the self link for the given domain instance.
+	 * Creates the self link for the given domain instance, with no templated parameters.
 	 *
 	 * @param instance must be a managed entity, not {@literal null}.
 	 * @return
 	 */
-	public Link getSelfLinkFor(Object instance) {
-
-		Link link = linkProvider.createSelfLinkFor(instance);
-		return new Link(link.expand().getHref(), Link.REL_SELF);
+	Link getExpandedSelfLink(Object instance) {
+		return new Link(linkProvider.createSelfLinkFor(instance).expand().getHref(), IanaLinkRelation.SELF.value());
 	}
 }

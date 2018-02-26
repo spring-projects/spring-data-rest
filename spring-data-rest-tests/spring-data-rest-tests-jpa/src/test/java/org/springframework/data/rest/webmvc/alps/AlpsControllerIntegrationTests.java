@@ -37,6 +37,7 @@ import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.jpa.Item;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverer;
 import org.springframework.hateoas.LinkDiscoverers;
@@ -96,7 +97,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test // DATAREST-230
 	public void exposesAlpsCollectionResources() throws Exception {
 
-		Link profileLink = client.discoverUnique("profile");
+		Link profileLink = client.discoverUnique(IanaLinkRelation.PROFILE.value());
 		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
 		client.follow(peopleLink, RestMediaTypes.ALPS_JSON)//
@@ -107,7 +108,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test // DATAREST-638
 	public void verifyThatAlpsIsDefaultProfileFormat() throws Exception {
 
-		Link profileLink = client.discoverUnique("profile");
+		Link profileLink = client.discoverUnique(IanaLinkRelation.PROFILE.value());
 		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
 		client.follow(peopleLink)//
@@ -119,7 +120,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test // DATAREST-463
 	public void verifyThatAttributesIgnoredDontAppearInAlps() throws Exception {
 
-		Link profileLink = client.discoverUnique("profile");
+		Link profileLink = client.discoverUnique(IanaLinkRelation.PROFILE.value());
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
 
 		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
@@ -134,7 +135,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test // DATAREST-494
 	public void linksToJsonSchemaFromRepresentationDescriptor() throws Exception {
 
-		Link profileLink = client.discoverUnique("profile");
+		Link profileLink = client.discoverUnique(IanaLinkRelation.PROFILE.value());
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
 
 		assertThat(itemsLink).isNotNull();
@@ -149,7 +150,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test // DATAREST-516
 	public void referenceToAssociatedEntityDesciptorPointsToRepresentationDescriptor() throws Exception {
 
-		Link profileLink = client.discoverUnique("profile");
+		Link profileLink = client.discoverUnique(IanaLinkRelation.PROFILE.value());
 		Link usersLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
 		String jsonPath = "$.alps."; // Root
@@ -166,7 +167,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test // DATAREST-630
 	public void onlyExposesIdAttributesWhenExposedInTheConfiguration() throws Exception {
 
-		Link profileLink = client.discoverUnique("profile");
+		Link profileLink = client.discoverUnique(IanaLinkRelation.PROFILE.value());
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
 
 		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
@@ -179,7 +180,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		configuration.setEnableEnumTranslation(true);
 
-		Link profileLink = client.discoverUnique("profile");
+		Link profileLink = client.discoverUnique(IanaLinkRelation.PROFILE.value());
 		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
 		String result = client.follow(peopleLink).andReturn().getResponse().getContentAsString();
@@ -195,7 +196,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Test // DATAREST-753
 	public void alpsCanHandleGroovyDomainObjects() throws Exception {
 
-		Link profileLink = client.discoverUnique("profile");
+		Link profileLink = client.discoverUnique(IanaLinkRelation.PROFILE.value());
 		Link groovyDomainObjectLink = client.discoverUnique(profileLink, "simulatedGroovyDomainClasses");
 
 		String result = client.follow(groovyDomainObjectLink).andReturn().getResponse().getContentAsString();

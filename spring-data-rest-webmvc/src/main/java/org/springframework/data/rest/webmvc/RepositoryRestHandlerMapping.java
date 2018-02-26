@@ -35,6 +35,7 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
@@ -203,6 +204,8 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		HashSet<String> mediaTypes = new LinkedHashSet<String>();
 		mediaTypes.add(configuration.getDefaultMediaType().toString());
 		mediaTypes.add(MediaType.APPLICATION_JSON_VALUE);
+		mediaTypes.add(MediaTypes.HAL_FORMS_JSON_VALUE);
+		mediaTypes.add(MediaTypes.COLLECTION_JSON_VALUE);
 
 		return new ProducesRequestCondition(mediaTypes.toArray(new String[mediaTypes.size()]));
 	}

@@ -21,11 +21,10 @@ import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import net.minidev.json.JSONArray;
-
 import java.util.Collections;
 import java.util.Map;
 
+import net.minidev.json.JSONArray;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

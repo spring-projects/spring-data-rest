@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.CommonWebTests;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -131,7 +132,7 @@ public class MongoWebTests extends CommonWebTests {
 	public void executeQueryMethodWithPrimitiveReturnType() throws Exception {
 
 		Link profiles = client.discoverUnique("profiles");
-		Link profileSearches = client.discoverUnique(profiles, "search");
+		Link profileSearches = client.discoverUnique(profiles, IanaLinkRelation.SEARCH.value());
 		Link countByTypeLink = client.discoverUnique(profileSearches, "countByType");
 
 		assertThat(countByTypeLink.isTemplated()).isTrue();
@@ -288,7 +289,7 @@ public class MongoWebTests extends CommonWebTests {
 
 		Profile profile = repository.findAll().iterator().next();
 
-		Link link = client.discoverUnique("profiles", "search", "findProfileById");
+		Link link = client.discoverUnique("profiles", IanaLinkRelation.SEARCH.value(), "findProfileById");
 
 		mvc.perform(get(link.expand(profile.getId()).getHref())).//
 				andExpect(status().isOk());
@@ -297,7 +298,7 @@ public class MongoWebTests extends CommonWebTests {
 	@Test // DATAREST-517
 	public void returnsNotFoundIfQueryExecutionDoesNotReturnResult() throws Exception {
 
-		Link link = client.discoverUnique("profiles", "search", "findProfileById");
+		Link link = client.discoverUnique("profiles", IanaLinkRelation.SEARCH.value(), "findProfileById");
 
 		mvc.perform(get(link.expand("").getHref())).//
 				andExpect(status().isNotFound());
@@ -306,7 +307,7 @@ public class MongoWebTests extends CommonWebTests {
 	@Test // DATAREST-712
 	public void invokesQueryMethodTakingAReferenceCorrectly() throws Exception {
 
-		Link link = client.discoverUnique("users", "search", "findByColleaguesContains");
+		Link link = client.discoverUnique("users", IanaLinkRelation.SEARCH.value(), "findByColleaguesContains");
 
 		User thomas = userRepository.findAll(QUser.user.firstname.eq("Thomas")).iterator().next();
 		Link thomasUri = entityLinks.linkToSingleResource(User.class, thomas.id).expand();
@@ -319,7 +320,7 @@ public class MongoWebTests extends CommonWebTests {
 	@Test // DATAREST-835
 	public void exposesETagHeaderForSearchResourceYieldingItemResource() throws Exception {
 
-		Link link = client.discoverUnique("profiles", "search", "findProfileById");
+		Link link = client.discoverUnique("profiles", IanaLinkRelation.SEARCH.value(), "findProfileById");
 
 		Profile profile = repository.findAll().iterator().next();
 
@@ -331,7 +332,7 @@ public class MongoWebTests extends CommonWebTests {
 	@Test // DATAREST-835
 	public void doesNotAddETagHeaderForCollectionQueryResource() throws Exception {
 
-		Link link = client.discoverUnique("profiles", "search", "findByType");
+		Link link = client.discoverUnique("profiles", IanaLinkRelation.SEARCH.value(), "findByType");
 
 		Profile profile = repository.findAll().iterator().next();
 

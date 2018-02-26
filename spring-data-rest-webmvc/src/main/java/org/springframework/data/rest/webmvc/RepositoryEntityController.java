@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -51,6 +52,7 @@ import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.data.rest.webmvc.support.ETagDoesntMatchException;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.PagedResources;
@@ -208,7 +210,29 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		Resources<?> result = toResources(results, assembler, metadata.getDomainType(), baseLink);
 		result.add(getCollectionResourceLinks(resourceInformation, pageable));
-		return result;
+		return addAffordances(metadata.getDomainType(), result);
+	}
+
+	private Resources<?> addAffordances(Class<?> domainType, Resources<?> resources) {
+
+		if (resources instanceof PagedResources) {
+			return new PagedResources<>(resources.getContent(), ((PagedResources<?>) resources).getMetadata(), addAffordancesToLinks(domainType, resources.getLinks()));
+		}
+
+		return new Resources<>(resources.getContent(), addAffordancesToLinks(domainType, resources.getLinks()));
+	}
+
+	private List<Link> addAffordancesToLinks(Class<?> domainType, List<Link> links) {
+
+		return links.stream()
+			.map(link -> {
+				if (link.hasRel(IanaLinkRelation.SELF.value())) {
+					return link.andAffordance(HttpMethod.POST, domainType, Collections.emptyList(), null);
+				} else {
+					return link;
+				}
+			})
+			.collect(Collectors.toList());
 	}
 
 	private List<Link> getCollectionResourceLinks(RootResourceInformation resourceInformation,
@@ -218,7 +242,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		SearchResourceMappings searchMappings = metadata.getSearchResourceMappings();
 
 		List<Link> links = new ArrayList<Link>();
-		links.add(new Link(ProfileController.getPath(this.config, metadata), ProfileResourceProcessor.PROFILE_REL));
+		links.add(new Link(ProfileController.getPath(this.config, metadata), IanaLinkRelation.PROFILE.value()));
 
 		if (searchMappings.isExported()) {
 			links.add(entityLinks.linkFor(metadata.getDomainType()).slash(searchMappings.getPath())
@@ -499,7 +523,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 */
 	private void addLocationHeader(HttpHeaders headers, PersistentEntityResourceAssembler assembler, Object source) {
 
-		String selfLink = assembler.getSelfLinkFor(source).getHref();
+		String selfLink = assembler.getExpandedSelfLink(source).getHref();
 		headers.setLocation(new UriTemplate(selfLink).expand());
 	}
 

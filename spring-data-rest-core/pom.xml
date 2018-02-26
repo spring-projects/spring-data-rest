@@ -16,8 +16,6 @@
 	</parent>
 
 	<properties>
-		<springplugin>1.2.0.RELEASE</springplugin>
-		<evoinflector>1.2.2</evoinflector>
 		<java-module-name>spring.data.rest.core</java-module-name>
 		<project.root>${basedir}/..</project.root>
 	</properties>

@@ -122,7 +122,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 		descriptors.addAll(buildSearchResourceDescriptors(resourceInformation.getPersistentEntity()));
 
-		return Alps.alps().descriptors(descriptors).build();
+		return Alps.alps().descriptor(descriptors).build();
 	}
 
 	private Descriptor buildRepresentationDescriptor(Class<?> type) {
@@ -135,7 +135,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				id(getRepresentationDescriptorId(metadata)).//
 				href(href).//
 				doc(getDocFor(metadata.getItemResourceDescription())).//
-				descriptors(buildPropertyDescriptors(type, metadata.getItemResourceRel())).//
+				descriptor(buildPropertyDescriptors(type, metadata.getItemResourceRel())).//
 				build();
 	}
 
@@ -155,7 +155,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				type(descriptorType).//
 				doc(getDocFor(metadata.getDescription())).//
 				rt("#" + representationDescriptor.getId()).//
-				descriptors(nestedDescriptors).build();
+				descriptor(nestedDescriptors).build();
 	}
 
 	/**
@@ -184,7 +184,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 							type(Type.SEMANTIC).//
 							name(projection.getKey()).//
 							doc(getDocFor(projectionDescription)).//
-							descriptors(createJacksonDescriptor(projection.getKey(), type)).//
+							descriptor(createJacksonDescriptor(projection.getKey(), type)).//
 							build());
 		}
 
@@ -192,7 +192,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				type(Type.SEMANTIC).//
 				name(projectionParameterName).//
 				doc(getDocFor(SimpleResourceDescription.defaultFor(projectionParameterName))).//
-				descriptors(projectionDescriptors).build();
+				descriptor(projectionDescriptors).build();
 	}
 
 	private List<Descriptor> createJacksonDescriptor(String name, Class<?> type) {
@@ -231,7 +231,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				type(getType(method)).//
 				doc(getDocFor(metadata.getItemResourceDescription())).//
 				rt("#".concat(representationDescriptor.getId())). //
-				descriptors(getProjectionDescriptor(entity.getType(), method)).//
+				descriptor(getProjectionDescriptor(entity.getType(), method)).//
 				build();
 	}
 
@@ -375,7 +375,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 			descriptors.add(descriptor().//
 					type(Type.SAFE).//
 					name(methodMapping.getRel()).//
-					descriptors(parameterDescriptors).//
+					descriptor(parameterDescriptors).//
 					build());
 		}
 

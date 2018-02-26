@@ -35,6 +35,7 @@ import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.util.Assert;
@@ -127,7 +128,7 @@ public class LinkCollector {
 
 		Links result = new Links(existing);
 
-		if (result.hasLink(Link.REL_SELF)) {
+		if (result.hasLink(IanaLinkRelation.SELF.value())) {
 			return result;
 		}
 
@@ -140,11 +141,8 @@ public class LinkCollector {
 
 	private Link createSelfLink(Object object, Links existing) {
 
-		if (existing.hasLink(Link.REL_SELF)) {
-			return existing.getLink(Link.REL_SELF);
-		}
-
-		return links.createSelfLinkFor(object).withSelfRel();
+		return existing.getLink(IanaLinkRelation.SELF.value())
+			.orElseGet(() -> links.createSelfLinkFor(object).withSelfRel());
 	}
 
 	/**

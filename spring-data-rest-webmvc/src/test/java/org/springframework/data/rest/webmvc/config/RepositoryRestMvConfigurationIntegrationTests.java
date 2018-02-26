@@ -26,6 +26,7 @@ import java.util.TimeZone;
 import javax.naming.Name;
 import javax.naming.ldap.LdapName;
 
+import org.assertj.core.api.iterable.Extractor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -49,15 +50,18 @@ import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.format.datetime.DateFormatter;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.core.DefaultRelProvider;
 import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,6 +72,7 @@ import com.jayway.jsonpath.JsonPath;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Greg Turnquist
  */
 public class RepositoryRestMvConfigurationIntegrationTests {
 
@@ -98,7 +103,16 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		context.getBean(PageableHandlerMethodArgumentResolver.class);
 
 		// Verify HAL setup
-		getObjectMapper().writeValueAsString(new RepositoryLinksResource());
+		getHalObjectMapper().writeValueAsString(new RepositoryLinksResource());
+
+
+		// Verify HAL-FORMS setup
+		getHalFormsObjectMapper().writeValueAsString(new RepositoryLinksResource());
+
+		// Verify Collection+JSON setup
+		RepositoryLinksResource resource = new RepositoryLinksResource();
+		resource.add(new Link("/"));
+		getCollectionJsonObjectMapper().writeValueAsString(resource);
 	}
 
 	@Test // DATAREST-271
@@ -125,7 +139,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		Sample sample = new Sample();
 		sample.date = new Date();
 
-		ObjectMapper mapper = getObjectMapper();
+		ObjectMapper mapper = getHalObjectMapper();
 
 		DateFormatter formatter = new DateFormatter();
 		formatter.setPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
@@ -161,6 +175,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 
 		assertThat(converters.get(0).getSupportedMediaTypes()).contains(MediaTypes.HAL_JSON);
 		assertThat(converters.get(1).getSupportedMediaTypes()).contains(RestMediaTypes.SCHEMA_JSON);
+		assertThat(converters.get(2).getSupportedMediaTypes()).contains(MediaTypes.HAL_FORMS_JSON);
+		assertThat(converters.get(3).getSupportedMediaTypes()).contains(MediaTypes.COLLECTION_JSON);
 	}
 
 	@Test // DATAREST-424
@@ -174,6 +190,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 
 		assertThat(converters.get(0).getSupportedMediaTypes()).contains(RestMediaTypes.SCHEMA_JSON);
 		assertThat(converters.get(1).getSupportedMediaTypes()).contains(MediaTypes.HAL_JSON);
+		assertThat(converters.get(2).getSupportedMediaTypes()).contains(MediaTypes.HAL_FORMS_JSON);
+		assertThat(converters.get(3).getSupportedMediaTypes()).contains(MediaTypes.COLLECTION_JSON);
 	}
 
 	@Test // DATAREST-431, DATACMNS-626
@@ -206,11 +224,36 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat((String) ReflectionTestUtils.getField(messageSource, "defaultEncoding")).isEqualTo("UTF-8");
 	}
 
-	private static ObjectMapper getObjectMapper() {
+	@Test
+	public void restTemplateRegisteredForAllTypes() {
 
-		AbstractJackson2HttpMessageConverter converter = context.getBean("halJacksonHttpMessageConverter",
-				AbstractJackson2HttpMessageConverter.class);
-		return converter.getObjectMapper();
+		RestTemplate restTemplate = context.getBean("restTemplate", RestTemplate.class);
+
+		assertThat(restTemplate).isNotNull();
+		assertThat(restTemplate.getMessageConverters())
+			.flatExtracting((Extractor<HttpMessageConverter, List<MediaType>>) HttpMessageConverter::getSupportedMediaTypes)
+			.contains(
+				MediaTypes.HAL_JSON,
+				MediaTypes.COLLECTION_JSON,
+				MediaTypes.HAL_FORMS_JSON);
+	}
+
+	private static ObjectMapper getHalObjectMapper() {
+
+		return context.getBean("halJacksonHttpMessageConverter",
+			AbstractJackson2HttpMessageConverter.class).getObjectMapper();
+	}
+
+	private static ObjectMapper getHalFormsObjectMapper() {
+
+		return context.getBean("halFormsJacksonHttpMessageConverter",
+			AbstractJackson2HttpMessageConverter.class).getObjectMapper();
+	}
+
+	private static ObjectMapper getCollectionJsonObjectMapper() {
+
+		return context.getBean("collectionJsonJacksonHttpMessageConverter",
+			AbstractJackson2HttpMessageConverter.class).getObjectMapper();
 	}
 
 	@Configuration
@@ -238,6 +281,11 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 				config.setLimitParamName("mySize");
 				config.setSortParamName("mySort");
 			});
+		}
+
+		@Bean
+		public RestTemplate restTemplate() {
+			return new RestTemplate();
 		}
 	}
 

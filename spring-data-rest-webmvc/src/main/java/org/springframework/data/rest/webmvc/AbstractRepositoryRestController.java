@@ -26,6 +26,7 @@ import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.IanaLinkRelation;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -63,7 +64,7 @@ class AbstractRepositoryRestController {
 
 		ResourceMetadata repoMapping = resourceLink.getResourceMetadata();
 
-		Link selfLink = resource.getLink("self");
+		Link selfLink = resource.getRequiredLink(IanaLinkRelation.SELF.value());
 		String rel = repoMapping.getItemResourceRel();
 
 		return new Link(selfLink.getHref(), rel);

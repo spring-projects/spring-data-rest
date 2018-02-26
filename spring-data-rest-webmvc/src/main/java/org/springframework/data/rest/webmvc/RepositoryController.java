@@ -23,6 +23,7 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -105,6 +106,8 @@ public class RepositoryController extends AbstractRepositoryRestController {
 
 		RepositoryLinksResource resource = new RepositoryLinksResource();
 
+		resource.add(new Link("/"));
+
 		for (Class<?> domainType : repositories) {
 
 			ResourceMetadata metadata = mappings.getMetadataFor(domainType);
@@ -113,6 +116,6 @@ public class RepositoryController extends AbstractRepositoryRestController {
 			}
 		}
 
-		return new ResponseEntity<RepositoryLinksResource>(resource, HttpStatus.OK);
+		return new ResponseEntity<>(resource, HttpStatus.OK);
 	}
 }

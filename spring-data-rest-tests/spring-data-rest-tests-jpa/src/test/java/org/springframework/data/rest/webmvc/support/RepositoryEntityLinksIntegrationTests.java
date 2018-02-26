@@ -99,7 +99,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		assertThat(links.hasLink("firstname")).isTrue();
 
-		Link firstnameLink = links.getLink("firstname");
+		Link firstnameLink = links.getLink("firstname").orElse(null);
 		assertThat(firstnameLink.isTemplated()).isTrue();
 		assertThat(firstnameLink.getVariableNames()).contains("page", "size");
 	}
