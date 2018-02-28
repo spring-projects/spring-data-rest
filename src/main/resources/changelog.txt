@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.5.RELEASE (2018-02-28)
+---------------------------------------------
+* DATAREST-1200 - Release 3.0.5 (Kay SR5).
+
+
 Changes in version 3.0.4.RELEASE (2018-02-19)
 ---------------------------------------------
 * DATAREST-1193 - Make DelegatingHandlerMapping a MatchableHandlerMapping.
