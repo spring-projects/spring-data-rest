@@ -17,6 +17,8 @@ package org.springframework.data.rest.webmvc.config;
 
 import static org.assertj.core.api.Assertions.*;
 
+import javax.naming.Name;
+import javax.naming.ldap.LdapName;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -63,6 +65,7 @@ import com.jayway.jsonpath.JsonPath;
  * Integration tests for basic application bootstrapping (general configuration related checks).
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class RepositoryRestMvConfigurationIntegrationTests {
 
@@ -182,6 +185,15 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(service.canConvert(Point.class, String.class)).isTrue();
 		assertThat(service.canConvert(String.class, Distance.class)).isTrue();
 		assertThat(service.canConvert(Distance.class, String.class)).isTrue();
+	}
+
+	@Test // DATAREST-1198
+	public void hasConvertersForNamAndLdapName() {
+
+		ConversionService service = context.getBean("defaultConversionService", ConversionService.class);
+
+		assertThat(service.canConvert(String.class, Name.class)).isTrue();
+		assertThat(service.canConvert(String.class, LdapName.class)).isTrue();
 	}
 
 	@Test // DATAREST-686
