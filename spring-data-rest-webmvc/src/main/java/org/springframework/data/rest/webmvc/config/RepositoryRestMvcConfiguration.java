@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import javax.naming.Name;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,6 +44,7 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.auditing.MappingAuditableBeanWrapperFactory;
@@ -57,6 +59,7 @@ import org.springframework.data.querydsl.binding.QuerydslPredicateBuilder;
 import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
+import org.springframework.data.rest.core.StringToLdapNameConverter;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.Projection;
@@ -247,6 +250,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
 		// Add Spring Data Commons formatters
 		conversionService.addConverter(uriToEntityConverter(conversionService));
+		conversionService.addConverter(stringToNameConverter());
 		addFormatters(conversionService);
 
 		configurerDelegate.configureConversionService(conversionService);
@@ -671,6 +675,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	protected UriToEntityConverter uriToEntityConverter(ConversionService conversionService) {
 		return new UriToEntityConverter(persistentEntities(), repositoryInvokerFactory(conversionService), repositories());
+	}
+
+	protected Converter<String, ? extends Name> stringToNameConverter() {
+		 return StringToLdapNameConverter.INSTANCE;
 	}
 
 	@Bean
