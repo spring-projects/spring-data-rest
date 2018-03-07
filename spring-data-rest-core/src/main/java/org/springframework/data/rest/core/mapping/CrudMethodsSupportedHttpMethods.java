@@ -19,7 +19,6 @@ import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -61,7 +60,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getSupportedHttpMethods(org.springframework.data.rest.core.mapping.ResourceType)
 	 */
 	@Override
-	public Set<HttpMethod> getMethodsFor(ResourceType resourceType) {
+	public HttpMethods getMethodsFor(ResourceType resourceType) {
 
 		Assert.notNull(resourceType, "Resource type must not be null!");
 
@@ -105,7 +104,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 				throw new IllegalArgumentException(String.format("Unsupported resource type %s!", resourceType));
 		}
 
-		return Collections.unmodifiableSet(methods);
+		return HttpMethods.of(methods);
 	}
 
 	/*
@@ -113,10 +112,10 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getMethodsFor(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@Override
-	public Set<HttpMethod> getMethodsFor(PersistentProperty<?> property) {
+	public HttpMethods getMethodsFor(PersistentProperty<?> property) {
 
 		if (!property.isAssociation()) {
-			return Collections.emptySet();
+			return HttpMethods.none();
 		}
 
 		Set<HttpMethod> methods = new HashSet<HttpMethod>();
@@ -133,7 +132,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 			methods.add(POST);
 		}
 
-		return methods;
+		return HttpMethods.of(methods);
 	}
 
 	/**

@@ -155,7 +155,11 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 	 * @since 3.1
 	 * @see RepositoryRestConfiguration#exposeRepositoryMethodsByDefault()
 	 */
-	public boolean exposeMethodsByDefault() {
+	boolean exposeMethodsByDefault() {
 		return configuration.exposeRepositoryMethodsByDefault();
+	}
+
+	ExposureConfiguration getExposureConfiguration() {
+		return configuration.getExposureConfiguration();
 	}
 }

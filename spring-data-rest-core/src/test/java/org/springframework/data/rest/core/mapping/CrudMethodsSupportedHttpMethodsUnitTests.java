@@ -22,7 +22,6 @@ import static org.springframework.http.HttpMethod.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -151,7 +150,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 	private static void assertMethodsSupported(SupportedHttpMethods methods, ResourceType type, boolean supported,
 			HttpMethod... httpMethods) {
 
-		Set<HttpMethod> result = methods.getMethodsFor(type);
+		HttpMethods result = methods.getMethodsFor(type);
 
 		if (supported) {
 			assertThat(result).containsExactlyInAnyOrder(httpMethods);

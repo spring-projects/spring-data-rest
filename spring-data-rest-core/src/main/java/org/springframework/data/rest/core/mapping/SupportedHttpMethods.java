@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.http.HttpMethod;
 
@@ -34,7 +31,7 @@ public interface SupportedHttpMethods {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	Set<HttpMethod> getMethodsFor(ResourceType type);
+	HttpMethods getMethodsFor(ResourceType type);
 
 	/**
 	 * Returns the supported {@link HttpMethod}s for the given {@link PersistentProperty}.
@@ -42,7 +39,16 @@ public interface SupportedHttpMethods {
 	 * @param property must not be {@literal null}.
 	 * @return
 	 */
-	Set<HttpMethod> getMethodsFor(PersistentProperty<?> property);
+	HttpMethods getMethodsFor(PersistentProperty<?> property);
+
+	/**
+	 * Returns whether {@link HttpMethod#PUT} requests are supported for item resource creation.
+	 * 
+	 * @return
+	 */
+	default boolean allowsPutForCreation() {
+		return true;
+	}
 
 	/**
 	 * Null object to abstract the absence of any support for any HTTP method.
@@ -58,8 +64,8 @@ public interface SupportedHttpMethods {
 		 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getSupportedHttpMethods(org.springframework.data.rest.core.mapping.ResourceType)
 		 */
 		@Override
-		public Set<HttpMethod> getMethodsFor(ResourceType resourcType) {
-			return Collections.emptySet();
+		public HttpMethods getMethodsFor(ResourceType resourcType) {
+			return HttpMethods.none();
 		}
 
 		/*
@@ -67,8 +73,17 @@ public interface SupportedHttpMethods {
 		 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getMethodsFor(org.springframework.data.mapping.PersistentProperty)
 		 */
 		@Override
-		public Set<HttpMethod> getMethodsFor(PersistentProperty<?> property) {
-			return Collections.emptySet();
+		public HttpMethods getMethodsFor(PersistentProperty<?> property) {
+			return HttpMethods.none();
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#allowsPutForCreation()
+		 */
+		@Override
+		public boolean allowsPutForCreation() {
+			return false;
 		}
 	}
 }

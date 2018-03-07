@@ -15,13 +15,13 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.rest.core.mapping.HttpMethods;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
@@ -101,7 +101,7 @@ public class RootResourceInformation {
 		}
 
 		SupportedHttpMethods httpMethods = resourceMetadata.getSupportedHttpMethods();
-		Collection<HttpMethod> supportedMethods = httpMethods.getMethodsFor(resourceType);
+		HttpMethods supportedMethods = httpMethods.getMethodsFor(resourceType);
 
 		if (!supportedMethods.contains(httpMethod)) {
 			reject(httpMethod, supportedMethods);
@@ -128,21 +128,28 @@ public class RootResourceInformation {
 		}
 
 		SupportedHttpMethods httpMethods = resourceMetadata.getSupportedHttpMethods();
-		Collection<HttpMethod> supportedMethods = httpMethods.getMethodsFor(property);
+		HttpMethods supportedMethods = httpMethods.getMethodsFor(property);
 
 		if (!supportedMethods.contains(httpMethod)) {
 			reject(httpMethod, supportedMethods);
 		}
 	}
 
-	private static void reject(HttpMethod method, Collection<HttpMethod> supported)
-			throws HttpRequestMethodNotSupportedException {
+	public void verifyPutForCreation() throws HttpRequestMethodNotSupportedException {
 
-		Set<String> stringMethods = new HashSet<String>(supported.size());
+		SupportedHttpMethods supportedHttpMethods = resourceMetadata.getSupportedHttpMethods();
 
-		for (HttpMethod supportedMethod : supported) {
-			stringMethods.add(supportedMethod.name());
+		if (!supportedHttpMethods.allowsPutForCreation()) {
+			reject(HttpMethod.PUT, supportedHttpMethods.getMethodsFor(ResourceType.ITEM));
 		}
+	}
+
+	private static void reject(HttpMethod method, HttpMethods supported) throws HttpRequestMethodNotSupportedException {
+
+		Set<String> stringMethods = supported.butWithout(method) //
+				.stream() //
+				.map(HttpMethod::name) //
+				.collect(Collectors.toSet());
 
 		throw new HttpRequestMethodNotSupportedException(method.name(), stringMethods);
 	}
