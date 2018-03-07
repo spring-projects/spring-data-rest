@@ -140,7 +140,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		HttpHeaders headers = new HttpHeaders();
 		SupportedHttpMethods supportedMethods = information.getSupportedMethods();
 
-		headers.setAllow(supportedMethods.getMethodsFor(ResourceType.COLLECTION));
+		headers.setAllow(supportedMethods.getMethodsFor(ResourceType.COLLECTION).toSet());
 
 		return new ResponseEntity<Object>(headers, HttpStatus.OK);
 	}
@@ -286,7 +286,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		HttpHeaders headers = new HttpHeaders();
 		SupportedHttpMethods supportedMethods = information.getSupportedMethods();
 
-		headers.setAllow(supportedMethods.getMethodsFor(ResourceType.ITEM));
+		headers.setAllow(supportedMethods.getMethodsFor(ResourceType.ITEM).toSet());
 		headers.put("Accept-Patch", ACCEPT_PATCH_HEADERS);
 
 		return new ResponseEntity<Object>(headers, HttpStatus.OK);
@@ -359,6 +359,10 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PUT, ResourceType.ITEM);
+
+		if (payload.isNew()) {
+			resourceInformation.verifyPutForCreation();
+		}
 
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
 		Object objectToSave = payload.getContent();

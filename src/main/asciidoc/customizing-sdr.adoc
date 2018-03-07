@@ -63,6 +63,50 @@ public class UserEntityLookup extends EntityLookupSupport<User> {
 
 Notice how `getResourceIdentifier(…)` returns the username to be used by the URI creation. To load entity instances by the value returned from that method, we now implement `lookupEntity(…)` by using the query method available on the `UserRepository`.
 
+[[customizing-sdr.repository-exposure]]
+== Customizing repository exposure
+
+By default, all public Spring Data repositories are used to expose HTTP resources as described in <<repository-resources>>.
+Package protected repository interfaces are excluded from this list, as you express its functionality is only visible to the package internally.
+This can be customized by explicitly setting a `RepositoryDetectionStrategy` (usually through the enum `RepositoryDetectionStrategies`) on `RepositoryRestConfiguration`.
+The following values can be configured:
+
+- `ALL` -- exposes all Spring Data repositories regardless of their Java visibility or annotation configuration.
+- `DEFAULT` -- exposes public Spring Data repositories or ones explicitly annotated with `@RepositoryRestResource` and its `exported` attribute not set to `false`.
+- `VISIBILITY` -- exposes only public Spring Data repositories regardless of annotation configuration.
+- `ANNOTATED` -- only exposes Spring Data repositories explicitly annotated with `@RepositoryRestResource` and its `exported` attribute not set to `false`.
+
+If you need custom rules to apply, simply implement `RepositoryDetectionStrategy` manually.
+
+[[customizing-sdr.http-methods]]
+== Customizing supported HTTP methods
+
+[[customizing-sdr.http-methods.default-exposure]]
+=== Customizing default exposure
+
+By default, Spring Data REST exposes HTTP resources and methods as described in <<repository-resources>> based on which CRUD methods the repository exposes.
+The repositories don't need to extend `CrudRepository` but can also selectively declare methods described in aforementioned section and the resource exposure will follow.
+E.g. if a repository does not expose a `delete(…)` method, an HTTP `DELETE` will not be supported for item resources.
+
+If you need to declare a method for internal use but don't want it to trigger the HTTP method exposure, the repository method can be annotated with `@RestResource(exported = false)`.
+Which methods to annotate like that to remove support for which HTTP method is described in <<repository-resources>>.
+
+Sometimes managing the exposure on the method level is not fine-grained enough.
+E.g. the `save(…)` method is used to back `POST` on collection resources, as well as `PUT` and `PATCH` on item resources.
+To selectively define which HTTP methods are supposed to be exposed, you can use `RepositoryRestConfiguration.getExposureConfiguration()`.
+
+The class exposes a Lambda based API to define both global and type-based rules:
+
+[source, java]
+----
+ExposureConfiguration config = repositoryRestConfiguration.getExposureConfiguration();
+
+config.forDomainType(User.class).disablePutForCreation(); <1>
+config.withItemExposure((metadata, httpMethods) -> httpMethods.disable(HttpMethod.PATCH)); <2>
+----
+<1> Disables the support for HTTP `PUT` to create item resources directly.
+<2> Disables the support for HTTP `PATCH` on all item resources.
+
 
 include::configuring-the-rest-url-path.adoc[leveloffset=+1]
 include::adding-sdr-to-spring-mvc-app.adoc[leveloffset=+1]

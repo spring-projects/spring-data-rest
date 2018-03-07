@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.not;
@@ -30,11 +31,15 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
+import org.springframework.data.rest.webmvc.RepositoryEntityControllerIntegrationTests.ConfigurationCustomizer;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.AddressRepository;
 import org.springframework.data.rest.webmvc.jpa.CreditCard;
@@ -59,7 +64,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
  * @author Oliver Gierke
  * @author Jeremy Rickard
  */
-@ContextConfiguration(classes = JpaRepositoryConfig.class)
+@ContextConfiguration(classes = { ConfigurationCustomizer.class, JpaRepositoryConfig.class })
 @Transactional
 public class RepositoryEntityControllerIntegrationTests extends AbstractControllerIntegrationTests {
 
@@ -68,6 +73,18 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	@Autowired RepositoryRestConfiguration configuration;
 	@Autowired PersistentEntityResourceAssembler assembler;
 	@Autowired PersistentEntities entities;
+
+	@Configuration
+	static class ConfigurationCustomizer {
+
+		@Bean
+		RepositoryRestConfigurer configurer() {
+
+			return RepositoryRestConfigurer.withConfig(config -> {
+				config.getExposureConfiguration().forDomainType(Address.class).disablePutForCreation();
+			});
+		}
+	}
 
 	@Test(expected = HttpRequestMethodNotSupportedException.class) // DATAREST-217
 	public void returnsNotFoundForListingEntitiesIfFindAllNotExported() throws Exception {
@@ -181,7 +198,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
-				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).forCreation();
 
 		assertThat(controller.putItemResource(request, persistentEntityResource, 1L, assembler, ETag.NO_ETAG,
 				MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
@@ -248,6 +265,18 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		controller.deleteItemResource(informationSpy, "foo", ETag.from("0"));
 
 		assertThat(repository.findById(address.id)).isEmpty();
+	}
+
+	@Test // DATAREST-948
+	public void rejectsPutForCreationIfConfigured() throws HttpRequestMethodNotSupportedException {
+
+		RootResourceInformation request = getResourceInformation(Address.class);
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource
+				.build(new Address(), entities.getRequiredPersistentEntity(Address.class)).forCreation();
+
+		assertThatExceptionOfType(HttpRequestMethodNotSupportedException.class) //
+				.isThrownBy(() -> controller.putItemResource(request, persistentEntityResource, 1L, assembler, ETag.NO_ETAG,
+						MediaType.APPLICATION_JSON_VALUE));
 	}
 
 	interface AddressProjection {}

@@ -17,6 +17,17 @@ For this repository, Spring Data REST exposes a collection resource at `/orders`
 
 By default the HTTP methods to interact with these resources map to the according methods of `CrudRepository`. Read more on that in the sections on <<repository-resources.collection-resource,collection resources>> and <<repository-resources.item-resource,item resources>>.
 
+[[repository-resources.methods]]
+=== Repository methods exposure
+
+Which HTTP resources are exposed for a certain repository is mostly driven by the structure of the repository.
+In other words, the resource exposure will follow which methods you have exposed on the repository.
+If you extend `CrudRepository` you usually expose all methods required to expose all HTTP resources we can register by default.
+Each of the resources listed below will define which of the methods need to be present so that a particular HTTP method can be exposed for each of the resources.
+That means, that repositories that are not exposing those methods -- either by not declaring them at all or explicitly using `@RestResource(exported = false)` -- won't expose those HTTP methods on those resources.
+
+For details on how to tweak the default method exposure or dedicated HTTP methods individually see
+
 [[repository-resources.default-status-codes]]
 === Default Status Codes
 
@@ -72,7 +83,18 @@ Collections resources support both `GET` and `POST`. All other HTTP methods caus
 
 ==== `GET`
 
-The `GET` method returns all entities the repository serves through its `findAll(…)` method. If the repository is a paging repository, we include the pagination links (if the total number of results exceeds the page size) and additional page metadata.
+Returns all entities the repository servers through its `findAll(…)` method.
+If the repository is a paging repository we include the pagination links if necessary and additional page metadata.
+
+===== Methods used for invocation
+
+The following methods are used if present (decending order):
+
+- `findAll(Pageable)`
+- `findAll(Sort)`
+- `findAll()`
+
+For more information on the default exposure of methods, see <<repository-resources.methods>>.
 
 ===== Parameters
 
@@ -105,9 +127,27 @@ The `GET` method supports a single link for discovering related resources:
 
 The `HEAD` method returns whether the collection resource is available. It has no status codes, media types, or related resources.
 
+===== Methods used for invocation
+
+The following methods are used if present (decending order):
+
+- `findAll(Pageable)`
+- `findAll(Sort)`
+- `findAll()`
+
+For more information on the default exposure of methods, see <<repository-resources.methods>>.
+
 ==== `POST`
 
 The `POST` method creates a new entity from the given request body.
+
+===== Methods used for invocation
+
+The following methods are used if present (decending order):
+
+- `save(…)`
+
+For more information on the default exposure of methods, see <<repository-resources.methods>>.
 
 ===== Custom Status Codes
 
@@ -135,6 +175,14 @@ Item resources generally support `GET`, `PUT`, `PATCH`, and `DELETE`, unless exp
 
 The `GET` method returns a single entity.
 
+===== Methods used for invocation
+
+The following methods are used if present (decending order):
+
+- `findById(…)`
+
+For more information on the default exposure of methods, see <<repository-resources.methods>>.
+
 ===== Custom Status Codes
 
 The `GET` method has only one custom status code:
@@ -156,9 +204,25 @@ For every association of the domain type, we expose links named after the associ
 
 The `HEAD` method returns whether the item resource is available. It has no status codes, media types, or related resources.
 
+===== Methods used for invocation
+
+The following methods are used if present (decending order):
+
+- `findById(…)`
+
+For more information on the default exposure of methods, see <<repository-resources.methods>>.
+
 ==== `PUT`
 
 The `PUT` method replaces the state of the target resource with the supplied request body.
+
+===== Methods used for invocation
+
+The following methods are used if present (decending order):
+
+- `save(…)`
+
+For more information on the default exposure of methods, see <<repository-resources.methods>>.
 
 ===== Custom Status Codes
 
@@ -176,6 +240,14 @@ The `PUT` method supports the following media types:
 ==== `PATCH`
 
 The `PATCH` method is similar to the `PUT` method but partially updates the resources state.
+
+===== Methods used for invocation
+
+The following methods are used if present (decending order):
+
+- `save(…)`
+
+For more information on the default exposure of methods, see <<repository-resources.methods>>.
 
 ===== Custom Status Codes
 
@@ -195,6 +267,16 @@ The `PATCH` method supports the following media types:
 ==== `DELETE`
 
 The `DELETE` method deletes the resource exposed.
+
+===== Methods used for invocation
+
+The following methods are used if present (decending order):
+
+- `delete(T)`
+- `delete(ID)`
+- `delete(Iterable)`
+
+For more information on the default exposure of methods, see <<repository-resources.methods>>.
 
 ===== Custom Status Codes
 

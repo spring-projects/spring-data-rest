@@ -19,12 +19,9 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +36,8 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.rest.core.mapping.ConfigurableHttpMethods;
+import org.springframework.data.rest.core.mapping.HttpMethods;
 import org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -105,16 +104,14 @@ public class RepositoryPropertyReferenceControllerUnitTests {
 
 		INSTANCE;
 
-		private static final Set<HttpMethod> ALL_METHODS = new HashSet<HttpMethod>(Arrays.asList(HttpMethod.values()));
-
 		@Override
-		public Set<HttpMethod> getMethodsFor(PersistentProperty<?> property) {
-			return ALL_METHODS;
+		public HttpMethods getMethodsFor(PersistentProperty<?> property) {
+			return ConfigurableHttpMethods.ALL;
 		}
 
 		@Override
-		public Set<HttpMethod> getMethodsFor(ResourceType type) {
-			return ALL_METHODS;
+		public HttpMethods getMethodsFor(ResourceType type) {
+			return ConfigurableHttpMethods.ALL;
 		}
 	}
 }

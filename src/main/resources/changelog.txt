@@ -5,7 +5,6 @@ Changes in version 3.1.0.M3 (2018-05-17)
 ----------------------------------------
 * DATAREST-1231 - Upgrade to Solr 7.2.1.
 * DATAREST-1230 - Release 3.1 M3 (Lovelace).
-* DATAREST-948 - Switch to disable PUT for creation on item resources by default.
 
 
 Changes in version 3.0.7.RELEASE (2018-05-08)
