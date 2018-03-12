@@ -35,7 +35,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.Link;
 import org.springframework.test.context.ContextConfiguration;
@@ -58,7 +58,7 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 	@Configuration
 	@Import({ RepositoryRestMvcConfiguration.class, JpaRepositoryConfig.class })
 	@EnableJpaRepositories(considerNestedRepositories = true)
-	static class Config extends RepositoryRestConfigurerAdapter {
+	static class Config implements RepositoryRestConfigurer {
 
 		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
 			config.setDefaultPageSize(1);

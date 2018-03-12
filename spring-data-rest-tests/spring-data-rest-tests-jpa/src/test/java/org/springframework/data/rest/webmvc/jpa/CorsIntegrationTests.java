@@ -21,12 +21,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -51,16 +49,12 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		@Bean
 		RepositoryRestConfigurer repositoryRestConfigurer() {
 
-			return new RepositoryRestConfigurerAdapter() {
+			return RepositoryRestConfigurer.withConfig(config -> {
 
-				@Override
-				public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-
-					config.getCorsRegistry().addMapping("/books/**") //
-							.allowedMethods("GET", "PUT", "POST") //
-							.allowedOrigins("http://far.far.away");
-				}
-			};
+				config.getCorsRegistry().addMapping("/books/**") //
+						.allowedMethods("GET", "PUT", "POST") //
+						.allowedOrigins("http://far.far.away");
+			});
 		}
 	}
 

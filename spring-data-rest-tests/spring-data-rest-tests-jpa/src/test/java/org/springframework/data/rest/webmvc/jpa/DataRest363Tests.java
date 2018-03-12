@@ -25,9 +25,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.TestMvcClient;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.LinkDiscoverer;
 import org.springframework.hateoas.LinkDiscoverers;
@@ -38,6 +37,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -64,16 +64,17 @@ public class DataRest363Tests {
 	Person frodo;
 
 	@Configuration
-	static class Config extends RepositoryRestConfigurerAdapter {
+	static class Config {
 
 		@Bean
-		public LinkDiscoverer classicLinkDiscover() {
+		LinkDiscoverer classicLinkDiscover() {
 			return new JsonPathLinkDiscoverer("$.links[?(@.rel == '%s')].href", MEDIA_TYPE);
 		}
 
-		@Override
-		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-			config.setDefaultMediaType(MEDIA_TYPE).useHalAsDefaultJsonMediaType(false);
+		@Bean
+		RepositoryRestConfigurer configurer() {
+			return RepositoryRestConfigurer.withConfig( //
+					it -> it.setDefaultMediaType(MEDIA_TYPE).useHalAsDefaultJsonMediaType(false));
 		}
 	}
 

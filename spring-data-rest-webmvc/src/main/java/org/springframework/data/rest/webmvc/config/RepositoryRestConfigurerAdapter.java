@@ -31,7 +31,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  * @since 2.4
  * @soundtrack Florian Reichelt & Max Ender - Abschlusskonzert (https://www.youtube.com/watch?v=5WP0P-ndinY)
+ * @deprecated since 3.1, implement {@link RepositoryRestConfigurer} directly.
  */
+@Deprecated
 public class RepositoryRestConfigurerAdapter implements RepositoryRestConfigurer {
 
 	/*

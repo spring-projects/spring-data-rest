@@ -39,7 +39,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
@@ -197,41 +196,44 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 
 	@Configuration
 	@Import(RepositoryRestMvcConfiguration.class)
-	static class ExtendingConfiguration extends RepositoryRestConfigurerAdapter {
+	static class ExtendingConfiguration {
 
 		@Bean
-		public DefaultRelProvider relProvider() {
+		DefaultRelProvider relProvider() {
 			return new DefaultRelProvider();
 		}
 
 		@Bean
-		public CollectingComponent collectingComponent() {
+		CollectingComponent collectingComponent() {
 			return new CollectingComponent();
 		}
 
-		@Override
-		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+		@Bean
+		RepositoryRestConfigurer configurer() {
 
-			config.setDefaultPageSize(45);
-			config.setMaxPageSize(7000);
-			config.setPageParamName("myPage");
-			config.setLimitParamName("mySize");
-			config.setSortParamName("mySort");
+			return RepositoryRestConfigurer.withConfig(config -> {
+
+				config.setDefaultPageSize(45);
+				config.setMaxPageSize(7000);
+				config.setPageParamName("myPage");
+				config.setLimitParamName("mySize");
+				config.setSortParamName("mySort");
+			});
 		}
 	}
 
 	@Configuration
 	@Import(RepositoryRestMvcConfiguration.class)
-	static class NonHalConfiguration extends RepositoryRestConfigurerAdapter {
+	static class NonHalConfiguration {
 
 		@Bean
-		public CollectingComponent collectingComponent() {
+		CollectingComponent collectingComponent() {
 			return new CollectingComponent();
 		}
 
-		@Override
-		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-			config.useHalAsDefaultJsonMediaType(false);
+		@Bean
+		RepositoryRestConfigurer configurer() {
+			return RepositoryRestConfigurer.withConfig(config -> config.useHalAsDefaultJsonMediaType(false));
 		}
 	}
 

@@ -34,7 +34,7 @@ import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.tests.TestMvcClient;
 import org.springframework.data.rest.webmvc.ProfileController;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.jpa.Item;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.hateoas.Link;
@@ -65,7 +65,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Autowired RepositoryRestConfiguration configuration;
 
 	@Configuration
-	static class Config extends RepositoryRestConfigurerAdapter {
+	static class Config {
 
 		@Bean
 		public LinkDiscoverer alpsLinkDiscoverer() {
@@ -73,9 +73,9 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 					MediaType.valueOf("application/alps+json"));
 		}
 
-		@Override
-		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-			config.exposeIdsFor(Item.class);
+		@Bean
+		RepositoryRestConfigurer configurer() {
+			return RepositoryRestConfigurer.withConfig(config -> config.exposeIdsFor(Item.class));
 		}
 	}
 

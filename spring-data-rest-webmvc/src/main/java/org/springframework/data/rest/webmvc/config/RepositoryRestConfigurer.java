@@ -16,11 +16,13 @@
 package org.springframework.data.rest.webmvc.config;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.util.Assert;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,18 +37,43 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public interface RepositoryRestConfigurer {
 
 	/**
+	 * Convenience method to easily create simple {@link RepositoryRestConfigurer} instances that solely want to tweak the
+	 * {@link RepositoryRestConfiguration}.
+	 * 
+	 * @param consumer must not be {@literal null}.
+	 * @return
+	 * @since 3.1
+	 */
+	static RepositoryRestConfigurer withConfig(Consumer<RepositoryRestConfiguration> consumer) {
+
+		Assert.notNull(consumer, "Consumer must not be null!");
+
+		return new RepositoryRestConfigurer() {
+
+			/* 
+			 * (non-Javadoc)
+			 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration)
+			 */
+			@Override
+			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+				consumer.accept(config);
+			}
+		};
+	}
+
+	/**
 	 * Override this method to add additional configuration.
 	 *
 	 * @param config Main configuration bean.
 	 */
-	void configureRepositoryRestConfiguration(RepositoryRestConfiguration config);
+	default void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {}
 
 	/**
 	 * Override this method to add your own converters.
 	 *
 	 * @param conversionService Default ConversionService bean.
 	 */
-	void configureConversionService(ConfigurableConversionService conversionService);
+	default void configureConversionService(ConfigurableConversionService conversionService) {}
 
 	/**
 	 * Override this method to add validators manually.
@@ -54,26 +81,26 @@ public interface RepositoryRestConfigurer {
 	 * @param validatingListener The {@link org.springframework.context.ApplicationListener} responsible for invoking
 	 *          {@link org.springframework.validation.Validator} instances.
 	 */
-	void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener validatingListener);
+	default void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener validatingListener) {}
 
 	/**
 	 * Configure the {@link ExceptionHandlerExceptionResolver}.
 	 *
 	 * @param exceptionResolver The default exception resolver on which you can add custom argument resolvers.
 	 */
-	void configureExceptionHandlerExceptionResolver(ExceptionHandlerExceptionResolver exceptionResolver);
+	default void configureExceptionHandlerExceptionResolver(ExceptionHandlerExceptionResolver exceptionResolver) {}
 
 	/**
 	 * Configure the available {@link HttpMessageConverter}s by adding your own.
 	 *
 	 * @param messageConverters The converters to be used by the system.
 	 */
-	void configureHttpMessageConverters(List<HttpMessageConverter<?>> messageConverters);
+	default void configureHttpMessageConverters(List<HttpMessageConverter<?>> messageConverters) {}
 
 	/**
 	 * Configure the Jackson {@link ObjectMapper} directly.
 	 *
 	 * @param objectMapper The {@literal ObjectMapper} to be used by the system.
 	 */
-	void configureJacksonObjectMapper(ObjectMapper objectMapper);
+	default void configureJacksonObjectMapper(ObjectMapper objectMapper) {}
 }

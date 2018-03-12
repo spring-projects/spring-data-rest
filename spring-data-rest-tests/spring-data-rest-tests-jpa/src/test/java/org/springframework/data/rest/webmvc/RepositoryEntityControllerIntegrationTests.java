@@ -157,11 +157,10 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		List<String> value = entity.getHeaders().get("Accept-Patch");
 
 		assertThat(value).hasSize(3);
-		assertThat(value,
-				hasItems(//
-						RestMediaTypes.JSON_PATCH_JSON.toString(), //
-						RestMediaTypes.MERGE_PATCH_JSON.toString(), //
-						MediaType.APPLICATION_JSON_VALUE));
+		assertThat(value, hasItems(//
+				RestMediaTypes.JSON_PATCH_JSON.toString(), //
+				RestMediaTypes.MERGE_PATCH_JSON.toString(), //
+				MediaType.APPLICATION_JSON_VALUE));
 	}
 
 	@Test // DATAREST-34
