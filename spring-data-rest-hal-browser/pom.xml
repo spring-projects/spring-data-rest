@@ -15,6 +15,7 @@
 	<properties>
 		<browser.version>3325375</browser.version>
 		<json-editor.version>0.7.21</json-editor.version>
+		<project.root>${basedir}/..</project.root>
 	</properties>
 
 	<dependencies>

@@ -19,6 +19,7 @@
 	<properties>
 		<cassandra.version>2.0.9</cassandra.version>
 		<cassandraunit.version>2.0.2.1</cassandraunit.version>
+		<project.root>${basedir}/..</project.root>
 	</properties>
 
 	<dependencies>

@@ -18,6 +18,7 @@
 	<properties>
 		<springplugin>1.2.0.RELEASE</springplugin>
 		<evoinflector>1.2.2</evoinflector>
+		<project.root>${basedir}/..</project.root>
 	</properties>
 
 	<dependencies>
