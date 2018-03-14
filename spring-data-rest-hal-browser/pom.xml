@@ -16,6 +16,7 @@
 		<browser.version>ad9b865</browser.version>
 		<json-editor.version>0.7.21</json-editor.version>
 		<java-module-name>spring.data.rest.hal.browser</java-module-name>
+		<project.root>${basedir}/..</project.root>
 	</properties>
 
 	<dependencies>
