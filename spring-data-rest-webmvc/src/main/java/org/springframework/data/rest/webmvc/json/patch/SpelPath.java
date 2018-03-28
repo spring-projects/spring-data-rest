@@ -32,10 +32,12 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
+import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionException;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.StringUtils;
@@ -220,6 +222,7 @@ class SpelPath {
 		private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s (from source %s)!";
 		private static final Map<CacheKey, TypedSpelPath> TYPED_PATHS = new ConcurrentReferenceHashMap<CacheKey, TypedSpelPath>(
 				32);
+		private static final EvaluationContext CONTEXT = SimpleEvaluationContext.forReadWriteDataBinding().build();
 
 		private final Class<?> type;
 
@@ -274,7 +277,7 @@ class SpelPath {
 			Assert.notNull(target, "Target must not be null!");
 
 			try {
-				return (T) expression.getValue(target);
+				return (T) expression.getValue(CONTEXT, target);
 			} catch (ExpressionException o_O) {
 				throw new PatchException("Unable to get value from target", o_O);
 			}
@@ -290,7 +293,7 @@ class SpelPath {
 
 			Assert.notNull(target, "Target must not be null!");
 
-			expression.setValue(target, value);
+			expression.setValue(CONTEXT, target, value);
 		}
 
 		/**
@@ -303,7 +306,7 @@ class SpelPath {
 
 			Assert.notNull(root, "Root object must not be null!");
 
-			return expression.getValueType(root);
+			return expression.getValueType(CONTEXT, root);
 		}
 
 		/**
@@ -410,7 +413,7 @@ class SpelPath {
 		}
 
 		private TypeDescriptor getTypeDescriptor(Object target) {
-			return expression.getValueTypeDescriptor(target);
+			return expression.getValueTypeDescriptor(CONTEXT, target);
 		}
 
 		private Integer getTargetListIndex() {
