@@ -1,6 +1,14 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.11.RELEASE (2018-04-04)
+----------------------------------------------
+* DATAREST-1222 - Switch to SimpleEvaluationContext for SpEL-based PATCH handling.
+* DATAREST-1219 - Remove explicit declaration of Jackson library versions.
+* DATAREST-1215 - Declare project.root property to make sure JavaDoc generation works.
+* DATAREST-1185 - Release 2.6.11 (Ingalls SR11).
+
+
 Changes in version 3.0.5.RELEASE (2018-02-28)
 ---------------------------------------------
 * DATAREST-1200 - Release 3.0.5 (Kay SR5).
