@@ -71,6 +71,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerBuilder;
@@ -414,6 +415,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		public BeanDeserializerBuilder updateBuilder(DeserializationConfig config, BeanDescription beanDesc,
 				BeanDeserializerBuilder builder) {
 
+			boolean isSnakeCase = isSnakeCaseObjectMapper(config);
+
 			Iterator<SettableBeanProperty> properties = builder.getProperties();
 
 			entities.getPersistentEntity(beanDesc.getBeanClass()).ifPresent(entity -> {
@@ -422,7 +425,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 					SettableBeanProperty property = properties.next();
 
-					PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getName());
+					PersistentProperty<?> persistentProperty = entity.getPersistentProperty(isSnakeCase ? toCamelCase(property.getName()) : property.getName());
 
 					if (persistentProperty == null) {
 						continue;
@@ -464,6 +467,41 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					property.getActualType());
 			CollectionValueInstantiator instantiator = new CollectionValueInstantiator(property);
 			return new CollectionDeserializer(collectionType, elementDeserializer, null, instantiator);
+		}
+
+		private static boolean isSnakeCaseObjectMapper(DeserializationConfig config) {
+
+			if (config.getPropertyNamingStrategy() == null) {
+				return false;
+			}
+
+			return config.getPropertyNamingStrategy().getClass().equals(PropertyNamingStrategy.SnakeCaseStrategy.class);
+		}
+
+		private static String toCamelCase(String value) {
+
+			if (!StringUtils.hasText(value)) {
+				return value;
+			}
+
+			if (!value.contains("_")) {
+				return value;
+			}
+
+			StringBuilder b = new StringBuilder();
+			int length = value.length();
+
+			for (int i = 0; i < length; i++) {
+				char ch = value.charAt(i);
+				if ((ch == '_') && (i < length - 1)) {
+					b.append(Character.toUpperCase(value.charAt(i + 1)));
+					i++;
+				} else if (ch != '_') {
+					b.append(ch);
+				}
+			}
+
+			return b.toString();
 		}
 	}
 

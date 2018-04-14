@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -68,6 +69,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.util.UriTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -85,7 +87,8 @@ public class PersistentEntitySerializationTests {
 
 	private static final String PERSON_JSON_IN = "{\"firstName\": \"John\",\"lastName\": \"Doe\"}";
 
-	@Autowired ObjectMapper mapper;
+	@Autowired @Qualifier("objectMapper") ObjectMapper mapper;
+	@Autowired @Qualifier("snakeCaseObjectMapper") ObjectMapper snakeCaseMapper;
 	@Autowired Repositories repositories;
 	@Autowired PersonRepository people;
 	@Autowired OrderRepository orders;
@@ -94,13 +97,23 @@ public class PersistentEntitySerializationTests {
 	@Configuration
 	static class TestConfig extends RepositoryTestsConfig {
 
-		@Bean
+		@Bean("objectMapper")
 		@Override
 		public ObjectMapper objectMapper() {
 
 			ObjectMapper objectMapper = super.objectMapper();
 			objectMapper.registerModule(
 					new JacksonSerializers(new EnumTranslator(new MessageSourceAccessor(new StaticMessageSource()))));
+			return objectMapper;
+		}
+
+		@Bean("snakeCaseObjectMapper")
+		public ObjectMapper snakeCaseObjectMapper() {
+
+			ObjectMapper objectMapper = super.objectMapper();
+			objectMapper.registerModule(
+					new JacksonSerializers(new EnumTranslator(new MessageSourceAccessor(new StaticMessageSource()))));
+			objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 			return objectMapper;
 		}
 	}
@@ -194,6 +207,17 @@ public class PersistentEntitySerializationTests {
 
 		Order order = mapper.readValue(content, Order.class);
 		assertThat(order.getLineItems()).hasSize(2);
+	}
+
+	@Test // DATAREST-1232
+	public void deserializesPersonWithSnakeCaseLinkToOtherPersonCorrectly() throws Exception {
+
+		Person grandFather = people.save(new Person("John", "Doe"));
+
+		String child = String.format("{ \"first_name\" : \"Bilbo\", \"grand_father\" : \"/persons/%s\"}", grandFather.getId());
+		Person result = snakeCaseMapper.readValue(child, Person.class);
+
+		assertThat(result.getGrandFather()).isEqualTo(grandFather);
 	}
 
 	@Test // DATAREST-250

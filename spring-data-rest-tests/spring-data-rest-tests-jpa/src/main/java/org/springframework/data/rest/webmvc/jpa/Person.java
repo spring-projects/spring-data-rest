@@ -58,6 +58,9 @@ public class Person {
 	@ManyToOne //
 	private Person father;
 
+	@ManyToOne //
+	private Person grandFather;
+
 	@Description("Timestamp this person object was created") //
 	private Date created;
 
@@ -123,6 +126,14 @@ public class Person {
 
 	public void setFather(Person father) {
 		this.father = father;
+	}
+
+	public Person getGrandFather() {
+		return grandFather;
+	}
+
+	public void setGrandFather(Person grandFather) {
+		this.grandFather = grandFather;
 	}
 
 	public Date getCreated() {
