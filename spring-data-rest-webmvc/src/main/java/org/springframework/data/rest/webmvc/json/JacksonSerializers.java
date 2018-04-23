@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 /**
  * Custom Spring Data REST Jackson serializers.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.4
  * @soundtrack Wallis Bird - I Could Be Your Man (Yeah! Wallis Bird Live 2007-2014)
@@ -53,7 +53,7 @@ public class JacksonSerializers extends SimpleModule {
 
 	/**
 	 * Creates a new {@link JacksonSerializers} with the given {@link EnumTranslator}.
-	 * 
+	 *
 	 * @param translator must not be {@literal null}.
 	 */
 	public JacksonSerializers(EnumTranslator translator) {
@@ -83,7 +83,7 @@ public class JacksonSerializers extends SimpleModule {
 
 		/**
 		 * Creates a new {@link EnumTranslatingSerializer} using the given {@link EnumTranslator}.
-		 * 
+		 *
 		 * @param translator must not be {@literal null}.
 		 */
 		public EnumTranslatingSerializer(EnumTranslator translator) {
@@ -95,7 +95,7 @@ public class JacksonSerializers extends SimpleModule {
 			this.translator = translator;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
 		 */
@@ -104,7 +104,7 @@ public class JacksonSerializers extends SimpleModule {
 			gen.writeString(translator.asText(value));
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.webmvc.json.JsonSchemaPropertyCustomizer#customize(org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty, org.springframework.data.util.TypeInformation)
 		 */
@@ -136,7 +136,7 @@ public class JacksonSerializers extends SimpleModule {
 
 		/**
 		 * Creates a new {@link EnumTranslatingDeserializer} using the given {@link EnumTranslator}.
-		 * 
+		 *
 		 * @param translator must not be {@literal null}.
 		 */
 		public EnumTranslatingDeserializer(EnumTranslator translator) {
@@ -146,7 +146,7 @@ public class JacksonSerializers extends SimpleModule {
 		/**
 		 * Creates a new {@link EnumTranslatingDeserializer} using the given {@link EnumTranslator} and {@link BeanProperty}
 		 * .
-		 * 
+		 *
 		 * @param translator must not be {@literal null}.
 		 * @param property can be {@literal null}.
 		 */
@@ -160,7 +160,7 @@ public class JacksonSerializers extends SimpleModule {
 			this.property = property;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.deser.ContextualDeserializer#createContextual(com.fasterxml.jackson.databind.DeserializationContext, com.fasterxml.jackson.databind.BeanProperty)
 		 */
@@ -170,7 +170,7 @@ public class JacksonSerializers extends SimpleModule {
 			return new EnumTranslatingDeserializer(translator, property);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
 		 */
@@ -188,7 +188,7 @@ public class JacksonSerializers extends SimpleModule {
 
 		/**
 		 * Returns the value types for containers or the original type otherwise.
-		 * 
+		 *
 		 * @param type must not be {@literal null}.
 		 * @return
 		 */

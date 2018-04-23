@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
 
 /**
  * Configuration for metadata exposure.
- * 
+ *
  * @author Oliver Gierke
  */
 public class MetadataConfiguration {
@@ -38,7 +38,7 @@ public class MetadataConfiguration {
 	 * Configures whether to omit documentation attributes for unresolvable resource bundle keys. Defaults to
 	 * {@literal true}, which means that an unsuccessful attempt to resolve the message will cause no documentation entry
 	 * to be rendered for the metadata resources.
-	 * 
+	 *
 	 * @param omitUnresolvableDescriptionKeys whether to omit documentation attributes for unresolvable resource bundle
 	 *          keys.
 	 */
@@ -48,7 +48,7 @@ public class MetadataConfiguration {
 
 	/**
 	 * Returns whether to omit documentation attributes for unresolvable resource bundle keys.
-	 * 
+	 *
 	 * @return the omitUnresolvableDescriptionKeys
 	 */
 	public boolean omitUnresolvableDescriptionKeys() {
@@ -57,7 +57,7 @@ public class MetadataConfiguration {
 
 	/**
 	 * Configures whether to expose the ALPS resources.
-	 * 
+	 *
 	 * @param alpsEnabled the alpsEnabled to set
 	 */
 	public void setAlpsEnabled(boolean enableAlps) {
@@ -66,7 +66,7 @@ public class MetadataConfiguration {
 
 	/**
 	 * Returns whether the ALPS resources are exposed.
-	 * 
+	 *
 	 * @return the alpsEnabled
 	 */
 	public boolean alpsEnabled() {
@@ -84,7 +84,7 @@ public class MetadataConfiguration {
 
 	/**
 	 * Returns the {@link JsonSchemaFormat} to be used for the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -94,7 +94,7 @@ public class MetadataConfiguration {
 
 	/**
 	 * Registers the given formatting patter for the given value type.
-	 * 
+	 *
 	 * @param pattern must not be {@literal null} or empty.
 	 * @param type must not be {@literal null}.
 	 */
@@ -108,7 +108,7 @@ public class MetadataConfiguration {
 
 	/**
 	 * Returns the {@link Pattern} registered for the given value type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */

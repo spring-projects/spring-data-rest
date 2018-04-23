@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation to tie a particular projection type to a source type. Used to find projection interfaces at startup time.
- * 
+ *
  * @author Oliver Gierke
  */
 @Inherited
@@ -35,14 +35,14 @@ public @interface Projection {
 
 	/**
 	 * The type the projection type is bound to.
-	 * 
+	 *
 	 * @return
 	 */
 	Class<?>[] types();
 
 	/**
 	 * The name of projection to refer to.
-	 * 
+	 *
 	 * @return
 	 */
 	String name() default "";

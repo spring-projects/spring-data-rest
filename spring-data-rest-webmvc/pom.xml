@@ -20,6 +20,7 @@
 		<cassandra.version>2.0.9</cassandra.version>
 		<cassandraunit.version>2.0.2.1</cassandraunit.version>
 		<java-module-name>spring.data.rest.webmvc</java-module-name>
+		<project.root>${basedir}/..</project.root>
 	</properties>
 
 	<dependencies>
@@ -47,13 +48,11 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>${jackson}</version>
 		</dependency>
 
 		<!-- Jackson Hibernate -->
@@ -61,14 +60,12 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-hibernate4</artifactId>
-			<version>${jackson}</version>
 			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-hibernate5</artifactId>
-			<version>${jackson}</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -84,7 +81,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-joda</artifactId>
-			<version>${jackson}</version>
 			<optional>true</optional>
 		</dependency>
 

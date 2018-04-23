@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.springframework.plugin.core.Plugin;
  * SPI to customize which property of an entity is used as unique identifier and how the entity instance is looked up
  * from the backend. Prefer to extend {@link EntityLookupSupport} to let the generics declaration be used for the
  * {@link #supports(Object)} method automatically.
- * 
+ *
  * @author Oliver Gierke
  * @see EntityLookupSupport
  * @see DefaultSelfLinkProvider
@@ -37,7 +37,7 @@ public interface EntityLookup<T> extends Plugin<Class<?>> {
 	 * Returns the property of the given entity that shall be used to uniquely identify it. If no {@link EntityLookup} is
 	 * defined for a particular type, a standard identifier lookup mechanism (i.e. the datastore identifier) will be used
 	 * to eventually create an identifying URI.
-	 * 
+	 *
 	 * @param entity will never be {@literal null}.
 	 * @return must not be {@literal null}.
 	 */
@@ -50,7 +50,7 @@ public interface EntityLookup<T> extends Plugin<Class<?>> {
 	 * <p>
 	 * Implementations are free to return {@literal null} to indicate absence of a value or wrap the result into any
 	 * generally supported {@code Optional} type.
-	 * 
+	 *
 	 * @param id will never be {@literal null}.
 	 * @return can be {@literal null}.
 	 */

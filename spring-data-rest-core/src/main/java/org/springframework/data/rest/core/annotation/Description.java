@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation to describe semantics of a resource.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -33,7 +33,7 @@ public @interface Description {
 
 	/**
 	 * The textual description of the resource. Can be a resource bundle key for internationalization.
-	 * 
+	 *
 	 * @return
 	 */
 	String value();

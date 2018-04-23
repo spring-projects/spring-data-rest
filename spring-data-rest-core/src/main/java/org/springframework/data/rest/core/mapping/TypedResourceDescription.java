@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.springframework.util.StringUtils;
  * {@link SimpleResourceDescription} that additionally captures a type to be able to potentially create a reasonable
  * default message. The implementation will do so for enum types by rendering the available values as default message
  * and also provide them as arguments for message resolution.
- * 
+ *
  * @author Oliver Gierke
  */
 public class TypedResourceDescription extends SimpleResourceDescription {
@@ -34,7 +34,7 @@ public class TypedResourceDescription extends SimpleResourceDescription {
 
 	/**
 	 * Creates a new {@link TypedResourceDescription} for the given message, {@link MediaType} and type.
-	 * 
+	 *
 	 * @param message must not be {@literal null} or empty.
 	 * @param mediaType must not be {@literal null} or empty.
 	 * @param type can be {@literal null}, defaults to {@link Object}.
@@ -62,7 +62,7 @@ public class TypedResourceDescription extends SimpleResourceDescription {
 		return new TypedResourceDescription(message, DEFAULT_MEDIA_TYPE, type);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResolvableResourceDescriptionSupport#getArguments()
 	 */
@@ -71,7 +71,7 @@ public class TypedResourceDescription extends SimpleResourceDescription {
 		return type.isEnum() ? new Object[] { getEnumValues(type) } : new Object[0];
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResolvableResourceDescriptionSupport#getDefaultMessage()
 	 */

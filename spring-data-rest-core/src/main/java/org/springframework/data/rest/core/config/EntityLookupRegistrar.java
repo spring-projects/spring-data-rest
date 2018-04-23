@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.data.rest.core.support.EntityLookup;
 
 /**
  * Configuration interfaces to ease the configuration of custom {@link EntityLookup}s for repositories.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.5
  */
@@ -30,7 +30,7 @@ public interface EntityLookupRegistrar {
 
 	/**
 	 * Starts building a custom {@link EntityLookup} for the given repository type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -39,7 +39,7 @@ public interface EntityLookupRegistrar {
 	/**
 	 * Starts building a custom {@link EntityLookup} for the given repository type and registers the domain type of the
 	 * given repository as lookup type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -49,7 +49,7 @@ public interface EntityLookupRegistrar {
 
 		/**
 		 * Registers the given {@link Converter} to map the entity to its identifying property.
-		 * 
+		 *
 		 * @param mapping must not be {@literal null}.
 		 * @return
 		 */
@@ -58,7 +58,7 @@ public interface EntityLookupRegistrar {
 
 	/**
 	 * Registers an {@link EntityLookup} for the given repository type, identifier mapping and lookup operation.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param identifierMapping must not be {@literal null}.
 	 * @param lookup must not be {@literal null}.
@@ -69,7 +69,7 @@ public interface EntityLookupRegistrar {
 	/**
 	 * Registers an {@link EntityLookup} for the given repository type, identifier mapping and lookup operation and
 	 * registers the domain type managed by the given repository as lookup type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param identifierMapping must not be {@literal null}.
 	 * @param lookup must not be {@literal null}.
@@ -81,7 +81,7 @@ public interface EntityLookupRegistrar {
 
 		/**
 		 * Registers the given {@link Lookup} to obtain entity instances.
-		 * 
+		 *
 		 * @param lookup must not be {@literal null}.
 		 */
 		EntityLookupRegistrar withLookup(Lookup<R, ID> lookup);
@@ -90,7 +90,7 @@ public interface EntityLookupRegistrar {
 
 			/**
 			 * Looks up the entity using the given {@link Repository} and identifier.
-			 * 
+			 *
 			 * @param repository
 			 * @param identifier
 			 * @return

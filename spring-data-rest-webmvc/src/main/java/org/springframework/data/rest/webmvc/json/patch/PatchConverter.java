@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * For example, if the {@link Patch} is to be represented as JSON Patch, the representation type could be
  * {@link JsonNode} or some other JSON library's type that holds a JSON document.
  * </p>
- * 
+ *
  * @author Craig Walls
  * @author Oliver Gierke
  * @param <T> A type holding a representation of the patch. For example, a JsonNode if working with JSON Patch.
@@ -36,7 +36,7 @@ public interface PatchConverter<T> {
 
 	/**
 	 * Convert a patch document representation to a {@link Patch}.
-	 * 
+	 *
 	 * @param patchRepresentation the representation of a patch.
 	 * @return the {@link Patch} object that the document represents.
 	 */

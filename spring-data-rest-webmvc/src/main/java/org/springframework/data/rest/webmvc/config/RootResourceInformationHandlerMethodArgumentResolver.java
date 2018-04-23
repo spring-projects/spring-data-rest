@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 /**
  * {@link HandlerMethodArgumentResolver} to create {@link RootResourceInformation} for injection into Spring MVC
  * controller methods.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -46,7 +46,7 @@ public class RootResourceInformationHandlerMethodArgumentResolver implements Han
 	/**
 	 * Creates a new {@link RootResourceInformationHandlerMethodArgumentResolver} using the given {@link Repositories},
 	 * {@link RepositoryInvokerFactory} and {@link ResourceMetadataHandlerMethodArgumentResolver}.
-	 * 
+	 *
 	 * @param repositories must not be {@literal null}.
 	 * @param invokerFactory must not be {@literal null}.
 	 * @param resourceMetadataResolver must not be {@literal null}.
@@ -95,7 +95,7 @@ public class RootResourceInformationHandlerMethodArgumentResolver implements Han
 	/**
 	 * Potentially customize the given {@link RepositoryInvoker} for the given domain type. Default implementations simply
 	 * returns the given invoker as is.
-	 * 
+	 *
 	 * @param parameter must not be {@literal null}.
 	 * @param invoker will never be {@literal null}.
 	 * @param domainType will never be {@literal null}.

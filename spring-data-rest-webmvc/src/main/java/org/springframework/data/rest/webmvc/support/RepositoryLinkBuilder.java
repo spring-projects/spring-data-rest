@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * {@link LinkBuilder} to be able to create links pointing to repositories.
- * 
+ *
  * @author Oliver Gierke
  */
 public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuilder> {
@@ -37,7 +37,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 
 	/**
 	 * Creates a new {@link RepositoryLinkBuilder} with the given {@link ResourceMetadata} and base {@link URI}.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param baseUri
 	 */
@@ -48,7 +48,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 	/**
 	 * Creates a new {@link RepositoryLinkBuilder} with the given {@link ResourceMetadata} and
 	 * {@link UriComponentsBuilder}.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param builder must not be {@literal null}.
 	 */
@@ -81,7 +81,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 		return withRel(metadata.getRel());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.hateoas.core.LinkBuilderSupport#createNewInstance(org.springframework.web.util.UriComponentsBuilder)
 	 */
@@ -90,7 +90,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 		return new RepositoryLinkBuilder(this.metadata, builder);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.hateoas.core.LinkBuilderSupport#getThis()
 	 */

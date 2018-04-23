@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,6 @@ package org.springframework.data.rest.core.mapping;
 import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,12 +28,13 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.CrudMethods;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.util.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 
 /**
  * {@link SupportedHttpMethods} that are determined by a {@link CrudMethods} instance.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.3
  */
@@ -46,17 +44,19 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 
 	/**
 	 * Creates a new {@link CrudMethodsSupportedHttpMethods} for the given {@link CrudMethods}.
-	 * 
+	 *
 	 * @param crudMethods must not be {@literal null}.
+	 * @param methodsExposedByDefault whether repository methods should be considered exposed by default or need to be
+	 *          annotated with {@link RestResource} to really be visible.
 	 */
-	public CrudMethodsSupportedHttpMethods(CrudMethods crudMethods) {
+	public CrudMethodsSupportedHttpMethods(CrudMethods crudMethods, boolean methodsExposedByDefault) {
 
 		Assert.notNull(crudMethods, "CrudMethods must not be null!");
 
-		this.exposedMethods = new DefaultExposureAwareCrudMethods(crudMethods);
+		this.exposedMethods = new DefaultExposureAwareCrudMethods(crudMethods, methodsExposedByDefault);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getSupportedHttpMethods(org.springframework.data.rest.core.mapping.ResourceType)
 	 */
@@ -108,7 +108,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 		return Collections.unmodifiableSet(methods);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getMethodsFor(org.springframework.data.mapping.PersistentProperty)
 	 */
@@ -139,53 +139,69 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	/**
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	private static class DefaultExposureAwareCrudMethods implements ExposureAwareCrudMethods {
 
-		private final @NonNull CrudMethods crudMethods;
+		private final Lazy<Boolean> exposesSave;
+		private final Lazy<Boolean> exposesDelete;
+		private final Lazy<Boolean> exposesFindOne;
+		private final Lazy<Boolean> exposesFindAll;
 
-		/* 
+		private final boolean exportedDefault;
+
+		DefaultExposureAwareCrudMethods(CrudMethods crudMethods, boolean exportedDefault) {
+
+			Assert.notNull(crudMethods, "CrudMethods must not be null!");
+
+			this.exposesSave = Lazy.of(() -> exposes(crudMethods.getSaveMethod()));
+			this.exposesDelete = Lazy.of(() -> exposes(crudMethods.getDeleteMethod()) && crudMethods.hasFindOneMethod());
+			this.exposesFindOne = Lazy.of(() -> exposes(crudMethods.getFindOneMethod()));
+			this.exposesFindAll = Lazy.of(() -> exposes(crudMethods.getFindAllMethod()));
+
+			this.exportedDefault = exportedDefault;
+		}
+
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.mapping.ExposureAwareCrudMethods#exposesSave()
 		 */
 		@Override
 		public boolean exposesSave() {
-			return exposes(crudMethods.getSaveMethod());
+			return exposesSave.get();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.mapping.ExposureAwareCrudMethods#exposesDelete()
 		 */
 		@Override
 		public boolean exposesDelete() {
-			return exposes(crudMethods.getDeleteMethod()) && crudMethods.hasFindOneMethod();
+			return exposesDelete.get();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.mapping.ExposureAwareCrudMethods#exposesFindOne()
 		 */
 		@Override
 		public boolean exposesFindOne() {
-			return exposes(crudMethods.getFindOneMethod());
+			return exposesFindOne.get();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.mapping.ExposureAwareCrudMethods#exposesFindAll()
 		 */
 		@Override
 		public boolean exposesFindAll() {
-			return exposes(crudMethods.getFindAllMethod());
+			return exposesFindAll.get();
 		}
 
-		private static boolean exposes(Optional<Method> method) {
+		private boolean exposes(Optional<Method> method) {
 
 			return method.map(it -> {
 
 				RestResource annotation = AnnotationUtils.findAnnotation(it, RestResource.class);
-				return annotation == null ? true : annotation.exported();
+				return annotation == null ? exportedDefault : annotation.exported();
 
 			}).orElse(false);
 		}
@@ -198,28 +214,28 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 
 		/**
 		 * Returns whether the repository exposes the save method.
-		 * 
+		 *
 		 * @return
 		 */
 		boolean exposesSave();
 
 		/**
 		 * Returns whether the repository exposes the delete method.
-		 * 
+		 *
 		 * @return
 		 */
 		boolean exposesDelete();
 
 		/**
 		 * Returns whether the repository exposes the method to find a single object.
-		 * 
+		 *
 		 * @return
 		 */
 		boolean exposesFindOne();
 
 		/**
 		 * Returns whether the repository exposes the method to find all objects.
-		 * 
+		 *
 		 * @return
 		 */
 		boolean exposesFindAll();

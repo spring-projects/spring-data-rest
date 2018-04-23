@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.springframework.data.rest.webmvc.json.patch;
 /**
  * Operation to add a new value to the given "path". Will throw a {@link PatchException} if the path is invalid or if
  * the given value is not assignable to the given path.
- * 
+ *
  * @author Craig Walls
  * @author Oliver Gierke
  */
@@ -26,7 +26,7 @@ class AddOperation extends PatchOperation {
 
 	/**
 	 * Constructs the add operation
-	 * 
+	 *
 	 * @param path The path where the value will be added. (e.g., '/foo/bar/4')
 	 * @param value The value to add.
 	 */
@@ -47,7 +47,7 @@ class AddOperation extends PatchOperation {
 		path.bindTo(type).addValue(targetObject, evaluateValueFromTarget(targetObject, type));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#evaluateValueFromTarget(java.lang.Object, java.lang.Class)
 	 */

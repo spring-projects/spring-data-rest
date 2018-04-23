@@ -1,6 +1,95 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.0.M2 (2018-04-13)
+----------------------------------------
+* DATAREST-1222 - Switch to SimpleEvaluationContext for SpEL-based PATCH handling.
+* DATAREST-1219 - Remove explicit declaration of Jackson library versions.
+* DATAREST-1215 - Declare project.root property to make sure JavaDoc generation works.
+* DATAREST-1212 - Deprecate RepositoryRestConfigurerAdapter.
+* DATAREST-1196 - Release 3.1 M2 (Lovelace).
+* DATAREST-1193 - Make DelegatingHandlerMapping a MatchableHandlerMapping.
+
+
+Changes in version 3.0.6.RELEASE (2018-04-04)
+---------------------------------------------
+* DATAREST-1222 - Switch to SimpleEvaluationContext for SpEL-based PATCH handling.
+* DATAREST-1219 - Remove explicit declaration of Jackson library versions.
+* DATAREST-1215 - Declare project.root property to make sure JavaDoc generation works.
+* DATAREST-1206 - Release 3.0.6 (Kay SR6).
+
+
+Changes in version 2.6.11.RELEASE (2018-04-04)
+----------------------------------------------
+* DATAREST-1222 - Switch to SimpleEvaluationContext for SpEL-based PATCH handling.
+* DATAREST-1219 - Remove explicit declaration of Jackson library versions.
+* DATAREST-1215 - Declare project.root property to make sure JavaDoc generation works.
+* DATAREST-1185 - Release 2.6.11 (Ingalls SR11).
+
+
+Changes in version 3.0.5.RELEASE (2018-02-28)
+---------------------------------------------
+* DATAREST-1200 - Release 3.0.5 (Kay SR5).
+
+
+Changes in version 3.0.4.RELEASE (2018-02-19)
+---------------------------------------------
+* DATAREST-1193 - Make DelegatingHandlerMapping a MatchableHandlerMapping.
+* DATAREST-1187 - Release 3.0.4 (Kay SR4).
+
+
+Changes in version 3.1.0.M1 (2018-02-06)
+----------------------------------------
+* DATAREST-1184 - Adapt to CORS changes in Spring Framework 5.0.3.
+* DATAREST-1181 - Potential NullPointerException in JsonLateObjectEvaluator.evaluate(…).
+* DATAREST-1177 - DefaultExposureAwareCrudMethods should cache results.
+* DATAREST-1176 - Add ability to only expose repository methods explicitly declared for exposure.
+* DATAREST-1174 - Adapt WrappedProperties to changed defaults in Lombok 1.16.20.
+* DATAREST-1170 - Update copyright years to 2018.
+* DATAREST-1163 - Errors.reject() fails with NotReadablePropertyException when rejecting 'null' values.
+* DATAREST-1160 - Adapt test cases to new CORS defaults in Spring 5.0.2.
+* DATAREST-1159 - CONTRIBUTING file references wrong global contribution file.
+* DATAREST-1152 - Improve design of patch expression evaluation.
+* DATAREST-1148 - Single entity GET causes unnecessary toString call on domain object.
+* DATAREST-1141 - Release 3.1 M1 (Lovelace).
+* DATAREST-1006 - PUT nulls Json read-only property.
+
+
+Changes in version 3.0.3.RELEASE (2018-01-24)
+---------------------------------------------
+* DATAREST-1184 - Adapt to CORS changes in Spring Framework 5.0.3.
+* DATAREST-1181 - Potential NullPointerException in JsonLateObjectEvaluator.evaluate(…).
+* DATAREST-1177 - DefaultExposureAwareCrudMethods should cache results.
+* DATAREST-1176 - Add ability to only expose repository methods explicitly declared for exposure.
+* DATAREST-1174 - Adapt WrappedProperties to changed defaults in Lombok 1.16.20.
+* DATAREST-1163 - Errors.reject() fails with NotReadablePropertyException when rejecting 'null' values.
+* DATAREST-1162 - Release 3.0.3 (Kay SR3).
+
+
+Changes in version 2.6.10.RELEASE (2018-01-24)
+----------------------------------------------
+* DATAREST-1184 - Adapt to CORS changes in Spring Framework 5.0.3.
+* DATAREST-1181 - Potential NullPointerException in JsonLateObjectEvaluator.evaluate(…).
+* DATAREST-1176 - Add ability to only expose repository methods explicitly declared for exposure.
+* DATAREST-1174 - Adapt WrappedProperties to changed defaults in Lombok 1.16.20.
+* DATAREST-1161 - Release 2.6.10 (Ingalls SR10).
+
+
+Changes in version 3.0.2.RELEASE (2017-11-27)
+---------------------------------------------
+* DATAREST-1160 - Adapt test cases to new CORS defaults in Spring 5.0.2.
+* DATAREST-1159 - CONTRIBUTING file references wrong global contribution file.
+* DATAREST-1157 - Release 3.0.2 (Kay SR2).
+
+
+Changes in version 2.6.9.RELEASE (2017-11-27)
+---------------------------------------------
+* DATAREST-1159 - CONTRIBUTING file references wrong global contribution file.
+* DATAREST-1152 - Improve design of patch expression evaluation.
+* DATAREST-1150 - Release 2.6.9 (Ingalls SR9).
+* DATAREST-1148 - Single entity GET causes unnecessary toString call on domain object.
+
+
 Changes in version 3.0.1.RELEASE (2017-10-27)
 ---------------------------------------------
 * DATAREST-1152 - Improve design of patch expression evaluation.

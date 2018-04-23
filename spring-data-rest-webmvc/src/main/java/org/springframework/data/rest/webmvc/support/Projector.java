@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.springframework.data.rest.webmvc.support;
 
 /**
  * Interface for a component being able to create projections for objects.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface Projector extends ExcerptProjector {
@@ -25,7 +25,7 @@ public interface Projector extends ExcerptProjector {
 	/**
 	 * Returns the projection object for the given source. This may result in the same object being returned or a
 	 * completely different acting as projection for the source.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */

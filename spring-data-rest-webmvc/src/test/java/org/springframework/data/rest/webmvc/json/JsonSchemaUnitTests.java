@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 original author or authors.
+ * Copyright 2015-2018 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link JsonSchema}.
- * 
+ *
  * @author Oliver Gierke
  */
 public class JsonSchemaUnitTests {

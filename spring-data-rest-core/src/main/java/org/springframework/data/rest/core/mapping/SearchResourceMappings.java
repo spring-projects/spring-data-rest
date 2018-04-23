@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link ResourceMapping} for all search resources.
- * 
+ *
  * @author Oliver Gierke
  */
 public class SearchResourceMappings implements Iterable<MethodResourceMapping>, ResourceMapping {
@@ -43,7 +43,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 
 	/**
 	 * Creates a new {@link SearchResourceMappings} from the given
-	 * 
+	 *
 	 * @param mappings
 	 */
 	public SearchResourceMappings(List<MethodResourceMapping> mappings) {
@@ -67,7 +67,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 
 	/**
 	 * Returns the method mapped to the given path.
-	 * 
+	 *
 	 * @param path must not be {@literal null} or empty.
 	 * @return
 	 */
@@ -81,7 +81,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 
 	/**
 	 * Returns the mappings for all exported query methods.
-	 * 
+	 *
 	 * @return
 	 * @since 2.3
 	 */
@@ -100,7 +100,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 
 	/**
 	 * Returns the {@link MappingResourceMetadata} for the given relation name.
-	 * 
+	 *
 	 * @param rel must not be {@literal null} or empty.
 	 * @return
 	 * @since 2.3
@@ -121,7 +121,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 
 	/**
 	 * Returns the {@link MethodResourceMapping} for the given path.
-	 * 
+	 *
 	 * @param path must not be {@literal null} or empty.
 	 * @return
 	 * @since 2.4
@@ -140,7 +140,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 		return null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getPath()
 	 */
@@ -149,7 +149,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 		return PATH;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
 	 */
@@ -158,7 +158,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 		return REL;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
 	 */
@@ -167,7 +167,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 		return !mappings.isEmpty();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isPagingResource()
 	 */
@@ -176,7 +176,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
 	 */
@@ -185,7 +185,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 		return null;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */

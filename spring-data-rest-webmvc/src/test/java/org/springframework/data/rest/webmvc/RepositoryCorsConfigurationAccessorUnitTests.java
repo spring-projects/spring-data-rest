@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 original author or authors.
+ * Copyright 2016-2018 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.springframework.web.cors.CorsConfiguration;
 
 /**
  * Unit tests for {@link RepositoryCorsConfigurationAccessor}.
- * 
+ *
  * @author Mark Paluch
  * @author Oliver Gierke
  * @soundtrack Aso Mamiko - Drive Me Crazy (Club Mix)
@@ -63,7 +63,7 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 		CorsConfiguration configuration = accessor.createConfiguration(AnnotatedRepository.class);
 
 		assertThat(configuration).isNotNull();
-		assertThat(configuration.getAllowCredentials()).isTrue();
+		assertThat(configuration.getAllowCredentials()).isFalse();
 		assertThat(configuration.getAllowedHeaders()).contains("*");
 		assertThat(configuration.getAllowedOrigins()).contains("*");
 		assertThat(configuration.getAllowedMethods(),

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.tests.TestMvcClient;
 import org.springframework.data.rest.webmvc.ProfileController;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.jpa.Item;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.hateoas.Link;
@@ -52,7 +52,7 @@ import com.jayway.jsonpath.JsonPath;
 
 /**
  * Integration tests for {@link AlpsController}.
- * 
+ *
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
@@ -65,7 +65,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	@Autowired RepositoryRestConfiguration configuration;
 
 	@Configuration
-	static class Config extends RepositoryRestConfigurerAdapter {
+	static class Config {
 
 		@Bean
 		public LinkDiscoverer alpsLinkDiscoverer() {
@@ -73,9 +73,9 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 					MediaType.valueOf("application/alps+json"));
 		}
 
-		@Override
-		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-			config.exposeIdsFor(Item.class);
+		@Bean
+		RepositoryRestConfigurer configurer() {
+			return RepositoryRestConfigurer.withConfig(config -> config.exposeIdsFor(Item.class));
 		}
 	}
 

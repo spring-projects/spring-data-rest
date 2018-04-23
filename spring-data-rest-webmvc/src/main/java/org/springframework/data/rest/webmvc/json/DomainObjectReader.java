@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Component to apply an {@link ObjectNode} to an existing domain object. This is effectively a best-effort workaround
  * for Jackson's inability to apply a (partial) JSON document to an existing object in a deeply nested way. We manually
  * detect nested objects, lookup the original value and apply the merge recursively.
- * 
+ *
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Craig Andrews
@@ -72,7 +72,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Reads the given input stream into an {@link ObjectNode} and applies that to the given existing instance.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
@@ -93,7 +93,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Reads the given source node onto the given target object and applies PUT semantics, i.e. explicitly
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param mapper
@@ -122,7 +122,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Merges the state of given source object onto the target one preserving PUT semantics.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @param target can be {@literal null}.
 	 * @param mapper must not be {@literal null}.
@@ -156,7 +156,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Copies the unmapped properties of the given {@link MappedProperties} from the source object to the target instance.
-	 * 
+	 *
 	 * @param properties must not be {@literal null}.
 	 * @param source must not be {@literal null}.
 	 * @param target must not be {@literal null}.
@@ -194,7 +194,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Merges the given {@link ObjectNode} onto the given object.
-	 * 
+	 *
 	 * @param root must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
@@ -286,7 +286,7 @@ public class DomainObjectReader {
 	 * Handles the given {@link JsonNode} by treating it as {@link ArrayNode} and the given source value as
 	 * {@link Collection}-like value. Looks up the actual type to handle from the potentially available first element,
 	 * falling back to component type lookup on the given type.
-	 * 
+	 *
 	 * @param node must not be {@literal null}.
 	 * @param source must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
@@ -307,7 +307,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Applies the diff handling to {@link ArrayNode}s, potentially recursing into nested ones.
-	 * 
+	 *
 	 * @param array the source {@link ArrayNode}m, must not be {@literal null}.
 	 * @param collection the actual collection values, must not be {@literal null}.
 	 * @param mapper the {@link ObjectMapper} to use, must not be {@literal null}.
@@ -358,7 +358,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Merges nested {@link Map} values for the given source {@link Map}, the {@link ObjectNode} and {@link ObjectMapper}.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @param node must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
@@ -491,7 +491,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Returns the given source instance as {@link Collection} or creates a new one for the given type.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @param type must not be {@literal null} in case {@code source} is null.
 	 * @return
@@ -514,7 +514,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Surrounds the given source {@link String} with quotes so that they represent a valid JSON String.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
@@ -524,7 +524,7 @@ public class DomainObjectReader {
 
 	/**
 	 * Returns the raw type of the given {@link TypeInformation} or {@link Object} as fallback.
-	 * 
+	 *
 	 * @param type can be {@literal null}.
 	 * @return
 	 */
@@ -536,7 +536,7 @@ public class DomainObjectReader {
 	 * Returns the type to read for the given value and default type. The type will be defaulted to {@link Object} if
 	 * missing. If the given value's type is different from the given default (i.e. more concrete) the value's type will
 	 * be used.
-	 * 
+	 *
 	 * @param value can be {@literal null}.
 	 * @param type can be {@literal null}.
 	 * @return
@@ -562,7 +562,7 @@ public class DomainObjectReader {
 	/**
 	 * {@link SimpleAssociationHandler} that skips linkable associations and forwards handling for all other ones to the
 	 * delegate {@link SimplePropertyHandler}.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	@RequiredArgsConstructor
@@ -588,7 +588,7 @@ public class DomainObjectReader {
 
 	/**
 	 * {@link SimplePropertyHandler} to merge the states of the given objects.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private class MergingPropertyHandler implements SimplePropertyHandler {
@@ -601,7 +601,7 @@ public class DomainObjectReader {
 		/**
 		 * Creates a new {@link MergingPropertyHandler} for the given source, target, {@link PersistentEntity} and
 		 * {@link ObjectMapper}.
-		 * 
+		 *
 		 * @param source must not be {@literal null}.
 		 * @param target must not be {@literal null}.
 		 * @param entity must not be {@literal null}.

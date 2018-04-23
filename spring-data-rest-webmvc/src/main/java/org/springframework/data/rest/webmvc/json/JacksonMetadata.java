@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 
 /**
  * Value object to abstract Jackson based bean metadata of a given type.
- * 
+ *
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
@@ -53,7 +53,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 	/**
 	 * Creates a new {@link JacksonMetadata} instance for the given {@link ObjectMapper} and type.
-	 * 
+	 *
 	 * @param mapper must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 */
@@ -79,7 +79,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 	/**
 	 * Returns the {@link BeanPropertyDefinition} for the given {@link PersistentProperty}.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return can be {@literal null} in case there's no Jackson property to be exposed for the given
 	 *         {@link PersistentProperty}.
@@ -93,7 +93,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 	/**
 	 * Returns the fallback {@link ResourceDescription} to be used for the given {@link BeanPropertyDefinition}.
-	 * 
+	 *
 	 * @param ownerMetadata must not be {@literal null}.
 	 * @param definition must not be {@literal null}.
 	 * @return
@@ -113,7 +113,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 	/**
 	 * Check if a given property for a type is available to be exported, i.e. serialized via Jackson.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return
 	 */
@@ -126,7 +126,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 	/**
 	 * Returns whether the backing type is considered a Jackson value type.
-	 * 
+	 *
 	 * @return the isValue
 	 */
 	public boolean isValueType() {
@@ -135,7 +135,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 	/**
 	 * Returns whether the given {@link PersistentProperty} is considered read-only by Jackson.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @return
 	 */
@@ -147,7 +147,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 	/**
 	 * Returns the {@link JsonSerializer} for the given type, or {@literal null} if none available.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -173,7 +173,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
@@ -184,7 +184,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 	/**
 	 * Finds the {@link BeanPropertyDefinition} for the given {@link PersistentProperty} within the given definitions.
-	 * 
+	 *
 	 * @param property must not be {@literal null}.
 	 * @param definitions must not be {@literal null}.
 	 * @return

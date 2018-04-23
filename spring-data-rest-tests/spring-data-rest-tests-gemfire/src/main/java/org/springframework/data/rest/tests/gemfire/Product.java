@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
 
 /**
  * A product.
- * 
+ *
  * @author Oliver Gierke
  * @author David Turanski
  * @author Mark Paluch
@@ -40,7 +40,7 @@ public class Product extends AbstractPersistentEntity {
 
 	/**
 	 * Creates a new {@link Product} with the given name.
-	 * 
+	 *
 	 * @param id a unique Id
 	 * @param name must not be {@literal null} or empty.
 	 * @param price must not be {@literal null} or less than or equal to zero.
@@ -51,7 +51,7 @@ public class Product extends AbstractPersistentEntity {
 
 	/**
 	 * Creates a new {@link Product} from the given name and description.
-	 * 
+	 *
 	 * @param id a unique Id
 	 * @param name must not be {@literal null} or empty.
 	 * @param price must not be {@literal null} or less than or equal to zero.
@@ -72,7 +72,7 @@ public class Product extends AbstractPersistentEntity {
 
 	/**
 	 * Sets the attribute with the given name to the given value.
-	 * 
+	 *
 	 * @param name must not be {@literal null} or empty.
 	 * @param value
 	 */
@@ -89,7 +89,7 @@ public class Product extends AbstractPersistentEntity {
 
 	/**
 	 * Returns the {@link Product}'s name.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getName() {
@@ -98,7 +98,7 @@ public class Product extends AbstractPersistentEntity {
 
 	/**
 	 * Returns the {@link Product}'s description.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getDescription() {
@@ -107,7 +107,7 @@ public class Product extends AbstractPersistentEntity {
 
 	/**
 	 * Returns all the custom attributes of the {@link Product}.
-	 * 
+	 *
 	 * @return
 	 */
 	public Map<String, String> getAttributes() {
@@ -116,7 +116,7 @@ public class Product extends AbstractPersistentEntity {
 
 	/**
 	 * Returns the price of the {@link Product}.
-	 * 
+	 *
 	 * @return
 	 */
 	public BigDecimal getPrice() {

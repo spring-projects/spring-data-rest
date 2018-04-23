@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ import org.springframework.web.util.UrlPathHelper;
 
 /**
  * A {@link RequestMappingHandlerMapping} that augments the request mappings
- * 
+ *
  * @author Oliver Gierke
  */
 public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
@@ -74,7 +74,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 	/**
 	 * Creates a new {@link BasePathAwareHandlerMapping} using the given {@link RepositoryRestConfiguration}.
-	 * 
+	 *
 	 * @param configuration must not be {@literal null}.
 	 */
 	public BasePathAwareHandlerMapping(RepositoryRestConfiguration configuration) {
@@ -83,7 +83,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		this.configuration = configuration;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#lookupHandlerMethod(java.lang.String, javax.servlet.http.HttpServletRequest)
 	 */
@@ -113,7 +113,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		return super.lookupHandlerMethod(lookupPath, new CustomAcceptHeaderHttpServletRequest(request, mediaTypes));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping#getMappingForMethod(java.lang.reflect.Method, java.lang.Class)
 	 */
@@ -135,7 +135,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 	/**
 	 * Customize the given {@link PatternsRequestCondition} and prefix.
-	 * 
+	 *
 	 * @param condition will never be {@literal null}.
 	 * @param prefix will never be {@literal null}.
 	 * @return
@@ -156,7 +156,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 	/**
 	 * Customize the given {@link ProducesRequestCondition}. Default implementation returns the condition as is.
-	 * 
+	 *
 	 * @param condition will never be {@literal null}.
 	 * @return
 	 */
@@ -164,7 +164,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		return condition;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping#isHandler(java.lang.Class)
 	 */
@@ -176,7 +176,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		return type.isAnnotationPresent(BasePathAwareController.class);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping#afterPropertiesSet()
 	 */
@@ -574,7 +574,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		/**
 		 * Creates a new {@link CustomAcceptHeaderHttpServletRequest} for the given delegate {@link HttpServletRequest} and
 		 * the list of {@link MediaType}.
-		 * 
+		 *
 		 * @param request must not be {@literal null}.
 		 * @param acceptMediaTypes must not be {@literal null} or empty.
 		 */
@@ -595,7 +595,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 			this.acceptMediaTypeStrings = acceptMediaTypeStrings;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see javax.servlet.http.HttpServletRequestWrapper#getHeader(java.lang.String)
 		 */
@@ -609,7 +609,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 			return super.getHeader(name);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see javax.servlet.http.HttpServletRequestWrapper#getHeaders(java.lang.String)
 		 */

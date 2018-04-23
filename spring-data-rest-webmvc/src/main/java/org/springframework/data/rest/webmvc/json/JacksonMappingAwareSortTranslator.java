@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class JacksonMappingAwareSortTranslator {
 	/**
 	 * Creates a new {@link JacksonMappingAwareSortTranslator} for the given {@link ObjectMapper}, {@link Repositories},
 	 * {@link DomainClassResolver} and {@link PersistentEntities}.
-	 * 
+	 *
 	 * @param objectMapper must not be {@literal null}.
 	 * @param repositories must not be {@literal null}.
 	 * @param domainClassResolver must not be {@literal null}.
@@ -237,7 +237,7 @@ public class JacksonMappingAwareSortTranslator {
 		/**
 		 * Creates the initial {@link TypedSegment} given {@link PersistentEntities}, {@link ObjectMapper} and
 		 * {@link PersistentEntity}.
-		 * 
+		 *
 		 * @param persistentEntities must not be {@literal null}.
 		 * @param objectMapper must not be {@literal null}.
 		 * @param rootEntity the initial entity to start mapping from, must not be {@literal null}.

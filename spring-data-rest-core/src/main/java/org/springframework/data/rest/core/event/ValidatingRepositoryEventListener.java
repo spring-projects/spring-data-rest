@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.springframework.validation.Validator;
 /**
  * {@link org.springframework.context.ApplicationListener} implementation that dispatches {@link RepositoryEvent}s to a
  * specific {@link Validator}.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -49,7 +49,7 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 
 	/**
 	 * Creates a new {@link ValidatingRepositoryEventListener} using the given repositories.
-	 * 
+	 *
 	 * @param persistentEntitiesFactory must not be {@literal null}.
 	 */
 	public ValidatingRepositoryEventListener(ObjectFactory<PersistentEntities> persistentEntitiesFactory) {
@@ -62,7 +62,7 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 
 	/**
 	 * Assign a Map of {@link Validator}s that are assigned to the various {@link RepositoryEvent}s.
-	 * 
+	 *
 	 * @param validators A Map of Validators to wire.
 	 * @return @this
 	 */
@@ -77,7 +77,7 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 
 	/**
 	 * Add a {@link Validator} that will be triggered on the given event.
-	 * 
+	 *
 	 * @param event The event to listen for.
 	 * @param validator The Validator to execute when that event fires.
 	 * @return @this

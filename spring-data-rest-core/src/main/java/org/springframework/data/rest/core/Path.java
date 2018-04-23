@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.util.StringUtils;
 /**
  * Simple value object to build up (URI) paths. Allows easy concatenation of {@link String}s and will take care of
  * removal of whitespace and reducing slashes to single ones.
- * 
+ *
  * @author Oliver Gierke
  */
 public class Path {
@@ -34,7 +34,7 @@ public class Path {
 
 	/**
 	 * Creates a new {@link Path} from the given {@link String}.
-	 * 
+	 *
 	 * @param path
 	 */
 	public Path(String path) {
@@ -43,7 +43,7 @@ public class Path {
 
 	/**
 	 * Creates a new {@link Path} from the given string and potentially bypasses the cleanup.
-	 * 
+	 *
 	 * @param path
 	 * @param cleanUp
 	 */
@@ -53,7 +53,7 @@ public class Path {
 
 	/**
 	 * Returns whether the given reference String matches the current {@link Path}.
-	 * 
+	 *
 	 * @param reference
 	 * @return
 	 */
@@ -63,7 +63,7 @@ public class Path {
 
 	/**
 	 * Appends the given {@link String} to the current {@link Path}.
-	 * 
+	 *
 	 * @param path
 	 * @return
 	 */
@@ -75,7 +75,7 @@ public class Path {
 		return slash(path.toString());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -101,7 +101,7 @@ public class Path {
 		return trimmed.contains("://") ? trimmed : SLASH + trimmed;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -110,7 +110,7 @@ public class Path {
 		return path;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */

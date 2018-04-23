@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * Helper methods for web integration testing.
- * 
+ *
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
@@ -56,7 +56,7 @@ public class TestMvcClient {
 
 	/**
 	 * Creates a new {@link TestMvcClient} for the given {@link MockMvc} and {@link LinkDiscoverers}.
-	 * 
+	 *
 	 * @param mvc must not be {@literal null}.
 	 * @param discoverers must not be {@literal null}.
 	 */
@@ -191,7 +191,7 @@ public class TestMvcClient {
 
 	/**
 	 * Follow URL supplied as a string with a specific Accept header.
-	 * 
+	 *
 	 * @param href
 	 * @param accept
 	 * @return
@@ -214,7 +214,7 @@ public class TestMvcClient {
 
 	/**
 	 * Discover single URI associated with a rel, starting at the root node ("/")
-	 * 
+	 *
 	 * @param rel
 	 * @return
 	 * @throws Exception
@@ -228,7 +228,7 @@ public class TestMvcClient {
 
 	/**
 	 * Traverses the given link relations from the root.
-	 * 
+	 *
 	 * @param rels
 	 * @return
 	 * @throws Exception

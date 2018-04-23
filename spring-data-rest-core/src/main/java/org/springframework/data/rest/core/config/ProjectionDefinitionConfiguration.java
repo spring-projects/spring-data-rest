@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Wrapper class to register projection definitions for later lookup by name and source type.
- * 
+ *
  * @author Oliver Gierke
  */
 public class ProjectionDefinitionConfiguration implements ProjectionDefinitions {
@@ -61,7 +61,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 
 	/**
 	 * Configures the request parameter name to be used to accept the projection name to be returned.
-	 * 
+	 *
 	 * @param parameterName defaults to {@value ProjectionDefinitionConfiguration#DEFAULT_PROJECTION_PARAMETER_NAME}, will
 	 *          be set back to this default if {@literal null} or an empty value is configured.
 	 */
@@ -72,7 +72,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	/**
 	 * Adds the given projection type to the configuration. The type has to be annotated with {@link Projection} for
 	 * additional metadata.
-	 * 
+	 *
 	 * @param projectionType must not be {@literal null}.
 	 * @return
 	 * @see Projection
@@ -96,7 +96,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	/**
 	 * Adds a projection type for the given source types. The name of the projection will be defaulted to the
 	 * uncapitalized simply class name.
-	 * 
+	 *
 	 * @param projectionType must not be {@literal null}.
 	 * @param sourceTypes must not be {@literal null} or empty.
 	 * @return
@@ -109,7 +109,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 
 	/**
 	 * Adds the given projection type for the given source types under the given name.
-	 * 
+	 *
 	 * @param projectionType must not be {@literal null}.
 	 * @param name must not be {@literal null} or empty.
 	 * @param sourceTypes must not be {@literal null} or empty.
@@ -129,7 +129,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		return this;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.config.ProjectionDefinitions#getProjectionType(java.lang.Class, java.lang.String)
 	 */
@@ -138,7 +138,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		return getProjectionsFor(sourceType).get(name);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.projection.ProjectionDefinitions#hasProjectionFor(java.lang.Class)
 	 */
@@ -156,7 +156,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 
 	/**
 	 * Returns all projections registered for the given source type.
-	 * 
+	 *
 	 * @param sourceType must not be {@literal null}.
 	 * @return
 	 */
@@ -191,7 +191,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 
 	/**
 	 * Value object to define lookup keys for projections.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	@Value
@@ -203,7 +203,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 
 		/**
 		 * Creates a new {@link ProjectionDefinitionKey} for the given source type and name;
-		 * 
+		 *
 		 * @param sourceType must not be {@literal null}.
 		 * @param targetType must not be {@literal null}.
 		 * @param name must not be {@literal null} or empty.

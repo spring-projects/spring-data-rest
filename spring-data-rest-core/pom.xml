@@ -19,6 +19,7 @@
 		<springplugin>1.2.0.RELEASE</springplugin>
 		<evoinflector>1.2.2</evoinflector>
 		<java-module-name>spring.data.rest.core</java-module-name>
+		<project.root>${basedir}/..</project.root>
 	</properties>
 
 	<dependencies>
@@ -55,13 +56,11 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>${jackson}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jdk8</artifactId>
-			<version>${jackson}</version>
 		</dependency>
 
 		<dependency>

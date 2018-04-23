@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * A custom {@link ResourceSupport} type to be able to write custom {@link ResourceProcessor}s to add additional links
  * to ones automatically exposed for Spring Data repository query methods.
- * 
+ *
  * @author Oliver Gierke
  */
 public class RepositorySearchesResource extends ResourceSupport {
@@ -33,7 +33,7 @@ public class RepositorySearchesResource extends ResourceSupport {
 
 	/**
 	 * Creates a new {@link RepositorySearchesResource} for the given domain type.
-	 * 
+	 *
 	 * @param domainType must not be {@literal null}.
 	 */
 	RepositorySearchesResource(Class<?> domainType) {
@@ -44,7 +44,7 @@ public class RepositorySearchesResource extends ResourceSupport {
 
 	/**
 	 * Returns the domain type for which the resource lists searches.
-	 * 
+	 *
 	 * @return
 	 */
 	@JsonIgnore

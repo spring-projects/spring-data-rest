@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * Component to be able to merge the first level of two objects.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Willie Wheeler
@@ -44,7 +44,7 @@ public class DomainObjectMerger {
 
 	/**
 	 * Creates a new {@link DomainObjectMerger} for the given {@link Repositories} and {@link ConversionService}.
-	 * 
+	 *
 	 * @param repositories must not be {@literal null}.
 	 * @param conversionService must not be {@literal null}.
 	 */
@@ -60,7 +60,7 @@ public class DomainObjectMerger {
 
 	/**
 	 * Merges the given target object into the source one.
-	 * 
+	 *
 	 * @param from can be {@literal null}.
 	 * @param target can be {@literal null}.
 	 * @param nullPolicy how to handle {@literal null} values in the source object.
@@ -126,7 +126,7 @@ public class DomainObjectMerger {
 	/**
 	 * Returns whether the given source is {@literal null} or considered empty, which means it's an {@link Iterable} or
 	 * array and doesn't have any elements.
-	 * 
+	 *
 	 * @param source can be {@literal null}.
 	 * @return
 	 */

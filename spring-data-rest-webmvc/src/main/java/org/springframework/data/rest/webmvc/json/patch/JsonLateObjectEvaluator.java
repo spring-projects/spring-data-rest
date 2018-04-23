@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * {@link LateObjectEvaluator} implementation that assumes values represented as JSON objects.
- * 
+ *
  * @author Craig Walls
  * @author Oliver Trosien
  * @author Oliver Gierke
+ * @author Simon Allegraud
  */
 @RequiredArgsConstructor
 class JsonLateObjectEvaluator implements LateObjectEvaluator {
@@ -42,7 +43,7 @@ class JsonLateObjectEvaluator implements LateObjectEvaluator {
 	public Object evaluate(Class<?> type) {
 
 		try {
-			return mapper.readValue(valueNode.traverse(), type);
+			return mapper.readValue(valueNode.traverse(mapper.getFactory().getCodec()), type);
 		} catch (Exception o_O) {
 			throw new PatchException(String.format("Could not read %s into %s!", valueNode, type), o_O);
 		}

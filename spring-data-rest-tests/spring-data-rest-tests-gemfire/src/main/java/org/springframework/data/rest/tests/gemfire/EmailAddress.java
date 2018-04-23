@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 /**
  * Value object to represent email addresses.
- * 
+ *
  * @author Oliver Gierke
  */
 @JsonSerialize(using = ToStringSerializer.class)
@@ -40,7 +40,7 @@ public final class EmailAddress {
 
 	/**
 	 * Creates a new {@link EmailAddress} from the given {@link String} representation.
-	 * 
+	 *
 	 * @param emailAddress must not be {@literal null} or empty.
 	 */
 	@JsonCreator
@@ -52,7 +52,7 @@ public final class EmailAddress {
 	/**
 	 * Returns whether the given {@link String} is a valid {@link EmailAddress} which means you can safely instantiate the
 	 * class.
-	 * 
+	 *
 	 * @param candidate
 	 * @return
 	 */

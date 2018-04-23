@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.springframework.util.StringUtils;
 /**
  * {@link CollectionResourceMapping} based on a type. Will derive default relation types and pathes from the type but
  * inspect it for {@link RestResource} annotations for customization.
- * 
+ *
  * @author Oliver Gierke
  */
 class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
@@ -41,7 +41,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 
 	/**
 	 * Creates a new {@link TypeBasedCollectionResourceMapping} using the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 */
 	public TypeBasedCollectionResourceMapping(Class<?> type) {
@@ -50,7 +50,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 
 	/**
 	 * Creates a new {@link TypeBasedCollectionResourceMapping} using the given type and {@link RelProvider}.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
 	 */
@@ -65,7 +65,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		this.description = AnnotationUtils.findAnnotation(type, Description.class);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getPath()
 	 */
@@ -77,7 +77,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		return new Path(path);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
 	 */
@@ -86,7 +86,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		return annotation != null ? annotation.exported() : Modifier.isPublic(type.getModifiers());
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
 	 */
@@ -100,7 +100,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		return annotation.rel();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getSingleResourceRel()
 	 */
@@ -109,7 +109,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		return relProvider.getItemResourceRelFor(type);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#isPagingResource()
 	 */
@@ -118,7 +118,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		return false;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
 	 */
@@ -138,7 +138,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		return fallback;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getItemResourceDescription()
 	 */
@@ -158,7 +158,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		return fallback;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getExcerptProjection()
 	 */
@@ -169,7 +169,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 
 	/**
 	 * Returns the default path to be used if the path is not configured manually.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ import com.jayway.jsonpath.JsonPath;
 
 /**
  * Web integration tests specific to JPA.
- * 
+ *
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Mark Paluch
@@ -74,7 +74,7 @@ public class JpaWebTests extends CommonWebTests {
 
 	ObjectMapper mapper = new ObjectMapper();
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#setUp()
 	 */
@@ -85,7 +85,7 @@ public class JpaWebTests extends CommonWebTests {
 		super.setUp();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
 	 */
@@ -94,7 +94,7 @@ public class JpaWebTests extends CommonWebTests {
 		return Arrays.asList("people", "authors", "books");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#getPayloadToPost()
 	 */
@@ -103,7 +103,7 @@ public class JpaWebTests extends CommonWebTests {
 		return Collections.singletonMap("people", readFileFromClasspath("person.json"));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#getRootAndLinkedResources()
 	 */
@@ -399,7 +399,7 @@ public class JpaWebTests extends CommonWebTests {
 
 	/**
 	 * Checks, that the server only returns the properties contained in the projection requested.
-	 * 
+	 *
 	 * @see OrderSummary
 	 */
 	@Test // DATAREST-221
@@ -674,7 +674,7 @@ public class JpaWebTests extends CommonWebTests {
 
 	/**
 	 * Asserts the {@link Person} resource the given link points to contains siblings with the given names.
-	 * 
+	 *
 	 * @param link
 	 * @param siblingNames
 	 * @throws Exception

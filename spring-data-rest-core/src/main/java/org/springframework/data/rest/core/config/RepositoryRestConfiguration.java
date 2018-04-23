@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 import org.springframework.data.rest.core.support.EntityLookup;
@@ -38,7 +40,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistration;
 
 /**
  * Spring Data REST configuration options.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Jeremy Rickard
@@ -65,6 +67,7 @@ public class RepositoryRestConfiguration {
 	private ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
 	private RepositoryDetectionStrategy repositoryDetectionStrategy = RepositoryDetectionStrategies.DEFAULT;
+	private boolean exposeRepositoryMethodsByDefault = true;
 
 	/**
 	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
@@ -81,7 +84,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Creates a new {@link RepositoryRestConfiguration} with the given {@link ProjectionDefinitionConfiguration}.
-	 * 
+	 *
 	 * @param projectionConfiguration must not be {@literal null}.
 	 * @param metadataConfiguration must not be {@literal null}.
 	 * @param enumTranslationConfiguration must not be {@literal null}.
@@ -101,7 +104,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * The base URI against which the exporter should calculate its links.
-	 * 
+	 *
 	 * @return The base URI.
 	 */
 	public URI getBaseUri() {
@@ -110,7 +113,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * The base path to expose repository resources under.
-	 * 
+	 *
 	 * @return the basePath
 	 */
 	public URI getBasePath() {
@@ -119,7 +122,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Configures the base path to be used by Spring Data REST to expose repository resources.
-	 * 
+	 *
 	 * @param basePath the basePath to set
 	 */
 	public RepositoryRestConfiguration setBasePath(String basePath) {
@@ -135,7 +138,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the default size of {@link org.springframework.data.domain.Pageable}s. Default is 20.
-	 * 
+	 *
 	 * @return The default page size.
 	 */
 	public int getDefaultPageSize() {
@@ -144,7 +147,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the default size of {@link org.springframework.data.domain.Pageable}s.
-	 * 
+	 *
 	 * @param defaultPageSize The default page size.
 	 * @return {@literal this}
 	 */
@@ -156,7 +159,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the maximum size of pages.
-	 * 
+	 *
 	 * @return Maximum page size.
 	 */
 	public int getMaxPageSize() {
@@ -165,7 +168,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the maximum size of pages.
-	 * 
+	 *
 	 * @param maxPageSize Maximum page size.
 	 * @return {@literal this}
 	 */
@@ -177,7 +180,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the name of the URL query string parameter that indicates what page to return. Default is 'page'.
-	 * 
+	 *
 	 * @return Name of the query parameter used to indicate the page number to return.
 	 */
 	public String getPageParamName() {
@@ -186,7 +189,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the name of the URL query string parameter that indicates what page to return.
-	 * 
+	 *
 	 * @param pageParamName Name of the query parameter used to indicate the page number to return.
 	 * @return {@literal this}
 	 */
@@ -199,7 +202,7 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Get the name of the URL query string parameter that indicates how many results to return at once. Default is
 	 * 'limit'.
-	 * 
+	 *
 	 * @return Name of the query parameter used to indicate the maximum number of entries to return at a time.
 	 */
 	public String getLimitParamName() {
@@ -208,7 +211,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the name of the URL query string parameter that indicates how many results to return at once.
-	 * 
+	 *
 	 * @param limitParamName Name of the query parameter used to indicate the maximum number of entries to return at a
 	 *          time.
 	 * @return {@literal this}
@@ -221,7 +224,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the name of the URL query string parameter that indicates what direction to sort results. Default is 'sort'.
-	 * 
+	 *
 	 * @return Name of the query string parameter used to indicate what field to sort on.
 	 */
 	public String getSortParamName() {
@@ -230,7 +233,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the name of the URL query string parameter that indicates what direction to sort results.
-	 * 
+	 *
 	 * @param sortParamName Name of the query string parameter used to indicate what field to sort on.
 	 * @return {@literal this}
 	 */
@@ -242,7 +245,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the {@link MediaType} to use as a default when none is specified.
-	 * 
+	 *
 	 * @return Default content type if none has been specified.
 	 */
 	public MediaType getDefaultMediaType() {
@@ -251,7 +254,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the {@link MediaType} to use as a default when none is specified.
-	 * 
+	 *
 	 * @param defaultMediaType default content type if none has been specified.
 	 * @return {@literal this}
 	 */
@@ -264,7 +267,7 @@ public class RepositoryRestConfiguration {
 	 * Returns whether HAL will be served as primary representation in case on {@code application/json} is requested. This
 	 * defaults to {@literal true}. If configured to {@literal false} the legacy Spring Data representation will be
 	 * rendered.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean useHalAsDefaultJsonMediaType() {
@@ -275,7 +278,7 @@ public class RepositoryRestConfiguration {
 	 * Configures whether HAL will be served as primary representation in case on {@code application/json} is requested.
 	 * This defaults to {@literal true}. If configured to {@literal false} the legacy Spring Data representation will be
 	 * rendered.
-	 * 
+	 *
 	 * @param useHalAsDefaultJsonMediaType
 	 * @return
 	 */
@@ -287,7 +290,7 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Convenience method to activate returning response bodies for all {@code PUT} and {@code POST} requests, i.e. both
 	 * creating and updating entities.
-	 * 
+	 *
 	 * @param returnBody can be {@literal null}, expressing the decision shall be derived from the presence of an
 	 *          {@code Accept} header in the request.
 	 * @return
@@ -302,7 +305,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Whether to return a response body after creating an entity.
-	 * 
+	 *
 	 * @return {@link java.lang.Boolean#TRUE} to enforce returning a body on create, {@link java.lang.Boolean#FALSE}
 	 *         otherwise. If {@literal null} and an {@code Accept} header present in the request will cause a body being
 	 *         returned. If the {@code Accept} header is not present, no body will be rendered.
@@ -315,7 +318,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Whether to return a response body after creating an entity considering the given accept header.
-	 * 
+	 *
 	 * @param acceptHeader can be {@literal null} or empty.
 	 * @return
 	 */
@@ -325,7 +328,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set whether to return a response body after creating an entity.
-	 * 
+	 *
 	 * @param returnBody can be {@literal null}, expressing the decision shall be derived from the presence of an
 	 *          {@code Accept} header in the request.
 	 * @return {@literal this}
@@ -337,7 +340,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Whether to return a response body after updating an entity.
-	 * 
+	 *
 	 * @return {@link java.lang.Boolean#TRUE} to enforce returning a body on create, {@link java.lang.Boolean#FALSE}
 	 *         otherwise. If {@literal null} and an {@code Accept} header present in the request will cause a body being
 	 *         returned. If the {@code Accept} header is not present, no body will be rendered.
@@ -350,7 +353,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Whether to return a response body after updating an entity considering the given accept header.
-	 * 
+	 *
 	 * @param acceptHeader can be {@literal null} or empty.
 	 * @return
 	 */
@@ -372,7 +375,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Start configuration a {@link ResourceMapping} for a specific domain type.
-	 * 
+	 *
 	 * @param domainType The {@link Class} of the domain type to configure a mapping for.
 	 * @return A new {@link ResourceMapping} for configuring how a domain type is mapped.
 	 */
@@ -382,7 +385,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the {@link ResourceMapping} for a specific domain type.
-	 * 
+	 *
 	 * @param domainType The {@link Class} of the domain type.
 	 * @return A {@link ResourceMapping} for that domain type or {@literal null} if none exists.
 	 */
@@ -392,7 +395,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Whether there is a {@link ResourceMapping} for the given domain type.
-	 * 
+	 *
 	 * @param domainType The domain type to find a {@link ResourceMapping} for.
 	 * @return {@literal true} if a {@link ResourceMapping} exists for this domain class, {@literal false} otherwise.
 	 */
@@ -402,7 +405,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the {@link ResourceMappingConfiguration} that is currently configured.
-	 * 
+	 *
 	 * @return
 	 */
 	public ResourceMappingConfiguration getDomainTypesResourceMappingConfiguration() {
@@ -411,7 +414,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Start configuration a {@link ResourceMapping} for a specific repository interface.
-	 * 
+	 *
 	 * @param repositoryInterface The {@link Class} of the repository interface to configure a mapping for.
 	 * @return A new {@link ResourceMapping} for configuring how a repository interface is mapped.
 	 */
@@ -421,7 +424,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Get the {@link ResourceMapping} for a specific repository interface.
-	 * 
+	 *
 	 * @param repositoryInterface The {@link Class} of the repository interface.
 	 * @return A {@link ResourceMapping} for that repository interface or {@literal null} if none exists.
 	 */
@@ -431,7 +434,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Whether there is a {@link ResourceMapping} configured for this {@literal Repository} class.
-	 * 
+	 *
 	 * @param repositoryInterface
 	 * @return
 	 */
@@ -449,7 +452,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Should we expose the ID property for this domain type?
-	 * 
+	 *
 	 * @param domainType The domain type we may need to expose the ID for.
 	 * @return {@literal true} is the ID is to be exposed, {@literal false} otherwise.
 	 */
@@ -459,7 +462,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Set the list of domain types for which we will expose the ID value as a normal property.
-	 * 
+	 *
 	 * @param domainTypes Array of types to expose IDs for.
 	 * @return {@literal this}
 	 */
@@ -470,7 +473,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Returns the {@link ProjectionDefinitionConfiguration} to register addition projections.
-	 * 
+	 *
 	 * @return
 	 * @deprecated since 2.4, use {@link #getProjectionConfiguration()} instead.
 	 */
@@ -481,7 +484,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Returns the {@link ProjectionDefinitionConfiguration} to register addition projections.
-	 * 
+	 *
 	 * @return
 	 */
 	public ProjectionDefinitionConfiguration getProjectionConfiguration() {
@@ -490,7 +493,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Returns the {@link MetadataConfiguration} to customize metadata exposure.
-	 * 
+	 *
 	 * @return
 	 * @deprecated since 2.4, use {@link #getMetadataConfiguration()} instead.
 	 */
@@ -501,7 +504,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Returns the {@link MetadataConfiguration} to customize metadata exposure.
-	 * 
+	 *
 	 * @return
 	 */
 	public MetadataConfiguration getMetadataConfiguration() {
@@ -512,7 +515,7 @@ public class RepositoryRestConfiguration {
 	 * Configures whether to enable enum value translation via the Spring Data REST default resource bundle. Defaults to
 	 * {@literal false} for backwards compatibility reasons. Will use the fully qualified enum name as key. For further
 	 * details see {@link EnumTranslator}.
-	 * 
+	 *
 	 * @param enableEnumTranslation
 	 * @see #getEnumTranslationConfiguration()
 	 */
@@ -525,7 +528,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Returns whether enum value translation is enabled.
-	 * 
+	 *
 	 * @return
 	 * @since 2.4
 	 */
@@ -535,7 +538,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Returns the {@link EnumTranslationConfiguration} to be used.
-	 * 
+	 *
 	 * @return must not be {@literal null}.
 	 * @since 2.4
 	 */
@@ -546,7 +549,7 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Returns the {@link RepositoryDetectionStrategy} to be used to decide which repositories get exposed. Will be
 	 * {@link RepositoryDetectionStrategies#DEFAULT} by default.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 * @see RepositoryDetectionStrategies
 	 * @since 2.5
@@ -558,7 +561,7 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Configures the {@link RepositoryDetectionStrategy} to be used to determine which repositories get exposed. Defaults
 	 * to {@link RepositoryDetectionStrategies#DEFAULT}.
-	 * 
+	 *
 	 * @param repositoryDetectionStrategy can be {@literal null}.
 	 * @since 2.5
 	 */
@@ -569,6 +572,47 @@ public class RepositoryRestConfiguration {
 				: repositoryDetectionStrategy;
 
 		return this;
+	}
+
+	/**
+	 * Returns whether to expose repository methods by default.
+	 * 
+	 * @since 3.1
+	 * @see #setExposeRepositoryMethodsByDefault(boolean)
+	 */
+	public boolean exposeRepositoryMethodsByDefault() {
+		return this.exposeRepositoryMethodsByDefault;
+	}
+
+	/**
+	 * Sets whether to expose repository methods by default. If this is disabled, CRUD methods must be annotated with
+	 * {@link RestResource} explicitly to expose the default set of resources (opt-in). If this is set to {@literal true}
+	 * (default), repository methods methods are exposed unless explictly annotated with {@link RestResource} and
+	 * {@link RestResource#exported()} set to {@literal false}.
+	 * 
+	 * @since 3.1
+	 * @see #setRepositoryDetectionStrategy(RepositoryDetectionStrategy)
+	 */
+	public void setExposeRepositoryMethodsByDefault(boolean exposeRepositoryMethodsByDefault) {
+		this.exposeRepositoryMethodsByDefault = exposeRepositoryMethodsByDefault;
+	}
+
+	/**
+	 * Disables the default exposure of repositories entirely. I.e. repositories to be exported must now be explicitly
+	 * annotated with {@link RepositoryRestResource} and methods need to be annotated with {@link RestResource} to trigger
+	 * exposure of default resources. Basically a shortcut for calling both
+	 * {@link #setRepositoryDetectionStrategy(RepositoryDetectionStrategy)} to
+	 * {@link RepositoryDetectionStrategies#ANNOTATED} and setting {@link #setExposeRepositoryMethodsByDefault(boolean)}
+	 * to {@literal false}.
+	 * 
+	 * @since 3.1
+	 * @see #setRepositoryDetectionStrategy(RepositoryDetectionStrategy)
+	 * @see #setExposeRepositoryMethodsByDefault(boolean)
+	 */
+	public void disableDefaultExposure() {
+
+		setRepositoryDetectionStrategy(RepositoryDetectionStrategies.ANNOTATED);
+		setExposeRepositoryMethodsByDefault(false);
 	}
 
 	/**
@@ -586,7 +630,7 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Returns the {@link EntityLookupRegistrar} to create custom {@link EntityLookup} instances registered in the
 	 * configuration.
-	 * 
+	 *
 	 * @return the {@link EntityLookupRegistrar} to build custom {@link EntityLookup}s.
 	 * @since 2.5
 	 */
@@ -596,7 +640,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Returns all {@link EntityLookup}s considering the customizations made to the configuration.
-	 * 
+	 *
 	 * @param repositories must not be {@literal null}.
 	 * @return
 	 */

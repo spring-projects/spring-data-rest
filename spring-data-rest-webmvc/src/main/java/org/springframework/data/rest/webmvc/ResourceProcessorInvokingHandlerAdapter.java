@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * <p/>
  * This is a separate component as it might make sense to deploy it in a standalone SpringMVC application to enable post
  * processing. It would actually make most sense in Spring HATEOAS project.
- * 
+ *
  * @author Oliver Gierke
  * @author Phil Webb
  * @author Mark Paluch
@@ -51,7 +51,7 @@ public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandl
 
 	/**
 	 * Creates a new {@link ResourceProcessorInvokingHandlerAdapter} with the given {@link ResourceProcessorInvoker}.
-	 * 
+	 *
 	 * @param invoker must not be {@literal null}.
 	 */
 	@Autowired(required = false)
@@ -84,7 +84,7 @@ public class ResourceProcessorInvokingHandlerAdapter extends RequestMappingHandl
 	/**
 	 * Gets a {@link HandlerMethodReturnValueHandlerComposite} for return handlers, dealing with API changes introduced in
 	 * Spring 4.0.
-	 * 
+	 *
 	 * @return a HandlerMethodReturnValueHandlerComposite
 	 */
 	@SuppressWarnings("unchecked")

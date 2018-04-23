@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,16 +32,18 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
+import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionException;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * Value object to represent a SpEL-backed patch path.
- * 
+ *
  * @author Oliver Gierke
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -64,7 +66,7 @@ class SpelPath {
 
 	/**
 	 * Returns a {@link SpelPath} for the given source.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
@@ -74,7 +76,7 @@ class SpelPath {
 
 	/**
 	 * Returns a {@link TypedSpelPath} binding the expression to the given type.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -87,7 +89,7 @@ class SpelPath {
 
 	/**
 	 * Returns the leaf type of the underlying expression or the given type
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -100,7 +102,7 @@ class SpelPath {
 
 	/**
 	 * Returns whether the current path represents an append path, i.e. is supposed to append to collection.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isAppend() {
@@ -111,7 +113,7 @@ class SpelPath {
 		return SpelPath.of(path.substring(0, path.lastIndexOf('/')));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -120,7 +122,7 @@ class SpelPath {
 		return path;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -140,7 +142,7 @@ class SpelPath {
 		return this.path.equals(that.path);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -209,6 +211,7 @@ class SpelPath {
 
 		private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s (from source %s)!";
 		private static final Map<CacheKey, TypedSpelPath> TYPED_PATHS = new ConcurrentReferenceHashMap<>(32);
+		private static final EvaluationContext CONTEXT = SimpleEvaluationContext.forReadWriteDataBinding().build();
 
 		private final Class<?> type;
 
@@ -229,7 +232,7 @@ class SpelPath {
 
 		/**
 		 * Returns the {@link TypedSpelPath} for the given {@link SpelPath} and type.
-		 * 
+		 *
 		 * @param path must not be {@literal null}.
 		 * @param type must not be {@literal null}.
 		 * @return
@@ -244,7 +247,7 @@ class SpelPath {
 
 		/**
 		 * Returns the value pointed to by the current path with the given target object.
-		 * 
+		 *
 		 * @param target must not be {@literal null}.
 		 * @return can be {@literal null}.
 		 */
@@ -254,7 +257,7 @@ class SpelPath {
 			Assert.notNull(target, "Target must not be null!");
 
 			try {
-				return (T) expression.getValue(target);
+				return (T) expression.getValue(CONTEXT, target);
 			} catch (ExpressionException o_O) {
 				throw new PatchException("Unable to get value from target", o_O);
 			}
@@ -262,7 +265,7 @@ class SpelPath {
 
 		/**
 		 * Sets the given value on the given target object.
-		 * 
+		 *
 		 * @param target must not be {@literal null}.
 		 * @param value can be {@literal null}.
 		 */
@@ -270,12 +273,12 @@ class SpelPath {
 
 			Assert.notNull(target, "Target must not be null!");
 
-			expression.setValue(target, value);
+			expression.setValue(CONTEXT, target, value);
 		}
 
 		/**
 		 * Returns the type of the expression target based on the given root.
-		 * 
+		 *
 		 * @param root must not be {@literal null}.
 		 * @return
 		 */
@@ -283,12 +286,12 @@ class SpelPath {
 
 			Assert.notNull(root, "Root object must not be null!");
 
-			return expression.getValueType(root);
+			return expression.getValueType(CONTEXT, root);
 		}
 
 		/**
 		 * Copies the value pointed to by the given path within the given source object to the current expression target.
-		 * 
+		 *
 		 * @param path the {@link SpelPath} to look the value up from, must not be {@literal null}.
 		 * @param source the source object to look the value up from, must not be {@literal null}.
 		 * @return
@@ -305,7 +308,7 @@ class SpelPath {
 		/**
 		 * Moves the value pointed to by the given path within the given source object to the current expression target and
 		 * removes the value from its original position.
-		 * 
+		 *
 		 * @param path the {@link SpelPath} to look the value up from, must not be {@literal null}.
 		 * @param source the source object to look the value up from, must not be {@literal null}.
 		 * @return
@@ -320,7 +323,7 @@ class SpelPath {
 
 		/**
 		 * Removes the value pointed to by the current path within the given target.
-		 * 
+		 *
 		 * @param target must not be {@literal null}.
 		 * @return the original value that was just removed.
 		 */
@@ -351,7 +354,7 @@ class SpelPath {
 		/**
 		 * Adds a value to the operation's path. If the path references a list index, the value is added to the list at the
 		 * given index. If the path references an object property, the property is set to the value.
-		 * 
+		 *
 		 * @param target The target object.
 		 * @param value The value to add.
 		 */
@@ -390,7 +393,7 @@ class SpelPath {
 		}
 
 		private TypeDescriptor getTypeDescriptor(Object target) {
-			return expression.getValueTypeDescriptor(target);
+			return expression.getValueTypeDescriptor(CONTEXT, target);
 		}
 
 		private Integer getTargetListIndex() {
@@ -410,7 +413,7 @@ class SpelPath {
 
 		/**
 		 * Verifies that the given path exists on the given type. Skips collection index parts and append characters.
-		 * 
+		 *
 		 * @param path must not be {@literal null} or empty.
 		 * @param type must not be {@literal null}.
 		 * @return the {@link PropertyPath} if the path could be resolved or {@link Optional#empty()} in case an empty path

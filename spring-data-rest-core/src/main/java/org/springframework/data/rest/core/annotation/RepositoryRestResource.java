@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotate a {@link org.springframework.data.repository.Repository} with this to customize export mapping and rels.
- * 
+ *
  * @author Oliver Gierke
  */
 @Target({ ElementType.TYPE })
@@ -33,42 +33,42 @@ public @interface RepositoryRestResource {
 
 	/**
 	 * Flag indicating whether this resource is exported at all.
-	 * 
+	 *
 	 * @return {@literal true} if the resource is to be exported, {@literal false} otherwise.
 	 */
 	boolean exported() default true;
 
 	/**
 	 * The path segment under which this resource is to be exported.
-	 * 
+	 *
 	 * @return A valid path segment.
 	 */
 	String path() default "";
 
 	/**
 	 * The rel value to use when generating links to the collection resource.
-	 * 
+	 *
 	 * @return A valid rel value.
 	 */
 	String collectionResourceRel() default "";
 
 	/**
 	 * The description of the collection resource.
-	 * 
+	 *
 	 * @return
 	 */
 	Description collectionResourceDescription() default @Description(value = "");
 
 	/**
 	 * The rel value to use when generating links to the item resource.
-	 * 
+	 *
 	 * @return A valid rel value.
 	 */
 	String itemResourceRel() default "";
 
 	/**
 	 * The description of the item resource.
-	 * 
+	 *
 	 * @return
 	 */
 	Description itemResourceDescription() default @Description(value = "");
@@ -77,7 +77,7 @@ public @interface RepositoryRestResource {
 	 * Configures the projection type to be used when embedding item resources into collections and related resources.
 	 * Defaults to {@link None}, which indicates full rendering of the items in a collection resource and no inlining of
 	 * related resources.
-	 * 
+	 *
 	 * @return
 	 */
 	Class<?> excerptProjection() default None.class;

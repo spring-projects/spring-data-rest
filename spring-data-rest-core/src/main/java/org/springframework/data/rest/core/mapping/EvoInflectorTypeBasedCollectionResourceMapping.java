@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@ import org.springframework.hateoas.RelProvider;
 /**
  * {@link TypeBasedCollectionResourceMapping} extension to use Evo Inflector to pluralize the simple class name by as
  * default path.
- * 
+ *
  * @author Oliver Gierke
  */
 class EvoInflectorTypeBasedCollectionResourceMapping extends TypeBasedCollectionResourceMapping {
 
 	/**
 	 * Creates a new {@link EvoInflectorTypeBasedCollectionResourceMapping} for the given type and {@link RelProvider}.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
 	 */
@@ -36,7 +36,7 @@ class EvoInflectorTypeBasedCollectionResourceMapping extends TypeBasedCollection
 		super(type, relProvider);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.TypeBasedCollectionResourceMapping#getDefaultPathFor(java.lang.Class)
 	 */

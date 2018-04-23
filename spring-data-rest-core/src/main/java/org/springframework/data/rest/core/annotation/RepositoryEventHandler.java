@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * Advertises classes annotated with this that they are event handlers.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -34,7 +34,7 @@ public @interface RepositoryEventHandler {
 
 	/**
 	 * The list of {@link org.springframework.context.ApplicationEvent} classes this event handler cares about.
-	 * 
+	 *
 	 * @deprecated the type the handler is interested in is determined by the type of the first parameter of a handler
 	 *             method.
 	 */

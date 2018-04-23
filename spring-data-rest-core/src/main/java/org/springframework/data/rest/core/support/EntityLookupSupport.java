@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import org.springframework.core.GenericTypeResolver;
 
 /**
  * {@link EntityLookup} implementation base class to derive the supported domain type from the generics signature.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.5
  * @soundtrack Elephants Crossing - The New (Live at Stadtfest Dresden -
@@ -36,7 +36,7 @@ public abstract class EntityLookupSupport<T> implements EntityLookup<T> {
 		this.domainType = GenericTypeResolver.resolveTypeArgument(getClass(), EntityLookup.class);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
 	 */

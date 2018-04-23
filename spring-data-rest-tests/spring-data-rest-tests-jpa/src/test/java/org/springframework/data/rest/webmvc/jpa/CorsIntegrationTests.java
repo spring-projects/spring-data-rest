@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 original author or authors.
+ * Copyright 2016-2018 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -39,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Web integration tests specific to Cross-origin resource sharing.
- * 
+ *
  * @author Mark Paluch
  * @soundtrack 2 Unlimited - No Limit
  */
@@ -51,16 +49,12 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		@Bean
 		RepositoryRestConfigurer repositoryRestConfigurer() {
 
-			return new RepositoryRestConfigurerAdapter() {
+			return RepositoryRestConfigurer.withConfig(config -> {
 
-				@Override
-				public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-
-					config.getCorsRegistry().addMapping("/books/**") //
-							.allowedMethods("GET", "PUT", "POST") //
-							.allowedOrigins("http://far.far.away");
-				}
-			};
+				config.getCorsRegistry().addMapping("/books/**") //
+						.allowedMethods("GET", "PUT", "POST") //
+						.allowedOrigins("http://far.far.away");
+			});
 		}
 	}
 
@@ -73,7 +67,6 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		mvc.perform(options(findItems.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.away")
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
 				.andExpect(status().isOk()) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.away")) //
 				.andExpect(
 						header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS,TRACE"));
 	}
@@ -85,7 +78,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 
 		// Preflight request
 		mvc.perform(options(findBooks.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.away")
-				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")) //
+				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
 				.andExpect(status().isOk()) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.away")) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST"));
@@ -143,12 +136,12 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 
 		// Preflight request
 		mvc.perform(options(authorsLink.expand().getHref()).header(HttpHeaders.ORIGIN, "http://not.so.far.away")
-				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")) //
+				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
 				.andExpect(status().isOk()) //
 				.andExpect(header().longValue(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 1234)) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://not.so.far.away")) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH"));
+				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH,POST"));
 	}
 
 	@Test // DATAREST-573
@@ -161,7 +154,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 				.andExpect(header().longValue(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 1234)) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://not.so.far.away")) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH"));
+				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH,POST"));
 	}
 
 	@RepositoryRestController

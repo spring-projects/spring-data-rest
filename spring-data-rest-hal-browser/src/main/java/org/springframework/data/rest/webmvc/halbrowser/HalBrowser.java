@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.web.util.UriComponents;
 
 /**
  * Controller with a few convenience redirects to expose the HAL browser shipped as static content.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Miles Davis - So what (Kind of blue)
  */
@@ -40,7 +40,7 @@ public class HalBrowser {
 
 	/**
 	 * Redirects requests to the API root asking for HTML to the HAL browser.
-	 * 
+	 *
 	 * @return
 	 */
 	@RequestMapping(value = { "/", "" }, method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
@@ -50,7 +50,7 @@ public class HalBrowser {
 
 	/**
 	 * Redirects to the actual {@code index.html}.
-	 * 
+	 *
 	 * @return
 	 */
 	@RequestMapping(value = "/browser", method = RequestMethod.GET)
@@ -60,7 +60,7 @@ public class HalBrowser {
 
 	/**
 	 * Returns the View to redirect to to access the HAL browser.
-	 * 
+	 *
 	 * @param request must not be {@literal null}.
 	 * @param browserRelative
 	 * @return

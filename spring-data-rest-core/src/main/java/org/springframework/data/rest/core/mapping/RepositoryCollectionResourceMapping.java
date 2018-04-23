@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import org.springframework.util.StringUtils;
  * {@link CollectionResourceMapping} to be built from repository interfaces. Will inspect {@link RestResource}
  * annotations on the repository interface but fall back to the mapping information of the managed domain type for
  * defaults.
- * 
+ *
  * @author Oliver Gierke
  */
 class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
@@ -53,7 +53,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	/**
 	 * Creates a new {@link RepositoryCollectionResourceMapping} for the given repository using the given
 	 * {@link RelProvider}.
-	 * 
+	 *
 	 * @param strategy must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
 	 * @param repositoryType must not be {@literal null}.
@@ -84,7 +84,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		}
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getPath()
 	 */
@@ -106,7 +106,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		return fallback;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
 	 */
@@ -128,7 +128,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		return fallback;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getSingleResourceRel()
 	 */
@@ -145,7 +145,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		return fallback;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
 	 */
@@ -154,7 +154,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		return repositoryExported;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#isPagingResource()
 	 */
@@ -163,7 +163,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		return metadata.isPagingRepository();
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
 	 */
@@ -179,7 +179,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		return fallback;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getItemResourceDescription()
 	 */
@@ -195,7 +195,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 		return fallback;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getExcerptProjection()
 	 */

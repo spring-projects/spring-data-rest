@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class ControllerUtils {
 
 	/**
 	 * Wrap a resource as a {@link ResourceEntity} and attach given headers and status.
-	 * 
+	 *
 	 * @param status
 	 * @param headers
 	 * @param resource
@@ -66,7 +66,7 @@ public class ControllerUtils {
 
 	/**
 	 * Return an empty response that is only comprised of a status
-	 * 
+	 *
 	 * @param status
 	 * @return
 	 */
@@ -76,7 +76,7 @@ public class ControllerUtils {
 
 	/**
 	 * Return an empty response that is only comprised of headers and a status
-	 * 
+	 *
 	 * @param status
 	 * @param headers
 	 * @return

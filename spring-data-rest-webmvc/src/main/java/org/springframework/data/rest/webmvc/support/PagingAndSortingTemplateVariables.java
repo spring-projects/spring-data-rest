@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.web.util.UriComponents;
 
 /**
  * Interface to abstract the access of {@link TemplateVariables} for pagination and sorting.
- * 
+ *
  * @author Oliver Gierke
  * @since 2.3
  */
@@ -30,7 +30,7 @@ public interface PagingAndSortingTemplateVariables extends UriComponentsContribu
 
 	/**
 	 * Returns the {@link TemplateVariables} for pagination.
-	 * 
+	 *
 	 * @param parameter can be {@literal null}.
 	 * @param components must not be {@literal null}.
 	 * @return
@@ -39,7 +39,7 @@ public interface PagingAndSortingTemplateVariables extends UriComponentsContribu
 
 	/**
 	 * Returns the {@link TemplateVariables} for sorting.
-	 * 
+	 *
 	 * @param parameter can be {@literal null}.
 	 * @param components must not be {@literal null}.
 	 * @return

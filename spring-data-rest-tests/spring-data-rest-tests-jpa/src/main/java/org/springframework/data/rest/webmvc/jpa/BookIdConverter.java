@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import org.springframework.util.StringUtils;
 
 /**
  * {@link BackendIdConverter} artificially transforming the actual book id into some magic {@link String} and back.
- * 
+ *
  * @author Oliver Gierke
  */
 public class BookIdConverter implements BackendIdConverter {
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#fromRequestId(java.lang.String, java.lang.Class)
 	 */
@@ -38,7 +38,7 @@ public class BookIdConverter implements BackendIdConverter {
 		return Long.parseLong(id.substring(0, id.indexOf('-')));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#toRequestId(java.lang.Object, java.lang.Class)
 	 */
@@ -55,7 +55,7 @@ public class BookIdConverter implements BackendIdConverter {
 		return StringUtils.collectionToDelimitedString(ids, "-");
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
 	 */

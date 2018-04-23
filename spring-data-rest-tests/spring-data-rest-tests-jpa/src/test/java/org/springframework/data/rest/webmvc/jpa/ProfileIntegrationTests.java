@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.springframework.data.rest.tests.TestMvcClient;
 import org.springframework.data.rest.webmvc.ProfileController;
 import org.springframework.data.rest.webmvc.ProfileResourceProcessor;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverers;
 import org.springframework.http.MediaType;
@@ -56,7 +56,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 	private static final String ROOT_URI = "/api";
 
 	@Configuration
-	static class Config extends RepositoryRestConfigurerAdapter {
+	static class Config implements RepositoryRestConfigurer {
 
 		@Override
 		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {

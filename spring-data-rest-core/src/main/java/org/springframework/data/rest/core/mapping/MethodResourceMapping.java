@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,28 +22,28 @@ import java.util.Optional;
 
 /**
  * A {@link ResourceMapping} that is backed by a {@link Method}.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface MethodResourceMapping extends ResourceMapping {
 
 	/**
 	 * Returns the {@link Method} backing the resource.
-	 * 
+	 *
 	 * @return
 	 */
 	Method getMethod();
 
 	/**
 	 * Returns {@link ParameterMetadata} instances for all named parameters.
-	 * 
+	 *
 	 * @return
 	 */
 	ParametersMetadata getParametersMetadata();
 
 	/**
 	 * Returns whether the resource is sortable.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isSortableResource();
@@ -51,7 +51,7 @@ public interface MethodResourceMapping extends ResourceMapping {
 	/**
 	 * Returns the domain type that the query method returns. This will inspect wrapper types ({@link Collection}s,
 	 * {@link Map}s, {@link Optional}s etc.) for their element or value types.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 * @since 2.3
 	 */

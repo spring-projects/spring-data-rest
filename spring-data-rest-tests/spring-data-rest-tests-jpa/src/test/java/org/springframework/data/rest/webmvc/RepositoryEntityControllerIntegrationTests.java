@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 /**
  * Integration tests for {@link RepositoryEntityController}.
- * 
+ *
  * @author Oliver Gierke
  * @author Jeremy Rickard
  */
@@ -157,11 +157,10 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		List<String> value = entity.getHeaders().get("Accept-Patch");
 
 		assertThat(value).hasSize(3);
-		assertThat(value,
-				hasItems(//
-						RestMediaTypes.JSON_PATCH_JSON.toString(), //
-						RestMediaTypes.MERGE_PATCH_JSON.toString(), //
-						MediaType.APPLICATION_JSON_VALUE));
+		assertThat(value, hasItems(//
+				RestMediaTypes.JSON_PATCH_JSON.toString(), //
+				RestMediaTypes.MERGE_PATCH_JSON.toString(), //
+				MediaType.APPLICATION_JSON_VALUE));
 	}
 
 	@Test // DATAREST-34

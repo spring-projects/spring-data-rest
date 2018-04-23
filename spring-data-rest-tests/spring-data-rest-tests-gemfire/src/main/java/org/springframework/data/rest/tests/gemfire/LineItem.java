@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public class LineItem {
 
 	/**
 	 * Creates a new {@link LineItem} for the given {@link Product}.
-	 * 
+	 *
 	 * @param product must not be {@literal null}.
 	 */
 	public LineItem(Product product) {
@@ -39,7 +39,7 @@ public class LineItem {
 
 	/**
 	 * Creates a new {@link LineItem} for the given {@link Product} and amount.
-	 * 
+	 *
 	 * @param product must not be {@literal null}.
 	 * @param amount
 	 */
@@ -56,7 +56,7 @@ public class LineItem {
 
 	/**
 	 * Returns the id of the {@link Product} the {@link LineItem} refers to.
-	 * 
+	 *
 	 * @return
 	 */
 	public Long getProductId() {
@@ -65,7 +65,7 @@ public class LineItem {
 
 	/**
 	 * Returns the amount of {@link Product}s to be ordered.
-	 * 
+	 *
 	 * @return
 	 */
 	public int getAmount() {
@@ -74,7 +74,7 @@ public class LineItem {
 
 	/**
 	 * Returns the price a single unit of the {@link LineItem}'s product.
-	 * 
+	 *
 	 * @return the price
 	 */
 	public BigDecimal getUnitPrice() {
@@ -83,7 +83,7 @@ public class LineItem {
 
 	/**
 	 * Returns the total for the {@link LineItem}.
-	 * 
+	 *
 	 * @return
 	 */
 	public BigDecimal getTotal() {

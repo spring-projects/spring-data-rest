@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.springframework.data.rest.core.event;
 
 /**
  * Base class for {@link RepositoryEvent}s that deal with saving/updating or deleting a linked object.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
@@ -28,7 +28,7 @@ public abstract class LinkedEntityEvent extends RepositoryEvent {
 
 	/**
 	 * Creates a new {@link LinkedEntityEvent} for th given source and linked instance.
-	 * 
+	 *
 	 * @param source must not be {@literal null}.
 	 * @param linked can be {@literal null}.
 	 */
@@ -40,7 +40,7 @@ public abstract class LinkedEntityEvent extends RepositoryEvent {
 
 	/**
 	 * Get the linked object.
-	 * 
+	 *
 	 * @return The entity representing the right-hand side of this relationship.
 	 */
 	public Object getLinked() {

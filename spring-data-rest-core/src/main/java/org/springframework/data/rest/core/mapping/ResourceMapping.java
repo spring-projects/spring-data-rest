@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,42 +19,42 @@ import org.springframework.data.rest.core.Path;
 
 /**
  * Mapping information for components to be exported as REST resources.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface ResourceMapping {
 
 	/**
 	 * Returns whether the component shall be exported at all.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	boolean isExported();
 
 	/**
 	 * Returns the relation for the resource exported.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	String getRel();
 
 	/**
 	 * Returns the path the resource is exposed under.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 */
 	Path getPath();
 
 	/**
 	 * Returns whether the resource is paging one.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isPagingResource();
 
 	/**
 	 * Returns the resource's description.
-	 * 
+	 *
 	 * @return
 	 */
 	ResourceDescription getDescription();
