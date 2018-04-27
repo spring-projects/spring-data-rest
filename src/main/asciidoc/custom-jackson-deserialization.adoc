@@ -40,7 +40,7 @@ public class MyCustomModule extends SimpleModule {
 }
 ----
 
-Once you have access to the `SetupContext` object in your `Module`, you can do all sorts of cool things to configure Jackon's JSON mapping. You can read more about how http://wiki.fasterxml.com/JacksonFeatureModules[Module`s work on Jackson's wiki].
+Once you have access to the `SetupContext` object in your `Module`, you can do all sorts of cool things to configure Jackon's JSON mapping. You can read more about how http://wiki.fasterxml.com/JacksonFeatureModules[``Module``s work on Jackson's wiki].
 
 == Adding custom serializers for domain types
 

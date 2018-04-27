@@ -114,7 +114,7 @@ This looks very similar, except for the following differences:
 <2> A `prev` link now appears, giving us a path to the previous page.
 <3> The current number is now 1 (indicating the second page).
 
-This feature makes it quite easy to map optional buttons on the screen to these hypermedia controls, hence allowing easy navigational features for the UI experience without having to hard code the URIs. In fact, the user can be empowered to pick from a list of page sizes, dynamically changing the content served, without having to rewrite the `next` and `prev controls at the top or bottom.
+This feature makes it quite easy to map optional buttons on the screen to these hypermedia controls, hence allowing easy navigational features for the UI experience without having to hard code the URIs. In fact, the user can be empowered to pick from a list of page sizes, dynamically changing the content served, without having to rewrite the `next` and `prev` controls at the top or bottom.
 
 [[paging-and-sorting.sorting]]
 == Sorting
