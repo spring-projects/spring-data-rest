@@ -62,7 +62,7 @@ With this field, Spring Data REST will return a `Last-Modified` header like this
 Last-Modified: Wed, 24 Jun 2015 20:28:15 GMT
 ----
 
-This value can be capture and used for subsequent queries to avoid fetching the same data twice if it hasn't been updated.
+This value can be captured and used for subsequent queries to avoid fetching the same data twice if it hasn't been updated.
 
 ----
 curl -H "If-Modified-Since: Wed, 24 Jun 2015 20:28:15 GMT" ...

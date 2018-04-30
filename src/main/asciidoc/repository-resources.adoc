@@ -123,7 +123,7 @@ Returns a single entity.
 
 ===== Custom status codes
 
-* `405 Method Not Allowed` - if the `findOne(…)` methods was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
+* `405 Method Not Allowed` - if the `findOne(…)` method was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
 
 ===== Supported media types
 
@@ -144,7 +144,7 @@ Replaces the state of the target resource with the supplied request body.
 
 ===== Custom status codes
 
-* `405 Method Not Allowed` - if the `save(…)` methods was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
+* `405 Method Not Allowed` - if the `save(…)` method was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
 
 ===== Supported media types
 
@@ -157,7 +157,7 @@ Similar to `PUT` but partially updating the resources state.
 
 ===== Custom status codes
 
-* `405 Method Not Allowed` - if the `save(…)` methods was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
+* `405 Method Not Allowed` - if the `save(…)` method was not exported (through `@RestResource(exported = false)`) or is not present in the repository at all.
 
 ===== Supported media types
 
@@ -183,7 +183,7 @@ Spring Data REST exposes sub-resources of every item resource for each of the as
 
 ==== GET
 
-Returns the state of the association resource
+Returns the state of the association resource.
 
 ===== Supported media types
 
@@ -192,7 +192,7 @@ Returns the state of the association resource
 
 ==== PUT
 
-Binds the resource pointed to by the given URI(s) to the resource. This
+Binds the resource pointed to by the given URI(s) to the resource.
 
 ===== Custom status codes
 

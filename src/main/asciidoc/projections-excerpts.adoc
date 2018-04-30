@@ -127,13 +127,13 @@ The `NoAddresses` projection only has getters for `firstName` and `lastName` mea
 
 To view apply the projection to the resource, look up `http://localhost:8080/persons/1?projection=noAddresses`.
 
-NOTE: The value supplied to the `projection` query parameter is the same as specified in `@Projection(name = "noAddress")`. It has nothing to do with the name of the projection's interface.
+NOTE: The value supplied to the `projection` query parameter is the same as specified in `@Projection(name = "noAddresses")`. It has nothing to do with the name of the projection's interface.
 
 It's possible to have multiple projections.
 
 NOTE: Visit <<spring-data-examples.projections>> to see an example project you can experiment with.
 
-How does Spring Data REST finds projection definitions?
+How does Spring Data REST find projection definitions?
 
 * Any `@Projection` interface found in the same package as your entity definitions (or one of it's sub-packages) is registered.
 * You can manually register via `RepositoryRestConfiguration.getProjectionConfiguration().addProjection(…)`.
