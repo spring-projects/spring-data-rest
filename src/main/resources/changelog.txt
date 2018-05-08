@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.7.RELEASE (2018-05-08)
+---------------------------------------------
+* DATAREST-1227 - Release 3.0.7 (Kay SR7).
+
+
 Changes in version 2.6.12.RELEASE (2018-05-08)
 ----------------------------------------------
 * DATAREST-1226 - Release 2.6.12 (Ingalls SR12).
