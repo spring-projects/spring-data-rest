@@ -1,8 +1,9 @@
 [[customizing-sdr.overriding-sdr-response-handlers]]
 = Overriding Spring Data REST Response Handlers
 
-Sometimes you may want to write a custom handler for a specific resource. To take advantage of Spring Data REST's settings, message converters, exception handling, and more, use the `@RepositoryRestController` annotation instead of a standard Spring MVC `@Controller` or `@RestController`:
+Sometimes, you may want to write a custom handler for a specific resource. To take advantage of Spring Data REST's settings, message converters, exception handling, and more, use the `@RepositoryRestController` annotation instead of a standard Spring MVC `@Controller` or `@RestController`. Controllers annotated with `@RepositoryRestController` are served from the API base path defined in `RepositoryRestConfiguration.setBasePath`, which is used by all other RESTful endpoints (for example, `/api`). The following example shows how to use the `@RepositoryRestController` annotation:
 
+====
 [source,java]
 ----
 @RepositoryRestController
@@ -35,19 +36,18 @@ public class ScannerController {
 }
 ----
 
-This controller will be served from the same API base path defined in `RepositoryRestConfiguration.setBasePath` that is used by all other RESTful endpoints (e.g. */api*). It also has these characteristics:
-
 <1> This example uses constructor injection.
 <2> This handler plugs in a custom handler for a Spring Data finder method.
-<3> This handler is using the underlying repository to fetch data, but will then do some form of post processing before returning the final data set to the client.
-<4> The results need to be wrapped up in a Spring HATEOAS `Resources` object to return a collection, but only a `Resource` for a single item.
-<5> Add a link back to this exact method as a "self" link.
-<6> Returning the collection using Spring MVC's `ResponseEntity` wrapper ensure the collection is properly wrapped and rendered in the proper accept type.
+<3> This handler uses the underlying repository to fetch data, but then does some form of post processing before returning the final data set to the client.
+<4> The results need to be wrapped up in a Spring HATEOAS `Resources` object to return a collection but only a `Resource` for a single item.
+<5> Add a link back to this exact method as a `self` link.
+<6> Returning the collection by using Spring MVC's `ResponseEntity` wrapper ensures that the collection is properly wrapped and rendered in the proper accept type.
+====
 
-`Resources` is for a collection while `Resource` is for a single item. These types can be combined. If you know the links for each item in a collection, use `Resources<Resource<String>>` (or whatever the core domain type is). This lets you assemble links for each item as well as for the whole collection.
+`Resources` is for a collection, while `Resource` is for a single item. These types can be combined. If you know the links for each item in a collection, use `Resources<Resource<String>>` (or whatever the core domain type is rather than `String`). Doing so lets you assemble links for each item as well as for the whole collection.
 
-IMPORTANT: In this example, the combined path will be `RepositoryRestConfiguration.getBasePath()` + `/scanners/search/listProducers`.  
+IMPORTANT: In this example, the combined path is `RepositoryRestConfiguration.getBasePath()` + `/scanners/search/listProducers`.
 
-If you're NOT interested in entity-specific operations but still want to build custom operations underneath `basePath`, such as Spring MVC views, resources, etc. use `@BasePathAwareController`.
+If you are not interested in entity-specific operations but still want to build custom operations underneath `basePath`, such as Spring MVC views, resources, and others, use `@BasePathAwareController`.
 
-WARNING: If you use `@Controller` or `@RestController` for anything, that code will be totally outside the scope of Spring Data REST. This extends to request handling, message converters, exception handling, etc.
+WARNING: If you use `@Controller` or `@RestController` for anything, that code is totally outside the scope of Spring Data REST. This extends to request handling, message converters, exception handling, and other uses.

@@ -2,7 +2,7 @@
 [appendix]
 = Using cURL to talk to Spring Data REST
 
-This appendix contains a list of guides that demonstrate interacting with a Spring Data REST service via cURL:
+This appendix contains a list of guides that demonstrate interacting with a Spring Data REST service over cURL:
 
 * https://spring.io/guides/gs/accessing-data-rest/[Accessing JPA Data with REST]
 * https://spring.io/guides/gs/accessing-neo4j-data-rest/[Accessing Neo4j Data with REST]

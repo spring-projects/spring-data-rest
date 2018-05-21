@@ -6,16 +6,17 @@ This section details various ways to integrate with Spring Data REST components,
 
 == Programmatic Links
 
-Sometimes you need to add links to exported resources in your own custom built Spring MVC controllers. There are three basic levels of linking available:
+Sometimes you need to add links to exported resources in your own custom-built Spring MVC controllers. There are three basic levels of linking available:
 
-. Manually assembling links
-. Using Spring HATEOAS's http://docs.spring.io/spring-hateoas/docs/current/reference/html/#fundamentals.obtaining-links.builder[LinkBuilder] with `linkTo()`, `slash()`, etc.
-. Using Spring Data REST's implementation of http://docs.spring.io/spring-data/rest/docs/current/api/org/springframework/data/rest/webmvc/support/RepositoryEntityLinks.html[RepositoryEntityLinks].
+* Manually assembling links.
+* Using Spring HATEOAS's http://docs.spring.io/spring-hateoas/docs/current/reference/html/#fundamentals.obtaining-links.builder[`LinkBuilder`] with `linkTo()`, `slash()`, and so on.
+* Using Spring Data REST's implementation of http://docs.spring.io/spring-data/rest/docs/current/api/org/springframework/data/rest/webmvc/support/RepositoryEntityLinks.html[`RepositoryEntityLinks`].
 
-The first suggestion is terrible and should be avoided at all costs. It makes your code brittle and high risk. The second is handy when creating links to other hand written Spring MVC controllers. The last one, which you'll see in a moment, is good for looking up resource links that are exported by Spring Data REST.
+The first suggestion is terrible and should be avoided at all costs. It makes your code brittle and high-risk. The second is handy when creating links to other hand-written Spring MVC controllers. The last one, which we explore in the rest of this section, is good for looking up resource links that are exported by Spring Data REST.
 
-Assuming you have configured your code to use Spring's autowiring,
+Consider the following class ,which uses Spring's autowiring:
 
+====
 [source,java]
 ----
 public class MyWebApp {
@@ -28,15 +29,16 @@ public class MyWebApp {
 	}
 }
 ----
+====
 
-...you can then use the following operations:
+With the class in the preceding example, you can use the following operations:
 
 .Ways to link to exported resources
 |===
 |Method | Description
 
 |`entityLinks.linkToCollectionResource(Person.class)`
-|Provide a link to the collection resource of that type.
+|Provide a link to the collection resource of the specified type (`Person`, in this case).
 
 |`entityLinks.linkToSingleResource(Person.class, 1)`
 |Provide a link to a single resource.
@@ -48,8 +50,8 @@ public class MyWebApp {
 |Provides a list of links for all the finder methods exposed by the corresponding repository.
 
 |`entityLinks.linkToSearchResource(Person.class, "findByLastName")`
-|Provide a finder link by rel, i.e. the name of the finder.
+|Provide a finder link by `rel` (that is, the name of the finder).
 
 |===
 
-NOTE: All of the search-based links support extra parameters for paging and sorting. Checkout http://docs.spring.io/spring-data/rest/docs/current/api/org/springframework/data/rest/webmvc/support/RepositoryEntityLinks.html[RepositoryEntityLinks] for specifics. There is also `linkFor(Class<?> type)`, but that returns a Spring HATEOAS `LinkBuilder`, which returns you to the lower level API. Try to use the other ones first.
+NOTE: All of the search-based links support extra parameters for paging and sorting. See http://docs.spring.io/spring-data/rest/docs/current/api/org/springframework/data/rest/webmvc/support/RepositoryEntityLinks.html[`RepositoryEntityLinks`] for the details. There is also `linkFor(Class<?> type)`, but that returns a Spring HATEOAS `LinkBuilder`, which returns you to the lower level API. Try to use the other ones first.
