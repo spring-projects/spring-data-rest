@@ -1,14 +1,15 @@
 [[validation]]
 = Validation
 
-There are two ways to register a `Validator` instance in Spring Data REST: wire it by bean name or register the validator manually. For the majority of cases, the simple bean name prefix style will be sufficient.
+There are two ways to register a `Validator` instance in Spring Data REST: wire it by bean name or register the validator manually. For the majority of cases, the simple bean name prefix style is sufficient.
 
-In order to tell Spring Data REST you want a particular `Validator` assigned to a particular event, you simply prefix the bean name with the event you're interested in. For example, to validate instances of the `Person` class before new ones are saved into the repository, you would declare an instance of a `Validator<Person>` in your `ApplicationContext` with the bean name "beforeCreatePersonValidator". Since the prefix "beforeCreate" matches a known Spring Data REST event, that validator will be wired to the correct event.
+In order to tell Spring Data REST you want a particular `Validator` assigned to a particular event, prefix the bean name with the event in question. For example, to validate instances of the `Person` class before new ones are saved into the repository, you would declare an instance of a `Validator<Person>` in your `ApplicationContext` with a bean name of `beforeCreatePersonValidator`. Since the `beforeCreate` prefix matches a known Spring Data REST event, that validator is wired to the correct event.
 
-== Assigning Validators manually
+== Assigning Validators Manually
 
-If you would rather not use the bean name prefix approach, then you simply need to register an instance of your validator with the bean whose job it is to invoke validators after the correct event. In your configuration that implements `RepositoryRestConfigurer` or subclasses Spring Data REST's `RepositoryRestConfigurerAdapter`, override the `configureValidatingRepositoryEventListener` method and call `addValidator` on the `ValidatingRepositoryEventListener`, passing the event you want this validator to be triggered on, and an instance of the validator.
+If you would rather not use the bean name prefix approach, you need to register an instance of your validator with the bean whose job it is to invoke validators after the correct event. In your configuration that implements `RepositoryRestConfigurer` or subclasses Spring Data REST's `RepositoryRestConfigurerAdapter`, override the `configureValidatingRepositoryEventListener` method and call `addValidator` on the `ValidatingRepositoryEventListener`, passing the event on which you want this validator to be triggered and an instance of the validator. The following example shows how to do so:
 
+====
 [source,java]
 ----
 @Override
@@ -16,3 +17,4 @@ protected void configureValidatingRepositoryEventListener(ValidatingRepositoryEv
   v.addValidator("beforeSave", new BeforeSaveValidator());
 }
 ----
+====

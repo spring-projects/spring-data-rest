@@ -2,28 +2,26 @@
 [appendix]
 = Spring Data REST example projects
 
-This appendix contains a list of Spring Data REST sample applications. The exact version of each example isn't guaranteed to match the version of this reference manual.
+This appendix contains a list of Spring Data REST sample applications. The exact version of each example is not guaranteed to match the version of this reference manual.
 
-NOTE: To get them all, visit https://github.com/spring-projects/spring-data-examples and either clone or download a zipball. This will give you example apps for ALL supported Spring Data projects. Simply navigate to `spring-data-examples/rest`.
+NOTE: To get them all, visit https://github.com/spring-projects/spring-data-examples and either clone or download a zipball. Doing so gives you example applications for all supported Spring Data projects. To see them, navigate to `spring-data-examples/rest`.
 
 [[spring-data-examples.multi-store]]
-== Multi-store example
+== Multi-store Example
 
 https://github.com/spring-projects/spring-data-examples/tree/master/rest/multi-store[This example] shows how to mix together several underlying Spring Data projects.
 
 [[spring-data-examples.projections]]
 == Projections
 
-https://github.com/spring-projects/spring-data-examples/tree/master/rest/projections[This example] contains more detailed code you can use to poke around with <<projections-excerpts,projections>>.
+https://github.com/spring-projects/spring-data-examples/tree/master/rest/projections[This example] contains more detailed code you can use to explore <<projections-excerpts,projections>>.
 
 [[spring-data-examples.spring-security]]
-== Spring Data REST + Spring Security
+== Spring Data REST with Spring Security
 
 https://github.com/spring-projects/spring-data-examples/tree/master/rest/security[This example] shows how to secure a http://projects.spring.io/spring-data-rest[Spring Data REST] application in multiple ways with http://projects.spring.io/spring-security[Spring Security].
 
 [[spring-data-examples.starbucks]]
 == Starbucks example
 
-https://github.com/spring-projects/spring-data-examples/tree/master/rest/starbucks[This example] exposes 10843 Starbucks coffee shops via a RESTful API that allows to access the stores in a hypermedia based way and exposes a resource to execute geo-location search for coffee shops.
-
-
+https://github.com/spring-projects/spring-data-examples/tree/master/rest/starbucks[This example] exposes 10,843 Starbucks coffee shops through a RESTful API that allows access to the stores in a hypermedia-based way and exposes a resource to execute a geo-location search for coffee shops.

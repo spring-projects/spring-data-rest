@@ -10,11 +10,12 @@ This section details the various forms of metadata provided by a Spring Data RES
 http://alps.io/[ALPS] is a data format for defining simple descriptions of application-level semantics, similar in complexity to HTML microformats.  An ALPS document can be used as a profile to explain the application semantics of a document with an application-agnostic media type (such as HTML, HAL, Collection+JSON, Siren, etc.). This increases the reusability of profile documents across media types.
 
 Spring Data REST provides an ALPS document for every exported repository. It contains information about both the RESTful transitions
-as well as the attributes of each repository.
+and the attributes of each repository.
 
-At the root of a Spring Data REST app is a *profile* link. Assuming you had an app with both *persons* and related *addresses*, the root
-document would look like this:
+At the root of a Spring Data REST app is a profile link. Assuming you had an app with both `persons` and related `addresses`, the root
+document would be as follows:
 
+====
 [source,javascript]
 ----
 {
@@ -31,13 +32,15 @@ document would look like this:
   }
 }
 ----
+====
 
-A *profile* link, as defined in https://tools.ietf.org/html/rfc6906[RFC 6906], is a place to include application level details. The
-http://tools.ietf.org/html/draft-amundsen-richardson-foster-alps-00[ALPS draft spec] is meant to define a particular profile format
-which we'll explore further down in this section.
+A profile link, as defined in https://tools.ietf.org/html/rfc6906[RFC 6906], is a place to include application-level details. The
+http://tools.ietf.org/html/draft-amundsen-richardson-foster-alps-00[ALPS draft spec] is meant to define a particular profile format,
+which we explore later in this section.
 
-If you navigate into the *profile* link at `localhost:8080/profile`, you would see something like this:
+If you navigate into the profile link at `localhost:8080/profile`, you see content resembling the following:
 
+====
 [source,javascript]
 ----
 {
@@ -54,12 +57,14 @@ If you navigate into the *profile* link at `localhost:8080/profile`, you would s
   }
 }
 ----
+====
 
-IMPORTANT: At the root level, *profile* is a single link and hence can't handle serving up more than one application profile. That
+IMPORTANT: At the root level, `profile` is a single link and cannot serve up more than one application profile. That
 is why you must navigate to `/profile` to find a link for each resource's metadata.
 
-Let's navigate to `/profile/persons` and look at the profile data for a `Person` resource.
+If you navigate to `/profile/persons` and look at the profile data for a `Person` resource, you see content resembling the following example:
 
+====
 [source,javascript]
 ----
 {
@@ -114,17 +119,19 @@ Let's navigate to `/profile/persons` and look at the profile data for a `Person`
 }
 ----
 
-<1> At the top is a detailed listing of the attributes of a `Person` resource, identified as `#person-representation`. It lists the names
+<1> A detailed listing of the attributes of a `Person` resource, identified as `#person-representation`, lists the names
 of the attributes.
-<2> After the resource representation are all the supported operations. This one is how to create a new `Person`.
-<3> The name is *persons*, which indicates that a POST should be applied to the whole collection, not a single *person*.
-<4> The *type* is `UNSAFE` because this operation can alter the state of the system.
+<2> The supported operations. This one indicates how to create a new `Person`.
+<3> The `name` is `persons`, which indicates (because it is plural) that a POST should be applied to the whole collection, not a single `person`.
+<4> The `type` is `UNSAFE`, because this operation can alter the state of the system.
+====
 
-NOTE: This JSON document has a media type of `application/alps+json`. This is different than the previous JSON document, which had
+NOTE: This JSON document has a media type of `application/alps+json`. This is different from the previous JSON document, which had
 a media type of `application/hal+json`. These formats are different and governed by different specs.
 
-You will also find a "profile" link shown in the collection of *_links* when you are looking at a collection resource.
+You can also find a `profile` link in the collection of `_links` when you examine a collection resource, as the following example shows:
 
+====
 [source,javascript]
 ----
 {
@@ -143,11 +150,12 @@ You will also find a "profile" link shown in the collection of *_links* when you
 
 <1> This HAL document respresents the `Person` collection.
 <2> It has a *profile* link to the same URI for metadata.
+====
 
-The *profile* link, again, will serve up ALPS by default or if you use an http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[Accept header] of *application/alps+json*.
+Again, by default, the `profile` link serves up ALPS. However, if you use an http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[`Accept` header], it can serve `application/alps+json`.
 
 [[metadata.alps.control-types]]
-=== Hypermedia control types
+=== Hypermedia Control Types
 
 ALPS displays types for each hypermedia control. They include:
 
@@ -156,23 +164,24 @@ ALPS displays types for each hypermedia control. They include:
 |===
 | Type | Description
 
-| SEMANTIC | A state element (e.g. HTML.SPAN, HTML.INPUT, etc.).
-| SAFE | A hypermedia control that triggers a safe, idempotent state transition (e.g. *GET* or *HEAD*).
-| IDEMPOTENT | A hypermedia control that triggers an unsafe, idempotent state transition (e.g. *PUT* or *DELETE*).
-| UNSAFE | A hypermedia control that triggers an unsafe, non-idempotent state transition (e.g. *POST*).
+| SEMANTIC | A state element (such as `HTML.SPAN`, `HTML.INPUT`, and others).
+| SAFE | A hypermedia control that triggers a safe, idempotent state transition (such as `GET` or `HEAD`).
+| IDEMPOTENT | A hypermedia control that triggers an unsafe, idempotent state transition (such as `PUT` or `DELETE`).
+| UNSAFE | A hypermedia control that triggers an unsafe, non-idempotent state transition (such as `POST`).
 |===
 
-In the representation section up above, bits of data from the application are marked *SEMANTIC*. The *address* field
-is a link that involves a safe *GET* to retrive. Hence, it is marked *SAFE*. Hypermedia operations themselves map onto the types as
-shown the table.
+In the representation section shown earlier, bits of data from the application are marked as being `SEMANTIC`. The `address` field
+is a link that involves a safe `GET` to retrieve. Consequently, it is marked as being `SAFE`. Hypermedia operations themselves map onto the types as
+shown in the preceding table.
 
 [[metadata.alps.projections]]
 === ALPS with Projections
 
-If you define any projections, they are also listed in the ALPS metadata. Assuming we also defined *inlineAddress* and *noAddresses*, they
-would appear inside the relevant operations, i.e. *GET* for the whole collection as well *GET* for a single resource. The following shows
-the alternate version of the *get-persons* subsection:
+If you define any projections, they are also listed in the ALPS metadata. Assuming we also defined `inlineAddress` and `noAddresses`, they
+would appear inside the relevant operations. (See "`<<projections-excerpts.projections>>`" for the definitions and discussion of these two projections.) That is *GET* would appear in the operations for the whole collection, and *GET* would appear in the operations for a single resource. The following example shows
+the alternate version of the `get-persons` subsection:
 
+====
 [source,javascript]
 ----
 ...
@@ -217,19 +226,21 @@ the alternate version of the *get-persons* subsection:
 ...
 ----
 
-<1> A new attribute, *descriptors*, appears containing an array with one entry, *projection*.
-<2> Inside the *projection.descriptors* we can see *inLineAddress* listed. It will render *address*, *firstName*, and *lastName*.
-Relationships rendered inside a projection result in inlining the data fields.
-<3> Also found is *noAddresses*, which serves up a subset containing *firstName* and *lastName*.
+<1> A new attribute, `descriptors`, appears, containing an array with one entry, `projection`.
+<2> Inside the `projection.descriptors`, we can see `inLineAddress`. It render `address`, `firstName`, and `lastName`.
+Relationships rendered inside a projection result in including the data fields inline.
+<3> `noAddresses` serves up a subset that contains `firstName` and `lastName`.
+====
 
-With all this information, a client should be able to deduce not only the RESTful transitions avaiable, but also, to some degree, the
-data elements needed to interact.
+With all this information, a client can deduce not only the available RESTful transitions but also, to some degree, the
+data elements needed to interact with the back end.
 
 [[metadata.alps.descriptions]]
-=== Adding custom details to your ALPS descriptions
+=== Adding Custom Details to Your ALPS Descriptions
 
-It's possible to create custom messages that appear in your ALPS metadata. Just create `rest-messages.properties` like this:
+You can create custom messages that appear in your ALPS metadata. To do so, create `rest-messages.properties`, as follows:
 
+====
 [source,properties]
 ----
 rest.description.person=A collection of people
@@ -238,9 +249,11 @@ rest.description.person.firstName=Person's first name
 rest.description.person.lastName=Person's last name
 rest.description.person.address=Person's address
 ----
+====
 
-As you can see, this defines details to display for a `Person` resource. They alter the ALPS format of the *person-representation* as follows:
+These `rest.description.*` properties define details to display for a `Person` resource. They alter the ALPS format of the `person-representation`, as follows:
 
+====
 [source,javascript]
 ----
 ...
@@ -284,13 +297,14 @@ As you can see, this defines details to display for a `Person` resource. They al
 ...
 ----
 
-By supplying these property settings, each field has an extra *doc* attribute.
-
 <1> The value of `rest.description.person` maps into the whole representation.
-<2> The value of `rest.description.person.firstName` maps to the *firstName* attribute.
-<3> The value of `rest.description.person.lastName` maps to the *lastName* attribute.
-<4> The value of `rest.description.person.id` maps to the *id* attribute, a field not normally displayed.
-<5> The value of `rest.description.person.address` maps to the *address* attribute.
+<2> The value of `rest.description.person.firstName` maps to the `firstName` attribute.
+<3> The value of `rest.description.person.lastName` maps to the `lastName` attribute.
+<4> The value of `rest.description.person.id` maps to the `id` attribute, a field not normally displayed.
+<5> The value of `rest.description.person.address` maps to the `address` attribute.
+====
+
+Supplying these property settings causes each field to have an extra `doc` attribute.
 
 NOTE: Spring MVC (which is the essence of a Spring Data REST application) supports locales, meaning you can bundle up multiple
 properties files with different messages.
@@ -301,12 +315,13 @@ properties files with different messages.
 
 http://json-schema.org/[JSON Schema] is another form of metadata supported by Spring Data REST. Per their website, JSON Schema has the following advantages:
 
-* describes your existing data format
-* clear, human- and machine-readable documentation
-* complete structural validation, useful for automated testing and validating client-submitted data
+* Describes your existing data format
+* Clear, human- and machine-readable documentation
+* Complete structural validation, useful for automated testing and validating client-submitted data
 
-As shown in the <<metadata.alps,previous section>>, you can reach this data by navigating from the root URI to the "profile" link.
+As shown in the <<metadata.alps,previous section>>, you can reach this data by navigating from the root URI to the `profile` link.
 
+====
 [source,javascript]
 ----
 {
@@ -323,11 +338,13 @@ As shown in the <<metadata.alps,previous section>>, you can reach this data by n
   }
 }
 ----
+====
 
-These links are the same as shown earlier. To retrieve JSON Schema you invoke them with Accept header *application/schema+json*.
+These links are the same as shown earlier. To retrieve JSON Schema, you can invoke them with the following `Accept` header: `application/schema+json`.
 
-In this case, if you executed `curl -H 'Accept:application/schema+json' http://localhost:8080/profile/persons`, you would see something like this:
+In this case, if you executed `curl -H 'Accept:application/schema+json' http://localhost:8080/profile/persons`, you would see output resembling the following:
 
+====
 [source,javascript]
 ----
 {
@@ -373,11 +390,13 @@ In this case, if you executed `curl -H 'Accept:application/schema+json' http://l
 
 <1> The type that was exported
 <2> A listing of properties
+====
 
 There are more details if your resources have links to other resources.
 
-You will also find a "profile" link shown in the collection of *_links* when you are looking at a collection resource.
+You can also find a `profile` link in the collection of `_links` when you examine a collection resource, as the following example shows:
 
+====
 [source,javascript]
 ----
 {
@@ -396,8 +415,9 @@ You will also find a "profile" link shown in the collection of *_links* when you
 
 <1> This HAL document respresents the `Person` collection.
 <2> It has a *profile* link to the same URI for metadata.
+====
 
-The *profile* link, again, will serve up <<metadata.alps,ALPS>> by default. If you supply it with an http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[Accept header] of *application/schema+json*, it will render the JSON Schema representation.
+Again, the `profile` link serves <<metadata.alps,ALPS>> by default. If you supply it with an http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[`Accept` header] of `application/schema+json`, it renders the JSON Schema representation.
 
 //= JSON Patch
 
