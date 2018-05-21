@@ -1,29 +1,34 @@
 [[customizing-sdr.configuring-the-rest-url-path]]
-= Configuring the REST URL path
+= Configuring the REST URL Path
 
-Configuring the segments of the URL path under which the resources of a JPA repository are exported is simple. You just add an annotation at the class level and/or at the query method level.
+You can configure the segments of the URL path under which the resources of a JPA repository are exported. To do so, add an annotation at the class level or at the query method level.
 
-By default, the exporter will expose your `CrudRepository` using the name of the domain class. Spring Data REST also applies the https://github.com/atteo/evo-inflector[Evo Inflector] to pluralize this word. So a repository defined as follows:
+By default, the exporter exposes your `CrudRepository` by using the name of the domain class. Spring Data REST also applies the https://github.com/atteo/evo-inflector[Evo Inflector] to pluralize this word. Consider the following repository definition:
 
+====
 [source,java]
 ----
 interface PersonRepository extends CrudRepository<Person, Long> {}
 ----
+====
 
-Will, by default, be exposed under the URL `http://localhost:8080/persons/`
+The repository defined by the preceding example is exposed at `http://localhost:8080/persons/`.
 
-To change how the repository is exported, add a `@RestResource` annotation at the class level:
+To change how the repository is exported, add a `@RestResource` annotation at the class level, as the following example shows:
 
+====
 [source,java]
 ----
 @RepositoryRestResource(path = "people")
 interface PersonRepository extends CrudRepository<Person, Long> {}
 ----
+====
 
-Now the repository will be accessible under the URL: `http://localhost:8080/people/`
+The repository defined by the preceding example is accessible at `http://localhost:8080/people/`.
 
-If you have query methods defined, those also default to be exposed by their name:
+If you have query methods defined, those also default to being exposed by their name, as the following example shows:
 
+====
 [source,java]
 ----
 interface PersonRepository extends CrudRepository<Person, Long> {
@@ -31,13 +36,15 @@ interface PersonRepository extends CrudRepository<Person, Long> {
   List<Person> findByName(String name);
 }
 ----
+====
 
-This would be exposed under the URL: `http://localhost:8080/persons/search/findByName`
+The method in the preceding example is exposed at `http://localhost:8080/persons/search/findByName`.
 
-NOTE: All query method resources are exposed under the resource `search`.
+NOTE: All query method resources are exposed under the `search` resource.
 
-To change the segment of the URL under which this query method is exposed, use the `@RestResource` annotation again:
+To change the segment of the URL under which this query method is exposed, you can use the `@RestResource` annotation again, as the following example shows:
 
+====
 [source,java]
 ----
 @RepositoryRestResource(path = "people")
@@ -47,15 +54,17 @@ interface PersonRepository extends CrudRepository<Person, Long> {
   List<Person> findByName(String name);
 }
 ----
+====
 
-Now this query method will be exposed under the URL: `http://localhost:8080/people/search/names`
+Now the query method in the preceding example is exposed at `http://localhost:8080/people/search/names`.
 
-== Handling rels
+== Handling `rel` Attributes
 
-Since these resources are all discoverable, you can also affect how the "rel" attribute is displayed in the links sent out by the exporter.
+Since these resources are all discoverable, you can also affect how the `rel` attribute is displayed in the links sent out by the exporter.
 
-For instance, in the default configuration, if you issue a request to `http://localhost:8080/persons/search` to find out what query methods are exposed, you'll get back a list of links:
+For instance, in the default configuration, if you issue a request to `http://localhost:8080/persons/search` to find out what query methods are exposed, you get back a list of links similar to the following:
 
+====
 [source,javascript]
 ----
 {
@@ -66,9 +75,11 @@ For instance, in the default configuration, if you issue a request to `http://lo
   }
 }
 ----
+====
 
-To change the rel value, use the `rel` property on the `@RestResource` annotation:
+To change the `rel` value, use the `rel` property on the `@RestResource` annotation, as the following example shows:
 
+====
 [source,java]
 ----
 @RepositoryRestResource(path = "people")
@@ -78,9 +89,11 @@ interface PersonRepository extends CrudRepository<Person, Long> {
   List<Person> findByName(String name);
 }
 ----
+====
 
-This would result in a link value of:
+The preceding example results in the following link value:
 
+====
 [source,javascript]
 ----
 {
@@ -91,10 +104,13 @@ This would result in a link value of:
   }
 }
 ----
+====
 
-NOTE: These snippets of JSON assume you are using Spring Data REST's default format of http://stateless.co/hal_specification.html[HAL]. It's possible to turn off HAL, which would cause the output to look different. But your ability to override rel names is totally independent of the rendering format.
+NOTE: These snippets of JSON assume you use Spring Data REST's default format of http://stateless.co/hal_specification.html[HAL]. You can turn off HAL, which would cause the output to look different. However, your ability to override `rel` names is totally independent of the rendering format.
 
+You can change the `rel` of a repository, as the following example shows:
 
+====
 [source,java]
 ----
 @RepositoryRestResource(path = "people", rel = "people")
@@ -104,9 +120,11 @@ interface PersonRepository extends CrudRepository<Person, Long> {
   List<Person> findByName(String name);
 }
 ----
+====
 
-Altering the rel of a Repository changes the top level name:
+Altering the `rel` of a repository changes the top-level name, as the following example output shows:
 
+====
 [source,javascript]
 ----
 {
@@ -118,14 +136,16 @@ Altering the rel of a Repository changes the top level name:
   }
 }
 ----
+====
 
-In the top level fragment above:
+In the top level fragment shown in the preceding output:
 
-* `path = "people"` changed the value in `href` from `/persons` to `/people`
-* `rel = "people"` changed the name of that link from `persons` to `people`
+* `path = "people"` changed the value in `href` from `/persons` to `/people`.
+* `rel = "people"` changed the name of that link from `persons` to `people`.
 
-When you navigate to the *search* resource of this repository, the finder-method's `@RestResource` annotation has altered the path as shown below:
+When you navigate to the `search` resource of this repository, the finder method's `@RestResource` annotation has altered the path, as follows:
 
+====
 [source,javascript]
 ----
 {
@@ -136,29 +156,33 @@ When you navigate to the *search* resource of this repository, the finder-method
   }
 }
 ----
+====
 
-This collection of annotations in your Repository definition has caused the following changes:
+This collection of annotations in your repository definition has caused the following changes:
 
-* The Repository-level annotation's `path = "people"` is reflected in the base URI with `/people`
-* Being a finder method provides you with `/people/search`
-* `path = "names"` creates a URI of `/people/search/names`
-* `rel = "names"` changes the name of that link from `findByNames` to `names`
+* The Repository-level annotation's `path = "people"` is reflected in the base URI with `/people`.
+* The inclusion of a finder method provides you with `/people/search`.
+* `path = "names"` creates a URI of `/people/search/names`.
+* `rel = "names"` changes the name of that link from `findByNames` to `names`.
 
 [[customizing-sdr.hiding-repositories]]
-== Hiding certain repositories, query methods, or fields
+== Hiding Certain Repositories, Query Methods, or Fields
 
-You may not want a certain repository, a query method on a repository, or a field of your entity to be exported at all. Examples include hiding fields like `password` on a `User` object or similar sensitive data. To tell the exporter to not export these items, annotate them with `@RestResource` and set `exported = false`.
+You may not want a certain repository, a query method on a repository, or a field of your entity to be exported at all. Examples include hiding fields like `password` on a `User` object and similar sensitive data. To tell the exporter to not export these items, annotate them with `@RestResource` and set `exported = false`.
 
-For example, to skip exporting a Repository:
+For example, to skip exporting a repository, you could create a repository definition similar to the following example:
 
+====
 [source,java]
 ----
 @RepositoryRestResource(exported = false)
 interface PersonRepository extends CrudRepository<Person, Long> {}
 ----
+====
 
-To skip exporting a query method:
+To skip exporting a query method, you can annotate the query method with `@RestResource(exported = false)`, as follows:
 
+====
 [source,java]
 ----
 @RepositoryRestResource(path = "people", rel = "people")
@@ -168,9 +192,11 @@ interface PersonRepository extends CrudRepository<Person, Long> {
   List<Person> findByName(String name);
 }
 ----
+====
 
-Or to skip exporting a field:
+Similarly, to skip exporting a field, you can annotate the field with `@RestResource(exported = false)`, as follows:
 
+====
 [source,java]
 ----
 @Entity
@@ -183,14 +209,16 @@ public class Person {
   private Map<String, Profile> profiles;
 }
 ----
+====
 
-WARNING: Projections provide the means to change what is exported and effectively <<projections-excerpts.hidden-data,side step these settings>>. If you create any projections against the same domain object, it's your responsiblity to NOT export the fields. See 
+WARNING: Projections provide the means to change what is exported and effectively <<projections-excerpts.hidden-data,side-step these settings>>. If you create any projections against the same domain object, be sure to NOT export the fields.
 
 [[customizing-sdr.hiding-repository-crud-methods]]
-== Hiding repository CRUD methods
+== Hiding Repository CRUD Methods
 
-If you don't want to expose a save or delete method on your `CrudRepository`, you can use the `@RestResource(exported = false)` setting by overriding the method you want to turn off and placing the annotation on the overriden version. For example, to prevent HTTP users from invoking the delete methods of `CrudRepository`, override all of them and add the annotation to the overriden methods.
+If you do not want to expose a save or delete method on your `CrudRepository`, you can use the `@RestResource(exported = false)` setting by overriding the method you want to turn off and placing the annotation on the overridden version. For example, to prevent HTTP users from invoking the delete methods of `CrudRepository`, override all of them and add the annotation to the overridden methods, as follows:
 
+====
 [source,java]
 ----
 @RepositoryRestResource(path = "people", rel = "people")
@@ -205,5 +233,6 @@ interface PersonRepository extends CrudRepository<Person, Long> {
   void delete(Person entity);
 }
 ----
+====
 
-WARNING: It is important that you override _both_ delete methods as the exporter currently uses a somewhat naive algorithm for determing which CRUD method to use in the interest of faster runtime performance. It's not currently possible to turn off the version of delete which takes an ID but leave exported the version that takes an entity instance. For the time being, you can either export the delete methods or not. If you want turn them off, then just keep in mind you have to annotate both versions with `exported = false`.
+WARNING: It is important that you override _both_ `delete` methods. In the interest of faster runtime performance, the exporter currently uses a somewhat naive algorithm for determining which CRUD method to use. You cannot currently turn off the version of `delete` that takes an ID but export the version that takes an entity instance. For the time being, you can either export the `delete` methods or not. If you want turn them off, keep in mind that you have to annotate both versions with `exported = false`.

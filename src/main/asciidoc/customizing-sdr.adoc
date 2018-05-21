@@ -3,18 +3,19 @@
 
 There are many options to tailor Spring Data REST. These subsections show how.
 
-== Customizing item resource URIs
+== Customizing Item Resource URIs
 
-By default the URI for item resources are comprised of the path segment used for the collection resource with the database identifier appended.
-That allows us to use the repository's `findOne(…)` method to lookup entity instances.
-As of Spring Data REST 2.5 this can be customized by using configuration API on `RepositoryRestConfiguration` (preferred on Java 8) or by registering an implementation of `EntityLookup` as Spring bean in your application.
-Spring Data REST will pick those up and tweak the URI generation according to their implementation.
+By default, the URI for item resources are comprised of the path segment used for the collection resource with the database identifier appended.
+That lets you use the repository's `findOne(…)` method to lookup entity instances.
+As of Spring Data REST 2.5, this can be customized by using configuration API on `RepositoryRestConfiguration` (preferred on Java 8) or by registering an implementation of `EntityLookup` as a Spring bean in your application.
+Spring Data REST picks those up and tweaks the URI generation according to their implementation.
 
 Assume a `User` with a `username` property that uniquely identifies it.
-Also, assume we have a method `Optional<User> findByUsername(String username)` on the according repository.
+Further assume that we have a `Optional<User> findByUsername(String username)` method on the corresponding repository.
 
-On Java 8 we can simply register the mapping methods as method references to weak the URI creation as follows:
+On Java 8, we can register the mapping methods as method references to tweak the URI creation, as follows:
 
+====
 [source, java]
 ----
 @Component
@@ -28,12 +29,14 @@ public class SpringDataRestCustomization extends RepositoryRestConfigurerAdapter
   }
 }
 ----
+====
 
-`forRepository(…)` takes the repository type as first argument a method reference mapping the repositories domain type to some target type, as well as another method reference to map that value back using the repository mentioned as first argument.
+`forRepository(…)` takes the repository type as the first argument, a method reference mapping the repositories domain type to some target type as the second argument, and another method reference to map that value back by using the repository mentioned as the first argument.
 
-If you're not running Java 8 or better, you could use the method but it would require a few quite verbose anonymous inner classes to be use.
-That's why on older Java versions you probably prefer implementing a `UserEntityLookup` looking like this:
+If you are not running Java 8 or better, you could use the method, but it would require a few quite verbose anonymous inner classes.
+On older Java versions, you should probably prefer implementing a `UserEntityLookup` that resembles the following:
 
+====
 [source, java]
 ----
 @Component
@@ -56,8 +59,9 @@ public class UserEntityLookup extends EntityLookupSupport<User> {
     }
 }
 ----
+====
 
-Note, how `getResourceIdentifier(…)` returns the username to be used by the URI creation. To load entity instances by the value returned from that method we now implement `lookupEntity(…)` using the query method available on the `UserRepository`.
+Notice how `getResourceIdentifier(…)` returns the username to be used by the URI creation. To load entity instances by the value returned from that method, we now implement `lookupEntity(…)` by using the query method available on the `UserRepository`.
 
 
 include::configuring-the-rest-url-path.adoc[leveloffset=+1]
