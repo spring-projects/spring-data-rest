@@ -47,8 +47,12 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
+import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -198,6 +202,76 @@ public class DomainObjectReader {
 	}
 
 	/**
+	 * If the given {@link ObjectNode} indicates that the type of the target has changed, returns an instance of the new
+	 * type. Otherwise, the given target is returned unmodified.
+	 *
+	 * @param root must not be {@literal null}.
+	 * @param target must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 * @return
+	 * @throws Exception
+	 */
+	<T> T handlePotentialTypeChange(ObjectNode root, T target, ObjectMapper mapper) throws Exception {
+		TypeDeserializer typeDeserializer = mapper.getDeserializationConfig()
+				.findTypeDeserializer(mapper.getTypeFactory().constructType(target.getClass()));
+		if (typeDeserializer == null || typeDeserializer.getPropertyName() == null) {
+			// type did not change
+			return target;
+		}
+		String typePropertyName = typeDeserializer.getPropertyName();
+		if (!root.has(typePropertyName)) {
+			// type did not change
+			return target;
+		}
+		String typePropertyValue = root.get(typePropertyName).asText();
+		JavaType newTargetJavaType = typeDeserializer.getTypeIdResolver()
+				.typeFromId(mapper.getDeserializationContext(), typePropertyValue);
+		if (newTargetJavaType == null || newTargetJavaType.getRawClass().equals(target.getClass())) {
+			// the type property will not be used so remove it to avoid
+			// com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException.UnrecognizedPropertyException
+			root.remove(typePropertyName);
+			// type did not change
+			return target;
+		}
+		// type has changed
+		// serialize the existing target to json
+		ObjectNode existingTargetNode = mapper.valueToTree(target);
+
+		// mapper.getDeserializationContext() doesn't have a DeserializationConfig set on it, so have to create a
+		// new one that does
+		DeserializationContext deserializationContext = new DefaultDeserializationContext.Impl(
+				mapper.getDeserializationContext().getFactory()).createInstance(mapper.getDeserializationConfig(),
+						mapper.getDeserializationContext().getParser(), null);
+		Collection<Object> targetKnownPropertyNames = deserializationContext
+				.findRootValueDeserializer(mapper.getTypeFactory().constructType(target.getClass()))
+				.getKnownPropertyNames();
+		Collection<Object> newTargetKnownPropertyNames = deserializationContext
+				.findRootValueDeserializer(newTargetJavaType).getKnownPropertyNames();
+
+		if (targetKnownPropertyNames != null && newTargetKnownPropertyNames != null) {
+			Iterator<Entry<String, JsonNode>> fieldsIterator = existingTargetNode.fields();
+			while (fieldsIterator.hasNext()) {
+				Entry<String, JsonNode> entry = fieldsIterator.next();
+				// remove the properties that exist in target but not newTarget
+				if (targetKnownPropertyNames.contains(entry.getKey())
+						&& !newTargetKnownPropertyNames.contains(entry.getKey())) {
+					fieldsIterator.remove();
+				}
+			}
+		}
+
+		// apply the root json. This includes the type information.
+		existingTargetNode.setAll(root);
+
+		// the type property will not be used so remove it to avoid
+		// com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException.UnrecognizedPropertyException
+		root.remove(typePropertyName);
+
+		// read the json to create an instance of the new type
+		return mapper.readerFor(newTargetJavaType).readValue(existingTargetNode);
+	}
+
+	/**
 	 * Merges the given {@link ObjectNode} onto the given object.
 	 * 
 	 * @param root must not be {@literal null}.
@@ -212,6 +286,8 @@ public class DomainObjectReader {
 		Assert.notNull(root, "Root ObjectNode must not be null!");
 		Assert.notNull(target, "Target object instance must not be null!");
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
+
+		target = handlePotentialTypeChange(root, target, mapper);
 
 		PersistentEntity<?, ?> entity = entities.getPersistentEntity(target.getClass());
 
@@ -271,7 +347,7 @@ public class DomainObjectReader {
 
 				if (property.isEntity()) {
 					i.remove();
-					doMerge(objectNode, rawValue, mapper);
+					accessor.setProperty(property, doMerge(objectNode, rawValue, mapper));
 				}
 			}
 		}
