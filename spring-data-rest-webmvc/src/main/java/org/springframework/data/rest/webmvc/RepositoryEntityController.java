@@ -293,8 +293,8 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	/**
-	 * <code>HEAD /{repsoitory}/{id}</code>
-	 * 
+	 * <code>HEAD /{repository}/{id}</code>
+	 *
 	 * @param resourceInformation
 	 * @param id
 	 * @return
