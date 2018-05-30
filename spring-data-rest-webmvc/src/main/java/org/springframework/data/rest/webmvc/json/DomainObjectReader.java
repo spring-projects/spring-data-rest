@@ -480,7 +480,9 @@ public class DomainObjectReader {
 	@SuppressWarnings("unchecked")
 	private static Collection<Object> asCollection(Object source) {
 
-		if (source instanceof Collection) {
+		if (source == null) {
+			return null;
+		} else if (source instanceof Collection) {
 			return (Collection<Object>) source;
 		} else if (source.getClass().isArray()) {
 			return Arrays.asList(ObjectUtils.toObjectArray(source));

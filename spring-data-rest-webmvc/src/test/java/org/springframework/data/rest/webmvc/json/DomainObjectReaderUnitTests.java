@@ -112,6 +112,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(CollectionOfEnumWithMethods.class);
 		mappingContext.getPersistentEntity(SampleWithReference.class);
 		mappingContext.getPersistentEntity(Note.class);
+		mappingContext.getPersistentEntity(WithNullCollection.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -555,6 +556,17 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.tags).contains(second);
 	}
 
+	@Test // DATAREST-1249
+	public void mergesIntoUninitializedCollection() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode source = (ObjectNode) mapper.readTree("{ \"strings\" : [ \"value\" ] }");
+
+		WithNullCollection result = reader.readPut(source, new WithNullCollection(), mapper);
+
+		assertThat(result.strings).containsExactly("value");
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -765,5 +777,12 @@ public class DomainObjectReaderUnitTests {
 					.map(it -> it.getValue())//
 					.findFirst().orElse(null);
 		}
+	}
+
+	// DATAREST-1249
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class WithNullCollection {
+		List<String> strings;
 	}
 }
