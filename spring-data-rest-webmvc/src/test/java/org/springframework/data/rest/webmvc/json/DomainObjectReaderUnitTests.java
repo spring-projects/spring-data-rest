@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -209,7 +209,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.version).isEqualTo(1L);
 	}
 
-	@Test //DATAREST-1006
+	@Test // DATAREST-1006
 	public void doesNotWipeReadOnlyJsonPropertyForPut() throws Exception {
 
 		SampleUser sampleUser = new SampleUser("name", "password");
@@ -581,7 +581,7 @@ public class DomainObjectReaderUnitTests {
 		@JsonIgnore String password;
 		Map<String, SampleUser> relatedUsers;
 
-		@JsonProperty(access = READ_ONLY)
+		@JsonProperty(access = READ_ONLY) //
 		private Date lastLogin;
 
 		public SampleUser(String name, String password) {
