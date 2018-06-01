@@ -19,7 +19,6 @@ import static org.springframework.util.ClassUtils.*;
 import static org.springframework.util.StringUtils.*;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -36,6 +35,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author jiacheng Yang
  */
 public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -69,7 +69,7 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return isAssignable(parameter.getParameterType(), RepositoryInformation.class);
+		return isAssignable(parameter.getParameterType(), ResourceMetadata.class);
 	}
 
 	/*
