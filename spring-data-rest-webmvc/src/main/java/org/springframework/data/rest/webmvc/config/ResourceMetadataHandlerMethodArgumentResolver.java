@@ -35,7 +35,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * 
  * @author Jon Brisbin
  * @author Oliver Gierke
- * @author jiacheng Yang
+ * @author Jiacheng Yang
  */
 public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
