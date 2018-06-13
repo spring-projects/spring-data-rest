@@ -1,6 +1,15 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.8.RELEASE (2018-06-13)
+---------------------------------------------
+* DATAREST-1251 - Java 8 improvements in PersistentEntityProjector.
+* DATAREST-1250 - ResourceMetadataHandlerMethodArgumentResolver.supports(…) not working for ResourceMetadata.
+* DATAREST-1249 - HttpMessageNotReadableException caused by NPE.
+* DATAREST-1244 - Release 3.0.8 (Kay SR8).
+* DATAREST-1198 - Add Converter to convert String to javax.naming.ldap.LdapName.
+
+
 Changes in version 2.6.13.RELEASE (2018-06-13)
 ----------------------------------------------
 * DATAREST-1250 - ResourceMetadataHandlerMethodArgumentResolver.supports(…) not working for ResourceMetadata.
