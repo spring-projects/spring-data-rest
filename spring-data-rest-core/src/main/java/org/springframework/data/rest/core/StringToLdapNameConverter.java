@@ -25,7 +25,7 @@ import org.springframework.core.convert.converter.Converter;
  * {@link Converter} to convert a {@link String} to a {@link LdapName}.
  *
  * @author Mark Paluch
- * @since 3.1
+ * @since 3.0.8
  */
 public enum StringToLdapNameConverter implements Converter<String, Name> {
 
