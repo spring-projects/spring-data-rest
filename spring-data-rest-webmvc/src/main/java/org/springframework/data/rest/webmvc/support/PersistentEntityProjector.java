@@ -15,7 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import org.springframework.core.convert.converter.Converter;
+import java.util.function.Function;
+
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
@@ -59,14 +60,7 @@ public class PersistentEntityProjector extends DefaultExcerptProjector implement
 	 * @see org.springframework.data.rest.webmvc.support.Projector#project(java.lang.Object)
 	 */
 	public Object project(Object source) {
-
-		return projectWithDefault(source, new Converter<Object, Object>() {
-
-			@Override
-			public Object convert(Object source) {
-				return source;
-			}
-		});
+		return projectWithDefault(source, Function.identity());
 	}
 
 	/* 
@@ -75,34 +69,27 @@ public class PersistentEntityProjector extends DefaultExcerptProjector implement
 	 */
 	@Override
 	public Object projectExcerpt(Object source) {
-
-		return projectWithDefault(source, new Converter<Object, Object>() {
-
-			@Override
-			public Object convert(Object source) {
-				return PersistentEntityProjector.super.projectExcerpt(source);
-			}
-		});
+		return projectWithDefault(source, PersistentEntityProjector.super::projectExcerpt);
 	}
 
 	/**
-	 * Creates the projection for the given source instance falling back to the given {@link Converter} if no explicit
+	 * Creates the projection for the given source instance falling back to the given {@link Function} if no explicit
 	 * projection is selected.
 	 * 
 	 * @param source must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
 	 * @return
 	 */
-	private Object projectWithDefault(Object source, Converter<Object, Object> converter) {
+	private Object projectWithDefault(Object source, Function<Object, Object> converter) {
 
 		Assert.notNull(source, "Projection source must not be null!");
 		Assert.notNull(converter, "Converter must not be null!");
 
 		if (!StringUtils.hasText(projection)) {
-			return converter.convert(source);
+			return converter.apply(source);
 		}
 
 		Class<?> projectionType = definitions.getProjectionType(source.getClass(), projection);
-		return projectionType == null ? converter.convert(source) : factory.createProjection(projectionType, source);
+		return projectionType == null ? converter.apply(source) : factory.createProjection(projectionType, source);
 	}
 }
