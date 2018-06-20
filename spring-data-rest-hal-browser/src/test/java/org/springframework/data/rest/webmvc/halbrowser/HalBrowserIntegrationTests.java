@@ -28,8 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
@@ -66,15 +65,8 @@ public class HalBrowserIntegrationTests {
 		}
 
 		@Bean
-		RepositoryRestConfigurerAdapter configExtension() {
-
-			return new RepositoryRestConfigurerAdapter() {
-
-				@Override
-				public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-					config.setBasePath(BASE_PATH);
-				}
-			};
+		RepositoryRestConfigurer configExtension() {
+			return RepositoryRestConfigurer.withConfig(config -> config.setBasePath(BASE_PATH));
 		}
 	}
 

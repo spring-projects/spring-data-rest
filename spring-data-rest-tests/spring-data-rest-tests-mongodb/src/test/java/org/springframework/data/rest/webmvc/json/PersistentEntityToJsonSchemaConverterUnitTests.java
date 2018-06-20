@@ -42,7 +42,7 @@ import org.springframework.data.rest.tests.mongodb.User;
 import org.springframework.data.rest.tests.mongodb.User.EmailAddress;
 import org.springframework.data.rest.tests.mongodb.User.TypeWithPattern;
 import org.springframework.data.rest.tests.mongodb.groovy.SimulatedGroovyDomainClass;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.ValueTypeSchemaPropertyCustomizerFactory;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.TestConfiguration;
@@ -66,12 +66,13 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 	@Autowired @Qualifier("resourceDescriptionMessageSourceAccessor") MessageSourceAccessor accessor;
 	@Autowired RepositoryRestConfiguration configuration;
 	@Autowired PersistentEntities entities;
-	@Autowired @Qualifier("objectMapper") ObjectMapper objectMapper;
 	@Autowired Associations associations;
+
+	ObjectMapper objectMapper = new ObjectMapper();
 
 	@Configuration
 	@Import(RepositoryRestMvcConfiguration.class)
-	static class TestConfiguration extends RepositoryRestConfigurerAdapter {
+	static class TestConfiguration implements RepositoryRestConfigurer {
 
 		@Override
 		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
