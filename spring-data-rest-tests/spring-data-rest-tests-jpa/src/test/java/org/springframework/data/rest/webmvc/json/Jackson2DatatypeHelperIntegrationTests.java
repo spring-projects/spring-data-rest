@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -33,6 +34,7 @@ import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.OrderRepository;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
+import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,11 +52,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class Jackson2DatatypeHelperIntegrationTests {
 
 	@Autowired PersistentEntities entities;
-	@Autowired ObjectMapper objectMapper;
+	@Autowired ApplicationContext context;
 
 	@Autowired PersonRepository people;
 	@Autowired OrderRepository orders;
 	@Autowired EntityManager em;
+
+	ObjectMapper objectMapper;
 
 	Order order;
 
@@ -62,6 +66,8 @@ public class Jackson2DatatypeHelperIntegrationTests {
 	public void setUp() {
 
 		this.order = orders.save(new Order(people.save(new Person("Dave", "Matthews"))));
+		this.objectMapper = context.getBean("halJacksonHttpMessageConverter", AbstractJackson2HttpMessageConverter.class)
+				.getObjectMapper();
 
 		// Reset JPA to make sure the query returns a result with proxy references
 		em.flush();

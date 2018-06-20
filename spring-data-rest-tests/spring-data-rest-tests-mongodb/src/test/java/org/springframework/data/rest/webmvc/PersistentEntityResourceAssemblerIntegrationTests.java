@@ -25,7 +25,6 @@ import java.util.Collections;
 import org.junit.Test;
 import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.EntityLookup;
@@ -39,8 +38,6 @@ import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Links;
 import org.springframework.test.context.ContextConfiguration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * Integration tests for {@link PersistentEntityResourceAssembler}.
  * 
@@ -51,7 +48,6 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 
 	@Autowired PersistentEntities entities;
 	@Autowired EntityLinks entityLinks;
-	@Autowired @Qualifier("objectMapper") ObjectMapper objectMapper;
 	@Autowired Associations associations;
 
 	@Test // DATAREST-609

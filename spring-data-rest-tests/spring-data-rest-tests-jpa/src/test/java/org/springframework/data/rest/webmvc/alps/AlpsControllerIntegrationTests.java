@@ -69,7 +69,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		@Bean
 		public LinkDiscoverer alpsLinkDiscoverer() {
-			return new JsonPathLinkDiscoverer("$.descriptors[?(@.name == '%s')].href",
+			return new JsonPathLinkDiscoverer("$.descriptor[?(@.name == '%s')].href",
 					MediaType.valueOf("application/alps+json"));
 		}
 
@@ -101,7 +101,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		client.follow(peopleLink, RestMediaTypes.ALPS_JSON)//
 				.andExpect(jsonPath("$.alps.version").value("1.0"))//
-				.andExpect(jsonPath("$.alps.descriptors[*].name", hasItems("people", "person")));
+				.andExpect(jsonPath("$.alps.descriptor[*].name", hasItems("people", "person")));
 	}
 
 	@Test // DATAREST-638
@@ -112,7 +112,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		client.follow(peopleLink)//
 				.andExpect(jsonPath("$.alps.version").value("1.0"))//
-				.andExpect(jsonPath("$.alps.descriptors[*].name", hasItems("people", "person")));
+				.andExpect(jsonPath("$.alps.descriptor[*].name", hasItems("people", "person")));
 
 	}
 
@@ -124,11 +124,11 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
 				// Exposes standard property
-				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", hasItems("name")))
+				.andExpect(jsonPath("$.alps.descriptor[*].descriptor[*].name", hasItems("name")))
 				// Does not expose explicitly @JsonIgnored property
-				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", not(hasItems("owner"))))
+				.andExpect(jsonPath("$.alps.descriptor[*].descriptor[*].name", not(hasItems("owner"))))
 				// Does not expose properties pointing to non exposed types
-				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", not(hasItems("manager", "curator"))));
+				.andExpect(jsonPath("$.alps.descriptor[*].descriptor[*].name", not(hasItems("manager", "curator"))));
 	}
 
 	@Test // DATAREST-494
@@ -140,7 +140,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		assertThat(itemsLink).isNotNull();
 
 		String result = client.follow(itemsLink, RestMediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
-		String href = JsonPath.<JSONArray> read(result, "$.alps.descriptors[?(@.id == 'item-representation')].href").get(0)
+		String href = JsonPath.<JSONArray> read(result, "$.alps.descriptor[?(@.id == 'item-representation')].href").get(0)
 				.toString();
 
 		assertThat(href, endsWith("/profile/items"));
@@ -153,8 +153,8 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link usersLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
 		String jsonPath = "$.alps."; // Root
-		jsonPath += "descriptors[?(@.id == 'person-representation')]."; // Representation descriptor
-		jsonPath += "descriptors[?(@.name == 'father')]."; // First father descriptor
+		jsonPath += "descriptor[?(@.id == 'person-representation')]."; // Representation descriptor
+		jsonPath += "descriptor[?(@.name == 'father')]."; // First father descriptor
 		jsonPath += "rt"; // Return type
 
 		String result = client.follow(usersLink, RestMediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
@@ -171,7 +171,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
 				// Exposes identifier if configured to
-				.andExpect(jsonPath("$.alps.descriptors[*].descriptors[*].name", hasItems("id", "name")));
+				.andExpect(jsonPath("$.alps.descriptor[*].descriptor[*].name", hasItems("id", "name")));
 	}
 
 	@Test // DATAREST-683
@@ -186,7 +186,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		String value = JsonPath
 				.<JSONArray> read(result,
-						"$.alps.descriptors[?(@.id == 'person-representation')].descriptors[?(@.name == 'gender')].doc.value")
+						"$.alps.descriptor[?(@.id == 'person-representation')].descriptor[?(@.name == 'gender')].doc.value")
 				.get(0).toString();
 
 		assertThat(value).isEqualTo("Male, Female, Undefined");
@@ -202,7 +202,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		String name = JsonPath
 				.<JSONArray> read(result,
-						"$.alps.descriptors[?(@.id == 'simulatedGroovyDomainClass-representation')].descriptors[0].name")
+						"$.alps.descriptor[?(@.id == 'simulatedGroovyDomainClass-representation')].descriptor[0].name")
 				.get(0).toString();
 
 		assertThat(name).isEqualTo("name");

@@ -66,8 +66,9 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 	@Autowired @Qualifier("resourceDescriptionMessageSourceAccessor") MessageSourceAccessor accessor;
 	@Autowired RepositoryRestConfiguration configuration;
 	@Autowired PersistentEntities entities;
-	@Autowired @Qualifier("objectMapper") ObjectMapper objectMapper;
 	@Autowired Associations associations;
+
+	ObjectMapper objectMapper = new ObjectMapper();
 
 	@Configuration
 	@Import(RepositoryRestMvcConfiguration.class)

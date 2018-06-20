@@ -26,11 +26,9 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -41,9 +39,16 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -69,11 +74,18 @@ public class DataRest262Tests {
 	@Autowired ApplicationContext beanFactory;
 	@Autowired JpaMetamodelMappingContext mappingContext;
 	@Autowired AirportRepository repository;
-	@Autowired @Qualifier("halObjectMapper") ObjectMapper mapper;
+
+	ObjectMapper mapper;
 
 	@Before
 	public void setUp() {
-		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
+
+		this.mapper = beanFactory //
+				.getBean("halJacksonHttpMessageConverter", AbstractJackson2HttpMessageConverter.class) //
+				.getObjectMapper() //
+				.copy();
+
+		this.mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 	}
 
 	@Test // DATAREST-262
@@ -87,8 +99,12 @@ public class DataRest262Tests {
 	}
 
 	@Test // DATAREST-262
-	@Ignore
 	public void serializesLinksToNestedAssociations() throws Exception {
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(HttpHeaders.ACCEPT, MediaTypes.HAL_JSON_VALUE);
+		RequestAttributes attributes = new ServletRequestAttributes(request);
+		RequestContextHolder.setRequestAttributes(attributes);
 
 		Airport first = new Airport();
 		first.id = 1L;
@@ -112,9 +128,9 @@ public class DataRest262Tests {
 
 		String result = mapper.writeValueAsString(resource);
 
-		assertThat(JsonPath.<Object> read(result, "$_links.self")).isNotNull();
-		assertThat(JsonPath.<Object> read(result, "$_links.airport")).isNotNull();
-		assertThat(JsonPath.<Object> read(result, "$_links.originOrDestinationAirport")).isNotNull();
+		assertThat(JsonPath.<Object> read(result, "$._links.self")).isNotNull();
+		assertThat(JsonPath.<Object> read(result, "$._links.originOrDestinationAirport")).isNotNull();
+		assertThat(JsonPath.<Object> read(result, "$.orgOrDstFlightPart._links.airport")).isNotNull();
 	}
 
 	public interface AircraftMovementRepository extends CrudRepository<AircraftMovement, Long> {

@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
@@ -117,6 +119,7 @@ import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.util.AnnotatedTypeScanner;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -132,6 +135,7 @@ import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.CurieProvider;
+import org.springframework.hateoas.hal.HalConfiguration;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.hateoas.hal.Jackson2HalModule.HalHandlerInstantiator;
 import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
@@ -189,15 +193,32 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Autowired(required = false) List<RepositoryRestConfigurer> configurers = Collections.emptyList();
 	@Autowired(required = false) List<EntityLookup<?>> lookups = Collections.emptyList();
 
-	@Autowired(required = false) RelProvider relProvider;
-	@Autowired(required = false) CurieProvider curieProvider;
+	@Autowired Optional<RelProvider> relProvider;
+	@Autowired Optional<CurieProvider> curieProvider;
+	@Autowired Optional<HalConfiguration> halConfiguration;
+	@Autowired ObjectProvider<ObjectMapper> objectMapper;
+
+	private final Lazy<ObjectMapper> mapper;
 
 	private RepositoryRestConfigurerDelegate configurerDelegate;
 	private ClassLoader beanClassLoader;
 
 	public RepositoryRestMvcConfiguration(ApplicationContext context,
 			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService) {
+
 		super(context, conversionService);
+
+		this.mapper = Lazy.of(() -> {
+
+			Jdk8Module jdk8Module = new Jdk8Module();
+			jdk8Module.configureAbsentsAsNulls(true);
+
+			ObjectMapper mapper = basicObjectMapper();
+			mapper.registerModule(persistentEntityJackson2Module());
+			mapper.registerModule(jdk8Module);
+
+			return mapper;
+		});
 	}
 
 	/* 
@@ -461,17 +482,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * 
 	 * @return
 	 */
-	@Bean
 	public ObjectMapper objectMapper() {
-
-		Jdk8Module jdk8Module = new Jdk8Module();
-		jdk8Module.configureAbsentsAsNulls(true);
-
-		ObjectMapper mapper = basicObjectMapper();
-		mapper.registerModule(persistentEntityJackson2Module());
-		mapper.registerModule(jdk8Module);
-
-		return mapper;
+		return mapper.get();
 	}
 
 	/**
@@ -529,13 +541,13 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return converter;
 	}
 
-	@Bean
 	public ObjectMapper halObjectMapper() {
 
-		RelProvider defaultedRelProvider = this.relProvider != null ? this.relProvider : new EvoInflectorRelProvider();
+		RelProvider defaultedRelProvider = this.relProvider.orElseGet(() -> new EvoInflectorRelProvider());
+		HalConfiguration halConfiguration = this.halConfiguration.orElseGet(() -> new HalConfiguration());
 
-		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider, curieProvider,
-				resourceDescriptionMessageSourceAccessor(), applicationContext.getAutowireCapableBeanFactory());
+		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider, curieProvider.orElse(null),
+				resourceDescriptionMessageSourceAccessor(), halConfiguration);
 
 		ObjectMapper mapper = basicObjectMapper();
 		mapper.registerModule(persistentEntityJackson2Module());
@@ -849,7 +861,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	protected ObjectMapper basicObjectMapper() {
 
-		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper mapper = this.objectMapper.getIfAvailable();
+		ObjectMapper objectMapper = mapper == null ? new ObjectMapper() : mapper.copy();
 
 		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);

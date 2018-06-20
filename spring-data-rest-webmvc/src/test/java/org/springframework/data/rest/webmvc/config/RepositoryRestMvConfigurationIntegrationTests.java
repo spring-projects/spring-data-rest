@@ -17,13 +17,14 @@ package org.springframework.data.rest.webmvc.config;
 
 import static org.assertj.core.api.Assertions.*;
 
-import javax.naming.Name;
-import javax.naming.ldap.LdapName;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import javax.naming.Name;
+import javax.naming.ldap.LdapName;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -54,6 +55,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.core.DefaultRelProvider;
 import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
@@ -97,9 +99,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		context.getBean(PageableHandlerMethodArgumentResolver.class);
 
 		// Verify HAL setup
-		context.getBean("halJacksonHttpMessageConverter", HttpMessageConverter.class);
-		ObjectMapper mapper = context.getBean("halObjectMapper", ObjectMapper.class);
-		mapper.writeValueAsString(new RepositoryLinksResource());
+		getObjectMapper().writeValueAsString(new RepositoryLinksResource());
 	}
 
 	@Test // DATAREST-271
@@ -126,7 +126,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		Sample sample = new Sample();
 		sample.date = new Date();
 
-		ObjectMapper mapper = context.getBean("objectMapper", ObjectMapper.class);
+		ObjectMapper mapper = getObjectMapper();
 
 		DateFormatter formatter = new DateFormatter();
 		formatter.setPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
@@ -205,6 +205,13 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		Object messageSource = ReflectionTestUtils.getField(accessor, "messageSource");
 
 		assertThat((String) ReflectionTestUtils.getField(messageSource, "defaultEncoding")).isEqualTo("UTF-8");
+	}
+
+	private static ObjectMapper getObjectMapper() {
+
+		AbstractJackson2HttpMessageConverter converter = context.getBean("halJacksonHttpMessageConverter",
+				AbstractJackson2HttpMessageConverter.class);
+		return converter.getObjectMapper();
 	}
 
 	@Configuration
