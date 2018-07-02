@@ -6,48 +6,47 @@ Sometimes, you may want to write a custom handler for a specific resource. To ta
 ====
 [source,java]
 ----
-@RepositoryRestController
+@RepositoryRestController // <1>
 public class ScannerController {
 
     private final ScannerRepository repository;
 
-    @Autowired
-    public ScannerController(ScannerRepository repo) { // <1>
+    public ScannerController(ScannerRepository repo) { // <2>
         repository = repo;
     }
 
-    @RequestMapping(method = GET, value = "/scanners/search/listProducers") // <2>
+    @RequestMapping(method = GET, value = "/scanners/search/listProducers") // <3>
     public @ResponseBody ResponseEntity<?> getProducers() {
-        List<String> producers = repository.listProducers(); // <3>
+        List<String> producers = repository.listProducers(); // <4>
 
         //
         // do some intermediate processing, logging, etc. with the producers
         //
 
-        Resources<String> resources = new Resources<String>(producers); // <4>
+        Resources<String> resources = new Resources<String>(producers); // <5>
 
-        resources.add(linkTo(methodOn(ScannerController.class).getProducers()).withSelfRel()); // <5>
+        resources.add(linkTo(methodOn(ScannerController.class).getProducers()).withSelfRel()); // <6>
 
         // add other links as needed
 
-        return ResponseEntity.ok(resources); // <6>
+        return ResponseEntity.ok(resources); // <7>
     }
 
 }
 ----
-
-<1> This example uses constructor injection.
-<2> This handler plugs in a custom handler for a Spring Data finder method.
-<3> This handler uses the underlying repository to fetch data, but then does some form of post processing before returning the final data set to the client.
-<4> The results need to be wrapped up in a Spring HATEOAS `Resources` object to return a collection but only a `Resource` for a single item.
-<5> Add a link back to this exact method as a `self` link.
-<6> Returning the collection by using Spring MVC's `ResponseEntity` wrapper ensures that the collection is properly wrapped and rendered in the proper accept type.
+<1> `@RepositoryRestController` indicates that this controller targets an existing Spring Data REST route (`/scanners/search`) tied to an exported repository.
+<2> This example uses constructor injection (no `@Autowired` annotation required when there is only one constructor).
+<3> This handler plugs in a custom handler for a Spring Data finder method.
+<4> This handler uses the underlying repository to fetch data, but then does specialized post processing before returning final results to the client.
+<5> The results need to be wrapped in a Spring HATEOAS `Resources` object to return a collection but only a `Resource` for a single item.
+<6> Add a link back to this exact method as a `self` link.
+<7> Returning the collection using Spring MVC's `ResponseEntity` wrapper ensures that the collection is wrapped and rendered in the proper accept type.
 ====
 
 `Resources` is for a collection, while `Resource` is for a single item. These types can be combined. If you know the links for each item in a collection, use `Resources<Resource<String>>` (or whatever the core domain type is rather than `String`). Doing so lets you assemble links for each item as well as for the whole collection.
 
 IMPORTANT: In this example, the combined path is `RepositoryRestConfiguration.getBasePath()` + `/scanners/search/listProducers`.
 
-If you are not interested in entity-specific operations but still want to build custom operations underneath `basePath`, such as Spring MVC views, resources, and others, use `@BasePathAwareController`.
+If you are not interested in entity-specific operations that target existing Spring Data REST routes, but still want to build custom operations underneath `basePath`, such as Spring MVC views and resources, use `@BasePathAwareController`.
 
 WARNING: If you use `@Controller` or `@RestController` for anything, that code is totally outside the scope of Spring Data REST. This extends to request handling, message converters, exception handling, and other uses.
