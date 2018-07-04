@@ -18,7 +18,7 @@ Consider the following example:
 include::{spring-data-rest-root}/spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/ETagUnitTests.java[tag=versioned-sample]
 ----
 
-<1> The `@javax.persistence.Version` annotation flags this field as a version marker.
+<1> The `@Version` annotation (the JPA one in case you're using Spring Data JPA, the Spring Data `org.springframework.data.annotation.Version` one for all other modules) flags this field as a version marker.
 ====
 
 The POJO in the preceding example, when served up as a REST resource by Spring Data REST, has an `ETag` header with the value of the version field.
