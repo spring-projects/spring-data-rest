@@ -16,7 +16,7 @@ The http://tools.ietf.org/html/rfc7232#section-2.3[ETag header] provides a way t
 include::{spring-data-rest-root}/spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/ETagUnitTests.java[tag=versioned-sample]
 ----
 
-<1> The `@javax.persistence.Version` annotation flags this field as a version marker.
+<1> The `@Version` annotation (the JPA one in case you're using Spring Data JPA, the Spring Data `org.springframework.data.annotation.Version` one for all other modules) flags this field as a version marker.
 ====
 This POJO, when served up as a REST resource by Spring Data REST, will have an `ETag` header with the value of the version field.
 
