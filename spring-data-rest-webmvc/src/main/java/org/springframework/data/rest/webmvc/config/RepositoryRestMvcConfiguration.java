@@ -145,7 +145,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
@@ -569,16 +568,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		}
 
 		return handlerAdapter;
-	}
-
-	/**
-	 * {@link HttpRequestHandlerAdapter} to handle CORS preflight requests.
-	 *
-	 * @return
-	 */
-	@Bean
-	public HttpRequestHandlerAdapter httpRequestHandlerAdapter() {
-		return new HttpRequestHandlerAdapter();
 	}
 
 	/**
