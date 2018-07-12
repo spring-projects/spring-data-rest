@@ -112,7 +112,7 @@ public class HttpHeadersPreparer {
 	 * @param source can be {@literal null}.
 	 * @return
 	 */
-	private Optional<AuditableBeanWrapper> getAuditableBeanWrapper(Object source) {
+	private Optional<AuditableBeanWrapper<Object>> getAuditableBeanWrapper(Object source) {
 		return auditableBeanWrapperFactory.getBeanWrapperFor(source);
 	}
 

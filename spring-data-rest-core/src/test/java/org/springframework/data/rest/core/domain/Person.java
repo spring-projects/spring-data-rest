@@ -15,7 +15,9 @@
  */
 package org.springframework.data.rest.core.domain;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -34,10 +37,15 @@ import org.springframework.data.rest.core.annotation.RestResource;
  * @author Oliver Gierke
  */
 @Data
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__(@PersistenceConstructor))
 public class Person {
 
-	private final @Id UUID id = UUID.randomUUID();
+	private final @Id UUID id;
 	private final String firstName, lastName;
+
+	public Person(String firstName, String lastName) {
+		this(UUID.randomUUID(), firstName, lastName);
+	}
 
 	private @Reference List<Person> siblings = new ArrayList<Person>();
 	private @RestResource(path = "father-mapped") @Reference Person father;

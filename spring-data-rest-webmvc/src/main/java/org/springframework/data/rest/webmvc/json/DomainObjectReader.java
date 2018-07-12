@@ -138,20 +138,22 @@ public class DomainObjectReader {
 
 		Class<? extends Object> type = target.getClass();
 
-		return entities.getPersistentEntity(type).map(it -> {
+		return entities.getPersistentEntity(type) //
+				.filter(it -> !it.isImmutable()) //
+				.map(it -> {
 
-			MergingPropertyHandler propertyHandler = new MergingPropertyHandler(source, target, it, mapper);
+					MergingPropertyHandler propertyHandler = new MergingPropertyHandler(source, target, it, mapper);
 
-			it.doWithProperties(propertyHandler);
-			it.doWithAssociations(new LinkedAssociationSkippingAssociationHandler(associationLinks, propertyHandler));
+					it.doWithProperties(propertyHandler);
+					it.doWithAssociations(new LinkedAssociationSkippingAssociationHandler(associationLinks, propertyHandler));
 
-			// Need to copy unmapped properties as the PersistentProperty model currently does not contain any transient
-			// properties
-			copyRemainingProperties(propertyHandler.getProperties(), source, target);
+					// Need to copy unmapped properties as the PersistentProperty model currently does not contain any transient
+					// properties
+					copyRemainingProperties(propertyHandler.getProperties(), source, target);
 
-			return target;
+					return target;
 
-		}).orElse(source);
+				}).orElse(source);
 	}
 
 	/**
@@ -229,7 +231,7 @@ public class DomainObjectReader {
 			}
 
 			PersistentProperty<?> property = mappedProperties.getPersistentProperty(fieldName);
-			PersistentPropertyAccessor accessor = entity.getPropertyAccessor(target);
+			PersistentPropertyAccessor<?> accessor = entity.getPropertyAccessor(target);
 			Optional<Object> rawValue = Optional.ofNullable(accessor.getProperty(property));
 
 			if (!rawValue.isPresent() || associationLinks.isLinkableAssociation(property)) {
@@ -596,8 +598,8 @@ public class DomainObjectReader {
 	private class MergingPropertyHandler implements SimplePropertyHandler {
 
 		private final @Getter MappedProperties properties;
-		private final PersistentPropertyAccessor targetAccessor;
-		private final PersistentPropertyAccessor sourceAccessor;
+		private final PersistentPropertyAccessor<?> targetAccessor;
+		private final PersistentPropertyAccessor<?> sourceAccessor;
 		private final ObjectMapper mapper;
 
 		/**
@@ -617,7 +619,7 @@ public class DomainObjectReader {
 			Assert.notNull(mapper, "ObjectMapper must not be null!");
 
 			this.properties = MappedProperties.fromJacksonProperties(entity, mapper);
-			this.targetAccessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(target),
+			this.targetAccessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(target),
 					new DefaultConversionService());
 			this.sourceAccessor = entity.getPropertyAccessor(source);
 			this.mapper = mapper;
@@ -639,6 +641,12 @@ public class DomainObjectReader {
 			}
 
 			Optional<Object> sourceValue = Optional.ofNullable(sourceAccessor.getProperty(property));
+
+			if (property.isImmutable()) {
+				targetAccessor.setProperty(property, sourceValue.orElse(null));
+				return;
+			}
+
 			Optional<Object> targetValue = Optional.ofNullable(targetAccessor.getProperty(property));
 			Optional<?> result = Optional.empty();
 

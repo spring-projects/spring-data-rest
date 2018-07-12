@@ -71,7 +71,6 @@ import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
-import org.springframework.data.rest.core.support.DomainObjectMerger;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.RepositoryRelProvider;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
@@ -344,17 +343,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public static AnnotatedEventHandlerInvoker annotatedEventHandlerInvoker() {
 		return new AnnotatedEventHandlerInvoker();
-	}
-
-	/**
-	 * For merging incoming objects materialized from JSON with existing domain objects loaded from the repository.
-	 *
-	 * @return
-	 * @throws Exception
-	 */
-	@Bean
-	public DomainObjectMerger domainObjectMerger() throws Exception {
-		return new DomainObjectMerger(repositories(), defaultConversionService());
 	}
 
 	/**
