@@ -76,7 +76,7 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 		});
 	}
 
-	@Test // DATAREST-724
+	@Test // DATAREST-724, DATAREST-1261
 	@SuppressWarnings("unchecked")
 	public void usesRegisteredEntityLookup() {
 
@@ -89,6 +89,7 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 		factory.getInvokerFor(Profile.class).invokeFindById(1L);
 
 		verify(lookup, times(1)).lookupEntity(eq(1L));
+		verify(invoker, never()).invokeFindById(eq(1L)); // DATAREST-1261
 	}
 
 	private static Consumer<AbstractOptionalAssert<?, Object>> $(Consumer<AbstractOptionalAssert<?, Object>> consumer) {

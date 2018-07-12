@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +29,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.util.Java8PluginRegistry;
-import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 
@@ -91,10 +89,9 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 		@SuppressWarnings("unchecked")
 		public <T> Optional<T> invokeFindById(Object id) {
 
-			Supplier<Optional<T>> viaLookup = () -> (Optional<T>) lookup.flatMap(it -> it.lookupEntity(id));
-			Supplier<Optional<T>> fallback = () -> delegate.invokeFindById(id);
-
-			return Optionals.firstNonEmpty(viaLookup, fallback);
+			return lookup.isPresent() //
+					? (Optional<T>) lookup.flatMap(it -> it.lookupEntity(id)) //
+					: delegate.invokeFindById(id);
 		}
 
 		/* 
