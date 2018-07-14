@@ -16,12 +16,12 @@
 package org.springframework.data.rest.core.mapping;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -34,6 +34,7 @@ import org.springframework.util.ClassUtils;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Petar Tahchiev
  */
 public class PersistentEntitiesResourceMappings implements ResourceMappings {
 
@@ -41,9 +42,9 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	private final SearchResourceMappings searchResourceMappings = new SearchResourceMappings(
 			Collections.<MethodResourceMapping> emptyList());
 
-	private final Map<Class<?>, ResourceMetadata> cache = new HashMap<Class<?>, ResourceMetadata>();
-	private final Map<Class<?>, MappingResourceMetadata> mappingCache = new HashMap<Class<?>, MappingResourceMetadata>();
-	private final Map<PersistentProperty<?>, ResourceMapping> propertyCache = new HashMap<PersistentProperty<?>, ResourceMapping>();
+	private final Map<Class<?>, ResourceMetadata> cache = new ConcurrentHashMap<Class<?>, ResourceMetadata>();
+	private final Map<Class<?>, MappingResourceMetadata> mappingCache = new ConcurrentHashMap<Class<?>, MappingResourceMetadata>();
+	private final Map<PersistentProperty<?>, ResourceMapping> propertyCache = new ConcurrentHashMap<PersistentProperty<?>, ResourceMapping>();
 
 	/**
 	 * Creates a new {@link PersistentEntitiesResourceMappings} from the given {@link PersistentEntities}.
