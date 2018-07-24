@@ -19,12 +19,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.util.Collections;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.AbstractView;
 import org.springframework.web.servlet.view.RedirectView;
@@ -35,6 +40,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * Unit tests for {@link HalBrowser}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @soundtrack Nils Wülker - Homeless Diamond (feat. Lauren Flynn)
  */
 public class HalBrowserUnitTests {
@@ -59,22 +65,26 @@ public class HalBrowserUnitTests {
 		assertThat(components.getFragment()).isEqualTo("/context");
 	}
 
-	@Test
-	public void producesProxyRelativeRedirectIfNecessary() {
+	@Test // DATAREST-1264
+	public void producesProxyRelativeRedirectIfNecessary() throws ServletException, IOException {
 
+		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/browser");
 		request.addHeader("X-Forwarded-Host", "somehost");
 		request.addHeader("X-Forwarded-Port", "4711");
 		request.addHeader("X-Forwarded-Proto", "https");
 		request.addHeader("X-Forwarded-Prefix", "/prefix");
+		ForwardedHeaderFilter filter = new ForwardedHeaderFilter();
 
-		View view = new HalBrowser().browser(request);
+		filter.doFilter(request, response, (req, resp) -> {
+			View view = new HalBrowser().browser((HttpServletRequest) req);
 
-		assertThat(view).isInstanceOf(RedirectView.class);
+			assertThat(view).isInstanceOf(RedirectView.class);
 
-		String url = ((RedirectView) view).getUrl();
+			String url = ((RedirectView) view).getUrl();
 
-		assertThat(url, startsWith("https://somehost:4711/prefix"));
-		assertThat(url, endsWith("/prefix"));
+			assertThat(url, startsWith("https://somehost:4711/prefix"));
+			assertThat(url, endsWith("/prefix"));
+		});
 	}
 }
