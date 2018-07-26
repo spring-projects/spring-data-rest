@@ -1,6 +1,16 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.9.RELEASE (2018-07-26)
+---------------------------------------------
+* DATAREST-1261 - UnwrappingRepositoryInvoker.invokeFindById(…) falls back to findById(…) even if a custom lookup is present.
+* DATAREST-1259 - Remove obsolete bean definition for HttpRequestHandlerAdapter.
+* DATAREST-1256 - Upgrade to Spring HATEOAS 0.25.
+* DATAREST-1254 - Release 3.0.9 (Kay SR9).
+* DATAREST-811 - Incorrect @Version documentation.
+* DATAREST-810 - Minor typo in reference documentation.
+
+
 Changes in version 3.1.0.RC1 (2018-07-26)
 -----------------------------------------
 * DATAREST-1264 - Adapt to changed forwarded header behavior.
