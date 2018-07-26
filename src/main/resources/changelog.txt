@@ -1,6 +1,24 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.0.RC1 (2018-07-26)
+-----------------------------------------
+* DATAREST-1264 - Adapt to changed forwarded header behavior.
+* DATAREST-1261 - UnwrappingRepositoryInvoker.invokeFindById(…) falls back to findById(…) even if a custom lookup is present.
+* DATAREST-1260 - Adapt to changes in PersistentPropertyAccessor for immutable objects.
+* DATAREST-1259 - Remove obsolete bean definition for HttpRequestHandlerAdapter.
+* DATAREST-1256 - Upgrade to Spring HATEOAS 0.25.
+* DATAREST-1251 - Java 8 improvements in PersistentEntityProjector.
+* DATAREST-1250 - ResourceMetadataHandlerMethodArgumentResolver.supports(…) not working for ResourceMetadata.
+* DATAREST-1249 - HttpMessageNotReadableException caused by NPE.
+* DATAREST-1246 - Editorial overhaul of reference docs.
+* DATAREST-1245 - Release 3.1 RC1 (Lovelace).
+* DATAREST-1198 - Add Converter to convert String to javax.naming.ldap.LdapName.
+* DATAREST-948 - Switch to disable PUT for creation on item resources by default.
+* DATAREST-811 - Incorrect @Version documentation.
+* DATAREST-810 - Minor typo in reference documentation.
+
+
 Changes in version 3.0.8.RELEASE (2018-06-13)
 ---------------------------------------------
 * DATAREST-1251 - Java 8 improvements in PersistentEntityProjector.
