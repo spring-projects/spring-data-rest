@@ -40,6 +40,7 @@
 		<hibernate.version>4.3.10.Final</hibernate.version>
 		<jsonpath>1.1.0</jsonpath>
 		<bundlor.enabled>false</bundlor.enabled>
+		<manifest.file></manifest.file>
 	</properties>
 
 	<developers>
