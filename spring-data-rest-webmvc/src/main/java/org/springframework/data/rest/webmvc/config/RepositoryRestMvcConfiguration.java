@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanCreationException;
@@ -173,6 +174,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
  * @author Jon Brisbin
  * @author Greg Turnquist
  * @author Mark Paluch
+ * @author Petar Tahchiev
  */
 @Configuration
 @EnableHypermediaSupport(type = HypermediaType.HAL)
@@ -626,6 +628,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		repositoryMapping.setJpaHelper(jpaHelper());
 		repositoryMapping.setApplicationContext(applicationContext);
 		repositoryMapping.setCorsConfigurations(corsConfigurations);
+		repositoryMapping.setSupportedMediaTypes(getSupportedMediaTypes());
 		repositoryMapping.afterPropertiesSet();
 
 		BasePathAwareHandlerMapping basePathMapping = new BasePathAwareHandlerMapping(repositoryRestConfiguration());
@@ -638,6 +641,16 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		mappings.add(repositoryMapping);
 
 		return new DelegatingHandlerMapping(mappings);
+	}
+
+	private Collection<MediaType> getSupportedMediaTypes() {
+
+		List<MediaType> result = new ArrayList<>();
+		for(HttpMessageConverter<?> httpMessageConverter : defaultMessageConverters()) {
+			result.addAll(httpMessageConverter.getSupportedMediaTypes());
+		}
+
+		return result;
 	}
 
 	@Bean
