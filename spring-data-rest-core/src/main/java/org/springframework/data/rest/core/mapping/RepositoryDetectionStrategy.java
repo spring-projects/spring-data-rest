@@ -21,6 +21,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 
 /**
  * The strategy to determine whether a given repository is to be exported by Spring Data REST.
@@ -99,9 +100,15 @@ public interface RepositoryDetectionStrategy {
 		},
 
 		/**
-		 * Behaves like the annotated strategy on repository level. But it does not export all methods
-		 * of an exported Repository. The methods have to be annotated explicitly too.
+		 * Behaves like the annotated strategy on repository level. But it does not export all methods of an exported
+		 * Repository. The methods have to be annotated explicitly too.
+		 * 
+		 * @deprecated since 3.0.10 with no replacement, as it's effectively the same as {@link #ANNOTATED}. To only expose
+		 *             annotated repository methods, rather use
+		 *             {@link RepositoryRestConfiguration#setExposeRepositoryMethodsByDefault(boolean)} to {@literal false}.
+		 *             Will be removed in 3.1.
 		 */
+		@Deprecated
 		EXPLICIT_METHOD_ANNOTATED {
 
 			@Override
