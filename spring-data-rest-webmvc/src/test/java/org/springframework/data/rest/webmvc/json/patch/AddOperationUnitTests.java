@@ -21,12 +21,16 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AddOperationUnitTests {
+
+	public @Rule ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void addBooleanPropertyValue() throws Exception {
@@ -111,5 +115,31 @@ public class AddOperationUnitTests {
 
 		assertThat(todo.getUninitialized(), is(notNullValue()));
 		assertThat(todo.getUninitialized(), hasItem("Text"));
+	}
+
+	@Test // DATAREST-1273
+	public void addsItemToTheEndOfACollectionViaIndex() {
+
+		List<Todo> todos = new ArrayList<Todo>();
+		todos.add(new Todo(1L, "A", false));
+
+		Todo todo = new Todo(2L, "B", true);
+		AddOperation.of("/1", todo).perform(todos, Todo.class);
+
+		assertThat(todos.get(1), is(todo));
+	}
+
+	@Test // DATAREST-1273
+	public void rejectsAdditionBeyondEndOfList() {
+
+		List<Todo> todos = new ArrayList<Todo>();
+		todos.add(new Todo(1L, "A", false));
+
+		exception.expect(PatchException.class);
+		exception.expectMessage("index");
+		exception.expectMessage("1");
+		exception.expectMessage("2");
+
+		AddOperation.of("/2", new Todo(2L, "B", true)).perform(todos, Todo.class);
 	}
 }
