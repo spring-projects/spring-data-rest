@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
@@ -110,5 +111,30 @@ public class AddOperationUnitTests {
 		AddOperation.of("/uninitialized/-", "Text").perform(todo, Todo.class);
 
 		assertThat(todo.getUninitialized()).containsExactly("Text");
+	}
+
+	@Test // DATAREST-1273
+	public void addsItemToTheEndOfACollectionViaIndex() {
+
+		List<Todo> todos = new ArrayList<Todo>();
+		todos.add(new Todo(1L, "A", false));
+
+		Todo todo = new Todo(2L, "B", true);
+		AddOperation.of("/1", todo).perform(todos, Todo.class);
+
+		assertThat(todos).element(1).isEqualTo(todo);
+	}
+
+	@Test // DATAREST-1273
+	public void rejectsAdditionBeyondEndOfList() {
+
+		List<Todo> todos = new ArrayList<Todo>();
+		todos.add(new Todo(1L, "A", false));
+
+		assertThatExceptionOfType(PatchException.class) //
+				.isThrownBy(() -> AddOperation.of("/2", new Todo(2L, "B", true)).perform(todos, Todo.class)) //
+				.withMessageContaining("index") //
+				.withMessageContaining("2") //
+				.withMessageContaining("1");
 	}
 }
