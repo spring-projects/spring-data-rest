@@ -36,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.BasicClassIntrospector;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
@@ -202,8 +203,10 @@ class WrappedProperties {
 		}
 
 		private BeanDescription getBeanDescription(Class<?> type) {
-			return INTROSPECTOR.forDeserialization(mapper.getDeserializationConfig(), mapper.constructType(type),
-					mapper.getDeserializationConfig());
+
+			SerializationConfig config = mapper.getSerializationConfig();
+
+			return INTROSPECTOR.forSerialization(config, mapper.constructType(type), config);
 		}
 
 		private static Optional<AnnotatedMember> findAnnotatedMember(BeanPropertyDefinition property) {

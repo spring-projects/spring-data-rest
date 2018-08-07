@@ -32,7 +32,9 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.introspect.BasicClassIntrospector;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
@@ -89,16 +91,34 @@ class MappedProperties {
 	}
 
 	/**
-	 * Creates {@link MappedProperties} for the given {@link PersistentEntity}.
+	 * Creates {@link MappedProperties} for the given {@link PersistentEntity} for deserialization purposes. Will not
+	 * include Jackson-read-only properties.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
 	 * @return
 	 */
-	public static MappedProperties fromJacksonProperties(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
+	public static MappedProperties forDeserialization(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
 
-		BeanDescription description = INTROSPECTOR.forDeserialization(mapper.getDeserializationConfig(),
-				mapper.constructType(entity.getType()), mapper.getDeserializationConfig());
+		DeserializationConfig config = mapper.getDeserializationConfig();
+		BeanDescription description = INTROSPECTOR.forDeserialization(config, mapper.constructType(entity.getType()),
+				config);
+
+		return new MappedProperties(entity, description);
+	}
+
+	/**
+	 * Creates {@link MappedProperties} for the given {@link PersistentEntity} for serialization purposes. Includes
+	 * Jackson-read-only properties.
+	 *
+	 * @param entity must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 * @return
+	 */
+	public static MappedProperties forSerialization(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
+
+		SerializationConfig config = mapper.getSerializationConfig();
+		BeanDescription description = INTROSPECTOR.forSerialization(config, mapper.constructType(entity.getType()), config);
 
 		return new MappedProperties(entity, description);
 	}
