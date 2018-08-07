@@ -35,6 +35,7 @@ import org.springframework.data.rest.webmvc.json.JacksonMappingAwareSortTranslat
 import org.springframework.data.rest.webmvc.mapping.Associations;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -172,12 +173,22 @@ public class SortTranslatorUnitTests {
 		assertThat(translatedSort.getOrderFor("burrito.embedded.name"), is(notNullValue()));
 	}
 
+	@Test // DATAREST-1248
+	public void allowsSortingByReadOnlyProperty() {
+
+		Sort sort = sortTranslator.translateSort(new Sort("readOnly"), mappingContext.getPersistentEntity(Plain.class));
+
+		assertThat(sort, is(notNullValue()));
+		assertThat(sort.getOrderFor("readOnly"), is(notNullValue()));
+	}
+
 	static class Plain {
 
 		public String name;
 		public Embedded embedded;
 		@Reference public Embedded refEmbedded;
 		@Reference public AnotherRootEntity association;
+		@JsonProperty(access = Access.READ_ONLY) public String readOnly;
 	}
 
 	static class UnwrapEmbedded {

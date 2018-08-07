@@ -38,7 +38,7 @@ public class MappedPropertiesUnitTests {
 	ObjectMapper mapper = new ObjectMapper();
 	KeyValueMappingContext context = new KeyValueMappingContext();
 	KeyValuePersistentEntity<?> entity = context.getPersistentEntity(Sample.class);
-	MappedProperties properties = MappedProperties.fromJacksonProperties(entity, mapper);
+	MappedProperties properties = MappedProperties.forDeserialization(entity, mapper);
 
 	@Test // DATAREST-575
 	public void doesNotExposeMappedPropertyForNonSpringDataPersistentProperty() {
@@ -74,6 +74,15 @@ public class MappedPropertiesUnitTests {
 
 		assertThat(properties.hasPersistentPropertyForField("readOnlyProperty"), is(false));
 		assertThat(properties.getPersistentProperty("readOnlyProperty"), is(nullValue()));
+	}
+
+	@Test // DATAREST-1248
+	public void doesNotExcludeReadOnlyPropertiesForSerialization() {
+
+		MappedProperties properties = MappedProperties.forSerialization(entity, mapper);
+
+		assertThat(properties.hasPersistentPropertyForField("readOnlyProperty"), is(true));
+		assertThat(properties.getPersistentProperty("readOnlyProperty"), is(notNullValue()));
 	}
 
 	static class Sample {

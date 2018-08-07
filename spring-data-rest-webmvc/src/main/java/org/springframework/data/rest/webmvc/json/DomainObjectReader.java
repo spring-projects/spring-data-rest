@@ -219,7 +219,7 @@ public class DomainObjectReader {
 			return mapper.readerForUpdating(target).readValue(root);
 		}
 
-		MappedProperties mappedProperties = MappedProperties.fromJacksonProperties(entity, mapper);
+		MappedProperties mappedProperties = MappedProperties.forDeserialization(entity, mapper);
 
 		for (Iterator<Entry<String, JsonNode>> i = root.fields(); i.hasNext();) {
 
@@ -616,7 +616,7 @@ public class DomainObjectReader {
 			Assert.notNull(entity, "PersistentEntity must not be null!");
 			Assert.notNull(mapper, "ObjectMapper must not be null!");
 
-			this.properties = MappedProperties.fromJacksonProperties(entity, mapper);
+			this.properties = MappedProperties.forDeserialization(entity, mapper);
 			this.targetAccessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(target),
 					new DefaultConversionService());
 			this.sourceAccessor = entity.getPropertyAccessor(source);
