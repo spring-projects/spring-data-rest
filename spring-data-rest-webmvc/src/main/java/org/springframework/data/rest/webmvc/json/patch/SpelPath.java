@@ -450,7 +450,7 @@ class SpelPath {
 			Assert.notNull(type, "Type must not be null!");
 
 			String pathSource = Arrays.stream(path.split("/"))//
-					.filter(it -> !it.matches("\\d")) // no digits
+					.filter(it -> !it.matches("\\d+")) // no digits
 					.filter(it -> !it.equals("-")) // no "last element"s
 					.filter(it -> !it.isEmpty()) //
 					.collect(Collectors.joining("."));
