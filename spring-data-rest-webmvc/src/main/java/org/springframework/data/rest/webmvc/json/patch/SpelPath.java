@@ -474,7 +474,7 @@ class SpelPath {
 
 			for (String part : parts) {
 
-				if (part.matches("\\d") || APPEND_CHARACTERS.contains(part) || part.isEmpty()) {
+				if (part.matches("\\d+") || APPEND_CHARACTERS.contains(part) || part.isEmpty()) {
 					continue;
 				}
 

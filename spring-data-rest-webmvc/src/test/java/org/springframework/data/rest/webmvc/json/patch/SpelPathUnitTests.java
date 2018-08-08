@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -23,6 +24,11 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.TypedSpelPath;
 
+/**
+ * Unit tests for {@link SpelPath}.
+ *
+ * @author Oliver Gierke
+ */
 public class SpelPathUnitTests {
 
 	@Test
@@ -68,5 +74,10 @@ public class SpelPathUnitTests {
 		TypedSpelPath right = source.bindTo(Todo.class);
 
 		assertSame(left, right);
+	}
+
+	@Test // DATAREST-1274
+	public void supportsMultiDigitCollectionIndex() {
+		assertThat(SpelPath.of("/11/description").getLeafType(Todo.class), is(typeCompatibleWith(String.class)));
 	}
 }
