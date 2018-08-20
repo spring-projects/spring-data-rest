@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.0.RC2 (2018-08-20)
+-----------------------------------------
+* DATAREST-1274 - Patching a collection element at a position greater than 9 fails.
+* DATAREST-1267 - Release 3.1 RC2 (Lovelace).
+* DATAREST-1248 - Cannot sort by property marked with JsonProperty.Access.READ_ONLY.
+
+
 Changes in version 2.6.14.RELEASE (2018-07-27)
 ----------------------------------------------
 * DATAREST-1259 - Remove obsolete bean definition for HttpRequestHandlerAdapter.
