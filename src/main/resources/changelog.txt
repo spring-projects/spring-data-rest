@@ -1,6 +1,14 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.15.RELEASE (2018-09-10)
+----------------------------------------------
+* DATAREST-1274 - Patching a collection element at a position greater than 9 fails.
+* DATAREST-1273 - Append-PATCHing a collection via index fails.
+* DATAREST-1270 - Release 2.6.15 (Ingalls SR15).
+* DATAREST-1248 - Cannot sort by property marked with JsonProperty.Access.READ_ONLY.
+
+
 Changes in version 3.1.0.RC2 (2018-08-20)
 -----------------------------------------
 * DATAREST-1274 - Patching a collection element at a position greater than 9 fails.
