@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.0.RELEASE (2018-09-21)
+---------------------------------------------
+* DATAREST-1279 - Fix embedded server setup for solr web tests.
+* DATAREST-1277 - Release 3.1 GA (Lovelace).
+
+
 Changes in version 3.0.10.RELEASE (2018-09-10)
 ----------------------------------------------
 * DATAREST-1274 - Patching a collection element at a position greater than 9 fails.
