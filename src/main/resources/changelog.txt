@@ -1,6 +1,16 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.16.RELEASE (2018-10-15)
+----------------------------------------------
+* DATAREST-1283 - Release 2.6.16 (Ingalls SR16).
+
+
+Changes in version 3.0.11.RELEASE (2018-10-15)
+----------------------------------------------
+* DATAREST-1284 - Release 3.0.11 (Kay SR11).
+
+
 Changes in version 3.1.1.RELEASE (2018-10-15)
 ---------------------------------------------
 * DATAREST-1287 - Release 3.1.1 (Lovelace SR1).
