@@ -65,7 +65,8 @@ import org.springframework.web.util.pattern.PathPatternParser;
 public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 	private static final PathPatternParser PARSER = new PathPatternParser();
-	static final String EFFECTIVE_LOOKUP_PATH_KEY = "EFFECTIVE_REPOSITORY_LOOKUP_PATH";
+	static final String EFFECTIVE_LOOKUP_PATH_ATTRIBUTE = RepositoryRestHandlerMapping.class.getName()
+			+ ".EFFECTIVE_REPOSITORY_RESOURCE_LOOKUP_PATH";
 
 	private final ResourceMappings mappings;
 	private final RepositoryRestConfiguration configuration;
@@ -248,8 +249,9 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	}
 
 	/**
-	 * Exposes the effective repository resource lookup path as request attribute via {@link #EFFECTIVE_LOOKUP_PATH_KEY},
-	 * i.e. {@code /people/search/\{search\}} instead of {@code /\{repository\}/search/\{search\}}.
+	 * Exposes the effective repository resource lookup path as request attribute via
+	 * {@link #EFFECTIVE_LOOKUP_PATH_ATTRIBUTE}, i.e. {@code /people/search/\{search\}} instead of
+	 * {@code /\{repository\}/search/\{search\}}.
 	 * 
 	 * @param method must not be {@literal null}.
 	 * @param request must not be {@literal null}.
@@ -264,7 +266,8 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 				.getPatterns() //
 				.iterator().next();
 
-		request.setAttribute(EFFECTIVE_LOOKUP_PATH_KEY, PARSER.parse(pattern.replace("/{repository}", repositoryBasePath)));
+		request.setAttribute(EFFECTIVE_LOOKUP_PATH_ATTRIBUTE,
+				PARSER.parse(pattern.replace("/{repository}", repositoryBasePath)));
 	}
 
 	/**

@@ -281,7 +281,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 		handlerMapping.afterPropertiesSet();
 		handlerMapping.lookupHandlerMethod("/people/search/findByLastnameLike", mockRequest);
 
-		assertThat(mockRequest.getAttribute(RepositoryRestHandlerMapping.EFFECTIVE_LOOKUP_PATH_KEY)) //
+		assertThat(mockRequest.getAttribute(RepositoryRestHandlerMapping.EFFECTIVE_LOOKUP_PATH_ATTRIBUTE)) //
 				.isInstanceOfSatisfying(PathPattern.class, it -> {
 					assertThat(it.getPatternString()).isEqualTo("/people/search/{search}");
 				});
