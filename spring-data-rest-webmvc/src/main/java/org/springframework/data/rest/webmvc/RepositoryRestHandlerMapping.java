@@ -50,6 +50,7 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.condition.ProducesRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 /**
  * {@link RequestMappingHandlerMapping} implementation that will only find a handler method if a
@@ -62,6 +63,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @author Mark Paluch
  */
 public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
+
+	private static final PathPatternParser PARSER = new PathPatternParser();
+	static final String EFFECTIVE_LOOKUP_PATH_KEY = "EFFECTIVE_REPOSITORY_LOOKUP_PATH";
 
 	private final ResourceMappings mappings;
 	private final RepositoryRestConfiguration configuration;
@@ -151,7 +155,15 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 			return handlerMethod;
 		}
 
-		return mappings.exportsTopLevelResourceFor(getRepositoryBasePath(repositoryLookupPath)) ? handlerMethod : null;
+		String repositoryBasePath = getRepositoryBasePath(repositoryLookupPath);
+
+		if (!mappings.exportsTopLevelResourceFor(repositoryBasePath)) {
+			return null;
+		}
+
+		exposeEffectiveLookupPathKey(handlerMethod, request, repositoryBasePath);
+
+		return handlerMethod;
 	}
 
 	/*
@@ -233,6 +245,26 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 		int secondSlashIndex = repositoryLookupPath.indexOf('/', repositoryLookupPath.startsWith("/") ? 1 : 0);
 		return secondSlashIndex == -1 ? repositoryLookupPath : repositoryLookupPath.substring(0, secondSlashIndex);
+	}
+
+	/**
+	 * Exposes the effective repository resource lookup path as request attribute via {@link #EFFECTIVE_LOOKUP_PATH_KEY},
+	 * i.e. {@code /people/search/\{search\}} instead of {@code /\{repository\}/search/\{search\}}.
+	 * 
+	 * @param method must not be {@literal null}.
+	 * @param request must not be {@literal null}.
+	 * @param repositoryBasePath must not be {@literal null}.
+	 */
+	private void exposeEffectiveLookupPathKey(HandlerMethod method, HttpServletRequest request,
+			String repositoryBasePath) {
+
+		RequestMappingInfo mappingInfo = getMappingForMethod(method.getMethod(), method.getBeanType());
+		String pattern = mappingInfo.getPatternsCondition() //
+				.getMatchingCondition(request)//
+				.getPatterns() //
+				.iterator().next();
+
+		request.setAttribute(EFFECTIVE_LOOKUP_PATH_KEY, PARSER.parse(pattern.replace("/{repository}", repositoryBasePath)));
 	}
 
 	/**
