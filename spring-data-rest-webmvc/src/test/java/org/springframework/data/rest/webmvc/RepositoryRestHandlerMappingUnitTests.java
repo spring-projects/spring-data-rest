@@ -43,6 +43,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.util.pattern.PathPattern;
 
 /**
  * Unit tests for {@link RepositoryRestHandlerMapping}.
@@ -268,6 +269,22 @@ public class RepositoryRestHandlerMappingUnitTests {
 				mock(RepositoryRestConfiguration.class));
 
 		assertThat(mapping.isHandler(type)).isTrue();
+	}
+
+	@Test // DATAREST-1294
+	public void exposesEffectiveRepositoryLookupPathAsRequestAttribute() throws Exception {
+
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
+
+		MockHttpServletRequest mockRequest = new MockHttpServletRequest("GET", "/people/search/findByLastnameLike");
+
+		handlerMapping.afterPropertiesSet();
+		handlerMapping.lookupHandlerMethod("/people/search/findByLastnameLike", mockRequest);
+
+		assertThat(mockRequest.getAttribute(RepositoryRestHandlerMapping.EFFECTIVE_LOOKUP_PATH_KEY)) //
+				.isInstanceOfSatisfying(PathPattern.class, it -> {
+					assertThat(it.getPatternString()).isEqualTo("/people/search/{search}");
+				});
 	}
 
 	private static Class<?> createProxy(Object source) {
