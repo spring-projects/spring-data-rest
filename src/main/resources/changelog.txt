@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.2.RELEASE (2018-10-29)
+---------------------------------------------
+* DATAREST-1294 - Expose effective repository lookup path from handler mapping.
+* DATAREST-1291 - Release 3.1.2 (Lovelace SR2).
+
+
 Changes in version 2.6.16.RELEASE (2018-10-15)
 ----------------------------------------------
 * DATAREST-1283 - Release 2.6.16 (Ingalls SR16).
