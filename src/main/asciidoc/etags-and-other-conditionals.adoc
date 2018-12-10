@@ -1,6 +1,6 @@
 [[conditional]]
 = Conditional Operations with Headers
-:spring-data-rest-root: ../../..
+:spring-data-rest-root: ../../../..
 
 This section shows how Spring Data REST uses standard HTTP headers to enhance performance, conditionalize operations, and contribute to a more sophisticated frontend.
 

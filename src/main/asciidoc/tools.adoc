@@ -1,6 +1,6 @@
 [[tools]]
 = Tools
-:spring-data-rest-root: ../../..
+:spring-data-rest-root: ../../../..
 
 == The HAL Browser
 
