@@ -79,7 +79,8 @@ public class Jackson2DatatypeHelperIntegrationTests {
 
 		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(Order.class);
 		PersistentProperty<?> property = entity.getRequiredPersistentProperty("creator");
-		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(orders.findById(this.order.getId()).orElse(null));
+		PersistentPropertyAccessor<?> accessor = entity
+				.getPropertyAccessor(orders.findById(this.order.getId()).orElse(null));
 
 		assertThat(objectMapper.writeValueAsString(accessor.getProperty(property))).isNotEqualTo("null");
 	}
