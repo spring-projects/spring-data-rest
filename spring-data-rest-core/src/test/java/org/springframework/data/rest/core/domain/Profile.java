@@ -16,6 +16,7 @@
 package org.springframework.data.rest.core.domain;
 
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 import java.util.UUID;
 
@@ -25,6 +26,7 @@ import org.springframework.data.annotation.Id;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
+@NonFinal
 @Value
 public class Profile {
 

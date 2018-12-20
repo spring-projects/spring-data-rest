@@ -17,6 +17,7 @@ package org.springframework.data.rest.tests.shop;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -28,6 +29,7 @@ import org.springframework.data.rest.core.config.Projection;
  * @author Oliver Gierke
  * @author Craig Andrews
  */
+@NonFinal
 @Value
 @RequiredArgsConstructor
 public class Product {

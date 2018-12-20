@@ -49,9 +49,9 @@ import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
-import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
 import org.springframework.plugin.core.PluginRegistry;
 
@@ -92,7 +92,8 @@ public class PersistentEntityJackson2ModuleUnitTests {
 
 		this.persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
 
-		RepresentationModelProcessorInvoker invoker = new RepresentationModelProcessorInvoker(Collections.<RepresentationModelProcessor<?>> emptyList());
+		RepresentationModelProcessorInvoker invoker = new RepresentationModelProcessorInvoker(
+				Collections.<RepresentationModelProcessor<?>> emptyList());
 
 		NestedEntitySerializer nestedEntitySerializer = new NestedEntitySerializer(persistentEntities,
 				new EmbeddedResourcesAssembler(persistentEntities, associations, mock(ExcerptProjector.class)), invoker);
@@ -200,6 +201,11 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		@Override
 		public Optional<Home> lookupEntity(Object id) {
 			return Optional.of(new Home());
+		}
+
+		@Override
+		public Optional<String> getLookupProperty() {
+			return Optional.empty();
 		}
 	}
 

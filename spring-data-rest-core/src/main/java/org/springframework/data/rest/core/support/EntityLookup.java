@@ -55,4 +55,12 @@ public interface EntityLookup<T> extends Plugin<Class<?>> {
 	 * @return can be {@literal null}.
 	 */
 	Optional<T> lookupEntity(Object id);
+
+	/**
+	 * Returns the lookup property if available. If {@link Optional#empty()} is returned, we assume the identifier
+	 * property is the one to be used for lookup.
+	 *
+	 * @return will never be {@literal null}.
+	 */
+	Optional<String> getLookupProperty();
 }

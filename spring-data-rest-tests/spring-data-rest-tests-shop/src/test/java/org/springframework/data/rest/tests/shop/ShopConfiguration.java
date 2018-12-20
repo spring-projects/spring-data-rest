@@ -26,9 +26,9 @@ import org.springframework.data.map.repository.config.EnableMapRepositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.shop.Customer.Gender;
 import org.springframework.data.rest.tests.shop.Product.ProductNameOnlyProjection;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
-import org.springframework.hateoas.Link;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 
 /**
@@ -96,7 +96,7 @@ public class ShopConfiguration {
 	}
 
 	@Configuration
-	static class SpringDataRestConfiguration extends RepositoryRestConfigurerAdapter {
+	static class SpringDataRestConfiguration implements RepositoryRestConfigurer {
 
 		/*
 		 * (non-Javadoc)
