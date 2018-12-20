@@ -26,8 +26,8 @@ import java.util.Set;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.util.ProxyUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 /**
  * {@link ResourceMappings} for {@link PersistentEntities}.
@@ -63,7 +63,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		type = ClassUtils.getUserClass(type);
+		type = ProxyUtils.getUserClass(type);
 
 		if (cache.containsKey(type)) {
 			return cache.get(type);
@@ -85,7 +85,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	MappingResourceMetadata getMappingMetadataFor(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null!");
-		Class<?> userType = ClassUtils.getUserClass(type);
+		Class<?> userType = ProxyUtils.getUserClass(type);
 
 		MappingResourceMetadata mappingMetadata = mappingCache.get(userType);
 

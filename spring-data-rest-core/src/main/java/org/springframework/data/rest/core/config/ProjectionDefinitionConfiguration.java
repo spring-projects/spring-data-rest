@@ -27,8 +27,8 @@ import java.util.Set;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
+import org.springframework.data.util.ProxyUtils;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -164,7 +164,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 
 		Assert.notNull(sourceType, "Source type must not be null!");
 
-		Class<?> userType = ClassUtils.getUserClass(sourceType);
+		Class<?> userType = ProxyUtils.getUserClass(sourceType);
 		Map<String, ProjectionDefinition> byName = new HashMap<String, ProjectionDefinition>();
 		Map<String, Class<?>> result = new HashMap<String, Class<?>>();
 
