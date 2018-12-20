@@ -15,7 +15,9 @@
  */
 package org.springframework.data.rest.core.domain;
 
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
@@ -25,9 +27,11 @@ import org.springframework.data.annotation.Id;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@Value
+@Getter
+@EqualsAndHashCode
+@RequiredArgsConstructor
 public class Profile {
 
-	@Id UUID id = UUID.randomUUID();
-	String name, type;
+	private final @Id UUID id = UUID.randomUUID();
+	private final String name, type;
 }

@@ -125,7 +125,8 @@ public class ExposureConfiguration implements ExposureConfigurer {
 	}
 
 	/**
-	 * Returns whether PUT is supported for the given {@link ResourceMetadata}.
+	 * Returns whether PUT requests can be used to create new instances for the type backing the given
+	 * {@link ResourceMetadata}.
 	 * 
 	 * @param metadata must not be {@literal null}.
 	 * @return
@@ -134,7 +135,20 @@ public class ExposureConfiguration implements ExposureConfigurer {
 
 		Assert.notNull(metadata, "ResourceMetadata must not be null!");
 
-		return creationViaPut.apply(metadata.getDomainType());
+		return allowsPutForCreation(metadata.getDomainType());
+	}
+
+	/**
+	 * Returns whether PUT requests can be used to create new instances of the given domain type.
+	 * 
+	 * @param metadata must not be {@literal null}.
+	 * @return
+	 */
+	public boolean allowsPutForCreation(Class<?> domainType) {
+
+		Assert.notNull(domainType, "Domain type must not be null!");
+
+		return creationViaPut.apply(domainType);
 	}
 
 	HttpMethods filter(ConfigurableHttpMethods methods, ResourceType type, ResourceMetadata metadata) {

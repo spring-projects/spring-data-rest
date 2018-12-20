@@ -17,7 +17,6 @@ package org.springframework.data.rest.webmvc.util;
 
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.hateoas.server.core.AnnotationMappingDiscoverer;
 import org.springframework.util.Assert;
@@ -51,14 +50,9 @@ public abstract class UriUtils {
 
 		String mapping = DISCOVERER.getMapping(method);
 
-		Map<String, String> variables = new org.springframework.web.util.UriTemplate(mapping).match(lookupPath);
-		String value = variables.get(variable);
-
-		if (value != null) {
-			return value;
-		}
-
-		return null;
+		return new org.springframework.web.util.UriTemplate(mapping) //
+				.match(lookupPath) //
+				.get(variable);
 	}
 
 	/**

@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
@@ -25,8 +28,12 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.mapping.IdentifierAccessor;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
+import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.webmvc.IncomingRequest;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
@@ -40,7 +47,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServletServerHttpRequest;
-import org.springframework.util.Assert;
+import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -56,41 +63,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
+@RequiredArgsConstructor
 public class PersistentEntityResourceHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private static final String ERROR_MESSAGE = "Could not read an object of type %s from the request!";
 	private static final String NO_CONVERTER_FOUND = "No suitable HttpMessageConverter found to read request body into object of type %s from request with content type of %s!";
 
-	private final RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver;
-	private final BackendIdHandlerMethodArgumentResolver idResolver;
-	private final DomainObjectReader reader;
-	private final List<HttpMessageConverter<?>> messageConverters;
+	private final @NonNull List<HttpMessageConverter<?>> messageConverters;
+	private final @NonNull RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver;
+	private final @NonNull BackendIdHandlerMethodArgumentResolver idResolver;
+	private final @NonNull DomainObjectReader reader;
+	private final @NonNull PluginRegistry<EntityLookup<?>, Class<?>> lookups;
 	private final ConversionService conversionService = new DefaultConversionService();
-
-	/**
-	 * Creates a new {@link PersistentEntityResourceHandlerMethodArgumentResolver} for the given
-	 * {@link HttpMessageConverter}s and {@link RootResourceInformationHandlerMethodArgumentResolver}..
-	 *
-	 * @param messageConverters must not be {@literal null}.
-	 * @param resourceInformationResolver must not be {@literal null}.
-	 * @param idResolver must not be {@literal null}.
-	 * @param reader must not be {@literal null}.
-	 */
-	public PersistentEntityResourceHandlerMethodArgumentResolver(List<HttpMessageConverter<?>> messageConverters,
-			RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver,
-			BackendIdHandlerMethodArgumentResolver idResolver, DomainObjectReader reader) {
-
-		Assert.notEmpty(messageConverters, "MessageConverters must not be null or empty!");
-		Assert.notNull(resourceInformationResolver,
-				"RootResourceInformationHandlerMethodArgumentResolver must not be empty!");
-		Assert.notNull(idResolver, "BackendIdHandlerMethodArgumentResolver must not be null!");
-		Assert.notNull(reader, "DomainObjectReader must not be null!");
-
-		this.messageConverters = messageConverters;
-		this.resourceInformationResolver = resourceInformationResolver;
-		this.idResolver = idResolver;
-		this.reader = reader;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -129,31 +113,45 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 			Optional<Serializable> id = Optional
 					.ofNullable(idResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory));
 			Optional<Object> objectToUpdate = id.flatMap(it -> resourceInformation.getInvoker().invokeFindById(it));
+			Object newObject = read(resourceInformation, incoming, converter, objectToUpdate);
 
-			Object obj = read(resourceInformation, incoming, converter, objectToUpdate);
-
-			if (obj == null) {
-				throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType));
+			if (newObject == null) {
+				throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType), request);
 			}
 
 			PersistentEntity<?, ?> entity = resourceInformation.getPersistentEntity();
+
+			if (!id.isPresent()) {
+				return toResource(newObject, entity, false);
+			}
+
+			PersistentPropertyAccessor<Object> accessor = entity.getPropertyAccessor(newObject);
+			PersistentProperty<?> idProperty = entity.getRequiredIdProperty();
+
 			boolean forUpdate = objectToUpdate.isPresent();
-			Optional<Object> entityIdentifier = objectToUpdate.map(it -> entity.getIdentifierAccessor(it).getIdentifier());
 
-			entityIdentifier.ifPresent(it -> entity.getPropertyAccessor(obj).setProperty(entity.getRequiredIdProperty(),
-					entityIdentifier.orElse(null)));
+			// Transfer identifier from existing object
+			objectToUpdate.map(entity::getIdentifierAccessor) //
+					.map(IdentifierAccessor::getIdentifier) //
+					.ifPresent(it -> accessor.setProperty(idProperty, it));
 
-			id.ifPresent(it -> {
-				ConvertingPropertyAccessor accessor = new ConvertingPropertyAccessor(entity.getPropertyAccessor(obj),
-						conversionService);
-				accessor.setProperty(entity.getRequiredIdProperty(), it);
-			});
+			if (!forUpdate) {
 
-			Builder build = PersistentEntityResource.build(obj, entity);
-			return forUpdate ? build.build() : build.forCreation();
+				// Find property to map URI derived value from
+				PersistentProperty<?> propertyToSet = lookups.getPluginFor(domainType) //
+						.flatMap(EntityLookup::getLookupProperty) //
+						.<PersistentProperty<?>> map(entity::getPersistentProperty) //
+						.orElseGet(() -> idProperty);
+
+				// Transfer onto new object
+				new ConvertingPropertyAccessor(accessor, conversionService) //
+						.setProperty(propertyToSet, id.get());
+			}
+
+			return toResource(accessor.getBean(), entity, forUpdate);
 		}
 
-		throw new HttpMessageNotReadableException(String.format(NO_CONVERTER_FOUND, domainType, contentType));
+		throw new HttpMessageNotReadableException(String.format(NO_CONVERTER_FOUND, domainType, contentType), request);
 	}
 
 	/**
@@ -205,7 +203,8 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 				throw (HttpMessageNotReadableException) o_O;
 			}
 
-			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, existingObject.getClass()), o_O);
+			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, existingObject.getClass()), o_O,
+					request.getServerHttpRequest());
 		}
 	}
 
@@ -219,7 +218,8 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 			return handler.applyPut((ObjectNode) jsonNode, existingObject);
 
 		} catch (Exception o_O) {
-			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, existingObject.getClass()), o_O);
+			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, existingObject.getClass()), o_O,
+					request.getServerHttpRequest());
 		}
 	}
 
@@ -229,7 +229,14 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 		try {
 			return converter.read(information.getDomainType(), request.getServerHttpRequest());
 		} catch (IOException o_O) {
-			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, information.getDomainType()), o_O);
+			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, information.getDomainType()), o_O,
+					request.getServerHttpRequest());
 		}
+	}
+
+	private PersistentEntityResource toResource(Object bean, PersistentEntity<?, ?> entity, boolean forUpdate) {
+
+		Builder build = PersistentEntityResource.build(bean, entity);
+		return forUpdate ? build.build() : build.forCreation();
 	}
 }

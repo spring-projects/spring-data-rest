@@ -15,10 +15,12 @@
  */
 package org.springframework.data.rest.core.config;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +32,7 @@ import org.springframework.data.repository.core.support.AbstractRepositoryMetada
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupRegistrar.Lookup;
 import org.springframework.data.rest.core.support.EntityLookup;
+import org.springframework.data.util.MethodInvocationRecorder;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
 
@@ -169,6 +172,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		private final LookupInformation<Object, Object, Repository<? extends T, ?>> lookupInfo;
 		private final Repository<? extends T, ?> repository;
 		private final Class<?> domainType;
+		private final @Getter Optional<String> lookupProperty;
 
 		/**
 		 * Creates a new {@link RepositoriesEntityLookup} for the given {@link Repositories} and {@link LookupInformation}.
@@ -192,6 +196,12 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			this.repository = (Repository<? extends T, ?>) repositories.getRepositoryFor(information.getDomainType())//
 					.orElseThrow(() -> new IllegalStateException(
 							"No repository found for type " + information.getDomainType().getName() + "!"));
+
+			this.lookupProperty = Optional.of(domainType) //
+					.filter(it -> !Modifier.isFinal(it.getModifiers())) //
+					.flatMap(it -> MethodInvocationRecorder.forProxyOf(it) //
+							.record(lookupInfo.identifierMapping::convert) //
+							.getPropertyPath());
 		}
 
 		/*

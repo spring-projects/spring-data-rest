@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,6 +32,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
@@ -39,6 +41,7 @@ import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -75,7 +78,8 @@ public class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
 	public void returnsAggregateInstanceWithIdentifierPopulatedForPutRequests() throws Exception {
 
 		PersistentEntityResourceHandlerMethodArgumentResolver argumentResolver = new PersistentEntityResourceHandlerMethodArgumentResolver(
-				Arrays.<HttpMessageConverter<?>> asList(converter), rootResourceResolver, backendIdResolver, reader);
+				Arrays.<HttpMessageConverter<?>> asList(converter), rootResourceResolver, backendIdResolver, reader,
+				PluginRegistry.empty());
 
 		HttpServletRequest request = new MockHttpServletRequest("PUT", "/foo/4711");
 
@@ -86,6 +90,32 @@ public class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
 
 		assertThat(result).isInstanceOfSatisfying(PersistentEntityResource.class, it -> {
 			assertThat(it.getContent()).isInstanceOfSatisfying(Foo.class, foo -> assertThat(foo.id).isEqualTo(4711L));
+		});
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void setsLookupPropertyForEntitiesWithCustomLookup() throws Exception {
+
+		EntityLookup<?> lookup = mock(EntityLookup.class);
+		doReturn(Optional.of("name")).when(lookup).getLookupProperty();
+		doReturn(true).when(lookup).supports(Foo.class);
+
+		PersistentEntityResourceHandlerMethodArgumentResolver argumentResolver = new PersistentEntityResourceHandlerMethodArgumentResolver(
+				Arrays.<HttpMessageConverter<?>> asList(converter), rootResourceResolver, backendIdResolver, reader,
+				PluginRegistry.of(Arrays.asList(lookup)));
+
+		HttpServletRequest request = new MockHttpServletRequest("PUT", "/foo/someName");
+
+		doReturn(new Foo()).when(converter).read(Mockito.any(Class.class), Mockito.any(HttpInputMessage.class));
+		mockInvocationOfResolver(backendIdResolver, "someName");
+
+		Object result = argumentResolver.resolveArgument(null, null, new ServletWebRequest(request), null);
+
+		assertThat(result).isInstanceOfSatisfying(PersistentEntityResource.class, it -> {
+			assertThat(it.getContent()).isInstanceOfSatisfying(Foo.class, foo -> {
+				assertThat(foo.name).isEqualTo("someName");
+			});
 		});
 	}
 
@@ -113,5 +143,6 @@ public class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
 
 	static class Foo {
 		@Id Long id;
+		String name;
 	}
 }

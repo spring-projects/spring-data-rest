@@ -25,4 +25,7 @@ import org.springframework.data.repository.CrudRepository;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public interface ProfileRepository extends CrudRepository<Profile, UUID> {}
+public interface ProfileRepository extends CrudRepository<Profile, UUID> {
+
+	Profile findByName(String name);
+}

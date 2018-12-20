@@ -55,4 +55,6 @@ public interface EntityLookup<T> extends Plugin<Class<?>> {
 	 * @return can be {@literal null}.
 	 */
 	Optional<T> lookupEntity(Object id);
+
+	Optional<String> getLookupProperty();
 }

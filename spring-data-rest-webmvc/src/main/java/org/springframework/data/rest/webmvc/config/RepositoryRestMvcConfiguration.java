@@ -389,9 +389,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public PersistentEntityResourceHandlerMethodArgumentResolver persistentEntityArgumentResolver() {
 
+		PluginRegistry<EntityLookup<?>, Class<?>> lookups = PluginRegistry.of(getEntityLookups());
+
 		return new PersistentEntityResourceHandlerMethodArgumentResolver(defaultMessageConverters(),
 				repoRequestArgumentResolver(), backendIdHandlerMethodArgumentResolver(),
-				new DomainObjectReader(persistentEntities(), associationLinks()));
+				new DomainObjectReader(persistentEntities(), associationLinks()), lookups);
 	}
 
 	/**
