@@ -45,12 +45,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.util.ProxyUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
@@ -171,7 +170,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 	@Override
 	protected boolean isHandler(Class<?> beanType) {
 
-		Class<?> type = ClassUtils.getUserClass(beanType);
+		Class<?> type = ProxyUtils.getUserClass(beanType);
 
 		return type.isAnnotationPresent(BasePathAwareController.class);
 	}
