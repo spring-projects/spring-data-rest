@@ -152,12 +152,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	 */
 	@Override
 	public boolean hasMappingFor(Class<?> type) {
-
-		if (cache.containsKey(type)) {
-			return true;
-		}
-
-		return false;
+		return cache.get(ProxyUtils.getUserClass(type)) != null;
 	}
 
 	/* 
