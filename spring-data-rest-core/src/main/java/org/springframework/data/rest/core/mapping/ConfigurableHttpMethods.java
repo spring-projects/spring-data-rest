@@ -95,7 +95,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 	 * @param methods must not be {@literal null}.
 	 * @return
 	 */
-	public HttpMethods enable(HttpMethod... methods) {
+	public ConfigurableHttpMethods enable(HttpMethod... methods) {
 
 		Assert.notNull(methods, "HttpMethods must not be null!");
 
