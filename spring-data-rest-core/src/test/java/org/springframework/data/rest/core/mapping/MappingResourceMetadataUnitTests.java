@@ -52,7 +52,7 @@ public class MappingResourceMetadataUnitTests {
 		PropertyAwareResourceMapping propertyMapping = metadata.getProperty("foo");
 
 		assertThat(propertyMapping).isNotNull();
-		assertThat(propertyMapping.getProperty()).isEqualTo((Object) property);
+		assertThat(propertyMapping.getProperty()).isEqualTo(property);
 		assertThat(metadata.getMappingFor(property).getPath().matches("foo")).isTrue();
 	}
 
