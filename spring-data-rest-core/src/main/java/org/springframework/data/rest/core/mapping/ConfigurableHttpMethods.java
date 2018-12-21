@@ -44,7 +44,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 
 	/**
 	 * Creates a new {@link ConfigurableHttpMethods} of the given {@link HttpMethod}s.
-	 * 
+	 *
 	 * @param methods must not be {@literal null}.
 	 * @return
 	 */
@@ -57,7 +57,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 
 	/**
 	 * Creates a new {@link ConfigurableHttpMethods} of the given {@link HttpMethods}.
-	 * 
+	 *
 	 * @param methods must not be {@literal null}.
 	 * @return
 	 */
@@ -74,7 +74,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 
 	/**
 	 * Disables the given {@link HttpMethod}s.
-	 * 
+	 *
 	 * @param methods must not be {@literal null}.
 	 * @return
 	 */
@@ -91,7 +91,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 
 	/**
 	 * Enables the given {@link HttpMethod}s.
-	 * 
+	 *
 	 * @param methods must not be {@literal null}.
 	 * @return
 	 */
@@ -108,7 +108,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 		return ConfigurableHttpMethods.of(Stream.concat(this.methods.stream(), toAdd.stream()).collect(Collectors.toSet()));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.HttpMethods#contains(org.springframework.http.HttpMethod)
 	 */
@@ -120,7 +120,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 		return methods.contains(method);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Iterable#iterator()
 	 */
