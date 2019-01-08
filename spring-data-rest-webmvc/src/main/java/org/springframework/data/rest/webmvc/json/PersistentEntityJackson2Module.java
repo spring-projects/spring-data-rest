@@ -92,7 +92,7 @@ import com.fasterxml.jackson.databind.util.NameTransformer;
 
 /**
  * Jackson 2 module to serialize and deserialize {@link PersistentEntityResource}s.
- * 
+ *
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Greg Turnquist
@@ -107,7 +107,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	/**
 	 * Creates a new {@link PersistentEntityJackson2Module} using the given {@link ResourceMappings}, {@link Repositories}
 	 * , {@link RepositoryRestConfiguration}, {@link UriToEntityConverter} and {@link SelfLinkProvider}.
-	 * 
+	 *
 	 * @param associations must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
@@ -143,7 +143,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	/**
 	 * Custom {@link JsonSerializer} for {@link PersistentEntityResource}s to turn associations into {@link Link}s.
 	 * Delegates to standard {@link Resource} serialization afterwards.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	@SuppressWarnings("serial")
@@ -154,7 +154,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		/**
 		 * Creates a new {@link PersistentEntityResourceSerializer} using the given {@link PersistentEntities} and
 		 * {@link Associations}.
-		 * 
+		 *
 		 * @param entities must not be {@literal null}.
 		 */
 		private PersistentEntityResourceSerializer(LinkCollector collector) {
@@ -222,7 +222,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 	/**
 	 * {@link BeanSerializerModifier} to drop the property descriptors for associations.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	@RequiredArgsConstructor
@@ -233,7 +233,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		private final @NonNull NestedEntitySerializer nestedEntitySerializer;
 		private final @NonNull LookupObjectSerializer lookupObjectSerializer;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.ser.BeanSerializerModifier#changeProperties(com.fasterxml.jackson.databind.SerializationConfig, com.fasterxml.jackson.databind.BeanDescription, java.util.List)
 		 */
@@ -298,7 +298,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		/**
 		 * Returns the {@link PersistentProperty} for the property with the given final name (the name that it will be
 		 * rendered under eventually).
-		 * 
+		 *
 		 * @param finalName the output name the property will be rendered under.
 		 * @param entity the {@link PersistentEntity} to find the property on.
 		 * @param description the Jackson {@link BeanDescription}.
@@ -341,7 +341,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.invoker = invoker;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
 		 */
@@ -399,7 +399,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * A {@link BeanDeserializerModifier} that registers a custom {@link UriStringDeserializer} for association properties
 	 * of {@link PersistentEntity}s. This allows to submit URIs for those properties in request payloads, so that
 	 * non-optional associations can be populated on resource creation.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	@RequiredArgsConstructor
@@ -410,7 +410,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		private final @NonNull UriToEntityConverter converter;
 		private final @NonNull RepositoryInvokerFactory factory;
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.deser.BeanDeserializerModifier#updateBuilder(com.fasterxml.jackson.databind.DeserializationConfig, com.fasterxml.jackson.databind.BeanDescription, com.fasterxml.jackson.databind.deser.BeanDeserializerBuilder)
 		 */
@@ -471,7 +471,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	/**
 	 * Custom {@link JsonDeserializer} to interpret {@link String} values as URIs and resolve them using a
 	 * {@link UriToEntityConverter}.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 * @author Valentin Rentschler
 	 */
@@ -486,7 +486,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		/**
 		 * Creates a new {@link UriStringDeserializer} for the given {@link PersistentProperty} using the given
 		 * {@link UriToEntityConverter}.
-		 * 
+		 *
 		 * @param property must not be {@literal null}.
 		 * @param converter must not be {@literal null}.
 		 */
@@ -498,7 +498,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.converter = converter;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
 		 */
@@ -524,7 +524,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		/**
 		 * Deserialize by ignoring the {@link TypeDeserializer}, as URIs will either resolve to {@literal null} or a
 		 * concrete instance anyway.
-		 * 
+		 *
 		 * @see com.fasterxml.jackson.databind.deser.std.StdDeserializer#deserializeWithType(com.fasterxml.jackson.core.JsonParser,
 		 *      com.fasterxml.jackson.databind.DeserializationContext,
 		 *      com.fasterxml.jackson.databind.jsontype.TypeDeserializer)
@@ -547,7 +547,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		/**
 		 * Creates a new {@link ProjectionSerializer} for the given {@link LinkCollector}, {@link ResourceMappings} whether
 		 * to be in unwrapping mode or not.
-		 * 
+		 *
 		 * @param collector must not be {@literal null}.
 		 * @param mappings must not be {@literal null}.
 		 * @param invoker must not be {@literal null}.
@@ -564,7 +564,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.unwrapping = unwrapping;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
 		 */
@@ -586,7 +586,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.JsonSerializer#isUnwrappingSerializer()
 		 */
@@ -595,7 +595,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			return unwrapping;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.JsonSerializer#unwrappingSerializer(com.fasterxml.jackson.databind.util.NameTransformer)
 		 */
@@ -606,7 +606,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		/**
 		 * Creates a {@link ProjectionResource} for the given {@link TargetAware}.
-		 * 
+		 *
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
@@ -659,7 +659,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		/**
 		 * Creates a new {@link ProjectionResourceContentSerializer}.
-		 * 
+		 *
 		 * @param unwrapping whether to expose the unwrapping state.
 		 */
 		public ProjectionResourceContentSerializer(boolean unwrapping) {
@@ -668,7 +668,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.unwrapping = unwrapping;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
 		 */
@@ -682,7 +682,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					serialize(value.getProjection(), jgen, provider);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.JsonSerializer#isUnwrappingSerializer()
 		 */
@@ -691,7 +691,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			return unwrapping;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.JsonSerializer#unwrappingSerializer(com.fasterxml.jackson.databind.util.NameTransformer)
 		 */
@@ -704,7 +704,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	/**
 	 * {@link ValueInstantiator} to create collection or map instances based on the type of the configured
 	 * {@link PersistentProperty}.
-	 * 
+	 *
 	 * @author Oliver Gierke
 	 */
 	private static class CollectionValueInstantiator extends ValueInstantiator {
@@ -713,7 +713,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		/**
 		 * Creates a new {@link CollectionValueInstantiator} for the given {@link PersistentProperty}.
-		 * 
+		 *
 		 * @param property must not be {@literal null} and must be a collection.
 		 */
 		public CollectionValueInstantiator(PersistentProperty<?> property) {
@@ -724,7 +724,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.property = property;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.deser.ValueInstantiator#getValueTypeDesc()
 		 */
@@ -733,7 +733,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			return property.getType().getName();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.deser.ValueInstantiator#createUsingDefault(com.fasterxml.jackson.databind.DeserializationContext)
 		 */
@@ -758,7 +758,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.invoker = factory.getInvokerFor(_valueClass);
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
 		 */
