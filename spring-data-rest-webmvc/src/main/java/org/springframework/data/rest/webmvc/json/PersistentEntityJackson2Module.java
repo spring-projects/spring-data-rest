@@ -763,7 +763,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 */
 		@Override
 		public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-			return invoker.invokeFindById(p.getValueAsString());
+
+			Object id = p.getCurrentToken().isNumeric() ? p.getValueAsLong() : p.getValueAsString();
+
+			return invoker.invokeFindById(id).orElse(null);
 		}
 	}
 
@@ -785,23 +788,22 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				gen.writeStartArray();
 
 				for (Object element : (Collection<?>) value) {
-					gen.writeString(getLookupKey(element));
+					gen.writeObject(getLookupKey(element));
 				}
 
 				gen.writeEndArray();
 
 			} else {
-				gen.writeString(getLookupKey(value));
+				gen.writeObject(getLookupKey(value));
 			}
 		}
 
-		private String getLookupKey(Object value) {
+		private Object getLookupKey(Object value) {
 
-			Optional<EntityLookup<Object>> map = lookups.getPluginFor(value.getClass()).map(CastUtils::cast);
-
-			return map
+			return lookups.getPluginFor(value.getClass()) //
+					.<EntityLookup<Object>> map(CastUtils::cast)
 					.orElseThrow(() -> new IllegalArgumentException("No EntityLookup found for " + value.getClass().getName()))
-					.getResourceIdentifier(value).toString();
+					.getResourceIdentifier(value);
 		}
 	}
 }
