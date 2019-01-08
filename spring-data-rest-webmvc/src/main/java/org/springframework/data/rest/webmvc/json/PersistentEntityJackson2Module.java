@@ -764,7 +764,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 */
 		@Override
 		public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-			return invoker.invokeFindOne(p.getValueAsString());
+			return invoker.invokeFindOne(p.getCurrentToken().isNumeric() ? p.getValueAsLong() : p.getValueAsString());
 		}
 	}
 
@@ -772,7 +772,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	public static class LookupObjectSerializer extends ToStringSerializer {
 
 		private static final long serialVersionUID = -3033458643050330913L;
-		private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
+		private final PluginRegistry<? extends EntityLookup<?>, Class<?>> lookups;
 
 		/*
 		 * (non-Javadoc)
@@ -786,21 +786,21 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				gen.writeStartArray();
 
 				for (Object element : (Collection<?>) value) {
-					gen.writeString(getLookupKey(element));
+					gen.writeObject(getLookupKey(element));
 				}
 
 				gen.writeEndArray();
 
 			} else {
-				gen.writeString(getLookupKey(value));
+				gen.writeObject(getLookupKey(value));
 			}
 		}
 
 		@SuppressWarnings("unchecked")
-		private String getLookupKey(Object value) {
+		private Object getLookupKey(Object value) {
 
 			EntityLookup<Object> lookup = (EntityLookup<Object>) lookups.getPluginFor(value.getClass());
-			return lookup.getResourceIdentifier(value).toString();
+			return lookup.getResourceIdentifier(value);
 		}
 	}
 }

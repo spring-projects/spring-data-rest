@@ -19,7 +19,10 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import lombok.Getter;
+
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,11 +31,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -51,6 +56,8 @@ import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
 import org.springframework.plugin.core.OrderAwarePluginRegistry;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,7 +66,7 @@ import com.jayway.jsonpath.JsonPath;
 
 /**
  * Unit tests for {@link PersistentEntityJackson2Module}.
- * 
+ *
  * @author Oliver Gierke
  * @author Valentin Rentschler
  */
@@ -71,6 +78,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 	@Mock EntityLinks entityLinks;
 	@Mock ResourceMappings mappings;
 	@Mock SelfLinkProvider selfLinks;
+	@Mock RepositoryInvokerFactory factory;
 
 	PersistentEntities persistentEntities;
 	ObjectMapper mapper;
@@ -89,14 +97,14 @@ public class PersistentEntityJackson2ModuleUnitTests {
 
 		NestedEntitySerializer nestedEntitySerializer = new NestedEntitySerializer(persistentEntities,
 				new EmbeddedResourcesAssembler(persistentEntities, associations, mock(ExcerptProjector.class)), invoker);
-		OrderAwarePluginRegistry<EntityLookup<?>, Class<?>> lookups = OrderAwarePluginRegistry.create();
+		OrderAwarePluginRegistry<? extends EntityLookup<?>, Class<?>> lookups = OrderAwarePluginRegistry
+				.create(Arrays.asList(new HomeLookup()));
 
 		SimpleModule module = new SimpleModule();
-
 		module.setSerializerModifier(new AssociationOmittingSerializerModifier(persistentEntities, associations,
 				nestedEntitySerializer, new LookupObjectSerializer(lookups)));
-		module.setDeserializerModifier(new AssociationUriResolvingDeserializerModifier(persistentEntities, associations,
-				converter, mock(RepositoryInvokerFactory.class)));
+		module.setDeserializerModifier(
+				new AssociationUriResolvingDeserializerModifier(persistentEntities, associations, converter, factory));
 
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(module);
@@ -138,19 +146,78 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		assertThat(petOwner.getPet(), is(notNullValue()));
 	}
 
+	@Test // DATAREST-1321
+	public void allowsNumericIdsForLookupTypes() throws Exception {
+
+		RepositoryInvoker invoker = mock(RepositoryInvoker.class);
+		when(invoker.invokeFindOne(Mockito.any(Long.class))).thenReturn(new Home());
+
+		when(factory.getInvokerFor(Home.class)).thenReturn(invoker);
+
+		PersistentProperty<?> property = persistentEntities.getPersistentEntity(PetOwner.class)
+				.getPersistentProperty("home");
+
+		when(associations.isLookupType(property)).thenReturn(true);
+
+		PetOwner petOwner = mapper.readValue("{\"home\": 1 }", PetOwner.class);
+
+		assertThat(petOwner, is(notNullValue()));
+		assertThat(petOwner.getHome(), is(instanceOf(Home.class)));
+	}
+
+	@Test // DATAREST-1321
+	public void serializesNonStringLookupValues() throws Exception {
+		// Given Pet defined as lookup type
+
+		PersistentProperty<?> property = persistentEntities.getPersistentEntity(PetOwner.class)
+				.getPersistentProperty("home");
+		when(associations.isLookupType(property)).thenReturn(true);
+
+		// When a Pet is rendered
+		PetOwner owner = new PetOwner();
+		owner.home = new Home();
+
+		String result = mapper.writeValueAsString(owner);
+
+		// The it appears as numeric value
+		assertThat(JsonPath.parse(result).read("$.home", Integer.class), is(41));
+	}
+
+	/**
+	 * @author Oliver Gierke
+	 */
+	private static class HomeLookup implements EntityLookup<Home> {
+
+		@Override
+		public Serializable getResourceIdentifier(Home entity) {
+			return 41;
+		}
+
+		@Override
+		public boolean supports(Class<?> delimiter) {
+			return delimiter.equals(Home.class);
+		}
+
+		@Override
+		public Home lookupEntity(Serializable id) {
+			return new Home();
+		}
+	}
+
+	@Getter
+	@JsonInclude(Include.NON_NULL)
 	static class PetOwner {
 
 		Pet pet;
-
-		public Pet getPet() {
-			return pet;
-		}
+		Home home;
 	}
 
 	@JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.MINIMAL_CLASS)
 	static class Pet {}
 
 	static class Cat extends Pet {}
+
+	static class Home {}
 
 	static class Sample {
 		public @JsonProperty("foo") String name;
