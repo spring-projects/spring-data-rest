@@ -1,6 +1,17 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.4.RELEASE (2019-01-10)
+---------------------------------------------
+* DATAREST-1330 - Update copyright years to 2019.
+* DATAREST-1324 - ConfigurableHttpMethods.enable(…) returns type HttpMethods.
+* DATAREST-1322 - Proxy class detection for Hibernate 5 fails.
+* DATAREST-1321 - Support non-string values for lookup types.
+* DATAREST-1320 - NullPointerException when ResourceMetadata not found for a specific type.
+* DATAREST-1309 - Release 3.1.4 (Lovelace SR4).
+* DATAREST-1304 - PUT and PATCH don't work, when custom entity lookup is configured.
+
+
 Changes in version 3.0.13.RELEASE (2019-01-10)
 ----------------------------------------------
 * DATAREST-1330 - Update copyright years to 2019.
