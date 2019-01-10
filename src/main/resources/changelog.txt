@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.18.RELEASE (2019-01-10)
+----------------------------------------------
+* DATAREST-1330 - Update copyright years to 2019.
+* DATAREST-1321 - Support non-string values for lookup types.
+* DATAREST-1307 - Release 2.6.18 (Ingalls SR18).
+
+
 Changes in version 3.2.0.M1 (2018-12-11)
 ----------------------------------------
 * DATAREST-1317 - Simplify reference documentation setup.
