@@ -173,6 +173,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
  * @author Jon Brisbin
  * @author Greg Turnquist
  * @author Mark Paluch
+ * @author Jiacheng Yang
  */
 @Configuration
 @EnableHypermediaSupport(type = HypermediaType.HAL)
@@ -546,7 +547,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		HalConfiguration halConfiguration = this.halConfiguration.orElseGet(() -> new HalConfiguration());
 
 		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider, curieProvider.orElse(null),
-				resourceDescriptionMessageSourceAccessor(), halConfiguration);
+				resourceDescriptionMessageSourceAccessor(), applicationContext.getAutowireCapableBeanFactory(), halConfiguration);
 
 		ObjectMapper mapper = basicObjectMapper();
 		mapper.registerModule(persistentEntityJackson2Module());
@@ -584,7 +585,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	/**
 	 * Special {@link org.springframework.web.servlet.HandlerAdapter} that only recognizes handler methods defined in the
 	 * provided controller classes.
-	 * 
+	 *
 	 * @param resourceProcessors {@link ResourceProcessor}s available in the {@link ApplicationContext}.
 	 * @return
 	 */
