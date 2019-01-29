@@ -18,6 +18,8 @@ package org.springframework.data.rest.webmvc.json.patch;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
+
 /**
  * <p>
  * Operation that moves a value from the given "from" path to the given "path". Will throw a {@link PatchException} if
@@ -35,7 +37,7 @@ import lombok.RequiredArgsConstructor;
  */
 class MoveOperation extends PatchOperation {
 
-	private final SpelPath from;
+	private final UntypedSpelPath from;
 
 	/**
 	 * Constructs the move operation.
@@ -43,7 +45,7 @@ class MoveOperation extends PatchOperation {
 	 * @param path The path to move the source value to. (e.g., '/foo/bar/4')
 	 * @param from The source path from which a value will be moved. (e.g., '/foo/bar/5')
 	 */
-	private MoveOperation(SpelPath path, SpelPath from) {
+	private MoveOperation(UntypedSpelPath path, UntypedSpelPath from) {
 
 		super("move", path);
 
@@ -60,7 +62,7 @@ class MoveOperation extends PatchOperation {
 		private final String from;
 
 		public MoveOperation to(String to) {
-			return new MoveOperation(SpelPath.of(to), SpelPath.of(from));
+			return new MoveOperation(SpelPath.untyped(to), SpelPath.untyped(from));
 		}
 	}
 

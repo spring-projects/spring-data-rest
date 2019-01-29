@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
+
 /**
  * Operation to add a new value to the given "path". Will throw a {@link PatchException} if the path is invalid or if
  * the given value is not assignable to the given path.
@@ -30,12 +32,12 @@ class AddOperation extends PatchOperation {
 	 * @param path The path where the value will be added. (e.g., '/foo/bar/4')
 	 * @param value The value to add.
 	 */
-	private AddOperation(SpelPath path, Object value) {
+	private AddOperation(UntypedSpelPath path, Object value) {
 		super("add", path, value);
 	}
 
 	public static AddOperation of(String path, Object value) {
-		return new AddOperation(SpelPath.of(path), value);
+		return new AddOperation(SpelPath.untyped(path), value);
 	}
 
 	/*
@@ -58,6 +60,6 @@ class AddOperation extends PatchOperation {
 			return super.evaluateValueFromTarget(targetObject, entityType);
 		}
 
-		return evaluate(path.getLeafType(entityType));
+		return evaluate(path.bindTo(entityType).getLeafType());
 	}
 }

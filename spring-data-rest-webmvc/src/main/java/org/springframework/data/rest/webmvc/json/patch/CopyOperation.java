@@ -17,6 +17,8 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
+
 /**
  * <p>
  * Operation to copy a value from the given "from" path to the given "path". Will throw a {@link PatchException} if
@@ -41,7 +43,7 @@ import lombok.RequiredArgsConstructor;
  */
 class CopyOperation extends PatchOperation {
 
-	private final SpelPath from;
+	private final UntypedSpelPath from;
 
 	/**
 	 * Constructs the copy operation
@@ -49,7 +51,7 @@ class CopyOperation extends PatchOperation {
 	 * @param path The path to copy the source value to. (e.g., '/foo/bar/4')
 	 * @param from The source path from which a value will be copied. (e.g., '/foo/bar/5')
 	 */
-	public CopyOperation(SpelPath path, SpelPath from) {
+	public CopyOperation(UntypedSpelPath path, UntypedSpelPath from) {
 
 		super("copy", path);
 
@@ -66,7 +68,7 @@ class CopyOperation extends PatchOperation {
 		private final String from;
 
 		CopyOperation to(String to) {
-			return new CopyOperation(SpelPath.of(to), SpelPath.of(from));
+			return new CopyOperation(SpelPath.untyped(to), SpelPath.untyped(from));
 		}
 	}
 
