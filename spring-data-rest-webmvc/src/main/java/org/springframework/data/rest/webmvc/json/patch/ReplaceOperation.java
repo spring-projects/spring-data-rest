@@ -18,6 +18,8 @@ package org.springframework.data.rest.webmvc.json.patch;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
+
 /**
  * Operation that replaces the value at the given path with a new value.
  *
@@ -32,7 +34,7 @@ class ReplaceOperation extends PatchOperation {
 	 * @param path The path whose value is to be replaced. (e.g., '/foo/bar/4')
 	 * @param value The value that will replace the current path value.
 	 */
-	private ReplaceOperation(SpelPath path, Object value) {
+	private ReplaceOperation(UntypedSpelPath path, Object value) {
 		super("replace", path, value);
 	}
 
@@ -46,7 +48,7 @@ class ReplaceOperation extends PatchOperation {
 		private final String path;
 
 		public ReplaceOperation with(Object value) {
-			return new ReplaceOperation(SpelPath.of(path), value);
+			return new ReplaceOperation(SpelPath.untyped(path), value);
 		}
 	}
 

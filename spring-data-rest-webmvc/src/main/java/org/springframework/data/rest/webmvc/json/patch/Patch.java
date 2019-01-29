@@ -15,7 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import java.util.Iterator;
 import java.util.List;
+
+import org.springframework.data.util.Streamable;
 
 /**
  * <p>
@@ -29,7 +32,7 @@ import java.util.List;
  * @author Craig Walls
  * @author Oliver Gierke
  */
-public class Patch {
+public class Patch implements Streamable<PatchOperation> {
 
 	private final List<PatchOperation> operations;
 
@@ -44,6 +47,13 @@ public class Patch {
 		return operations.size();
 	}
 
+	/**
+	 * Returns all underlying {@link PatchOperation}s.
+	 *
+	 * @return
+	 * @deprecated since 3.2, prefer streaming via {@link #stream()}.
+	 */
+	@Deprecated
 	public List<PatchOperation> getOperations() {
 		return operations;
 	}
@@ -84,5 +94,14 @@ public class Patch {
 		}
 
 		return in;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Iterable#iterator()
+	 */
+	@Override
+	public Iterator<PatchOperation> iterator() {
+		return operations.iterator();
 	}
 }
