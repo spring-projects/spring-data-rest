@@ -15,13 +15,17 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ReplaceOperationTests {
@@ -81,5 +85,31 @@ public class ReplaceOperationTests {
 		assertNotNull(todo.getType());
 		assertNotNull(todo.getType().getValue());
 		assertTrue(todo.getType().getValue().equals("new"));
+	}
+
+	@Test // DATAREST-1338
+	public void replacesMapValueCorrectly() throws Exception {
+
+		Book book = new Book();
+		book.characters = new HashMap<>();
+		book.characters.put("protagonist", "Pinco");
+
+		ReplaceOperation.valueAt("/characters/protagonist") //
+				.with(prepareValue("\"Pallo\"")) //
+				.perform(book, Book.class);
+
+		assertThat(book.characters.get("protagonist")).isEqualTo("Pallo");
+	}
+
+	private static Object prepareValue(String json) throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = mapper.readTree(json);
+		return new JsonLateObjectEvaluator(mapper, node);
+	}
+
+	// DATAREST-1338
+	class Book {
+		public Map<String, String> characters;
 	}
 }

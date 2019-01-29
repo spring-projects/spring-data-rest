@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -43,7 +44,7 @@ class TestOperation extends PatchOperation {
 	 * @param path The path to test. (e.g., '/foo/bar/4')
 	 * @param value The value to test the path against.
 	 */
-	private TestOperation(SpelPath path, Object value) {
+	private TestOperation(UntypedSpelPath path, Object value) {
 		super("test", path, value);
 	}
 
@@ -57,7 +58,7 @@ class TestOperation extends PatchOperation {
 		private final String path;
 
 		public TestOperation hasValue(Object value) {
-			return new TestOperation(SpelPath.of(path), value);
+			return new TestOperation(SpelPath.untyped(path), value);
 		}
 	}
 

@@ -26,12 +26,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionException;
@@ -39,9 +41,11 @@ import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.SpelMessage;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
+import org.springframework.util.StringUtils;
 
 /**
  * Value object to represent a SpEL-backed patch path.
@@ -53,53 +57,28 @@ class SpelPath {
 
 	private static final SpelExpressionParser SPEL_EXPRESSION_PARSER = new SpelExpressionParser();
 	private static final String APPEND_CHARACTER = "-";
-	private static final Map<String, SpelPath> PATHS = new ConcurrentReferenceHashMap<>(32);
+	private static final Map<String, UntypedSpelPath> UNTYPED_PATHS = new ConcurrentReferenceHashMap<>(32);
 
 	protected final @Getter String path;
-	protected final Expression expression;
-
-	private SpelPath(String path) {
-
-		Assert.notNull(path, "Path must not be null!");
-
-		this.path = path;
-		this.expression = SPEL_EXPRESSION_PARSER.parseExpression(pathToSpEL(path));
-	}
 
 	/**
-	 * Returns a {@link SpelPath} for the given source.
+	 * Returns a {@link UntypedSpelPath} for the given source.
 	 *
 	 * @param source must not be {@literal null}.
 	 * @return
 	 */
-	public static SpelPath of(String source) {
-		return PATHS.computeIfAbsent(source, SpelPath::new);
+	public static UntypedSpelPath untyped(String source) {
+		return UNTYPED_PATHS.computeIfAbsent(source, UntypedSpelPath::new);
 	}
 
 	/**
-	 * Returns a {@link TypedSpelPath} binding the expression to the given type.
+	 * Returns a {@link TypedSpelPath} for the given source and type.
 	 *
-	 * @param type must not be {@literal null}.
+	 * @param source must not be {@literal null}.
 	 * @return
 	 */
-	public TypedSpelPath bindTo(Class<?> type) {
-
-		Assert.notNull(type, "Type must not be null!");
-
-		return TypedSpelPath.of(this, type);
-	}
-
-	/**
-	 * Returns the leaf type of the underlying expression or the given type
-	 *
-	 * @param type
-	 * @return
-	 */
-	public Class<?> getLeafType(Class<?> type) {
-
-		return TypedSpelPath.verifyPath(path, type) //
-				.<Class<?>> map(it -> it.getType()) //
-				.orElse(type);
+	public static TypedSpelPath typed(String source, Class<?> type) {
+		return untyped(source).bindTo(type);
 	}
 
 	/**
@@ -109,10 +88,6 @@ class SpelPath {
 	 */
 	public boolean isAppend() {
 		return path.endsWith("-");
-	}
-
-	private SpelPath getParent() {
-		return SpelPath.of(path.substring(0, path.lastIndexOf('/')));
 	}
 
 	/*
@@ -135,7 +110,7 @@ class SpelPath {
 			return true;
 		}
 
-		if (!(SpelPath.class.isInstance(obj))) {
+		if (!SpelPath.class.isInstance(obj)) {
 			return false;
 		}
 
@@ -153,54 +128,24 @@ class SpelPath {
 		return path.hashCode();
 	}
 
-	private static String pathToSpEL(String path) {
-		return pathNodesToSpEL(path.split("\\/"));
-	}
+	static class UntypedSpelPath extends SpelPath {
 
-	private static String pathNodesToSpEL(String[] pathNodes) {
-
-		StringBuilder spelBuilder = new StringBuilder();
-
-		for (int i = 0; i < pathNodes.length; i++) {
-
-			String pathNode = pathNodes[i];
-
-			if (pathNode.length() == 0) {
-				continue;
-			}
-
-			if (APPEND_CHARACTER.equals(pathNode)) {
-
-				if (spelBuilder.length() > 0) {
-					spelBuilder.append(".");
-				}
-
-				spelBuilder.append("$[true]");
-				continue;
-			}
-
-			try {
-
-				int index = Integer.parseInt(pathNode);
-				spelBuilder.append('[').append(index).append(']');
-
-			} catch (NumberFormatException e) {
-
-				if (spelBuilder.length() > 0) {
-					spelBuilder.append('.');
-				}
-
-				spelBuilder.append(pathNode);
-			}
+		private UntypedSpelPath(String path) {
+			super(path);
 		}
 
-		String spel = spelBuilder.toString();
+		/**
+		 * Returns a {@link TypedSpelPath} binding the expression to the given type.
+		 *
+		 * @param type must not be {@literal null}.
+		 * @return
+		 */
+		public TypedSpelPath bindTo(Class<?> type) {
 
-		if (spel.length() == 0) {
-			spel = "#this";
+			Assert.notNull(type, "Type must not be null!");
+
+			return TypedSpelPath.of(this, type);
 		}
-
-		return spel;
 	}
 
 	/**
@@ -211,26 +156,26 @@ class SpelPath {
 	@EqualsAndHashCode(callSuper = true)
 	static class TypedSpelPath extends SpelPath {
 
-		private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s (from source %s)!";
+		private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s!";
 		private static final String INVALID_COLLECTION_INDEX = "Invalid collection index %s for collection of size %s. Use '…/-' or the collection's actual size as index to append to it!";
 		private static final Map<CacheKey, TypedSpelPath> TYPED_PATHS = new ConcurrentReferenceHashMap<>(32);
 		private static final EvaluationContext CONTEXT = SimpleEvaluationContext.forReadWriteDataBinding().build();
 
+		private final Expression expression;
 		private final Class<?> type;
 
 		@Value(staticConstructor = "of")
 		private static class CacheKey {
 			Class<?> type;
-			SpelPath path;
+			UntypedSpelPath path;
 		}
 
-		private TypedSpelPath(SpelPath path, Class<?> type) {
+		private TypedSpelPath(UntypedSpelPath path, Class<?> type) {
 
-			super(path.path, path.expression);
-
-			verifyPath(path.path, type);
+			super(path.path);
 
 			this.type = type;
+			this.expression = toSpel(path.path, type);
 		}
 
 		/**
@@ -240,7 +185,7 @@ class SpelPath {
 		 * @param type must not be {@literal null}.
 		 * @return
 		 */
-		public static TypedSpelPath of(SpelPath path, Class<?> type) {
+		public static TypedSpelPath of(UntypedSpelPath path, Class<?> type) {
 
 			Assert.notNull(path, "Path must not be null!");
 			Assert.notNull(type, "Type must not be null!");
@@ -272,11 +217,28 @@ class SpelPath {
 		 * @param target must not be {@literal null}.
 		 * @param value can be {@literal null}.
 		 */
-		public void setValue(Object target, Object value) {
+		public void setValue(Object target, @Nullable Object value) {
 
 			Assert.notNull(target, "Target must not be null!");
 
 			expression.setValue(CONTEXT, target, value);
+		}
+
+		/**
+		 * Returns the type of the leaf property of the path.
+		 *
+		 * @return will never be {@literal null}.
+		 */
+		public Class<?> getLeafType() {
+
+			return TypedSpelPath.verifyPath(path, type) //
+					.map(PropertyPath::getLeafProperty) //
+					.<Class<?>> map(PropertyPath::getType) //
+					.orElse(type);
+		}
+
+		public String getExpressionString() {
+			return expression.getExpressionString();
 		}
 
 		/**
@@ -316,8 +278,7 @@ class SpelPath {
 		 * @param source the source object to look the value up from, must not be {@literal null}.
 		 * @return
 		 */
-
-		public void copyFrom(SpelPath path, Object source) {
+		public void copyFrom(UntypedSpelPath path, Object source) {
 
 			Assert.notNull(path, "Source path must not be null!");
 			Assert.notNull(source, "Source value must not be null!");
@@ -333,7 +294,7 @@ class SpelPath {
 		 * @param source the source object to look the value up from, must not be {@literal null}.
 		 * @return
 		 */
-		public void moveFrom(SpelPath path, Object source) {
+		public void moveFrom(UntypedSpelPath path, Object source) {
 
 			Assert.notNull(path, "Source path must not be null!");
 			Assert.notNull(source, "Source value must not be null!");
@@ -413,8 +374,20 @@ class SpelPath {
 			}
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.webmvc.json.patch.SpelPath#toString()
+		 */
+		@Override
+		public String toString() {
+			return String.format("%s on %s -> %s", path, type.getName(), getExpressionString());
+		}
+
 		private TypedSpelPath getParent() {
-			return TypedSpelPath.of(super.getParent(), type);
+
+			return SpelPath //
+					.untyped(path.substring(0, path.lastIndexOf('/'))) //
+					.bindTo(type);
 		}
 
 		private TypeDescriptor getTypeDescriptor(Object target) {
@@ -449,20 +422,153 @@ class SpelPath {
 			Assert.notNull(path, "Path must not be null!");
 			Assert.notNull(type, "Type must not be null!");
 
-			String pathSource = Arrays.stream(path.split("/"))//
-					.filter(it -> !it.matches("\\d+")) // no digits
-					.filter(it -> !it.equals("-")) // no "last element"s
-					.filter(it -> !it.isEmpty()) //
-					.collect(Collectors.joining("."));
+			// Remove leading digits
+			String segmentSource = path.replaceAll("^/\\d+", "");
 
-			if (pathSource.isEmpty()) {
-				return Optional.empty();
-			}
+			Stream<String> segments = Arrays.stream(segmentSource.split("/"))//
+					.filter(it -> !it.equals("-")) // no "last element"s
+					.filter(it -> !it.isEmpty());
 
 			try {
-				return Optional.of(PropertyPath.from(pathSource, type));
+
+				return segments.reduce(Optional.<SkippedPropertyPath> empty(), //
+						(current, next) -> Optional.of(createOrSkip(current, next, type)), //
+						(l, r) -> r) //
+						.map(SkippedPropertyPath::getPath);
+
 			} catch (PropertyReferenceException o_O) {
-				throw new PatchException(String.format(INVALID_PATH_REFERENCE, pathSource, type, path), o_O);
+				throw new PatchException(String.format(INVALID_PATH_REFERENCE, o_O.getPropertyName(), type), o_O);
+			}
+		}
+
+		@Value
+		@RequiredArgsConstructor(access = AccessLevel.PRIVATE, staticName = "of")
+		private static class SkippedPropertyPath {
+
+			PropertyPath path;
+			boolean skipped;
+
+			public static SkippedPropertyPath of(String segment, Class<?> type) {
+				return of(PropertyPath.from(segment, type), false);
+			}
+
+			public SkippedPropertyPath nested(String segment) {
+
+				if (skipped) {
+					return SkippedPropertyPath.of(path.nested(segment), false);
+				}
+
+				TypeInformation<?> typeInformation = path.getTypeInformation();
+
+				return typeInformation.isMap() || typeInformation.isCollectionLike() //
+						? SkippedPropertyPath.of(path, true) //
+						: SkippedPropertyPath.of(path.nested(segment), false);
+			}
+		}
+
+		private static Expression toSpel(String path, Class<?> type) {
+
+			String expression = Arrays.stream(path.split("/"))//
+					.filter(it -> !it.isEmpty()) //
+					.reduce(Optional.<SpelExpressionBuilder> empty(), //
+							(current, next) -> Optional.of(nextOrCreate(current, next, type)), //
+							(l, r) -> r) //
+					.map(it -> it.getExpression()) //
+					.orElse("#this");
+
+			return SPEL_EXPRESSION_PARSER.parseExpression(expression);
+		}
+
+		private static SpelExpressionBuilder nextOrCreate(Optional<SpelExpressionBuilder> current, String next,
+				Class<?> type) {
+
+			return current //
+					.map(it -> it.next(next)) //
+					.orElseGet(() -> SpelExpressionBuilder.of(type).next(next));
+		}
+
+		private static SkippedPropertyPath createOrSkip(Optional<SkippedPropertyPath> current, String next, Class<?> type) {
+
+			return current //
+					.map(it -> it.nested(next)) //
+					.orElseGet(() -> SkippedPropertyPath.of(next, type));
+		}
+
+		@Value
+		private static class SpelExpressionBuilder {
+
+			private static final TypeInformation<String> STRING_TYPE = ClassTypeInformation.from(String.class);
+
+			private final @Nullable PropertyPath basePath;
+			private final Class<?> type;
+			private final String spelSegment;
+			private final boolean skipped;
+
+			public String getExpression() {
+				return StringUtils.hasText(spelSegment) ? spelSegment : null;
+			}
+
+			public static SpelExpressionBuilder of(Class<?> type) {
+				return new SpelExpressionBuilder(null, type, "", false);
+			}
+
+			private SpelExpressionBuilder skipWith(String segment) {
+				return new SpelExpressionBuilder(basePath, type, spelSegment.concat(segment), true);
+			}
+
+			private SpelExpressionBuilder nested(String segment) {
+
+				String segmentBase = StringUtils.hasText(spelSegment) //
+						? spelSegment.concat(".") //
+						: spelSegment;
+
+				try {
+
+					PropertyPath path = basePath == null //
+							? PropertyPath.from(segment, type) //
+							: basePath.nested(segment);
+
+					return new SpelExpressionBuilder(path, type, segmentBase.concat(segment), false);
+
+				} catch (PropertyReferenceException o_O) {
+					throw new PatchException(String.format(INVALID_PATH_REFERENCE, o_O.getPropertyName(), type), o_O);
+				}
+			}
+
+			public SpelExpressionBuilder next(String segment) {
+
+				if (basePath == null) {
+
+					if (APPEND_CHARACTER.equals(segment)) {
+						return skipWith("$[true]");
+					}
+
+					if (segment.matches("\\d+")) {
+						return skipWith(String.format("[%s]", segment));
+					}
+
+					return nested(segment);
+				}
+
+				if (skipped) {
+					return nested(segment);
+				}
+
+				TypeInformation<?> typeInformation = basePath.getTypeInformation();
+
+				if (typeInformation.isMap()) {
+
+					TypeInformation<?> componentType = typeInformation.getComponentType();
+					String keyExpression = STRING_TYPE.equals(componentType) ? String.format("'%s'", segment) : segment;
+
+					return skipWith(String.format("[%s]", keyExpression));
+				}
+
+				if (typeInformation.isCollectionLike()) {
+					return skipWith(APPEND_CHARACTER.equals(segment) ? "$[true]" : String.format("[%s]", segment));
+				}
+
+				return nested(segment);
 			}
 		}
 	}

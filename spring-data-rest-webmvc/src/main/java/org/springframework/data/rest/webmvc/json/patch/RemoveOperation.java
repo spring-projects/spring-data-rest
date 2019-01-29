@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
+
 /**
  * Operation that removes the value at the given path. Will throw a {@link PatchException} if the given path isn't valid
  * or if the path is non-nullable.
@@ -29,12 +31,12 @@ class RemoveOperation extends PatchOperation {
 	 *
 	 * @param path The path of the value to be removed. (e.g., '/foo/bar/4')
 	 */
-	private RemoveOperation(SpelPath path) {
+	private RemoveOperation(UntypedSpelPath path) {
 		super("remove", path);
 	}
 
 	public static RemoveOperation valueAt(String path) {
-		return new RemoveOperation(SpelPath.of(path));
+		return new RemoveOperation(SpelPath.untyped(path));
 	}
 
 	/*

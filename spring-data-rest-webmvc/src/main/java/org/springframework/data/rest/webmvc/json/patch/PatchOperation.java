@@ -18,6 +18,8 @@ package org.springframework.data.rest.webmvc.json.patch;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
+
 /**
  * Abstract base class representing and providing support methods for patch operations.
  *
@@ -29,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 public abstract class PatchOperation {
 
 	protected final @NonNull String op;
-	protected final @NonNull SpelPath path;
+	protected final @NonNull UntypedSpelPath path;
 	protected final Object value;
 
 	/**
@@ -38,7 +40,7 @@ public abstract class PatchOperation {
 	 * @param op the operation name. (e.g., 'move')
 	 * @param path the path to perform the operation on. (e.g., '/1/description')
 	 */
-	public PatchOperation(String op, SpelPath path) {
+	public PatchOperation(String op, UntypedSpelPath path) {
 		this(op, path, null);
 	}
 

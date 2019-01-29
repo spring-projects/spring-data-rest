@@ -20,9 +20,11 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.TypedSpelPath;
+import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
 
 /**
  * Unit tests for {@link SpelPath}.
@@ -34,34 +36,34 @@ public class SpelPathUnitTests {
 	@Test
 	public void listIndex() {
 
-		SpelPath expr = SpelPath.of("/1/description");
+		UntypedSpelPath expr = SpelPath.untyped("/1/description");
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		assertEquals("B", (String) expr.bindTo(Todo.class).getValue(todos));
+		assertEquals("B", expr.bindTo(Todo.class).getValue(todos));
 	}
 
 	@Test
 	public void accessesLastCollectionElementWithDash() {
 
-		SpelPath expr = SpelPath.of("/-/description");
+		UntypedSpelPath expr = SpelPath.untyped("/-/description");
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		assertEquals("C", (String) expr.bindTo(Todo.class).getValue(todos));
+		assertEquals("C", expr.bindTo(Todo.class).getValue(todos));
 	}
 
 	@Test // DATAREST-1152
 	public void cachesSpelPath() {
 
-		SpelPath left = SpelPath.of("/description");
-		SpelPath right = SpelPath.of("/description");
+		UntypedSpelPath left = SpelPath.untyped("/description");
+		UntypedSpelPath right = SpelPath.untyped("/description");
 
 		assertSame(left, right);
 	}
@@ -69,7 +71,7 @@ public class SpelPathUnitTests {
 	@Test // DATAREST-1152
 	public void cachesTypedSpelPath() {
 
-		SpelPath source = SpelPath.of("/description");
+		UntypedSpelPath source = SpelPath.untyped("/description");
 		TypedSpelPath left = source.bindTo(Todo.class);
 		TypedSpelPath right = source.bindTo(Todo.class);
 
@@ -78,6 +80,35 @@ public class SpelPathUnitTests {
 
 	@Test // DATAREST-1274
 	public void supportsMultiDigitCollectionIndex() {
-		assertThat(SpelPath.of("/11/description").getLeafType(Todo.class)).isEqualTo(String.class);
+		assertThat(SpelPath.untyped("/11/description").bindTo(Todo.class).getLeafType()).isEqualTo(String.class);
+	}
+
+	@Test // DATAREST-1338
+	public void handlesStringMapKeysInPathExpressions() {
+
+		TypedSpelPath path = SpelPath.untyped("people/Dave/name").bindTo(MapWrapper.class);
+
+		assertThat(path.getExpressionString()).isEqualTo("people['Dave'].name");
+		assertThat(path.getLeafType()).isEqualTo(String.class);
+	}
+
+	@Test // DATAREST-1338
+	public void handlesIntegerMapKeysInPathExpressions() {
+
+		TypedSpelPath path = SpelPath.untyped("peopleByInt/0/name").bindTo(MapWrapper.class);
+
+		assertThat(path.getExpressionString()).isEqualTo("peopleByInt[0].name");
+		assertThat(path.getLeafType()).isEqualTo(String.class);
+	}
+
+	// DATAREST-1338
+
+	static class Person {
+		String name;
+	}
+
+	static class MapWrapper {
+		Map<String, Person> people;
+		Map<Integer, Person> peopleByInt;
 	}
 }
