@@ -35,7 +35,6 @@ import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
-import org.springframework.data.rest.core.util.Java8PluginRegistry;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
@@ -48,6 +47,7 @@ import org.springframework.hateoas.TemplateVariable.VariableType;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.core.AbstractEntityLinks;
+import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -66,7 +66,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	private final @NonNull ResourceMappings mappings;
 	private final @NonNull RepositoryRestConfiguration config;
 	private final @NonNull PagingAndSortingTemplateVariables templateVariables;
-	private final @NonNull Java8PluginRegistry<BackendIdConverter, Class<?>> idConverters;
+	private final @NonNull PluginRegistry<BackendIdConverter, Class<?>> idConverters;
 
 	/*
 	 * (non-Javadoc)

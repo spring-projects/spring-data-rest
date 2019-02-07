@@ -17,7 +17,6 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,7 +38,6 @@ import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
-import org.springframework.data.rest.core.util.Java8PluginRegistry;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
@@ -58,6 +56,7 @@ import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
+import org.springframework.plugin.core.PluginRegistry;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -117,8 +116,7 @@ public class RepositoryTestsConfig {
 		RepositoryResourceMappings mappings = new RepositoryResourceMappings(repositories(), persistentEntities(),
 				config());
 		EntityLinks entityLinks = new RepositoryEntityLinks(repositories(), mappings, config(),
-				mock(PagingAndSortingTemplateVariables.class),
-				Java8PluginRegistry.of(Arrays.asList(DefaultIdConverter.INSTANCE)));
+				mock(PagingAndSortingTemplateVariables.class), PluginRegistry.of(DefaultIdConverter.INSTANCE));
 		SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks,
 				Collections.<EntityLookup<?>> emptyList());
 

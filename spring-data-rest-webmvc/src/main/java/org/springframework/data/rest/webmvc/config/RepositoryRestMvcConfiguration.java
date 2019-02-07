@@ -75,48 +75,18 @@ import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.RepositoryRelProvider;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.core.support.UnwrappingRepositoryInvokerFactory;
-import org.springframework.data.rest.core.util.Java8PluginRegistry;
-import org.springframework.data.rest.webmvc.BasePathAwareController;
-import org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping;
-import org.springframework.data.rest.webmvc.BaseUri;
-import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
-import org.springframework.data.rest.webmvc.HttpHeadersPreparer;
-import org.springframework.data.rest.webmvc.ProfileResourceProcessor;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
-import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
-import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
-import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
-import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.data.rest.webmvc.ServerHttpRequestMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.*;
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.alps.RootResourceInformationToAlpsDescriptorConverter;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
-import org.springframework.data.rest.webmvc.json.DomainObjectReader;
-import org.springframework.data.rest.webmvc.json.EnumTranslator;
-import org.springframework.data.rest.webmvc.json.Jackson2DatatypeHelper;
-import org.springframework.data.rest.webmvc.json.JacksonMappingAwareSortTranslator;
-import org.springframework.data.rest.webmvc.json.JacksonSerializers;
-import org.springframework.data.rest.webmvc.json.MappingAwareDefaultedPageableArgumentResolver;
-import org.springframework.data.rest.webmvc.json.MappingAwarePageableArgumentResolver;
-import org.springframework.data.rest.webmvc.json.MappingAwareSortArgumentResolver;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
+import org.springframework.data.rest.webmvc.json.*;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
-import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.ValueTypeSchemaPropertyCustomizerFactory;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
-import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
-import org.springframework.data.rest.webmvc.support.DefaultExcerptProjector;
-import org.springframework.data.rest.webmvc.support.DelegatingHandlerMapping;
-import org.springframework.data.rest.webmvc.support.DomainClassResolver;
-import org.springframework.data.rest.webmvc.support.ETagArgumentResolver;
-import org.springframework.data.rest.webmvc.support.ExcerptProjector;
-import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
-import org.springframework.data.rest.webmvc.support.JpaHelper;
-import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables;
-import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.data.rest.webmvc.support.*;
 import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
@@ -142,7 +112,6 @@ import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessage
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.plugin.core.OrderAwarePluginRegistry;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
@@ -386,7 +355,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public BackendIdHandlerMethodArgumentResolver backendIdHandlerMethodArgumentResolver() {
-		return new BackendIdHandlerMethodArgumentResolver(Java8PluginRegistry.of(backendIdConverterRegistry()),
+		return new BackendIdHandlerMethodArgumentResolver(backendIdConverterRegistry(),
 				resourceMetadataHandlerMethodArgumentResolver(), baseUri());
 	}
 
@@ -409,7 +378,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				pageableResolver(), sortResolver());
 
 		return new RepositoryEntityLinks(repositories(), resourceMappings(), repositoryRestConfiguration(),
-				templateVariables, Java8PluginRegistry.of(backendIdConverterRegistry()));
+				templateVariables, backendIdConverterRegistry());
 	}
 
 	/**
@@ -648,8 +617,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		EmbeddedResourcesAssembler assembler = new EmbeddedResourcesAssembler(entities, associationLinks(),
 				excerptProjector());
-		LookupObjectSerializer lookupObjectSerializer = new LookupObjectSerializer(
-				Java8PluginRegistry.of(getEntityLookups()));
+		LookupObjectSerializer lookupObjectSerializer = new LookupObjectSerializer(PluginRegistry.of(getEntityLookups()));
 
 		return new PersistentEntityJackson2Module(associationLinks(), entities, uriToEntityConverter, linkCollector(),
 				repositoryInvokerFactory, lookupObjectSerializer, resourceProcessorInvoker(), assembler);
@@ -774,7 +742,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		converters.addAll(this.idConverters);
 		converters.add(DefaultIdConverter.INSTANCE);
 
-		return OrderAwarePluginRegistry.create(converters);
+		return PluginRegistry.of(converters);
 	}
 
 	@Bean

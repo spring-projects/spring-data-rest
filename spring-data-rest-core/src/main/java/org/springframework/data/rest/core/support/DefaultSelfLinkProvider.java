@@ -18,9 +18,9 @@ package org.springframework.data.rest.core.support;
 import java.util.List;
 
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.rest.core.util.Java8PluginRegistry;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
+import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 
 /**
@@ -35,7 +35,7 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 
 	private final PersistentEntities entities;
 	private final EntityLinks entityLinks;
-	private final Java8PluginRegistry<EntityLookup<?>, Class<?>> lookups;
+	private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
 
 	/**
 	 * Creates a new {@link DefaultSelfLinkProvider} from the {@link PersistentEntities}, {@link EntityLinks} and
@@ -54,7 +54,7 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 
 		this.entities = entities;
 		this.entityLinks = entityLinks;
-		this.lookups = Java8PluginRegistry.of(lookups);
+		this.lookups = PluginRegistry.of(lookups);
 	}
 
 	/*
