@@ -252,7 +252,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	 * Exposes the effective repository resource lookup path as request attribute via
 	 * {@link #EFFECTIVE_LOOKUP_PATH_ATTRIBUTE}, i.e. {@code /people/search/\{search\}} instead of
 	 * {@code /\{repository\}/search/\{search\}}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param request must not be {@literal null}.
 	 * @param repositoryBasePath must not be {@literal null}.
