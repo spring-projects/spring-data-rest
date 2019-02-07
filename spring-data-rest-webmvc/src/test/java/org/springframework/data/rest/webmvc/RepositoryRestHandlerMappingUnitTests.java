@@ -38,6 +38,7 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.ClassUtils;
@@ -285,6 +286,21 @@ public class RepositoryRestHandlerMappingUnitTests {
 				.isInstanceOfSatisfying(PathPattern.class, it -> {
 					assertThat(it.getPatternString()).isEqualTo("/people/search/{search}");
 				});
+	}
+
+	@Test // DATAREST-1332
+	public void handlesCorsPreflightRequestsProperly() throws Exception {
+
+		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
+
+		MockHttpServletRequest request = new MockHttpServletRequest("OPTIONS", "/people/search");
+		request.addHeader(HttpHeaders.ORIGIN, "test case");
+		request.addHeader(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET");
+
+		handlerMapping.afterPropertiesSet();
+
+		assertThatCode(() -> handlerMapping.lookupHandlerMethod("/people/search", request)) //
+				.doesNotThrowAnyException();
 	}
 
 	private static Class<?> createProxy(Object source) {

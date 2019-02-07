@@ -261,6 +261,11 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 			String repositoryBasePath) {
 
 		RequestMappingInfo mappingInfo = getMappingForMethod(method.getMethod(), method.getBeanType());
+
+		if (mappingInfo == null) {
+			return;
+		}
+
 		String pattern = mappingInfo.getPatternsCondition() //
 				.getMatchingCondition(request)//
 				.getPatterns() //
