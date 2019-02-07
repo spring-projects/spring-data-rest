@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -252,7 +252,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	 * Exposes the effective repository resource lookup path as request attribute via
 	 * {@link #EFFECTIVE_LOOKUP_PATH_ATTRIBUTE}, i.e. {@code /people/search/\{search\}} instead of
 	 * {@code /\{repository\}/search/\{search\}}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param request must not be {@literal null}.
 	 * @param repositoryBasePath must not be {@literal null}.
@@ -261,6 +261,11 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 			String repositoryBasePath) {
 
 		RequestMappingInfo mappingInfo = getMappingForMethod(method.getMethod(), method.getBeanType());
+
+		if (mappingInfo == null) {
+			return;
+		}
+
 		String pattern = mappingInfo.getPatternsCondition() //
 				.getMatchingCondition(request)//
 				.getPatterns() //

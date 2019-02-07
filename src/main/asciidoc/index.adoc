@@ -6,7 +6,7 @@ Jon Brisbin, Oliver Gierke, Greg Turnquist, Jay Bryant
 ifdef::backend-epub3[:front-cover-image: image:epub-cover.png[Front Cover,1050,1600]]
 :spring-data-commons-docs: ../../../../../spring-data-commons/src/main/asciidoc
 
-(C) 2012-2018 Original authors
+(C) 2012-2019 Original authors
 
 NOTE: Copies of this document may be made for your own use and for distribution to others, provided that you do not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed in print or electronically.
 
