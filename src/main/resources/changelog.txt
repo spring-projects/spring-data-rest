@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.5.RELEASE (2019-02-13)
+---------------------------------------------
+* DATAREST-1336 - Release 3.1.5 (Lovelace SR5).
+* DATAREST-1332 - NullPointerException in RepositoryRestHandlerMapping during preflight request.
+
+
 Changes in version 3.1.4.RELEASE (2019-01-10)
 ---------------------------------------------
 * DATAREST-1330 - Update copyright years to 2019.
