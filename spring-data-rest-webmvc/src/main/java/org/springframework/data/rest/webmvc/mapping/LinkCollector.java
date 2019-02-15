@@ -35,6 +35,7 @@ import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
 import org.springframework.util.Assert;
@@ -75,7 +76,7 @@ public class LinkCollector {
 	 * @return
 	 */
 	public Links getLinksFor(Object object) {
-		return getLinksFor(object, Collections.<Link> emptyList());
+		return getLinksFor(object, Links.NONE);
 	}
 
 	/**
@@ -85,16 +86,15 @@ public class LinkCollector {
 	 * @param existingLinks must not be {@literal null}.
 	 * @return
 	 */
-	public Links getLinksFor(Object object, List<Link> existingLinks) {
+	public Links getLinksFor(Object object, Links existingLinks) {
 
 		Assert.notNull(object, "Object must not be null!");
 		Assert.notNull(existingLinks, "Existing links must not be null!");
 
-		Links links = new Links(existingLinks);
-		Link selfLink = createSelfLink(object, links);
+		Link selfLink = createSelfLink(object, existingLinks);
 
 		if (selfLink == null) {
-			return links;
+			return existingLinks;
 		}
 
 		Path path = new Path(selfLink.expand().getHref());
@@ -102,13 +102,10 @@ public class LinkCollector {
 		LinkCollectingAssociationHandler handler = new LinkCollectingAssociationHandler(entities, path, associationLinks);
 		entities.getRequiredPersistentEntity(object.getClass()).doWithAssociations(handler);
 
-		List<Link> result = new ArrayList<Link>(existingLinks);
-		result.addAll(handler.getLinks());
-
-		return addSelfLinkIfNecessary(object, result);
+		return addSelfLinkIfNecessary(object, existingLinks.and(handler.getLinks()));
 	}
 
-	public Links getLinksForNested(Object object, List<Link> existing) {
+	public Links getLinksForNested(Object object, Links existing) {
 
 		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(object.getClass());
 
@@ -116,35 +113,21 @@ public class LinkCollector {
 				entity.getPropertyAccessor(object), associationLinks);
 		entity.doWithAssociations(handler);
 
-		List<Link> links = new ArrayList<Link>();
-		links.addAll(existing);
-		links.addAll(handler.getLinks());
-
-		return new Links(links);
+		return existing.and(handler.getLinks());
 	}
 
-	private Links addSelfLinkIfNecessary(Object object, List<Link> existing) {
+	private Links addSelfLinkIfNecessary(Object object, Links existing) {
 
-		Links result = new Links(existing);
-
-		if (result.hasLink(Link.REL_SELF)) {
-			return result;
-		}
-
-		List<Link> list = new ArrayList<Link>();
-		list.add(createSelfLink(object, result));
-		list.addAll(existing);
-
-		return new Links(list);
+		return existing.hasLink(IanaLinkRelations.SELF) //
+				? existing //
+				: Links.of(createSelfLink(object, existing)) //
+						.and(existing);
 	}
 
 	private Link createSelfLink(Object object, Links existing) {
 
-		if (existing.hasLink(Link.REL_SELF)) {
-			return existing.getLink(Link.REL_SELF).get();
-		}
-
-		return links.createSelfLinkFor(object).withSelfRel();
+		return existing.getLink(IanaLinkRelations.SELF) //
+				.orElseGet(() -> links.createSelfLinkFor(object).withSelfRel());
 	}
 
 	/**
@@ -168,8 +151,8 @@ public class LinkCollector {
 		 *
 		 * @return the links
 		 */
-		public List<Link> getLinks() {
-			return links;
+		public Links getLinks() {
+			return Links.of(links);
 		}
 
 		/*
@@ -182,7 +165,7 @@ public class LinkCollector {
 			if (associationLinks.isLinkableAssociation(association)) {
 
 				PersistentProperty<?> property = association.getInverse();
-				Links existingLinks = new Links(links);
+				Links existingLinks = Links.of(links);
 
 				for (Link link : associationLinks.getLinksFor(association, basePath)) {
 					if (existingLinks.hasLink(link.getRel())) {
@@ -199,7 +182,7 @@ public class LinkCollector {
 	private static class NestedLinkCollectingAssociationHandler implements SimpleAssociationHandler {
 
 		private final SelfLinkProvider selfLinks;
-		private final PersistentPropertyAccessor accessor;
+		private final PersistentPropertyAccessor<?> accessor;
 		private final Associations associations;
 		private final @Getter List<Link> links = new ArrayList<Link>();
 

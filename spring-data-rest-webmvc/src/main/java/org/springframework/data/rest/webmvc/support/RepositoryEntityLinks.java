@@ -41,6 +41,7 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConv
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkBuilder;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariable.VariableType;
@@ -181,43 +182,43 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	}
 
 	/**
-	 * Creates the link to the search resource with the given rel for a given type.
+	 * Creates the link to the search resource with the given {@link LinkRelation} for a given type.
 	 *
 	 * @param domainType must not be {@literal null}.
-	 * @param rel must not be {@literal null} or empty.
+	 * @param relation must not be {@literal null}.
 	 * @return
 	 * @since 2.3
 	 */
-	public Link linkToSearchResource(Class<?> domainType, String rel) {
-		return getSearchResourceLinkFor(domainType, rel, null, null);
+	public Link linkToSearchResource(Class<?> domainType, LinkRelation relation) {
+		return getSearchResourceLinkFor(domainType, relation, null, null);
 	}
 
 	/**
-	 * Creates the link to the search resource with the given rel for a given type. Uses the given {@link Pageable} to
-	 * pre-expand potentially available template variables.
+	 * Creates the link to the search resource with the given {@link LinkRelation} for a given type. Uses the given
+	 * {@link Pageable} to pre-expand potentially available template variables.
 	 *
 	 * @param domainType must not be {@literal null}.
-	 * @param rel must not be {@literal null} or empty.
+	 * @param relation must not be {@literal null}.
 	 * @param pageable can be {@literal null}.
 	 * @return
 	 * @since 2.3
 	 */
-	public Link linkToSearchResource(Class<?> domainType, String rel, Pageable pageable) {
-		return getSearchResourceLinkFor(domainType, rel, pageable, null);
+	public Link linkToSearchResource(Class<?> domainType, LinkRelation relation, Pageable pageable) {
+		return getSearchResourceLinkFor(domainType, relation, pageable, null);
 	}
 
 	/**
-	 * Creates the link to the search resource with the given rel for a given type. Uses the given {@link Sort} to
-	 * pre-expand potentially available template variables.
+	 * Creates the link to the search resource with the given {@link LinkRelation} for a given type. Uses the given
+	 * {@link Sort} to pre-expand potentially available template variables.
 	 *
 	 * @param domainType must not be {@literal null}.
-	 * @param rel must not be {@literal null} or empty.
+	 * @param relation must not be {@literal null}.
 	 * @param sort can be {@literal null}.
 	 * @return
 	 * @since 2.3
 	 */
-	public Link linkToSearchResource(Class<?> domainType, String rel, Sort sort) {
-		return getSearchResourceLinkFor(domainType, rel, null, sort);
+	public Link linkToSearchResource(Class<?> domainType, LinkRelation relation, Sort sort) {
+		return getSearchResourceLinkFor(domainType, relation, null, sort);
 	}
 
 	/**
@@ -231,31 +232,26 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 */
 	private Links linksToSearchResources(Class<?> type, Pageable pageable, Sort sort) {
 
-		List<Link> links = new ArrayList<Link>();
-
-		SearchResourceMappings searchMappings = mappings.getSearchResourceMappings(type);
-
-		for (MethodResourceMapping mapping : searchMappings.getExportedMappings()) {
-			links.add(getSearchResourceLinkFor(type, mapping.getRel(), pageable, sort));
-		}
-
-		return new Links(links);
+		return mappings.getSearchResourceMappings(type).getExportedMappings() //
+				.map(MethodResourceMapping::getRel) //
+				.map(it -> getSearchResourceLinkFor(type, it, pageable, sort)) //
+				.collect(Links.collector());
 	}
 
 	/**
-	 * Returns the link pointing to the search resource with the given rel of the given type and pre-expands the
-	 * calculated URi tempalte with the given {@link Pageable} and {@link Sort}.
+	 * Returns the link pointing to the search resource with the given {@link LinkRelation} of the given type and
+	 * pre-expands the calculated URi template with the given {@link Pageable} and {@link Sort}.
 	 *
 	 * @param type must not be {@literal null}.
-	 * @param rel must not be {@literal null} or empty.
+	 * @param rel must not be {@literal null}.
 	 * @param pageable can be {@literal null}.
 	 * @param sort can be {@literal null}.
 	 * @return
 	 */
-	private Link getSearchResourceLinkFor(Class<?> type, String rel, Pageable pageable, Sort sort) {
+	private Link getSearchResourceLinkFor(Class<?> type, LinkRelation rel, Pageable pageable, Sort sort) {
 
 		Assert.notNull(type, "Domain type must not be null!");
-		Assert.hasText(rel, "Relation name must not be null or empty!");
+		Assert.notNull(rel, "Relation name must not be null!");
 
 		SearchResourceMappings searchMappings = mappings.getSearchResourceMappings(type);
 		MethodResourceMapping mapping = searchMappings.getExportedMethodMappingForRel(rel);

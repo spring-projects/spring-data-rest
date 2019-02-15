@@ -108,5 +108,4 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 		client.follow(profileLink, RestMediaTypes.SCHEMA_JSON).andExpect(status().is2xxSuccessful())
 				.andExpect(content().contentTypeCompatibleWith(RestMediaTypes.SCHEMA_JSON));
 	}
-
 }

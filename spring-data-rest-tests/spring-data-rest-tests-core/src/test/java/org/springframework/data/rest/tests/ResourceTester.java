@@ -15,8 +15,9 @@
  */
 package org.springframework.data.rest.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import org.hamcrest.Matcher;
 import org.springframework.data.rest.core.Path;
@@ -58,7 +59,7 @@ public class ResourceTester {
 	 * @param number
 	 */
 	public void assertNumberOfLinks(int number) {
-		assertThat(resource.getLinks().size(), is(number));
+		assertThat(resource.getLinks()).hasSize(number);
 	}
 
 	/**

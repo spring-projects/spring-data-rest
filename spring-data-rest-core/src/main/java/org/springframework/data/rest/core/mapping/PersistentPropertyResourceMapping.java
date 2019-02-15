@@ -22,6 +22,7 @@ import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.util.Optionals;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -71,11 +72,11 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
 	 */
 	@Override
-	public String getRel() {
+	public LinkRelation getRel() {
 
-		return annotation.filter(it -> StringUtils.hasText(it.rel()))//
-				.map(it -> it.rel())//
-				.orElseGet(() -> property.getName());
+		return LinkRelation.of(annotation.filter(it -> StringUtils.hasText(it.rel())) //
+				.map(it -> it.rel()) //
+				.orElseGet(() -> property.getName()));
 	}
 
 	/*

@@ -42,6 +42,7 @@ import org.springframework.data.rest.core.domain.CreditCard;
 import org.springframework.data.rest.core.domain.JpaRepositoryConfig;
 import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.domain.Profile;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -106,7 +107,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 		ResourceMetadata metadata = mappings.getMetadataFor(Person.class);
 		ResourceMapping mapping = metadata.getMappingFor(property);
 
-		assertThat(mapping.getRel()).isEqualTo("siblings");
+		assertThat(mapping.getRel()).isEqualTo(LinkRelation.of("siblings"));
 		assertThat(mapping.getPath()).isEqualTo(new Path("siblings"));
 		assertThat(mapping.isExported()).isTrue();
 	}
@@ -168,7 +169,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 
 		PropertyAwareResourceMapping propertyMapping = metadata.getProperty("father-mapped");
 
-		assertThat(propertyMapping.getRel()).isEqualTo("father");
+		assertThat(propertyMapping.getRel()).isEqualTo(LinkRelation.of("father"));
 		assertThat(propertyMapping.getPath()).isEqualTo(new Path("father-mapped"));
 	}
 }

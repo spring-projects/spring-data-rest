@@ -25,6 +25,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Links;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.core.EmbeddedWrapper;
@@ -91,7 +92,7 @@ public class PersistentEntityResource extends Resource<Object> {
 	 *
 	 * @return
 	 */
-	public PersistentPropertyAccessor getPropertyAccessor() {
+	public PersistentPropertyAccessor<?> getPropertyAccessor() {
 		return entity.getPropertyAccessor(getContent());
 	}
 
@@ -214,7 +215,7 @@ public class PersistentEntityResource extends Resource<Object> {
 		 */
 		@Override
 		@JsonIgnore
-		public List<Link> getLinks() {
+		public Links getLinks() {
 			return super.getLinks();
 		}
 	}

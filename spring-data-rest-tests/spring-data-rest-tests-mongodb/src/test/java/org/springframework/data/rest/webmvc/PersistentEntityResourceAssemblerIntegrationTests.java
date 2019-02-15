@@ -27,7 +27,6 @@ import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
-import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests.TestConfiguration;
 import org.springframework.data.rest.tests.mongodb.MongoDbRepositoryConfig;
@@ -35,6 +34,7 @@ import org.springframework.data.rest.tests.mongodb.User;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.Projector;
 import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Links;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -58,17 +58,17 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 		when(projector.projectExcerpt(any())).thenAnswer(new ReturnsArgumentAt(0));
 
 		PersistentEntityResourceAssembler assembler = new PersistentEntityResourceAssembler(entities, projector,
-				associations, new DefaultSelfLinkProvider(entities, entityLinks, Collections.<EntityLookup<?>> emptyList()));
+				associations, new DefaultSelfLinkProvider(entities, entityLinks, Collections.emptyList()));
 
 		User user = new User();
 		user.id = BigInteger.valueOf(4711);
 
 		PersistentEntityResource resource = assembler.toResource(user);
 
-		Links links = new Links(resource.getLinks());
+		Links links = resource.getLinks();
 
 		assertThat(links).hasSize(2);
-		assertThat(links.getLink("self").orElseThrow(() -> new RuntimeException("Unable to find 'self' link")).getVariables()).isEmpty();
-		assertThat(links.getLink("user").orElseThrow(() -> new RuntimeException("Unable to find 'user' link")).getVariableNames()).contains("projection");
+		assertThat(links.getRequiredLink(IanaLinkRelations.SELF).getVariables()).isEmpty();
+		assertThat(links.getRequiredLink("user").getVariableNames()).contains("projection");
 	}
 }

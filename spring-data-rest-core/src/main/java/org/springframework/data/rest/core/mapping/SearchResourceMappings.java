@@ -17,13 +17,14 @@ package org.springframework.data.rest.core.mapping;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.data.rest.core.Path;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.util.Assert;
 
 /**
@@ -37,7 +38,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 			+ "%s are mapped to %s! Tweak configuration to get to unambiguous paths!";
 
 	private static final Path PATH = new Path("/search");
-	private static final String REL = "search";
+	private static final LinkRelation REL = IanaLinkRelations.SEARCH;
 
 	private final Map<Path, MethodResourceMapping> mappings;
 
@@ -57,8 +58,8 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 			MethodResourceMapping existing = this.mappings.get(mapping.getPath());
 
 			if (existing != null) {
-				throw new IllegalStateException(String.format(AMBIGUOUS_MAPPING, existing.getMethod(), mapping.getMethod(),
-						existing.getPath()));
+				throw new IllegalStateException(
+						String.format(AMBIGUOUS_MAPPING, existing.getMethod(), mapping.getMethod(), existing.getPath()));
 			}
 
 			this.mappings.put(mapping.getPath(), mapping);
@@ -85,38 +86,27 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	 * @return
 	 * @since 2.3
 	 */
-	public Iterable<MethodResourceMapping> getExportedMappings() {
+	public Stream<MethodResourceMapping> getExportedMappings() {
 
-		Set<MethodResourceMapping> result = new HashSet<MethodResourceMapping>(mappings.values().size());
-
-		for (MethodResourceMapping mapping : this) {
-			if (mapping.isExported()) {
-				result.add(mapping);
-			}
-		}
-
-		return result;
+		return mappings.values().stream() //
+				.filter(MethodResourceMapping::isExported);
 	}
 
 	/**
 	 * Returns the {@link MappingResourceMetadata} for the given relation name.
 	 *
-	 * @param rel must not be {@literal null} or empty.
+	 * @param rel must not be {@literal null}.
 	 * @return
 	 * @since 2.3
 	 */
-	public MethodResourceMapping getExportedMethodMappingForRel(String rel) {
+	public MethodResourceMapping getExportedMethodMappingForRel(LinkRelation rel) {
 
-		Assert.hasText(rel, "Rel must not be null or empty!");
+		Assert.notNull(rel, "Rel must not be null!");
 
-		for (MethodResourceMapping mapping : this) {
-
-			if (mapping.isExported() && mapping.getRel().equals(rel)) {
-				return mapping;
-			}
-		}
-
-		return null;
+		return mappings.values().stream() //
+				.filter(MethodResourceMapping::isExported) //
+				.filter(it -> it.getRel().isSameAs(rel)) //
+				.findFirst().orElse(null);
 	}
 
 	/**
@@ -154,7 +144,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
 	 */
 	@Override
-	public String getRel() {
+	public LinkRelation getRel() {
 		return REL;
 	}
 

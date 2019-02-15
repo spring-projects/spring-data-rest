@@ -57,6 +57,7 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.BackendId;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
@@ -294,9 +295,9 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 			} else if (prop.property.isMap()) {
 
-				Map<String, Object> map = AUGMENTING_METHODS.contains(requestMethod) //
-						? (Map<String, Object>) prop.propertyValue //
-						: CollectionFactory.<String, Object> createMap(propertyType, 0);
+				Map<LinkRelation, Object> map = AUGMENTING_METHODS.contains(requestMethod) //
+						? (Map<LinkRelation, Object>) prop.propertyValue //
+						: CollectionFactory.<LinkRelation, Object> createMap(propertyType, 0);
 
 				// Add to the existing collection
 				for (Link l2 : source.getLinks()) {
@@ -314,12 +315,13 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 									"Cannot PATCH a reference to this singular property since the property type is not a List or a Map.");
 				}
 
-				if (source.getLinks().size() != 1) {
+				if (source.getLinks().hasSingleLink()) {
 					throw new IllegalArgumentException(
 							"Must send only 1 link to update a property reference that isn't a List or a Map.");
 				}
 
-				prop.accessor.setProperty(prop.property, loadPropertyValue(prop.propertyType, source.getLinks().get(0)));
+				prop.accessor.setProperty(prop.property,
+						loadPropertyValue(prop.propertyType, source.getLinks().toList().get(0)));
 			}
 
 			publisher.publishEvent(new BeforeLinkSaveEvent(prop.accessor.getBean(), prop.propertyValue));

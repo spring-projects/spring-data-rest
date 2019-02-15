@@ -29,7 +29,9 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
@@ -37,7 +39,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -53,7 +54,7 @@ import com.jayway.jsonpath.JsonPath;
  */
 public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
-	protected abstract Iterable<String> expectedRootLinkRels();
+	protected abstract Iterable<LinkRelation> expectedRootLinkRels();
 
 	// Root test cases
 
@@ -62,8 +63,8 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 		ResultActions actions = mvc.perform(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)).andExpect(status().isOk());
 
-		for (String rel : expectedRootLinkRels()) {
-			actions.andDo(MockMvcResultHandlers.print()).andExpect(client.hasLinkWithRel(rel));
+		for (LinkRelation rel : expectedRootLinkRels()) {
+			actions.andExpect(client.hasLinkWithRel(rel));
 		}
 	}
 
@@ -72,14 +73,14 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 		MockHttpServletResponse response = client.request("/");
 
-		for (String rel : expectedRootLinkRels()) {
+		for (LinkRelation rel : expectedRootLinkRels()) {
 
 			Link link = client.assertHasLinkWithRel(rel, response);
 
 			// Resource
 			client.follow(link).andExpect(status().is2xxSuccessful());
 
-			Link profileLink = client.discoverUnique(link, "profile");
+			Link profileLink = client.discoverUnique(link, LinkRelation.of("profile"));
 
 			// Default metadata
 			client.follow(profileLink).andExpect(status().is2xxSuccessful());
@@ -113,29 +114,37 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 		MockHttpServletResponse response = client.request("/");
 
-		for (String rel : expectedRootLinkRels()) {
+		for (LinkRelation rel : expectedRootLinkRels()) {
 
 			Link link = client.assertHasLinkWithRel(rel, response);
 			String rootResourceRepresentation = client.request(link).getContentAsString();
-			Link searchLink = client.getDiscoverer(response).findLinkWithRel("search", rootResourceRepresentation);
 
-			if (searchLink != null) {
-				client.follow(searchLink).//
-						andExpect(client.hasLinkWithRel("self")).//
-						andExpect(jsonPath("$.domainType").doesNotExist()); // DATAREST-549
-			}
+			client.getDiscoverer(response) //
+					.findLinkWithRel("search", rootResourceRepresentation) //
+					.ifPresent(it -> {
+
+						try {
+
+							client.follow(it).//
+							andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF)).//
+							andExpect(jsonPath("$.domainType").doesNotExist());
+
+						} catch (Exception e) {
+							throw new RuntimeException(e);
+						}
+					});
 		}
 	}
 
 	@Test
 	public void nic() throws Exception {
 
-		Map<String, String> payloads = getPayloadToPost();
+		Map<LinkRelation, String> payloads = getPayloadToPost();
 		assumeFalse(payloads.isEmpty());
 
 		MockHttpServletResponse response = client.request("/");
 
-		for (String rel : expectedRootLinkRels()) {
+		for (LinkRelation rel : expectedRootLinkRels()) {
 
 			String payload = payloads.get(rel);
 
@@ -159,7 +168,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 		MockHttpServletResponse rootResource = client.request("/");
 
-		for (Map.Entry<String, List<String>> linked : getRootAndLinkedResources().entrySet()) {
+		for (Map.Entry<LinkRelation, List<String>> linked : getRootAndLinkedResources().entrySet()) {
 
 			Link resourceLink = client.assertHasLinkWithRel(linked.getKey(), rootResource);
 			MockHttpServletResponse resource = client.request(resourceLink);
@@ -186,7 +195,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 		MediaType ALPS_MEDIA_TYPE = MediaType.valueOf("application/alps+json");
 
 		MockHttpServletResponse response = client.request("/");
-		Link profileLink = client.assertHasLinkWithRel("profile", response);
+		Link profileLink = client.assertHasLinkWithRel(LinkRelation.of("profile"), response);
 
 		mvc.perform(//
 				get(profileLink.expand().getHref()).//
@@ -206,7 +215,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-658
 	public void collectionResourcesExposeLinksAsHeadersForHeadRequest() throws Exception {
 
-		for (String rel : expectedRootLinkRels()) {
+		for (LinkRelation rel : expectedRootLinkRels()) {
 
 			Link link = client.discoverUnique(rel);
 
@@ -214,9 +223,9 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 					.andExpect(status().isNoContent())//
 					.andReturn().getResponse();
 
-			Links links = Links.valueOf(response.getHeader("Link"));
+			Links links = Links.parse(response.getHeader("Link"));
 
-			assertThat(links.hasLink(Link.REL_SELF)).isTrue();
+			assertThat(links.hasLink(IanaLinkRelations.SELF)).isTrue();
 			assertThat(links.hasLink("profile")).isTrue();
 		}
 	}
@@ -224,7 +233,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-661
 	public void patchToNonExistingResourceReturnsNotFound() throws Exception {
 
-		String rel = expectedRootLinkRels().iterator().next();
+		LinkRelation rel = expectedRootLinkRels().iterator().next();
 		String uri = client.discoverUnique(rel).expand().getHref().concat("/");
 		String id = "4711";
 		Integer status = null;
@@ -244,7 +253,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-1003
 	public void rejectsUnsupportedAcceptTypeForResources() throws Exception {
 
-		for (String string : expectedRootLinkRels()) {
+		for (LinkRelation string : expectedRootLinkRels()) {
 
 			Link link = client.discoverUnique(string);
 

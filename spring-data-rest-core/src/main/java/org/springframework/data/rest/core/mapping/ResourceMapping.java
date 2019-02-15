@@ -16,6 +16,7 @@
 package org.springframework.data.rest.core.mapping;
 
 import org.springframework.data.rest.core.Path;
+import org.springframework.hateoas.LinkRelation;
 
 /**
  * Mapping information for components to be exported as REST resources.
@@ -36,7 +37,7 @@ public interface ResourceMapping {
 	 *
 	 * @return will never be {@literal null}.
 	 */
-	String getRel();
+	LinkRelation getRel();
 
 	/**
 	 * Returns the path the resource is exposed under.

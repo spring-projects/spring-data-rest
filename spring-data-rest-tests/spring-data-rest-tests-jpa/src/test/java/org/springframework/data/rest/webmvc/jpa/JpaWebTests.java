@@ -28,7 +28,6 @@ import net.minidev.json.JSONArray;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +37,9 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.tests.CommonWebTests;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.http.MediaType;
@@ -90,8 +91,8 @@ public class JpaWebTests extends CommonWebTests {
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
 	 */
 	@Override
-	protected Iterable<String> expectedRootLinkRels() {
-		return Arrays.asList("people", "authors", "books");
+	protected Iterable<LinkRelation> expectedRootLinkRels() {
+		return LinkRelation.manyOf("people", "authors", "books");
 	}
 
 	/*
@@ -99,8 +100,8 @@ public class JpaWebTests extends CommonWebTests {
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#getPayloadToPost()
 	 */
 	@Override
-	protected Map<String, String> getPayloadToPost() throws Exception {
-		return Collections.singletonMap("people", readFileFromClasspath("person.json"));
+	protected Map<LinkRelation, String> getPayloadToPost() throws Exception {
+		return Collections.singletonMap(LinkRelation.of("people"), readFileFromClasspath("person.json"));
 	}
 
 	/*
@@ -108,11 +109,11 @@ public class JpaWebTests extends CommonWebTests {
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#getRootAndLinkedResources()
 	 */
 	@Override
-	protected MultiValueMap<String, String> getRootAndLinkedResources() {
+	protected MultiValueMap<LinkRelation, String> getRootAndLinkedResources() {
 
-		MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
-		map.add("authors", "books");
-		map.add("books", "authors");
+		MultiValueMap<LinkRelation, String> map = new LinkedMultiValueMap<>();
+		map.add(LinkRelation.of("authors"), "books");
+		map.add(LinkRelation.of("books"), "authors");
 
 		return map;
 	}
@@ -130,26 +131,26 @@ public class JpaWebTests extends CommonWebTests {
 
 		MockHttpServletResponse response = client.request("/people?page=0&size=1");
 
-		Link nextLink = client.assertHasLinkWithRel(Link.REL_NEXT, response);
-		assertDoesNotHaveLinkWithRel(Link.REL_PREVIOUS, response);
+		Link nextLink = client.assertHasLinkWithRel(IanaLinkRelations.NEXT, response);
+		assertDoesNotHaveLinkWithRel(IanaLinkRelations.PREV, response);
 
 		response = client.request(nextLink);
-		client.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		nextLink = client.assertHasLinkWithRel(Link.REL_NEXT, response);
+		client.assertHasLinkWithRel(IanaLinkRelations.PREV, response);
+		nextLink = client.assertHasLinkWithRel(IanaLinkRelations.NEXT, response);
 
 		response = client.request(nextLink);
-		client.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);
+		client.assertHasLinkWithRel(IanaLinkRelations.PREV, response);
+		assertDoesNotHaveLinkWithRel(IanaLinkRelations.NEXT, response);
 	}
 
 	@Test // DATAREST-169
 	public void exposesLinkForRelatedResource() throws Exception {
 
 		MockHttpServletResponse response = client.request("/");
-		Link ordersLink = client.assertHasLinkWithRel("orders", response);
+		Link ordersLink = client.assertHasLinkWithRel(LinkRelation.of("orders"), response);
 
 		MockHttpServletResponse orders = client.request(ordersLink);
-		Link creatorLink = assertHasContentLinkWithRel("creator", orders);
+		Link creatorLink = assertHasContentLinkWithRel(LinkRelation.of("creator"), orders);
 
 		assertThat(client.request(creatorLink)).isNotNull();
 	}
@@ -158,7 +159,7 @@ public class JpaWebTests extends CommonWebTests {
 	public void exposesInlinedEntities() throws Exception {
 
 		MockHttpServletResponse response = client.request("/");
-		Link ordersLink = client.assertHasLinkWithRel("orders", response);
+		Link ordersLink = client.assertHasLinkWithRel(LinkRelation.of("orders"), response);
 
 		MockHttpServletResponse orders = client.request(ordersLink);
 		assertHasJsonPathValue("$..lineItems", orders);
@@ -176,7 +177,7 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-117
 	public void createPersonThenVerifyIgnoredAttributesDontExist() throws Exception {
 
-		Link peopleLink = client.discoverUnique("people");
+		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 		ObjectMapper mapper = new ObjectMapper();
 		Person frodo = new Person("Frodo", "Baggins");
 		frodo.setAge(77);
@@ -196,12 +197,12 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-95
 	public void createThenPatch() throws Exception {
 
-		Link peopleLink = client.discoverUnique("people");
+		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 
 		MockHttpServletResponse bilbo = postAndGet(peopleLink, "{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }",
 				MediaType.APPLICATION_JSON);
 
-		Link bilboLink = client.assertHasLinkWithRel("self", bilbo);
+		Link bilboLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, bilbo);
 
 		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName")).isEqualTo("Bilbo");
 		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName")).isEqualTo("Baggins");
@@ -220,13 +221,13 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-150
 	public void createThenPut() throws Exception {
 
-		Link peopleLink = client.discoverUnique("people");
+		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 
 		MockHttpServletResponse bilbo = postAndGet(peopleLink, //
 				"{ \"firstName\" : \"Bilbo\", \"lastName\" : \"Baggins\" }", //
 				MediaType.APPLICATION_JSON);
 
-		Link bilboLink = client.assertHasLinkWithRel("self", bilbo);
+		Link bilboLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, bilbo);
 
 		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName"), equalTo("Bilbo"));
 		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName"), equalTo("Baggins"));
@@ -343,7 +344,7 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-50
 	public void propertiesCanHaveNulls() throws Exception {
 
-		Link peopleLink = client.discoverUnique("people");
+		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 
 		Person frodo = new Person();
 		frodo.setFirstName("Frodo");
@@ -360,14 +361,14 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-238
 	public void putShouldWorkDespiteExistingLinks() throws Exception {
 
-		Link peopleLink = client.discoverUnique("people");
+		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 
 		Person frodo = new Person("Frodo", "Baggins");
 		String frodoString = mapper.writeValueAsString(frodo);
 
 		MockHttpServletResponse createdPerson = postAndGet(peopleLink, frodoString, MediaType.APPLICATION_JSON);
 
-		Link frodoLink = client.assertHasLinkWithRel("self", createdPerson);
+		Link frodoLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, createdPerson);
 		assertJsonPathEquals("$.firstName", "Frodo", createdPerson);
 
 		String bilboWithFrodosLinks = createdPerson.getContentAsString().replace("Frodo", "Bilbo");
@@ -375,14 +376,14 @@ public class JpaWebTests extends CommonWebTests {
 		MockHttpServletResponse overwrittenResponse = putAndGet(frodoLink, bilboWithFrodosLinks,
 				MediaType.APPLICATION_JSON);
 
-		client.assertHasLinkWithRel("self", overwrittenResponse);
+		client.assertHasLinkWithRel(IanaLinkRelations.SELF, overwrittenResponse);
 		assertJsonPathEquals("$.firstName", "Bilbo", overwrittenResponse);
 	}
 
 	@Test // DATAREST-217
 	public void doesNotAllowGetToCollectionResourceIfFindAllIsNotExported() throws Exception {
 
-		Link link = client.discoverUnique("addresses");
+		Link link = client.discoverUnique(LinkRelation.of("addresses"));
 
 		mvc.perform(get(link.getHref())).//
 				andExpect(status().isMethodNotAllowed());
@@ -391,7 +392,7 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-217
 	public void doesNotAllowPostToCollectionResourceIfSaveIsNotExported() throws Exception {
 
-		Link link = client.discoverUnique("addresses");
+		Link link = client.discoverUnique(LinkRelation.of("addresses"));
 
 		mvc.perform(post(link.getHref()).content("{}").contentType(MediaType.APPLICATION_JSON)).//
 				andExpect(status().isMethodNotAllowed());
@@ -405,10 +406,10 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-221
 	public void returnsProjectionIfRequested() throws Exception {
 
-		Link orders = client.discoverUnique("orders");
+		Link orders = client.discoverUnique(LinkRelation.of("orders"));
 
 		MockHttpServletResponse response = client.request(orders);
-		Link orderLink = assertContentLinkWithRel("self", response, true).expand();
+		Link orderLink = assertContentLinkWithRel(IanaLinkRelations.SELF, response, true).expand();
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(orderLink.getHref());
 		String uri = builder.queryParam("projection", "summary").build().toUriString();
@@ -423,18 +424,18 @@ public class JpaWebTests extends CommonWebTests {
 
 	@Test // DATAREST-261
 	public void relProviderDetectsCustomizedMapping() {
-		assertThat(relProvider.getCollectionResourceRelFor(Person.class)).isEqualTo("people");
+		assertThat(relProvider.getCollectionResourceRelFor(Person.class)).isEqualTo(LinkRelation.of("people"));
 	}
 
 	@Test // DATAREST-311
 	public void onlyLinksShouldAppearWhenExecuteSearchCompact() throws Exception {
 
-		Link peopleLink = client.discoverUnique("people");
+		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 		Person daenerys = new Person("Daenerys", "Targaryen");
 		String daenerysString = mapper.writeValueAsString(daenerys);
 
 		MockHttpServletResponse createdPerson = postAndGet(peopleLink, daenerysString, MediaType.APPLICATION_JSON);
-		Link daenerysLink = client.assertHasLinkWithRel("self", createdPerson);
+		Link daenerysLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, createdPerson);
 		assertJsonPathEquals("$.firstName", "Daenerys", createdPerson);
 
 		Link searchLink = client.discoverUnique(peopleLink, "search");
@@ -448,7 +449,7 @@ public class JpaWebTests extends CommonWebTests {
 		JSONArray personLinks = JsonPath.<JSONArray> read(responseBody, "$.links[?(@.rel=='person')].href");
 
 		assertThat(personLinks).hasSize(1);
-		assertThat(personLinks.get(0)).isEqualTo((Object) daenerysLink.getHref());
+		assertThat(personLinks.get(0)).isEqualTo(daenerysLink.getHref());
 		assertThat(JsonPath.<JSONArray> read(responseBody, "$.content")).hasSize(0);
 	}
 
@@ -499,12 +500,12 @@ public class JpaWebTests extends CommonWebTests {
 		client.follow(findBySortedLink.expand("title,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
-				andExpect(client.hasLinkWithRel("self"));
+				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 
 		client.follow(findBySortedLink.expand("title,asc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
-				andExpect(client.hasLinkWithRel("self"));
+				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 	}
 
 	@Test // DATAREST-160
@@ -519,7 +520,7 @@ public class JpaWebTests extends CommonWebTests {
 		String stringReceipt = mapper.writeValueAsString(receipt);
 
 		MockHttpServletResponse createdReceipt = postAndGet(receiptLink, stringReceipt, MediaType.APPLICATION_JSON);
-		Link tacosLink = client.assertHasLinkWithRel("self", createdReceipt);
+		Link tacosLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, createdReceipt);
 		assertJsonPathEquals("$.saleItem", "Springy Tacos", createdReceipt);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(tacosLink.getHref());
@@ -569,15 +570,15 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-658
 	public void returnsLinkHeadersForHeadRequestToItemResource() throws Exception {
 
-		MockHttpServletResponse response = client.request(client.discoverUnique("people"));
+		MockHttpServletResponse response = client.request(client.discoverUnique(LinkRelation.of("people")));
 		String personHref = JsonPath.read(response.getContentAsString(), "$._embedded.people[0]._links.self.href");
 
 		response = mvc.perform(head(personHref))//
 				.andExpect(status().isNoContent())//
 				.andReturn().getResponse();
 
-		Links links = Links.valueOf(response.getHeader("Link"));
-		assertThat(links.hasLink("self")).isTrue();
+		Links links = Links.parse(response.getHeader("Link"));
+		assertThat(links.hasLink(IanaLinkRelations.SELF)).isTrue();
 		assertThat(links.hasLink("person")).isTrue();
 	}
 
@@ -594,12 +595,12 @@ public class JpaWebTests extends CommonWebTests {
 		client.follow(findBySortedLink.expand("sales,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
-				andExpect(client.hasLinkWithRel("self"));
+				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 
 		client.follow(findBySortedLink.expand("sales,asc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
-				andExpect(client.hasLinkWithRel("self"));
+				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 	}
 
 	@Test // DATAREST-883
@@ -614,12 +615,12 @@ public class JpaWebTests extends CommonWebTests {
 		client.follow(findByLink.expand("0", "10", "sales,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
-				andExpect(client.hasLinkWithRel("self"));
+				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 
 		client.follow(findByLink.expand("0", "10", "unknown,asc,sales,asc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
-				andExpect(client.hasLinkWithRel("self"));
+				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 	}
 
 	@Test // DATAREST-910
@@ -644,17 +645,17 @@ public class JpaWebTests extends CommonWebTests {
 		client.follow(findBySortedLink.expand("offer.price,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
-				andExpect(client.hasLinkWithRel("self"));
+				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 
 		client.follow(findBySortedLink.expand("offer.price,asc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
-				andExpect(client.hasLinkWithRel("self"));
+				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 	}
 
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
 
-		Link peopleLink = client.discoverUnique("people");
+		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 		List<Link> links = new ArrayList<Link>();
 
 		MockHttpServletResponse primaryResponse = postAndGet(peopleLink, mapper.writeValueAsString(primary),
@@ -666,7 +667,7 @@ public class JpaWebTests extends CommonWebTests {
 			String payload = mapper.writeValueAsString(person);
 			MockHttpServletResponse response = postAndGet(peopleLink, payload, MediaType.APPLICATION_JSON);
 
-			links.add(client.assertHasLinkWithRel(Link.REL_SELF, response));
+			links.add(client.assertHasLinkWithRel(IanaLinkRelations.SELF, response));
 		}
 
 		return links;
@@ -690,7 +691,7 @@ public class JpaWebTests extends CommonWebTests {
 
 	private void assertPersonWithNameAndSiblingLink(String name) throws Exception {
 
-		MockHttpServletResponse response = client.request(client.discoverUnique("people"));
+		MockHttpServletResponse response = client.request(client.discoverUnique(LinkRelation.of("people")));
 
 		String jsonPath = String.format("$._embedded.people[?(@.firstName == '%s')]", name);
 

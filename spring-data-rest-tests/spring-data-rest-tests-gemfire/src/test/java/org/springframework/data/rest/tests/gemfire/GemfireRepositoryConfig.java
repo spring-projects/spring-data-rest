@@ -38,7 +38,6 @@ public class GemfireRepositoryConfig {
 	 * TODO: Remove, once Spring Data Gemfire exposes a mapping context.
 	 */
 	@Bean
-	@SuppressWarnings("unchecked")
 	public GemfireMappingContext gemfireMappingContext() {
 
 		AnnotatedTypeScanner scanner = new AnnotatedTypeScanner(Region.class);

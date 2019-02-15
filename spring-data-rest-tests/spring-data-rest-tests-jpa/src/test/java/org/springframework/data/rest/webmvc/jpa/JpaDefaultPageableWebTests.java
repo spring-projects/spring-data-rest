@@ -37,7 +37,9 @@ import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -83,6 +85,7 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 	@Autowired TestDataPopulator loader;
 	@Autowired ApplicationContext context;
 
+	@Override
 	@Before
 	public void setUp() {
 		loader.populateRepositories();
@@ -92,7 +95,8 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-906
 	public void executesSearchThatTakesAMappedSortProperty() throws Exception {
 
-		Link findBySortedLink = client.discoverUnique("books", "search", "find-spring-books-sorted");
+		Link findBySortedLink = client.discoverUnique(LinkRelation.of("books"), IanaLinkRelations.SEARCH,
+				LinkRelation.of("find-spring-books-sorted"));
 
 		// Assert sort options advertised
 		assertThat(findBySortedLink.isTemplated()).isTrue();

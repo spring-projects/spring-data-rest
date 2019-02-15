@@ -31,6 +31,8 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.LinkRelation;
 
 /**
  * Unit tests for {@link PersistentPropertyResourceMapping}.
@@ -49,7 +51,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 
 		assertThat(mapping).isNotNull();
 		assertThat(mapping.getPath()).isEqualTo(new Path("first"));
-		assertThat(mapping.getRel()).isEqualTo("first");
+		assertThat(mapping.getRel()).isEqualTo(IanaLinkRelations.FIRST);
 		assertThat(mapping.isExported()).isFalse();
 	}
 
@@ -60,7 +62,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 
 		assertThat(mapping).isNotNull();
 		assertThat(mapping.getPath()).isEqualTo(new Path("secPath"));
-		assertThat(mapping.getRel()).isEqualTo("secRel");
+		assertThat(mapping.getRel()).isEqualTo(LinkRelation.of("secRel"));
 		assertThat(mapping.isExported()).isFalse();
 	}
 
@@ -71,7 +73,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 
 		assertThat(mapping).isNotNull();
 		assertThat(mapping.getPath()).isEqualTo(new Path("thirdPath"));
-		assertThat(mapping.getRel()).isEqualTo("thirdRel");
+		assertThat(mapping.getRel()).isEqualTo(LinkRelation.of("thirdRel"));
 		assertThat(mapping.isExported()).isFalse();
 	}
 

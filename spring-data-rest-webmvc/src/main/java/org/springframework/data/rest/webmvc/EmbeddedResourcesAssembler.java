@@ -30,6 +30,7 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.util.Assert;
@@ -59,7 +60,7 @@ public class EmbeddedResourcesAssembler {
 		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(instance.getClass());
 
 		final List<EmbeddedWrapper> associationProjections = new ArrayList<EmbeddedWrapper>();
-		final PersistentPropertyAccessor accessor = entity.getPropertyAccessor(instance);
+		final PersistentPropertyAccessor<?> accessor = entity.getPropertyAccessor(instance);
 		final ResourceMetadata metadata = associations.getMetadataFor(entity.getType());
 
 		entity.doWithAssociations((SimpleAssociationHandler) association -> {
@@ -80,7 +81,7 @@ public class EmbeddedResourcesAssembler {
 				return;
 			}
 
-			String rel = metadata.getMappingFor(property).getRel();
+			LinkRelation rel = metadata.getMappingFor(property).getRel();
 
 			if (value instanceof Collection) {
 

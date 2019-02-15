@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.Test;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.hateoas.LinkRelation;
 
 /**
  * Unit tests for {@link TypeBasedCollectionResourceMapping}.
@@ -34,8 +35,8 @@ public class TypeBasedCollectionResourceMappingUnitTests {
 		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(Sample.class);
 
 		assertThat(mapping.getPath()).isEqualTo(new Path("sample"));
-		assertThat(mapping.getRel()).isEqualTo("samples");
-		assertThat(mapping.getItemResourceRel()).isEqualTo("sample");
+		assertThat(mapping.getRel()).isEqualTo(LinkRelation.of("samples"));
+		assertThat(mapping.getItemResourceRel()).isEqualTo(LinkRelation.of("sample"));
 		assertThat(mapping.isExported()).isTrue();
 	}
 
@@ -45,8 +46,8 @@ public class TypeBasedCollectionResourceMappingUnitTests {
 		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(CustomizedSample.class);
 
 		assertThat(mapping.getPath()).isEqualTo(new Path("customizedSample"));
-		assertThat(mapping.getRel()).isEqualTo("myRel");
-		assertThat(mapping.getItemResourceRel()).isEqualTo("customizedSample");
+		assertThat(mapping.getRel()).isEqualTo(LinkRelation.of("myRel"));
+		assertThat(mapping.getItemResourceRel()).isEqualTo(LinkRelation.of("customizedSample"));
 		assertThat(mapping.isExported()).isTrue();
 	}
 

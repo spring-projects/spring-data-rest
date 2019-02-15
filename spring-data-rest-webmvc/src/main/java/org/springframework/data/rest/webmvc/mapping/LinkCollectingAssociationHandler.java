@@ -81,8 +81,8 @@ public class LinkCollectingAssociationHandler implements SimpleAssociationHandle
 	 *
 	 * @return the links
 	 */
-	public List<Link> getLinks() {
-		return links;
+	public Links getLinks() {
+		return Links.of(links);
 	}
 
 	/*
@@ -96,7 +96,7 @@ public class LinkCollectingAssociationHandler implements SimpleAssociationHandle
 
 		if (associations.isLinkableAssociation(property)) {
 
-			Links existingLinks = new Links(links);
+			Links existingLinks = Links.of(links);
 
 			for (Link link : associations.getLinksFor(association, basePath)) {
 				if (existingLinks.hasLink(link.getRel())) {

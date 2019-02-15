@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
@@ -48,7 +49,7 @@ public class PersistentEntityResourceUnitTests {
 	public void setUp() {
 
 		EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
-		EmbeddedWrapper wrapper = wrappers.wrap("Embedded", "foo");
+		EmbeddedWrapper wrapper = wrappers.wrap("Embedded", LinkRelation.of("foo"));
 		this.resources = new Resources<EmbeddedWrapper>(Collections.singleton(wrapper));
 	}
 

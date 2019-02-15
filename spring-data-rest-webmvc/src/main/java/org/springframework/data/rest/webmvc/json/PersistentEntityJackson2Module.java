@@ -613,7 +613,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			Object target = value.getTarget();
 			ResourceMetadata metadata = associations.getMetadataFor(value.getTargetClass());
-			Links links = metadata.isExported() ? collector.getLinksFor(target) : new Links();
+			Links links = metadata.isExported() ? collector.getLinksFor(target) : Links.NONE;
 
 			Resource<TargetAware> resource = invoker.invokeProcessorsFor(new Resource<TargetAware>(value, links));
 

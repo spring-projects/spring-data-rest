@@ -22,6 +22,7 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
@@ -111,18 +112,18 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
 	 */
 	@Override
-	public String getRel() {
+	public LinkRelation getRel() {
 
-		String fallback = domainTypeMapping.getRel();
+		LinkRelation fallback = domainTypeMapping.getRel();
 
 		if (repositoryAnnotation != null) {
 			String rel = repositoryAnnotation.collectionResourceRel();
-			return StringUtils.hasText(rel) ? rel : fallback;
+			return StringUtils.hasText(rel) ? LinkRelation.of(rel) : fallback;
 		}
 
 		if (annotation != null) {
 			String rel = annotation.rel();
-			return StringUtils.hasText(rel) ? rel : fallback;
+			return StringUtils.hasText(rel) ? LinkRelation.of(rel) : fallback;
 		}
 
 		return fallback;
@@ -133,13 +134,13 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getSingleResourceRel()
 	 */
 	@Override
-	public String getItemResourceRel() {
+	public LinkRelation getItemResourceRel() {
 
-		String fallback = domainTypeMapping.getItemResourceRel();
+		LinkRelation fallback = domainTypeMapping.getItemResourceRel();
 
 		if (repositoryAnnotation != null) {
 			String rel = repositoryAnnotation.itemResourceRel();
-			return StringUtils.hasText(rel) ? rel : fallback;
+			return StringUtils.hasText(rel) ? LinkRelation.of(rel) : fallback;
 		}
 
 		return fallback;

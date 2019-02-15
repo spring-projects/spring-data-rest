@@ -33,7 +33,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.CommonWebTests;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -106,8 +108,8 @@ public class MongoWebTests extends CommonWebTests {
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
 	 */
 	@Override
-	protected Iterable<String> expectedRootLinkRels() {
-		return Arrays.asList("profiles", "users");
+	protected Iterable<LinkRelation> expectedRootLinkRels() {
+		return LinkRelation.manyOf("profiles", "users");
 	}
 
 	@Test
@@ -122,7 +124,7 @@ public class MongoWebTests extends CommonWebTests {
 	public void rendersEmbeddedDocuments() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
-		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
+		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
 		client.follow(userLink).//
 				andExpect(jsonPath("$.address.zipCode").value(is(notNullValue())));
 	}
@@ -145,7 +147,7 @@ public class MongoWebTests extends CommonWebTests {
 	public void testname() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
-		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
+		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
 
 		MockHttpServletResponse response = patchAndGet(userLink,
 				"{\"lastname\" : null, \"address\" : { \"zipCode\" : \"ZIP\"}}",
@@ -159,7 +161,7 @@ public class MongoWebTests extends CommonWebTests {
 	public void testname2() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
-		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
+		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
 
 		MockHttpServletResponse response = patchAndGet(userLink,
 				"[{ \"op\": \"replace\", \"path\": \"/address/zipCode\", \"value\": \"ZIP\" },"
@@ -183,7 +185,7 @@ public class MongoWebTests extends CommonWebTests {
 		String stringReceipt = mapper.writeValueAsString(receipt);
 
 		MockHttpServletResponse createdReceipt = postAndGet(receiptLink, stringReceipt, MediaType.APPLICATION_JSON);
-		Link tacosLink = client.assertHasLinkWithRel("self", createdReceipt);
+		Link tacosLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, createdReceipt);
 		assertJsonPathEquals("$.saleItem", "Springy Tacos", createdReceipt);
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(tacosLink.getHref());
@@ -213,7 +215,7 @@ public class MongoWebTests extends CommonWebTests {
 	public void putDoesNotRemoveAssociations() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
-		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
+		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
 		Link colleaguesLink = client.assertHasLinkWithRel("colleagues", client.request(userLink));
 
 		// Expect a user returned as colleague
@@ -236,7 +238,7 @@ public class MongoWebTests extends CommonWebTests {
 	public void emptiesAssociationForEmptyUriList() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
-		Link userLink = assertHasContentLinkWithRel("self", client.request(usersLink));
+		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
 		Link colleaguesLink = client.assertHasLinkWithRel("colleagues", client.request(userLink));
 
 		putAndGet(colleaguesLink, "", MediaType.parseMediaType("text/uri-list"));
@@ -250,7 +252,7 @@ public class MongoWebTests extends CommonWebTests {
 	public void updatesMapPropertyCorrectly() throws Exception {
 
 		Link profilesLink = client.discoverUnique("profiles");
-		Link profileLink = assertHasContentLinkWithRel("self", client.request(profilesLink));
+		Link profileLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(profilesLink));
 
 		Profile profile = new Profile();
 		profile.setMetadata(Collections.singletonMap("Key", "Value"));
@@ -272,7 +274,9 @@ public class MongoWebTests extends CommonWebTests {
 		MockHttpServletResponse response = postAndGet(receiptsLink, mapper.writeValueAsString(receipt),
 				MediaType.APPLICATION_JSON);
 
-		Link receiptLink = client.getDiscoverer(response).findLinkWithRel("self", response.getContentAsString());
+		Link receiptLink = client.getDiscoverer(response) //
+				.findLinkWithRel(IanaLinkRelations.SELF, response.getContentAsString()) //
+				.orElseThrow(() -> new IllegalStateException("Did not find self link!"));
 
 		mvc.perform(get(receiptLink.getHref()).header(IF_MODIFIED_SINCE, response.getHeader(LAST_MODIFIED))).//
 				andExpect(status().isNotModified()).//
