@@ -333,7 +333,7 @@ public class JsonSchema {
 		public String pattern;
 		public Boolean uniqueItems;
 		public @JsonProperty("$ref") String reference;
-		public Map<String, String> items;
+		public Map<String, Object> items;
 
 		JsonSchemaProperty(String name, String title, String description, boolean required) {
 

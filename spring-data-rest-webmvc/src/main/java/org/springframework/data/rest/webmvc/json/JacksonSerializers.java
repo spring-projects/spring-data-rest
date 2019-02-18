@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc.json;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.rest.webmvc.json.JsonSchema.EnumProperty;
@@ -117,7 +118,11 @@ public class JacksonSerializers extends SimpleModule {
 				values.add(translator.asText((Enum<?>) value));
 			}
 
-			return ((EnumProperty) property).withValues(values);
+			if (property instanceof EnumProperty) {
+				return ((EnumProperty) property).withValues(values);
+			}
+			property.items = Collections.singletonMap("enum", values);
+			return property;
 		}
 	}
 
