@@ -41,14 +41,14 @@ import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.jpa.*;
 import org.springframework.data.rest.webmvc.util.TestUtils;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkDiscoverer;
+import org.springframework.hateoas.client.LinkDiscoverer;
 import org.springframework.hateoas.LinkRelation;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.core.EmbeddedWrapper;
-import org.springframework.hateoas.core.EmbeddedWrappers;
-import org.springframework.hateoas.hal.HalLinkDiscoverer;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.PagedModel.PageMetadata;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.core.EmbeddedWrapper;
+import org.springframework.hateoas.server.core.EmbeddedWrappers;
+import org.springframework.hateoas.mediatype.hal.HalLinkDiscoverer;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -204,7 +204,7 @@ public class PersistentEntitySerializationTests {
 				withLink(new Link("/orders/1")).//
 				build();
 
-		PagedResources<PersistentEntityResource> persistentEntityResource = new PagedResources<PersistentEntityResource>(
+		PagedModel<PersistentEntityResource> persistentEntityResource = new PagedModel<PersistentEntityResource>(
 				Arrays.asList(orderResource), new PageMetadata(1, 0, 10));
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
@@ -260,7 +260,7 @@ public class PersistentEntitySerializationTests {
 		ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 		PersonSummary projection = factory.createProjection(PersonSummary.class, person);
 
-		String result = mapper.writeValueAsString(new Resource<PersonSummary>(projection));
+		String result = mapper.writeValueAsString(new EntityModel<PersonSummary>(projection));
 
 		assertThat(JsonPath.<Object> read(result, "$._links.self")).isNotNull();
 	}

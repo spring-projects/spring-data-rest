@@ -18,8 +18,8 @@ package org.springframework.data.rest.webmvc;
 import java.util.Collections;
 import java.util.Optional;
 
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,10 +31,10 @@ import org.springframework.util.Assert;
  */
 public class ControllerUtils {
 
-	public static final Iterable<Resource<?>> EMPTY_RESOURCE_LIST = Collections.emptyList();
+	public static final Iterable<EntityModel<?>> EMPTY_RESOURCE_LIST = Collections.emptyList();
 
-	public static <R extends ResourceSupport> ResponseEntity<ResourceSupport> toResponseEntity(HttpStatus status,
-			HttpHeaders headers, Optional<R> resource) {
+	public static <R extends RepresentationModel<?>> ResponseEntity<RepresentationModel<?>> toResponseEntity(
+			HttpStatus status, HttpHeaders headers, Optional<R> resource) {
 
 		HttpHeaders hdrs = new HttpHeaders();
 
@@ -42,7 +42,7 @@ public class ControllerUtils {
 			hdrs.putAll(headers);
 		}
 
-		return new ResponseEntity<ResourceSupport>(resource.orElse(null), hdrs, status);
+		return new ResponseEntity<RepresentationModel<?>>(resource.orElse(null), hdrs, status);
 	}
 
 	/**
@@ -54,8 +54,8 @@ public class ControllerUtils {
 	 * @param <R>
 	 * @return
 	 */
-	public static <R extends ResourceSupport> ResponseEntity<ResourceSupport> toResponseEntity(HttpStatus status,
-			HttpHeaders headers, R resource) {
+	public static <R extends RepresentationModel<?>> ResponseEntity<RepresentationModel<?>> toResponseEntity(
+			HttpStatus status, HttpHeaders headers, R resource) {
 
 		Assert.notNull(status, "Http status must not be null!");
 		Assert.notNull(headers, "Http headers must not be null!");
@@ -70,7 +70,7 @@ public class ControllerUtils {
 	 * @param status
 	 * @return
 	 */
-	public static ResponseEntity<ResourceSupport> toEmptyResponse(HttpStatus status) {
+	public static ResponseEntity<RepresentationModel<?>> toEmptyResponse(HttpStatus status) {
 		return toEmptyResponse(status, new HttpHeaders());
 	}
 
@@ -81,7 +81,7 @@ public class ControllerUtils {
 	 * @param headers
 	 * @return
 	 */
-	public static ResponseEntity<ResourceSupport> toEmptyResponse(HttpStatus status, HttpHeaders headers) {
+	public static ResponseEntity<RepresentationModel<?>> toEmptyResponse(HttpStatus status, HttpHeaders headers) {
 		return toResponseEntity(status, headers, Optional.empty());
 	}
 }

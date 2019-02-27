@@ -33,7 +33,7 @@ import org.springframework.data.rest.tests.mongodb.MongoDbRepositoryConfig;
 import org.springframework.data.rest.tests.mongodb.User;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.Projector;
-import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Links;
 import org.springframework.test.context.ContextConfiguration;
@@ -63,7 +63,7 @@ public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractC
 		User user = new User();
 		user.id = BigInteger.valueOf(4711);
 
-		PersistentEntityResource resource = assembler.toResource(user);
+		PersistentEntityResource resource = assembler.toModel(user);
 
 		Links links = resource.getLinks();
 

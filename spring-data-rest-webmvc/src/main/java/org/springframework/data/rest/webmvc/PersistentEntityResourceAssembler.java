@@ -25,9 +25,9 @@ import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.Projector;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.ResourceAssembler;
-import org.springframework.hateoas.core.EmbeddedWrapper;
-import org.springframework.hateoas.core.EmbeddedWrappers;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.hateoas.server.core.EmbeddedWrapper;
+import org.springframework.hateoas.server.core.EmbeddedWrappers;
 import org.springframework.util.Assert;
 
 /**
@@ -36,7 +36,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  */
 @RequiredArgsConstructor
-public class PersistentEntityResourceAssembler implements ResourceAssembler<Object, PersistentEntityResource> {
+public class PersistentEntityResourceAssembler implements RepresentationModelAssembler<Object, PersistentEntityResource> {
 
 	private final @NonNull PersistentEntities entities;
 	private final @NonNull Projector projector;
@@ -46,10 +46,10 @@ public class PersistentEntityResourceAssembler implements ResourceAssembler<Obje
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.ResourceAssembler#toResource(java.lang.Object)
+	 * @see org.springframework.hateoas.server.RepresentationModelAssembler#toModel(java.lang.Object)
 	 */
 	@Override
-	public PersistentEntityResource toResource(Object instance) {
+	public PersistentEntityResource toModel(Object instance) {
 
 		Assert.notNull(instance, "Entity instance must not be null!");
 		return wrap(projector.projectExcerpt(instance), instance).build();

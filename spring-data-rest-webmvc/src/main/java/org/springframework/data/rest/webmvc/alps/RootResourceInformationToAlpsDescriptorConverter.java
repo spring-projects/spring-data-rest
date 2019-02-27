@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.alps;
 
-import static org.springframework.hateoas.alps.Alps.*;
+import static org.springframework.hateoas.mediatype.alps.Alps.*;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -55,16 +55,16 @@ import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.EnumTranslator;
 import org.springframework.data.rest.webmvc.json.JacksonMetadata;
 import org.springframework.data.rest.webmvc.mapping.Associations;
-import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.TemplateVariable;
-import org.springframework.hateoas.alps.Alps;
-import org.springframework.hateoas.alps.Descriptor;
-import org.springframework.hateoas.alps.Descriptor.DescriptorBuilder;
-import org.springframework.hateoas.alps.Doc;
-import org.springframework.hateoas.alps.Format;
-import org.springframework.hateoas.alps.Type;
+import org.springframework.hateoas.mediatype.alps.Alps;
+import org.springframework.hateoas.mediatype.alps.Descriptor;
+import org.springframework.hateoas.mediatype.alps.Descriptor.DescriptorBuilder;
+import org.springframework.hateoas.mediatype.alps.Doc;
+import org.springframework.hateoas.mediatype.alps.Format;
+import org.springframework.hateoas.mediatype.alps.Type;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.StringUtils;
 

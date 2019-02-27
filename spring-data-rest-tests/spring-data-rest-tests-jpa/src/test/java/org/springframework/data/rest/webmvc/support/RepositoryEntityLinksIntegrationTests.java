@@ -51,7 +51,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	@Test
 	public void returnsLinkToSingleResource() {
 
-		Link link = entityLinks.linkToSingleResource(Person.class, 1);
+		Link link = entityLinks.linkToItemResource(Person.class, 1);
 
 		assertThat(link.getHref(), endsWith("/people/1{?projection}"));
 		assertThat(link.getRel()).isEqualTo(LinkRelation.of("person"));
@@ -70,7 +70,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	@Test // DATAREST-221
 	public void returnsLinkWithProjectionTemplateVariableIfProjectionIsDefined() {
 
-		Link link = entityLinks.linkToSingleResource(Order.class, 1);
+		Link link = entityLinks.linkToItemResource(Order.class, 1);
 
 		assertThat(link.isTemplated()).isTrue();
 		assertThat(link.getVariableNames()).contains(configuration.getProjectionConfiguration().getParameterName());
@@ -79,7 +79,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	@Test // DATAREST-155
 	public void usesCustomGeneratedBackendId() {
 
-		Link link = entityLinks.linkToSingleResource(Book.class, 7L);
+		Link link = entityLinks.linkToItemResource(Book.class, 7L);
 		assertThat(link.expand().getHref(), endsWith("/7-7-7-7-7-7-7"));
 	}
 

@@ -22,8 +22,8 @@ import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.hateoas.LinkRelation;
-import org.springframework.hateoas.RelProvider;
-import org.springframework.hateoas.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.server.RelProvider;
+import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 

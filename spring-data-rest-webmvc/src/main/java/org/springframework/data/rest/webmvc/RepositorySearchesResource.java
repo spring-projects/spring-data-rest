@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -27,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  * @author Oliver Gierke
  */
-public class RepositorySearchesResource extends ResourceSupport {
+public class RepositorySearchesResource extends RepresentationModel<RepositorySearchesResource> {
 
 	private final Class<?> domainType;
 

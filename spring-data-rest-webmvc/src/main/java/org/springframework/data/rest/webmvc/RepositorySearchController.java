@@ -23,7 +23,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,14 +40,14 @@ import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.core.AnnotationAttribute;
-import org.springframework.hateoas.core.MethodParameters;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.EntityLinks;
+import org.springframework.hateoas.server.core.AnnotationAttribute;
+import org.springframework.hateoas.server.core.MethodParameters;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -154,11 +153,9 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			throw new ResourceNotFoundException();
 		}
 
-		RepositorySearchesResource result = new RepositorySearchesResource(resourceInformation.getDomainType());
-		result.add(queryMethodLinks);
-		result.add(getDefaultSelfLink());
-
-		return result;
+		return new RepositorySearchesResource(resourceInformation.getDomainType()) //
+				.add(queryMethodLinks) //
+				.add(getDefaultSelfLink());
 	}
 
 	/**
@@ -187,7 +184,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		MethodResourceMapping methodMapping = searchMappings.getExportedMethodMappingForPath(search);
 		Class<?> domainType = methodMapping.getReturnedDomainType();
 
-		return toResource(result, assembler, domainType, Optional.empty(), headers, resourceInformation);
+		return toModel(result, assembler, domainType, Optional.empty(), headers, resourceInformation);
 	}
 
 	/**
@@ -200,13 +197,13 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @param baseLink can be {@literal null}.
 	 * @return
 	 */
-	protected ResponseEntity<?> toResource(Optional<Object> source, final PersistentEntityResourceAssembler assembler,
+	protected ResponseEntity<?> toModel(Optional<Object> source, final PersistentEntityResourceAssembler assembler,
 			Class<?> domainType, Optional<Link> baseLink, HttpHeaders headers, RootResourceInformation information) {
 
 		return source.map(it -> {
 
 			if (it instanceof Iterable) {
-				return ResponseEntity.ok(toResources((Iterable<?>) it, assembler, domainType, baseLink));
+				return ResponseEntity.ok(toCollectionModel((Iterable<?>) it, assembler, domainType, baseLink));
 			} else if (ClassUtils.isPrimitiveOrWrapper(it.getClass())) {
 				return ResponseEntity.ok(it);
 			}
@@ -239,7 +236,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET, //
 			produces = { "application/x-spring-data-compact+json" })
-	public ResourceSupport executeSearchCompact(RootResourceInformation resourceInformation,
+	public RepresentationModel<?> executeSearchCompact(RootResourceInformation resourceInformation,
 			@RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, Object> parameters,
 			@PathVariable String repository, @PathVariable String search, DefaultedPageable pageable, Sort sort,
 			PersistentEntityResourceAssembler assembler) {
@@ -248,28 +245,28 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 		Optional<Object> result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort,
 				assembler);
 		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
-		ResponseEntity<?> entity = toResource(result, assembler, metadata.getDomainType(), Optional.empty(), headers,
+		ResponseEntity<?> entity = toModel(result, assembler, metadata.getDomainType(), Optional.empty(), headers,
 				resourceInformation);
 		Object resource = entity.getBody();
 
 		List<Link> links = new ArrayList<Link>();
 
-		if (resource instanceof Resources && ((Resources<?>) resource).getContent() != null) {
+		if (resource instanceof CollectionModel && ((CollectionModel<?>) resource).getContent() != null) {
 
-			for (Object obj : ((Resources<?>) resource).getContent()) {
-				if (null != obj && obj instanceof Resource) {
-					Resource<?> res = (Resource<?>) obj;
+			for (Object obj : ((CollectionModel<?>) resource).getContent()) {
+				if (null != obj && obj instanceof EntityModel) {
+					EntityModel<?> res = (EntityModel<?>) obj;
 					links.add(resourceLink(resourceInformation, res));
 				}
 			}
 
-		} else if (resource instanceof Resource) {
+		} else if (resource instanceof EntityModel) {
 
-			Resource<?> res = (Resource<?>) resource;
+			EntityModel<?> res = (EntityModel<?>) resource;
 			links.add(resourceLink(resourceInformation, res));
 		}
 
-		return new Resources<Resource<?>>(EMPTY_RESOURCE_LIST, links);
+		return new CollectionModel<EntityModel<?>>(EMPTY_RESOURCE_LIST, links);
 	}
 
 	/**
@@ -346,18 +343,17 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		parameters.entrySet().forEach(entry ->
 
-			methodParameters.getParameter(entry.getKey()).ifPresent(parameter -> {
+		methodParameters.getParameter(entry.getKey()).ifPresent(parameter -> {
 
-				int parameterIndex = parameterList.indexOf(parameter);
-				TypeInformation<?> domainType = parameterTypeInformations.get(parameterIndex).getActualType();
+			int parameterIndex = parameterList.indexOf(parameter);
+			TypeInformation<?> domainType = parameterTypeInformations.get(parameterIndex).getActualType();
 
-				ResourceMetadata metadata = mappings.getMetadataFor(domainType.getType());
+			ResourceMetadata metadata = mappings.getMetadataFor(domainType.getType());
 
-				if (metadata != null && metadata.isExported()) {
-					result.put(parameter.getParameterName(), prepareUris(entry.getValue()));
-				}
+			if (metadata != null && metadata.isExported()) {
+				result.put(parameter.getParameterName(), prepareUris(entry.getValue()));
 			}
-		));
+		}));
 
 		return invoker.invokeQueryMethod(method, result, pageable.getPageable(), sort);
 	}

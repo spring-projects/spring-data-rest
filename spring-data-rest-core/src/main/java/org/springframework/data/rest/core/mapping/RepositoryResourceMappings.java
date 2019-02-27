@@ -28,7 +28,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.hateoas.RelProvider;
+import org.springframework.hateoas.server.RelProvider;
 import org.springframework.util.Assert;
 
 /**

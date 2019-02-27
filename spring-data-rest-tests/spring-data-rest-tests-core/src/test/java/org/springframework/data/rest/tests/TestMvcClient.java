@@ -26,8 +26,8 @@ import java.util.Iterator;
 import java.util.Optional;
 
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkDiscoverer;
-import org.springframework.hateoas.LinkDiscoverers;
+import org.springframework.hateoas.client.LinkDiscoverer;
+import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
 import org.springframework.http.HttpEntity;
@@ -365,7 +365,7 @@ public class TestMvcClient {
 	 * Using the servlet response's content type, find the corresponding link discoverer.
 	 *
 	 * @param response
-	 * @return {@link org.springframework.hateoas.LinkDiscoverer}
+	 * @return {@link org.springframework.hateoas.client.LinkDiscoverer}
 	 */
 	public LinkDiscoverer getDiscoverer(MockHttpServletResponse response) {
 

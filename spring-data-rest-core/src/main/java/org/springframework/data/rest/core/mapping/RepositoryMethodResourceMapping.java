@@ -31,8 +31,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.hateoas.LinkRelation;
-import org.springframework.hateoas.core.AnnotationAttribute;
-import org.springframework.hateoas.core.MethodParameters;
+import org.springframework.hateoas.server.core.AnnotationAttribute;
+import org.springframework.hateoas.server.core.MethodParameters;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 

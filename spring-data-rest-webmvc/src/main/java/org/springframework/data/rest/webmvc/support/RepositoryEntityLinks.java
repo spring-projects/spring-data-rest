@@ -38,16 +38,16 @@ import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
-import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkBuilder;
+import org.springframework.hateoas.server.LinkBuilder;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariable.VariableType;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.UriTemplate;
-import org.springframework.hateoas.core.AbstractEntityLinks;
+import org.springframework.hateoas.server.core.AbstractEntityLinks;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponents;
@@ -80,7 +80,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.EntityLinks#linkFor(java.lang.Class)
+	 * @see org.springframework.hateoas.server.EntityLinks#linkFor(java.lang.Class)
 	 */
 	@Override
 	public LinkBuilder linkFor(Class<?> type) {
@@ -91,7 +91,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.EntityLinks#linkFor(java.lang.Class, java.lang.Object[])
+	 * @see org.springframework.hateoas.server.EntityLinks#linkFor(java.lang.Class, java.lang.Object[])
 	 */
 	@Override
 	public LinkBuilder linkFor(Class<?> type, Object... parameters) {
@@ -119,7 +119,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.EntityLinks#linkToCollectionResource(java.lang.Class)
+	 * @see org.springframework.hateoas.server.EntityLinks#linkToCollectionResource(java.lang.Class)
 	 */
 	@Override
 	public Link linkToCollectionResource(Class<?> type) {
@@ -128,10 +128,10 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.EntityLinks#linkToSingleResource(java.lang.Class, java.lang.Object)
+	 * @see org.springframework.hateoas.server.EntityLinks#linkToItemResource(java.lang.Class, java.lang.Object)
 	 */
 	@Override
-	public Link linkToSingleResource(Class<?> type, Object id) {
+	public Link linkToItemResource(Class<?> type, Object id) {
 
 		Assert.isInstanceOf(Serializable.class, id, "Id must be assignable to Serializable!");
 

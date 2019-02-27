@@ -35,7 +35,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.domain.Profile;
-import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.Link;
 
 /**
@@ -58,7 +58,7 @@ public class DefaultSelfLinkProviderUnitTests {
 	@Before
 	public void setUp() {
 
-		when(entityLinks.linkToSingleResource((Class<?>) any(), any())).then(invocation -> {
+		when(entityLinks.linkToItemResource((Class<?>) any(), any())).then(invocation -> {
 
 			Class<?> type = invocation.getArgument(0);
 			Serializable id = invocation.getArgument(1);

@@ -26,13 +26,13 @@ import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.core.EmbeddedWrappers;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.server.core.EmbeddedWrappers;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -61,7 +61,7 @@ class AbstractRepositoryRestController {
 		this.pagedResourcesAssembler = pagedResourcesAssembler;
 	}
 
-	protected Link resourceLink(RootResourceInformation resourceLink, Resource resource) {
+	protected Link resourceLink(RootResourceInformation resourceLink, EntityModel resource) {
 
 		ResourceMetadata repoMapping = resourceLink.getResourceMetadata();
 
@@ -72,7 +72,7 @@ class AbstractRepositoryRestController {
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	protected Resources<?> toResources(Iterable<?> source, PersistentEntityResourceAssembler assembler,
+	protected CollectionModel<?> toCollectionModel(Iterable<?> source, PersistentEntityResourceAssembler assembler,
 			Class<?> domainType, Optional<Link> baseLink) {
 
 		if (source instanceof Page) {
@@ -81,38 +81,38 @@ class AbstractRepositoryRestController {
 		} else if (source instanceof Iterable) {
 			return entitiesToResources((Iterable<Object>) source, assembler, domainType);
 		} else {
-			return new Resources(EMPTY_RESOURCE_LIST);
+			return new CollectionModel(EMPTY_RESOURCE_LIST);
 		}
 	}
 
-	protected Resources<?> entitiesToResources(Page<Object> page, PersistentEntityResourceAssembler assembler,
+	protected CollectionModel<?> entitiesToResources(Page<Object> page, PersistentEntityResourceAssembler assembler,
 			Class<?> domainType, Optional<Link> baseLink) {
 
 		if (page.getContent().isEmpty()) {
-			return baseLink.<PagedResources<?>> map(it -> pagedResourcesAssembler.toEmptyResource(page, domainType, it))//
-					.orElseGet(() -> pagedResourcesAssembler.toEmptyResource(page, domainType));
+			return baseLink.<PagedModel<?>> map(it -> pagedResourcesAssembler.toEmptyModel(page, domainType, it))//
+					.orElseGet(() -> pagedResourcesAssembler.toEmptyModel(page, domainType));
 		}
 
-		return baseLink.map(it -> pagedResourcesAssembler.toResource(page, assembler, it))//
-				.orElseGet(() -> pagedResourcesAssembler.toResource(page, assembler));
+		return baseLink.map(it -> pagedResourcesAssembler.toModel(page, assembler, it))//
+				.orElseGet(() -> pagedResourcesAssembler.toModel(page, assembler));
 	}
 
-	protected Resources<?> entitiesToResources(Iterable<Object> entities, PersistentEntityResourceAssembler assembler,
-			Class<?> domainType) {
+	protected CollectionModel<?> entitiesToResources(Iterable<Object> entities,
+			PersistentEntityResourceAssembler assembler, Class<?> domainType) {
 
 		if (!entities.iterator().hasNext()) {
 
 			List<Object> content = Arrays.<Object> asList(WRAPPERS.emptyCollectionOf(domainType));
-			return new Resources<Object>(content, getDefaultSelfLink());
+			return new CollectionModel<Object>(content, getDefaultSelfLink());
 		}
 
-		List<Resource<Object>> resources = new ArrayList<Resource<Object>>();
+		List<EntityModel<Object>> resources = new ArrayList<EntityModel<Object>>();
 
 		for (Object obj : entities) {
-			resources.add(obj == null ? null : assembler.toResource(obj));
+			resources.add(obj == null ? null : assembler.toModel(obj));
 		}
 
-		return new Resources<Resource<Object>>(resources, getDefaultSelfLink());
+		return new CollectionModel<EntityModel<Object>>(resources, getDefaultSelfLink());
 	}
 
 	protected Link getDefaultSelfLink() {

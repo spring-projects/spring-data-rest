@@ -50,12 +50,12 @@ import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVari
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.RelProvider;
-import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.core.EvoInflectorRelProvider;
-import org.springframework.hateoas.hal.Jackson2HalModule;
-import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
+import org.springframework.hateoas.server.EntityLinks;
+import org.springframework.hateoas.server.RelProvider;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
+import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
+import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
 import org.springframework.plugin.core.PluginRegistry;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -129,7 +129,7 @@ public class RepositoryTestsConfig {
 
 		return new PersistentEntityJackson2Module(associations, persistentEntities(), uriToEntityConverter, collector,
 				invokerFactory, mock(LookupObjectSerializer.class),
-				new ResourceProcessorInvoker(Collections.<ResourceProcessor<?>> emptyList()),
+				new RepresentationModelProcessorInvoker(Collections.<RepresentationModelProcessor<?>> emptyList()),
 				new EmbeddedResourcesAssembler(persistentEntities(), associations, mock(ExcerptProjector.class)));
 	}
 

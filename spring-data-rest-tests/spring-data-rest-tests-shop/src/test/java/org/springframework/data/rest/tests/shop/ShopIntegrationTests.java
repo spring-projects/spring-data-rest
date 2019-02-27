@@ -51,7 +51,7 @@ public class ShopIntegrationTests extends AbstractWebIntegrationTests {
 		ResultActions actions = client.follow(selfLink)
 				// Lookup type is rendered as String
 				.andExpect(jsonPath("items[0].type", is("good")))//
-				// Invokes ResourceProcessor for nested Resource
+				// Invokes RepresentationModelProcessor for nested Resource
 				.andExpect(jsonPath("items[0]._links.bar").exists());//
 
 		// Adds excerpt projection for related product

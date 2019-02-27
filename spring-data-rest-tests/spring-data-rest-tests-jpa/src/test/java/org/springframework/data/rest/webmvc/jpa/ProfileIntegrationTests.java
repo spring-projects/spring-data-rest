@@ -31,7 +31,7 @@ import org.springframework.data.rest.webmvc.ProfileResourceProcessor;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkDiscoverers;
+import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;

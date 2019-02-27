@@ -10,21 +10,21 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 
 /**
  * @author Jon Brisbin
  */
-public class PersistentEntityResourceProcessor implements ResourceProcessor<PersistentEntityResource> {
+public class PersistentEntityResourceProcessor implements RepresentationModelProcessor<PersistentEntityResource> {
 
 	private final List<DomainTypeResourceProcessor> resourceProcessors = new ArrayList<DomainTypeResourceProcessor>();
 
 	@Autowired
 	public PersistentEntityResourceProcessor(Repositories repositories,
-			List<ResourceProcessor<Resource<?>>> resourceProcessors) {
+			List<RepresentationModelProcessor<EntityModel<?>>> resourceProcessors) {
 		if (null != resourceProcessors) {
-			for (ResourceProcessor<Resource<?>> rp : resourceProcessors) {
+			for (RepresentationModelProcessor<EntityModel<?>> rp : resourceProcessors) {
 				TypeInformation<?> typeInfo = ClassTypeInformation.from(rp.getClass());
 				TypeInformation<?> domainType = typeInfo.getTypeArguments().get(0);
 				if (null != repositories.getPersistentEntity(domainType.getType())) {
@@ -55,9 +55,9 @@ public class PersistentEntityResourceProcessor implements ResourceProcessor<Pers
 
 	private static class DomainTypeResourceProcessor {
 		final Class<?> domainType;
-		final ResourceProcessor<Resource<?>> resourceProcessor;
+		final RepresentationModelProcessor<EntityModel<?>> resourceProcessor;
 
-		private DomainTypeResourceProcessor(Class<?> domainType, ResourceProcessor<Resource<?>> resourceProcessor) {
+		private DomainTypeResourceProcessor(Class<?> domainType, RepresentationModelProcessor<EntityModel<?>> resourceProcessor) {
 			this.domainType = domainType;
 			this.resourceProcessor = resourceProcessor;
 		}

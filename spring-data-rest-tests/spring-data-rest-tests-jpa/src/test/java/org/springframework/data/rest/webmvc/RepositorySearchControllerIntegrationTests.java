@@ -35,9 +35,9 @@ import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.TestDataPopulator;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -72,7 +72,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	public void rendersCorrectSearchLinksForPersons() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Person.class);
-		ResourceSupport resource = controller.listSearches(request);
+		RepresentationModel resource = controller.listSearches(request);
 
 		ResourceTester tester = ResourceTester.of(resource);
 		tester.assertNumberOfLinks(7); // Self link included
@@ -107,7 +107,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 				Sort.unsorted(), assembler, new HttpHeaders());
 
 		ResourceTester tester = ResourceTester.of(response.getBody());
-		PagedResources<Object> pagedResources = tester.assertIsPage();
+		PagedModel<Object> pagedResources = tester.assertIsPage();
 		assertThat(pagedResources.getContent()).hasSize(1);
 
 		ResourceMetadata metadata = getMetadata(Person.class);
@@ -169,7 +169,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		ResponseEntity<?> result = controller.executeSearch(resourceInformation, parameters, "findByAuthorsContains",
 				PAGEABLE, Sort.unsorted(), assembler, new HttpHeaders());
 
-		assertThat(result.getBody()).isInstanceOf(Resources.class);
+		assertThat(result.getBody()).isInstanceOf(CollectionModel.class);
 	}
 
 	@Test // DATAREST-515

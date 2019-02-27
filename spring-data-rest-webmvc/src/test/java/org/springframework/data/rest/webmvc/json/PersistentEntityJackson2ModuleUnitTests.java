@@ -49,10 +49,10 @@ import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.server.EntityLinks;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.hateoas.UriTemplate;
-import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
+import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
 import org.springframework.plugin.core.PluginRegistry;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -92,7 +92,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 
 		this.persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
 
-		ResourceProcessorInvoker invoker = new ResourceProcessorInvoker(Collections.<ResourceProcessor<?>> emptyList());
+		RepresentationModelProcessorInvoker invoker = new RepresentationModelProcessorInvoker(Collections.<RepresentationModelProcessor<?>> emptyList());
 
 		NestedEntitySerializer nestedEntitySerializer = new NestedEntitySerializer(persistentEntities,
 				new EmbeddedResourcesAssembler(persistentEntities, associations, mock(ExcerptProjector.class)), invoker);

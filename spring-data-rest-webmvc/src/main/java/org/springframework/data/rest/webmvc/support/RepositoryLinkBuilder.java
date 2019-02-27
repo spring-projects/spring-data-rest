@@ -24,8 +24,8 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.hateoas.Affordance;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkBuilder;
-import org.springframework.hateoas.core.LinkBuilderSupport;
+import org.springframework.hateoas.server.LinkBuilder;
+import org.springframework.hateoas.server.core.LinkBuilderSupport;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -66,7 +66,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.core.LinkBuilderSupport#slash(java.lang.Object)
+	 * @see org.springframework.hateoas.server.core.LinkBuilderSupport#slash(java.lang.Object)
 	 */
 	@Override
 	public RepositoryLinkBuilder slash(Object object) {
@@ -86,7 +86,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.core.LinkBuilderSupport#createNewInstance(org.springframework.web.util.UriComponentsBuilder, java.util.List)
+	 * @see org.springframework.hateoas.server.core.LinkBuilderSupport#createNewInstance(org.springframework.web.util.UriComponentsBuilder, java.util.List)
 	 */
 	@Override
 	protected RepositoryLinkBuilder createNewInstance(UriComponentsBuilder builder, List<Affordance> affordances) {
@@ -95,7 +95,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.core.LinkBuilderSupport#getThis()
+	 * @see org.springframework.hateoas.server.core.LinkBuilderSupport#getThis()
 	 */
 	@Override
 	protected RepositoryLinkBuilder getThis() {

@@ -18,7 +18,7 @@ package org.springframework.data.rest.webmvc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.util.Assert;
 
 /**
@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
  * @author Greg Turnquist
  * @since 2.4
  */
-public class ProfileResourceProcessor implements ResourceProcessor<RepositoryLinksResource> {
+public class ProfileResourceProcessor implements RepresentationModelProcessor<RepositoryLinksResource> {
 
 	public static final String PROFILE_REL = "profile";
 

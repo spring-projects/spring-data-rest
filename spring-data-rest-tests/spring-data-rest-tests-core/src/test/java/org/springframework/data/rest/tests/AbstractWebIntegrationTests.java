@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkDiscoverers;
+import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;

@@ -97,18 +97,18 @@ import org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguratio
 import org.springframework.data.web.config.SpringDataJacksonConfiguration;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.RelProvider;
-import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.server.RelProvider;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType;
-import org.springframework.hateoas.core.EvoInflectorRelProvider;
-import org.springframework.hateoas.hal.CurieProvider;
-import org.springframework.hateoas.hal.HalConfiguration;
-import org.springframework.hateoas.hal.Jackson2HalModule;
-import org.springframework.hateoas.hal.Jackson2HalModule.HalHandlerInstantiator;
-import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
-import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.mediatype.hal.CurieProvider;
+import org.springframework.hateoas.mediatype.hal.HalConfiguration;
+import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
+import org.springframework.hateoas.mediatype.hal.Jackson2HalModule.HalHandlerInstantiator;
+import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
+import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -365,7 +365,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	/**
-	 * A special {@link org.springframework.hateoas.EntityLinks} implementation that takes repository and current
+	 * A special {@link org.springframework.hateoas.server.EntityLinks} implementation that takes repository and current
 	 * configuration into account when generating links.
 	 *
 	 * @return
@@ -525,17 +525,17 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	@SuppressWarnings("rawtypes")
-	public ResourceProcessorInvoker resourceProcessorInvoker() {
+	public RepresentationModelProcessorInvoker resourceProcessorInvoker() {
 
-		Collection<ResourceProcessor> beans = applicationContext.getBeansOfType(ResourceProcessor.class, false, false)
+		Collection<RepresentationModelProcessor> beans = applicationContext.getBeansOfType(RepresentationModelProcessor.class, false, false)
 				.values();
-		List<ResourceProcessor<?>> processors = new ArrayList<ResourceProcessor<?>>(beans.size());
+		List<RepresentationModelProcessor<?>> processors = new ArrayList<RepresentationModelProcessor<?>>(beans.size());
 
-		for (ResourceProcessor<?> bean : beans) {
+		for (RepresentationModelProcessor<?> bean : beans) {
 			processors.add(bean);
 		}
 
-		return new ResourceProcessorInvoker(processors);
+		return new RepresentationModelProcessorInvoker(processors);
 	}
 
 	/**
@@ -903,7 +903,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		 * @param order the order for the {@link HttpMessageConverter}.
 		 */
 		public ResourceSupportHttpMessageConverter(int order) {
-			super(ResourceSupport.class);
+			super(RepresentationModel.class);
 			this.order = order;
 		}
 

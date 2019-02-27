@@ -17,7 +17,7 @@ package org.springframework.data.rest.webmvc.support;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.TemplateVariables;
-import org.springframework.hateoas.mvc.UriComponentsContributor;
+import org.springframework.hateoas.server.mvc.UriComponentsContributor;
 import org.springframework.web.util.UriComponents;
 
 /**

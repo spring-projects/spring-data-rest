@@ -84,7 +84,7 @@ class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSort
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
+	 * @see org.springframework.hateoas.server.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
 	 */
 	@Override
 	public void enhance(UriComponentsBuilder builder, MethodParameter parameter, Object value) {
@@ -98,7 +98,7 @@ class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSort
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.mvc.UriComponentsContributor#supportsParameter(org.springframework.core.MethodParameter)
+	 * @see org.springframework.hateoas.server.mvc.UriComponentsContributor#supportsParameter(org.springframework.core.MethodParameter)
 	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {

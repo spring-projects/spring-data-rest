@@ -313,7 +313,7 @@ public class MongoWebTests extends CommonWebTests {
 		Link link = client.discoverUnique("users", "search", "findByColleaguesContains");
 
 		User thomas = userRepository.findAll(QUser.user.firstname.eq("Thomas")).iterator().next();
-		Link thomasUri = entityLinks.linkToSingleResource(User.class, thomas.id).expand();
+		Link thomasUri = entityLinks.linkToItemResource(User.class, thomas.id).expand();
 
 		String href = link.expand(thomasUri.getHref()).getHref();
 

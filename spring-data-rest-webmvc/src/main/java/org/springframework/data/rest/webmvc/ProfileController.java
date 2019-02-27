@@ -26,11 +26,10 @@ import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -84,7 +83,7 @@ public class ProfileController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAllow(Collections.singleton(HttpMethod.GET));
 
-		return new ResponseEntity<Object>(headers, HttpStatus.OK);
+		return ResponseEntity.ok().headers(headers).build();
 	}
 
 	/**
@@ -93,9 +92,9 @@ public class ProfileController {
 	 * @return
 	 */
 	@RequestMapping(value = PROFILE_ROOT_MAPPING, method = GET)
-	HttpEntity<ResourceSupport> listAllFormsOfMetadata() {
+	HttpEntity<RepresentationModel<?>> listAllFormsOfMetadata() {
 
-		ResourceSupport profile = new ResourceSupport();
+		RepresentationModel<?> profile = new RepresentationModel<>();
 
 		profile.add(new Link(getRootPath(this.configuration)).withSelfRel());
 
@@ -108,7 +107,7 @@ public class ProfileController {
 			}
 		}
 
-		return new ResponseEntity<ResourceSupport>(profile, HttpStatus.OK);
+		return ResponseEntity.ok(profile);
 	}
 
 	/**
