@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,8 +34,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.domain.Profile;
-import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.EntityLinks;
 
 /**
  * Unit tests for {@link DefaultSelfLinkProvider}.
@@ -58,10 +57,10 @@ public class DefaultSelfLinkProviderUnitTests {
 	@Before
 	public void setUp() {
 
-		when(entityLinks.linkToItemResource((Class<?>) any(), any())).then(invocation -> {
+		when(entityLinks.linkToItemResource(any(Class.class), any(Object.class))).then(invocation -> {
 
 			Class<?> type = invocation.getArgument(0);
-			Serializable id = invocation.getArgument(1);
+			Object id = invocation.getArgument(1);
 
 			return new Link("/".concat(type.getName()).concat("/").concat(id.toString()));
 		});
