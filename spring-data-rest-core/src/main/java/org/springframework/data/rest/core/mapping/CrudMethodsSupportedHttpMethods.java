@@ -62,7 +62,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	@Override
 	public HttpMethods getMethodsFor(ResourceType resourceType) {
 
-		Assert.notNull(resourceType, "Resource type must not be null!");
+		Assert.notNull(resourceType, "EntityRepresentationModel type must not be null!");
 
 		Set<HttpMethod> methods = new HashSet<HttpMethod>();
 		methods.add(OPTIONS);

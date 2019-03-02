@@ -31,7 +31,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.rest.tests.CommonWebTests;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -65,6 +67,7 @@ public class SolrWebTests extends CommonWebTests {
 
 	@Autowired ProductRepository repo;
 
+	@Override
 	@Before
 	public void setUp() {
 
@@ -82,16 +85,16 @@ public class SolrWebTests extends CommonWebTests {
 
 		MockHttpServletResponse response = client.request("/products?page=0&size=1");
 
-		Link nextLink = client.assertHasLinkWithRel(Link.REL_NEXT, response);
-		assertDoesNotHaveLinkWithRel(Link.REL_PREVIOUS, response);
+		Link nextLink = client.assertHasLinkWithRel(IanaLinkRelations.NEXT, response);
+		assertDoesNotHaveLinkWithRel(IanaLinkRelations.PREV, response);
 
 		response = client.request(nextLink);
-		client.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		nextLink = client.assertHasLinkWithRel(Link.REL_NEXT, response);
+		client.assertHasLinkWithRel(IanaLinkRelations.PREV, response);
+		nextLink = client.assertHasLinkWithRel(IanaLinkRelations.NEXT, response);
 
 		response = client.request(nextLink);
-		client.assertHasLinkWithRel(Link.REL_PREVIOUS, response);
-		assertDoesNotHaveLinkWithRel(Link.REL_NEXT, response);
+		client.assertHasLinkWithRel(IanaLinkRelations.PREV, response);
+		assertDoesNotHaveLinkWithRel(IanaLinkRelations.NEXT, response);
 	}
 
 	@Test // DATAREST-387
@@ -121,8 +124,8 @@ public class SolrWebTests extends CommonWebTests {
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
 	 */
 	@Override
-	protected Iterable<String> expectedRootLinkRels() {
-		return Arrays.asList("products");
+	protected Iterable<LinkRelation> expectedRootLinkRels() {
+		return LinkRelation.manyOf("products");
 	}
 
 	private void assertJsonDocumentMatches(Product reference) throws Exception {

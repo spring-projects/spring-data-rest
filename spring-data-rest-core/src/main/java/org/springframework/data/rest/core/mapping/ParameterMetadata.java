@@ -17,6 +17,7 @@ package org.springframework.data.rest.core.mapping;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.rest.core.annotation.Description;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.util.Assert;
 
 /**
@@ -42,8 +43,8 @@ public final class ParameterMetadata {
 		Assert.hasText(name, "Parameter name must not be null or empty!");
 		Assert.hasText(baseRel, "Method rel must not be null!");
 
-		ResourceDescription fallback = TypedResourceDescription.defaultFor(baseRel.concat(".").concat(name),
-				parameter.getParameterType());
+		ResourceDescription fallback = TypedResourceDescription
+				.defaultFor(LinkRelation.of(baseRel.concat(".").concat(name)), parameter.getParameterType());
 		Description annotation = parameter.getParameterAnnotation(Description.class);
 
 		this.description = annotation == null ? fallback : new AnnotationBasedResourceDescription(annotation, fallback);

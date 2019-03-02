@@ -16,13 +16,16 @@
 package org.springframework.data.rest.webmvc.support;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.BaseUri;
+import org.springframework.hateoas.Affordance;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkBuilder;
-import org.springframework.hateoas.core.LinkBuilderSupport;
+import org.springframework.hateoas.server.LinkBuilder;
+import org.springframework.hateoas.server.core.LinkBuilderSupport;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -42,7 +45,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 	 * @param baseUri
 	 */
 	public RepositoryLinkBuilder(ResourceMetadata metadata, BaseUri baseUri) {
-		this(metadata, baseUri.getUriComponentsBuilder().path(metadata.getPath().toString()));
+		this(metadata, baseUri.getUriComponentsBuilder().path(metadata.getPath().toString()), Collections.emptyList());
 	}
 
 	/**
@@ -52,25 +55,25 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 	 * @param metadata must not be {@literal null}.
 	 * @param builder must not be {@literal null}.
 	 */
-	private RepositoryLinkBuilder(ResourceMetadata metadata, UriComponentsBuilder builder) {
+	private RepositoryLinkBuilder(ResourceMetadata metadata, UriComponentsBuilder builder, List<Affordance> affordances) {
 
-		super(builder);
+		super(builder, affordances);
+
 		Assert.notNull(metadata, "ResourceMetadata must not be null!");
+
 		this.metadata = metadata;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.core.LinkBuilderSupport#slash(java.lang.Object)
+	 * @see org.springframework.hateoas.server.core.LinkBuilderSupport#slash(java.lang.Object)
 	 */
 	@Override
 	public RepositoryLinkBuilder slash(Object object) {
 
-		if (object instanceof PersistentProperty) {
-			return slash((PersistentProperty<?>) object);
-		}
-
-		return super.slash(object);
+		return PersistentProperty.class.isInstance(object) //
+				? slash((PersistentProperty<?>) object)
+				: super.slash(object);
 	}
 
 	public RepositoryLinkBuilder slash(PersistentProperty<?> property) {
@@ -83,16 +86,16 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.core.LinkBuilderSupport#createNewInstance(org.springframework.web.util.UriComponentsBuilder)
+	 * @see org.springframework.hateoas.server.core.LinkBuilderSupport#createNewInstance(org.springframework.web.util.UriComponentsBuilder, java.util.List)
 	 */
 	@Override
-	protected RepositoryLinkBuilder createNewInstance(UriComponentsBuilder builder) {
-		return new RepositoryLinkBuilder(this.metadata, builder);
+	protected RepositoryLinkBuilder createNewInstance(UriComponentsBuilder builder, List<Affordance> affordances) {
+		return new RepositoryLinkBuilder(this.metadata, builder, affordances);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.core.LinkBuilderSupport#getThis()
+	 * @see org.springframework.hateoas.server.core.LinkBuilderSupport#getThis()
 	 */
 	@Override
 	protected RepositoryLinkBuilder getThis() {

@@ -23,10 +23,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
-import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.core.EvoInflectorRelProvider;
-import org.springframework.hateoas.hal.Jackson2HalModule;
-import org.springframework.hateoas.hal.Jackson2HalModule.HalHandlerInstantiator;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
+import org.springframework.hateoas.mediatype.hal.Jackson2HalModule.HalHandlerInstantiator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -78,7 +78,7 @@ public class ProjectionJacksonIntegrationTests {
 		customer.address = new Address();
 
 		CustomerProjection projection = factory.createProjection(CustomerProjection.class, customer);
-		Resources<CustomerProjection> resources = new Resources<CustomerProjection>(Arrays.asList(projection));
+		CollectionModel<CustomerProjection> resources = new CollectionModel<CustomerProjection>(Arrays.asList(projection));
 
 		String result = mapper.writeValueAsString(resources);
 

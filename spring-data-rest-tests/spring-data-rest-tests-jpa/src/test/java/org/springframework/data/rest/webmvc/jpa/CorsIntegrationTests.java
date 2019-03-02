@@ -26,6 +26,7 @@ import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -61,7 +62,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-573
 	public void appliesSelectiveDefaultCorsConfiguration() throws Exception {
 
-		Link findItems = client.discoverUnique("items");
+		Link findItems = client.discoverUnique(LinkRelation.of("items"));
 
 		// Preflight request
 		mvc.perform(options(findItems.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.away")
@@ -74,7 +75,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-573
 	public void appliesGlobalCorsConfiguration() throws Exception {
 
-		Link findBooks = client.discoverUnique("books");
+		Link findBooks = client.discoverUnique(LinkRelation.of("books"));
 
 		// Preflight request
 		mvc.perform(options(findBooks.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.away")
@@ -132,7 +133,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-573
 	public void appliesCorsConfigurationOnRepository() throws Exception {
 
-		Link authorsLink = client.discoverUnique("authors");
+		Link authorsLink = client.discoverUnique(LinkRelation.of("authors"));
 
 		// Preflight request
 		mvc.perform(options(authorsLink.expand().getHref()).header(HttpHeaders.ORIGIN, "http://not.so.far.away")

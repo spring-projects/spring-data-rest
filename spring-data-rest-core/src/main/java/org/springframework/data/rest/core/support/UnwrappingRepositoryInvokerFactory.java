@@ -28,7 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
-import org.springframework.data.rest.core.util.Java8PluginRegistry;
+import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 
@@ -41,7 +41,7 @@ import org.springframework.util.MultiValueMap;
 public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFactory {
 
 	private final RepositoryInvokerFactory delegate;
-	private final Java8PluginRegistry<EntityLookup<?>, Class<?>> lookups;
+	private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
 
 	/**
 	 * @param delegate must not be {@literal null}.
@@ -54,7 +54,7 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 		Assert.notNull(lookups, "EntityLookups must not be null!");
 
 		this.delegate = delegate;
-		this.lookups = Java8PluginRegistry.of(lookups);
+		this.lookups = PluginRegistry.of(lookups);
 	}
 
 	/*

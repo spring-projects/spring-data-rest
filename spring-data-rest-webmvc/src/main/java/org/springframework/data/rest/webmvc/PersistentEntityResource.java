@@ -25,9 +25,10 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.core.EmbeddedWrapper;
+import org.springframework.hateoas.Links;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.server.core.EmbeddedWrapper;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -38,7 +39,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public class PersistentEntityResource extends Resource<Object> {
+public class PersistentEntityResource extends EntityModel<Object> {
 
 	private static final Iterable<EmbeddedWrapper> NO_EMBEDDEDS = new NoLinksResources<EmbeddedWrapper>(
 			Collections.<EmbeddedWrapper> emptyList());
@@ -91,7 +92,7 @@ public class PersistentEntityResource extends Resource<Object> {
 	 *
 	 * @return
 	 */
-	public PersistentPropertyAccessor getPropertyAccessor() {
+	public PersistentPropertyAccessor<?> getPropertyAccessor() {
 		return entity.getPropertyAccessor(getContent());
 	}
 
@@ -202,7 +203,7 @@ public class PersistentEntityResource extends Resource<Object> {
 		}
 	}
 
-	private static class NoLinksResources<T> extends Resources<T> {
+	private static class NoLinksResources<T> extends CollectionModel<T> {
 
 		public NoLinksResources(Iterable<T> content) {
 			super(content);
@@ -210,11 +211,11 @@ public class PersistentEntityResource extends Resource<Object> {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.hateoas.ResourceSupport#getLinks()
+		 * @see org.springframework.hateoas.RepresentationModel#getLinks()
 		 */
 		@Override
 		@JsonIgnore
-		public List<Link> getLinks() {
+		public Links getLinks() {
 			return super.getLinks();
 		}
 	}

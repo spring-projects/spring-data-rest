@@ -15,16 +15,17 @@
  */
 package org.springframework.data.rest.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import org.hamcrest.Matcher;
 import org.springframework.data.rest.core.Path;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriTemplate;
 
@@ -35,11 +36,11 @@ import org.springframework.web.util.UriTemplate;
  */
 public class ResourceTester {
 
-	private final ResourceSupport resource;
+	private final RepresentationModel resource;
 
 	public static ResourceTester of(Object object) {
-		assertThat(object, is(instanceOf(ResourceSupport.class)));
-		return new ResourceTester((ResourceSupport) object);
+		assertThat(object, is(instanceOf(RepresentationModel.class)));
+		return new ResourceTester((RepresentationModel) object);
 	}
 
 	/**
@@ -47,8 +48,8 @@ public class ResourceTester {
 	 *
 	 * @param resource must not be {@literal null}.
 	 */
-	private ResourceTester(ResourceSupport resource) {
-		Assert.notNull(resource, "Resource must not be null!");
+	private ResourceTester(RepresentationModel resource) {
+		Assert.notNull(resource, "EntityRepresentationModel must not be null!");
 		this.resource = resource;
 	}
 
@@ -58,7 +59,7 @@ public class ResourceTester {
 	 * @param number
 	 */
 	public void assertNumberOfLinks(int number) {
-		assertThat(resource.getLinks().size(), is(number));
+		assertThat(resource.getLinks()).hasSize(number);
 	}
 
 	/**
@@ -83,7 +84,7 @@ public class ResourceTester {
 
 	private final Link assertHasLinkMatching(String rel, Matcher<String> hrefMatcher) {
 
-		Link link = resource.getLink(rel);
+		Link link = resource.getRequiredLink(rel);
 		assertThat("Expected link with rel '" + rel + "' but didn't find it in " + resource.getLinks(), link,
 				is(notNullValue()));
 
@@ -95,27 +96,27 @@ public class ResourceTester {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> PagedResources<T> assertIsPage() {
+	public <T> PagedModel<T> assertIsPage() {
 
-		assertThat(resource, is(instanceOf(PagedResources.class)));
-		return (PagedResources<T>) resource;
+		assertThat(resource, is(instanceOf(PagedModel.class)));
+		return (PagedModel<T>) resource;
 	}
 
 	public ResourceTester getContentResource() {
 
-		assertThat(resource, is(instanceOf(Resources.class)));
-		Object next = ((Resources<?>) resource).getContent().iterator().next();
+		assertThat(resource, is(instanceOf(CollectionModel.class)));
+		Object next = ((CollectionModel<?>) resource).getContent().iterator().next();
 
-		assertThat(next, is(instanceOf(ResourceSupport.class)));
-		return new ResourceTester((ResourceSupport) next);
+		assertThat(next, is(instanceOf(RepresentationModel.class)));
+		return new ResourceTester((RepresentationModel) next);
 	}
 
 	public void withContentResource(ContentResourceHandler handler) {
 
-		assertThat(resource, is(instanceOf(Resources.class)));
+		assertThat(resource, is(instanceOf(CollectionModel.class)));
 
-		for (Object element : ((Resources<?>) resource).getContent()) {
-			assertThat(element, is(instanceOf(ResourceSupport.class)));
+		for (Object element : ((CollectionModel<?>) resource).getContent()) {
+			assertThat(element, is(instanceOf(RepresentationModel.class)));
 			handler.doWith(of(element));
 		}
 	}

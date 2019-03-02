@@ -27,8 +27,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
-import org.springframework.hateoas.RelProvider;
-import org.springframework.hateoas.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.server.RelProvider;
+import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
 
 /**
  * Ensure the {@link ResourceMapping} components convey the correct information.

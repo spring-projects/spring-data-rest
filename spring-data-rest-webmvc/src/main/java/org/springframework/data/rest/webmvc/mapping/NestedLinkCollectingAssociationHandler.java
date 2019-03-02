@@ -32,7 +32,7 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
-import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.Link;
 
 /**
@@ -68,7 +68,7 @@ public class NestedLinkCollectingAssociationHandler implements SimpleAssociation
 				PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(element.getClass());
 				IdentifierAccessor identifierAccessor = entity.getIdentifierAccessor(element);
 
-				links.add(entityLinks.linkForSingleResource(element.getClass(), identifierAccessor.getIdentifier())
+				links.add(entityLinks.linkForItemResource(element.getClass(), identifierAccessor.getIdentifier())
 						.withRel(propertyMapping.getRel()));
 
 			}
@@ -77,7 +77,7 @@ public class NestedLinkCollectingAssociationHandler implements SimpleAssociation
 			PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(propertyValue.getClass());
 			IdentifierAccessor identifierAccessor = entity.getIdentifierAccessor(propertyValue);
 
-			links.add(entityLinks.linkForSingleResource(propertyValue.getClass(), identifierAccessor.getIdentifier())
+			links.add(entityLinks.linkForItemResource(propertyValue.getClass(), identifierAccessor.getIdentifier())
 					.withRel(propertyMapping.getRel()));
 		}
 	}

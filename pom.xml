@@ -35,7 +35,6 @@
 		<springdata.solr>4.1.0.BUILD-SNAPSHOT</springdata.solr>
 		<springdata.cassandra>2.2.0.BUILD-SNAPSHOT</springdata.cassandra>
 		<springdata.keyvalue>2.2.0.BUILD-SNAPSHOT</springdata.keyvalue>
-		<spring-hateoas>0.25.0.RELEASE</spring-hateoas>
 
 		<hibernate.version>5.2.17.Final</hibernate.version>
 		<jsonpath>1.1.0</jsonpath>

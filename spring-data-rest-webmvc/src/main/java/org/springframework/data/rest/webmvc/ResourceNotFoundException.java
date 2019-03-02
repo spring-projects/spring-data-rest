@@ -30,7 +30,7 @@ public class ResourceNotFoundException extends RuntimeException {
 	private static final long serialVersionUID = 7992904489502842099L;
 
 	public ResourceNotFoundException() {
-		this("Resource not found!");
+		this("EntityRepresentationModel not found!");
 	}
 
 	public ResourceNotFoundException(String message) {

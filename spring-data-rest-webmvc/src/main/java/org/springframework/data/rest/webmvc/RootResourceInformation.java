@@ -94,7 +94,7 @@ public class RootResourceInformation {
 			throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
 
 		Assert.notNull(httpMethod, "HTTP method must not be null!");
-		Assert.notNull(resourceType, "Resource type must not be null!");
+		Assert.notNull(resourceType, "EntityRepresentationModel type must not be null!");
 
 		if (!resourceMetadata.isExported()) {
 			throw new ResourceNotFoundException();
@@ -121,7 +121,7 @@ public class RootResourceInformation {
 			throws HttpRequestMethodNotSupportedException {
 
 		Assert.notNull(httpMethod, "HTTP method must not be null!");
-		Assert.notNull(property, "Resource type must not be null!");
+		Assert.notNull(property, "EntityRepresentationModel type must not be null!");
 
 		if (!resourceMetadata.isExported()) {
 			throw new ResourceNotFoundException();

@@ -25,8 +25,8 @@ import java.util.Scanner;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -43,7 +43,7 @@ import org.springframework.util.StringUtils;
  * @author Greg Turnquist
  * @author Oliver Gierke
  */
-public class UriListHttpMessageConverter implements HttpMessageConverter<ResourceSupport> {
+public class UriListHttpMessageConverter implements HttpMessageConverter<RepresentationModel> {
 
 	private static final List<MediaType> MEDIA_TYPES = new ArrayList<MediaType>();
 
@@ -60,7 +60,7 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Resourc
 		if (null == mediaType) {
 			return false;
 		}
-		return ResourceSupport.class.isAssignableFrom(clazz) && mediaType.getSubtype().contains("uri-list");
+		return RepresentationModel.class.isAssignableFrom(clazz) && mediaType.getSubtype().contains("uri-list");
 	}
 
 	/*
@@ -86,7 +86,7 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Resourc
 	 * @see org.springframework.http.converter.HttpMessageConverter#read(java.lang.Class, org.springframework.http.HttpInputMessage)
 	 */
 	@Override
-	public ResourceSupport read(Class<? extends ResourceSupport> clazz, HttpInputMessage inputMessage)
+	public RepresentationModel read(Class<? extends RepresentationModel> clazz, HttpInputMessage inputMessage)
 			throws IOException, HttpMessageNotReadableException {
 
 		List<Link> links = new ArrayList<Link>();
@@ -107,7 +107,7 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Resourc
 			scanner.close();
 		}
 
-		return new Resources<Object>(Collections.emptyList(), links);
+		return new CollectionModel<Object>(Collections.emptyList(), links);
 	}
 
 	/*
@@ -115,7 +115,7 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Resourc
 	 * @see org.springframework.http.converter.HttpMessageConverter#write(java.lang.Object, org.springframework.http.MediaType, org.springframework.http.HttpOutputMessage)
 	 */
 	@Override
-	public void write(ResourceSupport resource, MediaType contentType, HttpOutputMessage outputMessage)
+	public void write(RepresentationModel resource, MediaType contentType, HttpOutputMessage outputMessage)
 			throws IOException, HttpMessageNotWritableException {
 
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputMessage.getBody()));

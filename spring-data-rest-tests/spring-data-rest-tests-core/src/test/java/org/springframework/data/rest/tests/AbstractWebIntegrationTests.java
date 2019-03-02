@@ -15,9 +15,8 @@
  */
 package org.springframework.data.rest.tests;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,13 +24,15 @@ import net.minidev.json.JSONArray;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkDiscoverers;
+import org.springframework.hateoas.client.LinkDiscoverers;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -39,7 +40,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -118,10 +118,8 @@ public abstract class AbstractWebIntegrationTests {
 
 		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
-		MockHttpServletResponse response = mvc
-				.perform(MockMvcRequestBuilders.request(HttpMethod.PATCH, href).//
-						content(payload.toString()).contentType(mediaType))
-				.andExpect(status().is2xxSuccessful())//
+		MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.request(HttpMethod.PATCH, href).//
+				content(payload.toString()).contentType(mediaType)).andExpect(status().is2xxSuccessful())//
 				.andReturn().getResponse();
 
 		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(href);
@@ -140,15 +138,16 @@ public abstract class AbstractWebIntegrationTests {
 				.andExpect(status().isNotFound());
 	}
 
-	protected Link assertHasContentLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
-		return assertContentLinkWithRel(rel, response, true);
+	protected Link assertHasContentLinkWithRel(LinkRelation relation, MockHttpServletResponse response) throws Exception {
+		return assertContentLinkWithRel(relation, response, true);
 	}
 
-	protected void assertDoesNotHaveContentLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
+	protected void assertDoesNotHaveContentLinkWithRel(LinkRelation rel, MockHttpServletResponse response)
+			throws Exception {
 		assertContentLinkWithRel(rel, response, false);
 	}
 
-	protected Link assertContentLinkWithRel(String rel, MockHttpServletResponse response, boolean expected)
+	protected Link assertContentLinkWithRel(LinkRelation rel, MockHttpServletResponse response, boolean expected)
 			throws Exception {
 
 		String content = response.getContentAsString();
@@ -170,19 +169,19 @@ public abstract class AbstractWebIntegrationTests {
 		} catch (InvalidPathException o_O) {
 
 			if (expected) {
-				fail("Didn't find any content in the given response!");
+				fail("Didn't find any content in the given response!", o_O);
 			}
 
 			return null;
 		}
 	}
 
-	protected void assertDoesNotHaveLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
+	protected void assertDoesNotHaveLinkWithRel(LinkRelation rel, MockHttpServletResponse response) throws Exception {
 
 		String content = response.getContentAsString();
-		Link link = client.getDiscoverer(response).findLinkWithRel(rel, content);
+		Optional<Link> link = client.getDiscoverer(response).findLinkWithRel(rel, content);
 
-		assertThat(link).as("Expected not to find link with rel %s but found %s!", rel, link).isNull();
+		assertThat(link).as("Expected not to find link with rel %s but found %s!", rel, link).isEmpty();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -231,28 +230,24 @@ public abstract class AbstractWebIntegrationTests {
 		return jsonString;
 	}
 
-	protected ResultMatcher doesNotHaveLinkWithRel(final String rel) {
+	protected ResultMatcher doesNotHaveLinkWithRel(final LinkRelation relation) {
 
-		return new ResultMatcher() {
+		return result -> {
 
-			@Override
-			public void match(MvcResult result) throws Exception {
+			MockHttpServletResponse response = result.getResponse();
+			String s = response.getContentAsString();
 
-				MockHttpServletResponse response = result.getResponse();
-				String s = response.getContentAsString();
-
-				assertThat(client.getDiscoverer(response).findLinkWithRel(rel, s))//
-						.as("Expected not to find link with rel %s but found one in %s!", rel, s)//
-						.isNull();
-			}
+			assertThat(client.getDiscoverer(response).findLinkWithRel(relation, s))//
+					.as("Expected not to find link with rel %s but found one in %s!", relation, s)//
+					.isEmpty();
 		};
 	}
 
-	protected Map<String, String> getPayloadToPost() throws Exception {
+	protected Map<LinkRelation, String> getPayloadToPost() throws Exception {
 		return Collections.emptyMap();
 	}
 
-	protected MultiValueMap<String, String> getRootAndLinkedResources() {
-		return new LinkedMultiValueMap<String, String>(0);
+	protected MultiValueMap<LinkRelation, String> getRootAndLinkedResources() {
+		return new LinkedMultiValueMap<LinkRelation, String>(0);
 	}
 }

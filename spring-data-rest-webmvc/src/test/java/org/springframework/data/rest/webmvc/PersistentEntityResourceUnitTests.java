@@ -26,9 +26,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.core.EmbeddedWrapper;
-import org.springframework.hateoas.core.EmbeddedWrappers;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.server.core.EmbeddedWrapper;
+import org.springframework.hateoas.server.core.EmbeddedWrappers;
 
 /**
  * Unit tests for {@link PersistentEntityResource}.
@@ -41,15 +42,15 @@ public class PersistentEntityResourceUnitTests {
 	@Mock Object payload;
 	@Mock PersistentEntity<?, ?> entity;
 
-	Resources<EmbeddedWrapper> resources;
+	CollectionModel<EmbeddedWrapper> resources;
 	Link link = new Link("http://localhost", "foo");
 
 	@Before
 	public void setUp() {
 
 		EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
-		EmbeddedWrapper wrapper = wrappers.wrap("Embedded", "foo");
-		this.resources = new Resources<EmbeddedWrapper>(Collections.singleton(wrapper));
+		EmbeddedWrapper wrapper = wrappers.wrap("Embedded", LinkRelation.of("foo"));
+		this.resources = new CollectionModel<EmbeddedWrapper>(Collections.singleton(wrapper));
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATAREST-317

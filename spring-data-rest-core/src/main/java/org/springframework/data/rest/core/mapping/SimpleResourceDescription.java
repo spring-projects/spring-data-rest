@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -45,8 +46,8 @@ public class SimpleResourceDescription extends ResolvableResourceDescriptionSupp
 		this.mediaType = mediaType;
 	}
 
-	public static ResourceDescription defaultFor(String rel) {
-		return new SimpleResourceDescription(String.format("%s.%s", DEFAULT_KEY_PREFIX, rel), DEFAULT_MEDIA_TYPE);
+	public static ResourceDescription defaultFor(LinkRelation rel) {
+		return new SimpleResourceDescription(String.format("%s.%s", DEFAULT_KEY_PREFIX, rel.value()), DEFAULT_MEDIA_TYPE);
 	}
 
 	/*

@@ -40,7 +40,7 @@ import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -122,7 +122,7 @@ public class DataRest262Tests {
 
 		JpaPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(AircraftMovement.class);
 
-		Resource<Object> resource = PersistentEntityResource.build(movement, persistentEntity).//
+		EntityModel<Object> resource = PersistentEntityResource.build(movement, persistentEntity).//
 				withLink(new Link("/api/airports/" + movement.id)).//
 				build();
 

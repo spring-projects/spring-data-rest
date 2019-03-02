@@ -30,6 +30,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
+import org.springframework.hateoas.LinkRelation;
 
 /**
  * Unit tests for {@link RepositoryMethodResourceMapping}.
@@ -94,7 +95,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
 		MethodResourceMapping mapping = getMappingFor(method);
 
-		assertThat(mapping.getRel()).isEqualTo("findByEmailAddress");
+		assertThat(mapping.getRel()).isEqualTo(LinkRelation.of("findByEmailAddress"));
 	}
 
 	@Test // DATAREST-384
@@ -118,7 +119,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
 		MethodResourceMapping mapping = getMappingFor(method);
 
-		assertThat(mapping.getReturnedDomainType()).isEqualTo((Class) Person.class);
+		assertThat(mapping.getReturnedDomainType()).isEqualTo(Person.class);
 	}
 
 	@Test // DATAREST-699

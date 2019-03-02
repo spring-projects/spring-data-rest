@@ -30,8 +30,9 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.hateoas.core.AnnotationAttribute;
-import org.springframework.hateoas.core.MethodParameters;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.server.core.AnnotationAttribute;
+import org.springframework.hateoas.server.core.MethodParameters;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -46,7 +47,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	private static final AnnotationAttribute PARAM_VALUE = new AnnotationAttribute(Param.class);
 
 	private final boolean isExported;
-	private final String rel;
+	private final LinkRelation rel;
 	private final Path path;
 	private final Method method;
 	private final boolean paging;
@@ -70,14 +71,15 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		Assert.notNull(resourceMapping, "ResourceMapping must not be null!");
 
 		RestResource annotation = AnnotationUtils.findAnnotation(method, RestResource.class);
-		String resourceRel = resourceMapping.getRel();
+		LinkRelation resourceRel = resourceMapping.getRel();
 
 		this.isExported = annotation != null ? annotation.exported() : exposeMethodsByDefault;
-		this.rel = annotation == null || !StringUtils.hasText(annotation.rel()) ? method.getName() : annotation.rel();
+		this.rel = LinkRelation
+				.of(annotation == null || !StringUtils.hasText(annotation.rel()) ? method.getName() : annotation.rel());
 		this.path = annotation == null || !StringUtils.hasText(annotation.path()) ? new Path(method.getName())
 				: new Path(annotation.path());
 		this.method = method;
-		this.parameterMetadata = discoverParameterMetadata(method, resourceRel.concat(".").concat(rel));
+		this.parameterMetadata = discoverParameterMetadata(method, resourceRel.value().concat(".").concat(rel.value()));
 
 		List<Class<?>> parameterTypes = Arrays.asList(method.getParameterTypes());
 
@@ -114,7 +116,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
 	 */
 	@Override
-	public String getRel() {
+	public LinkRelation getRel() {
 		return rel;
 	}
 

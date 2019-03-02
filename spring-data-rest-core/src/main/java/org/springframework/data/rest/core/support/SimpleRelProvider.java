@@ -15,7 +15,8 @@
  */
 package org.springframework.data.rest.core.support;
 
-import org.springframework.hateoas.RelProvider;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.server.RelProvider;
 import org.springframework.util.StringUtils;
 
 /**
@@ -34,21 +35,21 @@ public class SimpleRelProvider implements RelProvider {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.RelProvider#getItemResourceRelFor(java.lang.Class)
+	 * @see org.springframework.hateoas.server.RelProvider#getItemResourceRelFor(java.lang.Class)
 	 */
 	@Override
-	public String getItemResourceRelFor(Class<?> type) {
+	public LinkRelation getItemResourceRelFor(Class<?> type) {
 
-		String collectionRel = getCollectionResourceRelFor(type);
-		return String.format("%s.%s", collectionRel, collectionRel);
+		LinkRelation collectionRel = getCollectionResourceRelFor(type);
+		return LinkRelation.of(String.format("%s.%s", collectionRel.value(), collectionRel.value()));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.RelProvider#getCollectionResourceRelFor(java.lang.Class)
+	 * @see org.springframework.hateoas.server.RelProvider#getCollectionResourceRelFor(java.lang.Class)
 	 */
 	@Override
-	public String getCollectionResourceRelFor(Class<?> type) {
-		return StringUtils.uncapitalize(type.getSimpleName());
+	public LinkRelation getCollectionResourceRelFor(Class<?> type) {
+		return LinkRelation.of(StringUtils.uncapitalize(type.getSimpleName()));
 	}
 }
