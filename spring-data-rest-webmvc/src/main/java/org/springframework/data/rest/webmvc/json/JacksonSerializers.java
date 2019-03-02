@@ -45,6 +45,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
  * Custom Spring Data REST Jackson serializers.
  *
  * @author Oliver Gierke
+ * @author Doug Busley
  * @since 2.4
  * @soundtrack Wallis Bird - I Could Be Your Man (Yeah! Wallis Bird Live 2007-2014)
  */

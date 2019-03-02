@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Doug Busley
  */
 @JsonInclude(Include.NON_EMPTY)
 public class JsonSchema {
