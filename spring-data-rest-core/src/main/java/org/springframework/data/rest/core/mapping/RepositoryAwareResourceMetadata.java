@@ -21,6 +21,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.rest.core.Path;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.util.Assert;
 
 /**
@@ -129,7 +130,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getCollectionRel()
 	 */
 	@Override
-	public String getRel() {
+	public LinkRelation getRel() {
 		return mapping.getRel();
 	}
 
@@ -138,7 +139,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getSingleResourceRel()
 	 */
 	@Override
-	public String getItemResourceRel() {
+	public LinkRelation getItemResourceRel() {
 		return mapping.getItemResourceRel();
 	}
 

@@ -15,9 +15,8 @@
  */
 package org.springframework.data.rest.tests.gemfire;
 
-import java.util.Arrays;
-
 import org.springframework.data.rest.tests.CommonWebTests;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
@@ -31,7 +30,7 @@ public class GemfireWebTests extends CommonWebTests {
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
 	 */
 	@Override
-	protected Iterable<String> expectedRootLinkRels() {
-		return Arrays.asList("products");
+	protected Iterable<LinkRelation> expectedRootLinkRels() {
+		return LinkRelation.manyOf("products");
 	}
 }

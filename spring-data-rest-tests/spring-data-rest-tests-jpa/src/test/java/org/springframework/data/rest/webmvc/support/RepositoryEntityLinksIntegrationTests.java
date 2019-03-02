@@ -31,6 +31,7 @@ import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.util.UriComponents;
@@ -50,10 +51,10 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	@Test
 	public void returnsLinkToSingleResource() {
 
-		Link link = entityLinks.linkToSingleResource(Person.class, 1);
+		Link link = entityLinks.linkToItemResource(Person.class, 1);
 
 		assertThat(link.getHref(), endsWith("/people/1{?projection}"));
-		assertThat(link.getRel()).isEqualTo("person");
+		assertThat(link.getRel()).isEqualTo(LinkRelation.of("person"));
 	}
 
 	@Test
@@ -63,13 +64,13 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		assertThat(link.isTemplated()).isTrue();
 		assertThat(link.getVariableNames()).contains("page", "size", "sort");
-		assertThat(link.getRel()).isEqualTo("people");
+		assertThat(link.getRel()).isEqualTo(LinkRelation.of("people"));
 	}
 
 	@Test // DATAREST-221
 	public void returnsLinkWithProjectionTemplateVariableIfProjectionIsDefined() {
 
-		Link link = entityLinks.linkToSingleResource(Order.class, 1);
+		Link link = entityLinks.linkToItemResource(Order.class, 1);
 
 		assertThat(link.isTemplated()).isTrue();
 		assertThat(link.getVariableNames()).contains(configuration.getProjectionConfiguration().getParameterName());
@@ -78,7 +79,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	@Test // DATAREST-155
 	public void usesCustomGeneratedBackendId() {
 
-		Link link = entityLinks.linkToSingleResource(Book.class, 7L);
+		Link link = entityLinks.linkToItemResource(Book.class, 7L);
 		assertThat(link.expand().getHref(), endsWith("/7-7-7-7-7-7-7"));
 	}
 
@@ -99,7 +100,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		assertThat(links.hasLink("firstname")).isTrue();
 
-		Link firstnameLink = links.getLink("firstname");
+		Link firstnameLink = links.getLink("firstname").orElse(null);
 		assertThat(firstnameLink.isTemplated()).isTrue();
 		assertThat(firstnameLink.getVariableNames()).contains("page", "size");
 	}
@@ -107,7 +108,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	@Test // DATAREST-467
 	public void returnsLinkToSearchResource() {
 
-		Link link = entityLinks.linkToSearchResource(Person.class, "firstname");
+		Link link = entityLinks.linkToSearchResource(Person.class, LinkRelation.of("firstname"));
 
 		assertThat(link).isNotNull();
 		assertThat(link.isTemplated()).isTrue();
@@ -117,7 +118,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	@Test // DATAREST-467, DATAREST-519
 	public void prepopulatesPaginationInformationForSearchResourceLink() {
 
-		Link link = entityLinks.linkToSearchResource(Person.class, "firstname", PageRequest.of(0, 10));
+		Link link = entityLinks.linkToSearchResource(Person.class, LinkRelation.of("firstname"), PageRequest.of(0, 10));
 
 		assertThat(link).isNotNull();
 		assertThat(link.isTemplated()).isTrue();
@@ -131,7 +132,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	@Test // DATAREST-467
 	public void returnsTemplatedLinkForSortedSearchResource() {
 
-		Link link = entityLinks.linkToSearchResource(Person.class, "lastname");
+		Link link = entityLinks.linkToSearchResource(Person.class, LinkRelation.of("lastname"));
 
 		assertThat(link.isTemplated()).isTrue();
 		assertThat(link.getVariableNames()).contains("lastname", "sort");
@@ -140,7 +141,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	@Test // DATAREST-467, DATAREST-519
 	public void prepopulatesSortInformationForSearchResourceLink() {
 
-		Link link = entityLinks.linkToSearchResource(Person.class, "lastname", Sort.by("firstname"));
+		Link link = entityLinks.linkToSearchResource(Person.class, LinkRelation.of("lastname"), Sort.by("firstname"));
 
 		assertThat(link).isNotNull();
 		assertThat(link.isTemplated()).isTrue();

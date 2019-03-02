@@ -21,8 +21,9 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.hateoas.RelProvider;
-import org.springframework.hateoas.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.server.RelProvider;
+import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -91,13 +92,13 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
 	 */
 	@Override
-	public String getRel() {
+	public LinkRelation getRel() {
 
 		if (annotation == null || !StringUtils.hasText(annotation.rel())) {
 			return relProvider.getCollectionResourceRelFor(type);
 		}
 
-		return annotation.rel();
+		return LinkRelation.of(annotation.rel());
 	}
 
 	/*
@@ -105,7 +106,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getSingleResourceRel()
 	 */
 	@Override
-	public String getItemResourceRel() {
+	public LinkRelation getItemResourceRel() {
 		return relProvider.getItemResourceRelFor(type);
 	}
 

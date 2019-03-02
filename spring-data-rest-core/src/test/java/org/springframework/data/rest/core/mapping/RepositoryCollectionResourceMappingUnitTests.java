@@ -27,6 +27,7 @@ import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
+import org.springframework.hateoas.LinkRelation;
 
 /**
  * Unit tests for {@link RepositoryCollectionResourceMapping}.
@@ -41,8 +42,8 @@ public class RepositoryCollectionResourceMappingUnitTests {
 		CollectionResourceMapping mapping = getResourceMappingFor(PersonRepository.class);
 
 		assertThat(mapping.getPath()).isEqualTo(new Path("persons"));
-		assertThat(mapping.getRel()).isEqualTo("persons");
-		assertThat(mapping.getItemResourceRel()).isEqualTo("person");
+		assertThat(mapping.getRel()).isEqualTo(LinkRelation.of("persons"));
+		assertThat(mapping.getItemResourceRel()).isEqualTo(LinkRelation.of("person"));
 		assertThat(mapping.isExported()).isTrue();
 	}
 
@@ -52,8 +53,8 @@ public class RepositoryCollectionResourceMappingUnitTests {
 		CollectionResourceMapping mapping = getResourceMappingFor(AnnotatedPersonRepository.class);
 
 		assertThat(mapping.getPath()).isEqualTo(new Path("bar"));
-		assertThat(mapping.getRel()).isEqualTo("foo");
-		assertThat(mapping.getItemResourceRel()).isEqualTo("annotatedPerson");
+		assertThat(mapping.getRel()).isEqualTo(LinkRelation.of("foo"));
+		assertThat(mapping.getItemResourceRel()).isEqualTo(LinkRelation.of("annotatedPerson"));
 		assertThat(mapping.isExported()).isFalse();
 	}
 
@@ -63,8 +64,8 @@ public class RepositoryCollectionResourceMappingUnitTests {
 		CollectionResourceMapping mapping = getResourceMappingFor(AnnotatedAnnotatedPersonRepository.class);
 
 		assertThat(mapping.getPath()).isEqualTo(new Path("/trumpsAll"));
-		assertThat(mapping.getRel()).isEqualTo("foo");
-		assertThat(mapping.getItemResourceRel()).isEqualTo("annotatedPerson");
+		assertThat(mapping.getRel()).isEqualTo(LinkRelation.of("foo"));
+		assertThat(mapping.getItemResourceRel()).isEqualTo(LinkRelation.of("annotatedPerson"));
 		assertThat(mapping.isExported()).isTrue();
 	}
 
@@ -84,8 +85,8 @@ public class RepositoryCollectionResourceMappingUnitTests {
 	public void discoversCustomizationsUsingRestRepositoryResource() {
 
 		CollectionResourceMapping mapping = getResourceMappingFor(RepositoryAnnotatedRepository.class);
-		assertThat(mapping.getRel()).isEqualTo("foo");
-		assertThat(mapping.getItemResourceRel()).isEqualTo("bar");
+		assertThat(mapping.getRel()).isEqualTo(LinkRelation.of("foo"));
+		assertThat(mapping.getItemResourceRel()).isEqualTo(LinkRelation.of("bar"));
 	}
 
 	@Test // DATAREST-445

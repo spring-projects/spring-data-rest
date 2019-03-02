@@ -22,7 +22,7 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -113,6 +113,6 @@ public class RepositoryController extends AbstractRepositoryRestController {
 			}
 		}
 
-		return new ResponseEntity<RepositoryLinksResource>(resource, HttpStatus.OK);
+		return new ResponseEntity<>(resource, HttpStatus.OK);
 	}
 }

@@ -23,7 +23,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
-import org.springframework.hateoas.alps.Alps;
+import org.springframework.hateoas.mediatype.alps.Alps;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;

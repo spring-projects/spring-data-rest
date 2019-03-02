@@ -21,20 +21,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.plugin.core.OrderAwarePluginRegistry;
 import org.springframework.plugin.core.Plugin;
 import org.springframework.plugin.core.PluginRegistry;
 
 /**
  * @author Oliver Gierke
+ * @deprecated since 3.2, for removal 3.3.
  */
+@Deprecated
 @RequiredArgsConstructor
 public class Java8PluginRegistry<T extends Plugin<S>, S> {
 
 	private final PluginRegistry<T, S> registry;
 
 	public static <T extends Plugin<S>, S> Java8PluginRegistry<T, S> of(List<? extends T> plugins) {
-		return Java8PluginRegistry.of(OrderAwarePluginRegistry.create(plugins));
+		return Java8PluginRegistry.of(PluginRegistry.of(plugins));
 	}
 
 	public static <T extends Plugin<S>, S> Java8PluginRegistry<T, S> of(PluginRegistry<T, S> plugins) {
@@ -46,7 +47,7 @@ public class Java8PluginRegistry<T extends Plugin<S>, S> {
 	}
 
 	public Optional<T> getPluginFor(S delimiter) {
-		return Optional.ofNullable(registry.getPluginFor(delimiter));
+		return registry.getPluginFor(delimiter);
 	}
 
 	public T getPluginOrDefaultFor(S delimiter, T fallback) {

@@ -18,6 +18,7 @@ package org.springframework.data.rest.core.mapping;
 import java.util.Arrays;
 
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 
@@ -46,19 +47,19 @@ public class TypedResourceDescription extends SimpleResourceDescription {
 		this.type = type == null ? Object.class : type;
 	}
 
-	public static ResourceDescription defaultFor(String rel, PersistentProperty<?> property) {
+	public static ResourceDescription defaultFor(LinkRelation rel, PersistentProperty<?> property) {
 		return defaultFor(rel, property.getName(), property.getType());
 	}
 
-	public static ResourceDescription defaultFor(String rel, String name, Class<?> type) {
+	public static ResourceDescription defaultFor(LinkRelation rel, String name, Class<?> type) {
 
-		String message = String.format("%s.%s.%s", DEFAULT_KEY_PREFIX, rel, name);
+		String message = String.format("%s.%s.%s", DEFAULT_KEY_PREFIX, rel.value(), name);
 		return new TypedResourceDescription(message, DEFAULT_MEDIA_TYPE, type);
 	}
 
-	public static ResourceDescription defaultFor(String rel, Class<?> type) {
+	public static ResourceDescription defaultFor(LinkRelation rel, Class<?> type) {
 
-		String message = String.format("%s.%s", DEFAULT_KEY_PREFIX, rel);
+		String message = String.format("%s.%s", DEFAULT_KEY_PREFIX, rel.value());
 		return new TypedResourceDescription(message, DEFAULT_MEDIA_TYPE, type);
 	}
 

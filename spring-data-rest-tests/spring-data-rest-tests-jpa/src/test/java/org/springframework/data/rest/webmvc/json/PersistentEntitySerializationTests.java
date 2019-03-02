@@ -38,27 +38,17 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
-import org.springframework.data.rest.webmvc.jpa.CreditCard;
-import org.springframework.data.rest.webmvc.jpa.Dinner;
-import org.springframework.data.rest.webmvc.jpa.Guest;
-import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
-import org.springframework.data.rest.webmvc.jpa.LineItem;
-import org.springframework.data.rest.webmvc.jpa.Order;
-import org.springframework.data.rest.webmvc.jpa.OrderRepository;
-import org.springframework.data.rest.webmvc.jpa.Person;
-import org.springframework.data.rest.webmvc.jpa.PersonRepository;
-import org.springframework.data.rest.webmvc.jpa.PersonSummary;
-import org.springframework.data.rest.webmvc.jpa.Suite;
-import org.springframework.data.rest.webmvc.jpa.UserExcerpt;
+import org.springframework.data.rest.webmvc.jpa.*;
 import org.springframework.data.rest.webmvc.util.TestUtils;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkDiscoverer;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.core.EmbeddedWrapper;
-import org.springframework.hateoas.core.EmbeddedWrappers;
-import org.springframework.hateoas.hal.HalLinkDiscoverer;
+import org.springframework.hateoas.client.LinkDiscoverer;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.PagedModel.PageMetadata;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.core.EmbeddedWrapper;
+import org.springframework.hateoas.server.core.EmbeddedWrappers;
+import org.springframework.hateoas.mediatype.hal.HalLinkDiscoverer;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -105,7 +95,7 @@ public class PersistentEntitySerializationTests {
 		}
 	}
 
-	LinkDiscoverer linkDiscoverer;
+	LinkDiscoverer discoverer;
 	ProjectionFactory projectionFactory;
 
 	@Before
@@ -113,7 +103,7 @@ public class PersistentEntitySerializationTests {
 
 		RequestContextHolder.setRequestAttributes(new ServletWebRequest(new MockHttpServletRequest()));
 
-		this.linkDiscoverer = new HalLinkDiscoverer();
+		this.discoverer = new HalLinkDiscoverer();
 		this.projectionFactory = new SpelAwareProxyProjectionFactory();
 	}
 
@@ -156,11 +146,15 @@ public class PersistentEntitySerializationTests {
 
 		String s = writer.toString();
 
-		Link fatherLink = linkDiscoverer.findLinkWithRel("father", s);
-		assertThat(fatherLink.getHref(), endsWith(new UriTemplate("/{id}/father").expand(person.getId()).toString()));
+		assertThat(discoverer.findLinkWithRel("father", s)) //
+				.map(Link::getHref) //
+				.hasValueSatisfying(
+						it -> assertThat(it).endsWith(new UriTemplate("/{id}/father").expand(person.getId()).toString()));
 
-		Link siblingLink = linkDiscoverer.findLinkWithRel("siblings", s);
-		assertThat(siblingLink.getHref(), endsWith(new UriTemplate("/{id}/siblings").expand(person.getId()).toString()));
+		assertThat(discoverer.findLinkWithRel("siblings", s)) //
+				.map(Link::getHref) //
+				.hasValueSatisfying(
+						it -> assertThat(it).endsWith(new UriTemplate("/{id}/siblings").expand(person.getId()).toString()));
 	}
 
 	@Test // DATAREST-248
@@ -210,7 +204,7 @@ public class PersistentEntitySerializationTests {
 				withLink(new Link("/orders/1")).//
 				build();
 
-		PagedResources<PersistentEntityResource> persistentEntityResource = new PagedResources<PersistentEntityResource>(
+		PagedModel<PersistentEntityResource> persistentEntityResource = new PagedModel<PersistentEntityResource>(
 				Arrays.asList(orderResource), new PageMetadata(1, 0, 10));
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
@@ -229,7 +223,7 @@ public class PersistentEntitySerializationTests {
 		oliver.setFather(dave);
 
 		UserExcerpt daveExcerpt = projectionFactory.createProjection(UserExcerpt.class, dave);
-		EmbeddedWrapper wrapper = new EmbeddedWrappers(false).wrap(daveExcerpt, "father");
+		EmbeddedWrapper wrapper = new EmbeddedWrappers(false).wrap(daveExcerpt, LinkRelation.of("father"));
 
 		PersistentEntityResource resource = PersistentEntityResource.//
 				build(oliver, repositories.getPersistentEntity(Person.class)).//
@@ -266,7 +260,7 @@ public class PersistentEntitySerializationTests {
 		ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 		PersonSummary projection = factory.createProjection(PersonSummary.class, person);
 
-		String result = mapper.writeValueAsString(new Resource<PersonSummary>(projection));
+		String result = mapper.writeValueAsString(new EntityModel<PersonSummary>(projection));
 
 		assertThat(JsonPath.<Object> read(result, "$._links.self")).isNotNull();
 	}

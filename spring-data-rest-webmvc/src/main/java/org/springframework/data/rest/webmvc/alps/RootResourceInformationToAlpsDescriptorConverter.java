@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.alps;
 
-import static org.springframework.hateoas.alps.Alps.*;
+import static org.springframework.hateoas.mediatype.alps.Alps.*;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -55,15 +55,16 @@ import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.EnumTranslator;
 import org.springframework.data.rest.webmvc.json.JacksonMetadata;
 import org.springframework.data.rest.webmvc.mapping.Associations;
-import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.TemplateVariable;
-import org.springframework.hateoas.alps.Alps;
-import org.springframework.hateoas.alps.Descriptor;
-import org.springframework.hateoas.alps.Descriptor.DescriptorBuilder;
-import org.springframework.hateoas.alps.Doc;
-import org.springframework.hateoas.alps.Format;
-import org.springframework.hateoas.alps.Type;
+import org.springframework.hateoas.mediatype.alps.Alps;
+import org.springframework.hateoas.mediatype.alps.Descriptor;
+import org.springframework.hateoas.mediatype.alps.Descriptor.DescriptorBuilder;
+import org.springframework.hateoas.mediatype.alps.Doc;
+import org.springframework.hateoas.mediatype.alps.Format;
+import org.springframework.hateoas.mediatype.alps.Type;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.StringUtils;
 
@@ -122,7 +123,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 		descriptors.addAll(buildSearchResourceDescriptors(resourceInformation.getPersistentEntity()));
 
-		return Alps.alps().descriptors(descriptors).build();
+		return Alps.alps().descriptor(descriptors).build();
 	}
 
 	private Descriptor buildRepresentationDescriptor(Class<?> type) {
@@ -135,7 +136,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				id(getRepresentationDescriptorId(metadata)).//
 				href(href).//
 				doc(getDocFor(metadata.getItemResourceDescription())).//
-				descriptors(buildPropertyDescriptors(type, metadata.getItemResourceRel())).//
+				descriptor(buildPropertyDescriptors(type, metadata.getItemResourceRel())).//
 				build();
 	}
 
@@ -150,12 +151,12 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 		Type descriptorType = getType(method);
 		return descriptor().//
-				id(prefix(method).concat(metadata.getRel())).//
-				name(metadata.getRel()).//
+				id(prefix(method).concat(metadata.getRel().value())).//
+				name(metadata.getRel().value()).//
 				type(descriptorType).//
 				doc(getDocFor(metadata.getDescription())).//
 				rt("#" + representationDescriptor.getId()).//
-				descriptors(nestedDescriptors).build();
+				descriptor(nestedDescriptors).build();
 	}
 
 	/**
@@ -176,7 +177,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 			Class<?> type = projection.getValue();
 			String key = String.format("%s.%s.%s", metadata.getRel(), projectionParameterName, projection.getKey());
-			ResourceDescription fallback = SimpleResourceDescription.defaultFor(key);
+			ResourceDescription fallback = SimpleResourceDescription.defaultFor(LinkRelation.of(key));
 			AnnotationBasedResourceDescription projectionDescription = new AnnotationBasedResourceDescription(type, fallback);
 
 			projectionDescriptors.add(//
@@ -184,15 +185,15 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 							type(Type.SEMANTIC).//
 							name(projection.getKey()).//
 							doc(getDocFor(projectionDescription)).//
-							descriptors(createJacksonDescriptor(projection.getKey(), type)).//
+							descriptor(createJacksonDescriptor(projection.getKey(), type)).//
 							build());
 		}
 
 		return descriptor().//
 				type(Type.SEMANTIC).//
 				name(projectionParameterName).//
-				doc(getDocFor(SimpleResourceDescription.defaultFor(projectionParameterName))).//
-				descriptors(projectionDescriptors).build();
+				doc(getDocFor(SimpleResourceDescription.defaultFor(LinkRelation.of(projectionParameterName)))).//
+				descriptor(projectionDescriptors).build();
 	}
 
 	private List<Descriptor> createJacksonDescriptor(String name, Class<?> type) {
@@ -204,7 +205,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 			AnnotatedMethod getter = definition.getGetter();
 			Description description = getter.getAnnotation(Description.class);
 			ResourceDescription fallback = SimpleResourceDescription
-					.defaultFor(String.format("%s.%s", name, definition.getName()));
+					.defaultFor(LinkRelation.of(String.format("%s.%s", name, definition.getName())));
 			ResourceDescription resourceDescription = description == null ? null
 					: new AnnotationBasedResourceDescription(description, fallback);
 
@@ -226,12 +227,12 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		ResourceMetadata metadata = associations.getMetadataFor(entity.getType());
 
 		return descriptor().//
-				id(prefix(method).concat(metadata.getItemResourceRel())).//
-				name(metadata.getItemResourceRel()).//
+				id(prefix(method).concat(metadata.getItemResourceRel().value())).//
+				name(metadata.getItemResourceRel().value()).//
 				type(getType(method)).//
 				doc(getDocFor(metadata.getItemResourceDescription())).//
 				rt("#".concat(representationDescriptor.getId())). //
-				descriptors(getProjectionDescriptor(entity.getType(), method)).//
+				descriptor(getProjectionDescriptor(entity.getType(), method)).//
 				build();
 	}
 
@@ -275,7 +276,8 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				continue;
 			}
 
-			ResourceDescription description = SimpleResourceDescription.defaultFor(variable.getDescription());
+			ResourceDescription description = SimpleResourceDescription
+					.defaultFor(LinkRelation.of(variable.getDescription()));
 
 			descriptors.add(//
 					descriptor().//
@@ -288,7 +290,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		return descriptors;
 	}
 
-	private List<Descriptor> buildPropertyDescriptors(final Class<?> type, String baseRel) {
+	private List<Descriptor> buildPropertyDescriptors(final Class<?> type, LinkRelation baseRel) {
 
 		final PersistentEntity<?, ?> entity = persistentEntities.getRequiredPersistentEntity(type);
 		final List<Descriptor> propertyDescriptors = new ArrayList<Descriptor>();
@@ -333,7 +335,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				ResourceMapping mapping = metadata.getMappingFor(property);
 
 				DescriptorBuilder builder = descriptor().//
-				name(mapping.getRel()).doc(getDocFor(mapping.getDescription()));
+				name(mapping.getRel().value()).doc(getDocFor(mapping.getDescription()));
 
 				ResourceMetadata targetTypeMetadata = associations.getMetadataFor(property.getActualType());
 
@@ -374,8 +376,8 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 			descriptors.add(descriptor().//
 					type(Type.SAFE).//
-					name(methodMapping.getRel()).//
-					descriptors(parameterDescriptors).//
+					name(methodMapping.getRel().value()).//
+					descriptor(parameterDescriptors).//
 					build());
 		}
 
@@ -421,7 +423,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 	}
 
 	private static String getRepresentationDescriptorId(ResourceMetadata metadata) {
-		return metadata.getItemResourceRel().concat("-representation");
+		return metadata.getItemResourceRel().value().concat("-representation");
 	}
 
 	private static String prefix(HttpMethod method) {

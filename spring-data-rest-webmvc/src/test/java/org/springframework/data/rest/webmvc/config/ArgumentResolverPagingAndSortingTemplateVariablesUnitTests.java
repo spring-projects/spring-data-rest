@@ -31,7 +31,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
-import org.springframework.hateoas.mvc.UriComponentsContributor;
+import org.springframework.hateoas.server.mvc.UriComponentsContributor;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**

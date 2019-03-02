@@ -42,10 +42,10 @@ import org.springframework.data.rest.tests.mongodb.User.Nested;
 import org.springframework.data.rest.tests.mongodb.UserRepository;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkDiscoverer;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.hal.HalLinkDiscoverer;
+import org.springframework.hateoas.client.LinkDiscoverer;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.PagedModel.PageMetadata;
+import org.springframework.hateoas.mediatype.hal.HalLinkDiscoverer;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -109,7 +109,7 @@ public class PersistentEntitySerializationTests {
 				withLink(new Link("/users/1")).//
 				build();
 
-		PagedResources<PersistentEntityResource> persistentEntityResource = new PagedResources<PersistentEntityResource>(
+		PagedModel<PersistentEntityResource> persistentEntityResource = new PagedModel<PersistentEntityResource>(
 				Arrays.asList(userResource), new PageMetadata(1, 0, 10));
 
 		String result = mapper.writeValueAsString(persistentEntityResource);

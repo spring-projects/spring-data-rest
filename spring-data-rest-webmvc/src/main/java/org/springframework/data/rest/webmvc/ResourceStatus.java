@@ -25,7 +25,7 @@ import java.util.function.Supplier;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.rest.webmvc.support.ETag;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -98,9 +98,9 @@ class ResourceStatus {
 		 *          {@literal null}.
 		 * @return
 		 */
-		public ResponseEntity<Resource<?>> toResponseEntity(Supplier<PersistentEntityResource> supplier) {
-			return modified ? new ResponseEntity<Resource<?>>(supplier.get(), headers, HttpStatus.OK)
-					: new ResponseEntity<Resource<?>>(headers, HttpStatus.NOT_MODIFIED);
+		public ResponseEntity<EntityModel<?>> toResponseEntity(Supplier<PersistentEntityResource> supplier) {
+			return modified ? new ResponseEntity<EntityModel<?>>(supplier.get(), headers, HttpStatus.OK)
+					: new ResponseEntity<EntityModel<?>>(headers, HttpStatus.NOT_MODIFIED);
 		}
 	}
 }

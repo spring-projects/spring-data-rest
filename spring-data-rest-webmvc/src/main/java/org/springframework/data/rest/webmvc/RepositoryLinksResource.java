@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 
 /**
  * Dedicated resource type to represent the links pointing to collection resources exposed for repositories.
@@ -23,4 +23,4 @@ import org.springframework.hateoas.ResourceSupport;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public class RepositoryLinksResource extends ResourceSupport {}
+public class RepositoryLinksResource extends RepresentationModel<RepositoryLinksResource> {}

@@ -48,7 +48,7 @@ import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.ETag;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -243,7 +243,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		Mockito.when(assembler.toFullResource(Mockito.any(Object.class))).thenReturn(resource);
 
-		ResponseEntity<Resource<?>> entity = controller.getItemResource(getResourceInformation(Address.class), address.id,
+		ResponseEntity<EntityModel<?>> entity = controller.getItemResource(getResourceInformation(Address.class), address.id,
 				assembler, new HttpHeaders());
 
 		assertThat(entity.getHeaders().getETag()).isNotNull();

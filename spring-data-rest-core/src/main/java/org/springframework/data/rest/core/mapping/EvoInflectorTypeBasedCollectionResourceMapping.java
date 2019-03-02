@@ -16,7 +16,7 @@
 package org.springframework.data.rest.core.mapping;
 
 import org.atteo.evo.inflector.English;
-import org.springframework.hateoas.RelProvider;
+import org.springframework.hateoas.server.RelProvider;
 
 /**
  * {@link TypeBasedCollectionResourceMapping} extension to use Evo Inflector to pluralize the simple class name by as

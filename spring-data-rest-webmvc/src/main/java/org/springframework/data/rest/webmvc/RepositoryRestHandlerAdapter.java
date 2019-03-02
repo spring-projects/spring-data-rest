@@ -33,19 +33,19 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @author Oliver Gierke
  */
 public class RepositoryRestHandlerAdapter
-		extends org.springframework.hateoas.mvc.ResourceProcessorInvokingHandlerAdapter {
+		extends org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvokingHandlerAdapter {
 
 	private final List<HandlerMethodArgumentResolver> argumentResolvers;
 
 	/**
 	 * Creates a new {@link RepositoryRestHandlerAdapter} using the given {@link HandlerMethodArgumentResolver} and
-	 * {@link org.springframework.hateoas.mvc.ResourceProcessorInvoker}.
+	 * {@link org.springframework.hateoas.server.mvc.ResourceProcessorInvoker}.
 	 *
 	 * @param argumentResolvers must not be {@literal null}.
 	 * @param invoker must not be {@literal null}.
 	 */
 	public RepositoryRestHandlerAdapter(List<HandlerMethodArgumentResolver> argumentResolvers,
-			org.springframework.hateoas.mvc.ResourceProcessorInvoker invoker) {
+			org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker invoker) {
 
 		super(invoker);
 		this.argumentResolvers = argumentResolvers;
@@ -53,7 +53,7 @@ public class RepositoryRestHandlerAdapter
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.ResourceProcessorInvokingHandlerAdapter#afterPropertiesSet()
+	 * @see org.springframework.data.rest.webmvc.RepresentationModelProcessorInvokingHandlerAdapter#afterPropertiesSet()
 	 */
 	@Override
 	public void afterPropertiesSet() {

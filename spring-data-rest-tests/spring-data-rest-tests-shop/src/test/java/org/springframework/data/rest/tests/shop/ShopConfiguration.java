@@ -28,8 +28,8 @@ import org.springframework.data.rest.tests.shop.Customer.Gender;
 import org.springframework.data.rest.tests.shop.Product.ProductNameOnlyProjection;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 
 /**
  * @author Oliver Gierke
@@ -44,15 +44,15 @@ public class ShopConfiguration {
 	@Autowired LineItemTypeRepository lineItemTypes;
 
 	@Bean
-	public ResourceProcessor<Resource<LineItem>> lineItemResourceProcessor() {
-		return new ResourceProcessor<Resource<LineItem>>() {
+	public RepresentationModelProcessor<EntityModel<LineItem>> lineItemResourceProcessor() {
+		return new RepresentationModelProcessor<EntityModel<LineItem>>() {
 
 			/*
 			 * (non-Javadoc)
-			 * @see org.springframework.hateoas.ResourceProcessor#process(org.springframework.hateoas.ResourceSupport)
+			 * @see org.springframework.hateoas.server.RepresentationModelProcessor#process(org.springframework.hateoas.RepresentationModel)
 			 */
 			@Override
-			public Resource<LineItem> process(Resource<LineItem> resource) {
+			public EntityModel<LineItem> process(EntityModel<LineItem> resource) {
 				resource.add(new Link("foo", "bar"));
 				return resource;
 			}
@@ -60,16 +60,16 @@ public class ShopConfiguration {
 	}
 
 	@Bean
-	public ResourceProcessor<Resource<ProductNameOnlyProjection>> productNameOnlyProjectionResourceProcessor() {
+	public RepresentationModelProcessor<EntityModel<ProductNameOnlyProjection>> productNameOnlyProjectionResourceProcessor() {
 
-		return new ResourceProcessor<Resource<ProductNameOnlyProjection>>() {
+		return new RepresentationModelProcessor<EntityModel<ProductNameOnlyProjection>>() {
 
 			/*
 			 * (non-Javadoc)
-			 * @see org.springframework.hateoas.ResourceProcessor#process(org.springframework.hateoas.ResourceSupport)
+			 * @see org.springframework.hateoas.server.RepresentationModelProcessor#process(org.springframework.hateoas.RepresentationModel)
 			 */
 			@Override
-			public Resource<ProductNameOnlyProjection> process(Resource<Product.ProductNameOnlyProjection> resource) {
+			public EntityModel<ProductNameOnlyProjection> process(EntityModel<Product.ProductNameOnlyProjection> resource) {
 				resource.add(new Link("alpha", "beta"));
 				return resource;
 			}

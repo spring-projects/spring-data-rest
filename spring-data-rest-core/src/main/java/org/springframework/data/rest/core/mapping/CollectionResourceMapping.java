@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import org.springframework.hateoas.LinkRelation;
+
 /**
  * A custom resource mapping for collection resources.
  *
@@ -27,7 +29,7 @@ public interface CollectionResourceMapping extends ResourceMapping {
 	 *
 	 * @return
 	 */
-	String getItemResourceRel();
+	LinkRelation getItemResourceRel();
 
 	/**
 	 * Returns the {@link ResourceDescription} for the item resource.

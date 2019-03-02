@@ -15,18 +15,21 @@
  */
 package org.springframework.data.rest.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Optional;
 
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkDiscoverer;
-import org.springframework.hateoas.LinkDiscoverers;
+import org.springframework.hateoas.client.LinkDiscoverer;
+import org.springframework.hateoas.client.LinkDiscoverers;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.Links;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -34,7 +37,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.util.Assert;
@@ -208,8 +210,12 @@ public class TestMvcClient {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Link> discover(String rel) throws Exception {
+	public Links discover(LinkRelation rel) throws Exception {
 		return discover(new Link("/"), rel);
+	}
+
+	public Link discoverUnique(String rel) throws Exception {
+		return discoverUnique(LinkRelation.of(rel));
 	}
 
 	/**
@@ -219,11 +225,15 @@ public class TestMvcClient {
 	 * @return
 	 * @throws Exception
 	 */
-	public Link discoverUnique(String rel) throws Exception {
+	public Link discoverUnique(LinkRelation rel) throws Exception {
 
-		List<Link> discover = discover(rel);
-		assertThat(discover, hasSize(1));
-		return discover.get(0);
+		Links discover = discover(rel);
+		assertThat(discover).hasSize(1);
+		return discover.toList().get(0);
+	}
+
+	public Link discoverUnique(String... rels) throws Exception {
+		return discoverUnique(Arrays.stream(rels).map(LinkRelation::of).toArray(LinkRelation[]::new));
 	}
 
 	/**
@@ -233,15 +243,18 @@ public class TestMvcClient {
 	 * @return
 	 * @throws Exception
 	 */
-	public Link discoverUnique(String... rels) throws Exception {
+	public Link discoverUnique(LinkRelation... rels) throws Exception {
 
-		Iterator<String> toTraverse = Arrays.asList(rels).iterator();
+		Iterator<LinkRelation> toTraverse = Arrays.asList(rels).iterator();
 		Link lastLink = null;
 
 		while (toTraverse.hasNext()) {
 
-			String rel = toTraverse.next();
-			lastLink = lastLink == null ? discoverUnique(rel) : discoverUnique(lastLink, rel);
+			LinkRelation relation = toTraverse.next();
+
+			lastLink = lastLink == null //
+					? discoverUnique(relation) //
+					: discoverUnique(lastLink, relation);
 		}
 
 		return lastLink;
@@ -251,31 +264,39 @@ public class TestMvcClient {
 	 * Given a URI (root), discover the URIs for a given rel.
 	 *
 	 * @param root - URI to start from
-	 * @param rel - name of the relationship to seek links
+	 * @param relation - name of the relationship to seek links
 	 * @return list of {@link org.springframework.hateoas.Link Link} objects associated with the rel
 	 * @throws Exception
 	 */
-	public List<Link> discover(Link root, String rel) throws Exception {
+	public Links discover(Link root, LinkRelation relation) throws Exception {
 
 		MockHttpServletResponse response = mvc.perform(get(root.expand().getHref()).accept(DEFAULT_MEDIA_TYPE)).//
 				andExpect(status().isOk()).//
-				andExpect(hasLinkWithRel(rel)).//
+				andExpect(hasLinkWithRel(relation)).//
 				andReturn().getResponse();
 
-		String s = response.getContentAsString();
-		return getDiscoverer(response).findLinksWithRel(rel, s);
+		String content = response.getContentAsString();
+		return getDiscoverer(response).findLinksWithRel(relation, content);
+	}
+
+	public Link discoverUnique(Link root, String relation) throws Exception {
+		return discoverUnique(root, LinkRelation.of(relation));
 	}
 
 	/**
 	 * Given a URI (root), discover the unique URI for a given rel. NOTE: Assumes there is only one URI
 	 *
 	 * @param root
-	 * @param rel
+	 * @param relation
 	 * @return {@link org.springframework.hateoas.Link Link} tied to a given rel
 	 * @throws Exception
 	 */
-	public Link discoverUnique(Link root, String rel) throws Exception {
-		return discoverUnique(root, rel, DEFAULT_MEDIA_TYPE);
+	public Link discoverUnique(Link root, LinkRelation relation) throws Exception {
+		return discoverUnique(root, relation, DEFAULT_MEDIA_TYPE);
+	}
+
+	public Link discoverUnique(Link root, String rel, MediaType mediaType) throws Exception {
+		return discoverUnique(root, LinkRelation.of(rel), mediaType);
 	}
 
 	/**
@@ -287,35 +308,39 @@ public class TestMvcClient {
 	 * @return {@link org.springframework.hateoas.Link Link} tied to a given rel
 	 * @throws Exception
 	 */
-	public Link discoverUnique(Link root, String rel, MediaType mediaType) throws Exception {
+	public Link discoverUnique(Link root, LinkRelation rel, MediaType mediaType) throws Exception {
 
-		MockHttpServletResponse response = mvc
-				.perform(get(root.expand().getHref())//
-						.accept(mediaType))
-				.andExpect(status().isOk())//
+		MockHttpServletResponse response = mvc.perform(get(root.expand().getHref())//
+				.accept(mediaType)).andExpect(status().isOk())//
 				.andExpect(hasLinkWithRel(rel))//
 				.andReturn().getResponse();
 
 		return assertHasLinkWithRel(rel, response);
 	}
 
+	public Link assertHasLinkWithRel(String relation, MockHttpServletResponse response) throws Exception {
+		return assertHasLinkWithRel(LinkRelation.of(relation), response);
+	}
+
 	/**
 	 * For a given servlet response, verify that the provided rel exists in its hypermedia. If so, return the URI link.
 	 *
-	 * @param rel
+	 * @param relation
 	 * @param response
 	 * @return {@link org.springframework.hateoas.Link} of the rel found in the response
 	 * @throws Exception
 	 */
-	public Link assertHasLinkWithRel(String rel, MockHttpServletResponse response) throws Exception {
+	public Link assertHasLinkWithRel(LinkRelation relation, MockHttpServletResponse response) throws Exception {
 
 		String content = response.getContentAsString();
-		Link link = getDiscoverer(response).findLinkWithRel(rel, content);
+		Optional<Link> link = getDiscoverer(response).findLinkWithRel(relation, content);
 
-		assertThat("Expected to find link with rel " + rel + " but found none in " + content + "!", link,
-				is(notNullValue()));
+		return link.orElseThrow(() -> new IllegalStateException(
+				"Expected to find link with rel " + relation + " but found none in " + content + "!"));
+	}
 
-		return link;
+	public ResultMatcher hasLinkWithRel(String rel) {
+		return hasLinkWithRel(LinkRelation.of(rel));
 	}
 
 	/**
@@ -324,19 +349,15 @@ public class TestMvcClient {
 	 * @param rel
 	 * @return
 	 */
-	public ResultMatcher hasLinkWithRel(final String rel) {
+	public ResultMatcher hasLinkWithRel(LinkRelation rel) {
 
-		return new ResultMatcher() {
+		return result -> {
 
-			@Override
-			public void match(MvcResult result) throws Exception {
+			MockHttpServletResponse response = result.getResponse();
+			String s = response.getContentAsString();
 
-				MockHttpServletResponse response = result.getResponse();
-				String s = response.getContentAsString();
-
-				assertThat("Expected to find link with rel " + rel + " but found none in " + s, //
-						getDiscoverer(response).findLinkWithRel(rel, s), notNullValue());
-			}
+			assertThat("Expected to find link with rel " + rel + " but found none in " + s, //
+					getDiscoverer(response).findLinkWithRel(rel, s), notNullValue());
 		};
 	}
 
@@ -344,16 +365,12 @@ public class TestMvcClient {
 	 * Using the servlet response's content type, find the corresponding link discoverer.
 	 *
 	 * @param response
-	 * @return {@link org.springframework.hateoas.LinkDiscoverer}
+	 * @return {@link org.springframework.hateoas.client.LinkDiscoverer}
 	 */
 	public LinkDiscoverer getDiscoverer(MockHttpServletResponse response) {
 
 		String contentType = response.getContentType();
-		LinkDiscoverer linkDiscovererFor = discoverers.getLinkDiscovererFor(contentType);
 
-		assertThat("Did not find a LinkDiscoverer for returned media type " + contentType + "!", linkDiscovererFor,
-				is(notNullValue()));
-
-		return linkDiscovererFor;
+		return discoverers.getRequiredLinkDiscovererFor(contentType);
 	}
 }

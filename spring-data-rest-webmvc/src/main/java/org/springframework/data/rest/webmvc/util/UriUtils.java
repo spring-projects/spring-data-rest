@@ -19,7 +19,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.hateoas.core.AnnotationMappingDiscoverer;
+import org.springframework.hateoas.server.core.AnnotationMappingDiscoverer;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.util.UriComponentsBuilder;
