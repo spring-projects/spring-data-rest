@@ -16,7 +16,7 @@
 	</parent>
 
 	<properties>
-		<springplugin>2.0.0.BUILD-SNAPSHOT</springplugin>
+		<springplugin>2.0.0.M1</springplugin>
 		<evoinflector>1.2.2</evoinflector>
 		<java-module-name>spring.data.rest.core</java-module-name>
 		<project.root>${basedir}/..</project.root>
