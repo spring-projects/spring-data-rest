@@ -16,7 +16,7 @@
 package org.springframework.data.rest.core.mapping;
 
 import org.atteo.evo.inflector.English;
-import org.springframework.hateoas.server.RelProvider;
+import org.springframework.hateoas.server.LinkRelationProvider;
 
 /**
  * {@link TypeBasedCollectionResourceMapping} extension to use Evo Inflector to pluralize the simple class name by as
@@ -32,7 +32,7 @@ class EvoInflectorTypeBasedCollectionResourceMapping extends TypeBasedCollection
 	 * @param type must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
 	 */
-	public EvoInflectorTypeBasedCollectionResourceMapping(Class<?> type, RelProvider relProvider) {
+	public EvoInflectorTypeBasedCollectionResourceMapping(Class<?> type, LinkRelationProvider relProvider) {
 		super(type, relProvider);
 	}
 

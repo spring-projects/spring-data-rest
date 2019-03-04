@@ -16,13 +16,13 @@
 package org.springframework.data.rest.core.support;
 
 import org.springframework.hateoas.LinkRelation;
-import org.springframework.hateoas.server.RelProvider;
+import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.util.StringUtils;
 
 /**
  * @author Oliver Gierke
  */
-public class SimpleRelProvider implements RelProvider {
+public class SimpleRelProvider implements LinkRelationProvider {
 
 	/*
 	 * (non-Javadoc)
@@ -35,7 +35,7 @@ public class SimpleRelProvider implements RelProvider {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.RelProvider#getItemResourceRelFor(java.lang.Class)
+	 * @see org.springframework.hateoas.server.LinkRelationProvider#getItemResourceRelFor(java.lang.Class)
 	 */
 	@Override
 	public LinkRelation getItemResourceRelFor(Class<?> type) {
@@ -46,7 +46,7 @@ public class SimpleRelProvider implements RelProvider {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.RelProvider#getCollectionResourceRelFor(java.lang.Class)
+	 * @see org.springframework.hateoas.server.LinkRelationProvider#getCollectionResourceRelFor(java.lang.Class)
 	 */
 	@Override
 	public LinkRelation getCollectionResourceRelFor(Class<?> type) {

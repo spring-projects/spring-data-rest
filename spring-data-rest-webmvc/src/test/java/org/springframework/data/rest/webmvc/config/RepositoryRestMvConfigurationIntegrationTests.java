@@ -49,9 +49,9 @@ import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.format.datetime.DateFormatter;
-import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.server.core.DefaultRelProvider;
+import org.springframework.hateoas.client.LinkDiscoverers;
+import org.springframework.hateoas.server.core.DefaultLinkRelationProvider;
 import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
@@ -218,8 +218,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	static class ExtendingConfiguration {
 
 		@Bean
-		DefaultRelProvider relProvider() {
-			return new DefaultRelProvider();
+		DefaultLinkRelationProvider relProvider() {
+			return new DefaultLinkRelationProvider();
 		}
 
 		@Bean

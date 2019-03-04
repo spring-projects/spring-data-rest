@@ -32,8 +32,8 @@ import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.server.RelProvider;
-import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -73,7 +73,7 @@ public class RepositoryRestConfiguration {
 	/**
 	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
 	 */
-	private @Getter @Setter @NonNull RelProvider relProvider = new EvoInflectorRelProvider();
+	private @Getter @Setter @NonNull LinkRelationProvider relProvider = new EvoInflectorLinkRelationProvider();
 
 	private final RepositoryCorsRegistry corsRegistry = new RepositoryCorsRegistry();
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
@@ -579,7 +579,7 @@ public class RepositoryRestConfiguration {
 
 	/**
 	 * Returns whether to expose repository methods by default.
-	 * 
+	 *
 	 * @since 3.1
 	 * @see #setExposeRepositoryMethodsByDefault(boolean)
 	 */
@@ -592,7 +592,7 @@ public class RepositoryRestConfiguration {
 	 * {@link RestResource} explicitly to expose the default set of resources (opt-in). If this is set to {@literal true}
 	 * (default), repository methods methods are exposed unless explictly annotated with {@link RestResource} and
 	 * {@link RestResource#exported()} set to {@literal false}.
-	 * 
+	 *
 	 * @since 3.1
 	 * @see #setRepositoryDetectionStrategy(RepositoryDetectionStrategy)
 	 */
@@ -607,7 +607,7 @@ public class RepositoryRestConfiguration {
 	 * {@link #setRepositoryDetectionStrategy(RepositoryDetectionStrategy)} to
 	 * {@link RepositoryDetectionStrategies#ANNOTATED} and setting {@link #setExposeRepositoryMethodsByDefault(boolean)}
 	 * to {@literal false}.
-	 * 
+	 *
 	 * @since 3.1
 	 * @see #setRepositoryDetectionStrategy(RepositoryDetectionStrategy)
 	 * @see #setExposeRepositoryMethodsByDefault(boolean)

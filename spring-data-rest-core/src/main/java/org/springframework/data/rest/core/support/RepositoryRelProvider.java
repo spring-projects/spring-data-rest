@@ -20,7 +20,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.hateoas.LinkRelation;
-import org.springframework.hateoas.server.RelProvider;
+import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.util.Assert;
 
 /**
@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  */
 @Order(Ordered.LOWEST_PRECEDENCE + 10)
-public class RepositoryRelProvider implements RelProvider {
+public class RepositoryRelProvider implements LinkRelationProvider {
 
 	private final ObjectFactory<ResourceMappings> mappings;
 
@@ -46,7 +46,7 @@ public class RepositoryRelProvider implements RelProvider {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.RelProvider#getCollectionResourceRelFor(java.lang.Class)
+	 * @see org.springframework.hateoas.server.LinkRelationProvider#getCollectionResourceRelFor(java.lang.Class)
 	 */
 	@Override
 	public LinkRelation getCollectionResourceRelFor(Class<?> type) {
@@ -55,7 +55,7 @@ public class RepositoryRelProvider implements RelProvider {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.RelProvider#getItemResourceRelFor(java.lang.Class)
+	 * @see org.springframework.hateoas.server.LinkRelationProvider#getItemResourceRelFor(java.lang.Class)
 	 */
 	@Override
 	public LinkRelation getItemResourceRelFor(Class<?> type) {

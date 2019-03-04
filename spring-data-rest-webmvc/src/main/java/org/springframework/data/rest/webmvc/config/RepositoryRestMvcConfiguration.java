@@ -97,16 +97,16 @@ import org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguratio
 import org.springframework.data.web.config.SpringDataJacksonConfiguration;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.server.RelProvider;
-import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType;
-import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.mediatype.hal.CurieProvider;
 import org.springframework.hateoas.mediatype.hal.HalConfiguration;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule.HalHandlerInstantiator;
+import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
+import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
 import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.MediaType;
@@ -160,7 +160,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Autowired(required = false) List<RepositoryRestConfigurer> configurers = Collections.emptyList();
 	@Autowired(required = false) List<EntityLookup<?>> lookups = Collections.emptyList();
 
-	@Autowired Optional<RelProvider> relProvider;
+	@Autowired Optional<LinkRelationProvider> relProvider;
 	@Autowired Optional<CurieProvider> curieProvider;
 	@Autowired Optional<HalConfiguration> halConfiguration;
 	@Autowired ObjectProvider<ObjectMapper> objectMapper;
@@ -499,7 +499,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	public ObjectMapper halObjectMapper() {
 
-		RelProvider defaultedRelProvider = this.relProvider.orElseGet(EvoInflectorRelProvider::new);
+		LinkRelationProvider defaultedRelProvider = this.relProvider.orElseGet(EvoInflectorLinkRelationProvider::new);
 		HalConfiguration halConfiguration = this.halConfiguration.orElseGet(HalConfiguration::new);
 
 		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider, curieProvider.orElse(null),
@@ -527,8 +527,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@SuppressWarnings("rawtypes")
 	public RepresentationModelProcessorInvoker resourceProcessorInvoker() {
 
-		Collection<RepresentationModelProcessor> beans = applicationContext.getBeansOfType(RepresentationModelProcessor.class, false, false)
-				.values();
+		Collection<RepresentationModelProcessor> beans = applicationContext
+				.getBeansOfType(RepresentationModelProcessor.class, false, false).values();
 		List<RepresentationModelProcessor<?>> processors = new ArrayList<RepresentationModelProcessor<?>>(beans.size());
 
 		for (RepresentationModelProcessor<?> bean : beans) {

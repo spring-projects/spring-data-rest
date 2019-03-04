@@ -23,8 +23,8 @@ import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.hateoas.LinkRelation;
-import org.springframework.hateoas.server.RelProvider;
-import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -48,7 +48,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	private final RepositoryMetadata metadata;
 
 	public RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RepositoryDetectionStrategy strategy) {
-		this(metadata, strategy, new EvoInflectorRelProvider());
+		this(metadata, strategy, new EvoInflectorLinkRelationProvider());
 	}
 
 	/**
@@ -60,10 +60,10 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 * @param repositoryType must not be {@literal null}.
 	 */
 	RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RepositoryDetectionStrategy strategy,
-			RelProvider relProvider) {
+			LinkRelationProvider relProvider) {
 
 		Assert.notNull(metadata, "Repository metadata must not be null!");
-		Assert.notNull(relProvider, "RelProvider must not be null!");
+		Assert.notNull(relProvider, "LinkRelationProvider must not be null!");
 		Assert.notNull(strategy, "RepositoryDetectionStrategy must not be null!");
 
 		Class<?> repositoryType = metadata.getRepositoryInterface();

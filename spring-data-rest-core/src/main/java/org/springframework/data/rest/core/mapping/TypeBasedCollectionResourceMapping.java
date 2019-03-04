@@ -22,8 +22,8 @@ import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.hateoas.LinkRelation;
-import org.springframework.hateoas.server.RelProvider;
-import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
 class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 
 	private final Class<?> type;
-	private final RelProvider relProvider;
+	private final LinkRelationProvider relProvider;
 	private final RestResource annotation;
 	private final Description description;
 
@@ -46,7 +46,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 * @param type must not be {@literal null}.
 	 */
 	public TypeBasedCollectionResourceMapping(Class<?> type) {
-		this(type, new EvoInflectorRelProvider());
+		this(type, new EvoInflectorLinkRelationProvider());
 	}
 
 	/**
@@ -55,10 +55,10 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 * @param type must not be {@literal null}.
 	 * @param relProvider must not be {@literal null}.
 	 */
-	public TypeBasedCollectionResourceMapping(Class<?> type, RelProvider relProvider) {
+	public TypeBasedCollectionResourceMapping(Class<?> type, LinkRelationProvider relProvider) {
 
 		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(relProvider, "RelProvider must not be null!");
+		Assert.notNull(relProvider, "LinkRelationProvider must not be null!");
 
 		this.type = type;
 		this.relProvider = relProvider;

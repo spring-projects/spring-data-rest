@@ -27,8 +27,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
-import org.springframework.hateoas.server.RelProvider;
-import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
+import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 
 /**
  * Ensure the {@link ResourceMapping} components convey the correct information.
@@ -38,7 +38,7 @@ import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
 @SuppressWarnings("deprecation")
 public class ResourceMappingUnitTests {
 
-	RelProvider relProvider = new EvoInflectorRelProvider();
+	LinkRelationProvider relProvider = new EvoInflectorLinkRelationProvider();
 
 	@Test
 	public void shouldDetectPathAndRemoveLeadingSlashIfAny() {

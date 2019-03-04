@@ -28,7 +28,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.hateoas.server.RelProvider;
+import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.util.Assert;
 
 /**
@@ -74,7 +74,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 			PersistentEntity<?, ?> entity = repositories.getPersistentEntity(type);
 
 			RepositoryDetectionStrategy strategy = configuration.getRepositoryDetectionStrategy();
-			RelProvider provider = configuration.getRelProvider();
+			LinkRelationProvider provider = configuration.getRelProvider();
 
 			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInformation, strategy,
 					provider);

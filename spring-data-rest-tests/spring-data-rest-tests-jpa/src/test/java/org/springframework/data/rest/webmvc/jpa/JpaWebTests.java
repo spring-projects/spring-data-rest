@@ -41,7 +41,7 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
-import org.springframework.hateoas.server.RelProvider;
+import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -71,7 +71,7 @@ public class JpaWebTests extends CommonWebTests {
 
 	@Autowired TestDataPopulator loader;
 	@Autowired ResourceMappings mappings;
-	@Autowired RelProvider relProvider;
+	@Autowired LinkRelationProvider relProvider;
 
 	ObjectMapper mapper = new ObjectMapper();
 

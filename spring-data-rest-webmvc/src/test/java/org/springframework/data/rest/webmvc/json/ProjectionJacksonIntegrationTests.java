@@ -24,16 +24,16 @@ import org.junit.Test;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule.HalHandlerInstantiator;
+import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 /**
- * Integration tests for Jackson marshalling of projected objects.
+ * Integration tests for Jackson marshaling of projected objects.
  *
  * @author Oliver Gierke
  */
@@ -47,7 +47,7 @@ public class ProjectionJacksonIntegrationTests {
 
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(new Jackson2HalModule());
-		this.mapper.setHandlerInstantiator(new HalHandlerInstantiator(new EvoInflectorRelProvider(), null, null));
+		this.mapper.setHandlerInstantiator(new HalHandlerInstantiator(new EvoInflectorLinkRelationProvider(), null, null));
 	}
 
 	@Test // DATAREST-221
@@ -61,7 +61,7 @@ public class ProjectionJacksonIntegrationTests {
 		CustomerProjection projection = factory.createProjection(CustomerProjection.class, customer);
 
 		String result = mapper.writeValueAsString(projection);
-		assertThat(JsonPath.<String> read(result, "$.firstname")).isEqualTo((Object) "Dave");
+		assertThat(JsonPath.<String> read(result, "$.firstname")).isEqualTo("Dave");
 	}
 
 	@Test // DATAREST-221
@@ -70,7 +70,7 @@ public class ProjectionJacksonIntegrationTests {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new Jackson2HalModule());
 		mapper.setHandlerInstantiator(
-				new Jackson2HalModule.HalHandlerInstantiator(new EvoInflectorRelProvider(), null, null));
+				new Jackson2HalModule.HalHandlerInstantiator(new EvoInflectorLinkRelationProvider(), null, null));
 
 		Customer customer = new Customer();
 		customer.firstname = "Dave";
@@ -82,7 +82,7 @@ public class ProjectionJacksonIntegrationTests {
 
 		String result = mapper.writeValueAsString(resources);
 
-		assertThat(JsonPath.<String> read(result, "$._embedded.customers[0].firstname")).isEqualTo((Object) "Dave");
+		assertThat(JsonPath.<String> read(result, "$._embedded.customers[0].firstname")).isEqualTo("Dave");
 	}
 
 	static class Customer {

@@ -50,11 +50,11 @@ import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVari
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
-import org.springframework.hateoas.server.EntityLinks;
-import org.springframework.hateoas.server.RelProvider;
-import org.springframework.hateoas.server.RepresentationModelProcessor;
-import org.springframework.hateoas.server.core.EvoInflectorRelProvider;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
+import org.springframework.hateoas.server.EntityLinks;
+import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
+import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
 import org.springframework.plugin.core.PluginRegistry;
 
@@ -136,7 +136,7 @@ public class RepositoryTestsConfig {
 	@Bean
 	public ObjectMapper objectMapper() {
 
-		RelProvider relProvider = new EvoInflectorRelProvider();
+		LinkRelationProvider relProvider = new EvoInflectorLinkRelationProvider();
 		ObjectMapper mapper = new ObjectMapper();
 
 		mapper.registerModule(new Jackson2HalModule());
