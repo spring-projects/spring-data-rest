@@ -73,6 +73,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Jeremy Rickard
+ * @author Jeroen Reijn
  */
 @RepositoryRestController
 class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
@@ -334,7 +335,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			return resourceStatus.getStatusAndHeaders(headers, it, entity).toResponseEntity(//
 					() -> assembler.toFullResource(it));
 
-		}).orElseGet(() -> new ResponseEntity<EntityModel<?>>(HttpStatus.NOT_FOUND));
+		}).orElseThrow(() -> new ResourceNotFoundException());
 	}
 
 	/**
