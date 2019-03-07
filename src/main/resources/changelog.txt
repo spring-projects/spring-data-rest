@@ -1,6 +1,24 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.2.0.M2 (2019-03-07)
+----------------------------------------
+* DATAREST-1348 - Upgrade to Spring Plugin 2.0 M1.
+* DATAREST-1341 - Upgrade to Spring HATEOAS 1.0.
+* DATAREST-1338 - JSON patch doesn't update single Map's values.
+* DATAREST-1333 - Introduce Concourse CI.
+* DATAREST-1332 - NullPointerException in RepositoryRestHandlerMapping during preflight request.
+* DATAREST-1330 - Update copyright years to 2019.
+* DATAREST-1325 - Raise minimum Hibernate dependency to 5.2.
+* DATAREST-1324 - ConfigurableHttpMethods.enable(…) returns type HttpMethods.
+* DATAREST-1322 - Proxy class detection for Hibernate 5 fails.
+* DATAREST-1321 - Support non-string values for lookup types.
+* DATAREST-1320 - NullPointerException when ResourceMetadata not found for a specific type.
+* DATAREST-1318 - Release 3.2 M2 (Moore).
+* DATAREST-1304 - PUT and PATCH don't work, when custom entity lookup is configured.
+* DATAREST-1143 - Unable to implement custom error handling for RepositoryEntityController#getItemResource in case of item not found.
+
+
 Changes in version 3.1.5.RELEASE (2019-02-13)
 ---------------------------------------------
 * DATAREST-1336 - Release 3.1.5 (Lovelace SR5).
