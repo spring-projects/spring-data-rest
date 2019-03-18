@@ -47,7 +47,7 @@
 			<name>Oliver Gierke</name>
 			<email>ogierke at pivotal.io</email>
 			<organization>Pivotal</organization>
-			<organizationUrl>http://www.pivotal.io</organizationUrl>
+			<organizationUrl>https://www.pivotal.io</organizationUrl>
 			<roles>
 				<role>Project Lead</role>
 			</roles>
@@ -58,7 +58,7 @@
 			<name>Greg Turnquist</name>
 			<email>gturnquist at pivotal.io</email>
 			<organization>Pivotal</organization>
-			<organizationUrl>http://www.pivotal.io</organizationUrl>
+			<organizationUrl>https://www.pivotal.io</organizationUrl>
 			<roles>
 				<role>Developer</role>
 			</roles>
