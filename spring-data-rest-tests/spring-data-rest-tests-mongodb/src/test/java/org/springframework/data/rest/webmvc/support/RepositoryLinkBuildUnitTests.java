@@ -48,7 +48,7 @@ public class RepositoryLinkBuildUnitTests {
 
 	@Test // DATAREST-292, DATAREST-296
 	public void usesBaseUriOnlyIfItIsAbsolute() {
-		assertRootUriFor("http://foobar/api", "http://foobar/api/profile");
+		assertRootUriFor("https://foobar/api", "https://foobar/api/profile");
 	}
 
 	private void assertRootUriFor(String baseUri, String expectedUri) {

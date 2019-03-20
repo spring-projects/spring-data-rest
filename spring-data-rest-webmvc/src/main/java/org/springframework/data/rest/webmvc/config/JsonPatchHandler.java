@@ -37,9 +37,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  *
  * @author Oliver Gierke
  * @author Mathias Düsterhöft
- * @see <a href="http://tools.ietf.org/html/rfc6902">http://tools.ietf.org/html/rfc6902</a>
+ * @see <a href="https://tools.ietf.org/html/rfc6902">https://tools.ietf.org/html/rfc6902</a>
  * @see <a href=
- *      "http://tools.ietf.org/html/draft-ietf-appsawg-json-merge-patch-02">http://tools.ietf.org/html/draft-ietf-appsawg-json-merge-patch-02</a>
+ *      "https://tools.ietf.org/html/draft-ietf-appsawg-json-merge-patch-02">https://tools.ietf.org/html/draft-ietf-appsawg-json-merge-patch-02</a>
  */
 class JsonPatchHandler {
 

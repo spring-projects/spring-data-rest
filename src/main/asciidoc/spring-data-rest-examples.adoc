@@ -19,7 +19,7 @@ https://github.com/spring-projects/spring-data-examples/tree/master/rest/project
 [[spring-data-examples.spring-security]]
 == Spring Data REST with Spring Security
 
-https://github.com/spring-projects/spring-data-examples/tree/master/rest/security[This example] shows how to secure a http://projects.spring.io/spring-data-rest[Spring Data REST] application in multiple ways with http://projects.spring.io/spring-security[Spring Security].
+https://github.com/spring-projects/spring-data-examples/tree/master/rest/security[This example] shows how to secure a https://projects.spring.io/spring-data-rest[Spring Data REST] application in multiple ways with https://projects.spring.io/spring-security[Spring Security].
 
 [[spring-data-examples.starbucks]]
 == Starbucks example

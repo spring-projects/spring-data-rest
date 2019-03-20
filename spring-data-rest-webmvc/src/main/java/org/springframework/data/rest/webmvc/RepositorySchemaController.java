@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Greg Turnquist
- * @see <a href="http://json-schema.org/">http://json-schema.org/</a>
+ * @see <a href="https://json-schema.org/">https://json-schema.org/</a>
  */
 @BasePathAwareController
 class RepositorySchemaController {

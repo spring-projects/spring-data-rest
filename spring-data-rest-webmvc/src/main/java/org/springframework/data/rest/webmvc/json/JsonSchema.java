@@ -82,7 +82,7 @@ public class JsonSchema {
 
 	@JsonProperty("$schema")
 	public String getSchema() {
-		return "http://json-schema.org/draft-04/schema#";
+		return "https://json-schema.org/draft-04/schema#";
 	}
 
 	public String getType() {
@@ -113,7 +113,7 @@ public class JsonSchema {
 	 * @param typeInformation
 	 * @return
 	 * @see <a href=
-	 *      "http://json-schema.org/latest/json-schema-core.html#anchor8">http://json-schema.org/latest/json-schema-core.html#anchor8</a>
+	 *      "https://json-schema.org/latest/json-schema-core.html#anchor8">https://json-schema.org/latest/json-schema-core.html#anchor8</a>
 	 */
 	private static String toJsonSchemaType(TypeInformation<?> typeInformation) {
 

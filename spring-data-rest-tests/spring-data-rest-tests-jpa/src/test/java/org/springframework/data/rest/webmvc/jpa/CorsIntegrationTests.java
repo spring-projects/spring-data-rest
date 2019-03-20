@@ -54,7 +54,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 
 				config.getCorsRegistry().addMapping("/books/**") //
 						.allowedMethods("GET", "PUT", "POST") //
-						.allowedOrigins("http://far.far.away");
+						.allowedOrigins("https://far.far.away");
 			});
 		}
 	}
@@ -65,7 +65,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		Link findItems = client.discoverUnique(LinkRelation.of("items"));
 
 		// Preflight request
-		mvc.perform(options(findItems.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.away")
+		mvc.perform(options(findItems.expand().getHref()).header(HttpHeaders.ORIGIN, "https://far.far.away")
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
 				.andExpect(status().isOk()) //
 				.andExpect(
@@ -78,16 +78,16 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		Link findBooks = client.discoverUnique(LinkRelation.of("books"));
 
 		// Preflight request
-		mvc.perform(options(findBooks.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.away")
+		mvc.perform(options(findBooks.expand().getHref()).header(HttpHeaders.ORIGIN, "https://far.far.away")
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
 				.andExpect(status().isOk()) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.away")) //
+				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://far.far.away")) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST"));
 
 		// CORS request
-		mvc.perform(get(findBooks.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.away")) //
+		mvc.perform(get(findBooks.expand().getHref()).header(HttpHeaders.ORIGIN, "https://far.far.away")) //
 				.andExpect(status().isOk()) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.away"));
+				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://far.far.away"));
 	}
 
 	/**
@@ -98,20 +98,20 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 
 		// Preflight request
 		mvc.perform(options("/books/xml/1234") //
-				.header(HttpHeaders.ORIGIN, "http://far.far.away") //
+				.header(HttpHeaders.ORIGIN, "https://far.far.away") //
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")) //
 				.andExpect(status().isOk()) //
 				.andExpect(header().longValue(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 77123)) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.away")) //
+				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://far.far.away")) //
 				// See https://jira.spring.io/browse/SPR-14792
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET,PUT,POST")));
 
 		// CORS request
 		mvc.perform(get("/books/xml/1234") //
-				.header(HttpHeaders.ORIGIN, "http://far.far.away") //
+				.header(HttpHeaders.ORIGIN, "https://far.far.away") //
 				.accept(MediaType.APPLICATION_XML)) //
 				.andExpect(status().isOk()) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.away"));
+				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://far.far.away"));
 	}
 
 	/**
@@ -121,11 +121,11 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	public void appliesCorsConfigurationOnCustomControllerMethod() throws Exception {
 
 		// Preflight request
-		mvc.perform(options("/books/pdf/1234").header(HttpHeaders.ORIGIN, "http://far.far.away")
+		mvc.perform(options("/books/pdf/1234").header(HttpHeaders.ORIGIN, "https://far.far.away")
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")) //
 				.andExpect(status().isOk()) //
 				.andExpect(header().longValue(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 4711)) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.away")) //
+				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://far.far.away")) //
 				// See https://jira.spring.io/browse/SPR-14792
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET,PUT,POST")));
 	}
@@ -136,11 +136,11 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		Link authorsLink = client.discoverUnique(LinkRelation.of("authors"));
 
 		// Preflight request
-		mvc.perform(options(authorsLink.expand().getHref()).header(HttpHeaders.ORIGIN, "http://not.so.far.away")
+		mvc.perform(options(authorsLink.expand().getHref()).header(HttpHeaders.ORIGIN, "https://not.so.far.away")
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
 				.andExpect(status().isOk()) //
 				.andExpect(header().longValue(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 1234)) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://not.so.far.away")) //
+				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://not.so.far.away")) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH,POST"));
 	}
@@ -149,11 +149,11 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	public void appliesCorsConfigurationOnRepositoryToCustomControllers() throws Exception {
 
 		// Preflight request
-		mvc.perform(options("/authors/pdf/1234").header(HttpHeaders.ORIGIN, "http://not.so.far.away")
+		mvc.perform(options("/authors/pdf/1234").header(HttpHeaders.ORIGIN, "https://not.so.far.away")
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")) //
 				.andExpect(status().isOk()) //
 				.andExpect(header().longValue(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 1234)) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://not.so.far.away")) //
+				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://not.so.far.away")) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH,POST"));
 	}

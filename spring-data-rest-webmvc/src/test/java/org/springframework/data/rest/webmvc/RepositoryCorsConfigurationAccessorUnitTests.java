@@ -80,7 +80,7 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 		assertThat(configuration.getAllowCredentials()).isTrue();
 		assertThat(configuration.getAllowedHeaders()).contains("Content-type");
 		assertThat(configuration.getExposedHeaders()).contains("Accept");
-		assertThat(configuration.getAllowedOrigins()).contains("http://far.far.away");
+		assertThat(configuration.getAllowedOrigins()).contains("https://far.far.away");
 		assertThat(configuration.getAllowedMethods()).contains("PATCH");
 		assertThat(configuration.getAllowedMethods()).doesNotContain("DELETE");
 		assertThat(configuration.getAllowCredentials()).isTrue();
@@ -102,7 +102,7 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 	@CrossOrigin
 	interface AnnotatedRepository {}
 
-	@CrossOrigin(origins = "http://far.far.away", //
+	@CrossOrigin(origins = "https://far.far.away", //
 			allowedHeaders = "Content-type", //
 			maxAge = 1234, exposedHeaders = "Accept", //
 			methods = RequestMethod.PATCH, //

@@ -32,7 +32,7 @@ The Spring Data REST exporter recognizes the returned `Page` and gives you the r
 [[paging-and-sorting.prev-and-next-links]]
 === Previous and Next Links
 
-Each paged response returns links to the previous and next pages of results based on the current page by using the IANA-defined link relations http://www.w3.org/TR/html5/links.html#link-type-prev[`prev`] and http://www.w3.org/TR/html5/links.html#link-type-next[`next`]. If you are currently at the first page of results, however, no `prev` link is rendered. For the last page of results, no `next` link is rendered.
+Each paged response returns links to the previous and next pages of results based on the current page by using the IANA-defined link relations https://www.w3.org/TR/html5/links.html#link-type-prev[`prev`] and https://www.w3.org/TR/html5/links.html#link-type-next[`next`]. If you are currently at the first page of results, however, no `prev` link is rendered. For the last page of results, no `next` link is rendered.
 
 Consider the following example, where we set the page size to 5:
 

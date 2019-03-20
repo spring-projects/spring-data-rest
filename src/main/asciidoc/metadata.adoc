@@ -6,7 +6,7 @@ This section details the various forms of metadata provided by a Spring Data RES
 [[metadata.alps]]
 == Application-Level Profile Semantics (ALPS)
 
-[quote, M. Admundsen / L. Richardson / M. Foster, http://tools.ietf.org/html/draft-amundsen-richardson-foster-alps-00]
+[quote, M. Admundsen / L. Richardson / M. Foster, https://tools.ietf.org/html/draft-amundsen-richardson-foster-alps-00]
 http://alps.io/[ALPS] is a data format for defining simple descriptions of application-level semantics, similar in complexity to HTML microformats.  An ALPS document can be used as a profile to explain the application semantics of a document with an application-agnostic media type (such as HTML, HAL, Collection+JSON, Siren, etc.). This increases the reusability of profile documents across media types.
 
 Spring Data REST provides an ALPS document for every exported repository. It contains information about both the RESTful transitions
@@ -35,7 +35,7 @@ document would be as follows:
 ====
 
 A profile link, as defined in https://tools.ietf.org/html/rfc6906[RFC 6906], is a place to include application-level details. The
-http://tools.ietf.org/html/draft-amundsen-richardson-foster-alps-00[ALPS draft spec] is meant to define a particular profile format,
+https://tools.ietf.org/html/draft-amundsen-richardson-foster-alps-00[ALPS draft spec] is meant to define a particular profile format,
 which we explore later in this section.
 
 If you navigate into the profile link at `localhost:8080/profile`, you see content resembling the following:
@@ -152,7 +152,7 @@ You can also find a `profile` link in the collection of `_links` when you examin
 <2> It has a *profile* link to the same URI for metadata.
 ====
 
-Again, by default, the `profile` link serves up ALPS. However, if you use an http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[`Accept` header], it can serve `application/alps+json`.
+Again, by default, the `profile` link serves up ALPS. However, if you use an https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[`Accept` header], it can serve `application/alps+json`.
 
 [[metadata.alps.control-types]]
 === Hypermedia Control Types
@@ -313,7 +313,7 @@ properties files with different messages.
 [[metadata.json-schema]]
 == JSON Schema
 
-http://json-schema.org/[JSON Schema] is another form of metadata supported by Spring Data REST. Per their website, JSON Schema has the following advantages:
+https://json-schema.org/[JSON Schema] is another form of metadata supported by Spring Data REST. Per their website, JSON Schema has the following advantages:
 
 * Describes your existing data format
 * Clear, human- and machine-readable documentation
@@ -384,7 +384,7 @@ In this case, if you executed `curl -H 'Accept:application/schema+json' http://l
   },
   "descriptors" : { },
   "type" : "object",
-  "$schema" : "http://json-schema.org/draft-04/schema#"
+  "$schema" : "https://json-schema.org/draft-04/schema#"
 }
 ----
 
@@ -417,7 +417,7 @@ You can also find a `profile` link in the collection of `_links` when you examin
 <2> It has a *profile* link to the same URI for metadata.
 ====
 
-Again, the `profile` link serves <<metadata.alps,ALPS>> by default. If you supply it with an http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[`Accept` header] of `application/schema+json`, it renders the JSON Schema representation.
+Again, the `profile` link serves <<metadata.alps,ALPS>> by default. If you supply it with an https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[`Accept` header] of `application/schema+json`, it renders the JSON Schema representation.
 
 //= JSON Patch
 
