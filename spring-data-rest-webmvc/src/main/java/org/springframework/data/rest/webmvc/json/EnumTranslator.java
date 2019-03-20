@@ -15,11 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import java.util.ArrayList;
+import lombok.RequiredArgsConstructor;
+
 import java.util.List;
 import java.util.Locale;
 
-import org.springframework.context.NoSuchMessageException;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.util.Assert;
@@ -81,13 +82,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 
 		Assert.notNull(value, "Enum value must not be null!");
 
-		String code = String.format("%s.%s", value.getDeclaringClass().getName(), value.name());
-
-		try {
-			return messageSourceAccessor.getMessage(code);
-		} catch (NoSuchMessageException o_O) {
-			return enableDefaultTranslation ? toDefault(value) : value.name();
-		}
+		return messageSourceAccessor.getMessage(TranslatedEnum.of(value, enableDefaultTranslation));
 	}
 
 	public List<String> getValues(Class<? extends Enum<?>> type) {
@@ -176,5 +171,48 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	 */
 	private <T extends Enum<?>> T fromDefault(Class<T> type, String text) {
 		return resolveEnum(type, text.toUpperCase(Locale.US).replaceAll(" ", "_"), true);
+	}
+
+	/**
+	 * A {@link MessageSourceResolvable} that will use a key of {@code enumClassName.value} and a capitalized version of
+	 * the enum value with the underscores replaced by spaces as default if configured.
+	 *
+	 * @author Oliver Drotbohm
+	 * @since 3.2
+	 * @soundtrack Dave Matthews Band - #41 [4.20.02] (Best of What's Around – Encore Vol. 1)
+	 */
+	@RequiredArgsConstructor(staticName = "of")
+	private static class TranslatedEnum implements MessageSourceResolvable {
+
+		private final Enum<?> value;
+		private final boolean withDefaultTranslation;
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.context.MessageSourceResolvable#getCodes()
+		 */
+		@Override
+		public String[] getCodes() {
+			return new String[] { String.format("%s.%s", value.getDeclaringClass().getName(), value.name()) };
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.context.MessageSourceResolvable#getDefaultMessage()
+		 */
+		@Override
+		public String getDefaultMessage() {
+			return withDefaultTranslation ? toDefault(value) : value.name();
+		}
+
+		/**
+		 * Renders a default translation for the given enum (capitalized, lower case, underscores replaced by spaces).
+		 *
+		 * @param value must not be {@literal null}.
+		 * @return
+		 */
+		private static String toDefault(Enum<?> value) {
+			return StringUtils.capitalize(value.name().toLowerCase(Locale.US).replaceAll("_", " "));
+		}
 	}
 }
