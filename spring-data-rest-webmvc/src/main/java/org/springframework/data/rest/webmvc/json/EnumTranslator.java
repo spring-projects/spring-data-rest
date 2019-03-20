@@ -17,12 +17,14 @@ package org.springframework.data.rest.webmvc.json;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -85,15 +87,19 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 		return messageSourceAccessor.getMessage(TranslatedEnum.of(value, enableDefaultTranslation));
 	}
 
+	/**
+	 * Returns all potentially translated values for the given {@link Enum} type.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return
+	 */
 	public List<String> getValues(Class<? extends Enum<?>> type) {
 
-		List<String> result = new ArrayList<String>();
+		Assert.notNull(type, "Enum type must not be null!");
 
-		for (Enum<?> value : type.getEnumConstants()) {
-			result.add(asText(value));
-		}
-
-		return result;
+		return Arrays.stream(type.getEnumConstants()) //
+				.map(this::asText) //
+				.collect(StreamUtils.toUnmodifiableList());
 	}
 
 	/**
