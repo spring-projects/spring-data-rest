@@ -15,7 +15,7 @@ Installation instructions are in the docs:
 
 === License
 
-The Spring Data REST is http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 licensed].
+The Spring Data REST is https://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 licensed].
 
 == Contributing to Spring Data Rest
 
