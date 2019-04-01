@@ -77,6 +77,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Brandon Vulaj
  */
 @RepositoryRestController
 @SuppressWarnings({ "unchecked" })
