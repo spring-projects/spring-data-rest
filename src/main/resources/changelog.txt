@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.0.14.RELEASE (2019-04-01)
+----------------------------------------------
+* DATAREST-1354 - Avoid exception creation in enum translation.
+* DATAREST-1335 - Release 3.0.14 (Kay SR14).
+* DATAREST-1332 - NullPointerException in RepositoryRestHandlerMapping during preflight request.
+
+
 Changes in version 2.6.20.RELEASE (2019-04-01)
 ----------------------------------------------
 * DATAREST-1357 - Release 2.6.20 (Ingalls SR20).
