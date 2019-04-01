@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.20.RELEASE (2019-04-01)
+----------------------------------------------
+* DATAREST-1357 - Release 2.6.20 (Ingalls SR20).
+
+
 Changes in version 2.6.19.RELEASE (2019-04-01)
 ----------------------------------------------
 * DATAREST-1354 - Avoid exception creation in enum translation.
