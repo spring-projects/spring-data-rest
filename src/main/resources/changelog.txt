@@ -1,6 +1,14 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.6.RELEASE (2019-04-01)
+---------------------------------------------
+* DATAREST-1354 - Avoid exception creation in enum translation.
+* DATAREST-1353 - Update test dependency for Apache Solr.
+* DATAREST-1344 - Release 3.1.6 (Lovelace SR6).
+* DATAREST-1338 - JSON patch doesn't update single Map's values.
+
+
 Changes in version 3.0.14.RELEASE (2019-04-01)
 ----------------------------------------------
 * DATAREST-1354 - Avoid exception creation in enum translation.
