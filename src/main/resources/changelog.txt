@@ -1,6 +1,15 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.2.0.M3 (2019-04-11)
+----------------------------------------
+* DATAREST-1362 - Adapt to Mockito 2.26.0.
+* DATAREST-1356 - Can't PUT single-link URI references.
+* DATAREST-1354 - Avoid exception creation in enum translation.
+* DATAREST-1353 - Update test dependency for Apache Solr.
+* DATAREST-1349 - Release 3.2 M3 (Moore).
+
+
 Changes in version 3.1.6.RELEASE (2019-04-01)
 ---------------------------------------------
 * DATAREST-1354 - Avoid exception creation in enum translation.
