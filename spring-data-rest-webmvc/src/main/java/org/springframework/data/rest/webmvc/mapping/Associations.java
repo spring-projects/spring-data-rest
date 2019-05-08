@@ -72,7 +72,7 @@ public class Associations {
 			ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 			String href = path.slash(propertyMapping.getPath()).toString();
-			UriTemplate template = new UriTemplate(href, getProjectionVariable(property));
+			UriTemplate template = UriTemplate.of(href).with(getProjectionVariable(property));
 
 			return Collections.singletonList(new Link(template, propertyMapping.getRel()));
 		}

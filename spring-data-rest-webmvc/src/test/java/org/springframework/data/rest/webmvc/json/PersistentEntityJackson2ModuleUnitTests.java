@@ -136,7 +136,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 				.getRequiredPersistentProperty("pet");
 
 		when(associations.isLinkableAssociation(property)).thenReturn(true);
-		when(converter.convert(new UriTemplate("/pets/1").expand(), TypeDescriptor.valueOf(URI.class),
+		when(converter.convert(UriTemplate.of("/pets/1").expand(), TypeDescriptor.valueOf(URI.class),
 				TypeDescriptor.valueOf(Pet.class))).thenReturn(new Cat());
 
 		PetOwner petOwner = mapper.readValue("{\"pet\":\"/pets/1\"}", PetOwner.class);

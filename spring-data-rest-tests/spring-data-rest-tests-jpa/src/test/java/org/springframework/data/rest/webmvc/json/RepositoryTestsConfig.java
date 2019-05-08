@@ -50,6 +50,7 @@ import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVari
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
+import org.springframework.hateoas.mediatype.hal.DefaultCurieProvider;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.LinkRelationProvider;
@@ -141,7 +142,8 @@ public class RepositoryTestsConfig {
 
 		mapper.registerModule(new Jackson2HalModule());
 		mapper.registerModule(persistentEntityModule());
-		mapper.setHandlerInstantiator(new Jackson2HalModule.HalHandlerInstantiator(relProvider, null, null));
+		mapper.setHandlerInstantiator(new Jackson2HalModule.HalHandlerInstantiator(relProvider,
+				new DefaultCurieProvider(Collections.emptyMap()), null));
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.setSerializationInclusion(Include.NON_EMPTY);
 

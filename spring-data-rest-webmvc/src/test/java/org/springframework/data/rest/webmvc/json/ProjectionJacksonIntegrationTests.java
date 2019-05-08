@@ -18,12 +18,14 @@ package org.springframework.data.rest.webmvc.json;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.mediatype.hal.DefaultCurieProvider;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule.HalHandlerInstantiator;
 import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
@@ -47,7 +49,8 @@ public class ProjectionJacksonIntegrationTests {
 
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(new Jackson2HalModule());
-		this.mapper.setHandlerInstantiator(new HalHandlerInstantiator(new EvoInflectorLinkRelationProvider(), null, null));
+		this.mapper.setHandlerInstantiator(new HalHandlerInstantiator(new EvoInflectorLinkRelationProvider(),
+				new DefaultCurieProvider(Collections.emptyMap()), null));
 	}
 
 	@Test // DATAREST-221
@@ -66,11 +69,6 @@ public class ProjectionJacksonIntegrationTests {
 
 	@Test // DATAREST-221
 	public void rendersHalContentCorrectly() throws Exception {
-
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.registerModule(new Jackson2HalModule());
-		mapper.setHandlerInstantiator(
-				new Jackson2HalModule.HalHandlerInstantiator(new EvoInflectorLinkRelationProvider(), null, null));
 
 		Customer customer = new Customer();
 		customer.firstname = "Dave";

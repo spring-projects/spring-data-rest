@@ -50,9 +50,9 @@ import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.util.CastUtils;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
 import org.springframework.plugin.core.PluginRegistry;
@@ -511,7 +511,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 
 			try {
-				URI uri = new UriTemplate(source).expand();
+				URI uri = UriTemplate.of(source).expand();
 				TypeDescriptor typeDescriptor = TypeDescriptor.valueOf(property.getActualType());
 
 				return converter.convert(uri, URI_DESCRIPTOR, typeDescriptor);
@@ -552,8 +552,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @param invoker must not be {@literal null}.
 		 * @param unwrapping
 		 */
-		private ProjectionSerializer(LinkCollector collector, Associations mappings, RepresentationModelProcessorInvoker invoker,
-				boolean unwrapping) {
+		private ProjectionSerializer(LinkCollector collector, Associations mappings,
+				RepresentationModelProcessorInvoker invoker, boolean unwrapping) {
 
 			super(TargetAware.class);
 

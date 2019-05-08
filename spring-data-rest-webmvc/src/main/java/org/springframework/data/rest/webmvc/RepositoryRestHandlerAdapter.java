@@ -32,8 +32,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public class RepositoryRestHandlerAdapter
-		extends org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvokingHandlerAdapter {
+public class RepositoryRestHandlerAdapter extends RequestMappingHandlerAdapter {
 
 	private final List<HandlerMethodArgumentResolver> argumentResolvers;
 
@@ -44,10 +43,8 @@ public class RepositoryRestHandlerAdapter
 	 * @param argumentResolvers must not be {@literal null}.
 	 * @param invoker must not be {@literal null}.
 	 */
-	public RepositoryRestHandlerAdapter(List<HandlerMethodArgumentResolver> argumentResolvers,
-			org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker invoker) {
+	public RepositoryRestHandlerAdapter(List<HandlerMethodArgumentResolver> argumentResolvers) {
 
-		super(invoker);
 		this.argumentResolvers = argumentResolvers;
 	}
 

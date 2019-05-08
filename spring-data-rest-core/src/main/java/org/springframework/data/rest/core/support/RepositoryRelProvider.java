@@ -67,7 +67,7 @@ public class RepositoryRelProvider implements LinkRelationProvider {
 	 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
 	 */
 	@Override
-	public boolean supports(Class<?> delimiter) {
-		return mappings.getObject().hasMappingFor(delimiter);
+	public boolean supports(LookupContext context) {
+		return mappings.getObject().hasMappingFor(context.getType());
 	}
 }

@@ -101,6 +101,7 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType;
 import org.springframework.hateoas.mediatype.hal.CurieProvider;
+import org.springframework.hateoas.mediatype.hal.DefaultCurieProvider;
 import org.springframework.hateoas.mediatype.hal.HalConfiguration;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule.HalHandlerInstantiator;
@@ -504,7 +505,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		LinkRelationProvider defaultedRelProvider = this.relProvider.orElseGet(EvoInflectorLinkRelationProvider::new);
 		HalConfiguration halConfiguration = this.halConfiguration.orElseGet(HalConfiguration::new);
 
-		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider, curieProvider.orElse(null),
+		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider,
+				curieProvider.orElse(new DefaultCurieProvider(Collections.emptyMap())),
 				resourceDescriptionMessageSourceAccessor(), halConfiguration);
 
 		ObjectMapper mapper = basicObjectMapper();
@@ -554,8 +556,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		ConfigurableWebBindingInitializer initializer = new ConfigurableWebBindingInitializer();
 		initializer.setConversionService(defaultConversionService());
 
-		RepositoryRestHandlerAdapter handlerAdapter = new RepositoryRestHandlerAdapter(defaultMethodArgumentResolvers(),
-				resourceProcessorInvoker());
+		RepositoryRestHandlerAdapter handlerAdapter = new RepositoryRestHandlerAdapter(defaultMethodArgumentResolvers());
 		handlerAdapter.setWebBindingInitializer(initializer);
 		handlerAdapter.setMessageConverters(defaultMessageConverters());
 

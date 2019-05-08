@@ -38,15 +38,15 @@ import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
-import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.server.LinkBuilder;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariable.VariableType;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.UriTemplate;
+import org.springframework.hateoas.server.EntityLinks;
+import org.springframework.hateoas.server.LinkBuilder;
 import org.springframework.hateoas.server.core.AbstractEntityLinks;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
@@ -114,7 +114,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		TemplateVariables variables = getTemplateVariables(components, metadata, pageable).//
 				concat(getProjectionVariable(type));
 
-		return new Link(new UriTemplate(href, variables), metadata.getRel());
+		return new Link(UriTemplate.of(href).with(variables), metadata.getRel());
 	}
 
 	/*
@@ -141,7 +141,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 				.toRequestId((Serializable) id, type);
 
 		Link link = linkFor(type).slash(mappedId).withRel(metadata.getItemResourceRel());
-		return new Link(new UriTemplate(link.getHref(), getProjectionVariable(type)).toString(),
+		return new Link(UriTemplate.of(link.getHref()).with(getProjectionVariable(type)).toString(),
 				metadata.getItemResourceRel());
 	}
 
@@ -270,7 +270,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 				concat(getTemplateVariables(uriComponents, mapping, pageable, sort)).//
 				concat(getProjectionVariable(mapping.getReturnedDomainType()));
 
-		return new Link(new UriTemplate(uriComponents.toString(), variables), mapping.getRel());
+		return new Link(UriTemplate.of(uriComponents.toString()).with(variables), mapping.getRel());
 	}
 
 	/**
