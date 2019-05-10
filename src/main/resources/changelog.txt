@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.7.RELEASE (2019-05-10)
+---------------------------------------------
+* DATAREST-1360 - Release 3.1.7 (Lovelace SR7).
+
+
 Changes in version 3.2.0.M3 (2019-04-11)
 ----------------------------------------
 * DATAREST-1362 - Adapt to Mockito 2.26.0.
