@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.8.RELEASE (2019-05-13)
+---------------------------------------------
+* DATAREST-1374 - Release 3.1.8 (Lovelace SR8).
+
+
 Changes in version 3.2.0.M4 (2019-05-13)
 ----------------------------------------
 * DATAREST-1373 - Upgrade to API changes in Spring HATEOAS 1.0 M2.
