@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.22.RELEASE (2019-05-13)
+----------------------------------------------
+* DATAREST-1375 - Release 2.6.22 (Ingalls SR22).
+
+
 Changes in version 3.1.8.RELEASE (2019-05-13)
 ---------------------------------------------
 * DATAREST-1374 - Release 3.1.8 (Lovelace SR8).
