@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.2.0.M4 (2019-05-13)
+----------------------------------------
+* DATAREST-1373 - Upgrade to API changes in Spring HATEOAS 1.0 M2.
+* DATAREST-1366 - Release 3.2 M4 (Moore).
+
+
 Changes in version 2.6.21.RELEASE (2019-05-10)
 ----------------------------------------------
 * DATAREST-1358 - Release 2.6.21 (Ingalls SR21).
