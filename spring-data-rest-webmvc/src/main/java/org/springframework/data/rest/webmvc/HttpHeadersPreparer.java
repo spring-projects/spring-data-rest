@@ -37,6 +37,7 @@ import org.springframework.util.Assert;
  * instances.
  *
  * @author Oliver Gierke
+ * @author Dario Seidl
  * @soundtrack Ron Spielman Trio - Matchstick
  */
 @RequiredArgsConstructor
@@ -59,7 +60,7 @@ public class HttpHeadersPreparer {
 	public HttpHeaders prepareHeaders(Optional<PersistentEntityResource> resource) {
 
 		return resource//
-				.map(it -> prepareHeaders(it.getPersistentEntity(), it.getContent()))//
+				.map(it -> prepareHeaders(it.getPersistentEntity(), it.getTargetEntity()))//
 				.orElseGet(() -> new HttpHeaders());
 	}
 
@@ -75,6 +76,8 @@ public class HttpHeadersPreparer {
 
 		Assert.notNull(entity, "PersistentEntity must not be null!");
 		Assert.notNull(value, "Entity value must not be null!");
+		Assert.isInstanceOf(entity.getType(), value, () ->
+			String.format("Target bean of type %s is not of type of the persistent entity (%s)!", value.getClass().getName(), entity.getType().getName()));
 
 		// Add ETag
 		HttpHeaders headers = ETag.from(entity, value).addTo(new HttpHeaders());
