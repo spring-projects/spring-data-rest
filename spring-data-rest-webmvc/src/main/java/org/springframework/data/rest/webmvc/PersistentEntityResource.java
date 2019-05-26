@@ -22,6 +22,7 @@ import java.util.List;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.projection.TargetAware;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -36,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Dario Seidl
  */
 public class PersistentEntityResource extends EntityModel<Object> {
 
@@ -93,12 +95,26 @@ public class PersistentEntityResource extends EntityModel<Object> {
 	}
 
 	/**
+	 * Returns the underlying instance. If the instance is a dynamic JDK proxy, the proxy target is returned.
+	 *
+	 * @return
+	 */
+	public Object getTargetEntity() {
+		Object content = getContent();
+		if (content instanceof TargetAware) {
+			return ((TargetAware) content).getTarget();
+		} else {
+			return content;
+		}
+	}
+
+	/**
 	 * Returns the {@link PersistentPropertyAccessor} for the underlying content bean.
 	 *
 	 * @return
 	 */
 	public PersistentPropertyAccessor<?> getPropertyAccessor() {
-		return entity.getPropertyAccessor(getContent());
+		return entity.getPropertyAccessor(getTargetEntity());
 	}
 
 	/**

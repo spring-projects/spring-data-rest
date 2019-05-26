@@ -66,6 +66,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Greg Turnquist
  * @author Mark Paluch
  * @author Ľubomír Varga
+ * @author Dario Seidl
  */
 @Transactional
 @ContextConfiguration(classes = JpaRepositoryConfig.class, initializers = JpaWebTests.JpaContextInitializer.class)
@@ -254,6 +255,48 @@ public class JpaWebTests extends CommonWebTests {
 
 		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), equalTo("Frodo"));
 		assertNull(JsonPath.read(frodo.getContentAsString(), "$.lastName"));
+	}
+
+	@Test // DATAREST-1213
+	public void createThenPatchWithProjection() throws Exception {
+
+		Link categoriesLink = client.discoverUnique(LinkRelation.of("categories"));
+
+		MockHttpServletResponse test = postAndGet(categoriesLink, "{ \"name\" : \"test\" }",
+			MediaType.APPLICATION_JSON);
+
+		Link testLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, test);
+
+		assertThat((String) JsonPath.read(test.getContentAsString(), "$.name")).isEqualTo("test");
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(testLink.getHref());
+		String uri = builder.queryParam("projection", "open").build().toUriString();
+
+		MockHttpServletResponse patched = patchAndGet(new Link(uri), "{ \"name\" : \"patched\" }", MediaType.APPLICATION_JSON);
+
+		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.name")).isEqualTo("patched");
+		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.calculatedName")).isEqualTo("calculated-patched");
+	}
+
+	@Test // DATAREST-1213
+	public void createThenPutWithProjection() throws Exception {
+
+		Link categoriesLink = client.discoverUnique(LinkRelation.of("categories"));
+
+		MockHttpServletResponse test = postAndGet(categoriesLink, "{ \"name\" : \"test\" }",
+			MediaType.APPLICATION_JSON);
+
+		Link testLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, test);
+
+		assertThat((String) JsonPath.read(test.getContentAsString(), "$.name")).isEqualTo("test");
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(testLink.getHref());
+		String uri = builder.queryParam("projection", "open").build().toUriString();
+
+		MockHttpServletResponse patched = putAndGet(new Link(uri), "{ \"name\" : \"put\" }", MediaType.APPLICATION_JSON);
+
+		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.name")).isEqualTo("put");
+		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.calculatedName")).isEqualTo("calculated-put");
 	}
 
 	@Test
