@@ -30,6 +30,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.projection.TargetAware;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
@@ -74,6 +75,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Greg Turnquist
  * @author Jeremy Rickard
  * @author Jeroen Reijn
+ * @author Dario Seidl
  */
 @RepositoryRestController
 class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
@@ -364,6 +366,13 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
 		Object objectToSave = payload.getContent();
+
+		// Unproxy dynamic JDK proxy to be able to get version information for ETag
+		if (objectToSave instanceof TargetAware) {
+			TargetAware targetAware = (TargetAware) objectToSave;
+			objectToSave = targetAware.getTarget();
+		}
+
 		eTag.verify(resourceInformation.getPersistentEntity(), objectToSave);
 
 		return payload.isNew() ? createAndReturn(objectToSave, invoker, assembler, config.returnBodyOnCreate(acceptHeader))
@@ -393,6 +402,12 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		resourceInformation.verifySupportedMethod(HttpMethod.PATCH, ResourceType.ITEM);
 
 		Object domainObject = payload.getContent();
+
+		// Unproxy dynamic JDK proxy to be able to get version information for ETag
+		if (domainObject instanceof TargetAware) {
+			TargetAware targetAware = (TargetAware) domainObject;
+			domainObject = targetAware.getTarget();
+		}
 
 		eTag.verify(resourceInformation.getPersistentEntity(), domainObject);
 

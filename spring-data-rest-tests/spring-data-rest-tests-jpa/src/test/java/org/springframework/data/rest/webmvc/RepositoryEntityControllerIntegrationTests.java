@@ -36,12 +36,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.support.RepositoryInvoker;
+import org.springframework.data.rest.core.config.Projection;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.webmvc.RepositoryEntityControllerIntegrationTests.ConfigurationCustomizer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.AddressRepository;
+import org.springframework.data.rest.webmvc.jpa.Category;
+import org.springframework.data.rest.webmvc.jpa.CategoryRepository;
 import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
@@ -49,6 +52,7 @@ import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -63,6 +67,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
  *
  * @author Oliver Gierke
  * @author Jeremy Rickard
+ * @author Dario Seidl
  */
 @ContextConfiguration(classes = { ConfigurationCustomizer.class, JpaRepositoryConfig.class })
 @Transactional
@@ -70,6 +75,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 	@Autowired RepositoryEntityController controller;
 	@Autowired AddressRepository repository;
+	@Autowired CategoryRepository categoryRepository;
 	@Autowired RepositoryRestConfiguration configuration;
 	@Autowired PersistentEntityResourceAssembler assembler;
 	@Autowired PersistentEntities entities;
@@ -249,6 +255,40 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		assertThat(entity.getHeaders().getETag()).isNotNull();
 	}
 
+	@Test // DATAREST-1213
+	public void createsEtagForProjectedEntityOnPatchCorrectly() throws Exception {
+
+		Category category = categoryRepository.save(new Category("foo"));
+
+		CategoryProjection categoryProjection = new SpelAwareProxyProjectionFactory()
+				.createProjection(CategoryProjection.class, new Category("bar"));
+
+		PersistentEntityResource resource = PersistentEntityResource
+				.build(categoryProjection, entities.getRequiredPersistentEntity(Category.class)).build();
+
+		ResponseEntity<RepresentationModel<?>> entity = controller.patchItemResource(getResourceInformation(Category.class), resource, category.id,
+				assembler, ETag.from("0"), MediaType.APPLICATION_JSON_VALUE);
+
+		assertThat(entity.getHeaders().getETag()).isNotNull();
+		assertThat(entity.hasBody());
+	}
+
+	@Test // DATAREST-1213
+	public void createsEtagForProjectedEntityOnPutCorrectly() throws Exception {
+
+		CategoryProjection categoryProjection = new SpelAwareProxyProjectionFactory()
+				.createProjection(CategoryProjection.class, new Category("bar"));
+
+		PersistentEntityResource resource = PersistentEntityResource
+				.build(categoryProjection, entities.getRequiredPersistentEntity(Category.class)).build();
+
+		ResponseEntity<?> entity = controller.putItemResource(getResourceInformation(Category.class), resource, 1,
+				assembler, ETag.from("0"), MediaType.APPLICATION_JSON_VALUE);
+
+		assertThat(entity.getHeaders().getETag()).isNotNull();
+		assertThat(entity.hasBody());
+	}
+
 	@Test // DATAREST-724
 	public void deletesEntityWithCustomLookupCorrectly() throws Exception {
 
@@ -280,4 +320,9 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	}
 
 	interface AddressProjection {}
+
+	@Projection(name = "category-name", types = Category.class)
+	interface CategoryProjection {
+		String getName();
+	}
 }
