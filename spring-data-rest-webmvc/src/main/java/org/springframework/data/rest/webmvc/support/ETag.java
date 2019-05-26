@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
  * A value object to represent ETags.
  *
  * @author Oliver Gierke
+ * @author Dario Seidl
  */
 @EqualsAndHashCode
 public final class ETag {
@@ -74,7 +75,7 @@ public final class ETag {
 
 		Assert.notNull(resource, "PersistentEntityResource must not be null!");
 
-		return from(resource.getPersistentEntity(), resource.getContent());
+		return from(resource.getPersistentEntity(), resource.getTargetEntity());
 	}
 
 	/**
