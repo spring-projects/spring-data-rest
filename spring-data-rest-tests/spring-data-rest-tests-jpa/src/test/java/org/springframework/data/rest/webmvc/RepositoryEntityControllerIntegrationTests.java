@@ -42,7 +42,6 @@ import org.springframework.data.rest.webmvc.RepositoryEntityControllerIntegratio
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.AddressRepository;
-import org.springframework.data.rest.webmvc.jpa.CategoryRepository;
 import org.springframework.data.rest.webmvc.jpa.CreditCard;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Order;
@@ -71,7 +70,6 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 	@Autowired RepositoryEntityController controller;
 	@Autowired AddressRepository repository;
-	@Autowired CategoryRepository categoryRepository;
 	@Autowired RepositoryRestConfiguration configuration;
 	@Autowired PersistentEntityResourceAssembler assembler;
 	@Autowired PersistentEntities entities;
@@ -282,5 +280,4 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	}
 
 	interface AddressProjection {}
-
 }

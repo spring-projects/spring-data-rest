@@ -30,7 +30,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.projection.TargetAware;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
@@ -75,7 +74,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Greg Turnquist
  * @author Jeremy Rickard
  * @author Jeroen Reijn
- * @author Dario Seidl
  */
 @RepositoryRestController
 class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
@@ -366,7 +364,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
 		Object objectToSave = payload.getContent();
-
 		eTag.verify(resourceInformation.getPersistentEntity(), objectToSave);
 
 		return payload.isNew() ? createAndReturn(objectToSave, invoker, assembler, config.returnBodyOnCreate(acceptHeader))
