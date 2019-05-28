@@ -225,6 +225,7 @@ public class DomainObjectReader {
 			String fieldName = entry.getKey();
 
 			if (!mappedProperties.hasPersistentPropertyForField(fieldName)) {
+				i.remove();
 				continue;
 			}
 
