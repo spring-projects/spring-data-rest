@@ -29,19 +29,7 @@ import lombok.Value;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -174,11 +162,11 @@ public class DomainObjectReaderUnitTests {
 
 		TypeWithGenericMap result = reader.readPut((ObjectNode) node, target, mapper);
 
-		assertThat(result.map.get("a")).isEqualTo((Object) "1");
+		assertThat(result.map.get("a")).isEqualTo("1");
 
 		Object object = result.map.get("b");
 		assertThat(object).isInstanceOf(Map.class);
-		assertThat(((Map<Object, Object>) object).get("c")).isEqualTo((Object) "2");
+		assertThat(((Map<Object, Object>) object).get("c")).isEqualTo("2");
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATAREST-701
@@ -280,7 +268,7 @@ public class DomainObjectReaderUnitTests {
 
 		TypeWithGenericMap result = reader.readPut(payload, map, mapper);
 
-		assertThat(result.map.get("sub1")).isEqualTo((Object) "ok");
+		assertThat(result.map.get("sub1")).isEqualTo("ok");
 
 		List<String> sub2 = as(result.map.get("sub2"), List.class);
 		assertThat(sub2.get(0)).isEqualTo("ok1");
@@ -423,8 +411,8 @@ public class DomainObjectReaderUnitTests {
 		assertThat(collection).hasSize(2);
 
 		Iterator<Map<String, Object>> iterator = (Iterator<Map<String, Object>>) collection.iterator();
-		assertThat(iterator.next().get("some")).isEqualTo((Object) "value");
-		assertThat(iterator.next().get("some")).isEqualTo((Object) "otherValue");
+		assertThat(iterator.next().get("some")).isEqualTo("value");
+		assertThat(iterator.next().get("some")).isEqualTo("otherValue");
 	}
 
 	@Test // DATAREST-965
