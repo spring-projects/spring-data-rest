@@ -15,23 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertThat;
-import static org.springframework.data.rest.webmvc.util.TestUtils.*;
-import static org.springframework.http.HttpHeaders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
+import net.minidev.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +29,8 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -52,8 +41,20 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
+import static org.springframework.data.rest.webmvc.util.TestUtils.*;
+import static org.springframework.http.HttpHeaders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Web integration tests specific to JPA.
@@ -61,6 +62,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Mark Paluch
+ * @author Dario Seidl
  */
 @Transactional
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
@@ -238,6 +240,48 @@ public class JpaWebTests extends CommonWebTests {
 
 		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), equalTo("Frodo"));
 		assertNull(JsonPath.read(frodo.getContentAsString(), "$.lastName"));
+	}
+
+	@Test // DATAREST-1213
+	public void createThenPatchWithProjection() throws Exception {
+
+		Link categoriesLink = client.discoverUnique(LinkRelation.of("categories"));
+
+		MockHttpServletResponse test = postAndGet(categoriesLink, "{ \"name\" : \"test\" }",
+			MediaType.APPLICATION_JSON);
+
+		Link testLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, test);
+
+		assertThat((String) JsonPath.read(test.getContentAsString(), "$.name")).isEqualTo("test");
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(testLink.getHref());
+		String uri = builder.queryParam("projection", "open").build().toUriString();
+
+		MockHttpServletResponse patched = patchAndGet(new Link(uri), "{ \"name\" : \"patched\" }", MediaType.APPLICATION_JSON);
+
+		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.name")).isEqualTo("patched");
+		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.calculatedName")).isEqualTo("calculated-patched");
+	}
+
+	@Test // DATAREST-1213
+	public void createThenPutWithProjection() throws Exception {
+
+		Link categoriesLink = client.discoverUnique(LinkRelation.of("categories"));
+
+		MockHttpServletResponse test = postAndGet(categoriesLink, "{ \"name\" : \"test\" }",
+			MediaType.APPLICATION_JSON);
+
+		Link testLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, test);
+
+		assertThat((String) JsonPath.read(test.getContentAsString(), "$.name")).isEqualTo("test");
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(testLink.getHref());
+		String uri = builder.queryParam("projection", "open").build().toUriString();
+
+		MockHttpServletResponse patched = putAndGet(new Link(uri), "{ \"name\" : \"put\" }", MediaType.APPLICATION_JSON);
+
+		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.name")).isEqualTo("put");
+		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.calculatedName")).isEqualTo("calculated-put");
 	}
 
 	@Test
@@ -652,6 +696,73 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 	}
+
+	private JSONObject body(String name) {
+		JSONObject body = new JSONObject();
+		body.put("name", name);
+		return body;
+	}
+
+	private HttpEntity headers(String body) {
+		List<MediaType> accept = new ArrayList<>();
+		accept.add(MediaType.APPLICATION_JSON);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setAccept(accept);
+
+		return new HttpEntity<>(body, headers);
+	}
+
+////
+////		RestTemplate restTemplate = new RestTemplate();
+////		ResponseEntity<String> responseEntity =
+////			restTemplate.exchange(BASE + "/categories/1/", HttpMethod.PATCH, headers(body("patch").toString()), String.class);
+////
+////		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
+////			.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag)) //
+////			.andExpect(status().is2xxSuccessful());
+//
+//		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+//		System.out.println(responseEntity.getBody());
+//	}
+//
+//	@Test // DATAREST-1213
+//	public void patchesProjectedEntityCorrectly() {
+//		RestTemplate restTemplate = new RestTemplate();
+//		ResponseEntity<String> responseEntity =
+//			restTemplate.exchange(BASE + "/categories/1/?projection=with-parent", HttpMethod.PATCH, headers(body("patch-with-projection").toString()), String.class);
+//
+//		mvc.perform(patch(URI.create(uri)));
+//
+//		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
+//			.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag)) //
+//			.andExpect(status().is2xxSuccessful());
+//
+//		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+//		System.out.println(responseEntity.getBody());
+//	}
+//
+//	@Test // DATAREST-1213
+//	public void putsEntityCorrectly() {
+//		RestTemplate restTemplate = new RestTemplate();
+//		ResponseEntity<String> responseEntity =
+//			restTemplate.exchange(BASE + "/categories/1/", HttpMethod.PUT, headers(body("put").toString()), String.class);
+//
+//		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+//		System.out.println(responseEntity.getBody());
+//	}
+//
+//
+//	@Test // DATAREST-1213
+//	public void putsProjectedEntityCorrectly() {
+//		RestTemplate restTemplate = new RestTemplate();
+//		ResponseEntity<String> responseEntity =
+//			restTemplate.exchange(BASE + "/categories/1/?projection=with-parent", HttpMethod.PUT, headers(body("put-with-projection").toString()), String.class);
+//
+//		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+//		System.out.println(responseEntity.getBody());
+//	}
 
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
 

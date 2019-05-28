@@ -15,13 +15,17 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.rest.core.config.Projection;
 
 /**
  * @author Dario Seidl
  */
-@RepositoryRestResource(collectionResourceRel = "categories", path = "categories")
-public interface CategoryRepository extends CrudRepository<Category, Long> {
+@Projection(name = "open", types = Category.class)
+public interface CategoryProjection {
 
+	String getName();
+
+	@Value("calculated-#{target.name}")
+	String getCalculatedName();
 }
