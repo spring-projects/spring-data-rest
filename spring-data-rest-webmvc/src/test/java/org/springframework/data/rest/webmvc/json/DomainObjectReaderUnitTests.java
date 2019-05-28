@@ -569,6 +569,22 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.strings).containsExactly("value");
 	}
 
+	@Test // DATAREST-1383
+	public void doesNotWipeReadOnlyPropertyForPatch() throws Exception {
+
+		SampleUser user = new SampleUser("name", "password");
+		user.lastLogin = new Date();
+		user.email = "foo@bar.com";
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode source = (ObjectNode) mapper.readTree("{ \"lastLogin\" : null, \"email\" : \"bar@foo.com\"}");
+
+		SampleUser result = reader.merge(source, user, mapper);
+
+		assertThat(result.lastLogin).isNotNull();
+		assertThat(result.email).isEqualTo("foo@bar.com");
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -585,6 +601,9 @@ public class DomainObjectReaderUnitTests {
 
 		@JsonProperty(access = READ_ONLY) //
 		private Date lastLogin;
+
+		@ReadOnlyProperty //
+		private String email;
 
 		public SampleUser(String name, String password) {
 

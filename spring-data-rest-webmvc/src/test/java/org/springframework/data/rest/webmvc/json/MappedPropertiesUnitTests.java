@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.json;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentEntity;
@@ -84,6 +85,20 @@ public class MappedPropertiesUnitTests {
 		assertThat(properties.getPersistentProperty("readOnlyProperty")).isNotNull();
 	}
 
+	@Test // DATAREST-1383
+	public void doesNotRegardReadOnlyPropertyForDeserialization() {
+
+		MappedProperties properties = MappedProperties.forDeserialization(entity, mapper);
+
+		assertThat(properties.hasPersistentPropertyForField("anotherReadOnlyProperty")).isFalse();
+		assertThat(properties.getPersistentProperty("readOnlyProperty")).isNull();
+
+		properties = MappedProperties.forSerialization(entity, mapper);
+
+		assertThat(properties.hasPersistentPropertyForField("anotherReadOnlyProperty")).isTrue();
+		assertThat(properties.getPersistentProperty("readOnlyProperty")).isNotNull();
+	}
+
 	static class Sample {
 
 		public @Transient String notExposedBySpringData;
@@ -91,5 +106,6 @@ public class MappedPropertiesUnitTests {
 		public String exposedProperty;
 		public @JsonProperty("email") String emailAddress;
 		public @JsonProperty(access = Access.READ_ONLY) String readOnlyProperty;
+		public @ReadOnlyProperty String anotherReadOnlyProperty;
 	}
 }
