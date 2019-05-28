@@ -219,6 +219,7 @@ public class DomainObjectReader {
 
 		PersistentEntity<?, ?> entity = candidate.get();
 		MappedProperties mappedProperties = MappedProperties.forDeserialization(entity, mapper);
+		PersistentPropertyAccessor<?> accessor = entity.getPropertyAccessor(target);
 
 		for (Iterator<Entry<String, JsonNode>> i = root.fields(); i.hasNext();) {
 
@@ -232,7 +233,6 @@ public class DomainObjectReader {
 			}
 
 			PersistentProperty<?> property = mappedProperties.getPersistentProperty(fieldName);
-			PersistentPropertyAccessor<?> accessor = entity.getPropertyAccessor(target);
 			Optional<Object> rawValue = Optional.ofNullable(accessor.getProperty(property));
 
 			if (!rawValue.isPresent() || associationLinks.isLinkableAssociation(property)) {
@@ -277,9 +277,7 @@ public class DomainObjectReader {
 						execute(() -> doMerge(objectNode, it, mapper));
 					}
 				}
-
 			});
-
 		}
 
 		return mapper.readerForUpdating(target).readValue(root);
