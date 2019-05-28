@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -61,7 +62,8 @@ class MappedProperties {
 	 * @param entity must not be {@literal null}.
 	 * @param description must not be {@literal null}.
 	 */
-	private MappedProperties(PersistentEntity<?, ? extends PersistentProperty<?>> entity, BeanDescription description) {
+	private MappedProperties(PersistentEntity<?, ? extends PersistentProperty<?>> entity, BeanDescription description,
+			Predicate<PersistentProperty<?>> filter) {
 
 		Assert.notNull(entity, "Entity must not be null!");
 		Assert.notNull(description, "BeanDescription must not be null!");
@@ -79,10 +81,12 @@ class MappedProperties {
 			Optional<? extends PersistentProperty<?>> persistentProperty = //
 					Optional.ofNullable(entity.getPersistentProperty(property.getInternalName()));
 
-			persistentProperty.ifPresent(it -> {
-				propertyToFieldName.put(it, property);
-				fieldNameToProperty.put(property.getName(), it);
-			});
+			persistentProperty//
+					.filter(filter) //
+					.ifPresent(it -> {
+						propertyToFieldName.put(it, property);
+						fieldNameToProperty.put(property.getName(), it);
+					});
 
 			if (!persistentProperty.isPresent()) {
 				unmappedProperties.add(property);
@@ -104,7 +108,7 @@ class MappedProperties {
 		BeanDescription description = INTROSPECTOR.forDeserialization(config, mapper.constructType(entity.getType()),
 				config);
 
-		return new MappedProperties(entity, description);
+		return new MappedProperties(entity, description, it -> it.isWritable());
 	}
 
 	/**
@@ -120,7 +124,7 @@ class MappedProperties {
 		SerializationConfig config = mapper.getSerializationConfig();
 		BeanDescription description = INTROSPECTOR.forSerialization(config, mapper.constructType(entity.getType()), config);
 
-		return new MappedProperties(entity, description);
+		return new MappedProperties(entity, description, it -> true);
 	}
 
 	public static MappedProperties none() {
