@@ -367,12 +367,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
 		Object objectToSave = payload.getContent();
 
-		// Unproxy dynamic JDK proxy to be able to get version information for ETag
-		if (objectToSave instanceof TargetAware) {
-			TargetAware targetAware = (TargetAware) objectToSave;
-			objectToSave = targetAware.getTarget();
-		}
-
 		eTag.verify(resourceInformation.getPersistentEntity(), objectToSave);
 
 		return payload.isNew() ? createAndReturn(objectToSave, invoker, assembler, config.returnBodyOnCreate(acceptHeader))
@@ -402,12 +396,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		resourceInformation.verifySupportedMethod(HttpMethod.PATCH, ResourceType.ITEM);
 
 		Object domainObject = payload.getContent();
-
-		// Unproxy dynamic JDK proxy to be able to get version information for ETag
-		if (domainObject instanceof TargetAware) {
-			TargetAware targetAware = (TargetAware) domainObject;
-			domainObject = targetAware.getTarget();
-		}
 
 		eTag.verify(resourceInformation.getPersistentEntity(), domainObject);
 

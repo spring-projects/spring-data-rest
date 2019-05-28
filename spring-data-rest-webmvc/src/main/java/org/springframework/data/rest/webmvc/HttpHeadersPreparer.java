@@ -28,6 +28,7 @@ import org.springframework.data.auditing.AuditableBeanWrapper;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.projection.TargetAware;
 import org.springframework.data.rest.webmvc.support.ETag;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
@@ -75,6 +76,12 @@ public class HttpHeadersPreparer {
 
 		Assert.notNull(entity, "PersistentEntity must not be null!");
 		Assert.notNull(value, "Entity value must not be null!");
+
+		// Unproxy dynamic JDK proxy to be able to get version information for ETag
+		if (value instanceof TargetAware) {
+			TargetAware targetAware = (TargetAware) value;
+			value = targetAware.getTarget();
+		}
 
 		// Add ETag
 		HttpHeaders headers = ETag.from(entity, value).addTo(new HttpHeaders());
