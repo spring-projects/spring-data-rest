@@ -38,6 +38,7 @@ import org.springframework.util.Assert;
  * instances.
  *
  * @author Oliver Gierke
+ * @author Dario Seidl
  * @soundtrack Ron Spielman Trio - Matchstick
  */
 @RequiredArgsConstructor
