@@ -214,8 +214,8 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		}
 
 		HashSet<String> mediaTypes = new LinkedHashSet<String>();
-		mediaTypes.add(configuration.getDefaultMediaType().toString());
-		mediaTypes.add(MediaType.APPLICATION_JSON_VALUE);
+//		mediaTypes.add(configuration.getDefaultMediaType().toString());
+//		mediaTypes.add(MediaType.APPLICATION_JSON_VALUE);
 
 		return new ProducesRequestCondition(mediaTypes.toArray(new String[mediaTypes.size()]));
 	}
