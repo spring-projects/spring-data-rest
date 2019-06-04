@@ -26,6 +26,7 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
 import org.springframework.data.rest.webmvc.util.UriUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -98,7 +99,10 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 		BackendIdConverter pluginFor = idConverters.getPluginFor(metadata.getDomainType())
 				.orElse(DefaultIdConverter.INSTANCE);
 		String lookupPath = baseUri.getRepositoryLookupPath(request);
-		return pluginFor.fromRequestId(UriUtils.findMappingVariable("id", parameter.getMethod(), lookupPath),
-				metadata.getDomainType());
+		String idSource = UriUtils.findMappingVariable("id", parameter.getMethod(), lookupPath);
+
+		return StringUtils.hasText(idSource) //
+				? pluginFor.fromRequestId(idSource, metadata.getDomainType())
+				: null;
 	}
 }
