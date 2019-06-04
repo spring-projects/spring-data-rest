@@ -90,7 +90,7 @@ public class PersistentEntityResource extends EntityModel<Object> {
 	}
 
 	/**
-	 * Returns the the underlying instance. If the instance is a dynamic JDK proxy, the proxy target is returned.
+	 * Returns the underlying instance. If the instance is a dynamic JDK proxy, the proxy target is returned.
 	 *
 	 * @return
 	 */
