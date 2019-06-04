@@ -94,6 +94,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 		assertThat(client.discoverUnique(profileLink, "orders", MediaType.ALL)).isNotNull();
 		assertThat(client.discoverUnique(profileLink, "receipts", MediaType.ALL)).isNotNull();
 		assertThat(client.discoverUnique(profileLink, "addresses", MediaType.ALL)).isNotNull();
+		assertThat(client.discoverUnique(profileLink, "categories", MediaType.ALL)).isNotNull();
 	}
 
 	@Test // DATAREST-638
