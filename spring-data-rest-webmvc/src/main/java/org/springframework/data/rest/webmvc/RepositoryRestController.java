@@ -21,11 +21,22 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerMapping;
 
 /**
  * Annotation to demarcate Spring MVC controllers provided by Spring Data REST. Allows to easily detect them and exclude
  * them from standard Spring MVC handling.
+ * <p>
+ * Note, that this annotation should only be used by application controllers that map to URIs that are managed by Spring
+ * Data REST as the get handled by a special {@link HandlerMapping} implementation that applies additional
+ * functionality:
+ * <ul>
+ * <li>CORS configuration defined for the repository backing the path.</li>
+ * <li>An {@link OpenEntityManagerInViewInterceptor} for JPA backed repositories so that properties can always be
+ * accessed.</li>
+ * </ul>
  *
  * @author Oliver Gierke
  */
