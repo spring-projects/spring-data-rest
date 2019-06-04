@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -73,7 +74,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	private final Optional<Repositories> repositories;
 
 	private RepositoryCorsConfigurationAccessor corsConfigurationAccessor;
-	private JpaHelper jpaHelper;
+	private Optional<JpaHelper> jpaHelper = Optional.empty();
 
 	/**
 	 * Creates a new {@link RepositoryRestHandlerMapping} for the given {@link ResourceMappings} and
@@ -120,7 +121,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	 * @param jpaHelper the jpaHelper to set
 	 */
 	public void setJpaHelper(JpaHelper jpaHelper) {
-		this.jpaHelper = jpaHelper;
+		this.jpaHelper = Optional.ofNullable(jpaHelper);
 	}
 
 	/*
@@ -195,11 +196,10 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	 */
 	@Override
 	protected void extendInterceptors(List<Object> interceptors) {
-		if (null != jpaHelper) {
-			for (Object o : jpaHelper.getInterceptors()) {
-				interceptors.add(o);
-			}
-		}
+
+		jpaHelper.map(JpaHelper::getInterceptors) //
+				.orElseGet(() -> Collections.emptyList()) //
+				.forEach(interceptors::add);
 	}
 
 	/*
