@@ -17,7 +17,6 @@ package org.springframework.data.rest.webmvc.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -107,7 +106,6 @@ import org.springframework.hateoas.mediatype.hal.HalConfiguration;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule.HalHandlerInstantiator;
 import org.springframework.hateoas.server.LinkRelationProvider;
-import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
 import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
@@ -166,6 +164,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Autowired Optional<CurieProvider> curieProvider;
 	@Autowired Optional<HalConfiguration> halConfiguration;
 	@Autowired ObjectProvider<ObjectMapper> objectMapper;
+	@Autowired ObjectProvider<RepresentationModelProcessorInvoker> invoker;
 
 	private final Lazy<ObjectMapper> mapper;
 
@@ -528,21 +527,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new UriListHttpMessageConverter();
 	}
 
-	@Bean
-	@SuppressWarnings("rawtypes")
-	public RepresentationModelProcessorInvoker resourceProcessorInvoker() {
-
-		Collection<RepresentationModelProcessor> beans = applicationContext
-				.getBeansOfType(RepresentationModelProcessor.class, false, false).values();
-		List<RepresentationModelProcessor<?>> processors = new ArrayList<RepresentationModelProcessor<?>>(beans.size());
-
-		for (RepresentationModelProcessor<?> bean : beans) {
-			processors.add(bean);
-		}
-
-		return new RepresentationModelProcessorInvoker(processors);
-	}
-
 	/**
 	 * Special {@link org.springframework.web.servlet.HandlerAdapter} that only recognizes handler methods defined in the
 	 * provided controller classes.
@@ -624,7 +608,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		LookupObjectSerializer lookupObjectSerializer = new LookupObjectSerializer(PluginRegistry.of(getEntityLookups()));
 
 		return new PersistentEntityJackson2Module(associationLinks(), entities, uriToEntityConverter, linkCollector(),
-				repositoryInvokerFactory, lookupObjectSerializer, resourceProcessorInvoker(), assembler);
+				repositoryInvokerFactory, lookupObjectSerializer, invoker.getObject(), assembler);
 	}
 
 	@Bean
