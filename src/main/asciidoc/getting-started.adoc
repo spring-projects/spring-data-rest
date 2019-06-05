@@ -37,7 +37,7 @@ The following example shows how to use Maven to include Spring Data Rest in a Sp
 ----
 ====
 
-NOTE: You need not supply the version number if you use the http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#build-tool-plugins-gradle-plugin[Spring Boot Gradle plugin] or the http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#build-tool-plugins-maven-plugin[Spring Boot Maven plugin].
+NOTE: You need not supply the version number if you use the https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#build-tool-plugins-gradle-plugin[Spring Boot Gradle plugin] or the https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#build-tool-plugins-maven-plugin[Spring Boot Maven plugin].
 
 When you use Spring Boot, Spring Data REST gets configured automatically.
 
@@ -82,7 +82,7 @@ IMPORTANT: This step is unnecessary if you use Spring Boot's auto-configuration.
 
 To customize the configuration, register a `RepositoryRestConfigurer` (or extend `RepositoryRestConfigurerAdapter`) and implement or override the `configure…`-methods relevant to your use case.
 
-Make sure you also configure Spring Data repositories for the store you use. For details on that, see the reference documentation for the http://projects.spring.io/spring-data/[corresponding Spring Data module].
+Make sure you also configure Spring Data repositories for the store you use. For details on that, see the reference documentation for the https://projects.spring.io/spring-data/[corresponding Spring Data module].
 
 [[getting-started.basic-settings]]
 == Basic Settings for Spring Data REST
@@ -190,11 +190,11 @@ At this point, you must also configure your key data store.
 
 Spring Data REST officially supports:
 
-* http://projects.spring.io/spring-data-jpa/[Spring Data JPA]
-* http://projects.spring.io/spring-data-mongodb/[Spring Data MongoDB]
-* http://projects.spring.io/spring-data-neo4j/[Spring Data Neo4j]
-* http://projects.spring.io/spring-data-gemfire/[Spring Data GemFire]
-* http://projects.spring.io/spring-data-cassandra/[Spring Data Cassandra]
+* https://projects.spring.io/spring-data-jpa/[Spring Data JPA]
+* https://projects.spring.io/spring-data-mongodb/[Spring Data MongoDB]
+* https://projects.spring.io/spring-data-neo4j/[Spring Data Neo4j]
+* https://projects.spring.io/spring-data-gemfire/[Spring Data GemFire]
+* https://projects.spring.io/spring-data-cassandra/[Spring Data Cassandra]
 
 The following Getting Started guides can help you get up and running quickly:
 

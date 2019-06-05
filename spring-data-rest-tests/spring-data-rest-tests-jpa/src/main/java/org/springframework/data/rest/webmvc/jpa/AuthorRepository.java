@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@CrossOrigin(origins = "http://not.so.far.away", //
+@CrossOrigin(origins = "http://not.so.far.example", //
 		allowCredentials = "true", //
 		methods = { GET, PATCH, POST }, //
 		maxAge = 1234)

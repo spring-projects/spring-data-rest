@@ -7,7 +7,7 @@ This section shows how Spring Data REST uses standard HTTP headers to enhance pe
 [[conditional.etag]]
 == `ETag`, `If-Match`, and `If-None-Match` Headers
 
-The http://tools.ietf.org/html/rfc7232#section-2.3[`ETag` header] provides a way to tag resources. This can prevent clients from overriding each other while also making it possible to reduce unnecessary calls.
+The https://tools.ietf.org/html/rfc7232#section-2.3[`ETag` header] provides a way to tag resources. This can prevent clients from overriding each other while also making it possible to reduce unnecessary calls.
 
 Consider the following example:
 
@@ -35,7 +35,7 @@ Only if the resource's current `ETag` state matches the `If-Match` header is the
 
 WARNING: The term, "`version,`" may carry different semantics with different data stores and even different semantics within your application. Spring Data REST effectively delegates to the data store's metamodel to discern if a field is versioned and, if so, only allows the listed updates if `ETag` elements match.
 
-The http://tools.ietf.org/html/rfc7232#section-3.2[`If-None-Match` header] provides an alternative. Instead of conditional updates, `If-None-Match` allows conditional queries. Consider the following example:
+The https://tools.ietf.org/html/rfc7232#section-3.2[`If-None-Match` header] provides an alternative. Instead of conditional updates, `If-None-Match` allows conditional queries. Consider the following example:
 
 ====
 ----
@@ -50,7 +50,7 @@ NOTE: This POJO is from an `ETag`-based unit test, so it does not have `@Entity`
 [[conditional.if-modified-since]]
 == `If-Modified-Since` header
 
-The http://tools.ietf.org/html/rfc7232#section-3.3[`If-Modified-Since` header] provides a way to check whether a resource has been updated since the last request, which lets applications avoid resending the same data. Consider the following example:
+The https://tools.ietf.org/html/rfc7232#section-3.3[`If-Modified-Since` header] provides a way to check whether a resource has been updated since the last request, which lets applications avoid resending the same data. Consider the following example:
 
 .The last modification date captured in a domain type
 ====
