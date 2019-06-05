@@ -30,6 +30,7 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.HandlerMapping;
@@ -48,7 +49,7 @@ public class DelegatingHandlerMappingUnitTests {
 	@Mock HandlerMapping first, second;
 	@Mock HttpServletRequest request;
 
-	@Test // DATAREST-490, DATAREST-522
+	@Test // DATAREST-490, DATAREST-522, DATAREST-1387
 	public void consultsAllHandlerMappingsAndThrowsExceptionEventually() throws Exception {
 
 		DelegatingHandlerMapping mapping = new DelegatingHandlerMapping(Arrays.asList(first, second));
@@ -56,6 +57,7 @@ public class DelegatingHandlerMappingUnitTests {
 		assertHandlerTriedButExceptionThrown(mapping, HttpMediaTypeNotAcceptableException.class);
 		assertHandlerTriedButExceptionThrown(mapping, HttpRequestMethodNotSupportedException.class);
 		assertHandlerTriedButExceptionThrown(mapping, UnsatisfiedServletRequestParameterException.class);
+		assertHandlerTriedButExceptionThrown(mapping, HttpMediaTypeNotSupportedException.class); // DATAREST-1387
 	}
 
 	@Test // DATAREST-1193
