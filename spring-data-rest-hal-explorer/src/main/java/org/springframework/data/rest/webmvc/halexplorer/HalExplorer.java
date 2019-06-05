@@ -76,7 +76,7 @@ class HalExplorer {
 		}
 
 		builder.path(INDEX);
-		builder.fragment(explorerRelative ? path.substring(0, path.lastIndexOf(EXPLORER)) : path);
+		builder.fragment(String.format("uri=%s", explorerRelative ? path.substring(0, path.lastIndexOf(EXPLORER)) : path));
 
 		return new RedirectView(builder.build().toUriString());
 	}

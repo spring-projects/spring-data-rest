@@ -54,7 +54,7 @@ public class HalExplorerIntegrationTests {
 
 	static final String BASE_PATH = "/api";
 	static final String EXPLORER_INDEX = "/explorer/index.html";
-	static final String TARGET = BASE_PATH.concat(EXPLORER_INDEX).concat("#").concat(BASE_PATH);
+	static final String TARGET = BASE_PATH.concat(EXPLORER_INDEX).concat("#uri=").concat(BASE_PATH);
 
 	@Configuration
 	@EnableWebMvc

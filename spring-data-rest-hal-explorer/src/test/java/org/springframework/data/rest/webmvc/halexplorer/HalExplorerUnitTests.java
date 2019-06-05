@@ -62,7 +62,7 @@ public class HalExplorerUnitTests {
 		UriComponents components = UriComponentsBuilder.fromUriString(response.getHeader(HttpHeaders.LOCATION)).build();
 
 		assertThat(components.getPath(), startsWith("/context"));
-		assertThat(components.getFragment()).isEqualTo("/context");
+		assertThat(components.getFragment()).isEqualTo("uri=/context");
 	}
 
 	@Test // DATAREST-1264
