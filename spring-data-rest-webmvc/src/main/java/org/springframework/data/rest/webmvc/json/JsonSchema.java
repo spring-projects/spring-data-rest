@@ -113,7 +113,7 @@ public class JsonSchema {
 	 * @param typeInformation
 	 * @return
 	 * @see <a href=
-	 *      "http://json-schema.org/latest/json-schema-core.html#anchor8">http://json-schema.org/latest/json-schema-core.html#anchor8</a>
+	 *      "https://json-schema.org/latest/json-schema-core.html#anchor8">https://json-schema.org/latest/json-schema-core.html#anchor8</a>
 	 */
 	private static String toJsonSchemaType(TypeInformation<?> typeInformation) {
 

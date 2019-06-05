@@ -1,7 +1,7 @@
 [[security]]
 = Security
 :spring-data-rest-root: ../../..
-:spring-security-docs: http://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle
+:spring-security-docs: https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle
 
 Spring Data REST works quite well with Spring Security. This section shows examples of how to secure your Spring Data REST services with method-level security.
 

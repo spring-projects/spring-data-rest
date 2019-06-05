@@ -9,8 +9,8 @@ This section details various ways to integrate with Spring Data REST components,
 Sometimes you need to add links to exported resources in your own custom-built Spring MVC controllers. There are three basic levels of linking available:
 
 * Manually assembling links.
-* Using Spring HATEOAS's http://docs.spring.io/spring-hateoas/docs/current/reference/html/#fundamentals.obtaining-links.builder[`LinkBuilder`] with `linkTo()`, `slash()`, and so on.
-* Using Spring Data REST's implementation of http://docs.spring.io/spring-data/rest/docs/current/api/org/springframework/data/rest/webmvc/support/RepositoryEntityLinks.html[`RepositoryEntityLinks`].
+* Using Spring HATEOAS's https://docs.spring.io/spring-hateoas/docs/current/reference/html/#fundamentals.obtaining-links.builder[`LinkBuilder`] with `linkTo()`, `slash()`, and so on.
+* Using Spring Data REST's implementation of https://docs.spring.io/spring-data/rest/docs/current/api/org/springframework/data/rest/webmvc/support/RepositoryEntityLinks.html[`RepositoryEntityLinks`].
 
 The first suggestion is terrible and should be avoided at all costs. It makes your code brittle and high-risk. The second is handy when creating links to other hand-written Spring MVC controllers. The last one, which we explore in the rest of this section, is good for looking up resource links that are exported by Spring Data REST.
 
@@ -54,4 +54,4 @@ With the class in the preceding example, you can use the following operations:
 
 |===
 
-NOTE: All of the search-based links support extra parameters for paging and sorting. See http://docs.spring.io/spring-data/rest/docs/current/api/org/springframework/data/rest/webmvc/support/RepositoryEntityLinks.html[`RepositoryEntityLinks`] for the details. There is also `linkFor(Class<?> type)`, but that returns a Spring HATEOAS `LinkBuilder`, which returns you to the lower level API. Try to use the other ones first.
+NOTE: All of the search-based links support extra parameters for paging and sorting. See https://docs.spring.io/spring-data/rest/docs/current/api/org/springframework/data/rest/webmvc/support/RepositoryEntityLinks.html[`RepositoryEntityLinks`] for the details. There is also `linkFor(Class<?> type)`, but that returns a Spring HATEOAS `LinkBuilder`, which returns you to the lower level API. Try to use the other ones first.
