@@ -9,7 +9,7 @@
 
 	<logger name="org.springframework" level="warn" />
 
-	<root level="warn">
+	<root level="error">
 		<appender-ref ref="console" />
 	</root>
 

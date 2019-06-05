@@ -46,6 +46,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.Ordered;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.auditing.MappingAuditableBeanWrapperFactory;
 import org.springframework.data.domain.PageRequest;
@@ -883,16 +884,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
-		// Register HAL browser if present
+		RepositoryRestConfiguration configuration = repositoryRestConfiguration();
 
-		if (ClassUtils.isPresent("org.springframework.data.rest.webmvc.halbrowser.HalBrowser",
-				getClass().getClassLoader())) {
-
-			String basePath = repositoryRestConfiguration().getBasePath().toString().concat("/browser");
-			String rootLocation = "classpath:META-INF/spring-data-rest/hal-browser/";
-
-			registry.addResourceHandler(basePath.concat("/**")).addResourceLocations(rootLocation);
-		}
+		SpringFactoriesLoader.loadFactories(StaticResourceProvider.class, beanClassLoader)
+				.forEach(it -> it.customizeResources(registry, configuration));
 	}
 
 	private static class ResourceSupportHttpMessageConverter extends TypeConstrainedMappingJackson2HttpMessageConverter

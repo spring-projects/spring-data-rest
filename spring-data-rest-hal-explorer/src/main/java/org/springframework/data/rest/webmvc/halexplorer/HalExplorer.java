@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc.halbrowser;
-
-import lombok.extern.slf4j.Slf4j;
+package org.springframework.data.rest.webmvc.halexplorer;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -28,31 +26,23 @@ import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.web.util.UriComponents;
 
 /**
- * Controller with a few convenience redirects to expose the HAL browser shipped as static content.
+ * Controller with a few convenience redirects to expose the HAL explorer shipped as static content.
  *
  * @author Oliver Gierke
  * @soundtrack Miles Davis - So what (Kind of blue)
  */
-@Slf4j
 @BasePathAwareController
-class HalBrowser {
+class HalExplorer {
 
-	static final String BROWSER = "/browser";
+	static final String EXPLORER = "/explorer";
 	static final String INDEX = "/index.html";
 
-	HalBrowser() {
-		LOG.warn("---");
-		LOG.warn(
-				"Spring Data REST HAL Browser is deprecated! Prefer the HAL Explorer (artifactId: spring-data-rest-hal-explorer)!");
-		LOG.warn("---");
-	}
-
 	/**
-	 * Redirects requests to the API root asking for HTML to the HAL browser.
+	 * Redirects requests to the API root asking for HTML to the HAL explorer.
 	 *
 	 * @return
 	 */
-	@GetMapping(path = { "/", "" }, produces = MediaType.TEXT_HTML_VALUE)
+	@GetMapping(value = { "/", "" }, produces = MediaType.TEXT_HTML_VALUE)
 	View index(HttpServletRequest request) {
 		return getRedirectView(request, false);
 	}
@@ -62,31 +52,31 @@ class HalBrowser {
 	 *
 	 * @return
 	 */
-	@GetMapping(path = BROWSER)
-	View browser(HttpServletRequest request) {
-		return getRedirectView(request, request.getRequestURI().endsWith(BROWSER));
+	@GetMapping(value = EXPLORER)
+	public View explorer(HttpServletRequest request) {
+		return getRedirectView(request, request.getRequestURI().endsWith(EXPLORER));
 	}
 
 	/**
-	 * Returns the View to redirect to to access the HAL browser.
+	 * Returns the View to redirect to to access the HAL explorer.
 	 *
 	 * @param request must not be {@literal null}.
-	 * @param browserRelative
+	 * @param explorerRelative
 	 * @return
 	 */
-	private View getRedirectView(HttpServletRequest request, boolean browserRelative) {
+	private View getRedirectView(HttpServletRequest request, boolean explorerRelative) {
 
 		ServletUriComponentsBuilder builder = ServletUriComponentsBuilder.fromRequest(request);
 
 		UriComponents components = builder.build();
 		String path = components.getPath() == null ? "" : components.getPath();
 
-		if (!browserRelative) {
-			builder.path(BROWSER);
+		if (!explorerRelative) {
+			builder.path(EXPLORER);
 		}
 
 		builder.path(INDEX);
-		builder.fragment(browserRelative ? path.substring(0, path.lastIndexOf(BROWSER)) : path);
+		builder.fragment(explorerRelative ? path.substring(0, path.lastIndexOf(EXPLORER)) : path);
 
 		return new RedirectView(builder.build().toUriString());
 	}
