@@ -16,6 +16,12 @@
 		<browser.version>ad9b865</browser.version>
 		<json-editor.version>0.7.21</json-editor.version>
 		<java-module-name>spring.data.rest.hal.browser</java-module-name>
+
+		<!--
+			Skip Javadoc as there's no public code to document
+			and this causes the Javadoc generation to fail otherwise.
+		-->
+		<maven.javadoc.skip>true</maven.javadoc.skip>
 		<project.root>${basedir}/..</project.root>
 	</properties>
 

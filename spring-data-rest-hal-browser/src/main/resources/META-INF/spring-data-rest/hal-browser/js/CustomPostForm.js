@@ -168,7 +168,7 @@ var CustomPostForm = Backbone.View.extend({
 	 * }
 	 *
 	 * @param linkHeader - HTTP Response header containing a list of W3C compliant links with rels.
-	 * @see http://www.w3.org/wiki/LinkHeader
+	 * @see https://www.w3.org/wiki/LinkHeader
 	 */
 	w3cLinksToHalLinks: function (linkHeader) {
 		var w3cLinks = linkHeader.split(',');
