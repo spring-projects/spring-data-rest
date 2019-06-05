@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;
 import org.springframework.util.Assert;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.HandlerExecutionChain;
@@ -30,7 +31,7 @@ import org.springframework.web.servlet.HandlerMapping;
 /**
  * A {@link HandlerMapping} that considers a {@link List} of delegates. It will keep on traversing the delegates in case
  * an {@link HttpMediaTypeNotAcceptableException} is thrown while trying to lookup the handler on a particular delegate.
- * 
+ *
  * @author Oliver Gierke
  * @soundtrack Benny Greb - Stabila (Moving Parts)
  */
@@ -40,7 +41,7 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
 
 	/**
 	 * Creates a new {@link DelegatingHandlerMapping} for the given delegates.
-	 * 
+	 *
 	 * @param delegates must not be {@literal null}.
 	 */
 	public DelegatingHandlerMapping(List<HandlerMapping> delegates) {
@@ -50,7 +51,7 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
 		this.delegates = delegates;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.core.Ordered#getOrder()
 	 */
@@ -59,7 +60,7 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
 		return Ordered.LOWEST_PRECEDENCE - 100;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.HandlerMapping#getHandler(javax.servlet.http.HttpServletRequest)
 	 */
@@ -78,6 +79,8 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered {
 					return result;
 				}
 
+			} catch (HttpMediaTypeNotSupportedException o_O) {
+				exception = o_O;
 			} catch (HttpMediaTypeNotAcceptableException o_O) {
 				exception = o_O;
 			} catch (HttpRequestMethodNotSupportedException o_O) {
