@@ -109,6 +109,9 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 			mediaTypes.add(configuration.getDefaultMediaType());
 		}
 
+		// DATAREST-1390 - Temporary workaround
+		request.setAttribute(ProducesRequestCondition.class.getName() + ".MEDIA_TYPES", mediaTypes);
+
 		return super.lookupHandlerMethod(lookupPath, new CustomAcceptHeaderHttpServletRequest(request, mediaTypes));
 	}
 
