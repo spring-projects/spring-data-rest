@@ -6,8 +6,8 @@ Jon Brisbin, Oliver Gierke, Greg Turnquist, Jay Bryant
 :linkcss:
 :doctype: book
 :docinfo: shared
-:toc:
-:toc-placement!:
+:toc: left
+:toclevels: 4
 :source-highlighter: prettify
 :icons: font
 :imagesdir: images
