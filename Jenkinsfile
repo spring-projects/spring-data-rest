@@ -4,7 +4,7 @@ pipeline {
     triggers {
         pollSCM 'H/10 * * * *'
         upstream(upstreamProjects: "spring-data-cassandra/master,spring-data-elasticsearch/master,spring-data-gemfire/master,spring-data-geode/master,spring-data-jpa/master," +
-                "spring-data-ldap/master,spring-data-neo4j/master,spring-data-solr/master", threshold: hudson.model.Result.SUCCESS)
+                "spring-data-ldap/master,spring-data-neo4j/master,spring-data-redis/master,spring-data-solr/master", threshold: hudson.model.Result.SUCCESS)
     }
 
     options {
