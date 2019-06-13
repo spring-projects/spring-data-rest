@@ -52,6 +52,7 @@ public class BackendIdHandlerMethodArgumentResolverUnitTests {
 		ResourceMetadata metadata = mock(ResourceMetadata.class);
 
 		doReturn(metadata).when(delegate).resolveArgument(any(), any(), any(), any());
+		doReturn(Object.class).when(metadata).getDomainType();
 		doReturn(true).when(converter).supports(any());
 
 		MethodParameter parameter = new MethodParameter(Sample.class.getMethod("sampleMethod", Serializable.class), 0);
