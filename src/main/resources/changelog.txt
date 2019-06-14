@@ -1,6 +1,20 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.2.0.RC1 (2019-06-14)
+-----------------------------------------
+* DATAREST-1394 - Upgrade to Spring Plugin 2.0 M2.
+* DATAREST-1390 - Add temporary workaround for regression in Spring 5.2 snapshots.
+* DATAREST-1388 - RepositoryRestMvcConfiguration should reuse RepresentationModelProcessorInvoker from Spring HATEOAS.
+* DATAREST-1387 - DelegatingHandlerMapping should proceed on HttpMediaTypeNotSupportedException.
+* DATAREST-1386 - Add HAL Explorer module as alternative to HAL Browser.
+* DATAREST-1384 - Create security policy readme.
+* DATAREST-1383 - Backend read-only properties overridden for PATCH requests.
+* DATAREST-1382 - The id parameter of the fromRequestId method of the BackendIdConverter class specified as non-null is null.
+* DATAREST-1381 - Improve documentation on the effects of @RepositoryRestController.
+* DATAREST-1364 - Release 3.2 RC1 (Moore).
+
+
 Changes in version 3.1.9.RELEASE (2019-06-14)
 ---------------------------------------------
 * DATAREST-1389 - Table of contents missing in reference docs.
