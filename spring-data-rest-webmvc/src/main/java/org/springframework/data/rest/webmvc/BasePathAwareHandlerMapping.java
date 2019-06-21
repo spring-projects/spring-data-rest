@@ -114,6 +114,15 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 	/*
 	 * (non-Javadoc)
+	 * @see org.springframework.web.servlet.handler.AbstractHandlerMapping#hasCorsConfigurationSource(java.lang.Object)
+	 */
+	@Override
+	protected boolean hasCorsConfigurationSource(Object handler) {
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping#getMappingForMethod(java.lang.reflect.Method, java.lang.Class)
 	 */
 	@Override

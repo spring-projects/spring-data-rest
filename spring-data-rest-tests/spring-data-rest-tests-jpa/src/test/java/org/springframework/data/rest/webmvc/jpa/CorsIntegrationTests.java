@@ -36,7 +36,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
- * Web integration tests specific to Cross-origin resource sharing.
+ * Web integration tests specific to Cross-origin resource sharing applying global CORS config defaults mixed with local
+ * controller/repository declarations.
  *
  * @author Mark Paluch
  * @soundtrack 2 Unlimited - No Limit
