@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -50,7 +49,7 @@ public class LocalConfigCorsIntegrationTests extends AbstractWebIntegrationTests
 	@Test // DATAREST-1397
 	public void appliesRepositoryCorsConfiguration() throws Exception {
 
-		Link findItems = client.discoverUnique(LinkRelation.of("items"));
+		Link findItems = client.discoverUnique("items");
 
 		// Preflight request
 		mvc.perform(options(findItems.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.example")

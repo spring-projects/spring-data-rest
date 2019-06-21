@@ -192,15 +192,6 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.AbstractHandlerMapping#hasCorsConfigurationSource(java.lang.Object)
-	 */
-	@Override
-	protected boolean hasCorsConfigurationSource(Object handler) {
-		return true;
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see org.springframework.web.servlet.handler.AbstractHandlerMapping#extendInterceptors(java.util.List)
 	 */
 	@Override

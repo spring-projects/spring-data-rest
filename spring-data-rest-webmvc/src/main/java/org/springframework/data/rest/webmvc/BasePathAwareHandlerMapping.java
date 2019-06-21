@@ -112,11 +112,12 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		return super.lookupHandlerMethod(lookupPath, new CustomAcceptHeaderHttpServletRequest(request, mediaTypes));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * No {@code @Override} as the method is only available in Spring 5.2, but needed to make CORS work in general on it.
+	 *
 	 * @see org.springframework.web.servlet.handler.AbstractHandlerMapping#hasCorsConfigurationSource(java.lang.Object)
+	 * @see https://github.com/spring-projects/spring-framework/issues/22273
 	 */
-	@Override
 	protected boolean hasCorsConfigurationSource(Object handler) {
 		return true;
 	}
