@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,6 +58,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.mvc.ResourceProcessorInvoker;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -75,11 +77,13 @@ import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerBuilder;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
+import com.fasterxml.jackson.databind.deser.CreatorProperty;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.deser.std.CollectionDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
+import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -414,6 +418,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		public BeanDeserializerBuilder updateBuilder(DeserializationConfig config, BeanDescription beanDesc,
 				BeanDeserializerBuilder builder) {
 
+			ValueInstantiatorCustomizer customizer = new ValueInstantiatorCustomizer(builder.getValueInstantiator(), config);
+
 			Iterator<SettableBeanProperty> properties = builder.getProperties();
 
 			entities.getPersistentEntity(beanDesc.getBeanClass()).ifPresent(entity -> {
@@ -446,11 +452,79 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					UriStringDeserializer uriStringDeserializer = new UriStringDeserializer(persistentProperty, converter);
 					JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, uriStringDeserializer, config);
 
-					builder.addOrReplaceProperty(property.withValueDeserializer(deserializer), false);
+					customizer.replacePropertyIfNeeded(builder, property.withValueDeserializer(deserializer));
 				}
 			});
 
-			return builder;
+			return customizer.conclude(builder);
+		}
+
+		/**
+		 * Advanced customization of the {@link CreatorProperty} instances customized to additionally register them with the
+		 * {@link ValueInstantiator} backing the {@link BeanDeserializerModifier}. This is necessary as the standard
+		 * customization does not propagate into the initial object construction as the {@link CreatorProperty} instances
+		 * for that are looked up via the {@link ValueInstantiator} and the property model behind those is not undergoing
+		 * the customization currently (Jackson 2.9.9).
+		 *
+		 * @author Oliver Drotbohm
+		 * @see https://github.com/FasterXML/jackson-databind/issues/2367
+		 */
+		static class ValueInstantiatorCustomizer {
+
+			private final SettableBeanProperty[] properties;
+			private final StdValueInstantiator instantiator;
+
+			ValueInstantiatorCustomizer(ValueInstantiator instantiator, DeserializationConfig config) {
+
+				this.instantiator = StdValueInstantiator.class.isInstance(instantiator) //
+						? StdValueInstantiator.class.cast(instantiator) //
+						: null;
+
+				this.properties = this.instantiator == null || this.instantiator.getFromObjectArguments(config) == null //
+						? new SettableBeanProperty[0] //
+						: this.instantiator.getFromObjectArguments(config).clone(); //
+			}
+
+			/**
+			 * Replaces the logically same property with the given {@link SettableBeanProperty} on the given
+			 * {@link BeanDeserializerBuilder}. In case we get a {@link CreatorProperty} we als register that one to be later
+			 * exposed via the {@link ValueInstantiator} backing the {@link BeanDeserializerBuilder}.
+			 *
+			 * @param builder must not be {@literal null}.
+			 * @param property must not be {@literal null}.
+			 */
+			void replacePropertyIfNeeded(BeanDeserializerBuilder builder, SettableBeanProperty property) {
+
+				builder.addOrReplaceProperty(property, false);
+
+				if (!CreatorProperty.class.isInstance(property)) {
+					return;
+				}
+
+				properties[((CreatorProperty) property).getCreatorIndex()] = property;
+			}
+
+			/**
+			 * Concludes the setup of the given {@link BeanDeserializerBuilder} by reflectively registering the potentially
+			 * customized {@link SettableBeanProperty} instances in the {@link ValueInstantiator} backing the builder.
+			 *
+			 * @param builder must not be {@literal null}.
+			 * @return
+			 */
+			BeanDeserializerBuilder conclude(BeanDeserializerBuilder builder) {
+
+				if (instantiator == null) {
+					return builder;
+				}
+
+				Field field = ReflectionUtils.findField(StdValueInstantiator.class, "_constructorArguments");
+				ReflectionUtils.makeAccessible(field);
+				ReflectionUtils.setField(field, instantiator, properties);
+
+				builder.setValueInstantiator(instantiator);
+
+				return builder;
+			}
 		}
 
 		private static JsonDeserializer<?> wrapIfCollection(PersistentProperty<?> property,

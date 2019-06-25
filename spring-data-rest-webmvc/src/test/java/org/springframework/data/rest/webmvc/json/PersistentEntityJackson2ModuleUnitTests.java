@@ -89,6 +89,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		mappingContext.getPersistentEntity(Sample.class);
 		mappingContext.getPersistentEntity(SampleWithAdditionalGetters.class);
 		mappingContext.getPersistentEntity(PersistentEntityJackson2ModuleUnitTests.PetOwner.class);
+		mappingContext.getPersistentEntity(Immutable.class);
 
 		this.persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
 
@@ -181,6 +182,21 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		assertThat(JsonPath.parse(result).read("$.home", Integer.class)) //
 				.isEqualTo(41);
 	}
+	@Test // DATAREST-1393
+
+	public void customizesDeserializerForCreatorProperties() throws Exception {
+
+		PersistentProperty<?> property = persistentEntities //
+				.getRequiredPersistentEntity(Immutable.class) //
+				.getRequiredPersistentProperty("home");
+
+		when(associations.isLinkableAssociation(property)).thenReturn(true);
+
+		mapper.readValue("{ \"home\" : \"homes:4711\"}", Immutable.class);
+
+		verify(converter).convert(URI.create("homes:4711"), TypeDescriptor.valueOf(URI.class),
+				TypeDescriptor.valueOf(Home.class));
+	}
 
 	/**
 	 * @author Oliver Gierke
@@ -226,6 +242,15 @@ public class PersistentEntityJackson2ModuleUnitTests {
 
 		public int getNumber() {
 			return 5;
+		}
+	}
+
+	static class Immutable {
+
+		private final @SuppressWarnings("unused") Home home;
+
+		public Immutable(@JsonProperty("home") Home home) {
+			this.home = home;
 		}
 	}
 }
