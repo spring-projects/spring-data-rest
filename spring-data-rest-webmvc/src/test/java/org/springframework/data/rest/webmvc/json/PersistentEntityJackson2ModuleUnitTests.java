@@ -51,7 +51,6 @@ import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.EntityLinks;
-import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
 import org.springframework.plugin.core.PluginRegistry;
 
@@ -89,11 +88,11 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		mappingContext.getPersistentEntity(Sample.class);
 		mappingContext.getPersistentEntity(SampleWithAdditionalGetters.class);
 		mappingContext.getPersistentEntity(PersistentEntityJackson2ModuleUnitTests.PetOwner.class);
+		mappingContext.getPersistentEntity(Immutable.class);
 
 		this.persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
 
-		RepresentationModelProcessorInvoker invoker = new RepresentationModelProcessorInvoker(
-				Collections.<RepresentationModelProcessor<?>> emptyList());
+		RepresentationModelProcessorInvoker invoker = new RepresentationModelProcessorInvoker(Collections.emptyList());
 
 		NestedEntitySerializer nestedEntitySerializer = new NestedEntitySerializer(persistentEntities,
 				new EmbeddedResourcesAssembler(persistentEntities, associations, mock(ExcerptProjector.class)), invoker);
@@ -183,6 +182,21 @@ public class PersistentEntityJackson2ModuleUnitTests {
 				.isEqualTo(41);
 	}
 
+	@Test // DATAREST-1393
+	public void customizesDeserializerForCreatorProperties() throws Exception {
+
+		PersistentProperty<?> property = persistentEntities //
+				.getRequiredPersistentEntity(Immutable.class) //
+				.getRequiredPersistentProperty("home");
+
+		when(associations.isLinkableAssociation(property)).thenReturn(true);
+
+		mapper.readValue("{ \"home\" : \"homes:4711\"}", Immutable.class);
+
+		verify(converter).convert(URI.create("homes:4711"), TypeDescriptor.valueOf(URI.class),
+				TypeDescriptor.valueOf(Home.class));
+	}
+
 	/**
 	 * @author Oliver Gierke
 	 */
@@ -232,6 +246,15 @@ public class PersistentEntityJackson2ModuleUnitTests {
 
 		public int getNumber() {
 			return 5;
+		}
+	}
+
+	static class Immutable {
+
+		private final @SuppressWarnings("unused") Home home;
+
+		public Immutable(@JsonProperty("home") Home home) {
+			this.home = home;
 		}
 	}
 }
