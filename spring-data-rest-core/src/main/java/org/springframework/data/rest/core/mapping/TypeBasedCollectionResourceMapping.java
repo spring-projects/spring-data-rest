@@ -16,11 +16,14 @@
 package org.springframework.data.rest.core.mapping;
 
 import java.lang.reflect.Modifier;
+import java.util.Optional;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.util.Lazy;
+import org.springframework.data.util.Optionals;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
@@ -36,8 +39,11 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 
 	private final Class<?> type;
 	private final RelProvider relProvider;
-	private final RestResource annotation;
-	private final Description description;
+	private final Optional<RestResource> annotation;
+
+	private final Lazy<Path> path;
+	private final Lazy<String> rel;
+	private final Lazy<ResourceDescription> description, itemResourceDescription;
 
 	/**
 	 * Creates a new {@link TypeBasedCollectionResourceMapping} using the given type.
@@ -61,8 +67,44 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 
 		this.type = type;
 		this.relProvider = relProvider;
-		this.annotation = AnnotationUtils.findAnnotation(type, RestResource.class);
-		this.description = AnnotationUtils.findAnnotation(type, Description.class);
+		this.annotation = Optional.ofNullable(AnnotationUtils.findAnnotation(type, RestResource.class));
+
+		this.path = Lazy.of(() -> annotation.map(RestResource::path) //
+				.map(String::trim) //
+				.filter(StringUtils::hasText) //
+				.orElseGet(() -> getDefaultPathFor(type)))//
+				.map(Path::new);
+
+		this.rel = Lazy.of(() -> annotation //
+				.map(RestResource::rel) //
+				.filter(StringUtils::hasText) //
+				.orElseGet(() -> relProvider.getCollectionResourceRelFor(type)));
+
+		Optional<Description> descriptionAnnotation = Optional
+				.ofNullable(AnnotationUtils.findAnnotation(type, Description.class));
+
+		this.description = Lazy.of(() -> {
+
+			ResourceDescription fallback = SimpleResourceDescription.defaultFor(getRel());
+
+			return Optionals.<ResourceDescription> firstNonEmpty(//
+					() -> descriptionAnnotation.map(it -> new AnnotationBasedResourceDescription(it, fallback)), //
+					() -> annotation.map(RestResource::description)
+							.map(it -> new AnnotationBasedResourceDescription(it, fallback))) //
+					.orElse(fallback);
+		});
+
+		this.itemResourceDescription = Lazy.of(() -> {
+
+			ResourceDescription fallback = SimpleResourceDescription.defaultFor(getItemResourceRel());
+
+			return Optionals.<ResourceDescription> firstNonEmpty(//
+					() -> annotation.map(RestResource::description) //
+							.filter(it -> StringUtils.hasText(it.value())) //
+							.map(it -> new AnnotationBasedResourceDescription(it, fallback)), //
+					() -> descriptionAnnotation.map(it -> new AnnotationBasedResourceDescription(it, fallback))) //
+					.orElse(fallback);
+		});
 	}
 
 	/*
@@ -71,10 +113,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public Path getPath() {
-
-		String path = annotation == null ? null : annotation.path().trim();
-		path = StringUtils.hasText(path) ? path : getDefaultPathFor(type);
-		return new Path(path);
+		return path.get();
 	}
 
 	/*
@@ -83,7 +122,10 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public boolean isExported() {
-		return annotation != null ? annotation.exported() : Modifier.isPublic(type.getModifiers());
+
+		return annotation //
+				.map(RestResource::exported) //
+				.orElseGet(() -> Modifier.isPublic(type.getModifiers()));
 	}
 
 	/*
@@ -92,12 +134,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public String getRel() {
-
-		if (annotation == null || !StringUtils.hasText(annotation.rel())) {
-			return relProvider.getCollectionResourceRelFor(type);
-		}
-
-		return annotation.rel();
+		return rel.get();
 	}
 
 	/*
@@ -124,18 +161,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public ResourceDescription getDescription() {
-
-		ResourceDescription fallback = SimpleResourceDescription.defaultFor(getRel());
-
-		if (description != null) {
-			return new AnnotationBasedResourceDescription(description, fallback);
-		}
-
-		if (annotation != null) {
-			return new AnnotationBasedResourceDescription(annotation.description(), fallback);
-		}
-
-		return fallback;
+		return description.get();
 	}
 
 	/*
@@ -144,18 +170,7 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public ResourceDescription getItemResourceDescription() {
-
-		ResourceDescription fallback = SimpleResourceDescription.defaultFor(getItemResourceRel());
-
-		if (annotation != null && StringUtils.hasText(annotation.description().value())) {
-			return new AnnotationBasedResourceDescription(annotation.description(), fallback);
-		}
-
-		if (description != null) {
-			return new AnnotationBasedResourceDescription(description, fallback);
-		}
-
-		return fallback;
+		return itemResourceDescription.get();
 	}
 
 	/*

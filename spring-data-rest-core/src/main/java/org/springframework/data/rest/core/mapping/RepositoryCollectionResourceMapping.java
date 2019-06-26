@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -22,6 +24,8 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.util.Lazy;
+import org.springframework.data.util.Optionals;
 import org.springframework.hateoas.RelProvider;
 import org.springframework.hateoas.core.EvoInflectorRelProvider;
 import org.springframework.util.Assert;
@@ -40,11 +44,13 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryCollectionResourceMapping.class);
 	private static final boolean EVO_INFLECTOR_IS_PRESENT = ClassUtils.isPresent("org.atteo.evo.inflector.English", null);
 
-	private final RestResource annotation;
-	private final RepositoryRestResource repositoryAnnotation;
-	private final CollectionResourceMapping domainTypeMapping;
 	private final boolean repositoryExported;
 	private final RepositoryMetadata metadata;
+	private final Path path;
+
+	private final Lazy<String> rel, itemResourceRel;
+	private final Lazy<ResourceDescription> description, itemDescription;
+	private final Lazy<Class<?>> excerptProjection;
 
 	public RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RepositoryDetectionStrategy strategy) {
 		this(metadata, strategy, new EvoInflectorRelProvider());
@@ -67,17 +73,60 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 
 		Class<?> repositoryType = metadata.getRepositoryInterface();
 
+		Optional<RestResource> annotation = Optional
+				.ofNullable(AnnotationUtils.findAnnotation(repositoryType, RestResource.class));
+		Optional<RepositoryRestResource> repositoryAnnotation = Optional
+				.ofNullable(AnnotationUtils.findAnnotation(repositoryType, RepositoryRestResource.class));
+
 		this.metadata = metadata;
-		this.annotation = AnnotationUtils.findAnnotation(repositoryType, RestResource.class);
-		this.repositoryAnnotation = AnnotationUtils.findAnnotation(repositoryType, RepositoryRestResource.class);
 		this.repositoryExported = strategy.isExported(metadata);
 
 		Class<?> domainType = metadata.getDomainType();
-		this.domainTypeMapping = EVO_INFLECTOR_IS_PRESENT
+		CollectionResourceMapping domainTypeMapping = EVO_INFLECTOR_IS_PRESENT
 				? new EvoInflectorTypeBasedCollectionResourceMapping(domainType, relProvider)
 				: new TypeBasedCollectionResourceMapping(domainType, relProvider);
 
-		if (annotation != null) {
+		this.rel = Lazy.of(() -> Optionals.firstNonEmpty(//
+				() -> repositoryAnnotation.map(RepositoryRestResource::collectionResourceRel), //
+				() -> annotation.map(RestResource::rel)) //
+				.filter(StringUtils::hasText) //
+				.orElseGet(domainTypeMapping::getRel));
+
+		this.itemResourceRel = Lazy.of(() -> repositoryAnnotation.map(RepositoryRestResource::itemResourceRel) //
+				.filter(StringUtils::hasText) //
+				.orElseGet(domainTypeMapping::getItemResourceRel));
+
+		this.path = Optionals.firstNonEmpty(//
+				() -> repositoryAnnotation.map(RepositoryRestResource::path), //
+				() -> annotation.map(RestResource::path)) //
+				.filter(StringUtils::hasText) //
+				.map(Path::new)//
+				.orElseGet(domainTypeMapping::getPath);
+
+		this.description = Lazy.of(() -> {
+
+			ResourceDescription fallback = SimpleResourceDescription.defaultFor(getRel());
+
+			return repositoryAnnotation.map(RepositoryRestResource::collectionResourceDescription) //
+					.<ResourceDescription> map(it -> new AnnotationBasedResourceDescription(it, fallback)) //
+					.orElse(fallback);
+		});
+
+		this.itemDescription = Lazy.of(() -> {
+
+			ResourceDescription fallback = SimpleResourceDescription.defaultFor(getItemResourceRel());
+
+			return repositoryAnnotation.map(RepositoryRestResource::itemResourceDescription) //
+					.<ResourceDescription> map(it -> new AnnotationBasedResourceDescription(it, fallback)) //
+					.orElse(fallback);
+		});
+
+		this.excerptProjection = Lazy.of(() -> repositoryAnnotation//
+				.map(RepositoryRestResource::excerptProjection)//
+				.filter(it -> !it.equals(RepositoryRestResource.None.class)) //
+				.orElse(null));
+
+		if (annotation.isPresent()) {
 			LOGGER.warn(
 					"@RestResource detected to customize the repository resource for {}! Use @RepositoryRestResource instead!",
 					metadata.getRepositoryInterface().getName());
@@ -90,20 +139,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public Path getPath() {
-
-		Path fallback = domainTypeMapping.getPath();
-
-		if (repositoryAnnotation != null) {
-			String path = repositoryAnnotation.path();
-			return StringUtils.hasText(path) ? new Path(path) : fallback;
-		}
-
-		if (annotation != null) {
-			String path = annotation.path();
-			return StringUtils.hasText(path) ? new Path(path) : fallback;
-		}
-
-		return fallback;
+		return path;
 	}
 
 	/*
@@ -112,20 +148,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public String getRel() {
-
-		String fallback = domainTypeMapping.getRel();
-
-		if (repositoryAnnotation != null) {
-			String rel = repositoryAnnotation.collectionResourceRel();
-			return StringUtils.hasText(rel) ? rel : fallback;
-		}
-
-		if (annotation != null) {
-			String rel = annotation.rel();
-			return StringUtils.hasText(rel) ? rel : fallback;
-		}
-
-		return fallback;
+		return rel.get();
 	}
 
 	/*
@@ -134,15 +157,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public String getItemResourceRel() {
-
-		String fallback = domainTypeMapping.getItemResourceRel();
-
-		if (repositoryAnnotation != null) {
-			String rel = repositoryAnnotation.itemResourceRel();
-			return StringUtils.hasText(rel) ? rel : fallback;
-		}
-
-		return fallback;
+		return itemResourceRel.get();
 	}
 
 	/*
@@ -169,14 +184,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public ResourceDescription getDescription() {
-
-		ResourceDescription fallback = SimpleResourceDescription.defaultFor(getRel());
-
-		if (repositoryAnnotation != null) {
-			return new AnnotationBasedResourceDescription(repositoryAnnotation.collectionResourceDescription(), fallback);
-		}
-
-		return fallback;
+		return description.get();
 	}
 
 	/*
@@ -185,14 +193,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public ResourceDescription getItemResourceDescription() {
-
-		ResourceDescription fallback = SimpleResourceDescription.defaultFor(getItemResourceRel());
-
-		if (repositoryAnnotation != null) {
-			return new AnnotationBasedResourceDescription(repositoryAnnotation.itemResourceDescription(), fallback);
-		}
-
-		return fallback;
+		return itemDescription.get();
 	}
 
 	/*
@@ -201,13 +202,6 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	@Override
 	public Class<?> getExcerptProjection() {
-
-		if (repositoryAnnotation == null) {
-			return null;
-		}
-
-		Class<?> excerptProjection = repositoryAnnotation.excerptProjection();
-
-		return excerptProjection.equals(RepositoryRestResource.None.class) ? null : excerptProjection;
+		return excerptProjection.getOptional().orElse(null);
 	}
 }
