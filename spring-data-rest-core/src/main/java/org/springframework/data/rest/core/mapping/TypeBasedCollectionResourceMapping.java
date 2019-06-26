@@ -16,6 +16,7 @@
 package org.springframework.data.rest.core.mapping;
 
 import java.lang.reflect.Modifier;
+import java.util.Optional;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.Path;
@@ -164,8 +165,8 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getExcerptProjection()
 	 */
 	@Override
-	public Class<?> getExcerptProjection() {
-		return null;
+	public Optional<Class<?>> getExcerptProjection() {
+		return Optional.empty();
 	}
 
 	/**

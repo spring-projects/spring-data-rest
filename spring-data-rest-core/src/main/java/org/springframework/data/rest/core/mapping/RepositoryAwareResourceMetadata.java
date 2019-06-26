@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import java.util.Optional;
+
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.PersistentEntity;
@@ -184,7 +186,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getExcerptProjection()
 	 */
 	@Override
-	public Class<?> getExcerptProjection() {
+	public Optional<Class<?>> getExcerptProjection() {
 		return mapping.getExcerptProjection();
 	}
 

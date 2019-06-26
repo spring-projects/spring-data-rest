@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import java.util.Optional;
+
 import org.springframework.hateoas.LinkRelation;
 
 /**
@@ -40,9 +42,10 @@ public interface CollectionResourceMapping extends ResourceMapping {
 
 	/**
 	 * Returns the projection type to be used when embedding item resources into collections and related resources. If
-	 * {@literal null} is returned this will mean full rendering for collections and no rendering for related resources.
+	 * {@link Optional#empty()} is returned this will mean full rendering for collections and no rendering for related
+	 * resources.
 	 *
 	 * @return
 	 */
-	Class<?> getExcerptProjection();
+	Optional<Class<?>> getExcerptProjection();
 }

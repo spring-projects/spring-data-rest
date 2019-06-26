@@ -17,6 +17,8 @@ package org.springframework.data.rest.webmvc.support;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
+
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -45,10 +47,13 @@ public class DefaultExcerptProjector implements ExcerptProjector {
 		Assert.notNull(source, "Projection source must not be null!");
 
 		ResourceMetadata metadata = mappings.getMetadataFor(source.getClass());
-		Class<?> projection = metadata == null ? null : metadata.getExcerptProjection();
 
-		return projection == null || projection.equals(source.getClass()) ? source
-				: factory.createProjection(projection, source);
+		return Optional.ofNullable(metadata) //
+				.flatMap(ResourceMetadata::getExcerptProjection) //
+				.filter(it -> !it.equals(source.getClass())) //
+				.<Object> map(it -> factory.createProjection(it, source)) //
+				.orElse(source);
+
 	}
 
 	/*

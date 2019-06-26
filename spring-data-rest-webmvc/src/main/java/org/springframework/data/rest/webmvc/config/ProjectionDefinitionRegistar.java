@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import java.util.Optional;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -68,15 +70,18 @@ public class ProjectionDefinitionRegistar extends InstantiationAwareBeanPostProc
 
 		for (ResourceMetadata resourceMetadata : mappings) {
 
-			Class<?> projection = resourceMetadata.getExcerptProjection();
+			Optional<Class<?>> projection = resourceMetadata.getExcerptProjection();
 
-			if (projection != null) {
+			projection.ifPresent(it -> {
 
-				Projection annotation = AnnotationUtils.findAnnotation(projection, Projection.class);
-				Class<?>[] target = annotation == null ? new Class[] { resourceMetadata.getDomainType() } : annotation.types();
+				Projection annotation = AnnotationUtils.findAnnotation(it, Projection.class);
 
-				config.getObject().getProjectionConfiguration().addProjection(projection, target);
-			}
+				Class<?>[] target = annotation == null //
+						? new Class[] { resourceMetadata.getDomainType() } //
+						: annotation.types();
+
+				config.getObject().getProjectionConfiguration().addProjection(it, target);
+			});
 		}
 
 		return bean;

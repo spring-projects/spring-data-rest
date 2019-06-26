@@ -18,6 +18,8 @@ package org.springframework.data.rest.webmvc.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +54,7 @@ public class PersistentEntityProjectorUnitTests {
 
 		ResourceMetadata metadata = mock(ResourceMetadata.class);
 		doReturn(metadata).when(mappings).getMetadataFor(Object.class);
-		doReturn(Excerpt.class).when(metadata).getExcerptProjection();
+		doReturn(Optional.of(Excerpt.class)).when(metadata).getExcerptProjection();
 	}
 
 	@Test // DATAREST-221

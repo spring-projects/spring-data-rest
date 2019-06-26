@@ -121,8 +121,8 @@ public class RepositoryCollectionResourceMappingUnitTests {
 	@Test // DATAREST-1401
 	public void exposesProjectionTypeIfConfigured() {
 
-		assertThat(getResourceMappingFor(WithProjection.class).getExcerptProjection()).isEqualTo(Object.class);
-		assertThat(getResourceMappingFor(WithoutProjection.class).getExcerptProjection()).isNull();
+		assertThat(getResourceMappingFor(WithProjection.class).getExcerptProjection()).hasValue(Object.class);
+		assertThat(getResourceMappingFor(WithoutProjection.class).getExcerptProjection()).isEmpty();
 	}
 
 	private static CollectionResourceMapping getResourceMappingFor(Class<?> repositoryInterface) {

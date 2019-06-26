@@ -84,6 +84,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 
 		Class<?> domainType = metadata.getDomainType();
 
+		CollectionResourceMapping domainTypeMapping = EVO_INFLECTOR_IS_PRESENT
 				? new EvoInflectorTypeBasedCollectionResourceMapping(domainType, relProvider)
 				: new TypeBasedCollectionResourceMapping(domainType, relProvider);
 
@@ -212,8 +213,8 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getExcerptProjection()
 	 */
 	@Override
-	public Class<?> getExcerptProjection() {
-		return excerptProjection.getOptional().orElse(null);
+	public Optional<Class<?>> getExcerptProjection() {
+		return excerptProjection.getOptional();
 	}
 
 	private static Optional<LinkRelation> toLinkRelation(Optional<String> source) {
