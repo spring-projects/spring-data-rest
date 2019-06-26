@@ -106,6 +106,25 @@ public class RepositoryCollectionResourceMappingUnitTests {
 		assertThat(mapping.getPath()).isEqualTo(new Path("/objects"));
 	}
 
+	@Test // DATAREST-1401
+	public void rejectsPathsWithMultipleSegments() {
+
+		RepositoryMetadata metadata = new DefaultRepositoryMetadata(InvalidPath.class);
+
+		assertThatExceptionOfType(IllegalStateException.class)
+				.isThrownBy(() -> new RepositoryCollectionResourceMapping(metadata, RepositoryDetectionStrategies.DEFAULT)) //
+				.withMessageContaining("first/second") //
+				.withMessageContaining(InvalidPath.class.getName()) //
+				.withMessageContaining("path segment");
+	}
+
+	@Test // DATAREST-1401
+	public void exposesProjectionTypeIfConfigured() {
+
+		assertThat(getResourceMappingFor(WithProjection.class).getExcerptProjection()).isEqualTo(Object.class);
+		assertThat(getResourceMappingFor(WithoutProjection.class).getExcerptProjection()).isNull();
+	}
+
 	private static CollectionResourceMapping getResourceMappingFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
@@ -133,4 +152,12 @@ public class RepositoryCollectionResourceMappingUnitTests {
 
 	@RepositoryRestResource(collectionResourceRel = "foo", itemResourceRel = "bar")
 	interface RepositoryAnnotatedRepository extends Repository<Person, Long> {}
+
+	@RepositoryRestResource(path = "first/second")
+	interface InvalidPath extends Repository<Person, Long> {}
+
+	@RepositoryRestResource(excerptProjection = Object.class)
+	interface WithProjection extends Repository<Person, Long> {}
+
+	interface WithoutProjection extends Repository<Person, Long> {}
 }
