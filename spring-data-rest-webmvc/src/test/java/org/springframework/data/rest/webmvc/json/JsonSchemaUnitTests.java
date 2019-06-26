@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 original author or authors.
+ * Copyright 2015-2019 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,24 +22,42 @@ import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
+import java.util.Collection;
+
 /**
  * Unit tests for {@link JsonSchema}.
  *
  * @author Oliver Gierke
+ * @author Christoph Huber
  */
 public class JsonSchemaUnitTests {
 
-	static final TypeInformation<?> type = ClassTypeInformation.from(Sample.class);
+	private static final TypeInformation<?> typeWithDoubleField = ClassTypeInformation.from(TypeWithDoubleField.class);
+	private static final TypeInformation<?> typeWithAssociations = ClassTypeInformation.from(TypeWithAssociations.class);
 
 	@Test // DATAREST-492
 	public void considersNumberPrimitivesJsonSchemaNumbers() {
 
 		JsonSchemaProperty property = new JsonSchemaProperty("foo", null, "bar", false);
 
-		assertThat(property.with(type.getRequiredProperty("foo")).type).isEqualTo("number");
+		assertThat(property.with(typeWithDoubleField.getRequiredProperty("foo")).type).isEqualTo("number");
 	}
 
-	static class Sample {
-		double foo;
+	@Test // DATAREST-1096
+	public void allowArrayOfUris() {
+		JsonSchemaProperty property = new JsonSchemaProperty("foos", null, null, false);
+
+		final JsonSchemaProperty arrayOfUris = property.with(typeWithAssociations.getRequiredProperty("foos")).asAssociation();
+		assertThat(arrayOfUris.type).isEqualTo("array");
+		assertThat(arrayOfUris.items.get("type")).isEqualTo("string");
+		assertThat(arrayOfUris.items.get("format")).isEqualTo("uri");
+	}
+
+	private static class TypeWithDoubleField {
+		private double foo;
+	}
+
+	private static class TypeWithAssociations {
+		private Collection<TypeWithDoubleField> foos;
 	}
 }
