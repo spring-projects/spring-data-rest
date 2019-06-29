@@ -13,6 +13,12 @@ pipeline {
 
     stages {
         stage("Test") {
+            when {
+                anyOf {
+                    branch '3.1.x'
+                    not { triggeredBy 'UpstreamCause' }
+                }
+            }
             parallel {
                 stage("test: baseline") {
                     agent {
@@ -32,6 +38,7 @@ pipeline {
         stage('Release to artifactory') {
             when {
                 branch 'issue/*'
+                not { triggeredBy 'UpstreamCause' }
             }
             agent {
                 docker {
