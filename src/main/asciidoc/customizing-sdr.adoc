@@ -19,13 +19,14 @@ On Java 8, we can register the mapping methods as method references to tweak the
 [source, java]
 ----
 @Component
-public class SpringDataRestCustomization extends RepositoryRestConfigurerAdapter {
+public class SpringDataRestCustomization extends RepositoryRestConfigurer {
 
   @Override
   public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-
-    config.withCustomEntityLookup().//
-      forRepository(UserRepository.class, User::getUsername, UserRepository::findByUsername);
+    config.withEntityLookup()
+      .forRepository(UserRepository.class)
+      .withIdMapping(User::getUsername)
+      .withLookup(UserRepository::findByUsername); 
   }
 }
 ----
