@@ -1,77 +1,159 @@
-image:https://spring.io/badges/spring-data-rest/ga.svg[Spring Data REST, link="http://projects.spring.io/spring-data-rest/#quick-start"]
-image:https://spring.io/badges/spring-data-rest/snapshot.svg[Spring Data REST, link="http://projects.spring.io/spring-data-rest/#quick-start"]
+image:https://spring.io/badges/spring-data-rest/ga.svg[Spring Data REST, link="https://projects.spring.io/spring-data-rest/#quick-start"]
+image:https://spring.io/badges/spring-data-rest/snapshot.svg[Spring Data REST, link="https://projects.spring.io/spring-data-rest/#quick-start"]
 
-image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2Fmaster&subject=Moore%20(master)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/]
-image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2F3.1.x&subject=Lovelace%20(3.1.x)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/]
-image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2F2.6.x&subject=Ingalls%20(2.6.x)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/]
-
-= Spring Data REST
+= Spring Data REST image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2Fmaster&subject=Build[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/] https://gitter.im/spring-projects/spring-data[image:https://badges.gitter.im/spring-projects/spring-data.svg[Gitter]]
 
 The goal of the project is to provide a flexible and configurable mechanism for writing simple services that can be exposed over HTTP.
 
 The first exporter implemented is a JPA Repository exporter. This takes your JPA repositories and front-ends them with HTTP, allowing you full CRUD capability over your entities, to include managing associations.
 
-=== Installation
+== Features
 
-Installation instructions are in the docs:
+* Exposes a discoverable REST API for your domain model using HAL as media type.
+* Exposes https://docs.spring.io/spring-data/rest/docs/current/reference/html/#repository-resources[collection, item and association resources] representing your model.
+* Supports pagination via https://docs.spring.io/spring-data/rest/docs/current/reference/html/#paging-and-sorting[navigational links].
+* Allows to dynamically filter collection resources.
+* Exposes dedicated https://docs.spring.io/spring-data/rest/docs/current/reference/html/#repository-resources.query-method-resource[search resources for query methods] defined in your repositories.
+* Allows to https://docs.spring.io/spring-data/rest/docs/current/reference/html/#events[hook into the handling of REST requests] by handling Spring `ApplicationEvents`.
+* https://docs.spring.io/spring-data/rest/docs/current/reference/html/#metadata[Exposes metadata] about the model discovered as ALPS and JSON Schema.
+* Allows to define client specific representations through https://docs.spring.io/spring-data/rest/docs/current/reference/html/#projections-excerpts[projections].
+* Ships a customized variant of the https://docs.spring.io/spring-data/rest/docs/current/reference/html/#_the_hal_browser[HAL Browser] to leverage the exposed metadata.
+* Currently supports JPA, MongoDB, Neo4j, Solr, Cassandra, Gemfire.
+* Allows https://docs.spring.io/spring-data/rest/docs/current/reference/html/#customizing-sdr[advanced customizations] of the default resources exposed.
 
-* http://docs.spring.io/spring-data/rest/docs/current/reference/html/[http://docs.spring.io/spring-data/rest/docs/current/reference/html/]
+== Code of Conduct
 
-=== License
+This project is governed by the link:CODE_OF_CONDUCT.adoc[Spring Code of Conduct]. By participating, you are expected to uphold this code of conduct. Please report unacceptable behavior to spring-code-of-conduct@pivotal.io.
 
-The Spring Data REST is https://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 licensed].
+== Getting Started
 
-== Contributing to Spring Data Rest
+Here is a quick teaser of an application using Spring Data REST in Java:
 
-Here are some ways for you to get involved in the community:
+[source,java]
+----
+@CrossOrigin
+@RepositoryRestResource(path = "people")
+public interface PersonRepository extends CrudRepository<Person, Long> {
 
-* Get involved with the Spring community on Stackoverflow. Please help out on the http://stackoverflow.com/questions/tagged/spring-data-rest[spring-data-rest] tag by responding to questions and joining the debate.
-* Create https://jira.spring.io/browse/DATAREST[JIRA] tickets for bugs and new features and comment and vote on the ones that you are interested in.
-* Github is for social coding: if you want to write code, we encourage contributions through pull requests from http://help.github.com/forking/[forks of this repository]. If you want to contribute code this way, please reference a JIRA ticket as well covering the specific issue you are addressing.
-* Watch for upcoming articles on Spring by http://spring.io/blog/[subscribing] to spring.io.
+  List<Person> findByLastname(String lastname);
 
-Before we accept a non-trivial patch or pull request we will need you to https://cla.pivotal.io/sign/spring[sign the Contributor License Agreement]. Signing the contributor’s agreement does not grant anyone commit rights to the main repository, but it does mean that we can accept your contributions, and you will get an author credit if we do. If you forget to do so, you'll be reminded when you submit a pull request. Active contributors might be asked to join the core team, and given the ability to merge pull requests.
+  @RestResource(path = "byFirstname")
+  List<Person> findByFirstnameLike(String firstname);
+}
 
-=== Note
+@Configuration
+@EnableMongoRepositories
+class ApplicationConfig extends AbstractMongoConfiguration {
 
-We disabled the github issues since we want to use https://jira.spring.io/browse/DATAREST[JIRA] as the only issue tracker.
-All open existing issues have been automatically imported into JIRA, so nothing was lost :)
+  @Override
+  public MongoClient mongoClient() {
+    return new MongoClient();
+  }
 
-= Running CI tasks locally
+  @Override
+  protected String getDatabaseName() {
+    return "springdata";
+  }
+}
+----
 
-Since this pipeline is purely Docker-based, it's easy to:
+[source,bash]
+----
+curl -v "http://localhost:8080/people/search/byFirstname?firstname=Oliver*&sort=name,desc"
+----
 
-* Debug what went wrong on your local machine.
-* Test out a a tweak to your `test.sh` script before sending it out.
-* Experiment against a new image before submitting your pull request.
+=== Maven configuration
 
-All of these use cases are great reasons to essentially run what the CI server does on your local machine.
+Add the Maven dependency:
 
-IMPORTANT: To do this you must have Docker installed on your machine.
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-data-rest</artifactId>
+  <version>${version}.RELEASE</version>
+</dependency>
+----
 
-1. `docker run -it --mount type=bind,source="$(pwd)",target=/spring-data-rest-github adoptopenjdk/openjdk8:latest /bin/bash`
-+
-This will launch the Docker image and mount your source code at `spring-data-rest-github`.
-+
-2. `cd spring-data-rest-github`
-+
-Next, run your tests from inside the container:
-+
-3. `./mvnw clean dependency:list test -Dsort` (or whatever profile you need to test out)
+If you'd rather like the latest snapshots of the upcoming major version, use our Maven snapshot repository and declare the appropriate dependency version.
 
-Since the container is binding to your source, you can make edits from your IDE and continue to run build jobs.
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-data-rest</artifactId>
+  <version>${version}.BUILD-SNAPSHOT</version>
+</dependency>
 
-If you test building the artifact, do this:
+<repository>
+  <id>spring-libs-snapshot</id>
+  <name>Spring Snapshot Repository</name>
+  <url>https://repo.spring.io/libs-snapshot</url>
+</repository>
+----
 
-1. `docker run -it --mount type=bind,source="$(pwd)",target=/spring-data-rest-github adoptopenjdk/openjdk8:latest /bin/bash`
-+
-This will launch the Docker image and mount your source code at `spring-data-rest-github`.
-+
-2. `cd spring-data-rest-github`
-+
-Next, try to package everything up from inside the container:
-+
-3. `./mvnw -Pci,snapshot -Dmaven.test.skip=true clean package`
+== Getting Help
 
-NOTE: Docker containers can eat up disk space fast! From time to time, run `docker system prune` to clean out old images.
+Having trouble with Spring Data? We’d love to help!
 
+* Check the
+https://docs.spring.io/spring-data/rest/docs/current/reference/html/[reference documentation], and https://docs.spring.io/spring-data/rest/docs/current/api/[Javadocs].
+* Learn the Spring basics – Spring Data builds on Spring Framework, check the https://spring.io[spring.io] web-site for a wealth of reference documentation.
+If you are just starting out with Spring, try one of the https://spring.io/guides[guides].
+* If you are upgrading, check out the https://docs.spring.io/spring-data/rest/docs/current/changelog.txt[changelog] for "`new and noteworthy`" features.
+* Ask a question - we monitor https://stackoverflow.com[stackoverflow.com] for questions tagged with https://stackoverflow.com/tags/spring-data[`spring-data-rest`].
+You can also chat with the community on https://gitter.im/spring-projects/spring-data[Gitter].
+* Report bugs with Spring Data REST at https://jira.spring.io/browse/DATAREST[jira.spring.io/browse/DATAREST].
+
+== Reporting Issues
+
+Spring Data uses JIRA as issue tracking system to record bugs and feature requests. If you want to raise an issue, please follow the recommendations below:
+
+* Before you log a bug, please search the
+https://jira.spring.io/browse/DATAREST[issue tracker] to see if someone has already reported the problem.
+* If the issue doesn’t already exist, https://jira.spring.io/browse/DATAREST[create a new issue].
+* Please provide as much information as possible with the issue report, we like to know the version of Spring Data that you are using and JVM version.
+* If you need to paste code, or include a stack trace use JIRA `{code}…{code}` escapes before and after your text.
+* If possible try to create a test-case or project that replicates the issue. Attach a link to your code or a compressed file containing your code.
+
+== Building from Source
+
+You don’t need to build from source to use Spring Data (binaries in https://repo.spring.io[repo.spring.io]), but if you want to try out the latest and greatest, Spring Data can be easily built with the https://github.com/takari/maven-wrapper[maven wrapper].
+You also need JDK 1.8.
+
+[source,bash]
+----
+ $ ./mvnw clean install
+----
+
+If you want to build with the regular `mvn` command, you will need https://maven.apache.org/run-maven/index.html[Maven v3.5.0 or above].
+
+_Also see link:CONTRIBUTING.adoc[CONTRIBUTING.adoc] if you wish to submit pull requests, and in particular please sign the https://cla.pivotal.io/sign/spring[Contributor’s Agreement] before your first change, is trivial._
+
+=== Building reference documentation
+
+Building the documentation builds also the project without running tests.
+
+[source,bash]
+----
+ $ ./mvnw clean install -Pdistribute
+----
+
+The generated documentation is available from `target/site/reference/html/index.html`.
+
+== Guides
+
+The https://spring.io/[spring.io] site contains several guides that show how to use Spring Data step-by-step:
+
+* https://spring.io/guides/gs/accessing-data-rest/[Accessing JPA Data with REST] is a guide to creating a REST web service exposing data stored with JPA through repositories.
+* https://spring.io/guides/gs/accessing-mongodb-data-rest/[Accessing MongoDB Data with REST] is a guide to creating a REST web service exposing data stored in MongoDB through repositories.
+* https://spring.io/guides/gs/accessing-neo4j-data-rest/[Accessing Neo4j Data with REST] is a guide to creating a REST web service exposing data stored in Neo4j through repositories.
+* https://spring.io/guides/gs/accessing-gemfire-data-rest/[Accessing GemFire Data with REST] is a guide to creating a REST web service exposing data stored in Pivotal GemFire through repositories.
+
+== Examples
+
+* https://github.com/spring-projects/spring-data-examples/[Spring Data Examples] contains example projects that explain specific features in more detail.
+
+== License
+
+Spring Data REST is Open Source software released under the https://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
