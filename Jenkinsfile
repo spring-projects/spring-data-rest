@@ -71,10 +71,7 @@ pipeline {
 		}
 		stage('Publish documentation') {
 			when {
-				anyOf {
-					branch 'master'
-					not { triggeredBy 'UpstreamCause' }
-				}
+				branch 'master'
 			}
 			agent {
 				docker {
