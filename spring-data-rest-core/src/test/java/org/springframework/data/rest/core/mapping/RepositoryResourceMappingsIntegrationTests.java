@@ -44,7 +44,7 @@ import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.domain.Profile;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Integration tests for {@link RepositoryResourceMappings}.
@@ -52,7 +52,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 public class RepositoryResourceMappingsIntegrationTests {
 

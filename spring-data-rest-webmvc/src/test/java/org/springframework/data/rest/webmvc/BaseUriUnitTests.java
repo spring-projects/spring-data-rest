@@ -15,9 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.net.URI;
 
@@ -42,7 +40,7 @@ public class BaseUriUnitTests {
 
 		BaseUri uri = new BaseUri(URI.create("foo"));
 
-		assertThat(uri.getRepositoryLookupPath("/foo"), isEmptyString());
+		assertThat(uri.getRepositoryLookupPath("/foo")).isEmpty();
 	}
 
 	@Test // DATAREST-276
@@ -50,8 +48,8 @@ public class BaseUriUnitTests {
 
 		BaseUri uri = new BaseUri(URI.create("foo/"));
 
-		assertThat(uri.getRepositoryLookupPath("/foo"), isEmptyString());
-		assertThat(uri.getRepositoryLookupPath("/foo/"), isEmptyString());
+		assertThat(uri.getRepositoryLookupPath("/foo")).isEmpty();
+		assertThat(uri.getRepositoryLookupPath("/foo/")).isEmpty();
 	}
 
 	@Test // DATAREST-276
@@ -59,8 +57,8 @@ public class BaseUriUnitTests {
 
 		BaseUri uri = new BaseUri(URI.create("/foo"));
 
-		assertThat(uri.getRepositoryLookupPath("/foo"), isEmptyString());
-		assertThat(uri.getRepositoryLookupPath("/foo/"), isEmptyString());
+		assertThat(uri.getRepositoryLookupPath("/foo")).isEmpty();
+		assertThat(uri.getRepositoryLookupPath("/foo/")).isEmpty();
 	}
 
 	@Test // DATAREST-276
@@ -68,8 +66,8 @@ public class BaseUriUnitTests {
 
 		BaseUri uri = new BaseUri(URI.create("http://localhost:8080/foo/"));
 
-		assertThat(uri.getRepositoryLookupPath("/foo"), isEmptyString());
-		assertThat(uri.getRepositoryLookupPath("/foo/"), isEmptyString());
+		assertThat(uri.getRepositoryLookupPath("/foo")).isEmpty();
+		assertThat(uri.getRepositoryLookupPath("/foo/")).isEmpty();
 		assertThat(uri.getRepositoryLookupPath("/foo/people")).isEqualTo("/people");
 		assertThat(uri.getRepositoryLookupPath("/foo/people/")).isEqualTo("/people");
 	}

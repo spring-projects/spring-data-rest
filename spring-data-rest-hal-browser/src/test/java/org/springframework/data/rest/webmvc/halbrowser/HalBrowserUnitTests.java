@@ -15,9 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.halbrowser;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -26,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -61,7 +60,7 @@ public class HalBrowserUnitTests {
 
 		UriComponents components = UriComponentsBuilder.fromUriString(response.getHeader(HttpHeaders.LOCATION)).build();
 
-		assertThat(components.getPath(), startsWith("/context"));
+		assertThat(components.getPath()).startsWith("/context");
 		assertThat(components.getFragment()).isEqualTo("/context");
 	}
 
@@ -83,8 +82,7 @@ public class HalBrowserUnitTests {
 
 			String url = ((RedirectView) view).getUrl();
 
-			assertThat(url, startsWith("https://somehost:4711/prefix"));
-			assertThat(url, endsWith("/prefix"));
+			assertThat(url).startsWith("https://somehost:4711/prefix").endsWith("/prefix");
 		});
 	}
 }

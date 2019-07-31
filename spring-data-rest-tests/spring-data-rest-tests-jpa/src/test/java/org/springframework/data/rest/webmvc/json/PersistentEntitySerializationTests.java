@@ -15,9 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -27,6 +25,7 @@ import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,18 +39,18 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.jpa.*;
 import org.springframework.data.rest.webmvc.util.TestUtils;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.client.LinkDiscoverer;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
-import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.client.LinkDiscoverer;
+import org.springframework.hateoas.mediatype.hal.HalLinkDiscoverer;
 import org.springframework.hateoas.server.core.EmbeddedWrapper;
 import org.springframework.hateoas.server.core.EmbeddedWrappers;
-import org.springframework.hateoas.mediatype.hal.HalLinkDiscoverer;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -68,7 +67,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Gierke
  * @author Alex Leigh
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { JpaRepositoryConfig.class, PersistentEntitySerializationTests.TestConfig.class })
 @Transactional
 public class PersistentEntitySerializationTests {
@@ -128,8 +127,8 @@ public class PersistentEntitySerializationTests {
 				+ "  \"created\" : \"2014-01-31T21:07:45.574+0000\"\n" + "}\n";
 
 		Person p = mapper.readValue(bilbo, Person.class);
-		assertThat(p.getFirstName(), equalTo("Bilbo"));
-		assertThat(p.getLastName(), equalTo("Baggins"));
+		assertThat(p.getFirstName()).isEqualTo("Bilbo");
+		assertThat(p.getLastName()).isEqualTo("Baggins");
 	}
 
 	@Test // DATAREST-238

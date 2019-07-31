@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.ResultActions;
 
 import com.jayway.jsonpath.JsonPath;
@@ -37,7 +37,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Gierke
  * @author Craig Andrews
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ShopConfiguration.class)
 public class ShopIntegrationTests extends AbstractWebIntegrationTests {
 

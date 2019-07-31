@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.core.support;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -23,14 +23,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.domain.Profile;
@@ -51,8 +49,6 @@ public class DefaultSelfLinkProviderUnitTests {
 	@Mock EntityLinks entityLinks;
 	PersistentEntities entities;
 	List<EntityLookup<?>> lookups;
-
-	public @Rule ExpectedException exception = ExpectedException.none();
 
 	@Before
 	public void setUp() {
@@ -95,7 +91,7 @@ public class DefaultSelfLinkProviderUnitTests {
 		Profile profile = new Profile("Name", "Type");
 		Link link = provider.createSelfLinkFor(profile);
 
-		assertThat(link.getHref(), Matchers.endsWith(profile.getId().toString()));
+		assertThat(link.getHref()).endsWith(profile.getId().toString());
 	}
 
 	@Test // DATAREST-724
@@ -106,20 +102,18 @@ public class DefaultSelfLinkProviderUnitTests {
 		when(lookup.supports(Profile.class)).thenReturn(true);
 		when(lookup.getResourceIdentifier(any(Profile.class))).thenReturn("foo");
 
-		this.provider = new DefaultSelfLinkProvider(entities, entityLinks, Arrays.asList(lookup));
+		this.provider = new DefaultSelfLinkProvider(entities, entityLinks, Collections.singletonList(lookup));
 
 		Link link = provider.createSelfLinkFor(new Profile("Name", "Type"));
 
-		assertThat(link.getHref(), Matchers.endsWith("foo"));
+		assertThat(link.getHref()).endsWith("foo");
 	}
 
 	@Test // DATAREST-724
 	public void rejectsLinkCreationForUnknownEntity() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage(Object.class.getName());
-		exception.expectMessage("Couldn't find PersistentEntity for");
-
-		provider.createSelfLinkFor(new Object());
+		assertThatIllegalArgumentException().isThrownBy(() -> provider.createSelfLinkFor(new Object())) //
+				.withMessageContaining(Object.class.getName()) //
+				.withMessageContaining("Couldn't find PersistentEntity for");
 	}
 }

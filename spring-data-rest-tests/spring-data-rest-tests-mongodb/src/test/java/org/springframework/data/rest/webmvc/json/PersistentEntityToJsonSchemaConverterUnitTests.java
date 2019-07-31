@@ -48,7 +48,7 @@ import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaCon
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.TestConfiguration;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,7 +59,7 @@ import com.jayway.jsonpath.PathNotFoundException;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { MongoDbRepositoryConfig.class, TestConfiguration.class })
 public class PersistentEntityToJsonSchemaConverterUnitTests {
 

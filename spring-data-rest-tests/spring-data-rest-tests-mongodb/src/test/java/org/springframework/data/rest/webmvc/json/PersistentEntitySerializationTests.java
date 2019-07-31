@@ -15,9 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,6 +23,7 @@ import java.util.HashMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,13 +41,13 @@ import org.springframework.data.rest.tests.mongodb.User.Nested;
 import org.springframework.data.rest.tests.mongodb.UserRepository;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.client.LinkDiscoverer;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
+import org.springframework.hateoas.client.LinkDiscoverer;
 import org.springframework.hateoas.mediatype.hal.HalLinkDiscoverer;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletWebRequest;
 
@@ -62,7 +61,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Greg Turnquist
  * @author Oliver Gierke
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { MongoDbRepositoryConfig.class, RepositoryTestsConfig.class,
 		PersistentEntitySerializationTests.TestConfig.class })
 public class PersistentEntitySerializationTests {
@@ -133,6 +132,6 @@ public class PersistentEntitySerializationTests {
 				.build(dave, repositories.getPersistentEntity(User.class)).build();
 
 		assertThat(JsonPath.parse(mapper.writeValueAsString(resource)).read("$.colleaguesMap.carter._links.user.href",
-				String.class), is(notNullValue()));
+				String.class)).isNotNull();
 	}
 }

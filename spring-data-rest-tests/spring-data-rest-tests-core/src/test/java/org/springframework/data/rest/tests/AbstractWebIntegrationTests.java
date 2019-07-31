@@ -28,16 +28,17 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -61,7 +62,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Greg Turnquist
  * @author Christoph Strobl
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = { RepositoryRestMvcConfiguration.class, DelegatingWebMvcConfiguration.class })
 public abstract class AbstractWebIntegrationTests {

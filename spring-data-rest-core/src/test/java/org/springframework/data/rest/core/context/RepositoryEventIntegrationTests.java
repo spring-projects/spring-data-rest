@@ -18,6 +18,7 @@ package org.springframework.data.rest.core.context;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -29,19 +30,9 @@ import org.springframework.data.rest.core.domain.EventHandlerInvokedException;
 import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.domain.PersonBeforeSaveHandler;
 import org.springframework.data.rest.core.domain.PersonRepository;
-import org.springframework.data.rest.core.event.AfterCreateEvent;
-import org.springframework.data.rest.core.event.AfterDeleteEvent;
-import org.springframework.data.rest.core.event.AfterLinkDeleteEvent;
-import org.springframework.data.rest.core.event.AfterLinkSaveEvent;
-import org.springframework.data.rest.core.event.AfterSaveEvent;
-import org.springframework.data.rest.core.event.AnnotatedEventHandlerInvoker;
-import org.springframework.data.rest.core.event.BeforeCreateEvent;
-import org.springframework.data.rest.core.event.BeforeDeleteEvent;
-import org.springframework.data.rest.core.event.BeforeLinkDeleteEvent;
-import org.springframework.data.rest.core.event.BeforeLinkSaveEvent;
-import org.springframework.data.rest.core.event.BeforeSaveEvent;
+import org.springframework.data.rest.core.event.*;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Tests around the {@link org.springframework.context.ApplicationEvent} handling abstractions.
@@ -49,7 +40,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 public class RepositoryEventIntegrationTests {
 

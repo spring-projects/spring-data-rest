@@ -16,9 +16,7 @@
 package org.springframework.data.rest.webmvc.json;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import lombok.AllArgsConstructor;
@@ -38,6 +36,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Immutable;
@@ -210,9 +209,9 @@ public class DomainObjectReaderUnitTests {
 
 		SampleUser result = reader.readPut(node, sampleUser, mapper);
 
-		assertThat(result.name, is("another"));
-		assertThat(result.password, notNullValue());
-		assertThat(result.lastLogin, notNullValue());
+		assertThat(result.name).isEqualTo("another");
+		assertThat(result.password).isNotNull();
+		assertThat(result.lastLogin).isNotNull();
 	}
 
 	@Test // DATAREST-873
@@ -487,7 +486,7 @@ public class DomainObjectReaderUnitTests {
 
 		CollectionOfEnumWithMethods result = reader.merge((ObjectNode) node, sample, mapper);
 
-		assertThat(result.enums, contains(SampleEnum.SECOND, SampleEnum.FIRST));
+		assertThat(result.enums).containsExactly(SampleEnum.SECOND, SampleEnum.FIRST);
 	}
 
 	@Test // DATAREST-944

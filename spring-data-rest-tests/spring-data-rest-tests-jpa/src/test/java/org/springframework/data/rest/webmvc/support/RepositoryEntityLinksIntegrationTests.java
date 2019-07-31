@@ -15,12 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -53,7 +51,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 
 		Link link = entityLinks.linkToItemResource(Person.class, 1);
 
-		assertThat(link.getHref(), endsWith("/people/1{?projection}"));
+		assertThat(link.getHref()).endsWith("/people/1{?projection}");
 		assertThat(link.getRel()).isEqualTo(LinkRelation.of("person"));
 	}
 
@@ -80,7 +78,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	public void usesCustomGeneratedBackendId() {
 
 		Link link = entityLinks.linkToItemResource(Book.class, 7L);
-		assertThat(link.expand().getHref(), endsWith("/7-7-7-7-7-7-7"));
+		assertThat(link.expand().getHref()).endsWith("/7-7-7-7-7-7-7");
 	}
 
 	@Test // DATAREST-317
@@ -126,7 +124,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(link.getVariableNames()).doesNotContain("page", "size");
 
 		UriComponents components = UriComponentsBuilder.fromUriString(link.getHref()).build();
-		assertThat(components.getQueryParams(), allOf(hasKey("page"), hasKey("size")));
+		assertThat(components.getQueryParams()).containsKey("page").containsKey("size");
 	}
 
 	@Test // DATAREST-467
@@ -149,7 +147,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		assertThat(link.getVariableNames()).doesNotContain("sort");
 
 		UriComponents components = UriComponentsBuilder.fromUriString(link.getHref()).build();
-		assertThat(components.getQueryParams(), hasKey("sort"));
+		assertThat(components.getQueryParams()).containsKey("sort");
 	}
 
 	@Test // DATAREST-668, DATAREST-519, DATAREST-467

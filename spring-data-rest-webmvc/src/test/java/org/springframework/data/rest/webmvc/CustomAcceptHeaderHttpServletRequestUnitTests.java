@@ -15,9 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +24,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
+
 import org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping.CustomAcceptHeaderHttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -48,8 +47,8 @@ public class CustomAcceptHeaderHttpServletRequestUnitTests {
 		List<MediaType> mediaTypes = Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_ATOM_XML);
 		HttpServletRequest servletRequest = new CustomAcceptHeaderHttpServletRequest(request, mediaTypes);
 
-		assertThat(servletRequest.getHeader(HttpHeaders.ACCEPT),
-				is(StringUtils.collectionToCommaDelimitedString(mediaTypes)));
+		assertThat(servletRequest.getHeader(HttpHeaders.ACCEPT))
+				.isEqualTo(StringUtils.collectionToCommaDelimitedString(mediaTypes));
 
 		List<String> expected = Collections.list(servletRequest.getHeaders(HttpHeaders.ACCEPT));
 

@@ -36,7 +36,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -48,7 +48,7 @@ import org.springframework.web.context.WebApplicationContext;
  * @author Greg Turnquist
  * @author Rob Winch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { SecurityIntegrationTests.Config.class, SecurityConfiguration.class,
 		RepositoryRestMvcConfiguration.class })
 public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
@@ -101,10 +101,8 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 		// Getting the collection is not tested here. This is to get the URI that will later be tested for DELETE
 		final String people = client.discoverUnique("people").expand().getHref();
 
-		MockHttpServletResponse response = mvc
-				.perform(get(people).//
-						with(user("user").roles("USER")))
-				.//
+		MockHttpServletResponse response = mvc.perform(get(people).//
+				with(user("user").roles("USER"))).//
 				andReturn().getResponse();
 		String href = assertHasJsonPathValue("$._embedded.people[0]._links.self.href", response);
 
@@ -117,10 +115,8 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-327
 	public void deletePersonAccessDeniedForUsers() throws Exception {
 
-		MockHttpServletResponse response = mvc
-				.perform(get(client.discoverUnique("people").expand().getHref()).//
-						with(user("user").roles("USER")))
-				.//
+		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("people").expand().getHref()).//
+				with(user("user").roles("USER"))).//
 				andReturn().getResponse();
 		String href = assertHasJsonPathValue("$._embedded.people[0]._links.self.href", response);
 
@@ -134,10 +130,8 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-327
 	public void deletePersonAccessGrantedForAdmins() throws Exception {
 
-		MockHttpServletResponse response = mvc
-				.perform(get(client.discoverUnique("people").expand().getHref()).//
-						with(user("user").roles("USER", "ADMIN")))
-				.//
+		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("people").expand().getHref()).//
+				with(user("user").roles("USER", "ADMIN"))).//
 				andReturn().getResponse();
 		String href = assertHasJsonPathValue("$._embedded.people[0]._links.self.href", response);
 
@@ -175,10 +169,8 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	public void deleteOrderAccessDeniedForNoCredentials() throws Exception {
 
 		// Getting the collection is not tested here. This is to get the URI that will later be tested for DELETE
-		MockHttpServletResponse response = mvc
-				.perform(get(client.discoverUnique("orders").expand().getHref()).//
-						with(user("user").roles("USER")))
-				.//
+		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
+				with(user("user").roles("USER"))).//
 				andReturn().getResponse();
 		String href = assertHasJsonPathValue("$._embedded.orders[0]._links.self.href", response);
 
@@ -191,10 +183,8 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-327
 	public void deleteOrderAccessDeniedForUsers() throws Exception {
 
-		MockHttpServletResponse response = mvc
-				.perform(get(client.discoverUnique("orders").expand().getHref()).//
-						with(user("user").roles("USER")))
-				.//
+		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
+				with(user("user").roles("USER"))).//
 				andReturn().getResponse();
 		String href = assertHasJsonPathValue("$._embedded.orders[0]._links.self.href", response);
 
@@ -205,10 +195,8 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-327
 	public void deleteOrderAccessGrantedForAdmins() throws Exception {
 
-		MockHttpServletResponse response = mvc
-				.perform(get(client.discoverUnique("orders").expand().getHref()).//
-						with(user("user").roles("USER")))
-				.//
+		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
+				with(user("user").roles("USER"))).//
 				andReturn().getResponse();
 		String href = assertHasJsonPathValue("$._embedded.orders[0]._links.self.href", response);
 

@@ -40,7 +40,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.server.SolrClientFactory;
 import org.springframework.data.solr.server.support.EmbeddedSolrServerFactory;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 import org.xml.sax.SAXException;
@@ -106,9 +106,8 @@ public class SolrInfrastructureConfig {
 	}
 
 	/**
-	 * {@link SpringJUnit4ClassRunner} executes {@link ClassRule}s before the actual shutdown of the
-	 * {@link ApplicationContext}. This causes the {@link TemporaryFolder} to vanish before Solr can gracefully shutdown.
-	 * <br />
+	 * {@link SpringRunner} executes {@link ClassRule}s before the actual shutdown of the {@link ApplicationContext}. This
+	 * causes the {@link TemporaryFolder} to vanish before Solr can gracefully shutdown. <br />
 	 * To prevent error messages popping up we register a {@link CloseHook} re adding the index directory and removing it
 	 * after {@link SolrCore#close()}.
 	 *

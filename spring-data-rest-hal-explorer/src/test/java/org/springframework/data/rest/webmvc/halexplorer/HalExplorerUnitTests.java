@@ -15,9 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.halexplorer;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -26,12 +24,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.view.AbstractView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -57,11 +55,11 @@ public class HalExplorerUnitTests {
 
 		assertThat(view).isInstanceOf(RedirectView.class);
 
-		((AbstractView) view).render(Collections.<String, Object> emptyMap(), request, response);
+		view.render(Collections.emptyMap(), request, response);
 
 		UriComponents components = UriComponentsBuilder.fromUriString(response.getHeader(HttpHeaders.LOCATION)).build();
 
-		assertThat(components.getPath(), startsWith("/context"));
+		assertThat(components.getPath()).startsWith("/context");
 		assertThat(components.getFragment()).isEqualTo("uri=/context");
 	}
 
@@ -83,8 +81,7 @@ public class HalExplorerUnitTests {
 
 			String url = ((RedirectView) view).getUrl();
 
-			assertThat(url, startsWith("https://somehost:4711/prefix"));
-			assertThat(url, endsWith("/prefix"));
+			assertThat(url).startsWith("https://somehost:4711/prefix").endsWith("/prefix");
 		});
 	}
 }

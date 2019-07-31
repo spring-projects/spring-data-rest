@@ -15,17 +15,15 @@
  */
 package org.springframework.data.rest.tests;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
-import org.hamcrest.Matcher;
+import java.util.function.Consumer;
+
 import org.springframework.data.rest.core.Path;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.util.Assert;
 import org.springframework.web.util.UriTemplate;
 
@@ -39,7 +37,7 @@ public class ResourceTester {
 	private final RepresentationModel resource;
 
 	public static ResourceTester of(Object object) {
-		assertThat(object, is(instanceOf(RepresentationModel.class)));
+		assertThat(object).isInstanceOf(RepresentationModel.class);
 		return new ResourceTester((RepresentationModel) object);
 	}
 
@@ -69,7 +67,12 @@ public class ResourceTester {
 	 * @param href can be {@literal null}, if so, only the presence of a {@link Link} with the given rel is checked.
 	 */
 	public Link assertHasLink(String rel, String href) {
-		return assertHasLinkMatching(rel, href == null ? null : is(href));
+		return assertHasLinkMatching(rel, it -> {
+			if (href == null) {
+				return;
+			}
+			assertThat(it).isEqualTo(href);
+		});
 	}
 
 	/**
@@ -79,17 +82,22 @@ public class ResourceTester {
 	 * @param href can be {@literal null}, if so, only the presence of a {@link Link} with the given rel is checked.
 	 */
 	public Link assertHasLinkEndingWith(String rel, String hrefEnd) {
-		return assertHasLinkMatching(rel, hrefEnd == null ? null : endsWith(hrefEnd));
+		return assertHasLinkMatching(rel, it -> {
+			if (hrefEnd == null) {
+				return;
+			}
+			assertThat(it).endsWith(hrefEnd);
+		});
 	}
 
-	private final Link assertHasLinkMatching(String rel, Matcher<String> hrefMatcher) {
+	private Link assertHasLinkMatching(String rel, Consumer<String> hrefMatcher) {
 
 		Link link = resource.getRequiredLink(rel);
-		assertThat("Expected link with rel '" + rel + "' but didn't find it in " + resource.getLinks(), link,
-				is(notNullValue()));
+		assertThat(link).as("Expected link with rel '" + rel + "' but didn't find it in " + resource.getLinks())
+				.isNotNull();
 
 		if (hrefMatcher != null) {
-			assertThat(link.getHref(), is(hrefMatcher));
+			assertThat(link.getHref()).satisfies(hrefMatcher);
 		}
 
 		return link;
@@ -98,25 +106,25 @@ public class ResourceTester {
 	@SuppressWarnings("unchecked")
 	public <T> PagedModel<T> assertIsPage() {
 
-		assertThat(resource, is(instanceOf(PagedModel.class)));
+		assertThat(resource).isInstanceOf(PagedModel.class);
 		return (PagedModel<T>) resource;
 	}
 
 	public ResourceTester getContentResource() {
 
-		assertThat(resource, is(instanceOf(CollectionModel.class)));
+		assertThat(resource).isInstanceOf(CollectionModel.class);
 		Object next = ((CollectionModel<?>) resource).getContent().iterator().next();
 
-		assertThat(next, is(instanceOf(RepresentationModel.class)));
+		assertThat(next).isInstanceOf(RepresentationModel.class);
 		return new ResourceTester((RepresentationModel) next);
 	}
 
 	public void withContentResource(ContentResourceHandler handler) {
 
-		assertThat(resource, is(instanceOf(CollectionModel.class)));
+		assertThat(resource).isInstanceOf(CollectionModel.class);
 
 		for (Object element : ((CollectionModel<?>) resource).getContent()) {
-			assertThat(element, is(instanceOf(RepresentationModel.class)));
+			assertThat(element).isInstanceOf(RepresentationModel.class);
 			handler.doWith(of(element));
 		}
 	}
@@ -144,8 +152,8 @@ public class ResourceTester {
 			String href = content.assertHasLink("self", null).getHref();
 
 			UriTemplate uriTemplate = new UriTemplate(template.toString());
-			assertThat(String.format("Expected %s to match %s!", href, uriTemplate.toString()), uriTemplate.matches(href),
-					is(true));
+			assertThat(uriTemplate.matches(href)).as(String.format("Expected %s to match %s!", href, uriTemplate.toString()))
+					.isTrue();
 		}
 	}
 }

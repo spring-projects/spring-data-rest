@@ -15,9 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collection;
@@ -25,6 +23,7 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.rest.webmvc.json.JacksonSerializersUnitTests.Sample.SampleEnum;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -70,7 +69,7 @@ public class JacksonSerializersUnitTests {
 
 		Sample result = mapper.readValue("{ \"array\" : [ \"value\" ] }", Sample.class);
 
-		assertThat(result.array, hasItemInArray(SampleEnum.VALUE));
+		assertThat(result.array).contains(SampleEnum.VALUE);
 	}
 
 	@Test // DATAREST-929

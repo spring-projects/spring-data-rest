@@ -16,10 +16,6 @@
 package org.springframework.data.rest.webmvc;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.tests.TestMvcClient.*;
 import static org.springframework.http.HttpMethod.*;
@@ -27,9 +23,9 @@ import static org.springframework.http.HttpMethod.*;
 import java.util.List;
 import java.util.Optional;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.Mockito;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -114,7 +110,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler,
 				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
 
-		assertThat(entity.getHeaders().getLocation().toString(), not(Matchers.endsWith("{?projection}")));
+		assertThat(entity.getHeaders().getLocation().toString()).doesNotEndWith("{?projection}");
 	}
 
 	@Test // DATAREST-330
@@ -174,10 +170,8 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		List<String> value = entity.getHeaders().get("Accept-Patch");
 
 		assertThat(value).hasSize(3);
-		assertThat(value, hasItems(//
-				RestMediaTypes.JSON_PATCH_JSON.toString(), //
-				RestMediaTypes.MERGE_PATCH_JSON.toString(), //
-				MediaType.APPLICATION_JSON_VALUE));
+		assertThat(value).contains(RestMediaTypes.JSON_PATCH_JSON.toString(), RestMediaTypes.MERGE_PATCH_JSON.toString(),
+				MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test // DATAREST-34
@@ -190,7 +184,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		assertThat(controller.putItemResource(request, persistentEntityResource, order.getId(), assembler, ETag.NO_ETAG,
-				MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
+				MediaType.APPLICATION_JSON_VALUE).hasBody()).isTrue();
 	}
 
 	@Test // DATAREST-34
@@ -201,7 +195,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).forCreation();
 
 		assertThat(controller.putItemResource(request, persistentEntityResource, 1L, assembler, ETag.NO_ETAG,
-				MediaType.APPLICATION_JSON_VALUE).hasBody(), is(true));
+				MediaType.APPLICATION_JSON_VALUE).hasBody()).isTrue();
 	}
 
 	@Test // DATAREST-34
@@ -213,7 +207,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		assertThat(controller
 				.postCollectionResource(request, persistentEntityResource, assembler, MediaType.APPLICATION_JSON_VALUE)
-				.hasBody(), is(true));
+				.hasBody()).isTrue();
 	}
 
 	@Test // DATAREST-34
@@ -223,10 +217,9 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
 				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
-		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, null).hasBody(),
-				is(false));
-		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, "").hasBody(),
-				is(false));
+		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, null).hasBody())
+				.isFalse();
+		assertThat(controller.postCollectionResource(request, persistentEntityResource, assembler, "").hasBody()).isFalse();
 	}
 
 	@Test // DATAREST-581
@@ -243,8 +236,8 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 
 		Mockito.when(assembler.toFullResource(Mockito.any(Object.class))).thenReturn(resource);
 
-		ResponseEntity<EntityModel<?>> entity = controller.getItemResource(getResourceInformation(Address.class), address.id,
-				assembler, new HttpHeaders());
+		ResponseEntity<EntityModel<?>> entity = controller.getItemResource(getResourceInformation(Address.class),
+				address.id, assembler, new HttpHeaders());
 
 		assertThat(entity.getHeaders().getETag()).isNotNull();
 	}

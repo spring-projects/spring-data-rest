@@ -15,9 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
@@ -27,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.NoOpStringValueResolver;
@@ -66,8 +65,8 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 		assertThat(configuration.getAllowCredentials()).isFalse();
 		assertThat(configuration.getAllowedHeaders()).contains("*");
 		assertThat(configuration.getAllowedOrigins()).contains("*");
-		assertThat(configuration.getAllowedMethods(),
-				hasItems("OPTIONS", "HEAD", "GET", "PATCH", "POST", "PUT", "DELETE", "TRACE"));
+		assertThat(configuration.getAllowedMethods()).contains("OPTIONS", "HEAD", "GET", "PATCH", "POST", "PUT", "DELETE",
+				"TRACE");
 		assertThat(configuration.getMaxAge()).isEqualTo(1800L);
 	}
 

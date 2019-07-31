@@ -33,7 +33,7 @@ import org.springframework.data.rest.core.domain.PersonNameValidator;
 import org.springframework.data.rest.core.event.BeforeSaveEvent;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Tests to check the {@link org.springframework.validation.Validator} integration.
@@ -41,7 +41,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 public class ValidatorIntegrationTests {
 

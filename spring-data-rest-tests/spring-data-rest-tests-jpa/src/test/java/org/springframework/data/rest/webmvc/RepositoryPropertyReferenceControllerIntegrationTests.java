@@ -15,12 +15,12 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.webmvc.jpa.Book;
@@ -58,8 +58,8 @@ public class RepositoryPropertyReferenceControllerIntegrationTests extends Abstr
 
 		Book book = books.findAll().iterator().next();
 
-		assertThat(controller.followPropertyReference(information, book.id, "creators", assembler).getStatusCode(),
-				is(HttpStatus.OK));
+		assertThat(controller.followPropertyReference(information, book.id, "creators", assembler).getStatusCode())
+				.isEqualTo(HttpStatus.OK);
 	}
 
 	@Test(expected = ResourceNotFoundException.class)
