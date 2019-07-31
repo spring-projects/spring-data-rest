@@ -36,7 +36,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
@@ -56,7 +55,6 @@ import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2Http
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -194,16 +192,6 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 
 		assertThat(service.canConvert(String.class, Name.class)).isTrue();
 		assertThat(service.canConvert(String.class, LdapName.class)).isTrue();
-	}
-
-	@Test // DATAREST-686
-	public void defaultsEncodingForMessageSourceToUtfEight() {
-
-		MessageSourceAccessor accessor = context.getBean("resourceDescriptionMessageSourceAccessor",
-				MessageSourceAccessor.class);
-		Object messageSource = ReflectionTestUtils.getField(accessor, "messageSource");
-
-		assertThat((String) ReflectionTestUtils.getField(messageSource, "defaultEncoding")).isEqualTo("UTF-8");
 	}
 
 	private static ObjectMapper getObjectMapper() {

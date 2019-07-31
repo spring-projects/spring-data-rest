@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.springframework.context.NoSuchMessageException;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -55,16 +54,17 @@ import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.EnumTranslator;
 import org.springframework.data.rest.webmvc.json.JacksonMetadata;
 import org.springframework.data.rest.webmvc.mapping.Associations;
-import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.TemplateVariable;
+import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.hateoas.mediatype.alps.Alps;
 import org.springframework.hateoas.mediatype.alps.Descriptor;
 import org.springframework.hateoas.mediatype.alps.Descriptor.DescriptorBuilder;
 import org.springframework.hateoas.mediatype.alps.Doc;
 import org.springframework.hateoas.mediatype.alps.Format;
 import org.springframework.hateoas.mediatype.alps.Type;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.StringUtils;
 
@@ -87,7 +87,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 	private final @NonNull Repositories repositories;
 	private final @NonNull PersistentEntities persistentEntities;
 	private final @NonNull EntityLinks entityLinks;
-	private final @NonNull MessageSourceAccessor messageSource;
+	private final @NonNull MessageResolver resolver;
 	private final @NonNull RepositoryRestConfiguration configuration;
 	private final @NonNull ObjectMapper mapper;
 	private final @NonNull EnumTranslator translator;
@@ -415,9 +415,10 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		}
 
 		try {
-			return messageSource.getMessage(description);
+			return resolver.resolve(description);
 		} catch (NoSuchMessageException o_O) {
-			return configuration.getMetadataConfiguration().omitUnresolvableDescriptionKeys() ? null
+			return configuration.getMetadataConfiguration().omitUnresolvableDescriptionKeys() //
+					? null //
 					: description.getMessage();
 		}
 	}

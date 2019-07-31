@@ -25,6 +25,7 @@ import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.util.StreamUtils;
+import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -35,7 +36,7 @@ import org.springframework.util.StringUtils;
  */
 public class EnumTranslator implements EnumTranslationConfiguration {
 
-	private final MessageSourceAccessor messageSourceAccessor;
+	private final MessageResolver resolver;
 
 	private boolean enableDefaultTranslation;
 	private boolean parseEnumNameAsFallback;
@@ -43,13 +44,13 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	/**
 	 * Creates a new {@link EnumTranslator} using the given {@link MessageSourceAccessor}.
 	 *
-	 * @param messageSourceAccessor must not be {@literal null}.
+	 * @param resolver must not be {@literal null}.
 	 */
-	public EnumTranslator(MessageSourceAccessor messageSourceAccessor) {
+	public EnumTranslator(MessageResolver resolver) {
 
-		Assert.notNull(messageSourceAccessor, "MessageSourceAccessor must not be null!");
+		Assert.notNull(resolver, "MessageResolver must not be null!");
 
-		this.messageSourceAccessor = messageSourceAccessor;
+		this.resolver = resolver;
 		this.enableDefaultTranslation = true;
 		this.parseEnumNameAsFallback = true;
 	}
@@ -84,7 +85,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 
 		Assert.notNull(value, "Enum value must not be null!");
 
-		return messageSourceAccessor.getMessage(TranslatedEnum.of(value, enableDefaultTranslation));
+		return resolver.resolve(TranslatedEnum.of(value, enableDefaultTranslation));
 	}
 
 	/**

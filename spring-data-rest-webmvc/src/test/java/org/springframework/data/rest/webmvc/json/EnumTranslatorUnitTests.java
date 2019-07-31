@@ -22,8 +22,8 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.StaticMessageSource;
+import org.springframework.hateoas.mediatype.MessageResolver;
 
 /**
  * Unit tests for {@link EnumTranslator}.
@@ -43,7 +43,7 @@ public class EnumTranslatorUnitTests {
 		this.messageSource = new StaticMessageSource();
 		this.messageSource.addMessage(MyEnum.class.getName().concat(".").concat(MyEnum.FIRST_VALUE.name()), Locale.US,
 				"Translated");
-		this.configuration = new EnumTranslator(new MessageSourceAccessor(messageSource));
+		this.configuration = new EnumTranslator(MessageResolver.of(messageSource));
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATAREST-654

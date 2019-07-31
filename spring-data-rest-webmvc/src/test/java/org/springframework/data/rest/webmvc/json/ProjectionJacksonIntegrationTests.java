@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.hateoas.mediatype.hal.DefaultCurieProvider;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule.HalHandlerInstantiator;
@@ -50,7 +51,7 @@ public class ProjectionJacksonIntegrationTests {
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(new Jackson2HalModule());
 		this.mapper.setHandlerInstantiator(new HalHandlerInstantiator(new EvoInflectorLinkRelationProvider(),
-				new DefaultCurieProvider(Collections.emptyMap()), null));
+				new DefaultCurieProvider(Collections.emptyMap()), MessageResolver.DEFAULTS_ONLY));
 	}
 
 	@Test // DATAREST-221

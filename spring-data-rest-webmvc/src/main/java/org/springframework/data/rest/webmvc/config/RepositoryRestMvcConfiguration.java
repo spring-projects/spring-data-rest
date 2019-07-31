@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,10 +23,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectFactory;
@@ -40,8 +41,6 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.ClassPathResource;
@@ -68,7 +67,6 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AnnotatedEventHandlerInvoker;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.core.mapping.RepositoryResourceMappings;
-import org.springframework.data.rest.core.mapping.ResourceDescription;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.EntityLookup;
@@ -100,6 +98,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType;
+import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.hateoas.mediatype.hal.CurieProvider;
 import org.springframework.hateoas.mediatype.hal.DefaultCurieProvider;
 import org.springframework.hateoas.mediatype.hal.HalConfiguration;
@@ -165,6 +164,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Autowired Optional<HalConfiguration> halConfiguration;
 	@Autowired ObjectProvider<ObjectMapper> objectMapper;
 	@Autowired ObjectProvider<RepresentationModelProcessorInvoker> invoker;
+	@Autowired MessageResolver resolver;
 
 	private final Lazy<ObjectMapper> mapper;
 
@@ -405,18 +405,12 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public PersistentEntityToJsonSchemaConverter jsonSchemaConverter() {
 
-		return new PersistentEntityToJsonSchemaConverter(persistentEntities(), associationLinks(),
-				resourceDescriptionMessageSourceAccessor(), objectMapper(), repositoryRestConfiguration(),
+		return new PersistentEntityToJsonSchemaConverter(persistentEntities(), associationLinks(), resolver, objectMapper(),
+				repositoryRestConfiguration(),
 				new ValueTypeSchemaPropertyCustomizerFactory(repositoryInvokerFactory(defaultConversionService())));
 	}
 
-	/**
-	 * The {@link MessageSourceAccessor} to provide messages for {@link ResourceDescription}s being rendered.
-	 *
-	 * @return
-	 */
-	@Bean
-	public MessageSourceAccessor resourceDescriptionMessageSourceAccessor() {
+	private final Properties lookupDefaultMessages() {
 
 		try {
 
@@ -424,15 +418,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			propertiesFactoryBean.setLocation(new ClassPathResource("rest-default-messages.properties"));
 			propertiesFactoryBean.afterPropertiesSet();
 
-			ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-			messageSource.setBasename("classpath:rest-messages");
-			messageSource.setCommonMessages(propertiesFactoryBean.getObject());
-			messageSource.setDefaultEncoding("UTF-8");
+			return propertiesFactoryBean.getObject();
 
-			return new MessageSourceAccessor(messageSource);
-
-		} catch (Exception o_O) {
-			throw new BeanCreationException("resourceDescriptionMessageSourceAccessor", "", o_O);
+		} catch (IOException o_O) {
+			throw new IllegalStateException("Unable to resolve default rest-default-messages.properties!", o_O);
 		}
 	}
 
@@ -506,8 +495,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		HalConfiguration halConfiguration = this.halConfiguration.orElseGet(HalConfiguration::new);
 
 		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider,
-				curieProvider.orElse(new DefaultCurieProvider(Collections.emptyMap())),
-				resourceDescriptionMessageSourceAccessor(), halConfiguration);
+				curieProvider.orElse(new DefaultCurieProvider(Collections.emptyMap())), resolver, halConfiguration);
 
 		ObjectMapper mapper = basicObjectMapper();
 		mapper.registerModule(persistentEntityJackson2Module());
@@ -817,7 +805,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public EnumTranslator enumTranslator() {
-		return new EnumTranslator(resourceDescriptionMessageSourceAccessor());
+		return new EnumTranslator(resolver);
 	}
 
 	private Set<Class<?>> getProjections(Repositories repositories) {
@@ -845,11 +833,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		Repositories repositories = repositories();
 		PersistentEntities persistentEntities = persistentEntities();
 		RepositoryEntityLinks entityLinks = entityLinks();
-		MessageSourceAccessor messageSourceAccessor = resourceDescriptionMessageSourceAccessor();
 		RepositoryRestConfiguration config = repositoryRestConfiguration();
 
 		return new RootResourceInformationToAlpsDescriptorConverter(associationLinks(), repositories, persistentEntities,
-				entityLinks, messageSourceAccessor, config, objectMapper(), enumTranslator());
+				entityLinks, resolver, config, objectMapper(), enumTranslator());
 	}
 
 	@Bean

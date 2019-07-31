@@ -28,10 +28,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.config.JsonSchemaFormat;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -47,6 +45,7 @@ import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguratio
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.ValueTypeSchemaPropertyCustomizerFactory;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverterUnitTests.TestConfiguration;
 import org.springframework.data.rest.webmvc.mapping.Associations;
+import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -63,7 +62,7 @@ import com.jayway.jsonpath.PathNotFoundException;
 @ContextConfiguration(classes = { MongoDbRepositoryConfig.class, TestConfiguration.class })
 public class PersistentEntityToJsonSchemaConverterUnitTests {
 
-	@Autowired @Qualifier("resourceDescriptionMessageSourceAccessor") MessageSourceAccessor accessor;
+	@Autowired MessageResolver resolver;
 	@Autowired RepositoryRestConfiguration configuration;
 	@Autowired PersistentEntities entities;
 	@Autowired Associations associations;
@@ -93,7 +92,7 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 
 		ValueTypeSchemaPropertyCustomizerFactory customizerFactory = mock(ValueTypeSchemaPropertyCustomizerFactory.class);
 
-		converter = new PersistentEntityToJsonSchemaConverter(entities, associations, accessor, objectMapper, configuration,
+		converter = new PersistentEntityToJsonSchemaConverter(entities, associations, resolver, objectMapper, configuration,
 				customizerFactory);
 	}
 

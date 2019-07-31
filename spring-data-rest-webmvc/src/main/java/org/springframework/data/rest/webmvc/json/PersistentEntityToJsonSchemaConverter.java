@@ -33,7 +33,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.data.domain.Sort;
@@ -56,6 +55,7 @@ import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -83,7 +83,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	private final ObjectMapper objectMapper;
 	private final RepositoryRestConfiguration configuration;
 	private final ValueTypeSchemaPropertyCustomizerFactory customizerFactory;
-	private final MessageResolver resolver;
+	private final InternalMessageResolver resolver;
 
 	/**
 	 * Creates a new {@link PersistentEntityToJsonSchemaConverter} for the given {@link PersistentEntities} and
@@ -96,12 +96,12 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @param configuration must not be {@literal null}.
 	 */
 	public PersistentEntityToJsonSchemaConverter(PersistentEntities entities, Associations associations,
-			MessageSourceAccessor accessor, ObjectMapper objectMapper, RepositoryRestConfiguration configuration,
+			MessageResolver resolver, ObjectMapper objectMapper, RepositoryRestConfiguration configuration,
 			ValueTypeSchemaPropertyCustomizerFactory customizerFactory) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
 		Assert.notNull(associations, "AssociationLinks must not be null!");
-		Assert.notNull(accessor, "MessageSourceAccessor must not be null!");
+		Assert.notNull(resolver, "MessageResolver must not be null!");
 		Assert.notNull(objectMapper, "ObjectMapper must not be null!");
 		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
 
@@ -110,7 +110,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		this.objectMapper = objectMapper;
 		this.configuration = configuration;
 		this.customizerFactory = customizerFactory;
-		this.resolver = new DefaultMessageResolver(accessor, configuration);
+		this.resolver = new DefaultMessageResolver(resolver, configuration);
 
 		for (TypeInformation<?> domainType : entities.getManagedTypes()) {
 			convertiblePairs.add(new ConvertiblePair(domainType.getType(), JsonSchema.class));
@@ -143,7 +143,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @return
 	 */
 	public JsonSchema convert(Class<?> domainType) {
-		return (JsonSchema) convert(domainType, STRING_TYPE, SCHEMA_TYPE);
+		return convert(domainType, STRING_TYPE, SCHEMA_TYPE);
 	}
 
 	/*
@@ -334,7 +334,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 			JsonSerializer<?> serializer = metadata.getTypeSerializer(type.getType());
 
-			if ((serializer instanceof JsonSchemaPropertyCustomizer)) {
+			if (serializer instanceof JsonSchemaPropertyCustomizer) {
 				properties.add(((JsonSchemaPropertyCustomizer) serializer).customize(property, type));
 				return;
 			}
@@ -455,7 +455,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 					.orElseGet(() -> ClassTypeInformation.from(definition.getPrimaryMember().getRawType()));
 		}
 
-		public JsonSchemaProperty getSchemaProperty(ResourceDescription description, MessageResolver resolver) {
+		public JsonSchemaProperty getSchemaProperty(ResourceDescription description, InternalMessageResolver resolver) {
 
 			JsonSchemaProperty result = getSchemaProperty(definition, getPropertyType(), description, resolver);
 
@@ -471,7 +471,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		}
 
 		private JsonSchemaProperty getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,
-				ResourceDescription description, MessageResolver resolver) {
+				ResourceDescription description, InternalMessageResolver resolver) {
 
 			String name = definition.getName();
 			String title = resolver.resolveWithDefault(new ResolvableProperty(definition));
@@ -490,7 +490,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		}
 	}
 
-	private interface MessageResolver {
+	private interface InternalMessageResolver {
 
 		String resolve(MessageSourceResolvable resolvable);
 
@@ -500,9 +500,9 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	}
 
 	@RequiredArgsConstructor
-	private static class DefaultMessageResolver implements MessageResolver {
+	private static class DefaultMessageResolver implements InternalMessageResolver {
 
-		private final MessageSourceAccessor accessor;
+		private final MessageResolver accessor;
 		private final RepositoryRestConfiguration configuration;
 
 		public String resolve(MessageSourceResolvable resolvable) {
@@ -512,7 +512,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			}
 
 			try {
-				return accessor.getMessage(resolvable);
+				return accessor.resolve(resolvable);
 			} catch (NoSuchMessageException o_O) {
 
 				if (configuration.getMetadataConfiguration().omitUnresolvableDescriptionKeys()) {
