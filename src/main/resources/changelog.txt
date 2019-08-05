@@ -1,6 +1,23 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.2.0.RC2 (2019-08-05)
+-----------------------------------------
+* DATAREST-1416 - Upgrade to Solr 8.2.0.
+* DATAREST-1414 - Adapt to changes in I18N in Spring HATEOAS.
+* DATAREST-1410 - Migrate remaining tests to AssertJ.
+* DATAREST-1409 - Upgrade to HAL Explorer 0.11.
+* DATAREST-1408 - Revise readme for a consistent structure.
+* DATAREST-1404 - Avoid repeated annotation lookups in CollectionResourceMapping implementations.
+* DATAREST-1403 - CollectionResourceMapping.getExcerptProjection() should use Optional.
+* DATAREST-1399 - Upgrade HAL Explorer to 0.10.0.
+* DATAREST-1398 - Integrate nohttp tooling into CI build profile.
+* DATAREST-1397 - Repository cors configurations are ignored unless there is a global cors configuration set.
+* DATAREST-1396 - Release 3.2 RC2 (Moore).
+* DATAREST-1393 - Deserializer customizations not propagated to Jackson creator properties.
+* DATAREST-1380 - Introduce Jenkins CI.
+
+
 Changes in version 3.1.10.RELEASE (2019-08-05)
 ----------------------------------------------
 * DATAREST-1417 - Inherit Spring HATEOAS version for parent pom.
