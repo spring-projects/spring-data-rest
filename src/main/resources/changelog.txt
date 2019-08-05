@@ -1,6 +1,18 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.10.RELEASE (2019-08-05)
+----------------------------------------------
+* DATAREST-1417 - Inherit Spring HATEOAS version for parent pom.
+* DATAREST-1413 - Use Spring HATEOAS version defined in Spring Data Build.
+* DATAREST-1404 - Avoid repeated annotation lookups in CollectionResourceMapping implementations.
+* DATAREST-1398 - Integrate nohttp tooling into CI build profile.
+* DATAREST-1397 - Repository cors configurations are ignored unless there is a global cors configuration set.
+* DATAREST-1395 - Release 3.1.10 (Lovelace SR10).
+* DATAREST-1393 - Deserializer customizations not propagated to Jackson creator properties.
+* DATAREST-1380 - Introduce Jenkins CI.
+
+
 Changes in version 2.6.23.RELEASE (2019-08-05)
 ----------------------------------------------
 * DATAREST-1387 - DelegatingHandlerMapping should proceed on HttpMediaTypeNotSupportedException.
