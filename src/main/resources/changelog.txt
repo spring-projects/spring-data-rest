@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 2.6.23.RELEASE (2019-08-05)
+----------------------------------------------
+* DATAREST-1387 - DelegatingHandlerMapping should proceed on HttpMediaTypeNotSupportedException.
+* DATAREST-1380 - Introduce Jenkins CI.
+* DATAREST-1379 - Release 2.6.23 (Ingalls SR23).
+
+
 Changes in version 3.2.0.RC1 (2019-06-14)
 -----------------------------------------
 * DATAREST-1394 - Upgrade to Spring Plugin 2.0 M2.
