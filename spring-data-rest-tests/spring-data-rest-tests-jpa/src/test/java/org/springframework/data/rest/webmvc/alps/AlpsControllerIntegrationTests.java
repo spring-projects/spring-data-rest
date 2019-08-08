@@ -21,8 +21,6 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import net.minidev.json.JSONArray;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,13 +31,13 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.tests.TestMvcClient;
 import org.springframework.data.rest.webmvc.ProfileController;
-import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.jpa.Item;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverer;
 import org.springframework.hateoas.LinkDiscoverers;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.core.JsonPathLinkDiscoverer;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -49,6 +47,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.JsonPath;
+
+import net.minidev.json.JSONArray;
 
 /**
  * Integration tests for {@link AlpsController}.
@@ -99,7 +99,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link profileLink = client.discoverUnique("profile");
 		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
 
-		client.follow(peopleLink, RestMediaTypes.ALPS_JSON)//
+		client.follow(peopleLink, MediaTypes.ALPS_JSON)//
 				.andExpect(jsonPath("$.alps.version").value("1.0"))//
 				.andExpect(jsonPath("$.alps.descriptor[*].name", hasItems("people", "person")));
 	}
@@ -122,7 +122,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link profileLink = client.discoverUnique("profile");
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
 
-		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
+		client.follow(itemsLink, MediaTypes.ALPS_JSON)//
 				// Exposes standard property
 				.andExpect(jsonPath("$.alps.descriptor[*].descriptor[*].name", hasItems("name")))
 				// Does not expose explicitly @JsonIgnored property
@@ -139,7 +139,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 		assertThat(itemsLink).isNotNull();
 
-		String result = client.follow(itemsLink, RestMediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
+		String result = client.follow(itemsLink, MediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
 		String href = JsonPath.<JSONArray> read(result, "$.alps.descriptor[?(@.id == 'item-representation')].href").get(0)
 				.toString();
 
@@ -157,7 +157,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		jsonPath += "descriptor[?(@.name == 'father')]."; // First father descriptor
 		jsonPath += "rt"; // Return type
 
-		String result = client.follow(usersLink, RestMediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
+		String result = client.follow(usersLink, MediaTypes.ALPS_JSON).andReturn().getResponse().getContentAsString();
 		String rt = JsonPath.<JSONArray> read(result, jsonPath).get(0).toString();
 
 		assertThat(rt).contains(ProfileController.PROFILE_ROOT_MAPPING).endsWith("-representation");
@@ -169,7 +169,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		Link profileLink = client.discoverUnique("profile");
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
 
-		client.follow(itemsLink, RestMediaTypes.ALPS_JSON)//
+		client.follow(itemsLink, MediaTypes.ALPS_JSON)//
 				// Exposes identifier if configured to
 				.andExpect(jsonPath("$.alps.descriptor[*].descriptor[*].name", hasItems("id", "name")));
 	}

@@ -32,6 +32,7 @@ import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkDiscoverers;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -102,8 +103,8 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 		Link peopleLink = client.discoverUnique(new Link(ROOT_URI), "people");
 		Link profileLink = client.discoverUnique(peopleLink, ProfileResourceProcessor.PROFILE_REL);
 
-		client.follow(profileLink, RestMediaTypes.ALPS_JSON).andExpect(status().is2xxSuccessful())
-				.andExpect(content().contentTypeCompatibleWith(RestMediaTypes.ALPS_JSON));
+		client.follow(profileLink, MediaTypes.ALPS_JSON).andExpect(status().is2xxSuccessful())
+				.andExpect(content().contentTypeCompatibleWith(MediaTypes.ALPS_JSON));
 
 		client.follow(profileLink, RestMediaTypes.SCHEMA_JSON).andExpect(status().is2xxSuccessful())
 				.andExpect(content().contentTypeCompatibleWith(RestMediaTypes.SCHEMA_JSON));
