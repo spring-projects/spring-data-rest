@@ -103,7 +103,8 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 			ServerHttpResponse response) {
 
 		return body instanceof RootResourceInformation
-				? Collections.singletonMap("alps", converter.convert((RootResourceInformation) body)) : body;
+				? Collections.singletonMap("alps", converter.convert((RootResourceInformation) body))
+				: body;
 	}
 
 	/*

@@ -76,7 +76,7 @@ public class AlpsController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAllow(Collections.singleton(HttpMethod.GET));
 
-		return new ResponseEntity<Object>(headers, HttpStatus.OK);
+		return new ResponseEntity<>(headers, HttpStatus.OK);
 	}
 
 	/**
@@ -91,7 +91,7 @@ public class AlpsController {
 
 		verifyAlpsEnabled();
 
-		return new ResponseEntity<RootResourceInformation>(information, HttpStatus.OK);
+		return new ResponseEntity<>(information, HttpStatus.OK);
 	}
 
 	private void verifyAlpsEnabled() {

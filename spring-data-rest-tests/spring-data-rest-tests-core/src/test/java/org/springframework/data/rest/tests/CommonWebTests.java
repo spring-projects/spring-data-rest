@@ -21,12 +21,11 @@ import static org.junit.Assume.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import net.minidev.json.JSONArray;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
+import net.minidev.json.JSONArray;
 import org.junit.Test;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.hateoas.Link;
@@ -45,8 +44,7 @@ import com.jayway.jsonpath.JsonPath;
  * This class contains a common test suite used to verify multiple data stores with the same domain space. When
  * verifying support of a new data store, it's good to start with extending this suite of tests. However, if the data
  * store doesn't map well onto this, then a good alternative would be write a new test suite using
- * {@link org.springframework.data.rest.webmvc.AbstractWebIntegrationTests AbstractWebIntegrationTests} as the test
- * harness.
+ * {@link AbstractWebIntegrationTests AbstractWebIntegrationTests} as the test harness.
  *
  * @author Oliver Gierke
  * @author Greg Turnquist
