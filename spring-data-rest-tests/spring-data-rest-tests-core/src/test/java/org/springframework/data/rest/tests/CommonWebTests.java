@@ -89,7 +89,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 			client.follow(profileLink, RestMediaTypes.SCHEMA_JSON).andExpect(status().is2xxSuccessful());
 
 			// ALPS
-			client.follow(profileLink, RestMediaTypes.ALPS_JSON).andExpect(status().is2xxSuccessful());
+			client.follow(profileLink, MediaTypes.ALPS_JSON).andExpect(status().is2xxSuccessful());
 		}
 	}
 

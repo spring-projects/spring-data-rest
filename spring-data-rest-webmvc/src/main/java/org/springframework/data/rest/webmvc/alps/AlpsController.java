@@ -25,8 +25,8 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.ProfileController;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -68,7 +68,7 @@ public class AlpsController {
 	 * @return
 	 */
 	@RequestMapping(value = ProfileController.RESOURCE_PROFILE_MAPPING, method = OPTIONS,
-			produces = RestMediaTypes.ALPS_JSON_VALUE)
+			produces = MediaTypes.ALPS_JSON_VALUE)
 	HttpEntity<?> alpsOptions() {
 
 		verifyAlpsEnabled();
@@ -86,7 +86,7 @@ public class AlpsController {
 	 * @return
 	 */
 	@RequestMapping(value = ProfileController.RESOURCE_PROFILE_MAPPING, method = GET,
-			produces = { MediaType.ALL_VALUE, RestMediaTypes.ALPS_JSON_VALUE })
+			produces = { MediaType.ALL_VALUE, MediaTypes.ALPS_JSON_VALUE })
 	HttpEntity<RootResourceInformation> descriptor(RootResourceInformation information) {
 
 		verifyAlpsEnabled();
