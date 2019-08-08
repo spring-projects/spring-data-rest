@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * {@code application/alps+json}.
  *
  * @author Oliver Gierke
+ * @author Greg Turnquist
  */
 public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConverter
 		implements ResponseBodyAdvice<Object> {
@@ -102,7 +103,8 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 			ServerHttpResponse response) {
 
 		return body instanceof RootResourceInformation
-				? Collections.singletonMap("alps", converter.convert((RootResourceInformation) body)) : body;
+				? Collections.singletonMap("alps", converter.convert((RootResourceInformation) body))
+				: body;
 	}
 
 	/*
