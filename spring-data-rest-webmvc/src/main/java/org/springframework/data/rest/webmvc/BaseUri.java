@@ -18,11 +18,14 @@ package org.springframework.data.rest.webmvc;
 import static org.springframework.util.StringUtils.*;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.hateoas.Link;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -157,5 +160,25 @@ public class BaseUri {
 		}
 
 		return ServletUriComponentsBuilder.fromCurrentServletMapping().path(baseUri.toString());
+	}
+
+	/**
+	 * Using a non-{@link BasePathAwareController} {@link Link}, create a proper one using the {@link BaseUri}.
+	 *
+	 * @param originalLink - Spring HATEOAS link without the {@link BaseUri} applied.
+	 * @param configuration - {@link RepositoryRestConfiguration} to fetch the base URI.
+	 * @return new {@link Link} with these two values melded together
+	 */
+	public static Link getBaseUriAwareLink(Link originalLink, RepositoryRestConfiguration configuration) {
+
+		try {
+			BaseUri baseUri = new BaseUri(configuration.getBaseUri());
+			String completeUri = baseUri.getUriComponentsBuilder().path(new URI(originalLink.getHref()).getPath()).build().toString();
+
+			return new Link(completeUri).withRel(originalLink.getRel());
+		} catch (URISyntaxException e) {
+			throw new IllegalStateException(e);
+		}
+
 	}
 }
