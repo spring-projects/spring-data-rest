@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.2.0.RC3 (2019-09-06)
+-----------------------------------------
+* DATAREST-1421 - Deprecate ALPS_JSON in favor of Spring HATEOAS media type definition.
+* DATAREST-1420 - Release 3.2 RC3 (Moore).
+
+
 Changes in version 3.2.0.RC2 (2019-08-05)
 -----------------------------------------
 * DATAREST-1416 - Upgrade to Solr 8.2.0.
