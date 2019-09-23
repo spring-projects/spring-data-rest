@@ -49,12 +49,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.plugin</groupId>
-			<artifactId>spring-plugin-core</artifactId>
-			<version>${springplugin}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.atteo</groupId>
 			<artifactId>evo-inflector</artifactId>
 			<version>${evoinflector}</version>
