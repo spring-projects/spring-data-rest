@@ -16,7 +16,6 @@
 	</parent>
 
 	<properties>
-		<springplugin>2.0.0.M2</springplugin>
 		<evoinflector>1.2.2</evoinflector>
 		<java-module-name>spring.data.rest.core</java-module-name>
 		<project.root>${basedir}/..</project.root>
@@ -51,7 +50,7 @@
 		<dependency>
 			<groupId>org.springframework.plugin</groupId>
 			<artifactId>spring-plugin-core</artifactId>
-			<version>${springplugin}</version>
+			<version>${spring-plugin}</version>
 		</dependency>
 
 		<dependency>
