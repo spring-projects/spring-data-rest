@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 original author or authors.
+ * Copyright 2016-2019 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * Unit tests for {@link MappingAwarePageableArgumentResolver}.
  *
  * @author Mark Paluch
+ * @author Oliver Drotbohm
  */
 @RunWith(MockitoJUnitRunner.class)
 public class MappingAwarePageableArgumentResolverUnitTests {
@@ -82,14 +83,17 @@ public class MappingAwarePageableArgumentResolverUnitTests {
 
 		assertThat(result.getPageSize()).isEqualTo(1);
 		assertThat(result.getPageNumber()).isEqualTo(0);
-		assertThat(result.getSort()).isNull();
+		assertThat(result.getSort().isUnsorted()).isTrue();
 	}
 
 	@Test // DATAREST-906
-	public void resolveArgumentShouldReturnNoPageable() throws Exception {
+	public void resolveArgumentShouldReturnUnpagedPageable() throws Exception {
+
+		when(delegate.resolveArgument(parameter, modelAndViewContainer, webRequest, binderFactory))
+				.thenReturn(Pageable.unpaged());
 
 		Pageable result = resolver.resolveArgument(parameter, modelAndViewContainer, webRequest, binderFactory);
 
-		assertThat(result).isNull();
+		assertThat(result.isUnpaged()).isTrue();
 	}
 }
