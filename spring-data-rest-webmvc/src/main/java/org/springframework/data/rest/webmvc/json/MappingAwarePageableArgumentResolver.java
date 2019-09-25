@@ -65,11 +65,12 @@ public class MappingAwarePageableArgumentResolver implements HandlerMethodArgume
 
 		Pageable pageable = delegate.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
 
-		if (pageable == null || pageable.getSort() == null) {
+		if (pageable.isUnpaged() || pageable.getSort().isUnsorted()) {
 			return pageable;
 		}
 
 		Sort translated = translator.translateSort(pageable.getSort(), methodParameter, webRequest);
+
 		return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), translated);
 	}
 }
