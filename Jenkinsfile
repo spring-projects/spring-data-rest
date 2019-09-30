@@ -3,8 +3,8 @@ pipeline {
 
 	triggers {
 		pollSCM 'H/10 * * * *'
-		upstream(upstreamProjects: "spring-hateoas/master,spring-data-cassandra/master,spring-data-couchbase/master,spring-data-elasticsearch/master,spring-data-gemfire/master," +
-				"spring-data-geode/master,spring-data-jpa/master,spring-data-ldap/master,spring-data-mongodb/master,spring-data-neo4j/master,spring-data-redis/master,spring-data-solr/master", threshold: hudson.model.Result.SUCCESS)
+		upstream(upstreamProjects: "spring-hateoas/1.0.x,spring-data-cassandra/2.2.x,spring-data-couchbase/3.2.x,spring-data-elasticsearch/3.2.x,spring-data-gemfire/2.2.x," +
+				"spring-data-geode/2.2.x,spring-data-jpa/2.2.x,spring-data-ldap/2.2.x,spring-data-mongodb/2.2.x,spring-data-neo4j/5.2.x,spring-data-redis/2.2.x,spring-data-solr/4.1.x", threshold: hudson.model.Result.SUCCESS)
 	}
 
 	options {
@@ -16,7 +16,7 @@ pipeline {
 		stage("Test") {
 			when {
 				anyOf {
-					branch 'master'
+					branch '3.2.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -40,7 +40,7 @@ pipeline {
 		stage('Release to artifactory') {
 			when {
 				anyOf {
-					branch 'master'
+					branch '3.2.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -71,7 +71,7 @@ pipeline {
 		}
 		stage('Publish documentation') {
 			when {
-				branch 'master'
+				branch '3.2.x'
 			}
 			agent {
 				docker {
