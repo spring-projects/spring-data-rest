@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.11.RELEASE (2019-09-30)
+----------------------------------------------
+* DATAREST-1427 - Fix unpaged Pageable handling in MappingAwarePageableArgumentResolver.
+* DATAREST-1421 - Deprecate ALPS_JSON in favor of Spring HATEOAS media type definition.
+* DATAREST-1418 - Release 3.1.11 (Lovelace SR11).
+
+
 Changes in version 3.2.0.RC3 (2019-09-06)
 -----------------------------------------
 * DATAREST-1421 - Deprecate ALPS_JSON in favor of Spring HATEOAS media type definition.
