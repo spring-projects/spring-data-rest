@@ -60,7 +60,23 @@
 
 	<build>
 		<plugins>
-
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>empty-javadoc-jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>javadoc</classifier>
+							<classesDirectory>${basedir}/javadoc</classesDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -116,7 +132,7 @@
 								<copy todir="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-explorer">
 									<fileset dir="${project.build.directory}/hal-explorer/META-INF/resources/webjars/hal-explorer/${explorer.version}" />
 								</copy>
-								<!-- 
+								<!--
 								<copy todir="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-explorer/vendor/js">
 									<fileset dir="${project.build.directory}/json-editor/META-INF/resources/webjars/json-editor/${json-editor.version}" />
 								</copy>
@@ -168,7 +184,7 @@
 										<replacevalue>The HAL Explorer (for Spring Data REST)</replacevalue>
 									</replacefilter>
 								</replace>
-								<!-- 
+								<!--
 								<delete file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-explorer/explorer.html" />
 								-->
 							</target>
