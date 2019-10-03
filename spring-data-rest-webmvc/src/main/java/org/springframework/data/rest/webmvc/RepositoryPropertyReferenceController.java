@@ -77,6 +77,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Ľubomír Varga
  */
 @RepositoryRestController
 @SuppressWarnings({ "unchecked" })
@@ -318,7 +319,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 									"Cannot PATCH a reference to this singular property since the property type is not a List or a Map.");
 				}
 
-				if (source.getLinks().hasSingleLink()) {
+				if (!source.getLinks().hasSingleLink()) {
 					throw new IllegalArgumentException(
 							"Must send only 1 link to update a property reference that isn't a List or a Map.");
 				}

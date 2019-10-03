@@ -61,6 +61,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Mark Paluch
+ * @author Ľubomír Varga
  */
 @Transactional
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
@@ -319,6 +320,40 @@ public class JpaWebTests extends CommonWebTests {
 
 		patchAndGet(frodoSiblingLink, toUriList(links.get(2)), TEXT_URI_LIST);
 		assertSiblingNames(frodoSiblingLink, "Merry", "Pippin");
+	}
+
+	/**
+	 * Test does simulate changing creator association from Order to Person. First it sets Frodo Baggins as creator and
+	 * checks for its first name. Than it sets Pippin Baggins as creator of the Order. Check for first name is done again.
+	 */
+	@Test // DATAREST-1356
+	public void associateCreatorToOrderWithSinglePut() throws Exception {
+
+		Link firstCreatorLink = preparePersonResource(new Person("Frodo", "Baggins"));
+		Link secondCreatorLink = preparePersonResource(new Person("Pippin", "Baggins"));
+		Link orderLinkToItsCreator = prepareOrderResource(new Order());
+
+		putAndGet(orderLinkToItsCreator, toUriList(firstCreatorLink), TEXT_URI_LIST);
+		assertCreatorName(orderLinkToItsCreator, "Frodo");
+
+		putAndGet(orderLinkToItsCreator, toUriList(secondCreatorLink), TEXT_URI_LIST);
+		assertCreatorName(orderLinkToItsCreator, "Pippin");
+	}
+
+	/**
+	 * Negative test scenario, which does try to put two persons at once as the creator of Order. We expect that result
+	 * will contain "send only 1 link" substring.
+	 */
+	@Test // DATAREST-1356
+	public void associateTwoCreatorsToOrderWithSinglePut() throws Exception {
+
+		Link firstCreatorLink = preparePersonResource(new Person("Frodo", "Baggins"));
+		Link secondCreatorLink = preparePersonResource(new Person("Pippin", "Baggins"));
+		Link orderLinkToItsCreator = prepareOrderResource(new Order());
+
+		MockHttpServletResponse response = putOnlyExpect5XXStatus(orderLinkToItsCreator,
+				toUriList(firstCreatorLink, secondCreatorLink), TEXT_URI_LIST);
+		assertThat(response.getContentAsString()).contains("send only 1 link");
 	}
 
 	@Test // DATAREST-219
@@ -674,6 +709,28 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	/**
+	 * @return link to creator of order (associative link for given order instance)
+	 */
+	private Link prepareOrderResource(Order order) throws Exception {
+		Link orderLink = client.discoverUnique(LinkRelation.of("orders"));
+
+		MockHttpServletResponse primaryResponse = postAndGet(orderLink, mapper.writeValueAsString(order),
+				MediaType.APPLICATION_JSON);
+		return client.assertHasLinkWithRel("creator", primaryResponse);
+	}
+
+	/**
+	 * @return link to given person (canonical, self, link)
+	 */
+	private Link preparePersonResource(Person person) throws Exception {
+		Link orderLink = client.discoverUnique(LinkRelation.of("people"));
+
+		MockHttpServletResponse primaryResponse = postAndGet(orderLink, mapper.writeValueAsString(person),
+				MediaType.APPLICATION_JSON);
+		return client.assertHasLinkWithRel("self", primaryResponse);
+	}
+
+	/**
 	 * Asserts the {@link Person} resource the given link points to contains siblings with the given names.
 	 *
 	 * @param link
@@ -687,6 +744,13 @@ public class JpaWebTests extends CommonWebTests {
 
 		assertThat(persons).hasSize(siblingNames.length);
 		assertThat(persons).contains(siblingNames);
+	}
+
+	private void assertCreatorName(Link orderLinkToItsCreator, String creatorName) throws Exception {
+		String responseBody = client.request(orderLinkToItsCreator).getContentAsString();
+		String personFirstName = JsonPath.read(responseBody, "$.firstName");
+
+		assertThat(personFirstName).isEqualTo(creatorName);
 	}
 
 	private void assertPersonWithNameAndSiblingLink(String name) throws Exception {
