@@ -323,9 +323,8 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	/**
-	 * Test does simulate changing creator association from Order to Person. First
-	 * it sets Frodo Baggins as creator and checks for its first name. Than it sets
-	 * Pippin Baggins as creator of the Order. Check for first name is done again.
+	 * Test does simulate changing creator association from Order to Person. First it sets Frodo Baggins as creator and
+	 * checks for its first name. Than it sets Pippin Baggins as creator of the Order. Check for first name is done again.
 	 */
 	@Test // DATAREST-1356
 	public void associateCreatorToOrderWithSinglePut() throws Exception {
@@ -339,6 +338,22 @@ public class JpaWebTests extends CommonWebTests {
 
 		putAndGet(orderLinkToItsCreator, toUriList(secondCreatorLink), TEXT_URI_LIST);
 		assertCreatorName(orderLinkToItsCreator, "Pippin");
+	}
+
+	/**
+	 * Negative test scenario, which does try to put two persons at once as the creator of Order. We expect that result
+	 * will contain "send only 1 link" substring.
+	 */
+	@Test // DATAREST-1356
+	public void associateTwoCreatorsToOrderWithSinglePut() throws Exception {
+
+		Link firstCreatorLink = preparePersonResource(new Person("Frodo", "Baggins"));
+		Link secondCreatorLink = preparePersonResource(new Person("Pippin", "Baggins"));
+		Link orderLinkToItsCreator = prepareOrderResource(new Order());
+
+		MockHttpServletResponse response = putOnlyExpect5XXStatus(orderLinkToItsCreator,
+				toUriList(firstCreatorLink, secondCreatorLink), TEXT_URI_LIST);
+		assertThat(response.getContentAsString()).contains("send only 1 link");
 	}
 
 	@Test // DATAREST-219

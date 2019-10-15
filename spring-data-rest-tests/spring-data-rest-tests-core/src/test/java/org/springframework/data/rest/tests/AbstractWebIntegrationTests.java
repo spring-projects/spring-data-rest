@@ -28,7 +28,6 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.Link;
@@ -61,6 +60,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Christoph Strobl
+ * @author Ľubomír Varga
  */
 @RunWith(SpringRunner.class)
 @WebAppConfiguration
@@ -111,6 +111,17 @@ public abstract class AbstractWebIntegrationTests {
 		MockHttpServletResponse response = mvc.perform(put(href).content(payload.toString()).contentType(mediaType))//
 				.andExpect(status().is2xxSuccessful())//
 				.andReturn().getResponse();
+
+		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(link);
+	}
+
+	protected MockHttpServletResponse putOnlyExpect5XXStatus(Link link, Object payload, MediaType mediaType)
+			throws Exception {
+
+		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
+
+		MockHttpServletResponse response = mvc.perform(put(href).content(payload.toString()).contentType(mediaType))//
+				.andExpect(status().is5xxServerError()).andReturn().getResponse();
 
 		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(link);
 	}
