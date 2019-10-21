@@ -17,14 +17,12 @@ package org.springframework.data.rest.webmvc.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import net.minidev.json.JSONArray;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -32,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import net.minidev.json.JSONArray;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -712,6 +711,7 @@ public class JpaWebTests extends CommonWebTests {
 	 * @return link to creator of order (associative link for given order instance)
 	 */
 	private Link prepareOrderResource(Order order) throws Exception {
+
 		Link orderLink = client.discoverUnique(LinkRelation.of("orders"));
 
 		MockHttpServletResponse primaryResponse = postAndGet(orderLink, mapper.writeValueAsString(order),
@@ -723,6 +723,7 @@ public class JpaWebTests extends CommonWebTests {
 	 * @return link to given person (canonical, self, link)
 	 */
 	private Link preparePersonResource(Person person) throws Exception {
+
 		Link orderLink = client.discoverUnique(LinkRelation.of("people"));
 
 		MockHttpServletResponse primaryResponse = postAndGet(orderLink, mapper.writeValueAsString(person),
@@ -773,7 +774,7 @@ public class JpaWebTests extends CommonWebTests {
 
 	private static String toUriList(Link... links) {
 
-		List<String> uris = new ArrayList<String>(links.length);
+		List<String> uris = new ArrayList<>(links.length);
 
 		for (Link link : links) {
 			uris.add(link.expand().getHref());
