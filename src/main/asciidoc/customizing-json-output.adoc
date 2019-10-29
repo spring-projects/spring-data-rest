@@ -28,7 +28,7 @@ public ResourceProcessor<Resource<Person>> personProcessor() {
 ----
 ====
 
-IMPORTANT: The preceding example hard codes a link to `http://localhost:8080/people`. If you have a Spring MVC endpoint inside your app to which you wish to link, consider using Spring HATEOAS's https://github.com/spring-projects/spring-hateoas#building-links-pointing-to-methods[`linkTo(...)`] method to avoid managing the URL.
+IMPORTANT: The preceding example hard codes a link to `http://localhost:8080/people`. If you have a Spring MVC endpoint inside your app to which you wish to link, consider using Spring HATEOAS's https://docs.spring.io/spring-hateoas/docs/current/reference/html/#fundamentals.obtaining-links.builder.methods[`linkTo(...)`] method to avoid managing the URL.
 
 == Adding Links
 
