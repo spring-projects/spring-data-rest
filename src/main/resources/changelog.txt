@@ -1,6 +1,17 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.2.1.RELEASE (2019-11-04)
+---------------------------------------------
+* DATAREST-1446 - DefaultExcerptProjector exposes projection present even if metadata returns Optional.empty().
+* DATAREST-1443 - Associated resources gets embedded and also linked.
+* DATAREST-1440 - Fields mapped with @JsonAnySetter are no longer updatable with http PATCH.
+* DATAREST-1435 - Embedded resources default serialisation with projector.
+* DATAREST-1431 - Release 3.2.1 (Moore SR1).
+* DATAREST-1430 - Publish Javadoc jar for HAL Browser/HAL Explorer.
+* DATAREST-1356 - Can't PUT single-link URI references.
+
+
 Changes in version 3.1.12.RELEASE (2019-11-04)
 ----------------------------------------------
 * DATAREST-1440 - Fields mapped with @JsonAnySetter are no longer updatable with http PATCH.
