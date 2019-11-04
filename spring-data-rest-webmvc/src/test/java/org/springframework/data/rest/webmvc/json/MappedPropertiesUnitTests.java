@@ -23,6 +23,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentEntity;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
@@ -90,13 +91,28 @@ public class MappedPropertiesUnitTests {
 
 		MappedProperties properties = MappedProperties.forDeserialization(entity, mapper);
 
-		assertThat(properties.hasPersistentPropertyForField("anotherReadOnlyProperty")).isFalse();
+		assertThat(properties.isWritableProperty("anotherReadOnlyProperty")).isFalse();
 		assertThat(properties.getPersistentProperty("readOnlyProperty")).isNull();
 
 		properties = MappedProperties.forSerialization(entity, mapper);
 
 		assertThat(properties.hasPersistentPropertyForField("anotherReadOnlyProperty")).isTrue();
 		assertThat(properties.getPersistentProperty("readOnlyProperty")).isNotNull();
+	}
+
+	@Test // DATAREST-1440
+	public void exposesExistanceOfCatchAllMethod() {
+
+		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(SampleWithJsonAnySetter.class);
+
+		MappedProperties properties = MappedProperties.forDeserialization(entity, mapper);
+
+		assertThat(properties.isWritableProperty("someProperty")).isTrue();
+		assertThat(properties.isWritableProperty("readOnlyProperty")).isFalse();
+		assertThat(properties.isWritableProperty("anotherReadOnlyProperty")).isFalse();
+
+		// Due to @JsonAnySetter
+		assertThat(properties.isWritableProperty("someRandomProperty")).isTrue();
 	}
 
 	static class Sample {
@@ -107,5 +123,15 @@ public class MappedPropertiesUnitTests {
 		public @JsonProperty("email") String emailAddress;
 		public @JsonProperty(access = Access.READ_ONLY) String readOnlyProperty;
 		public @ReadOnlyProperty String anotherReadOnlyProperty;
+	}
+
+	static class SampleWithJsonAnySetter {
+
+		public String someProperty;
+		public @JsonProperty(access = Access.READ_ONLY) String readOnlyProperty;
+		public @ReadOnlyProperty String anotherReadOnlyProperty;
+
+		@JsonAnySetter
+		public void set(String key, String value) {}
 	}
 }
