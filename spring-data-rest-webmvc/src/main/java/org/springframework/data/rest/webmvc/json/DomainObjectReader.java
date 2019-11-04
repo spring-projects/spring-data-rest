@@ -227,7 +227,8 @@ public class DomainObjectReader {
 			JsonNode child = entry.getValue();
 			String fieldName = entry.getKey();
 
-			if (!mappedProperties.hasPersistentPropertyForField(fieldName)) {
+			if (!mappedProperties.isWritableProperty(fieldName)) {
+
 				i.remove();
 				continue;
 			}
