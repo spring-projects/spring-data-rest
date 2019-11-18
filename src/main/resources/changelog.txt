@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.13.RELEASE (2019-11-18)
+----------------------------------------------
+* DATAREST-1450 - Release 3.1.13 (Lovelace SR13).
+
+
 Changes in version 3.2.1.RELEASE (2019-11-04)
 ---------------------------------------------
 * DATAREST-1446 - DefaultExcerptProjector exposes projection present even if metadata returns Optional.empty().
