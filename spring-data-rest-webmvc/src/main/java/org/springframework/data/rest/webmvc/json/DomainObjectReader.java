@@ -20,14 +20,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorFactory;
@@ -62,6 +57,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Mark Paluch
  * @author Craig Andrews
  * @author Mathias Düsterhöft
+ * @author Stefan Reichert
  * @since 2.2
  */
 @RequiredArgsConstructor
@@ -451,12 +447,19 @@ public class DomainObjectReader {
 					: CollectionFactory.createApproximateCollection(targetCollection, sourceCollection.size());
 
 			Iterator<Object> sourceIterator = sourceCollection.iterator();
-			Iterator<Object> targetIterator = targetCollection == null ? Collections.emptyIterator()
-					: targetCollection.iterator();
+			// FIX DATAREST-1012: map the target collection by type to avoid incompatible type on heterogeneous
+            // polymorphic collections. This map is used to retrieve matching merge targets for the incoming elements
+            Map<Class<?>, Iterator<Object>> targetIteratorByTypeMap = createIteratorByTypeMap(targetCollection);
 
 			while (sourceIterator.hasNext()) {
 
 				Object sourceElement = sourceIterator.next();
+                boolean sourceElementTypeExists = targetIteratorByTypeMap.containsKey(sourceElement.getClass());
+
+                // FIX DATAREST-1012: identify an object of matching type as merge target
+                Iterator<Object> targetIterator = sourceElementTypeExists
+                        ? targetIteratorByTypeMap.get(sourceElement.getClass())
+                        : Collections.emptyListIterator();
 				Object targetElement = targetIterator.hasNext() ? targetIterator.next() : null;
 
 				result.add(mergeForPut(sourceElement, targetElement, mapper));
@@ -479,6 +482,23 @@ public class DomainObjectReader {
 		});
 	}
 
+    /**
+     * Returns a map containing target collection elements grouped by their type. The key is represented by the
+     * type's {@link Class} mapping a collection of the respective matching elements.
+     *
+     * @param targetCollection
+     * @return
+     */
+    private Map<Class<?>, Iterator<Object>> createIteratorByTypeMap(Collection<Object> targetCollection) {
+        Map<Class<?>, Iterator<Object>> targetIteratorByTypeMap = new HashMap<>();
+        if (targetCollection != null) {
+            targetCollection.stream()
+                    .collect(Collectors.groupingBy(Object::getClass))
+                    .forEach((key, value) -> targetIteratorByTypeMap.put(key, value.iterator()));
+        }
+        return targetIteratorByTypeMap;
+    }
+
 	@SuppressWarnings("unchecked")
 	private static Collection<Object> asCollection(Object source) {
 
@@ -497,7 +517,6 @@ public class DomainObjectReader {
 	 * Returns the given source instance as {@link Collection} or creates a new one for the given type.
 	 *
 	 * @param source can be {@literal null}.
-	 * @param type must not be {@literal null} in case {@code source} is null.
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
