@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 
 import org.assertj.core.api.Condition;
 import org.junit.After;
@@ -31,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.CommonWebTests;
+import org.springframework.data.rest.tests.TestMatchers;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -39,6 +41,7 @@ import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -53,6 +56,8 @@ import com.jayway.jsonpath.JsonPath;
  */
 @ContextConfiguration(classes = MongoDbRepositoryConfig.class)
 public class MongoWebTests extends CommonWebTests {
+
+	private static final MediaType TEXT_URI_LIST = MediaType.parseMediaType("text/uri-list");
 
 	@Autowired ProfileRepository repository;
 	@Autowired UserRepository userRepository;
@@ -86,15 +91,28 @@ public class MongoWebTests extends CommonWebTests {
 
 		userRepository.save(thomas);
 
+		User mark = new User();
+		mark.firstname = "Mark";
+		mark.lastname = "Paluch";
+		mark.colleagues = Arrays.asList(thomas);
+
+		userRepository.save(mark);
+
 		User oliver = new User();
 		oliver.firstname = "Oliver";
 		oliver.lastname = "Gierke";
 		oliver.address = address;
-		oliver.colleagues = Arrays.asList(thomas);
+		oliver.colleagues = Arrays.asList(thomas, mark);
 		userRepository.save(oliver);
 
-		thomas.colleagues = Arrays.asList(oliver);
+		thomas.manager = oliver;
+		thomas.colleagues = Arrays.asList(oliver, mark);
+		thomas.map = new HashMap<>();
+		thomas.map.put("oliver", oliver);
+		thomas.map.put("mark", mark);
+
 		userRepository.save(thomas);
+
 	}
 
 	@After
@@ -328,8 +346,8 @@ public class MongoWebTests extends CommonWebTests {
 		Profile profile = repository.findAll().iterator().next();
 
 		mvc.perform(get(link.expand(profile.getId()).getHref()))//
-				.andExpect(header().string("ETag", is("\"0\"")))//
-				.andExpect(header().string("Last-Modified", is(notNullValue())));
+				.andExpect(header().string(ETAG, is("\"0\"")))//
+				.andExpect(header().string(LAST_MODIFIED, is(notNullValue())));
 	}
 
 	@Test // DATAREST-835
@@ -340,7 +358,46 @@ public class MongoWebTests extends CommonWebTests {
 		Profile profile = repository.findAll().iterator().next();
 
 		mvc.perform(get(link.expand(profile.getType()).getHref()))//
-				.andExpect(header().string("ETag", is(nullValue())))//
-				.andExpect(header().string("Last-Modified", is(nullValue())));
+				.andExpect(header().string(ETAG, is(nullValue())))//
+				.andExpect(header().string(LAST_MODIFIED, is(nullValue())));
+	}
+
+	@Test // DATAREST-1458
+	public void accessCollectionAssociationResourceAsUriList() throws Exception {
+
+		Link usersLink = client.discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
+		Link colleaguesLink = client.assertHasLinkWithRel("colleagues", client.request(userLink));
+
+		mvc.perform(get(colleaguesLink.expand().getHref()).accept(TEXT_URI_LIST)) //
+				.andExpect(status().isOk()) //
+				.andExpect(header().string(CONTENT_TYPE, is(TEXT_URI_LIST.toString()))) //
+				.andExpect(content().string(TestMatchers.hasNumberOfLines(2)));
+	}
+
+	@Test // DATAREST-1458
+	public void accessAssociationResourceAsUriList() throws Exception {
+
+		Link usersLink = client.discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
+		Link managerLink = client.assertHasLinkWithRel("manager", client.request(userLink));
+
+		mvc.perform(get(managerLink.expand().getHref()).accept(TEXT_URI_LIST)) //
+				.andExpect(header().string(CONTENT_TYPE, is(TEXT_URI_LIST.toString()))) //
+				.andExpect(content().string(TestMatchers.hasNumberOfLines(1)));
+	}
+
+	@Test // DATAREST-1458
+	public void accessMapCollectionAssociationResourceAsUriList() throws Exception {
+
+		Link usersLink = client.discoverUnique("users");
+		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
+		Link mapLink = client.assertHasLinkWithRel("map", client.request(userLink));
+
+		mvc.perform(get(mapLink.expand().getHref())) //
+				.andDo(MockMvcResultHandlers.print());
+
+		mvc.perform(get(mapLink.expand().getHref()).accept(TEXT_URI_LIST)) //
+				.andExpect(status().isUnsupportedMediaType());
 	}
 }

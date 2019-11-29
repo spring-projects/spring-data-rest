@@ -51,6 +51,8 @@ public class User {
 	public org.joda.time.LocalDateTime jodaDateTime;
 	public TypeWithPattern pattern;
 	public @DBRef(lazy = true) List<User> colleagues;
+	public @DBRef(lazy = true) User manager;
+	public @DBRef(lazy = true) Map<String, User> map;
 	public Map<String, Nested> colleaguesMap = new HashMap<String, Nested>();
 
 	public static class EmailAddress {
