@@ -15,22 +15,18 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.rest.webmvc.ControllerUtils.*;
+import static java.util.stream.Collectors.*;
 import static org.springframework.data.rest.webmvc.RestMediaTypes.*;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -52,7 +48,6 @@ import org.springframework.data.rest.core.event.AfterLinkSaveEvent;
 import org.springframework.data.rest.core.event.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.core.event.BeforeLinkSaveEvent;
 import org.springframework.data.rest.core.mapping.PropertyAwareResourceMapping;
-import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.BackendId;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -61,8 +56,8 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.Links;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -71,7 +66,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.server.UnsupportedMediaTypeStatusException;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 
 /**
  * @author Jon Brisbin
@@ -126,13 +125,9 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 			} else if (prop.property.isMap()) {
 
-				Map<Object, EntityModel<?>> resources = new HashMap<Object, EntityModel<?>>();
-
-				for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) it).entrySet()) {
-					resources.put(entry.getKey(), assembler.toModel(entry.getValue()));
-				}
-
-				return new EntityModel<Object>(resources);
+				return ((Map<Object, Object>) it).entrySet().stream() //
+						.collect(collectingAndThen(toMap(Map.Entry::getKey, entry -> assembler.toModel(entry.getValue())),
+								MapModel::new));
 
 			} else {
 
@@ -220,54 +215,34 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				doWithReferencedProperty(repoRequest, id, property, handler, HttpMethod.GET));
 	}
 
-	@RequestMapping(value = BASE_MAPPING, method = GET,
-			produces = { SPRING_DATA_COMPACT_JSON_VALUE, TEXT_URI_LIST_VALUE })
+	@RequestMapping(value = BASE_MAPPING, method = GET, produces = TEXT_URI_LIST_VALUE)
 	public ResponseEntity<RepresentationModel<?>> followPropertyReferenceCompact(RootResourceInformation repoRequest,
-			@BackendId Serializable id, @PathVariable String property, PersistentEntityResourceAssembler assembler)
-			throws Exception {
+			@BackendId Serializable id, @PathVariable String property, @RequestHeader HttpHeaders requestHeaders,
+			PersistentEntityResourceAssembler assembler) throws Exception {
 
-		ResponseEntity<RepresentationModel<?>> response = followPropertyReference(repoRequest, id, property, assembler);
+		Function<ReferencedProperty, RepresentationModel<?>> handler = prop -> prop.mapValue(it -> {
 
-		if (response.getStatusCode() != HttpStatus.OK) {
-			return response;
-		}
+			if (prop.property.isCollectionLike()) {
 
-		ResourceMetadata repoMapping = repoRequest.getResourceMetadata();
-		PersistentProperty<?> persistentProp = repoRequest.getPersistentEntity().getRequiredPersistentProperty(property);
-		ResourceMapping propertyMapping = repoMapping.getMappingFor(persistentProp);
+				Links links = ((Collection<?>) it).stream() //
+						.map(assembler::getExpandedSelfLink) //
+						.collect(Links.collector());
 
-		RepresentationModel<?> resource = response.getBody();
+				return new RepresentationModel<>(links.toList());
 
-		List<Link> links = new ArrayList<Link>();
-
-		WebMvcLinkBuilder linkBuilder = linkTo(methodOn(RepositoryPropertyReferenceController.class)
-				.followPropertyReference(repoRequest, id, property, assembler));
-
-		if (resource instanceof EntityModel) {
-
-			Object content = ((EntityModel<?>) resource).getContent();
-			if (content instanceof Iterable) {
-
-				for (EntityModel<?> res : (Iterable<EntityModel<?>>) content) {
-					links.add(linkBuilder.withRel(propertyMapping.getRel()));
-				}
-
-			} else if (content instanceof Map) {
-
-				Map<Object, EntityModel<?>> map = (Map<Object, EntityModel<?>>) content;
-
-				for (Entry<Object, EntityModel<?>> entry : map.entrySet()) {
-					Link l = new Link(entry.getValue().getRequiredLink(IanaLinkRelations.SELF).getHref(),
-							entry.getKey().toString());
-					links.add(l);
-				}
+			} else if (prop.property.isMap()) {
+				throw new UnsupportedMediaTypeStatusException("Cannot produce compact representation of map property!");
 			}
 
-		} else {
-			links.add(linkBuilder.withRel(propertyMapping.getRel()));
-		}
+			return new RepresentationModel<>(assembler.getExpandedSelfLink(it));
 
-		return ControllerUtils.toResponseEntity(HttpStatus.OK, null, new EntityModel<Object>(EMPTY_RESOURCE_LIST, links));
+		}).orElse(new RepresentationModel<>());
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(TEXT_URI_LIST);
+
+		return ControllerUtils.toResponseEntity(HttpStatus.OK, headers,
+				doWithReferencedProperty(repoRequest, id, property, handler, HttpMethod.GET));
 	}
 
 	@RequestMapping(value = BASE_MAPPING, method = { PATCH, PUT, POST }, //
@@ -460,6 +435,30 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@ExceptionHandler
 	public ResponseEntity<Void> handle(HttpRequestMethodNotSupportedException exception) {
 		return exception.toResponse();
+	}
+
+	/**
+	 * Custom {@link RepresentationModel} to be used with maps as {@link EntityModel} doesn't properly unwrap {@link Map}s
+	 * due to some limitation in Jackson.
+	 *
+	 * @author Oliver Drotbohm
+	 * @see https://github.com/FasterXML/jackson-databind/issues/171
+	 */
+	private static class MapModel extends RepresentationModel<MapModel> {
+
+		private Map<? extends Object, ? extends Object> content;
+
+		public MapModel(Map<? extends Object, ? extends Object> content, Link... links) {
+
+			super(Arrays.asList(links));
+
+			this.content = content;
+		}
+
+		@JsonAnyGetter
+		public Map<? extends Object, ? extends Object> getContent() {
+			return content;
+		}
 	}
 
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
