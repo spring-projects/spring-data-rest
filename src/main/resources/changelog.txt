@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.2.3.RELEASE (2019-12-04)
+---------------------------------------------
+* DATAREST-1458 - Compact lookup of association resources (via text/uri-list) broken.
+* DATAREST-1456 - Release 3.2.3 (Moore SR3).
+
+
 Changes in version 3.1.14.RELEASE (2019-12-04)
 ----------------------------------------------
 * DATAREST-1455 - Release 3.1.14 (Lovelace SR14).
@@ -1430,4 +1436,5 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
