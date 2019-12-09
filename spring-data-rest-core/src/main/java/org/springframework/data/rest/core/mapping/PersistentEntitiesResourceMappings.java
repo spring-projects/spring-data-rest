@@ -20,14 +20,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.util.ProxyUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ConcurrentReferenceHashMap;
 
 /**
  * {@link ResourceMappings} for {@link PersistentEntities}.
@@ -41,8 +42,8 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	private final SearchResourceMappings searchResourceMappings = new SearchResourceMappings(
 			Collections.<MethodResourceMapping> emptyList());
 
-	private final Map<Class<?>, ResourceMetadata> cache = new HashMap<Class<?>, ResourceMetadata>();
-	private final Map<Class<?>, MappingResourceMetadata> mappingCache = new HashMap<Class<?>, MappingResourceMetadata>();
+	private final Map<Class<?>, ResourceMetadata> cache = new ConcurrentHashMap<>();
+	private final Map<Class<?>, MappingResourceMetadata> mappingCache = new ConcurrentReferenceHashMap<>();
 	private final Map<PersistentProperty<?>, ResourceMapping> propertyCache = new HashMap<PersistentProperty<?>, ResourceMapping>();
 
 	/**
@@ -63,16 +64,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 
 		Assert.notNull(type, "Type must not be null!");
 
-		type = ProxyUtils.getUserClass(type);
-
-		if (cache.containsKey(type)) {
-			return cache.get(type);
-		}
-
-		MappingResourceMetadata metadata = getMappingMetadataFor(type);
-		cache.put(type, metadata);
-
-		return metadata;
+		return cache.computeIfAbsent(ProxyUtils.getUserClass(type), it -> getMappingMetadataFor(it));
 	}
 
 	/**
@@ -87,21 +79,12 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		Assert.notNull(type, "Type must not be null!");
 		Class<?> userType = ProxyUtils.getUserClass(type);
 
-		MappingResourceMetadata mappingMetadata = mappingCache.get(userType);
+		return mappingCache.computeIfAbsent(ProxyUtils.getUserClass(type), it -> {
 
-		if (mappingMetadata != null) {
-			return mappingMetadata;
-		}
+			PersistentEntity<?, ? extends PersistentProperty<?>> entity = entities.getPersistentEntity(userType).orElse(null);
 
-		Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> entity = entities.getPersistentEntity(userType);
-
-		return entity.map(it -> {
-
-			MappingResourceMetadata metadata = new MappingResourceMetadata(it, this);
-			mappingCache.put(userType, metadata);
-			return metadata;
-
-		}).orElse(null);
+			return entity == null ? null : new MappingResourceMetadata(entity, this);
+		});
 	}
 
 	/*
@@ -152,7 +135,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	 */
 	@Override
 	public boolean hasMappingFor(Class<?> type) {
-		return cache.get(ProxyUtils.getUserClass(type)) != null;
+		return cache.get(type) != null;
 	}
 
 	/*
@@ -160,18 +143,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#getMappingFor(org.springframework.data.mapping.PersistentProperty)
 	 */
 	public ResourceMapping getMappingFor(PersistentProperty<?> property) {
-
-		ResourceMapping propertyMapping = propertyCache.get(property);
-
-		if (propertyMapping != null) {
-			return propertyMapping;
-		}
-
-		propertyMapping = new PersistentPropertyResourceMapping(property, this);
-
-		propertyCache.put(property, propertyMapping);
-
-		return propertyMapping;
+		return propertyCache.computeIfAbsent(property, it -> new PersistentPropertyResourceMapping(property, this));
 	}
 
 	public boolean isMapped(PersistentProperty<?> property) {
