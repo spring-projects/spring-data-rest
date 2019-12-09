@@ -27,7 +27,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.LinkBuilder;
 import org.springframework.hateoas.server.core.LinkBuilderSupport;
 import org.springframework.util.Assert;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriComponents;
 
 /**
  * {@link LinkBuilder} to be able to create links pointing to repositories.
@@ -45,19 +45,18 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 	 * @param baseUri
 	 */
 	public RepositoryLinkBuilder(ResourceMetadata metadata, BaseUri baseUri) {
-		this(metadata, baseUri.getUriComponentsBuilder().path(metadata.getPath().toString()), Collections.emptyList());
+		this(metadata, baseUri.appendPath(metadata.getPath()), Collections.emptyList());
 	}
 
 	/**
-	 * Creates a new {@link RepositoryLinkBuilder} with the given {@link ResourceMetadata} and
-	 * {@link UriComponentsBuilder}.
+	 * Creates a new {@link RepositoryLinkBuilder} with the given {@link ResourceMetadata} and {@link UriComponents}.
 	 *
 	 * @param metadata must not be {@literal null}.
-	 * @param builder must not be {@literal null}.
+	 * @param components must not be {@literal null}.
 	 */
-	private RepositoryLinkBuilder(ResourceMetadata metadata, UriComponentsBuilder builder, List<Affordance> affordances) {
+	private RepositoryLinkBuilder(ResourceMetadata metadata, UriComponents components, List<Affordance> affordances) {
 
-		super(builder, affordances);
+		super(components, affordances);
 
 		Assert.notNull(metadata, "ResourceMetadata must not be null!");
 
@@ -89,8 +88,8 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 	 * @see org.springframework.hateoas.server.core.LinkBuilderSupport#createNewInstance(org.springframework.web.util.UriComponentsBuilder, java.util.List)
 	 */
 	@Override
-	protected RepositoryLinkBuilder createNewInstance(UriComponentsBuilder builder, List<Affordance> affordances) {
-		return new RepositoryLinkBuilder(this.metadata, builder, affordances);
+	protected RepositoryLinkBuilder createNewInstance(UriComponents components, List<Affordance> affordances) {
+		return new RepositoryLinkBuilder(this.metadata, components, affordances);
 	}
 
 	/*

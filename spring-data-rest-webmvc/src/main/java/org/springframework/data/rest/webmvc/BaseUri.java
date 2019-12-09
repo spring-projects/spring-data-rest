@@ -23,10 +23,12 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.data.rest.core.Path;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UrlPathHelper;
 
@@ -152,10 +154,21 @@ public class BaseUri {
 	 */
 	public UriComponentsBuilder getUriComponentsBuilder() {
 
-		if (baseUri.isAbsolute()) {
-			return UriComponentsBuilder.fromUri(baseUri);
-		}
+		return baseUri.isAbsolute() //
+				? UriComponentsBuilder.fromUri(baseUri) //
+				: ServletUriComponentsBuilder.fromCurrentServletMapping().path(baseUri.toString());
+	}
 
-		return ServletUriComponentsBuilder.fromCurrentServletMapping().path(baseUri.toString());
+	/**
+	 * Returns the {@link UriComponents} for the given {@link Path} appended to the current {@link BaseUri}.
+	 *
+	 * @param path must not be {@literal null}.
+	 * @return
+	 */
+	public UriComponents appendPath(Path path) {
+
+		Assert.notNull(path, "Path must not be null!");
+
+		return getUriComponentsBuilder().path(path.toString()).build();
 	}
 }
