@@ -165,7 +165,11 @@ public class RepositoryRestExceptionHandler {
 		if (exception != null) {
 
 			String message = exception.getMessage();
-			LOG.error(message, exception);
+			if (status.is5xxServerError()) {
+				LOG.error(message, exception);
+			} else {
+				LOG.debug(message, exception);
+			}
 
 			if (StringUtils.hasText(message)) {
 				return response(status, headers, new ExceptionMessage(exception));
