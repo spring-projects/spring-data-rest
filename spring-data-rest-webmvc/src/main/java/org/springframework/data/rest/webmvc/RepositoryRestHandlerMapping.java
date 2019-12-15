@@ -19,11 +19,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +43,7 @@ import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.MimeType;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -61,6 +64,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Petar Tahchiev
  */
 public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
@@ -74,6 +78,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 	private RepositoryCorsConfigurationAccessor corsConfigurationAccessor;
 	private JpaHelper jpaHelper;
+	private Collection<MediaType> supportedMediaTypes;
 
 	/**
 	 * Creates a new {@link RepositoryRestHandlerMapping} for the given {@link ResourceMappings} and
@@ -216,6 +221,9 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		HashSet<String> mediaTypes = new LinkedHashSet<String>();
 		mediaTypes.add(configuration.getDefaultMediaType().toString());
 		mediaTypes.add(MediaType.APPLICATION_JSON_VALUE);
+		if (supportedMediaTypes != null) {
+			mediaTypes.addAll(supportedMediaTypes.stream().map(MimeType::toString).collect(Collectors.toList()));
+		}
 
 		return new ProducesRequestCondition(mediaTypes.toArray(new String[mediaTypes.size()]));
 	}
@@ -246,6 +254,10 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 		int secondSlashIndex = repositoryLookupPath.indexOf('/', repositoryLookupPath.startsWith("/") ? 1 : 0);
 		return secondSlashIndex == -1 ? repositoryLookupPath : repositoryLookupPath.substring(0, secondSlashIndex);
+	}
+
+	public void setSupportedMediaTypes(Collection<MediaType> supportedMediaTypes) {
+		this.supportedMediaTypes = supportedMediaTypes;
 	}
 
 	/**
