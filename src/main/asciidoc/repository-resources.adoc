@@ -399,7 +399,7 @@ The query method resource runs the exposed query through an individual query met
 [[repository-resources.query-resource.supported-method]]
 === Supported HTTP Methods
 
-As the search resource is a read-only resource, it supports `GET` only.
+As the query method resource is a read-only resource, it supports `GET` only.
 
 [[repository-resources.query-resource.supported-method.get]]
 ==== `GET`
