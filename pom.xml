@@ -31,10 +31,10 @@
 
 		<springdata.commons>2.3.0.BUILD-SNAPSHOT</springdata.commons>
 		<springdata.jpa>2.3.0.BUILD-SNAPSHOT</springdata.jpa>
-		<springdata.mongodb>2.3.0.BUILD-SNAPSHOT</springdata.mongodb>
+		<springdata.mongodb>3.0.0.BUILD-SNAPSHOT</springdata.mongodb>
 		<springdata.gemfire>2.3.0.BUILD-SNAPSHOT</springdata.gemfire>
 		<springdata.solr>4.2.0.BUILD-SNAPSHOT</springdata.solr>
-		<springdata.cassandra>2.3.0.BUILD-SNAPSHOT</springdata.cassandra>
+		<springdata.cassandra>3.0.0.BUILD-SNAPSHOT</springdata.cassandra>
 		<springdata.keyvalue>2.3.0.BUILD-SNAPSHOT</springdata.keyvalue>
 
 		<hibernate.version>5.2.17.Final</hibernate.version>
