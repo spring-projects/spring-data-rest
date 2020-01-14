@@ -114,7 +114,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		TemplateVariables variables = getTemplateVariables(components, metadata, pageable).//
 				concat(getProjectionVariable(type));
 
-		return new Link(UriTemplate.of(href).with(variables), metadata.getRel());
+		return Link.of(UriTemplate.of(href).with(variables), metadata.getRel());
 	}
 
 	/*
@@ -141,7 +141,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 				.toRequestId((Serializable) id, type);
 
 		Link link = linkFor(type).slash(mappedId).withRel(metadata.getItemResourceRel());
-		return new Link(UriTemplate.of(link.getHref()).with(getProjectionVariable(type)).toString(),
+		return Link.of(UriTemplate.of(link.getHref()).with(getProjectionVariable(type)).toString(),
 				metadata.getItemResourceRel());
 	}
 
@@ -270,7 +270,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 				concat(getTemplateVariables(uriComponents, mapping, pageable, sort)).//
 				concat(getProjectionVariable(mapping.getReturnedDomainType()));
 
-		return new Link(UriTemplate.of(uriComponents.toString()).with(variables), mapping.getRel());
+		return Link.of(UriTemplate.of(uriComponents.toString()).with(variables), mapping.getRel());
 	}
 
 	/**

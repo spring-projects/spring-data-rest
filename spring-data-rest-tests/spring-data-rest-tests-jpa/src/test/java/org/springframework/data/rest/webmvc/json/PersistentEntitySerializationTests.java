@@ -135,7 +135,7 @@ public class PersistentEntitySerializationTests {
 		Person person = people.save(new Person("John", "Doe"));
 
 		PersistentEntityResource resource = PersistentEntityResource.build(person, persistentEntity).//
-				withLink(new Link("/person/" + person.getId())).build();
+				withLink(Link.of("/person/" + person.getId())).build();
 
 		StringWriter writer = new StringWriter();
 		mapper.writeValue(writer, resource);
@@ -197,7 +197,7 @@ public class PersistentEntitySerializationTests {
 
 		PersistentEntityResource orderResource = PersistentEntityResource.//
 				build(order, repositories.getPersistentEntity(Order.class)).//
-				withLink(new Link("/orders/1")).//
+				withLink(Link.of("/orders/1")).//
 				build();
 
 		PagedModel<PersistentEntityResource> persistentEntityResource = new PagedModel<PersistentEntityResource>(
@@ -238,8 +238,8 @@ public class PersistentEntitySerializationTests {
 
 		PersistentEntityResource resource = PersistentEntityResource.//
 				build(dave, repositories.getPersistentEntity(Person.class)).//
-				withLink(new Link("/people/1")).//
-				withLink(new Link("/aditional", "processed")).//
+				withLink(Link.of("/people/1")).//
+				withLink(Link.of("/aditional", "processed")).//
 				build();
 
 		String result = mapper.writeValueAsString(resource);
@@ -284,7 +284,7 @@ public class PersistentEntitySerializationTests {
 
 		PersistentEntityResource resource = PersistentEntityResource//
 				.build(guest, context.getRequiredPersistentEntity(Guest.class))//
-				.withLink(new Link("/guests/1")).build();
+				.withLink(Link.of("/guests/1")).build();
 
 		String result = mapper.writeValueAsString(resource);
 

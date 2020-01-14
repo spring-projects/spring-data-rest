@@ -74,7 +74,7 @@ public class Associations {
 			String href = path.slash(propertyMapping.getPath()).toString();
 			UriTemplate template = UriTemplate.of(href).with(getProjectionVariable(property));
 
-			return Collections.singletonList(new Link(template, propertyMapping.getRel()));
+			return Collections.singletonList(Link.of(template, propertyMapping.getRel()));
 		}
 
 		return Collections.emptyList();

@@ -84,7 +84,7 @@ public class RepositoryPropertyReferenceControllerUnitTests {
 		doReturn(new Sample()).when(invoker).invokeSave(any(Object.class));
 
 		RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
-		CollectionModel<Object> request = new CollectionModel<Object>(Collections.emptySet(), new Link("/reference/some-id"));
+		CollectionModel<Object> request = new CollectionModel<Object>(Collections.emptySet(), Link.of("/reference/some-id"));
 
 		controller.createPropertyReference(information, HttpMethod.POST, request, 4711, "references");
 

@@ -176,7 +176,7 @@ public abstract class AbstractWebIntegrationTests {
 				assertThat(href).as(message, " not", rel).isNull();
 			}
 
-			return new Link(href, rel);
+			return Link.of(href, rel);
 
 		} catch (InvalidPathException o_O) {
 

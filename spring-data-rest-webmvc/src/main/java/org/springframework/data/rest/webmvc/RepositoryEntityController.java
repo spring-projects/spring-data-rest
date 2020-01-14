@@ -217,7 +217,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		SearchResourceMappings searchMappings = metadata.getSearchResourceMappings();
 
 		Links links = Links
-				.of(new Link(ProfileController.getPath(this.config, metadata), ProfileResourceProcessor.PROFILE_REL));
+				.of(Link.of(ProfileController.getPath(this.config, metadata), ProfileResourceProcessor.PROFILE_REL));
 
 		return searchMappings.isExported() //
 				? links.and(entityLinks.linkFor(metadata.getDomainType()).slash(searchMappings.getPath())

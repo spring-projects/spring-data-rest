@@ -342,7 +342,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 				String href = ProfileController.getPath(configuration, targetTypeMetadata) + "#"
 						+ getRepresentationDescriptorId(targetTypeMetadata);
 
-				Link link = new Link(href).withSelfRel();
+				Link link = Link.of(href).withSelfRel();
 
 				builder.//
 				type(Type.SAFE).//

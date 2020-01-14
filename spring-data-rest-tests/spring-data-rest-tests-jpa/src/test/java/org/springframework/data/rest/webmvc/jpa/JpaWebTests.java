@@ -370,7 +370,7 @@ public class JpaWebTests extends CommonWebTests {
 		patchAndGet(frodosSiblingsLink, links.get(3).getHref(), TEXT_URI_LIST);
 
 		String pippinId = new UriTemplate("/people/{id}").match(links.get(3).getHref()).get("id");
-		deleteAndVerify(new Link(frodosSiblingsLink.expand().getHref() + "/" + pippinId));
+		deleteAndVerify(Link.of(frodosSiblingsLink.expand().getHref() + "/" + pippinId));
 
 		assertSiblingNames(frodosSiblingsLink, "Bilbo", "Merry");
 	}
@@ -507,7 +507,7 @@ public class JpaWebTests extends CommonWebTests {
 		String content = response.getContentAsString();
 		String href = JsonPath.read(content, firstAuthorPath.concat("._links.self.href"));
 
-		client.follow(new Link(href)).andExpect(client.hasLinkWithRel("books"));
+		client.follow(Link.of(href)).andExpect(client.hasLinkWithRel("books"));
 	}
 
 	@Test // DATAREST-353
@@ -766,7 +766,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertThat(JsonPath.<String> read(john, "$.firstName")).isNotNull();
 
 		// Assert sibling link exposed in resource pointed to
-		Link selfLink = new Link(JsonPath.<String> read(john, "$._links.self.href"));
+		Link selfLink = Link.of(JsonPath.<String> read(john, "$._links.self.href"));
 		client.follow(selfLink).//
 				andExpect(status().isOk()).//
 				andExpect(jsonPath("$._links.siblings", is(notNullValue())));

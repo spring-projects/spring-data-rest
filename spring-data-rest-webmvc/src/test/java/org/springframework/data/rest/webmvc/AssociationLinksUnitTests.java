@@ -101,7 +101,7 @@ public class AssociationLinksUnitTests {
 		List<Link> associationLinks = links.getLinksFor(property.getRequiredAssociation(), new Path("/base"));
 
 		assertThat(associationLinks).hasSize(1);
-		assertThat(associationLinks).contains(new Link("/base/property", "property"));
+		assertThat(associationLinks).contains(Link.of("/base/property", "property"));
 	}
 
 	@Test // DATAREST-262

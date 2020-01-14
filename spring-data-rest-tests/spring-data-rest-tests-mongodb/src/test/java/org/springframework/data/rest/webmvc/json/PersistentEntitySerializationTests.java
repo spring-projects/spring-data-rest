@@ -103,7 +103,7 @@ public class PersistentEntitySerializationTests {
 
 		PersistentEntityResource userResource = PersistentEntityResource.//
 				build(user, repositories.getPersistentEntity(User.class)).//
-				withLink(new Link("/users/1")).//
+				withLink(Link.of("/users/1")).//
 				build();
 
 		PagedModel<PersistentEntityResource> persistentEntityResource = new PagedModel<PersistentEntityResource>(

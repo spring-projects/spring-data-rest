@@ -85,7 +85,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 	@Test // DATAREST-230, DATAREST-638
 	public void profileRootLinkContainsMetadataForEachRepo() throws Exception {
 
-		Link profileLink = client.discoverUnique(new Link(ROOT_URI), ProfileResourceProcessor.PROFILE_REL);
+		Link profileLink = client.discoverUnique(Link.of(ROOT_URI), ProfileResourceProcessor.PROFILE_REL);
 
 		assertThat(client.discoverUnique(profileLink, "self", MediaType.ALL)).isNotNull();
 		assertThat(client.discoverUnique(profileLink, "people", MediaType.ALL)).isNotNull();
@@ -100,7 +100,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 	@Test // DATAREST-638
 	public void profileLinkOnCollectionResourceLeadsToRepositorySpecificMetadata() throws Exception {
 
-		Link peopleLink = client.discoverUnique(new Link(ROOT_URI), "people");
+		Link peopleLink = client.discoverUnique(Link.of(ROOT_URI), "people");
 		Link profileLink = client.discoverUnique(peopleLink, ProfileResourceProcessor.PROFILE_REL);
 
 		client.follow(profileLink, MediaTypes.ALPS_JSON).andExpect(status().is2xxSuccessful())

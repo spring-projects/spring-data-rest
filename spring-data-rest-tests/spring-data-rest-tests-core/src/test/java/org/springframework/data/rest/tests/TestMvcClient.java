@@ -211,7 +211,7 @@ public class TestMvcClient {
 	 * @throws Exception
 	 */
 	public Links discover(LinkRelation rel) throws Exception {
-		return discover(new Link("/"), rel);
+		return discover(Link.of("/"), rel);
 	}
 
 	public Link discoverUnique(String rel) throws Exception {

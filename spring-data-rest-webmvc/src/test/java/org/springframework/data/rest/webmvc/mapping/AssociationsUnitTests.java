@@ -122,7 +122,7 @@ public class AssociationsUnitTests {
 		List<Link> links = associations.getLinksFor(getAssociation(Root.class, "relatedAndExported"), new Path(""));
 
 		assertThat(links).hasSize(1);
-		assertThat(links).contains(new Link("/relatedAndExported", "relatedAndExported"));
+		assertThat(links).contains(Link.of("/relatedAndExported", "relatedAndExported"));
 	}
 
 	@Test
@@ -144,7 +144,7 @@ public class AssociationsUnitTests {
 		List<Link> links = associations.getLinksFor(getAssociation(Root.class, "relatedAndExported"), new Path(""));
 
 		assertThat(links).hasSize(1);
-		assertThat(links).contains(new Link("/relatedAndExported{?" + projectionParameterName + "}", "relatedAndExported"));
+		assertThat(links).contains(Link.of("/relatedAndExported{?" + projectionParameterName + "}", "relatedAndExported"));
 	}
 
 	private Association<? extends PersistentProperty<?>> getAssociation(Class<?> type, String name) {

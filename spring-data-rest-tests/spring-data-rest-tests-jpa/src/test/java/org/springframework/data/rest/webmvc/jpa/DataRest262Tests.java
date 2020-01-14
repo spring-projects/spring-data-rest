@@ -124,7 +124,7 @@ public class DataRest262Tests {
 		JpaPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(AircraftMovement.class);
 
 		EntityModel<Object> resource = PersistentEntityResource.build(movement, persistentEntity).//
-				withLink(new Link("/api/airports/" + movement.id)).//
+				withLink(Link.of("/api/airports/" + movement.id)).//
 				build();
 
 		String result = mapper.writeValueAsString(resource);

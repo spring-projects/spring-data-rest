@@ -99,7 +99,7 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Represe
 
 				String line = scanner.nextLine();
 				if (StringUtils.hasText(line)) {
-					links.add(new Link(line));
+					links.add(Link.of(line));
 				}
 			}
 

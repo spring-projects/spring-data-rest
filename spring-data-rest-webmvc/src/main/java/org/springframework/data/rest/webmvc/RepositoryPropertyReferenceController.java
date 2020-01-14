@@ -204,7 +204,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				}
 
 			} else {
-				return new EntityModel<>(prop.propertyValue);
+				return EntityModel.of(prop.propertyValue);
 			}
 
 			throw new ResourceNotFoundException();

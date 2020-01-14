@@ -96,14 +96,14 @@ public class ProfileController {
 
 		RepresentationModel<?> profile = new RepresentationModel<>();
 
-		profile.add(new Link(getRootPath(this.configuration)).withSelfRel());
+		profile.add(Link.of(getRootPath(this.configuration)).withSelfRel());
 
 		for (Class<?> domainType : this.repositories) {
 
 			ResourceMetadata mapping = this.mappings.getMetadataFor(domainType);
 
 			if (mapping.isExported()) {
-				profile.add(new Link(getPath(this.configuration, mapping), mapping.getRel()));
+				profile.add(Link.of(getPath(this.configuration, mapping), mapping.getRel()));
 			}
 		}
 

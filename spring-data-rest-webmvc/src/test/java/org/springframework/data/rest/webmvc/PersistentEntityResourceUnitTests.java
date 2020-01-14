@@ -43,7 +43,7 @@ public class PersistentEntityResourceUnitTests {
 	@Mock PersistentEntity<?, ?> entity;
 
 	CollectionModel<EmbeddedWrapper> resources;
-	Link link = new Link("http://localhost", "foo");
+	Link link = Link.of("http://localhost", "foo");
 
 	@Before
 	public void setUp() {

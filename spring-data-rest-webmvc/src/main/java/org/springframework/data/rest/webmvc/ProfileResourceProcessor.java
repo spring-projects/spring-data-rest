@@ -55,7 +55,7 @@ public class ProfileResourceProcessor implements RepresentationModelProcessor<Re
 	@Override
 	public RepositoryLinksResource process(RepositoryLinksResource resource) {
 
-		resource.add(new Link(ProfileController.getRootPath(this.configuration), PROFILE_REL));
+		resource.add(Link.of(ProfileController.getRootPath(this.configuration), PROFILE_REL));
 
 		return resource;
 	}

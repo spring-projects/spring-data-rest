@@ -68,7 +68,7 @@ class AbstractRepositoryRestController {
 		Link selfLink = resource.getRequiredLink(IanaLinkRelations.SELF);
 		LinkRelation rel = repoMapping.getItemResourceRel();
 
-		return new Link(selfLink.getHref(), rel);
+		return Link.of(selfLink.getHref(), rel);
 	}
 
 	@SuppressWarnings({ "unchecked" })
@@ -116,6 +116,6 @@ class AbstractRepositoryRestController {
 	}
 
 	protected Link getDefaultSelfLink() {
-		return new Link(ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString());
+		return Link.of(ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString());
 	}
 }

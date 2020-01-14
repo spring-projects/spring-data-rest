@@ -58,7 +58,7 @@ public class DefaultSelfLinkProviderUnitTests {
 			Class<?> type = invocation.getArgument(0);
 			Object id = invocation.getArgument(1);
 
-			return new Link("/".concat(type.getName()).concat("/").concat(id.toString()));
+			return Link.of("/".concat(type.getName()).concat("/").concat(id.toString()));
 		});
 
 		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
