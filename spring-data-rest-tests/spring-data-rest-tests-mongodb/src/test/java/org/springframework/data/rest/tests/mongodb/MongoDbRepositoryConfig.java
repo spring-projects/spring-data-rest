@@ -16,11 +16,12 @@
 package org.springframework.data.rest.tests.mongodb;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
+import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 
 /**
  * @author Jon Brisbin
@@ -29,7 +30,7 @@ import com.mongodb.MongoClient;
 @Configuration
 @EnableMongoRepositories
 @EnableMongoAuditing
-public class MongoDbRepositoryConfig extends AbstractMongoConfiguration {
+public class MongoDbRepositoryConfig extends AbstractMongoClientConfiguration {
 
 	/*
 	 * (non-Javadoc)
@@ -55,6 +56,6 @@ public class MongoDbRepositoryConfig extends AbstractMongoConfiguration {
 	 */
 	@Override
 	public MongoClient mongoClient() {
-		return new MongoClient();
+		return MongoClients.create();
 	}
 }
