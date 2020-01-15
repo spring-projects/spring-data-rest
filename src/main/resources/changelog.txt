@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.2.4.RELEASE (2020-01-15)
+---------------------------------------------
+* DATAREST-1467 - Update copyright years to 2020.
+* DATAREST-1462 - Release 3.2.4 (Moore SR4).
+* DATAREST-1460 - ConcurrentModificationException in PersistentEntitiesResourceMappings.
+
+
 Changes in version 3.1.15.RELEASE (2020-01-15)
 ----------------------------------------------
 * DATAREST-1467 - Update copyright years to 2020.
@@ -1442,6 +1449,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
