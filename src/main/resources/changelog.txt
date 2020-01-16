@@ -1,6 +1,28 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.3.0.M1 (2020-01-16)
+----------------------------------------
+* DATAREST-1475 - Migrate GemFire tests to Geode.
+* DATAREST-1472 - Switch to com.mongodb.client.MongoClient.
+* DATAREST-1471 - Upgrade to Apache Solr 8.4.
+* DATAREST-1470 - Switch to use factory methods of RepresentationModel types.
+* DATAREST-1468 - Bump Cassandra and MongoDB modules to next major version.
+* DATAREST-1467 - Update copyright years to 2020.
+* DATAREST-1463 - Adapt to API changes in Spring HATEOAS' LinkBuilderSupport.
+* DATAREST-1460 - ConcurrentModificationException in PersistentEntitiesResourceMappings.
+* DATAREST-1458 - Compact lookup of association resources (via text/uri-list) broken.
+* DATAREST-1453 - Enable JDK 11+ builds.
+* DATAREST-1446 - DefaultExcerptProjector exposes projection present even if metadata returns Optional.empty().
+* DATAREST-1443 - Associated resources gets embedded and also linked.
+* DATAREST-1440 - Fields mapped with @JsonAnySetter are no longer updatable with http PATCH.
+* DATAREST-1436 - Reintroduce hamcrest dependency.
+* DATAREST-1435 - Embedded resources default serialisation with projector.
+* DATAREST-1432 - Release 3.3 M1 (Neumann).
+* DATAREST-1430 - Publish Javadoc jar for HAL Browser/HAL Explorer.
+* DATAREST-1356 - Can't PUT single-link URI references.
+
+
 Changes in version 3.2.4.RELEASE (2020-01-15)
 ---------------------------------------------
 * DATAREST-1467 - Update copyright years to 2020.
@@ -1449,6 +1471,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
