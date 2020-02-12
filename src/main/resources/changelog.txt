@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.3.0.M3 (2020-02-12)
+----------------------------------------
+* DATAREST-1480 - CI tests need to run integration tests.
+* DATAREST-1478 - Release 3.3 M3 (Neumann).
+
+
 Changes in version 3.3.0.M2 (2020-01-17)
 ----------------------------------------
 * DATAREST-1476 - Release 3.3 M2 (Neumann).
@@ -1476,6 +1482,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
