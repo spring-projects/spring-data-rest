@@ -16,6 +16,8 @@
 package org.springframework.data.rest.webmvc.json;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.*;
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.*;
+import static javax.persistence.CascadeType.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -26,6 +28,10 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
+import javax.persistence.Basic;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.OneToMany;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
@@ -55,6 +61,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -64,6 +72,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.google.common.base.Charsets;
 
 /**
@@ -73,11 +82,13 @@ import com.google.common.base.Charsets;
  * @author Craig Andrews
  * @author Mathias Düsterhöft
  * @author Ken Dombeck
+ * @author Stefan Reichert
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainObjectReaderUnitTests {
 
-	@Mock ResourceMappings mappings;
+	@Mock
+	ResourceMappings mappings;
 
 	DomainObjectReader reader;
 	PersistentEntities entities;
@@ -102,6 +113,12 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(SampleWithReference.class);
 		mappingContext.getPersistentEntity(Note.class);
 		mappingContext.getPersistentEntity(WithNullCollection.class);
+		mappingContext.getPersistentEntity(Basket.class);
+		mappingContext.getPersistentEntity(Fruit.class);
+		mappingContext.getPersistentEntity(Apple.class);
+		mappingContext.getPersistentEntity(Pear.class);
+		mappingContext.getPersistentEntity(Orange.class);
+		mappingContext.getPersistentEntity(Banana.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -515,6 +532,64 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.nested).isEqualTo(source.nested);
 		assertThat(result.nested).isSameAs(originalCollection);
 	}
+
+	@Test // DATAREST-1012
+	public void writesPolymorphicArrayWithSwitchedItemForPut() throws Exception {
+
+		Basket basket = new Basket();
+		Apple apple = new Apple();
+		Pear pear = new Pear();
+		basket.fruits = new ArrayList<>();
+		basket.fruits.add(new Banana());
+		basket.fruits.add(apple);
+		basket.fruits.add(pear);
+
+		JsonNode node = new ObjectMapper().readTree("{ \"fruits\" : [ "
+				+ "{ \"@class\" : \"Pear\", \"color\" : \"green\" }," + "{ \"@class\" : \"Orange\",  \"color\" : \"orange\" },"
+				+ "{ \"@class\" : \"Apple\",  \"color\" : \"red\" } ] }");
+
+		Basket result = reader.readPut((ObjectNode) node, basket, new ObjectMapper());
+
+		assertThat(result.fruits.size()).isEqualTo(3);
+		assertThat(result.fruits.get(0)).isSameAs(pear);
+		assertThat(result.fruits.get(0).color).isEqualTo("green");
+		assertThat(result.fruits.get(1)).isInstanceOfAny(Orange.class);
+		assertThat(result.fruits.get(1).color).isEqualTo("orange");
+		assertThat(result.fruits.get(2)).isSameAs(apple);
+		assertThat(result.fruits.get(2).color).isEqualTo("red");
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Basket {
+		@Id @GeneratedValue(strategy = GenerationType.AUTO) Long id;
+
+		@OneToMany(cascade = ALL, orphanRemoval = true) List<Fruit> fruits;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = PROPERTY, property = "@class")
+	@JsonSubTypes({ @JsonSubTypes.Type(name = "Apple", value = Apple.class),
+			@JsonSubTypes.Type(name = "Pear", value = Pear.class),
+			@JsonSubTypes.Type(name = "Orange", value = Orange.class) })
+	static class Fruit {
+		@Id @GeneratedValue(strategy = GenerationType.AUTO) Long id;
+
+		@Basic
+		String color;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Apple extends Fruit {}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Pear extends Fruit {}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Orange extends Fruit {}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Banana extends Fruit {}
+
 
 	@Test // DATAREST-1030
 	public void patchWithReferenceToRelatedEntityIsResolvedCorrectly() throws Exception {
