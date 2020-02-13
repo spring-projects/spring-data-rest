@@ -18,6 +18,12 @@ package org.springframework.data.rest.core.event;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.annotation.Order;
@@ -28,6 +34,7 @@ import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.event.AnnotatedEventHandlerInvoker.EventHandlerMethod;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Unit tests for {@link AnnotatedEventHandlerInvoker}.
@@ -116,6 +123,26 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 		verify(handler, times(1)).doAfterCreate(payload);
 	}
 
+	@Test // DATAREST-582
+	public void invocesInterceptorForProxiedListener() {
+
+		SampleInterceptor interceptor = new SampleInterceptor();
+
+		ProxyFactory factory = new ProxyFactory();
+		factory.setTarget(new Sample());
+		factory.addAdvice(interceptor);
+		factory.setProxyTargetClass(true);
+
+		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
+		invoker.postProcessAfterInitialization(factory.getProxy(), "proxy");
+
+		invoker.onApplicationEvent(new BeforeCreateEvent(new Sample()));
+
+		Method method = ReflectionUtils.findMethod(Sample.class, "method", Sample.class);
+
+		assertThat(interceptor.invocations.get(method)).isEqualTo(1);
+	}
+
 	@RepositoryEventHandler
 	static class Sample {
 
@@ -193,4 +220,21 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 	}
 
 	static class Payload {}
+
+	static class SampleInterceptor implements MethodInterceptor {
+
+		Map<Method, Integer> invocations = new HashMap<>();
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
+		 */
+		@Override
+		public Object invoke(MethodInvocation invocation) throws Throwable {
+
+			invocations.compute(invocation.getMethod(), (method, value) -> value == null ? 1 : value++);
+
+			return invocation.proceed();
+		}
+	}
 }
