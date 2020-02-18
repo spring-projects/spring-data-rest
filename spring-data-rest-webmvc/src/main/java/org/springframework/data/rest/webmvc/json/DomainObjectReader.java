@@ -62,6 +62,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Mark Paluch
  * @author Craig Andrews
  * @author Mathias Düsterhöft
+ * @author Thomas Mrozinski
  * @since 2.2
  */
 @RequiredArgsConstructor
@@ -510,7 +511,7 @@ public class DomainObjectReader {
 		}
 
 		if (source.getClass().isArray()) {
-			return Arrays.asList((Object[]) source);
+			return new ArrayList<>(Arrays.asList((Object[]) source));
 		}
 
 		return null;
