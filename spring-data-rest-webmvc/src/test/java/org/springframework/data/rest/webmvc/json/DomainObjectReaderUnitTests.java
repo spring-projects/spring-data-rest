@@ -74,6 +74,7 @@ import com.google.common.base.Charsets;
  * @author Craig Andrews
  * @author Mathias Düsterhöft
  * @author Ken Dombeck
+ * @author Thomas Mrozinski
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DomainObjectReaderUnitTests {
@@ -103,6 +104,7 @@ public class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(SampleWithReference.class);
 		mappingContext.getPersistentEntity(Note.class);
 		mappingContext.getPersistentEntity(WithNullCollection.class);
+		mappingContext.getPersistentEntity(ArrayHolder.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -572,6 +574,16 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.lastLogin).isNotNull();
 		assertThat(result.email).isEqualTo("foo@bar.com");
 	}
+	
+	@Test // DATAREST-1068
+	public void arraysCanBeResizedDuringMerge() throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		ArrayHolder target = new ArrayHolder(new String[] { });
+		JsonNode node = mapper.readTree("{ \"array\" : [ \"new\" ] }");
+		
+		ArrayHolder updated = reader.doMerge((ObjectNode) node, target, mapper);
+		assertThat(updated.array).containsExactly("new");
+	}
 
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
@@ -795,5 +807,11 @@ public class DomainObjectReaderUnitTests {
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class WithNullCollection {
 		List<String> strings;
+	}
+	
+	// DATAREST-1068
+	@Value
+	static class ArrayHolder {
+		String[] array;
 	}
 }
