@@ -16,7 +16,7 @@ pipeline {
 		stage("Test") {
 			when {
 				anyOf {
-					branch 'master'
+					branch '3.2.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -34,44 +34,6 @@ pipeline {
 			}
 		}
 
-		stage("Test other configurations") {
-			when {
-				anyOf {
-					branch '3.2.x'
-					not { triggeredBy 'UpstreamCause' }
-				}
-			}
-			parallel {
-				stage("test: baseline") {
-					agent {
-						docker {
-							image 'adoptopenjdk/openjdk11:latest'
-							label 'data'
-							args '-v $HOME:/tmp/jenkins-home'
-						}
-					}
-					options { timeout(time: 30, unit: 'MINUTES') }
-					steps {
-						sh 'rm -rf ?'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pjava11 clean dependency:list test -Dsort -U -B -Pit'
-					}
-				}
-				stage("test: baseline (jdk13)") {
-					agent {
-						docker {
-							image 'adoptopenjdk/openjdk8:latest'
-							label 'data'
-							args '-v $HOME:/tmp/jenkins-home'
-						}
-					}
-					options { timeout(time: 30, unit: 'MINUTES') }
-					steps {
-						sh 'rm -rf ?'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -U -B -Pit'
-					}
-				}
-			}
-		}
 		stage('Release to artifactory') {
 			when {
 				anyOf {
