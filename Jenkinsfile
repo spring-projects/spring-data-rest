@@ -24,7 +24,7 @@ pipeline {
                 stage("test: baseline") {
                     agent {
                         docker {
-                            image 'adoptopenjdk/openjdk8:latest'
+                            image 'springci/spring-data-openjdk8-with-mongodb-4.2.0:latest'
                             label 'data'
                             args '-v $HOME:/tmp/jenkins-home'
                         }
@@ -32,6 +32,11 @@ pipeline {
                     options { timeout(time: 30, unit: 'MINUTES') }
                     steps {
                         sh 'rm -rf ?'
+                        sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
+                        sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
+                        sh 'sleep 10'
+                        sh 'mongo --eval "rs.initiate({_id: \'rs0\', members:[{_id: 0, host: \'127.0.0.1:27017\'}]});"'
+                        sh 'sleep 15'
                         sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -U -B -Pit'
                     }
                 }
