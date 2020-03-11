@@ -99,7 +99,6 @@ public class UriStringDeserializerUnitTests {
 
 		when(property.getActualType()).thenReturn((Class) Object.class);
 		when(parser.getValueAsString()).thenReturn(source);
-		when(parser.getText()).thenReturn(source);
 
 		return deserializer.deserialize(parser, context);
 	}

@@ -49,7 +49,6 @@ public class RootResourceInformationUnitTests {
 	@Before
 	public void setUp() {
 
-		when(metadata.isExported()).thenReturn(true);
 		this.invoker = mock(RepositoryInvoker.class, new DefaultBooleanToTrue());
 		this.information = new RootResourceInformation(metadata, entity, invoker);
 	}
