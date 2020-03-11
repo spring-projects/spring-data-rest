@@ -1,6 +1,14 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.3.0.M4 (2020-03-11)
+----------------------------------------
+* DATAREST-1491 - Adapt to Mockito 3.3 changes.
+* DATAREST-1483 - Make spring-data-rest-tests work properly on CI.
+* DATAREST-1482 - Release 3.3 M4 (Neumann).
+* DATAREST-1068 - DomainObjectReader throws UnsupportedOperationException on PATCH request when altering the size of existing Array.
+
+
 Changes in version 3.2.5.RELEASE (2020-02-26)
 ---------------------------------------------
 * DATAREST-1483 - Make spring-data-rest-tests work properly on CI.
@@ -1498,6 +1506,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
