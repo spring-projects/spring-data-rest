@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.2.6.RELEASE (2020-03-25)
+---------------------------------------------
+* DATAREST-1489 - ConcurrentModificationException in PersistentEntitiesResourceMappings.getMappingFor(…).
+* DATAREST-1486 - Release 3.2.6 (Moore SR6).
+
+
 Changes in version 3.3.0.M4 (2020-03-11)
 ----------------------------------------
 * DATAREST-1491 - Adapt to Mockito 3.3 changes.
@@ -1506,6 +1512,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
