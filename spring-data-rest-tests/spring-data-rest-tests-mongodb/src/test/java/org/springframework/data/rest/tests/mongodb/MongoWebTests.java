@@ -22,9 +22,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import org.assertj.core.api.Condition;
 import org.junit.After;
@@ -38,10 +41,14 @@ import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.TemplateVariable;
+import org.springframework.hateoas.TemplateVariable.VariableType;
+import org.springframework.hateoas.client.LinkDiscoverer;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -399,5 +406,37 @@ public class MongoWebTests extends CommonWebTests {
 
 		mvc.perform(get(mapLink.expand().getHref()).accept(TEXT_URI_LIST)) //
 				.andExpect(status().isUnsupportedMediaType());
+	}
+
+	@Test // DATAREST-762
+	public void paginatedLinksContainQuerydslPropertyReferences() throws Exception {
+
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("page", "0");
+		parameters.put("size", "1");
+		parameters.put("firstname", "a");
+
+		Link receipts = client.discoverUnique("users");
+		URI firstnameLikeA = receipts.getTemplate() //
+				.with(new TemplateVariable("firstname", VariableType.REQUEST_PARAM)) //
+				.expand(parameters);
+
+		MockHttpServletResponse response = mvc//
+				.perform(get(firstnameLikeA)) //
+				.andReturn() //
+				.getResponse();
+
+		LinkDiscoverer discoverer = client.getDiscoverer(response);
+		String content = response.getContentAsString();
+
+		Stream.of(IanaLinkRelations.FIRST, IanaLinkRelations.NEXT, IanaLinkRelations.LAST) //
+				.forEach(it -> {
+
+					Link firstLink = discoverer.findRequiredLinkWithRel(it, content);
+					UriComponents components = UriComponentsBuilder.fromUriString(firstLink.getHref()).build();
+
+					assertThat(components.getQueryParams().containsKey("firstname"));
+				});
+
 	}
 }

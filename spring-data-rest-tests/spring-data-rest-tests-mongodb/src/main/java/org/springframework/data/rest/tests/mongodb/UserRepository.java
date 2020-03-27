@@ -19,15 +19,27 @@ import java.math.BigInteger;
 import java.util.List;
 
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
 /**
  * @author Oliver Gierke
  */
-public interface UserRepository extends CrudRepository<User, BigInteger>, QuerydslPredicateExecutor<User> {
+public interface UserRepository extends PagingAndSortingRepository<User, BigInteger>, QuerydslPredicateExecutor<User>,
+		QuerydslBinderCustomizer<QUser> {
 
 	List<User> findByFirstname(String firstname);
 
 	List<User> findByColleaguesContains(@Param("colleagues") User colleague);
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.querydsl.binding.QuerydslBinderCustomizer#customize(org.springframework.data.querydsl.binding.QuerydslBindings, com.querydsl.core.types.EntityPath)
+	 */
+	@Override
+	default void customize(QuerydslBindings bindings, QUser root) {
+		bindings.bind(root.firstname).first((path, value) -> path.containsIgnoreCase(value));
+	}
 }
