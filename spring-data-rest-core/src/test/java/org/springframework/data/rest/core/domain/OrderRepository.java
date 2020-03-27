@@ -30,7 +30,8 @@ public interface OrderRepository extends CrudRepository<Order, UUID> {
 	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Object)
 	 */
 	@Override
-	<S extends Order> S save(S entity);
+	@SuppressWarnings("unchecked")
+	Order save(Order entity);
 
 	/*
 	 * (non-Javadoc)

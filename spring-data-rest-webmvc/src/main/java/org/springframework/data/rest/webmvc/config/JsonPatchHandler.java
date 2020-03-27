@@ -22,6 +22,7 @@ import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
 import org.springframework.data.rest.webmvc.json.patch.JsonPatchPatchConverter;
 import org.springframework.data.rest.webmvc.json.patch.Patch;
+import org.springframework.data.rest.webmvc.util.InputStreamHttpInputMessage;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
 
@@ -95,7 +96,7 @@ class JsonPatchHandler {
 		return reader.read(source, existingObject, mapper);
 	}
 
-	<T> T applyPut(ObjectNode source, T existingObject) {
+	<T> T applyPut(ObjectNode source, T existingObject) throws Exception {
 		return reader.readPut(source, existingObject, mapper);
 	}
 
@@ -112,7 +113,8 @@ class JsonPatchHandler {
 			return new JsonPatchPatchConverter(mapper).convert(mapper.readTree(source));
 		} catch (Exception o_O) {
 			throw new HttpMessageNotReadableException(
-					String.format("Could not read PATCH operations! Expected %s!", RestMediaTypes.JSON_PATCH_JSON), o_O);
+					String.format("Could not read PATCH operations! Expected %s!", RestMediaTypes.JSON_PATCH_JSON), o_O,
+					InputStreamHttpInputMessage.of(source));
 		}
 	}
 }

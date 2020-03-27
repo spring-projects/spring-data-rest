@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.rest.webmvc.ControllerUtils.*;
-
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -266,7 +264,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			links.add(resourceLink(resourceInformation, res));
 		}
 
-		return new CollectionModel<EntityModel<?>>(EMPTY_RESOURCE_LIST, links);
+		return CollectionModel.empty(links);
 	}
 
 	/**

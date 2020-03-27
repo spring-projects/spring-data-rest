@@ -195,6 +195,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				return;
 			}
 
+			@SuppressWarnings("deprecation")
 			EntityModel<Object> resourceToRender = new EntityModel<Object>(resource.getContent(), links) {
 
 				@JsonUnwrapped
@@ -689,7 +690,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			ResourceMetadata metadata = associations.getMetadataFor(value.getTargetClass());
 			Links links = metadata.isExported() ? collector.getLinksFor(target) : Links.NONE;
 
-			EntityModel<TargetAware> resource = invoker.invokeProcessorsFor(new EntityModel<TargetAware>(value, links));
+			EntityModel<TargetAware> resource = invoker.invokeProcessorsFor(EntityModel.of(value, links));
 
 			return new ProjectionResource(resource.getContent(), resource.getLinks());
 		}
@@ -697,6 +698,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 	static class ProjectionResource extends EntityModel<ProjectionResourceContent> {
 
+		@SuppressWarnings("deprecation")
 		ProjectionResource(TargetAware projection, Iterable<Link> links) {
 			super(new ProjectionResourceContent(projection, projection.getClass().getInterfaces()[0]), links);
 		}

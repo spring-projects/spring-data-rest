@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import static org.springframework.data.rest.webmvc.ControllerUtils.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -81,7 +79,7 @@ class AbstractRepositoryRestController {
 		} else if (source instanceof Iterable) {
 			return entitiesToResources((Iterable<Object>) source, assembler, domainType);
 		} else {
-			return new CollectionModel(EMPTY_RESOURCE_LIST);
+			return CollectionModel.empty();
 		}
 	}
 
@@ -103,7 +101,7 @@ class AbstractRepositoryRestController {
 		if (!entities.iterator().hasNext()) {
 
 			List<Object> content = Arrays.<Object> asList(WRAPPERS.emptyCollectionOf(domainType));
-			return new CollectionModel<Object>(content, getDefaultSelfLink());
+			return CollectionModel.of(content, getDefaultSelfLink());
 		}
 
 		List<EntityModel<Object>> resources = new ArrayList<EntityModel<Object>>();
@@ -112,7 +110,7 @@ class AbstractRepositoryRestController {
 			resources.add(obj == null ? null : assembler.toModel(obj));
 		}
 
-		return new CollectionModel<EntityModel<Object>>(resources, getDefaultSelfLink());
+		return CollectionModel.of(resources, getDefaultSelfLink());
 	}
 
 	protected Link getDefaultSelfLink() {

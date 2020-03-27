@@ -167,7 +167,7 @@ public final class ETag {
 		Assert.notNull(entity, "PersistentEntity must not be null!");
 		Assert.notNull(bean, "Target bean must not be null!");
 
-		PersistentPropertyAccessor accessor = entity.getPropertyAccessor(bean);
+		PersistentPropertyAccessor<?> accessor = entity.getPropertyAccessor(bean);
 
 		return Optional.ofNullable(entity.getVersionProperty())//
 				.map(it -> accessor.getProperty(it))//

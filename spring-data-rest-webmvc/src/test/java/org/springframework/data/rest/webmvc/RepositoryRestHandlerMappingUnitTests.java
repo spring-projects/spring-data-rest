@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.Path;
@@ -41,7 +42,6 @@ import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
-import org.springframework.util.ClassUtils;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.util.pattern.PathPattern;
@@ -308,7 +308,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 		ProxyFactory factory = new ProxyFactory(source);
 		Object proxy = factory.getProxy();
 
-		assertThat(ClassUtils.isCglibProxy(proxy)).isTrue();
+		assertThat(AopUtils.isCglibProxy(proxy)).isTrue();
 
 		return proxy.getClass();
 	}

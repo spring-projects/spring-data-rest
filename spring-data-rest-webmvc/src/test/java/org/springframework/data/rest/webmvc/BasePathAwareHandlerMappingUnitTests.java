@@ -20,8 +20,8 @@ import static org.mockito.Mockito.*;
 
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.util.ClassUtils;
 
 /**
  * Unit tests for {@link BasePathAwareHandlerMapping}.
@@ -54,7 +54,7 @@ public class BasePathAwareHandlerMappingUnitTests {
 		ProxyFactory factory = new ProxyFactory(source);
 		Object proxy = factory.getProxy();
 
-		assertThat(ClassUtils.isCglibProxy(proxy)).isTrue();
+		assertThat(AopUtils.isCglibProxy(proxy)).isTrue();
 
 		return proxy.getClass();
 	}

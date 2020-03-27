@@ -44,8 +44,8 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpMethod;
 
 /**
@@ -84,7 +84,7 @@ public class RepositoryPropertyReferenceControllerUnitTests {
 		doReturn(new Sample()).when(invoker).invokeSave(any(Object.class));
 
 		RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
-		CollectionModel<Object> request = new CollectionModel<Object>(Collections.emptySet(), Link.of("/reference/some-id"));
+		CollectionModel<Object> request = CollectionModel.empty(Link.of("/reference/some-id"));
 
 		controller.createPropertyReference(information, HttpMethod.POST, request, 4711, "references");
 

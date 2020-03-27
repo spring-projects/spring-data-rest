@@ -15,38 +15,28 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+
 import org.springframework.data.domain.Pageable;
 
 /**
- * Value object to capture a {@link Pageable} as well it is the default one configured.
+ * Value object to capture a {@link Pageable} as well whether it is the default one configured.
  *
  * @author Oliver Gierke
  */
+@Value
 public class DefaultedPageable {
-
-	private final Pageable pageable;
-	private final boolean isDefault;
-
-	/**
-	 * Creates a new {@link DefaultedPageable} with the given {@link Pageable} and default flag.
-	 *
-	 * @param pageable can be {@literal null}.
-	 * @param isDefault
-	 */
-	public DefaultedPageable(Pageable pageable, boolean isDefault) {
-
-		this.pageable = pageable;
-		this.isDefault = isDefault;
-	}
 
 	/**
 	 * Returns the delegate {@link Pageable}.
 	 *
 	 * @return can be {@literal null}.
 	 */
-	public Pageable getPageable() {
-		return pageable;
-	}
+	private final @NonNull Pageable pageable;
+	private final @Getter(value = AccessLevel.NONE) boolean isDefault;
 
 	/**
 	 * Returns whether the contained {@link Pageable} is the default one configured.
@@ -55,5 +45,15 @@ public class DefaultedPageable {
 	 */
 	public boolean isDefault() {
 		return isDefault;
+	}
+
+	/**
+	 * Returns {@link Pageable#unpaged()} if the contained {@link Pageable} is the default one.
+	 *
+	 * @return will never be {@literal null}.
+	 * @since 3.3
+	 */
+	public Pageable unpagedIfDefault() {
+		return isDefault ? Pageable.unpaged() : pageable;
 	}
 }

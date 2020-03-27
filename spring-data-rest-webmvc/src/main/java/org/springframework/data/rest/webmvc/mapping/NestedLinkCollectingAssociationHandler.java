@@ -32,8 +32,8 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.mapping.ResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
-import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.EntityLinks;
 
 /**
  * @author Oliver Gierke
@@ -43,7 +43,7 @@ public class NestedLinkCollectingAssociationHandler implements SimpleAssociation
 
 	private final EntityLinks entityLinks;
 	private final PersistentEntities entities;
-	private final PersistentPropertyAccessor accessor;
+	private final PersistentPropertyAccessor<?> accessor;
 	private final ResourceMappings mappings;
 
 	private final @Getter List<Link> links = new ArrayList<Link>();
@@ -70,10 +70,10 @@ public class NestedLinkCollectingAssociationHandler implements SimpleAssociation
 
 				links.add(entityLinks.linkForItemResource(element.getClass(), identifierAccessor.getIdentifier())
 						.withRel(propertyMapping.getRel()));
-
 			}
 
 		} else {
+
 			PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(propertyValue.getClass());
 			IdentifierAccessor identifierAccessor = entity.getIdentifierAccessor(propertyValue);
 

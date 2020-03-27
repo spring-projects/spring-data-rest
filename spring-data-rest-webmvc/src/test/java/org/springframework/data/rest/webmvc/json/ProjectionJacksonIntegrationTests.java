@@ -77,7 +77,7 @@ public class ProjectionJacksonIntegrationTests {
 		customer.address = new Address();
 
 		CustomerProjection projection = factory.createProjection(CustomerProjection.class, customer);
-		CollectionModel<CustomerProjection> resources = new CollectionModel<CustomerProjection>(Arrays.asList(projection));
+		CollectionModel<CustomerProjection> resources = CollectionModel.of(Arrays.asList(projection));
 
 		String result = mapper.writeValueAsString(resources);
 

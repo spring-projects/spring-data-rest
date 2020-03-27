@@ -147,6 +147,7 @@ public class AssociationsUnitTests {
 		assertThat(links).contains(Link.of("/relatedAndExported{?" + projectionParameterName + "}", "relatedAndExported"));
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Association<? extends PersistentProperty<?>> getAssociation(Class<?> type, String name) {
 
 		KeyValuePersistentEntity<?, ? extends KeyValuePersistentProperty<?>> rootEntity = mappingContext

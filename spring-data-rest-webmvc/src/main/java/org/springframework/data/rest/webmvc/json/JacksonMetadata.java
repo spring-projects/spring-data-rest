@@ -69,7 +69,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 		BeanDescription description = serializationConfig.introspect(javaType);
 
 		this.definitions = description.findProperties();
-		this.isValue = description.findJsonValueMethod() != null;
+		this.isValue = description.findJsonValueAccessor() != null;
 
 		DeserializationConfig deserializationConfig = mapper.getDeserializationConfig();
 		JavaType deserializationType = deserializationConfig.constructType(type);

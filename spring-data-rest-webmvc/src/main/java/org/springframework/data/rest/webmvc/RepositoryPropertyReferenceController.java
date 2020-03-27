@@ -25,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -252,7 +251,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			@RequestBody(required = false) CollectionModel<Object> incoming, @BackendId Serializable id,
 			@PathVariable String property) throws Exception {
 
-		CollectionModel<Object> source = incoming == null ? new CollectionModel<Object>(Collections.emptyList()) : incoming;
+		CollectionModel<Object> source = incoming == null ? CollectionModel.empty() : incoming;
 		RepositoryInvoker invoker = resourceInformation.getInvoker();
 
 		Function<ReferencedProperty, RepresentationModel<?>> handler = prop -> {

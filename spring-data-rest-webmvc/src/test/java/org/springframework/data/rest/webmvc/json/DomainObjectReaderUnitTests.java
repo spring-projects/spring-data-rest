@@ -36,7 +36,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Immutable;
@@ -59,6 +58,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -172,7 +172,7 @@ public class DomainObjectReaderUnitTests {
 		assertThat(((Map<Object, Object>) object).get("c")).isEqualTo("2");
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-701
+	@Test(expected = JsonMappingException.class) // DATAREST-701
 	public void rejectsMergingUnknownDomainObject() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -486,6 +486,7 @@ public class DomainObjectReaderUnitTests {
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode node = mapper.readTree("{ \"enums\" : [ \"SECOND\", \"FIRST\" ] }");
 
+		@SuppressWarnings("deprecation")
 		CollectionOfEnumWithMethods result = reader.merge((ObjectNode) node, sample, mapper);
 
 		assertThat(result.enums).containsExactly(SampleEnum.SECOND, SampleEnum.FIRST);
@@ -568,18 +569,19 @@ public class DomainObjectReaderUnitTests {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode source = (ObjectNode) mapper.readTree("{ \"lastLogin\" : null, \"email\" : \"bar@foo.com\"}");
 
+		@SuppressWarnings("deprecation")
 		SampleUser result = reader.merge(source, user, mapper);
 
 		assertThat(result.lastLogin).isNotNull();
 		assertThat(result.email).isEqualTo("foo@bar.com");
 	}
-	
+
 	@Test // DATAREST-1068
 	public void arraysCanBeResizedDuringMerge() throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
-		ArrayHolder target = new ArrayHolder(new String[] { });
+		ArrayHolder target = new ArrayHolder(new String[] {});
 		JsonNode node = mapper.readTree("{ \"array\" : [ \"new\" ] }");
-		
+
 		ArrayHolder updated = reader.doMerge((ObjectNode) node, target, mapper);
 		assertThat(updated.array).containsExactly("new");
 	}
@@ -807,7 +809,7 @@ public class DomainObjectReaderUnitTests {
 	static class WithNullCollection {
 		List<String> strings;
 	}
-	
+
 	// DATAREST-1068
 	@Value
 	static class ArrayHolder {

@@ -25,10 +25,10 @@ import java.util.Optional;
 
 import org.junit.Test;
 import org.mockito.Mockito;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.support.RepositoryInvoker;
@@ -116,13 +116,14 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	@Test // DATAREST-330
 	public void exposesHeadForCollectionResourceIfExported() throws Exception {
 		ResponseEntity<?> entity = controller.headCollectionResource(getResourceInformation(Person.class),
-				new DefaultedPageable(null, false));
+				new DefaultedPageable(Pageable.unpaged(), false));
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
 	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
 	public void doesNotExposeHeadForCollectionResourceIfNotExported() throws Exception {
-		controller.headCollectionResource(getResourceInformation(CreditCard.class), new DefaultedPageable(null, false));
+		controller.headCollectionResource(getResourceInformation(CreditCard.class),
+				new DefaultedPageable(Pageable.unpaged(), false));
 	}
 
 	@Test // DATAREST-330

@@ -19,7 +19,6 @@ import static org.springframework.http.HttpMethod.*;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -199,16 +198,16 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throw new ResourceNotFoundException();
 		}
 
-		Iterable<?> results = pageable.getPageable() != null ? invoker.invokeFindAll(pageable.getPageable())
+		Iterable<?> results = pageable.getPageable() != null //
+				? invoker.invokeFindAll(pageable.getPageable()) //
 				: invoker.invokeFindAll(sort);
 
 		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
 		Optional<Link> baseLink = Optional.of(entityLinks.linkToPagedResource(resourceInformation.getDomainType(),
 				pageable.isDefault() ? null : pageable.getPageable()));
 
-		CollectionModel<?> result = toCollectionModel(results, assembler, metadata.getDomainType(), baseLink);
-		result.add(getCollectionResourceLinks(resourceInformation, pageable));
-		return result;
+		return toCollectionModel(results, assembler, metadata.getDomainType(), baseLink)
+				.add(getCollectionResourceLinks(resourceInformation, pageable));
 	}
 
 	private Links getCollectionResourceLinks(RootResourceInformation resourceInformation, DefaultedPageable pageable) {
@@ -226,7 +225,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	}
 
 	@ResponseBody
-	@SuppressWarnings({ "unchecked" })
 	@RequestMapping(value = BASE_MAPPING, method = RequestMethod.GET,
 			produces = { "application/x-spring-data-compact+json", "text/uri-list" })
 	public CollectionModel<?> getCollectionResourceCompact(@QuerydslPredicate RootResourceInformation resourceinformation,
@@ -234,18 +232,17 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 
 		CollectionModel<?> resources = getCollectionResource(resourceinformation, pageable, sort, assembler);
-		Links links = resources.getLinks();
 
-		for (EntityModel<?> resource : ((CollectionModel<EntityModel<?>>) resources).getContent()) {
-			PersistentEntityResource persistentEntityResource = (PersistentEntityResource) resource;
-			links = links.and(resourceLink(resourceinformation, persistentEntityResource));
-		}
+		Links links = resources.getContent().stream() //
+				.map(PersistentEntityResource.class::cast) //
+				.map(it -> resourceLink(resourceinformation, it)) //
+				.reduce(resources.getLinks(), Links::and, Links::and);
 
-		if (resources instanceof PagedModel) {
-			return new PagedModel<Object>(Collections.emptyList(), ((PagedModel<?>) resources).getMetadata(), links);
-		} else {
-			return new CollectionModel<Object>(Collections.emptyList(), links);
-		}
+		CollectionModel<?> model = resources instanceof PagedModel //
+				? PagedModel.empty(((PagedModel<?>) resources).getMetadata()) //
+				: CollectionModel.empty();
+
+		return model.add(links);
 	}
 
 	/**

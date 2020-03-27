@@ -24,10 +24,10 @@ import java.util.List;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.server.core.EmbeddedWrapper;
 import org.springframework.util.Assert;
 
@@ -65,6 +65,7 @@ public class PersistentEntityResource extends EntityModel<Object> {
 	 * @param links must not be {@literal null}.
 	 * @param embeddeds can be {@literal null}.
 	 */
+	@SuppressWarnings("deprecation")
 	private PersistentEntityResource(PersistentEntity<?, ?> entity, Object content, Iterable<Link> links,
 			Iterable<EmbeddedWrapper> embeddeds, boolean isNew, boolean nested) {
 
@@ -205,6 +206,7 @@ public class PersistentEntityResource extends EntityModel<Object> {
 
 	private static class NoLinksResources<T> extends CollectionModel<T> {
 
+		@SuppressWarnings("deprecation")
 		public NoLinksResources(Iterable<T> content) {
 			super(content);
 		}

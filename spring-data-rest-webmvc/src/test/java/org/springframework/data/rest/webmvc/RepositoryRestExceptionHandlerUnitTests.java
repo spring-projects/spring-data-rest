@@ -30,6 +30,7 @@ import org.springframework.data.rest.webmvc.support.ExceptionMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.mock.http.MockHttpInputMessage;
 
 /**
  * Unit tests for {@link RepositoryRestExceptionHandler}.
@@ -60,7 +61,7 @@ public class RepositoryRestExceptionHandlerUnitTests {
 	public void handlesHttpMessageNotReadableException() {
 
 		ResponseEntity<ExceptionMessage> result = HANDLER
-				.handleNotReadable(new HttpMessageNotReadableException("Message!"));
+				.handleNotReadable(new HttpMessageNotReadableException("Message!", new MockHttpInputMessage(new byte[0])));
 
 		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 	}

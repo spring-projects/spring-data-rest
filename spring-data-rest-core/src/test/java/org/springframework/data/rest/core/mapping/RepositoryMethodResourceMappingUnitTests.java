@@ -113,7 +113,6 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-467
-	@SuppressWarnings("rawtypes")
 	public void returnsDomainTypeAsProjectionSourceType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);

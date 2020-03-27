@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc;
 import java.util.Collections;
 import java.util.Optional;
 
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpHeaders;
@@ -31,7 +32,12 @@ import org.springframework.util.Assert;
  */
 public class ControllerUtils {
 
-	public static final Iterable<EntityModel<?>> EMPTY_RESOURCE_LIST = Collections.emptyList();
+	/**
+	 * Use {@link CollectionModel#empty()} instead.
+	 *
+	 * @deprecated since 3.3
+	 */
+	@Deprecated public static final Iterable<EntityModel<?>> EMPTY_RESOURCE_LIST = Collections.emptyList();
 
 	public static <R extends RepresentationModel<?>> ResponseEntity<RepresentationModel<?>> toResponseEntity(
 			HttpStatus status, HttpHeaders headers, Optional<R> resource) {

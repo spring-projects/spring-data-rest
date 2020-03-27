@@ -42,6 +42,7 @@ import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.rest.webmvc.mapping.Associations;
+import org.springframework.data.rest.webmvc.util.InputStreamHttpInputMessage;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -88,7 +89,7 @@ public class DomainObjectReader {
 		try {
 			return doMerge((ObjectNode) mapper.readTree(source), target, mapper);
 		} catch (Exception o_O) {
-			throw new HttpMessageNotReadableException("Could not read payload!", o_O);
+			throw new HttpMessageNotReadableException("Could not read payload!", o_O, InputStreamHttpInputMessage.of(source));
 		}
 	}
 
@@ -101,24 +102,14 @@ public class DomainObjectReader {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T readPut(final ObjectNode source, T target, final ObjectMapper mapper) {
+	public <T> T readPut(final ObjectNode source, T target, final ObjectMapper mapper) throws Exception {
 
 		Assert.notNull(source, "ObjectNode must not be null!");
 		Assert.notNull(target, "Existing object instance must not be null!");
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
-		Class<? extends Object> type = target.getClass();
-
-		entities.getRequiredPersistentEntity(type);
-
-		try {
-
-			Object intermediate = mapper.readerFor(target.getClass()).readValue(source);
-			return (T) mergeForPut(intermediate, target, mapper);
-
-		} catch (Exception o_O) {
-			throw new HttpMessageNotReadableException("Could not read payload!", o_O);
-		}
+		Object intermediate = mapper.readerFor(target.getClass()).readValue(source);
+		return (T) mergeForPut(intermediate, target, mapper);
 	}
 
 	/**
@@ -186,6 +177,17 @@ public class DomainObjectReader {
 		}
 	}
 
+	/**
+	 * Only for internal use. To be removed in 3.4.
+	 *
+	 * @param <T>
+	 * @param source
+	 * @param target
+	 * @param mapper
+	 * @return
+	 * @deprecated
+	 */
+	@Deprecated
 	public <T> T merge(ObjectNode source, T target, ObjectMapper mapper) {
 
 		try {

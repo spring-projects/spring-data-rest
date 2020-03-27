@@ -15,7 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -33,7 +31,6 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -43,7 +40,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.Ordered;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.auditing.MappingAuditableBeanWrapperFactory;
@@ -408,21 +404,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new PersistentEntityToJsonSchemaConverter(persistentEntities(), associationLinks(), resolver, objectMapper(),
 				repositoryRestConfiguration(),
 				new ValueTypeSchemaPropertyCustomizerFactory(repositoryInvokerFactory(defaultConversionService())));
-	}
-
-	private final Properties lookupDefaultMessages() {
-
-		try {
-
-			PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
-			propertiesFactoryBean.setLocation(new ClassPathResource("rest-default-messages.properties"));
-			propertiesFactoryBean.afterPropertiesSet();
-
-			return propertiesFactoryBean.getObject();
-
-		} catch (IOException o_O) {
-			throw new IllegalStateException("Unable to resolve default rest-default-messages.properties!", o_O);
-		}
 	}
 
 	/**
