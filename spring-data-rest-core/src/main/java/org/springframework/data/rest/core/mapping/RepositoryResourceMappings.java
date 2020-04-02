@@ -45,12 +45,11 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 
 	/**
 	 * Creates a new {@link RepositoryResourceMappings} from the given {@link RepositoryRestConfiguration},
-	 * {@link Repositories} and {@link RelProvider}.
+	 * {@link PersistentEntities}, and {@link Repositories}.
 	 *
 	 * @param repositories must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
-	 * @param strategy must not be {@literal null}.
-	 * @param relProvider must not be {@literal null}.
+	 * @param configuration must not be {@literal null}.
 	 */
 	public RepositoryResourceMappings(Repositories repositories, PersistentEntities entities,
 			RepositoryRestConfiguration configuration) {
@@ -65,7 +64,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		this.populateCache(repositories, configuration);
 	}
 
-	private final void populateCache(Repositories repositories, RepositoryRestConfiguration configuration) {
+	private void populateCache(Repositories repositories, RepositoryRestConfiguration configuration) {
 
 		for (Class<?> type : repositories) {
 
@@ -151,7 +150,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 	/**
 	 * Returns whether to expose repository methods by default, i.e. without the need to explicitly annotate them with
 	 * {@link RestResource}.
-	 * 
+	 *
 	 * @since 3.1
 	 * @see RepositoryRestConfiguration#exposeRepositoryMethodsByDefault()
 	 */
@@ -161,7 +160,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 
 	/**
 	 * Returns the underlying {@link ExposureConfiguration}.
-	 * 
+	 *
 	 * @return will never be {@literal null}.
 	 * @since 3.1
 	 * @see RepositoryRestConfiguration#getExposureConfiguration()
