@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -40,9 +41,9 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	private final SearchResourceMappings searchResourceMappings = new SearchResourceMappings(
 			Collections.<MethodResourceMapping> emptyList());
 
-	private final Map<Class<?>, ResourceMetadata> cache = new ConcurrentReferenceHashMap<>();
-	private final Map<Class<?>, MappingResourceMetadata> mappingCache = new ConcurrentReferenceHashMap<>();
-	private final Map<PersistentProperty<?>, ResourceMapping> propertyCache = new ConcurrentReferenceHashMap<PersistentProperty<?>, ResourceMapping>();
+	private final Map<Class<?>, ResourceMetadata> cache = new ConcurrentHashMap<>();
+	private final Map<Class<?>, MappingResourceMetadata> mappingCache = new ConcurrentHashMap<>();
+	private final Map<PersistentProperty<?>, ResourceMapping> propertyCache = new ConcurrentHashMap<PersistentProperty<?>, ResourceMapping>();
 
 	/**
 	 * Creates a new {@link PersistentEntitiesResourceMappings} from the given {@link PersistentEntities}.
