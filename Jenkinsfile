@@ -66,10 +66,10 @@ pipeline {
 						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pjava11 clean dependency:list test -Dsort -U -B -Pit'
 					}
 				}
-				stage("test: baseline (jdk13)") {
+				stage("test: baseline (jdk14)") {
 					agent {
 						docker {
-							image 'springci/spring-data-openjdk13-with-mongodb-4.2.0:latest'
+							image 'springci/spring-data-openjdk14-with-mongodb-4.2.0:latest'
 							label 'data'
 							args '-v $HOME:/tmp/jenkins-home'
 						}
