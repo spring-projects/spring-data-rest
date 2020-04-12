@@ -311,7 +311,7 @@ The `GET` method supports the following media types:
 
 ==== `PUT`
 
-The `PUT` method binds the resource pointed to by the given URI(s) to the resource. This
+The `PUT` method binds the resource pointed to by the given URI(s) to the association resource (see Supported Media Types).
 
 ===== Custom Status Codes
 
