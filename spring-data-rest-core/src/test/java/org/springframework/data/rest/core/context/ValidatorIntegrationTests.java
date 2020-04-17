@@ -30,6 +30,8 @@ import org.springframework.data.rest.core.RepositoryTestsConfig;
 import org.springframework.data.rest.core.domain.JpaRepositoryConfig;
 import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.domain.PersonNameValidator;
+import org.springframework.data.rest.core.event.AfterLinkDeleteEvent;
+import org.springframework.data.rest.core.event.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.core.event.BeforeSaveEvent;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,6 +42,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Chris Midgley
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
@@ -54,6 +57,8 @@ public class ValidatorIntegrationTests {
 
 			ValidatingRepositoryEventListener listener = new ValidatingRepositoryEventListener(persistentEntities);
 			listener.addValidator("beforeSave", new PersonNameValidator());
+			listener.addValidator("beforeLinkDelete", new PersonNameValidator());
+			listener.addValidator("afterLinkDelete", new PersonNameValidator());
 
 			return listener;
 		}
@@ -69,5 +74,23 @@ public class ValidatorIntegrationTests {
 
 		// Empty name should be rejected by PersonNameValidator
 		context.publishEvent(new BeforeSaveEvent(new Person("Dave", "")));
+	}
+
+	@Test(expected = RepositoryConstraintViolationException.class) // DATAREST-1424
+	public void shouldValidateBeforeLinkDelete() throws Exception {
+
+		mappingContext.getPersistentEntity(Person.class);
+		context.publishEvent(new BeforeLinkDeleteEvent(createInvalidPerson(), null));
+	}
+
+	@Test(expected = RepositoryConstraintViolationException.class) // DATAREST-1424
+	public void shouldValidateAfterLinkDelete() throws Exception {
+
+		mappingContext.getPersistentEntity(Person.class);
+		context.publishEvent(new AfterLinkDeleteEvent(createInvalidPerson(), null));
+	}
+
+	private Person createInvalidPerson() {
+		return new Person("Dave", "");
 	}
 }
