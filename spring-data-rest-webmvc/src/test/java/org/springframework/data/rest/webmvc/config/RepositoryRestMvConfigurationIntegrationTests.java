@@ -16,16 +16,21 @@
 package org.springframework.data.rest.webmvc.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.*;
+import static org.springframework.data.rest.webmvc.util.AssertionUtils.*;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.function.Predicate;
 
 import javax.naming.Name;
 import javax.naming.ldap.LdapName;
 
+import org.assertj.core.api.Condition;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,6 +50,7 @@ import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
+import org.springframework.data.rest.webmvc.util.AssertionUtils;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.format.datetime.DateFormatter;
@@ -66,6 +72,7 @@ import com.jayway.jsonpath.JsonPath;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Greg Turnquist
  */
 public class RepositoryRestMvConfigurationIntegrationTests {
 
@@ -117,7 +124,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(params.get("mySize").get(0)).isEqualTo("7000");
 	}
 
-	@Test // DATAREST-336
+	@Test // DATAREST-336 DATAREST-1509
 	public void objectMapperRendersDatesInIsoByDefault() throws Exception {
 
 		Sample sample = new Sample();
@@ -125,13 +132,12 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 
 		ObjectMapper mapper = getObjectMapper();
 
-		DateFormatter formatter = new DateFormatter();
-		formatter.setPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+		String result = JsonPath.read(mapper.writeValueAsString(sample), "$.date");
 
-		Object result = JsonPath.read(mapper.writeValueAsString(sample), "$.date");
-		assertThat(result).isInstanceOf(String.class);
-		assertThat(result).isEqualTo(formatter.print(sample.date, Locale.US));
+		assertThat(result).is(anyOf( //
+				new Condition<>(endsWith("+00"), "ISO-8601-TZ1"), //
+				new Condition<>(endsWith("+0000"), "ISO-8601-TZ2"), //
+				new Condition<>(endsWith("+00:00"), "ISO-8601-TZ3")));
 	}
 
 	@Test(expected = NoSuchBeanDefinitionException.class) // DATAREST-362
