@@ -19,6 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -136,5 +140,29 @@ public class AddOperationUnitTests {
 				.withMessageContaining("index") //
 				.withMessageContaining("2") //
 				.withMessageContaining("1");
+	}
+
+	@Test // DATAREST-1479
+	public void manipulatesNestedCollectionProperly() {
+
+		List<Todo> todos = new ArrayList<>();
+		todos.add(new Todo(1L, "A", false));
+		todos.add(new Todo(2L, "B", false));
+
+		TodoList todoList = new TodoList();
+		todoList.setTodos(todos);
+		TodoListWrapper outer = new TodoListWrapper(todoList);
+
+		Todo newTodo = new Todo(3L, "C", false);
+		AddOperation.of("/todoList/todos/-", newTodo).perform(outer, TodoListWrapper.class);
+
+		assertThat(outer.todoList.getTodos()).containsExactly(todos.get(0), todos.get(1), newTodo);
+	}
+
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class TodoListWrapper {
+		public TodoList todoList;
 	}
 }
