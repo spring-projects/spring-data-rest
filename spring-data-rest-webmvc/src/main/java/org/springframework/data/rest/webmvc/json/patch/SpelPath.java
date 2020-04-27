@@ -554,7 +554,7 @@ class SpelPath {
 					return nested(segment);
 				}
 
-				TypeInformation<?> typeInformation = basePath.getTypeInformation();
+				TypeInformation<?> typeInformation = basePath.getLeafProperty().getTypeInformation();
 
 				if (typeInformation.isMap()) {
 
