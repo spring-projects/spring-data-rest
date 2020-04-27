@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
@@ -27,7 +24,6 @@ import org.springframework.data.rest.webmvc.support.Projector;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.core.EmbeddedWrapper;
-import org.springframework.hateoas.server.core.EmbeddedWrappers;
 import org.springframework.util.Assert;
 
 /**
@@ -35,14 +31,36 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  */
-@RequiredArgsConstructor
-public class PersistentEntityResourceAssembler implements RepresentationModelAssembler<Object, PersistentEntityResource> {
+public class PersistentEntityResourceAssembler
+		implements RepresentationModelAssembler<Object, PersistentEntityResource> {
 
-	private final @NonNull PersistentEntities entities;
-	private final @NonNull Projector projector;
-	private final @NonNull Associations associations;
-	private final @NonNull SelfLinkProvider linkProvider;
-	private final @NonNull EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+	private final PersistentEntities entities;
+	private final Projector projector;
+	private final SelfLinkProvider linkProvider;
+	private final EmbeddedResourcesAssembler embeddedAssembler;
+
+	/**
+	 * Creates a new {@link PersistentEntityResourceAssembler} for the given {@link PersistentEntities},
+	 * {@link Projector}, {@link Associations} and {@link SelfLinkProvider}.
+	 *
+	 * @param entities must not be {@literal null}.
+	 * @param projector must not be {@literal null}.
+	 * @param associations must not be {@literal null}.
+	 * @param linkProvider must not be {@literal null}.
+	 */
+	public PersistentEntityResourceAssembler(PersistentEntities entities, Projector projector, Associations associations,
+			SelfLinkProvider linkProvider) {
+
+		Assert.notNull(entities, "PersistentEntities must not be null!");
+		Assert.notNull(projector, "Projector must not be null!");
+		Assert.notNull(associations, "Associations must not be null!");
+		Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
+
+		this.entities = entities;
+		this.projector = projector;
+		this.linkProvider = linkProvider;
+		this.embeddedAssembler = new EmbeddedResourcesAssembler(entities, associations, projector);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -85,7 +103,7 @@ public class PersistentEntityResourceAssembler implements RepresentationModelAss
 	 * @return
 	 */
 	private Iterable<EmbeddedWrapper> getEmbeddedResources(Object instance) {
-		return new EmbeddedResourcesAssembler(entities, associations, projector).getEmbeddedResources(instance);
+		return embeddedAssembler.getEmbeddedResources(instance);
 	}
 
 	/**
