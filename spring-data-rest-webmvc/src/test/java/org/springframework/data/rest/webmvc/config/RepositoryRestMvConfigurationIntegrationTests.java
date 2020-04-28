@@ -16,24 +16,19 @@
 package org.springframework.data.rest.webmvc.config;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.*;
 import static org.springframework.data.rest.webmvc.util.AssertionUtils.*;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.function.Predicate;
 
 import javax.naming.Name;
 import javax.naming.ldap.LdapName;
 
-import org.assertj.core.api.Condition;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -50,10 +45,8 @@ import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
-import org.springframework.data.rest.webmvc.util.AssertionUtils;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.format.datetime.DateFormatter;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.hateoas.server.core.DefaultLinkRelationProvider;
@@ -134,10 +127,9 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 
 		String result = JsonPath.read(mapper.writeValueAsString(sample), "$.date");
 
-		assertThat(result).is(anyOf( //
-				new Condition<>(endsWith("+00"), "ISO-8601-TZ1"), //
-				new Condition<>(endsWith("+0000"), "ISO-8601-TZ2"), //
-				new Condition<>(endsWith("+00:00"), "ISO-8601-TZ3")));
+		assertThat(result).matches(suffix("+00") //
+				.or(suffix("+0000")) //
+				.or(suffix("+00:00")), "ISO-8601-TZ1, ISO-8601-TZ2, or ISO-8601-TZ3");
 	}
 
 	@Test(expected = NoSuchBeanDefinitionException.class) // DATAREST-362
