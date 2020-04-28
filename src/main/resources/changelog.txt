@@ -1,6 +1,17 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.3.0.RC2 (2020-04-28)
+-----------------------------------------
+* DATAREST-1513 - Avoid recreation of EmbeddedResourcesAssembler in PersistentEntityResourceAssembler.
+* DATAREST-1512 - Upgrade to HAL Explorer 0.12.
+* DATAREST-1509 - Fix Jackson ISO serialization test case to follow standards.
+* DATAREST-1507 - Use JDK 14 for Java.NEXT CI testing.
+* DATAREST-1502 - Use ConcurrentHashMap in PersistentEntitiesResourceMappings instead of ConcurrentReferenceHashMap.
+* DATAREST-1501 - Release 3.3 RC2 (Neumann).
+* DATAREST-1479 - Patch does not work when Lists occur somewhere in path and not at root.
+
+
 Changes in version 3.2.7.RELEASE (2020-04-28)
 ---------------------------------------------
 * DATAREST-1513 - Avoid recreation of EmbeddedResourcesAssembler in PersistentEntityResourceAssembler.
@@ -1538,6 +1549,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
