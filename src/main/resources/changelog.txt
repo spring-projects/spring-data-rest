@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.17.RELEASE (2020-04-28)
+----------------------------------------------
+* DATAREST-1513 - Avoid recreation of EmbeddedResourcesAssembler in PersistentEntityResourceAssembler.
+* DATAREST-1485 - Release 3.1.17 (Lovelace SR17).
+* DATAREST-1479 - Patch does not work when Lists occur somewhere in path and not at root.
+
+
 Changes in version 3.3.0.RC1 (2020-03-31)
 -----------------------------------------
 * DATAREST-1500 - General code cleanups.
@@ -1521,6 +1528,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
