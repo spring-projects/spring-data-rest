@@ -1,9 +1,0 @@
-language: java
-
-cache:
-  directories:
-    - $HOME/.m2
-
-install: true
-
-script: "./mvnw clean dependency:list test -Pjava11 -Dsort -B"
