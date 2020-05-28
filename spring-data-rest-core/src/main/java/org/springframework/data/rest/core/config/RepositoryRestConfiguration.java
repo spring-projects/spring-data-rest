@@ -65,6 +65,8 @@ public class RepositoryRestConfiguration {
 	private Boolean returnBodyOnCreate = null;
 	private Boolean returnBodyOnUpdate = null;
 	private List<Class<?>> exposeIdsFor = new ArrayList<Class<?>>();
+	private List<Class<?>> hiddenIdsFor = new ArrayList<Class<?>>();
+	private boolean exposedIdsForAll=false;
 	private ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
 	private RepositoryDetectionStrategy repositoryDetectionStrategy = RepositoryDetectionStrategies.DEFAULT;
@@ -460,6 +462,12 @@ public class RepositoryRestConfiguration {
 	 * @return {@literal true} is the ID is to be exposed, {@literal false} otherwise.
 	 */
 	public boolean isIdExposedFor(Class<?> domainType) {
+		if (hiddenIdsFor.contains(domainType)) {
+			return false;
+		}
+		if (exposedIdsForAll) {
+			return true;
+		}
 		return exposeIdsFor.contains(domainType);
 	}
 
@@ -474,6 +482,17 @@ public class RepositoryRestConfiguration {
 		return this;
 	}
 
+	/**
+	 * Set the list of domain types for which we will not expose the ID in any way even set {@link exposedIdsForAll} to
+	 * to true
+	 *
+	 * @param domainTypes Array of types to hidden IDs for.
+	 * @return {@literal this}
+	 */
+	public RepositoryRestConfiguration hiddenIdsFor(Class<?>... domainTypes) {
+		Collections.addAll(hiddenIdsFor, domainTypes);
+		return this;
+	}
 	/**
 	 * Returns the {@link ProjectionDefinitionConfiguration} to register addition projections.
 	 *
@@ -656,5 +675,13 @@ public class RepositoryRestConfiguration {
 
 	public boolean isLookupType(Class<?> type) {
 		return this.entityLookupConfiguration.isLookupType(type);
+	}
+
+
+	/** set if expose all classes ID value as a normal property except the explict @{link hiddenIdsFor} classes
+	 * @param exposedIdsForAll if expose all ID values as a normal property
+	 */
+	public void setExposedIdsForAll(boolean exposedIdsForAll) {
+		this.exposedIdsForAll = exposedIdsForAll;
 	}
 }
