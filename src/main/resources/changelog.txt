@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.1.18.RELEASE (2020-06-10)
+----------------------------------------------
+* DATAREST-1519 - Remove Travis CI.
+* DATAREST-1514 - Release 3.1.18 (Lovelace SR18).
+
+
 Changes in version 3.3.0.RC2 (2020-04-28)
 -----------------------------------------
 * DATAREST-1513 - Avoid recreation of EmbeddedResourcesAssembler in PersistentEntityResourceAssembler.
@@ -1549,6 +1555,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
