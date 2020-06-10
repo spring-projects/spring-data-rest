@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.2.8.RELEASE (2020-06-10)
+---------------------------------------------
+* DATAREST-1519 - Remove Travis CI.
+* DATAREST-1515 - Release 3.2.8 (Moore SR8).
+
+
 Changes in version 3.1.18.RELEASE (2020-06-10)
 ----------------------------------------------
 * DATAREST-1519 - Remove Travis CI.
@@ -1561,6 +1567,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
