@@ -18,6 +18,8 @@ package org.springframework.data.rest.webmvc.json;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.data.rest.webmvc.json.JsonSchema.EnumProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
@@ -44,8 +46,9 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
  * Custom Spring Data REST Jackson serializers.
  *
  * @author Oliver Gierke
- * @since 2.4
+ * @author Doug Busley
  * @soundtrack Wallis Bird - I Could Be Your Man (Yeah! Wallis Bird Live 2007-2014)
+ * @since 2.4
  */
 public class JacksonSerializers extends SimpleModule {
 
@@ -117,7 +120,14 @@ public class JacksonSerializers extends SimpleModule {
 				values.add(translator.asText((Enum<?>) value));
 			}
 
-			return ((EnumProperty) property).withValues(values);
+			if (property instanceof EnumProperty) {
+				return ((EnumProperty) property).withValues(values);
+			}
+
+			property.items = Stream.of(new Object[][]{{"enum", values}, {"type", "string"}})
+					.collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
+
+			return property;
 		}
 	}
 

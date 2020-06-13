@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Doug Busley
  */
 @JsonInclude(Include.NON_EMPTY)
 public class JsonSchema {
@@ -333,7 +334,7 @@ public class JsonSchema {
 		public String pattern;
 		public Boolean uniqueItems;
 		public @JsonProperty("$ref") String reference;
-		public Map<String, String> items;
+		public Map<String, Object> items;
 
 		JsonSchemaProperty(String name, String title, String description, boolean required) {
 

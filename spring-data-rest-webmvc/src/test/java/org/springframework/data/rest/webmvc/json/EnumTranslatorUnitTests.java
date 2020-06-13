@@ -17,18 +17,23 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.StaticMessageSource;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.mediatype.MessageResolver;
 
 /**
  * Unit tests for {@link EnumTranslator}.
  *
  * @author Oliver Gierke
+ * @author Doug Busley
  */
 public class EnumTranslatorUnitTests {
 
@@ -143,6 +148,32 @@ public class EnumTranslatorUnitTests {
 		// Parses default translation as no explicit translation is available
 		assertThat(configuration.fromText(MyEnum.class, "Second value")).isEqualTo(MyEnum.SECOND_VALUE);
 		assertThat(configuration.fromText(MyEnum.class, "SECOND_VALUE")).isNull();
+	}
+
+	@Test // DATAREST-1326
+	@SuppressWarnings("unchecked")
+	public void doesNotFailOnEnumListsWithEnumTranslation() {
+		final TypeInformation<?> type = ClassTypeInformation.from(MyEnum.class);
+
+		JsonSchema.JsonSchemaProperty jsonSchemaProperty =
+				new JsonSchema.JsonSchemaProperty("foo", null, "bar", true)
+						.with(ClassTypeInformation.from(List.class));
+		JacksonSerializers.EnumTranslatingSerializer serializer = new
+				JacksonSerializers.EnumTranslatingSerializer(configuration);
+		JsonSchema.JsonSchemaProperty result = serializer.customize(jsonSchemaProperty, type);
+
+		ArrayList<String> enums = (ArrayList<String>) result.items.get("enum");
+
+		// Enum values are placed in the items object
+		assertThat(enums.size()).isEqualTo(2);
+		assertThat(enums.get(0)).isEqualTo("Translated");
+		assertThat(enums.get(1)).isEqualTo("Second value");
+
+		// type of the result object is array
+		assertThat(result.type).isEqualTo("array");
+
+		// type of the items object is string
+		assertThat(result.items.get("type")).isEqualTo("string");
 	}
 
 	static enum MyEnum {
