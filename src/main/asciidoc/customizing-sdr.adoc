@@ -19,7 +19,7 @@ On Java 8, we can register the mapping methods as method references to tweak the
 [source, java]
 ----
 @Component
-public class SpringDataRestCustomization extends RepositoryRestConfigurer {
+public class SpringDataRestCustomization implements RepositoryRestConfigurer {
 
   @Override
   public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
