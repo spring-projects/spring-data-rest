@@ -13,6 +13,7 @@
 	<artifactId>spring-data-rest-tests-security</artifactId>
 
 	<properties>
+		<java-module-name>spring.data.rest.tests.security</java-module-name>
 		<spring-security.version>5.1.5.RELEASE</spring-security.version>
 	</properties>
 

@@ -9,8 +9,12 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<name>Spring Data REST Tests - Gemfire</name>
-	<artifactId>spring-data-rest-tests-gemfire</artifactId>
+	<name>Spring Data REST Tests - Geode</name>
+	<artifactId>spring-data-rest-tests-geode</artifactId>
+
+	<properties>
+		<java-module-name>spring.data.rest.tests.geode</java-module-name>
+	</properties>
 
 	<dependencies>
 
@@ -21,7 +25,7 @@
 			<type>test-jar</type>
 		</dependency>
 
-		<!-- Gemfire -->
+		<!-- Geode -->
 
 		<dependency>
 			<groupId>org.springframework.data</groupId>

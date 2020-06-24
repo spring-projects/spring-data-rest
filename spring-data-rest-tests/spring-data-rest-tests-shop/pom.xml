@@ -11,6 +11,10 @@
 	<name>Spring Data REST Tests - Shop</name>
 	<artifactId>spring-data-rest-tests-shop</artifactId>
 
+	<properties>
+		<java-module-name>spring.data.rest.tests.shop</java-module-name>
+	</properties>
+
 	<dependencies>
 
 		<dependency>

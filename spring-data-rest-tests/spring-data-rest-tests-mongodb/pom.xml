@@ -12,6 +12,10 @@
 	<name>Spring Data REST Tests - MongoDB</name>
 	<artifactId>spring-data-rest-tests-mongodb</artifactId>
 
+	<properties>
+		<java-module-name>spring.data.rest.tests.mongodb</java-module-name>
+	</properties>
+
 	<dependencies>
 
 		<dependency>

@@ -13,6 +13,7 @@
 	<artifactId>spring-data-rest-tests-jpa</artifactId>
 
 	<properties>
+		<java-module-name>spring.data.rest.tests.jpa</java-module-name>
 		<spring-security.version>4.0.1.RELEASE</spring-security.version>
 	</properties>
 

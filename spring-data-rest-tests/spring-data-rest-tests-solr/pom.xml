@@ -10,6 +10,10 @@
 	<name>Spring Data REST Tests - Solr</name>
 	<artifactId>spring-data-rest-tests-solr</artifactId>
 
+	<properties>
+		<java-module-name>spring.data.rest.tests.solr</java-module-name>
+	</properties>
+
 	<dependencies>
 
 		<dependency>
