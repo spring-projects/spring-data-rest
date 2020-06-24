@@ -18,7 +18,6 @@ package org.springframework.data.rest.webmvc;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -37,11 +36,9 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.util.ProxyUtils;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -346,28 +343,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 			CorsConfiguration config = new CorsConfiguration();
 			updateCorsConfig(config, typeAnnotation);
-
-			if (CollectionUtils.isEmpty(config.getAllowedOrigins())) {
-				config.setAllowedOrigins(Arrays.asList(CrossOrigin.DEFAULT_ORIGINS));
-			}
-
-			if (CollectionUtils.isEmpty(config.getAllowedMethods())) {
-				for (HttpMethod httpMethod : HttpMethod.values()) {
-					config.addAllowedMethod(httpMethod);
-				}
-			}
-
-			if (CollectionUtils.isEmpty(config.getAllowedHeaders())) {
-				config.setAllowedHeaders(Arrays.asList(CrossOrigin.DEFAULT_ALLOWED_HEADERS));
-			}
-
-			if (config.getAllowCredentials() == null) {
-				config.setAllowCredentials(CrossOrigin.DEFAULT_ALLOW_CREDENTIALS);
-			}
-
-			if (config.getMaxAge() == null) {
-				config.setMaxAge(CrossOrigin.DEFAULT_MAX_AGE);
-			}
+			config.applyPermitDefaultValues();
 
 			return config;
 		}

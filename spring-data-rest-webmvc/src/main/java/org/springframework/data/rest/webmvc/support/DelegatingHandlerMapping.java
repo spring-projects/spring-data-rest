@@ -33,6 +33,7 @@ import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.MatchableHandlerMapping;
 import org.springframework.web.servlet.handler.RequestMatchResult;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 /**
  * A {@link HandlerMapping} that considers a {@link List} of delegates. It will keep on traversing the delegates in case
@@ -87,6 +88,14 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered, Matcha
 		} catch (Exception o_O) {
 			return null;
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.web.servlet.handler.MatchableHandlerMapping#getPatternParser()
+	 */
+	public PathPatternParser getPatternParser() {
+		return null;
 	}
 
 	@Value
