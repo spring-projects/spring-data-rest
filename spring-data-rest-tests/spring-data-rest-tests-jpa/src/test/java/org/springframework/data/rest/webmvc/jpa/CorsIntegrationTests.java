@@ -69,8 +69,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		mvc.perform(options(findItems.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.example")
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
 				.andExpect(status().isOk()) //
-				.andExpect(
-						header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS,TRACE"));
+				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,HEAD,POST"));
 	}
 
 	@Test // DATAREST-573
@@ -140,7 +139,6 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		mvc.perform(options(authorsLink.expand().getHref()).header(HttpHeaders.ORIGIN, "http://not.so.far.example")
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
 				.andExpect(status().isOk()) //
-				.andExpect(header().longValue(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 1234)) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://not.so.far.example")) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")) //
 				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH,POST"));

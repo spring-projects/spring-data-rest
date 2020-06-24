@@ -66,12 +66,12 @@ public class DelegatingHandlerMappingUnitTests {
 		// Given:
 		// A matching mapping that doesn't get selected
 		MatchableHandlerMapping third = mock(MatchableHandlerMapping.class);
-		doReturn(mock(RequestMatchResult.class)).when(third).match(any(), any());
+		doReturn(mock(RequestMatchResult.class)).when(third).match(any(), any(String.class));
 
 		// A matching mapping that gets selected
 		RequestMatchResult result = mock(RequestMatchResult.class);
 		MatchableHandlerMapping fourth = mock(MatchableHandlerMapping.class, Answers.RETURNS_MOCKS);
-		doReturn(result).when(fourth).match(any(), any());
+		doReturn(result).when(fourth).match(any(), any(String.class));
 
 		DelegatingHandlerMapping mapping = new DelegatingHandlerMapping(Arrays.asList(first, second, third, fourth));
 
