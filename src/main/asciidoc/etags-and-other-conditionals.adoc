@@ -43,7 +43,7 @@ curl -v -H 'If-None-Match: <value of previous etag>' ...
 ----
 ====
 
-The preceding command (by default) executes a `GET`. Spring Data REST checks for `If-None-Match` headers while doing a `GET`. If the header matches the ETag, it concludes that nothing has changed and, instead of sending a copy of the resource, sends back an HTTP `304 Not Modified` status code. Semantically, it reads "`If this supplied header value does not match the server-side version, send the whole resource. Otherwise, do not send anything.`"
+The preceding command (by default) runs a `GET`. Spring Data REST checks for `If-None-Match` headers while doing a `GET`. If the header matches the ETag, it concludes that nothing has changed and, instead of sending a copy of the resource, sends back an HTTP `304 Not Modified` status code. Semantically, it reads "`If this supplied header value does not match the server-side version, send the whole resource. Otherwise, do not send anything.`"
 
 NOTE: This POJO is from an `ETag`-based unit test, so it does not have `@Entity` (JPA) or `@Document` (MongoDB) annotations, as expected in application code. It focuses solely on how a field with `@Version` results in an `ETag` header.
 

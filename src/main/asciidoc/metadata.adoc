@@ -341,7 +341,7 @@ As shown in the <<metadata.alps,previous section>>, you can reach this data by n
 
 These links are the same as shown earlier. To retrieve JSON Schema, you can invoke them with the following `Accept` header: `application/schema+json`.
 
-In this case, if you executed `curl -H 'Accept:application/schema+json' http://localhost:8080/profile/persons`, you would see output resembling the following:
+In this case, if you ran `curl -H 'Accept:application/schema+json' http://localhost:8080/profile/persons`, you would see output resembling the following:
 
 ====
 [source,javascript]
