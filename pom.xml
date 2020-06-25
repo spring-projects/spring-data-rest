@@ -101,7 +101,7 @@
 
 									<module name="io.spring.nohttp.checkstyle.check.NoHttpCheck">
 										<!-- XML requires double escaping, config gets XML-processed twice -->
-										<property name="whitelist" value="http://www\.querydsl\.com.*&amp;#10;http://stateless\.co.*&amp;#10;http://json-schema\.org.*&amp;#10;http://alps\.io.*"/>
+										<property name="allowlist" value="http://www\.querydsl\.com.*&amp;#10;http://stateless\.co.*&amp;#10;http://json-schema\.org.*&amp;#10;http://alps\.io.*"/>
 									</module>
 								</module>
 							</checkstyleRules>
