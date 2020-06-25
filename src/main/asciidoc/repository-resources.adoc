@@ -384,7 +384,7 @@ As the search resource is a read-only resource, it supports `GET` only.
 
 ==== `GET`
 
-The `GET` method returns the result of the query execution.
+The `GET` method returns the result of the query.
 
 ===== Parameters
 
