@@ -1,6 +1,16 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.4.0-M1 (2020-06-25)
+----------------------------------------
+* DATAREST-1538 - Adapt to Nohttp 0.0.5.
+* DATAREST-1537 - Upgrade security tests to Spring Security 5.3.3.
+* DATAREST-1536 - Set automatic module names for test modules.
+* DATAREST-1535 - Adapt to changes in Spring 5.3.
+* DATAREST-1527 - Use standard Spring code of conduct.
+* DATAREST-1522 - Release 3.4 M1 (2020.0.0).
+
+
 Changes in version 3.3.1.RELEASE (2020-06-10)
 ---------------------------------------------
 * DATAREST-1521 - Release 3.3.1 (Neumann SR1).
@@ -1566,6 +1576,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
