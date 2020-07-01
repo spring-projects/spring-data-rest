@@ -51,7 +51,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistration;
 @SuppressWarnings("deprecation")
 public class RepositoryRestConfiguration {
 
-	private static final URI NO_URI = URI.create("");
+	static final URI NO_URI = URI.create("");
 
 	private URI baseUri = NO_URI;
 	private URI basePath = NO_URI;
@@ -109,7 +109,9 @@ public class RepositoryRestConfiguration {
 	 * The base URI against which the exporter should calculate its links.
 	 *
 	 * @return The base URI.
+	 * @deprecated use {@link #getBasePath()} instead.
 	 */
+	@Deprecated
 	public URI getBaseUri() {
 		return basePath != NO_URI ? basePath : baseUri;
 	}

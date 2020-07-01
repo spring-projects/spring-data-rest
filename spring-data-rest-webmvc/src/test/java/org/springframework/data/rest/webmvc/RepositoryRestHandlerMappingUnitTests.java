@@ -19,7 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.Collections;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -71,7 +73,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	@Mock Repositories repositories;
 
 	RepositoryRestConfiguration configuration;
-	HandlerMappingStub handlerMapping;
+	Supplier<HandlerMappingStub> handlerMapping;
 	MockHttpServletRequest mockRequest;
 	Method listEntitiesMethod, rootHandlerMethod;
 
@@ -81,8 +83,14 @@ public class RepositoryRestHandlerMappingUnitTests {
 		configuration = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
 				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
 
-		handlerMapping = new HandlerMappingStub(mappings, configuration, repositories);
-		handlerMapping.setApplicationContext(CONTEXT);
+		handlerMapping = () -> {
+
+			HandlerMappingStub mapping = new HandlerMappingStub(mappings, configuration, repositories);
+			mapping.setApplicationContext(CONTEXT);
+			mapping.afterPropertiesSet();
+
+			return mapping;
+		};
 
 		mockRequest = new MockHttpServletRequest();
 
@@ -103,9 +111,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 	@Test // DATAREST-111
 	public void returnsNullForUriNotMapped() throws Exception {
-
-		handlerMapping.afterPropertiesSet();
-		assertThat(handlerMapping.getHandler(mockRequest)).isNull();
+		assertThat(handlerMapping.get().getHandler(mockRequest)).isNull();
 	}
 
 	@Test // DATAREST-111
@@ -114,8 +120,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/people");
 
-		handlerMapping.afterPropertiesSet();
-		HandlerMethod method = handlerMapping.getHandlerInternal(mockRequest);
+		HandlerMethod method = handlerMapping.get().getHandlerInternal(mockRequest);
 
 		assertThat(method).isNotNull();
 		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
@@ -128,9 +133,8 @@ public class RepositoryRestHandlerMappingUnitTests {
 		mockRequest = new MockHttpServletRequest("GET", "/base/people");
 
 		configuration.setBasePath("/base");
-		handlerMapping.afterPropertiesSet();
 
-		HandlerMethod method = handlerMapping.getHandlerInternal(mockRequest);
+		HandlerMethod method = handlerMapping.get().getHandlerInternal(mockRequest);
 
 		assertThat(method).isNotNull();
 		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
@@ -142,9 +146,8 @@ public class RepositoryRestHandlerMappingUnitTests {
 		mockRequest = new MockHttpServletRequest("GET", "/base");
 
 		configuration.setBasePath("/base");
-		handlerMapping.afterPropertiesSet();
 
-		HandlerMethod method = handlerMapping.getHandlerInternal(mockRequest);
+		HandlerMethod method = handlerMapping.get().getHandlerInternal(mockRequest);
 
 		assertThat(method).isNotNull();
 		assertThat(method.getMethod()).isEqualTo(rootHandlerMethod);
@@ -157,9 +160,8 @@ public class RepositoryRestHandlerMappingUnitTests {
 		mockRequest = new MockHttpServletRequest("GET", "/base/people/");
 
 		configuration.setBasePath("/base");
-		handlerMapping.afterPropertiesSet();
 
-		HandlerMethod method = handlerMapping.getHandlerInternal(mockRequest);
+		HandlerMethod method = handlerMapping.get().getHandlerInternal(mockRequest);
 
 		assertThat(method).isNotNull();
 		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
@@ -173,9 +175,8 @@ public class RepositoryRestHandlerMappingUnitTests {
 		mockRequest.setServletPath("/base/people");
 
 		configuration.setBasePath("/base");
-		handlerMapping.afterPropertiesSet();
 
-		HandlerMethod method = handlerMapping.getHandlerInternal(mockRequest);
+		HandlerMethod method = handlerMapping.get().getHandlerInternal(mockRequest);
 
 		assertThat(method).isNotNull();
 		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
@@ -189,7 +190,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		configuration.setBasePath("/base");
 
-		HandlerMethod method = handlerMapping.getHandlerInternal(mockRequest);
+		HandlerMethod method = handlerMapping.get().getHandlerInternal(mockRequest);
 
 		assertThat(method).isNull();
 	}
@@ -206,7 +207,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		configuration.setBasePath(baseUri);
 
-		HandlerMethod method = handlerMapping.getHandlerInternal(mockRequest);
+		HandlerMethod method = handlerMapping.get().getHandlerInternal(mockRequest);
 
 		assertThat(method).isNull();
 	}
@@ -218,7 +219,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		mockRequest = new MockHttpServletRequest("GET", "/people{?projection}");
 
-		assertThat(handlerMapping.getHandler(mockRequest)).isNull();
+		assertThat(handlerMapping.get().getHandler(mockRequest)).isNull();
 	}
 
 	@Test // DATAREST-1019
@@ -233,7 +234,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 		mockRequest = new MockHttpServletRequest("GET", uri);
 		mockRequest.setServletPath(uri);
 
-		handlerMapping.getCorsConfiguration(uri, mockRequest);
+		handlerMapping.get().getCorsConfiguration(uri, mockRequest);
 
 		verify(mappings).exportsTopLevelResourceFor("/people");
 	}
@@ -253,7 +254,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 		mockRequest = new MockHttpServletRequest("GET", uri);
 		mockRequest.setServletPath(uri);
 
-		handlerMapping.getCorsConfiguration(uri, mockRequest);
+		handlerMapping.get().getCorsConfiguration(uri, mockRequest);
 
 		verify(mappings).exportsTopLevelResourceFor("/people");
 	}
@@ -268,8 +269,10 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		Class<?> type = createProxy(new SomeController());
 
-		HandlerMappingStub mapping = new HandlerMappingStub(mock(ResourceMappings.class),
-				mock(RepositoryRestConfiguration.class));
+		RepositoryRestConfiguration configuration = mock(RepositoryRestConfiguration.class);
+		doReturn(URI.create("")).when(configuration).getBasePath();
+
+		HandlerMappingStub mapping = new HandlerMappingStub(mock(ResourceMappings.class), configuration);
 
 		assertThat(mapping.isHandler(type)).isTrue();
 	}
@@ -281,8 +284,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 
 		MockHttpServletRequest mockRequest = new MockHttpServletRequest("GET", "/people/search/findByLastnameLike");
 
-		handlerMapping.afterPropertiesSet();
-		handlerMapping.getHandlerInternal(mockRequest);
+		handlerMapping.get().getHandlerInternal(mockRequest);
 
 		assertThat(mockRequest.getAttribute(RepositoryRestHandlerMapping.EFFECTIVE_LOOKUP_PATH_ATTRIBUTE)) //
 				.isInstanceOfSatisfying(PathPattern.class, it -> {
@@ -299,9 +301,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 		request.addHeader(HttpHeaders.ORIGIN, "test case");
 		request.addHeader(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET");
 
-		handlerMapping.afterPropertiesSet();
-
-		assertThatCode(() -> handlerMapping.getHandlerInternal(request)).doesNotThrowAnyException();
+		assertThatCode(() -> handlerMapping.get().getHandlerInternal(request)).doesNotThrowAnyException();
 	}
 
 	private static Class<?> createProxy(Object source) {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.webmvc.support;
+package org.springframework.data.rest.webmvc.config;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -31,6 +31,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.handler.AbstractHandlerMapping;
 import org.springframework.web.servlet.handler.MatchableHandlerMapping;
 import org.springframework.web.servlet.handler.RequestMatchResult;
 import org.springframework.web.util.pattern.PathPatternParser;
@@ -42,7 +43,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Oliver Gierke
  * @soundtrack Benny Greb - Stabila (Moving Parts)
  */
-public class DelegatingHandlerMapping implements HandlerMapping, Ordered, MatchableHandlerMapping {
+class DelegatingHandlerMapping extends AbstractHandlerMapping implements MatchableHandlerMapping {
 
 	private final @Getter List<HandlerMapping> delegates;
 
@@ -58,6 +59,17 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered, Matcha
 		this.delegates = delegates;
 	}
 
+	@Override
+	public void setPatternParser(PathPatternParser parser) {
+
+		super.setPatternParser(parser);
+
+		delegates.stream() //
+				.filter(AbstractHandlerMapping.class::isInstance) //
+				.map(AbstractHandlerMapping.class::cast) //
+				.forEach(it -> it.setPatternParser(parser));
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.core.Ordered#getOrder()
@@ -69,10 +81,10 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered, Matcha
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.HandlerMapping#getHandler(javax.servlet.http.HttpServletRequest)
+	 * @see org.springframework.web.servlet.handler.AbstractHandlerMapping#getHandlerInternal(javax.servlet.http.HttpServletRequest)
 	 */
 	@Override
-	public HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+	protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
 		return HandlerSelectionResult.from(request, delegates).resultOrException();
 	}
 
@@ -88,14 +100,6 @@ public class DelegatingHandlerMapping implements HandlerMapping, Ordered, Matcha
 		} catch (Exception o_O) {
 			return null;
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.MatchableHandlerMapping#getPatternParser()
-	 */
-	public PathPatternParser getPatternParser() {
-		return null;
 	}
 
 	@Value

@@ -118,7 +118,7 @@ public class ProfileController {
 	 */
 	public static String getRootPath(RepositoryRestConfiguration configuration) {
 
-		BaseUri baseUri = new BaseUri(configuration.getBaseUri());
+		BaseUri baseUri = new BaseUri(configuration.getBasePath());
 		return baseUri.getUriComponentsBuilder().path(ProfileController.PROFILE_ROOT_MAPPING).build().toString();
 	}
 

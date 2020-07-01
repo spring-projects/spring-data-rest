@@ -18,6 +18,9 @@ package org.springframework.data.rest.webmvc;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.net.URI;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.AopUtils;
@@ -30,8 +33,16 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
  */
 public class BasePathAwareHandlerMappingUnitTests {
 
-	RepositoryRestConfiguration configuration = mock(RepositoryRestConfiguration.class);
-	HandlerMappingStub mapping = new HandlerMappingStub(configuration);
+	HandlerMappingStub mapping;
+
+	@Before
+	public void setUp() {
+
+		RepositoryRestConfiguration configuration = mock(RepositoryRestConfiguration.class);
+		doReturn(URI.create("")).when(configuration).getBasePath();
+
+		mapping = new HandlerMappingStub(configuration);
+	}
 
 	@Test // DATAREST-1132
 	public void detectsAnnotationsOnProxies() {

@@ -19,7 +19,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -147,7 +146,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 			return null;
 		}
 
-		String repositoryLookupPath = new BaseUri(configuration.getBaseUri()).getRepositoryLookupPath(lookupPath);
+		String repositoryLookupPath = new BaseUri(configuration.getBasePath()).getRepositoryLookupPath(lookupPath);
 
 		// Repository root resource
 		if (!StringUtils.hasText(repositoryLookupPath)) {
@@ -210,7 +209,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 			return condition;
 		}
 
-		HashSet<String> mediaTypes = new LinkedHashSet<String>();
+		Set<String> mediaTypes = new LinkedHashSet<String>();
 		mediaTypes.add(configuration.getDefaultMediaType().toString());
 		mediaTypes.add(MediaType.APPLICATION_JSON_VALUE);
 
@@ -224,7 +223,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	protected CorsConfiguration getCorsConfiguration(Object handler, HttpServletRequest request) {
 
 		String lookupPath = getUrlPathHelper().getLookupPathForRequest(request);
-		String repositoryLookupPath = new BaseUri(configuration.getBaseUri()).getRepositoryLookupPath(lookupPath);
+		String repositoryLookupPath = new BaseUri(configuration.getBasePath()).getRepositoryLookupPath(lookupPath);
 		CorsConfiguration corsConfiguration = super.getCorsConfiguration(handler, request);
 
 		return repositories.filter(it -> StringUtils.hasText(repositoryLookupPath))//

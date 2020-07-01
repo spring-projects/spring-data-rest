@@ -86,7 +86,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	public LinkBuilder linkFor(Class<?> type) {
 
 		ResourceMetadata metadata = mappings.getMetadataFor(type);
-		return new RepositoryLinkBuilder(metadata, new BaseUri(config.getBaseUri()));
+		return new RepositoryLinkBuilder(metadata, new BaseUri(config.getBasePath()));
 	}
 
 	/*

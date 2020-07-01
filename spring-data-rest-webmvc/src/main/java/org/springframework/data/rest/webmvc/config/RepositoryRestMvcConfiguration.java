@@ -80,7 +80,15 @@ import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
-import org.springframework.data.rest.webmvc.support.*;
+import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.support.DefaultExcerptProjector;
+import org.springframework.data.rest.webmvc.support.DomainClassResolver;
+import org.springframework.data.rest.webmvc.support.ETagArgumentResolver;
+import org.springframework.data.rest.webmvc.support.ExcerptProjector;
+import org.springframework.data.rest.webmvc.support.HttpMethodHandlerMethodArgumentResolver;
+import org.springframework.data.rest.webmvc.support.JpaHelper;
+import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
@@ -114,7 +122,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.handler.AbstractHandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
@@ -297,7 +307,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public BaseUri baseUri() {
-		return new BaseUri(repositoryRestConfiguration().getBaseUri());
+		return new BaseUri(repositoryRestConfiguration().getBasePath());
 	}
 
 	/**
@@ -530,7 +540,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @return
 	 */
 	@Bean
-	public DelegatingHandlerMapping restHandlerMapping() {
+	public AbstractHandlerMapping restHandlerMapping() {
 
 		Map<String, CorsConfiguration> corsConfigurations = repositoryRestConfiguration().getCorsRegistry()
 				.getCorsConfigurations();
@@ -552,6 +562,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		mappings.add(repositoryMapping);
 
 		return new DelegatingHandlerMapping(mappings);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurer#configurePathMatch(org.springframework.web.servlet.config.annotation.PathMatchConfigurer)
+	 */
+	@Override
+	public void configurePathMatch(PathMatchConfigurer configurer) {
+		restHandlerMapping().setPatternParser(configurer.getPatternParser());
 	}
 
 	@Bean
