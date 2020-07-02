@@ -63,7 +63,7 @@ pipeline {
 						sh 'sleep 10'
 						sh 'mongo --eval "rs.initiate({_id: \'rs0\', members:[{_id: 0, host: \'127.0.0.1:27017\'}]});"'
 						sh 'sleep 15'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pjava11 clean dependency:list test -Dsort -U -B -Pit'
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -U -B -Pit,java11'
 					}
 				}
 				stage("test: baseline (jdk14)") {
@@ -82,7 +82,45 @@ pipeline {
 						sh 'sleep 10'
 						sh 'mongo --eval "rs.initiate({_id: \'rs0\', members:[{_id: 0, host: \'127.0.0.1:27017\'}]});"'
 						sh 'sleep 15'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pjava11 clean dependency:list test -Dsort -U -B -Pit'
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -U -B -Pit,java11'
+					}
+				}
+				stage("test: spring53-next (jdk8)") {
+					agent {
+						docker {
+							image 'springci/spring-data-openjdk8-with-mongodb-4.2.0:latest'
+							label 'data'
+							args '-v $HOME:/tmp/jenkins-home'
+						}
+					}
+					options { timeout(time: 30, unit: 'MINUTES') }
+					steps {
+						sh 'rm -rf ?'
+						sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
+						sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
+						sh 'sleep 10'
+						sh 'mongo --eval "rs.initiate({_id: \'rs0\', members:[{_id: 0, host: \'127.0.0.1:27017\'}]});"'
+						sh 'sleep 15'
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -U -B -Pit,spring53-next'
+					}
+				}
+				stage("test: spring53-next (jdk14)") {
+					agent {
+						docker {
+							image 'springci/spring-data-openjdk14-with-mongodb-4.2.0:latest'
+							label 'data'
+							args '-v $HOME:/tmp/jenkins-home'
+						}
+					}
+					options { timeout(time: 30, unit: 'MINUTES') }
+					steps {
+						sh 'rm -rf ?'
+						sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
+						sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
+						sh 'sleep 10'
+						sh 'mongo --eval "rs.initiate({_id: \'rs0\', members:[{_id: 0, host: \'127.0.0.1:27017\'}]});"'
+						sh 'sleep 15'
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -U -B -Pit,spring53-next,java11'
 					}
 				}
 			}
