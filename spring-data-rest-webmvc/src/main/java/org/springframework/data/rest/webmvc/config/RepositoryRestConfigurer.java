@@ -54,10 +54,10 @@ public interface RepositoryRestConfigurer {
 
 			/*
 			 * (non-Javadoc)
-			 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration)
+			 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration, org.springframework.web.servlet.config.annotation.CorsRegistry)
 			 */
 			@Override
-			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
 				consumer.accept(config);
 			}
 		};
@@ -87,16 +87,6 @@ public interface RepositoryRestConfigurer {
 			}
 		};
 	}
-
-	/**
-	 * Override this method to add additional configuration.
-	 *
-	 * @param config Main configuration bean.
-	 * @deprecated since 3.4, implement
-	 *             {@link #configureRepositoryRestConfiguration(RepositoryRestConfiguration, CorsRegistry)} instead.
-	 */
-	@Deprecated
-	default void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {}
 
 	/**
 	 * Override this method to add additional configuration.

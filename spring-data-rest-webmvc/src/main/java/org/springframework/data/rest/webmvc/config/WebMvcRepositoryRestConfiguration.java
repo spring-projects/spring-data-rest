@@ -20,7 +20,6 @@ import java.util.Map;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
-import org.springframework.data.rest.core.config.RepositoryCorsRegistry;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.util.Assert;
 import org.springframework.web.cors.CorsConfiguration;
@@ -54,7 +53,6 @@ class WebMvcRepositoryRestConfiguration extends RepositoryRestConfiguration impl
 		Assert.notNull(registry, "CorsRegistry must not be null!");
 
 		this.registry = registry;
-		setCorsRegistry(registry);
 	}
 
 	private final RepositoryCorsRegistry registry;

@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -71,15 +72,18 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 
 	@Configuration
 	@Import(RepositoryRestMvcConfiguration.class)
-	static class TestConfiguration implements RepositoryRestConfigurer {
+	static class TestConfiguration {
 
-		@Override
-		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+		@Bean
+		public RepositoryRestConfigurer customizations() {
 
-			config.getMetadataConfiguration().registerJsonSchemaFormat(JsonSchemaFormat.EMAIL, EmailAddress.class);
-			config.getMetadataConfiguration().registerFormattingPatternFor("[A-Z]+", TypeWithPattern.class);
+			return RepositoryRestConfigurer.withConfig(config -> {
 
-			config.exposeIdsFor(Profile.class);
+				config.getMetadataConfiguration().registerJsonSchemaFormat(JsonSchemaFormat.EMAIL, EmailAddress.class);
+				config.getMetadataConfiguration().registerFormattingPatternFor("[A-Z]+", TypeWithPattern.class);
+
+				config.exposeIdsFor(Profile.class);
+			});
 		}
 	}
 

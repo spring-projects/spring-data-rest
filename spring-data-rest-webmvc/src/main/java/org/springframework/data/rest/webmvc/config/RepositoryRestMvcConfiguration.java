@@ -56,7 +56,6 @@ import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.Projection;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
-import org.springframework.data.rest.core.config.RepositoryCorsRegistry;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AnnotatedEventHandlerInvoker;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;

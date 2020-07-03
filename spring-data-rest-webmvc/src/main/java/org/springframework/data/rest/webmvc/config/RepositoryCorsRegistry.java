@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.rest.core.config;
+package org.springframework.data.rest.webmvc.config;
 
 import java.util.Map;
 
@@ -26,12 +26,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
  *
  * @author Mark Paluch
  * @since 2.6
- * @deprecated since 3.4. Rather implement
- *             {@code RepositoryRestConfigurer.configureRepositoryRestConfiguration(RepositoryRestConfiguration, CorsRegistry)}
- *             instead to get access to the registry.
  */
-@Deprecated
-public class RepositoryCorsRegistry extends CorsRegistry {
+class RepositoryCorsRegistry extends CorsRegistry {
 
 	/* (non-Javadoc)
 	 * @see org.springframework.web.servlet.config.annotation.CorsRegistry#getCorsConfigurations()

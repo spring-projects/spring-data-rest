@@ -22,8 +22,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.tests.TestMvcClient;
 import org.springframework.data.rest.webmvc.ProfileController;
@@ -57,11 +57,11 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 	private static final String ROOT_URI = "/api";
 
 	@Configuration
-	static class Config implements RepositoryRestConfigurer {
+	static class Config {
 
-		@Override
-		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-			config.setBasePath(ROOT_URI);
+		@Bean
+		RepositoryRestConfigurer configurer() {
+			return RepositoryRestConfigurer.withConfig(config -> config.setBasePath(ROOT_URI));
 		}
 	}
 
