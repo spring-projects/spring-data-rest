@@ -18,7 +18,6 @@ package org.springframework.data.rest.webmvc.config;
 import java.util.List;
 
 import org.springframework.core.convert.support.ConfigurableConversionService;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
@@ -35,13 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Deprecated
 public class RepositoryRestConfigurerAdapter implements RepositoryRestConfigurer {
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration)
-	 */
-	@Override
-	public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {}
 
 	/*
 	 * (non-Javadoc)

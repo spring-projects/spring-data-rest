@@ -37,7 +37,6 @@ import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.config.annotation.CorsRegistration;
 
 /**
  * Spring Data REST configuration options.
@@ -69,7 +68,6 @@ public class RepositoryRestConfiguration {
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
 	private RepositoryDetectionStrategy repositoryDetectionStrategy = RepositoryDetectionStrategies.DEFAULT;
 	private boolean exposeRepositoryMethodsByDefault = true;
-	private RepositoryCorsRegistry corsRegistry = new RepositoryCorsRegistry();
 
 	/**
 	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
@@ -618,26 +616,6 @@ public class RepositoryRestConfiguration {
 
 		setRepositoryDetectionStrategy(RepositoryDetectionStrategies.ANNOTATED);
 		setExposeRepositoryMethodsByDefault(false);
-	}
-
-	/**
-	 * Returns the {@link RepositoryCorsRegistry} to configure Cross-origin resource sharing.
-	 *
-	 * @return the {@link RepositoryCorsRegistry}.
-	 * @since 2.6
-	 * @see RepositoryCorsRegistry
-	 * @see CorsRegistration
-	 * @deprecated since 3.4. Rather implement
-	 *             {@code RepositoryRestConfigurer.configureRepositoryRestConfiguration(RepositoryRestConfiguration, CorsRegistry)}
-	 *             instead to get access to the registry.
-	 */
-	@Deprecated
-	public RepositoryCorsRegistry getCorsRegistry() {
-		return corsRegistry;
-	}
-
-	protected void setCorsRegistry(RepositoryCorsRegistry corsRegistry) {
-		this.corsRegistry = corsRegistry;
 	}
 
 	/**

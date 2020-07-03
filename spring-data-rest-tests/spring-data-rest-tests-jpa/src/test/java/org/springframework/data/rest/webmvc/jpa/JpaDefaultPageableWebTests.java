@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 original author or authors.
+ * Copyright 2016-2020 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
@@ -60,10 +60,11 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 	@Configuration
 	@Import({ RepositoryRestMvcConfiguration.class, JpaRepositoryConfig.class })
 	@EnableJpaRepositories(considerNestedRepositories = true)
-	static class Config implements RepositoryRestConfigurer {
+	static class Config {
 
-		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-			config.setDefaultPageSize(1);
+		@Bean
+		RepositoryRestConfigurer configurer() {
+			return RepositoryRestConfigurer.withConfig(config -> config.setDefaultPageSize(1));
 		}
 	}
 

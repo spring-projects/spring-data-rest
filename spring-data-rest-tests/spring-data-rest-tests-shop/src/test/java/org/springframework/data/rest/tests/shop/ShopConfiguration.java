@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.map.repository.config.EnableMapRepositories;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.config.EntityLookupRegistrar;
 import org.springframework.data.rest.tests.shop.Customer.Gender;
 import org.springframework.data.rest.tests.shop.Product.ProductNameOnlyProjection;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
@@ -53,7 +53,7 @@ public class ShopConfiguration {
 			 */
 			@Override
 			public EntityModel<LineItem> process(EntityModel<LineItem> resource) {
-				resource.add(new Link("foo", "bar"));
+				resource.add(Link.of("foo", "bar"));
 				return resource;
 			}
 		};
@@ -70,7 +70,7 @@ public class ShopConfiguration {
 			 */
 			@Override
 			public EntityModel<ProductNameOnlyProjection> process(EntityModel<Product.ProductNameOnlyProjection> resource) {
-				resource.add(new Link("alpha", "beta"));
+				resource.add(Link.of("alpha", "beta"));
 				return resource;
 			}
 		};
@@ -98,16 +98,17 @@ public class ShopConfiguration {
 	@Configuration
 	static class SpringDataRestConfiguration implements RepositoryRestConfigurer {
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration)
-		 */
-		@Override
-		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+		@Bean
+		RepositoryRestConfigurer configurer() {
 
-			config.withEntityLookup().forRepository(ProductRepository.class, Product::getName, ProductRepository::findByName);
-			config.withEntityLookup().forValueRepository(LineItemTypeRepository.class, LineItemType::getName,
-					LineItemTypeRepository::findByName);
+			return RepositoryRestConfigurer.withConfig(config -> {
+
+				EntityLookupRegistrar lookup = config.withEntityLookup();
+
+				lookup.forRepository(ProductRepository.class, Product::getName, ProductRepository::findByName);
+				lookup.forValueRepository(LineItemTypeRepository.class, LineItemType::getName,
+						LineItemTypeRepository::findByName);
+			});
 		}
 	}
 }

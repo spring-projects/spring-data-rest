@@ -22,9 +22,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Arrays;
 
 import org.junit.Test;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.mongodb.MongoDbRepositoryConfig;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -39,12 +39,15 @@ public class LegacyRepresentationConfigIntegrationTests extends AbstractReposito
 
 	@Configuration
 	@Import({ MongoDbRepositoryConfig.class, RepositoryRestMvcConfiguration.class })
-	static class Config extends RepositoryRestConfigurerAdapter {
+	static class Config {
 
-		@Override
-		public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-			config.setDefaultMediaType(MediaType.APPLICATION_JSON);
-			config.useHalAsDefaultJsonMediaType(false);
+		@Bean
+		RepositoryRestConfigurer configurer() {
+
+			return RepositoryRestConfigurer.withConfig(config -> {
+				config.setDefaultMediaType(MediaType.APPLICATION_JSON);
+				config.useHalAsDefaultJsonMediaType(false);
+			});
 		}
 	}
 
