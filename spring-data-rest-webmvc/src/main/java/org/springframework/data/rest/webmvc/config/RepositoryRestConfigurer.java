@@ -16,6 +16,7 @@
 package org.springframework.data.rest.webmvc.config;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.springframework.core.convert.support.ConfigurableConversionService;
@@ -23,6 +24,7 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.Assert;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,7 +41,7 @@ public interface RepositoryRestConfigurer {
 	/**
 	 * Convenience method to easily create simple {@link RepositoryRestConfigurer} instances that solely want to tweak the
 	 * {@link RepositoryRestConfiguration}.
-	 * 
+	 *
 	 * @param consumer must not be {@literal null}.
 	 * @return
 	 * @since 3.1
@@ -50,7 +52,7 @@ public interface RepositoryRestConfigurer {
 
 		return new RepositoryRestConfigurer() {
 
-			/* 
+			/*
 			 * (non-Javadoc)
 			 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration)
 			 */
@@ -62,11 +64,48 @@ public interface RepositoryRestConfigurer {
 	}
 
 	/**
+	 * Convenience method to easily create simple {@link RepositoryRestConfigurer} instances that solely want to tweak the
+	 * {@link RepositoryRestConfiguration}.
+	 *
+	 * @param consumer must not be {@literal null}.
+	 * @return
+	 * @since 3.4
+	 */
+	static RepositoryRestConfigurer withConfig(BiConsumer<RepositoryRestConfiguration, CorsRegistry> consumer) {
+
+		Assert.notNull(consumer, "Consumer must not be null!");
+
+		return new RepositoryRestConfigurer() {
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration, org.springframework.web.servlet.config.annotation.CorsRegistry)
+			 */
+			@Override
+			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
+				consumer.accept(config, cors);
+			}
+		};
+	}
+
+	/**
 	 * Override this method to add additional configuration.
 	 *
 	 * @param config Main configuration bean.
+	 * @deprecated since 3.4, implement
+	 *             {@link #configureRepositoryRestConfiguration(RepositoryRestConfiguration, CorsRegistry)} instead.
 	 */
+	@Deprecated
 	default void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {}
+
+	/**
+	 * Override this method to add additional configuration.
+	 *
+	 * @param config Main configuration bean.
+	 * @param cors CORS configuration.
+	 * @since 3.4
+	 */
+	default void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {}
 
 	/**
 	 * Override this method to add your own converters.

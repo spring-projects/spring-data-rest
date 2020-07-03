@@ -51,9 +51,9 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		@Bean
 		RepositoryRestConfigurer repositoryRestConfigurer() {
 
-			return RepositoryRestConfigurer.withConfig(config -> {
+			return RepositoryRestConfigurer.withConfig((config, cors) -> {
 
-				config.getCorsRegistry().addMapping("/books/**") //
+				cors.addMapping("/books/**") //
 						.allowedMethods("GET", "PUT", "POST") //
 						.allowedOrigins("http://far.far.example");
 			});

@@ -22,6 +22,7 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.Assert;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,6 +59,20 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 
 		for (RepositoryRestConfigurer configurer : delegates) {
 			configurer.configureRepositoryRestConfiguration(config);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration, org.springframework.web.servlet.config.annotation.CorsRegistry)
+	 */
+	@Override
+	public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
+
+		configureRepositoryRestConfiguration(config);
+
+		for (RepositoryRestConfigurer configurer : delegates) {
+			configurer.configureRepositoryRestConfiguration(config, cors);
 		}
 	}
 

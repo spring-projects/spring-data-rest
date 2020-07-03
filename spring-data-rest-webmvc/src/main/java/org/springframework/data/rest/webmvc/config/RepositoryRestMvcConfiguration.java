@@ -59,6 +59,7 @@ import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.Projection;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
+import org.springframework.data.rest.core.config.RepositoryCorsRegistry;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.AnnotatedEventHandlerInvoker;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
@@ -278,7 +279,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * Main configuration for the REST exporter.
 	 */
 	@Bean
-	public RepositoryRestConfiguration repositoryRestConfiguration() {
+	public <T extends RepositoryRestConfiguration & CorsConfigurationAware> T repositoryRestConfiguration() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
 
@@ -287,11 +288,13 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			configuration.addProjection(projection);
 		}
 
-		RepositoryRestConfiguration config = new RepositoryRestConfiguration(configuration, metadataConfiguration(),
-				enumTranslator());
-		configurerDelegate.configureRepositoryRestConfiguration(config);
+		RepositoryCorsRegistry registry = new RepositoryCorsRegistry();
 
-		return config;
+		WebMvcRepositoryRestConfiguration config = new WebMvcRepositoryRestConfiguration(configuration,
+				metadataConfiguration(), enumTranslator(), registry);
+		configurerDelegate.configureRepositoryRestConfiguration(config, registry);
+
+		return (T) config;
 	}
 
 	@Bean
@@ -542,8 +545,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public AbstractHandlerMapping restHandlerMapping() {
 
-		Map<String, CorsConfiguration> corsConfigurations = repositoryRestConfiguration().getCorsRegistry()
-				.getCorsConfigurations();
+		Map<String, CorsConfiguration> corsConfigurations = repositoryRestConfiguration().getCorsConfigurations();
 
 		RepositoryRestHandlerMapping repositoryMapping = new RepositoryRestHandlerMapping(resourceMappings(),
 				repositoryRestConfiguration(), repositories());

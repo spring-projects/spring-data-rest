@@ -26,7 +26,11 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
  *
  * @author Mark Paluch
  * @since 2.6
+ * @deprecated since 3.4. Rather implement
+ *             {@code RepositoryRestConfigurer.configureRepositoryRestConfiguration(RepositoryRestConfiguration, CorsRegistry)}
+ *             instead to get access to the registry.
  */
+@Deprecated
 public class RepositoryCorsRegistry extends CorsRegistry {
 
 	/* (non-Javadoc)

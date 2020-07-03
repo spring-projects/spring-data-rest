@@ -18,19 +18,15 @@ package org.springframework.data.rest.core;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
-import org.springframework.data.rest.core.config.RepositoryCorsRegistry;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.domain.Profile;
 import org.springframework.data.rest.core.domain.ProfileRepository;
 import org.springframework.http.MediaType;
-import org.springframework.web.cors.CorsConfiguration;
 
 /**
  * Unit tests for {@link RepositoryRestConfiguration}.
@@ -117,19 +113,6 @@ public class RepositoryRestConfigurationUnitTests {
 		configuration.withEntityLookup().forLookupRepository(ProfileRepository.class);
 
 		assertThat(configuration.isLookupType(Profile.class)).isTrue();
-	}
-
-	@Test // DATAREST-573
-	public void configuresCorsProcessing() {
-
-		RepositoryCorsRegistry registry = configuration.getCorsRegistry();
-		registry.addMapping("/hello").maxAge(1234);
-
-		Map<String, CorsConfiguration> corsConfigurations = registry.getCorsConfigurations();
-		assertThat(corsConfigurations).containsKey("/hello");
-
-		CorsConfiguration corsConfiguration = corsConfigurations.get("/hello");
-		assertThat(corsConfiguration.getMaxAge()).isEqualTo(1234L);
 	}
 
 	@Test // DATAREST-1076

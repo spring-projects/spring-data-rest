@@ -69,13 +69,13 @@ public class RepositoryRestConfiguration {
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
 	private RepositoryDetectionStrategy repositoryDetectionStrategy = RepositoryDetectionStrategies.DEFAULT;
 	private boolean exposeRepositoryMethodsByDefault = true;
+	private RepositoryCorsRegistry corsRegistry = new RepositoryCorsRegistry();
 
 	/**
 	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
 	 */
 	private @Getter @Setter @NonNull LinkRelationProvider relProvider = new EvoInflectorLinkRelationProvider();
 
-	private final RepositoryCorsRegistry corsRegistry = new RepositoryCorsRegistry();
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
 	private final MetadataConfiguration metadataConfiguration;
 	private final EntityLookupConfiguration entityLookupConfiguration;
@@ -627,9 +627,17 @@ public class RepositoryRestConfiguration {
 	 * @since 2.6
 	 * @see RepositoryCorsRegistry
 	 * @see CorsRegistration
+	 * @deprecated since 3.4. Rather implement
+	 *             {@code RepositoryRestConfigurer.configureRepositoryRestConfiguration(RepositoryRestConfiguration, CorsRegistry)}
+	 *             instead to get access to the registry.
 	 */
+	@Deprecated
 	public RepositoryCorsRegistry getCorsRegistry() {
 		return corsRegistry;
+	}
+
+	protected void setCorsRegistry(RepositoryCorsRegistry corsRegistry) {
+		this.corsRegistry = corsRegistry;
 	}
 
 	/**
