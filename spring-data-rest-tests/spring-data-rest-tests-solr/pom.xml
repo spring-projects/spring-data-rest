@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-rest-tests</artifactId>
-		<version>3.4.0-SNAPSHOT</version>
+		<version>3.4.0-DATAREST-1545-SNAPSHOT</version>
 	</parent>
 
 	<name>Spring Data REST Tests - Solr</name>
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-rest-tests-core</artifactId>
-			<version>3.4.0-SNAPSHOT</version>
+			<version>3.4.0-DATAREST-1545-SNAPSHOT</version>
 			<type>test-jar</type>
 		</dependency>
 
