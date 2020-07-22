@@ -2,13 +2,17 @@
  * Custom Backbone view that uses JSON Schema metadata to create pop-up dialog with actual field names instead of
  * asking user to input raw JSON.
  *
- * NOTE: Because JSON Schema lists all properties, including those that are links, they have to be filtered out.
- * Links have to be set via a PUT operation with the proper media type.
+ * NOTE: Links to other resources are shown as simple text fields. The user is responsible for inserting the correct URI.
+ * For '* to many' associations, it is currently only possible to insert ONE URI.
+ * Additional links have to be set via POST/PUT/PATCH operations with the proper media type.
+ * Jackson has to be configured properly for this to work (set spring.jackson.deserialization.accept-empty-string-as-null-object and
+ * spring.jackson.deserialization.accept-single-value-as-array to true).
  *
  * @author Greg Turnquist
  * @author Gregory Frank
+ * @author Marcel Kauf
  * @since 2.4
- * @see DATAREST-627, DATAREST-1077
+ * @see DATAREST-627, DATAREST-1077, DATAREST-721
  */
 /* jshint strict: true */
 /* globals HAL, Backbone, _, $, window, jqxhr */
@@ -107,16 +111,6 @@ var CustomPostForm = Backbone.View.extend({
 	 */
 	loadJsonEditor: function (schema) {
 		var self = this;
-
-		/**
-		 * Remove URI-based fields since this dialog doesn't handle relationships.
-		 */
-		Object.keys(schema.properties).forEach(function (property) {
-			if (schema.properties[property].hasOwnProperty('format') &&
-				schema.properties[property].format === 'uri') {
-				delete schema.properties[property];
-			}
-		});
 
 		/**
 		 * See https://github.com/jdorn/json-editor#options for more customizing options.
