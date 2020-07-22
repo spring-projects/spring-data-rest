@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.3.2.RELEASE (2020-07-22)
+---------------------------------------------
+* DATAREST-1537 - Upgrade security tests to Spring Security 5.3.3.
+* DATAREST-1535 - Adapt to changes in Spring 5.3.
+* DATAREST-1530 - Release 3.3.2 (Neumann SR2).
+
+
 Changes in version 3.2.9.RELEASE (2020-07-22)
 ---------------------------------------------
 * DATAREST-1537 - Upgrade security tests to Spring Security 5.3.3.
@@ -1588,6 +1595,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
