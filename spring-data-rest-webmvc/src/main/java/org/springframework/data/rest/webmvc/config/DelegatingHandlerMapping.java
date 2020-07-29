@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +44,8 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Oliver Gierke
  * @soundtrack Benny Greb - Stabila (Moving Parts)
  */
-class DelegatingHandlerMapping extends AbstractHandlerMapping implements MatchableHandlerMapping {
+class DelegatingHandlerMapping extends AbstractHandlerMapping
+		implements org.springframework.data.rest.webmvc.support.DelegatingHandlerMapping {
 
 	private final @Getter List<HandlerMapping> delegates;
 
@@ -68,6 +70,15 @@ class DelegatingHandlerMapping extends AbstractHandlerMapping implements Matchab
 				.filter(AbstractHandlerMapping.class::isInstance) //
 				.map(AbstractHandlerMapping.class::cast) //
 				.forEach(it -> it.setPatternParser(parser));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Iterable#iterator()
+	 */
+	@Override
+	public Iterator<HandlerMapping> iterator() {
+		return delegates.iterator();
 	}
 
 	/*
