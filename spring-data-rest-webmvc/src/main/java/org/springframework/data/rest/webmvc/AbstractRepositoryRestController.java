@@ -38,9 +38,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Thibaud Lepretre
+ * @author Luis Vargas
  */
 @SuppressWarnings({ "rawtypes" })
-class AbstractRepositoryRestController {
+public class AbstractRepositoryRestController {
 
 	private static final EmbeddedWrappers WRAPPERS = new EmbeddedWrappers(false);
 

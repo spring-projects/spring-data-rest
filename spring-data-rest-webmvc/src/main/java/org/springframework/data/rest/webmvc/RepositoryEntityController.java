@@ -73,9 +73,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Greg Turnquist
  * @author Jeremy Rickard
  * @author Jeroen Reijn
+ * @author Luis Vargas
  */
 @RepositoryRestController
-class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
+public class RepositoryEntityController extends AbstractRepositoryRestController implements ApplicationEventPublisherAware {
 
 	private static final String BASE_MAPPING = "/{repository}";
 	private static final List<String> ACCEPT_PATCH_HEADERS = Arrays.asList(//
