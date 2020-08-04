@@ -30,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.domain.Profile;
 import org.springframework.hateoas.Link;
@@ -39,6 +40,7 @@ import org.springframework.hateoas.server.EntityLinks;
  * Unit tests for {@link DefaultSelfLinkProvider}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @soundtrack Trio Rotation - Triopane
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -109,10 +111,10 @@ public class DefaultSelfLinkProviderUnitTests {
 		assertThat(link.getHref()).endsWith("foo");
 	}
 
-	@Test // DATAREST-724
+	@Test // DATAREST-724, DATAREST-1549
 	public void rejectsLinkCreationForUnknownEntity() {
 
-		assertThatIllegalArgumentException().isThrownBy(() -> provider.createSelfLinkFor(new Object())) //
+		assertThatExceptionOfType(MappingException.class).isThrownBy(() -> provider.createSelfLinkFor(new Object())) //
 				.withMessageContaining(Object.class.getName()) //
 				.withMessageContaining("Couldn't find PersistentEntity for");
 	}
