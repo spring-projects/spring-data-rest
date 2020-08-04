@@ -20,7 +20,7 @@ import java.util.Optional;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
+import org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.config.Projection;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -39,7 +39,7 @@ import org.springframework.util.Assert;
  * @since 2.5
  * @soundtrack Katinka - Ausverkauf
  */
-public class ProjectionDefinitionRegistar extends InstantiationAwareBeanPostProcessorAdapter {
+public class ProjectionDefinitionRegistar implements SmartInstantiationAwareBeanPostProcessor {
 
 	private final ObjectFactory<RepositoryRestConfiguration> config;
 
