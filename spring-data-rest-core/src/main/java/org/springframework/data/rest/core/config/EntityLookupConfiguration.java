@@ -15,13 +15,9 @@
  */
 package org.springframework.data.rest.core.config;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.core.convert.converter.Converter;
@@ -56,6 +52,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			Converter<T, ID> converter, Lookup<R, ID> lookup) {
 
 		new MappingBuilder<T, ID, R>(repositoryType).withIdMapping(converter).withLookup(lookup);
+
 		return this;
 	}
 
@@ -65,7 +62,9 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 	 */
 	@Override
 	public <T, ID, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forLookupRepository(Class<R> type) {
+
 		this.lookupTypes.add(AbstractRepositoryMetadata.getMetadata(type).getDomainType());
+
 		return forRepository(type);
 	}
 
@@ -87,6 +86,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			Converter<T, ID> identifierMapping, Lookup<R, ID> lookup) {
 
 		this.lookupTypes.add(AbstractRepositoryMetadata.getMetadata(type).getDomainType());
+
 		return forRepository(type, identifierMapping, lookup);
 	}
 
@@ -95,12 +95,23 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 	 *
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	private class MappingBuilder<T, ID, R extends Repository<T, ?>>
 			implements LookupRegistrar<T, ID, R>, IdMappingRegistrar<T, R> {
 
-		private @NonNull final Class<R> repositoryType;
+		private final Class<R> repositoryType;
 		private Converter<T, ID> idMapping;
+
+		/**
+		 * Creates a new {@link MappingBuilder} for the given repository type.
+		 *
+		 * @param type must not be {@literal null}.
+		 */
+		public MappingBuilder(Class<R> type) {
+
+			Assert.notNull(type, "Repository type must not be null!");
+
+			this.repositoryType = type;
+		}
 
 		/**
 		 * Creates a new {@link MappingBuilder} using the given repository type and identifier mapping.
@@ -109,11 +120,8 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		 * @param mapping must not be {@literal null}.
 		 */
 		private MappingBuilder(Class<R> repositoryType, Converter<T, ID> mapping) {
-
 			this(repositoryType);
-
 			Assert.notNull(mapping, "Converter must not be null!");
-
 			this.idMapping = mapping;
 		}
 
@@ -152,8 +160,8 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 
-		return lookupInformation.stream()//
-				.map(it -> new RepositoriesEntityLookup<>(repositories, it))//
+		return lookupInformation.stream() //
+				.map(it -> new RepositoriesEntityLookup<>(repositories, it)) //
 				.collect(StreamUtils.toUnmodifiableList());
 	}
 
@@ -171,7 +179,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		private final LookupInformation<Object, Object, Repository<? extends T, ?>> lookupInfo;
 		private final Repository<? extends T, ?> repository;
 		private final Class<?> domainType;
-		private final @Getter Optional<String> lookupProperty;
+		private final Optional<String> lookupProperty;
 
 		/**
 		 * Creates a new {@link RepositoriesEntityLookup} for the given {@link Repositories} and {@link LookupInformation}.
@@ -182,24 +190,21 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		@SuppressWarnings("unchecked")
 		public RepositoriesEntityLookup(Repositories repositories,
 				LookupInformation<Object, Object, Repository<? extends T, ?>> lookupInformation) {
-
 			Assert.notNull(repositories, "Repositories must not be null!");
 			Assert.notNull(lookupInformation, "LookupInformation must not be null!");
-
-			RepositoryInformation information = repositories.getRepositoryInformation(lookupInformation.repositoryType)//
-					.orElseThrow(() -> new IllegalStateException(
-							"No repository found for type " + lookupInformation.repositoryType.getName() + "!"));
-
+			RepositoryInformation information = //
+					repositories.getRepositoryInformation(lookupInformation.repositoryType)
+							.orElseThrow(() -> new IllegalStateException(
+									"No repository found for type " + lookupInformation.repositoryType.getName() + "!"));
 			this.domainType = information.getDomainType();
 			this.lookupInfo = lookupInformation;
-			this.repository = (Repository<? extends T, ?>) repositories.getRepositoryFor(information.getDomainType())//
-					.orElseThrow(() -> new IllegalStateException(
-							"No repository found for type " + information.getDomainType().getName() + "!"));
-
-			this.lookupProperty = Optional.of(domainType) //
-					.flatMap(it -> MethodInvocationRecorder.forProxyOf(it) //
-							.record(lookupInfo.identifierMapping::convert) //
-							.getPropertyPath());
+			this.repository = (Repository<? extends T, ?>) //
+			repositories.getRepositoryFor(information.getDomainType()).orElseThrow(() -> new IllegalStateException(
+					"No repository found for type " + information.getDomainType().getName() + "!"));
+			this.lookupProperty = //
+					Optional.of(domainType).flatMap(it -> //
+					//
+					MethodInvocationRecorder.forProxyOf(it).record(lookupInfo.identifierMapping::convert).getPropertyPath());
 		}
 
 		/*
@@ -232,13 +237,86 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		public boolean supports(Class<?> delimiter) {
 			return domainType.isAssignableFrom(delimiter);
 		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.core.support.EntityLookup#getLookupProperty()
+		 */
+		public Optional<String> getLookupProperty() {
+			return this.lookupProperty;
+		}
 	}
 
-	@Value
-	private static class LookupInformation<T, ID, R extends Repository<? extends T, ?>> {
+	private static final class LookupInformation<T, ID, R extends Repository<? extends T, ?>> {
 
 		private final Class<R> repositoryType;
 		private final Converter<T, ID> identifierMapping;
 		private final Lookup<R, ID> lookup;
+
+		public LookupInformation(Class<R> repositoryType, Converter<T, ID> identifierMapping,
+				Lookup<R, ID> lookup) {
+
+			Assert.notNull(repositoryType, "Repository type must not be null!");
+			Assert.notNull(identifierMapping, "Identifier mapping must not be null!");
+			Assert.notNull(lookup, "Lookup must not be null!");
+
+			this.repositoryType = repositoryType;
+			this.identifierMapping = identifierMapping;
+			this.lookup = lookup;
+		}
+
+		public Class<R> getRepositoryType() {
+			return this.repositoryType;
+		}
+
+		public Converter<T, ID> getIdentifierMapping() {
+			return this.identifierMapping;
+		}
+
+		public Lookup<R, ID> getLookup() {
+			return this.lookup;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(final java.lang.Object o) {
+
+			if (o == this) {
+				return true;
+			}
+
+			if (!(o instanceof EntityLookupConfiguration.LookupInformation)) {
+				return false;
+			}
+
+			LookupInformation<?, ?, ?> that = (LookupInformation<?, ?, ?>) o;
+
+			return Objects.equals(getRepositoryType(), that.getRepositoryType()) //
+					&& Objects.equals(getIdentifierMapping(), that.getIdentifierMapping()) //
+					&& Objects.equals(getLookup(), that.getLookup());
+		}
+
+		/*
+		 *
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(getRepositoryType(), getIdentifierMapping(), getLookup());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public java.lang.String toString() {
+			return "EntityLookupConfiguration.LookupInformation(repositoryType=" + this.getRepositoryType()
+					+ ", identifierMapping=" + this.getIdentifierMapping() + ", lookup=" + this.getLookup() + ")";
+		}
 	}
 }

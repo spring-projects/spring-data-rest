@@ -15,12 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
-
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -47,7 +44,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
 class DelegatingHandlerMapping extends AbstractHandlerMapping
 		implements org.springframework.data.rest.webmvc.support.DelegatingHandlerMapping {
 
-	private final @Getter List<HandlerMapping> delegates;
+	private final List<HandlerMapping> delegates;
 
 	/**
 	 * Creates a new {@link DelegatingHandlerMapping} for the given delegates.
@@ -59,6 +56,11 @@ class DelegatingHandlerMapping extends AbstractHandlerMapping
 		Assert.notNull(delegates, "Delegates must not be null!");
 
 		this.delegates = delegates;
+	}
+
+	@java.lang.SuppressWarnings("all")
+	public List<HandlerMapping> getDelegates() {
+		return this.delegates;
 	}
 
 	@Override
@@ -113,13 +115,12 @@ class DelegatingHandlerMapping extends AbstractHandlerMapping
 		}
 	}
 
-	@Value
 	private static class HandlerSelectionResult {
 
-		@NonNull HttpServletRequest request;
-		HandlerMapping mapping;
-		HandlerExecutionChain result;
-		Exception ignoredException;
+		private final HttpServletRequest request;
+		private final HandlerMapping mapping;
+		private final HandlerExecutionChain result;
+		private final Exception ignoredException;
 
 		public static HandlerSelectionResult from(HttpServletRequest request, Iterable<HandlerMapping> delegates)
 				throws Exception {
@@ -173,6 +174,59 @@ class DelegatingHandlerMapping extends AbstractHandlerMapping
 			return MatchableHandlerMapping.class.isInstance(mapping) //
 					? ((MatchableHandlerMapping) mapping).match(request, pattern) //
 					: null;
+		}
+
+		public HandlerSelectionResult(HttpServletRequest request, HandlerMapping mapping, HandlerExecutionChain result,
+				Exception ignoredException) {
+
+			Assert.notNull(request, "HttpServletRequest must not be null!");
+
+			this.request = request;
+			this.mapping = mapping;
+			this.result = result;
+			this.ignoredException = ignoredException;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(final java.lang.Object o) {
+
+			if (o == this) {
+				return true;
+			}
+
+			if (!(o instanceof DelegatingHandlerMapping.HandlerSelectionResult)) {
+				return false;
+			}
+
+			HandlerSelectionResult other = (HandlerSelectionResult) o;
+
+			return Objects.equals(request, other.request) //
+					&& Objects.equals(mapping, other.mapping) //
+					&& Objects.equals(result, other.result) //
+					&& Objects.equals(ignoredException, other.ignoredException);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(request, mapping, result, ignoredException);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public java.lang.String toString() {
+			return "DelegatingHandlerMapping.HandlerSelectionResult(request=" + request + ", mapping=" + mapping + ", result="
+					+ result + ", ignoredException=" + ignoredException + ")";
 		}
 	}
 }

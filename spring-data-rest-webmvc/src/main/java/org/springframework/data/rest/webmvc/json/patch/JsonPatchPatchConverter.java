@@ -15,12 +15,11 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,10 +33,16 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
  * @author Mathias Düsterhöft
  * @author Oliver Trosien
  */
-@RequiredArgsConstructor
 public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 
-	private final @NonNull ObjectMapper mapper;
+	private final ObjectMapper mapper;
+
+	public JsonPatchPatchConverter(ObjectMapper mapper) {
+
+		Assert.notNull(mapper, "ObjectMapper must not be null!");
+
+		this.mapper = mapper;
+	}
 
 	/**
 	 * Constructs a {@link Patch} object given a JsonNode.
@@ -99,7 +104,7 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 			return valueNode.asInt();
 		} else if (valueNode.isLong()) {
 			return valueNode.asLong();
-		} else if (valueNode.isObject() || (valueNode.isArray())) {
+		} else if (valueNode.isObject() || valueNode.isArray()) {
 			return new JsonLateObjectEvaluator(mapper, valueNode);
 		}
 

@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.core.util;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -29,10 +27,13 @@ import org.springframework.plugin.core.PluginRegistry;
  * @deprecated since 3.2, for removal 3.3.
  */
 @Deprecated
-@RequiredArgsConstructor
 public class Java8PluginRegistry<T extends Plugin<S>, S> {
 
 	private final PluginRegistry<T, S> registry;
+
+	public Java8PluginRegistry(PluginRegistry<T, S> registry) {
+		this.registry = registry;
+	}
 
 	public static <T extends Plugin<S>, S> Java8PluginRegistry<T, S> of(List<? extends T> plugins) {
 		return Java8PluginRegistry.of(PluginRegistry.of(plugins));

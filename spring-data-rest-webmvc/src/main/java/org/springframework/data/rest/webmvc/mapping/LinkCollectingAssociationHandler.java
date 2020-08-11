@@ -33,7 +33,10 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @since 2.1
+ * @deprecated no replacement, internal usage only. For removal in 3.5.
+ * @see LinkCollector
  */
+@Deprecated
 public class LinkCollectingAssociationHandler implements SimpleAssociationHandler {
 
 	private static final String AMBIGUOUS_ASSOCIATIONS = "Detected multiple association links with same relation type! Disambiguate association %s using @RestResource!";

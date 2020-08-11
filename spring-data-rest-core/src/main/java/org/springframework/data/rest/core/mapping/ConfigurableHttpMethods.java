@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.core.mapping;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -34,13 +31,23 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 3.1
  */
-@RequiredArgsConstructor(staticName = "of", access = AccessLevel.PACKAGE)
 public class ConfigurableHttpMethods implements HttpMethods {
 
 	public static final ConfigurableHttpMethods NONE = ConfigurableHttpMethods.of();
 	public static final ConfigurableHttpMethods ALL = ConfigurableHttpMethods.of(HttpMethod.values());
 
 	private final Collection<HttpMethod> methods;
+
+	private ConfigurableHttpMethods(Collection<HttpMethod> methods) {
+
+		Assert.notNull(methods, "HttpMethods must not be null!");
+
+		this.methods = methods;
+	}
+
+	static ConfigurableHttpMethods of(Collection<HttpMethod> methods) {
+		return new ConfigurableHttpMethods(methods);
+	}
 
 	/**
 	 * Creates a new {@link ConfigurableHttpMethods} of the given {@link HttpMethod}s.

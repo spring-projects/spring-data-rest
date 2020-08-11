@@ -15,8 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,11 +28,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  * @author Simon Allegraud
  */
-@RequiredArgsConstructor
 class JsonLateObjectEvaluator implements LateObjectEvaluator {
 
-	private final @NonNull ObjectMapper mapper;
-	private final @NonNull JsonNode valueNode;
+	private final ObjectMapper mapper;
+	private final JsonNode node;
+
+	public JsonLateObjectEvaluator(ObjectMapper mapper, JsonNode node) {
+
+		Assert.notNull(mapper, "ObjectMapper must not be null!");
+		Assert.notNull(node, "JsonNode must not be null!");
+
+		this.mapper = mapper;
+		this.node = node;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -43,9 +50,9 @@ class JsonLateObjectEvaluator implements LateObjectEvaluator {
 	public Object evaluate(Class<?> type) {
 
 		try {
-			return mapper.readValue(valueNode.traverse(mapper.getFactory().getCodec()), type);
+			return mapper.readValue(node.traverse(mapper.getFactory().getCodec()), type);
 		} catch (Exception o_O) {
-			throw new PatchException(String.format("Could not read %s into %s!", valueNode, type), o_O);
+			throw new PatchException(String.format("Could not read %s into %s!", node, type), o_O);
 		}
 	}
 }

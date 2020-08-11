@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,7 +43,6 @@ import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
  * @author Mark Paluch
  * @author Mathias Düsterhöft
  */
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 class MappedProperties {
 
 	private final Map<PersistentProperty<?>, BeanPropertyDefinition> propertyToFieldName;
@@ -54,6 +50,17 @@ class MappedProperties {
 	private final Set<BeanPropertyDefinition> unmappedProperties;
 	private final Set<String> ignoredPropertyNames;
 	private final boolean anySetterFound;
+
+	private MappedProperties(Map<PersistentProperty<?>, BeanPropertyDefinition> propertyToFieldName,
+			Map<String, PersistentProperty<?>> fieldNameToProperty, Set<BeanPropertyDefinition> unmappedProperties,
+			Set<String> ignoredPropertyNames, boolean anySetterFound) {
+
+		this.propertyToFieldName = propertyToFieldName;
+		this.fieldNameToProperty = fieldNameToProperty;
+		this.unmappedProperties = unmappedProperties;
+		this.ignoredPropertyNames = ignoredPropertyNames;
+		this.anySetterFound = anySetterFound;
+	}
 
 	/**
 	 * Creates a new {@link MappedProperties} instance for the given {@link PersistentEntity} and {@link BeanDescription}.

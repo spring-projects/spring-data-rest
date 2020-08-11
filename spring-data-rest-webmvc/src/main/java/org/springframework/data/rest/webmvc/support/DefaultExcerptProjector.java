@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.Optional;
 
 import org.springframework.data.projection.ProjectionFactory;
@@ -31,11 +29,19 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @since 2.5
  */
-@RequiredArgsConstructor
 public class DefaultExcerptProjector implements ExcerptProjector {
 
 	private final ProjectionFactory factory;
 	private final ResourceMappings mappings;
+
+	public DefaultExcerptProjector(ProjectionFactory factory, ResourceMappings mappings) {
+
+		Assert.notNull(factory, "ProjectionFactory must not be null!");
+		Assert.notNull(mappings, "ResourceMappings must not be null!");
+
+		this.factory = factory;
+		this.mappings = mappings;
+	}
 
 	/*
 	 * (non-Javadoc)

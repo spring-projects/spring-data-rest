@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -91,7 +88,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 *
 	 * @param entities must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
-	 * @param accessor must not be {@literal null}.
+	 * @param resolver must not be {@literal null}.
 	 * @param objectMapper must not be {@literal null}.
 	 * @param configuration must not be {@literal null}.
 	 */
@@ -275,28 +272,8 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		return getPropertiesFor(property.getActualType(),
 				associations.getMappings().getMetadataFor(property.getActualType()), descriptors);
 	}
-	//
-	// private JsonSchemaProperty getSchemaProperty(BeanPropertyDefinition definition, TypeInformation<?> type,
-	// ResourceDescription description) {
-	//
-	// String name = definition.getName();
-	// String title = resolver.resolveWithDefault(new ResolvableProperty(definition));
-	// String resolvedDescription = resolver.resolve(description);
-	// boolean required = definition.isRequired();
-	// Class<?> rawType = type.getType();
-	//
-	// if (!rawType.isEnum()) {
-	// return new JsonSchemaProperty(name, title, resolvedDescription, required).with(type);
-	// }
-	//
-	// String message = resolver.resolve(new DefaultMessageSourceResolvable(description.getMessage()));
-	//
-	// return new EnumProperty(name, title, rawType,
-	// description.getDefaultMessage().equals(resolvedDescription) ? message : resolvedDescription, required);
-	// }
 
 	private ResourceDescription getDescriptionFor(PersistentProperty<?> property, ResourceMetadata metadata) {
-
 		ResourceMapping propertyMapping = metadata.getMappingFor(property);
 		return propertyMapping.getDescription();
 	}
@@ -308,7 +285,6 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @since 2.4
 	 */
 	private class JsonSchemaPropertyRegistrar {
-
 		private final JacksonMetadata metadata;
 		private final List<AbstractJsonSchemaProperty<?>> properties;
 
@@ -318,32 +294,25 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		 * @param metadata must not be {@literal null}.
 		 */
 		public JsonSchemaPropertyRegistrar(JacksonMetadata metadata) {
-
 			Assert.notNull(metadata, "Metadata must not be null!");
-
 			this.metadata = metadata;
 			this.properties = new ArrayList<AbstractJsonSchemaProperty<?>>();
 		}
 
 		public void register(JsonSchemaProperty property, TypeInformation<?> type) {
-
 			if (type == null) {
 				properties.add(property);
 				return;
 			}
-
 			JsonSerializer<?> serializer = metadata.getTypeSerializer(type.getType());
-
 			if (serializer instanceof JsonSchemaPropertyCustomizer) {
 				properties.add(((JsonSchemaPropertyCustomizer) serializer).customize(property, type));
 				return;
 			}
-
 			if (configuration.isLookupType(type.getType())) {
 				properties.add(customizerFactory.getCustomizerFor(type.getType()).customize(property, type));
 				return;
 			}
-
 			properties.add(property);
 		}
 
@@ -352,10 +321,16 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		}
 	}
 
-	@RequiredArgsConstructor
 	public static class ValueTypeSchemaPropertyCustomizerFactory {
 
-		private final @NonNull RepositoryInvokerFactory factory;
+		private final RepositoryInvokerFactory factory;
+
+		public ValueTypeSchemaPropertyCustomizerFactory(RepositoryInvokerFactory factory) {
+
+			Assert.notNull(factory, "RepositoryInvokerFactory must not be null!");
+
+			this.factory = factory;
+		}
 
 		public JsonSchemaPropertyCustomizer getCustomizerFor(final Class<?> type) {
 
@@ -442,12 +417,23 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		}
 	}
 
-	@RequiredArgsConstructor
 	private static class JacksonProperty {
 
 		private final JacksonMetadata metadata;
 		private final Optional<? extends PersistentProperty<?>> property;
 		private final BeanPropertyDefinition definition;
+
+		public JacksonProperty(JacksonMetadata metadata, Optional<? extends PersistentProperty<?>> property,
+				BeanPropertyDefinition definition) {
+
+			Assert.notNull(metadata, "JacksonMetadata must not be null!");
+			Assert.notNull(property, "PersistentProperty must not be null!");
+			Assert.notNull(definition, "BeanPropertyDefinition must not be null!");
+
+			this.metadata = metadata;
+			this.property = property;
+			this.definition = definition;
+		}
 
 		@SuppressWarnings("rawtypes")
 		public TypeInformation<?> getPropertyType() {
@@ -499,11 +485,19 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		}
 	}
 
-	@RequiredArgsConstructor
 	private static class DefaultMessageResolver implements InternalMessageResolver {
 
-		private final MessageResolver accessor;
+		private final MessageResolver resolver;
 		private final RepositoryRestConfiguration configuration;
+
+		public DefaultMessageResolver(MessageResolver resolver, RepositoryRestConfiguration configuration) {
+
+			Assert.notNull(resolver, "MessageResolver must not be null!");
+			Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
+
+			this.resolver = resolver;
+			this.configuration = configuration;
+		}
 
 		public String resolve(MessageSourceResolvable resolvable) {
 
@@ -512,7 +506,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			}
 
 			try {
-				return accessor.resolve(resolvable);
+				return resolver.resolve(resolvable);
 			} catch (NoSuchMessageException o_O) {
 
 				if (configuration.getMetadataConfiguration().omitUnresolvableDescriptionKeys()) {
@@ -532,9 +526,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @since 2.4
 	 */
 	private static class DefaultingMessageSourceResolvable implements MessageSourceResolvable {
-
 		private static Pattern SPLIT_CAMEL_CASE = Pattern.compile("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])");
-
 		private final MessageSourceResolvable delegate;
 
 		/**
@@ -570,17 +562,13 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		 */
 		@Override
 		public String getDefaultMessage() {
-
 			String defaultMessage = delegate.getDefaultMessage();
-
 			if (defaultMessage != null) {
 				return defaultMessage;
 			}
-
 			String[] split = getCodes()[0].split("\\.");
 			String tail = split[split.length - 1];
 			tail = "_title".equals(tail) ? split[split.length - 2] : tail;
-
 			return StringUtils.capitalize(StringUtils
 					.collectionToDelimitedString(Arrays.asList(SPLIT_CAMEL_CASE.split(tail)), " ").toLowerCase(Locale.US));
 		}

@@ -15,10 +15,6 @@
  */
 package org.springframework.data.rest.core.config;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,13 +70,12 @@ public class RepositoryRestConfiguration {
 	/**
 	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
 	 */
-	private @Getter @Setter @NonNull LinkRelationProvider relProvider = new EvoInflectorLinkRelationProvider();
-
+	private LinkRelationProvider relProvider = new EvoInflectorLinkRelationProvider();
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
 	private final MetadataConfiguration metadataConfiguration;
 	private final EntityLookupConfiguration entityLookupConfiguration;
-	private final @Getter ExposureConfiguration exposureConfiguration;
 
+	private final ExposureConfiguration exposureConfiguration;
 	private final EnumTranslationConfiguration enumTranslationConfiguration;
 	private boolean enableEnumTranslation = false;
 
@@ -666,5 +661,26 @@ public class RepositoryRestConfiguration {
 
 	public boolean isLookupType(Class<?> type) {
 		return this.entityLookupConfiguration.isLookupType(type);
+	}
+
+	/**
+	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
+	 */
+	public LinkRelationProvider getRelProvider() {
+		return this.relProvider;
+	}
+
+	/**
+	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
+	 */
+	public void setRelProvider(LinkRelationProvider relProvider) {
+
+		Assert.notNull(relProvider, "LinkRelationProvider must not be null!");
+
+		this.relProvider = relProvider;
+	}
+
+	public ExposureConfiguration getExposureConfiguration() {
+		return this.exposureConfiguration;
 	}
 }

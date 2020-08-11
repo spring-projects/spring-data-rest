@@ -17,9 +17,6 @@ package org.springframework.data.rest.webmvc.support;
 
 import static org.springframework.hateoas.TemplateVariable.VariableType.*;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,14 +57,29 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@RequiredArgsConstructor
 public class RepositoryEntityLinks extends AbstractEntityLinks {
 
-	private final @NonNull Repositories repositories;
-	private final @NonNull ResourceMappings mappings;
-	private final @NonNull RepositoryRestConfiguration config;
-	private final @NonNull PagingAndSortingTemplateVariables templateVariables;
-	private final @NonNull PluginRegistry<BackendIdConverter, Class<?>> idConverters;
+	private final Repositories repositories;
+	private final ResourceMappings mappings;
+	private final RepositoryRestConfiguration config;
+	private final PagingAndSortingTemplateVariables templateVariables;
+	private final PluginRegistry<BackendIdConverter, Class<?>> idConverters;
+
+	public RepositoryEntityLinks(Repositories repositories, ResourceMappings mappings, RepositoryRestConfiguration config,
+			PagingAndSortingTemplateVariables templateVariables, PluginRegistry<BackendIdConverter, Class<?>> idConverters) {
+
+		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
+		Assert.notNull(templateVariables, "PagingAndSortingTemplateVariables must not be null!");
+		Assert.notNull(idConverters, "BackendIdConverters must not be null!");
+
+		this.repositories = repositories;
+		this.mappings = mappings;
+		this.config = config;
+		this.templateVariables = templateVariables;
+		this.idConverters = idConverters;
+	}
 
 	/*
 	 * (non-Javadoc)

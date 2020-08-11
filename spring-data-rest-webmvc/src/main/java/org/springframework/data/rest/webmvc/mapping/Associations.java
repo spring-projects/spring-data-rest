@@ -17,10 +17,6 @@ package org.springframework.data.rest.webmvc.mapping;
 
 import static org.springframework.hateoas.TemplateVariable.VariableType.*;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -47,11 +43,23 @@ import org.springframework.util.Assert;
  * @author Haroun Pacquee
  * @since 2.1
  */
-@RequiredArgsConstructor
 public class Associations {
 
-	private final @NonNull @Getter ResourceMappings mappings;
-	private final @NonNull RepositoryRestConfiguration config;
+	private final ResourceMappings mappings;
+	private final RepositoryRestConfiguration config;
+
+	public Associations(ResourceMappings mappings, RepositoryRestConfiguration config) {
+
+		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
+
+		this.mappings = mappings;
+		this.config = config;
+	}
+
+	public ResourceMappings getMappings() {
+		return this.mappings;
+	}
 
 	/**
 	 * Returns the links to render for the given {@link Association}.

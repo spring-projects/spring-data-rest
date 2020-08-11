@@ -15,28 +15,37 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
+import java.util.Objects;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.Assert;
 
 /**
  * Value object to capture a {@link Pageable} as well whether it is the default one configured.
  *
  * @author Oliver Gierke
  */
-@Value
-public class DefaultedPageable {
+public final class DefaultedPageable {
+
+	private final Pageable pageable;
+	private final boolean isDefault;
+
+	public DefaultedPageable(Pageable pageable, boolean isDefault) {
+
+		Assert.notNull(pageable, "Pageable must not be null!");
+
+		this.pageable = pageable;
+		this.isDefault = isDefault;
+	}
 
 	/**
 	 * Returns the delegate {@link Pageable}.
 	 *
 	 * @return can be {@literal null}.
 	 */
-	private final @NonNull Pageable pageable;
-	private final @Getter(value = AccessLevel.NONE) boolean isDefault;
+	public Pageable getPageable() {
+		return this.pageable;
+	}
 
 	/**
 	 * Returns whether the contained {@link Pageable} is the default one configured.
@@ -55,5 +64,44 @@ public class DefaultedPageable {
 	 */
 	public Pageable unpagedIfDefault() {
 		return isDefault ? Pageable.unpaged() : pageable;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (o == this) {
+			return true;
+		}
+
+		if (!(o instanceof DefaultedPageable)) {
+			return false;
+		}
+
+		DefaultedPageable that = (DefaultedPageable) o;
+
+		return Objects.equals(pageable, that.pageable) //
+				&& isDefault == that.isDefault;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(pageable, isDefault);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public java.lang.String toString() {
+		return "DefaultedPageable(pageable=" + pageable + ", isDefault=" + isDefault + ")";
 	}
 }

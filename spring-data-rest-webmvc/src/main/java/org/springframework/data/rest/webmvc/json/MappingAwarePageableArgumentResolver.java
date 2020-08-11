@@ -15,14 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableArgumentResolver;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -40,11 +38,20 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Oliver Gierke
  * @since 2.6
  */
-@RequiredArgsConstructor
 public class MappingAwarePageableArgumentResolver implements HandlerMethodArgumentResolver, PageableArgumentResolver {
 
-	private final @NonNull JacksonMappingAwareSortTranslator translator;
-	private final @NonNull PageableArgumentResolver delegate;
+	private final JacksonMappingAwareSortTranslator translator;
+	private final PageableArgumentResolver delegate;
+
+	public MappingAwarePageableArgumentResolver(JacksonMappingAwareSortTranslator translator,
+			PageableArgumentResolver delegate) {
+
+		Assert.notNull(translator, "JacksonMappingAwareSortTranslator must not be null!");
+		Assert.notNull(delegate, "Delegate PageableArgumentResolver must not be null!");
+
+		this.translator = translator;
+		this.delegate = delegate;
+	}
 
 	/*
 	 * (non-Javadoc)

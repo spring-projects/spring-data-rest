@@ -15,10 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.mapping;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -99,7 +95,7 @@ public class LinkCollector {
 
 		Path path = new Path(selfLink.expand().getHref());
 
-		LinkCollectingAssociationHandler handler = new LinkCollectingAssociationHandler(entities, path, associationLinks);
+		LinkCollectingAssociationHandler handler = new LinkCollectingAssociationHandler(path, associationLinks);
 		entities.getRequiredPersistentEntity(object.getClass()).doWithAssociations(handler);
 
 		return addSelfLinkIfNecessary(object, existingLinks.and(handler.getLinks()));
@@ -117,11 +113,8 @@ public class LinkCollector {
 	}
 
 	private Links addSelfLinkIfNecessary(Object object, Links existing) {
-
-		return existing.hasLink(IanaLinkRelations.SELF) //
-				? existing //
-				: Links.of(createSelfLink(object, existing)) //
-						.and(existing);
+		return existing.andIf(!existing.hasLink(IanaLinkRelations.SELF),
+				() -> links.createSelfLinkFor(object).withSelfRel());
 	}
 
 	private Link createSelfLink(Object object, Links existing) {
@@ -136,15 +129,22 @@ public class LinkCollector {
 	 * @author Oliver Gierke
 	 * @since 2.1
 	 */
-	@RequiredArgsConstructor
 	private static class LinkCollectingAssociationHandler implements SimpleAssociationHandler {
 
 		private static final String AMBIGUOUS_ASSOCIATIONS = "Detected multiple association links with same relation type! Disambiguate association %s using @RestResource!";
 
-		private final @NonNull PersistentEntities entities;
-		private final @NonNull Path basePath;
-		private final @NonNull Associations associationLinks;
-		private final @NonNull List<Link> links = new ArrayList<Link>();
+		private final Path basePath;
+		private final Associations associationLinks;
+		private final List<Link> links = new ArrayList<Link>();
+
+		public LinkCollectingAssociationHandler(Path basePath, Associations associationLinks) {
+
+			Assert.notNull(basePath, "Base Path must not be null!");
+			Assert.notNull(associationLinks, "Associations must not be null!");
+
+			this.basePath = basePath;
+			this.associationLinks = associationLinks;
+		}
 
 		/**
 		 * Returns the links collected after the {@link Association} has been traversed.
@@ -178,13 +178,28 @@ public class LinkCollector {
 		}
 	}
 
-	@RequiredArgsConstructor
 	private static class NestedLinkCollectingAssociationHandler implements SimpleAssociationHandler {
 
 		private final SelfLinkProvider selfLinks;
 		private final PersistentPropertyAccessor<?> accessor;
 		private final Associations associations;
-		private final @Getter List<Link> links = new ArrayList<Link>();
+		private final List<Link> links = new ArrayList<Link>();
+
+		public NestedLinkCollectingAssociationHandler(SelfLinkProvider selfLinks,
+				PersistentPropertyAccessor<?> accessor, Associations associations) {
+
+			Assert.notNull(selfLinks, "SelfLinkProvider must not be null!");
+			Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
+			Assert.notNull(associations, "Associations must not be null!");
+
+			this.selfLinks = selfLinks;
+			this.accessor = accessor;
+			this.associations = associations;
+		}
+
+		public List<Link> getLinks() {
+			return this.links;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -198,7 +213,6 @@ public class LinkCollector {
 			}
 
 			PersistentProperty<?> property = association.getInverse();
-
 			Object value = accessor.getProperty(property);
 
 			if (value == null) {
@@ -236,11 +250,9 @@ public class LinkCollector {
 		@SuppressWarnings("unchecked")
 		private static Collection<Object> asCollection(Object object) {
 
-			if (object instanceof Collection) {
-				return (Collection<Object>) object;
-			}
-
-			return Collections.singleton(object);
+			return object instanceof Collection //
+					? (Collection<Object>) object //
+					: Collections.singleton(object);
 		}
 	}
 }

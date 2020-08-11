@@ -15,13 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import lombok.Value;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.validation.FieldError;
 
@@ -59,10 +59,86 @@ public class RepositoryConstraintViolationExceptionMessage {
 		return errors;
 	}
 
-	@Value(staticConstructor = "of")
-	public static class ValidationError {
-		String entity, property;
-		Object invalidValue;
-		String message;
+	public static final class ValidationError {
+
+		private final String entity;
+		private final String property;
+		private final @Nullable Object invalidValue;
+		private final String message;
+
+		private ValidationError(String entity, String property, Object invalidValue, String message) {
+
+			Assert.hasText(entity, "Entity must not be null or empty!");
+			Assert.hasText(property, "Property must not be null or empty!");
+			Assert.hasText(message, "Message must not be null or empty!");
+
+			this.entity = entity;
+			this.property = property;
+			this.invalidValue = invalidValue;
+			this.message = message;
+		}
+
+		public static ValidationError of(String entity, String property, Object invalidValue, String message) {
+			return new ValidationError(entity, property, invalidValue, message);
+		}
+
+		public String getEntity() {
+			return this.entity;
+		}
+
+		public String getProperty() {
+			return this.property;
+		}
+
+		@Nullable
+		public Object getInvalidValue() {
+			return this.invalidValue;
+		}
+
+		public String getMessage() {
+			return this.message;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (o == this) {
+				return true;
+			}
+
+			if (!(o instanceof ValidationError)) {
+				return false;
+			}
+
+			ValidationError other = (ValidationError) o;
+
+			return Objects.equals(entity, other.entity) //
+					&& Objects.equals(property, other.property) //
+					&& Objects.equals(invalidValue, other.invalidValue) //
+					&& Objects.equals(message, other.message);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(entity, property, invalidValue, message);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public java.lang.String toString() {
+			return "RepositoryConstraintViolationExceptionMessage.ValidationError(entity=" + entity + ", property=" + property
+					+ ", invalidValue=" + invalidValue + ", message=" + message + ")";
+		}
 	}
 }

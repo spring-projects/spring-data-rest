@@ -17,9 +17,6 @@ package org.springframework.data.rest.webmvc.alps;
 
 import static org.springframework.hateoas.mediatype.alps.Alps.*;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -66,6 +63,7 @@ import org.springframework.hateoas.mediatype.alps.Format;
 import org.springframework.hateoas.mediatype.alps.Type;
 import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -78,19 +76,41 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
-@RequiredArgsConstructor
 public class RootResourceInformationToAlpsDescriptorConverter {
 
 	private static final List<HttpMethod> UNDOCUMENTED_METHODS = Arrays.asList(HttpMethod.OPTIONS, HttpMethod.HEAD);
 
-	private final @NonNull Associations associations;
-	private final @NonNull Repositories repositories;
-	private final @NonNull PersistentEntities persistentEntities;
-	private final @NonNull EntityLinks entityLinks;
-	private final @NonNull MessageResolver resolver;
-	private final @NonNull RepositoryRestConfiguration configuration;
-	private final @NonNull ObjectMapper mapper;
-	private final @NonNull EnumTranslator translator;
+	private final Associations associations;
+	private final Repositories repositories;
+	private final PersistentEntities persistentEntities;
+	private final EntityLinks entityLinks;
+	private final MessageResolver resolver;
+	private final RepositoryRestConfiguration configuration;
+	private final ObjectMapper mapper;
+	private final EnumTranslator translator;
+
+	public RootResourceInformationToAlpsDescriptorConverter(Associations associations, Repositories repositories,
+			PersistentEntities persistentEntities, EntityLinks entityLinks, MessageResolver resolver,
+			RepositoryRestConfiguration configuration, ObjectMapper mapper, EnumTranslator translator) {
+
+		Assert.notNull(associations, "Associations must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(persistentEntities, "PersistentEntities must not be null!");
+		Assert.notNull(entityLinks, "EntityLinks must not be null!");
+		Assert.notNull(resolver, "MessageResolver must not be null!");
+		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
+		Assert.notNull(mapper, "ObjectMapper must not be null!");
+		Assert.notNull(translator, "EnumTranslator must not be null!");
+
+		this.associations = associations;
+		this.repositories = repositories;
+		this.persistentEntities = persistentEntities;
+		this.entityLinks = entityLinks;
+		this.resolver = resolver;
+		this.configuration = configuration;
+		this.mapper = mapper;
+		this.translator = translator;
+	}
 
 	/*
 	 * (non-Javadoc)

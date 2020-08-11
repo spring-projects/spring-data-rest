@@ -15,14 +15,10 @@
  */
 package org.springframework.data.rest.core.config;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.core.annotation.AnnotationUtils;
@@ -80,6 +76,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	public ProjectionDefinitionConfiguration addProjection(Class<?> projectionType) {
 
 		Assert.notNull(projectionType, "Projection type must not be null!");
+
 		Projection annotation = AnnotationUtils.findAnnotation(projectionType, Projection.class);
 
 		if (annotation == null) {
@@ -89,7 +86,8 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		String name = annotation.name();
 		Class<?>[] sourceTypes = annotation.types();
 
-		return StringUtils.hasText(name) ? addProjection(projectionType, name, sourceTypes)
+		return StringUtils.hasText(name) //
+				? addProjection(projectionType, name, sourceTypes) //
 				: addProjection(projectionType, sourceTypes);
 	}
 
@@ -104,6 +102,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	public ProjectionDefinitionConfiguration addProjection(Class<?> projectionType, Class<?>... sourceTypes) {
 
 		Assert.notNull(projectionType, "Projection type must not be null!");
+
 		return addProjection(projectionType, StringUtils.uncapitalize(projectionType.getSimpleName()), sourceTypes);
 	}
 
@@ -146,6 +145,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	public boolean hasProjectionFor(Class<?> sourceType) {
 
 		for (ProjectionDefinition definition : projectionDefinitions) {
+
 			if (definition.sourceType.isAssignableFrom(sourceType)) {
 				return true;
 			}
@@ -194,12 +194,21 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	 *
 	 * @author Oliver Gierke
 	 */
-	@Value
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	static final class ProjectionDefinition {
 
-		private final @NonNull Class<?> sourceType, targetType;
-		private final @NonNull String name;
+		private final Class<?> sourceType, targetType;
+		private final String name;
+
+		private ProjectionDefinition(Class<?> sourceType, Class<?> targetType, String name) {
+
+			Assert.notNull(sourceType, "Source type must not be null!");
+			Assert.notNull(targetType, "Target type must not be null!");
+			Assert.notNull(name, "Name must not be null!");
+
+			this.sourceType = sourceType;
+			this.targetType = targetType;
+			this.name = name;
+		}
 
 		/**
 		 * Creates a new {@link ProjectionDefinitionKey} for the given source type and name;
@@ -213,6 +222,59 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 			Assert.hasText(name, "Name must not be null or empty!");
 
 			return new ProjectionDefinition(sourceType, targetType, name);
+		}
+
+		public Class<?> getSourceType() {
+			return this.sourceType;
+		}
+
+		public Class<?> getTargetType() {
+			return this.targetType;
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (o == this) {
+				return true;
+			}
+
+			if (!(o instanceof ProjectionDefinitionConfiguration.ProjectionDefinition)) {
+				return false;
+			}
+
+			ProjectionDefinition that = (ProjectionDefinitionConfiguration.ProjectionDefinition) o;
+
+			return Objects.equals(getSourceType(), that.getSourceType()) //
+					&& Objects.equals(getTargetType(), that.getTargetType()) //
+					&& Objects.equals(getName(), that.getName());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(getSourceType(), getTargetType(), getName());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public java.lang.String toString() {
+			return "ProjectionDefinitionConfiguration.ProjectionDefinition(sourceType=" + this.getSourceType()
+					+ ", targetType=" + this.getTargetType() + ", name=" + this.getName() + ")";
 		}
 	}
 }

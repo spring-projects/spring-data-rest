@@ -15,11 +15,6 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -39,12 +34,22 @@ import org.springframework.util.Assert;
  * @since 2.6
  * @soundtrack Blumentopf - Dass ich nicht lache (Kein Zufall)
  */
-@RequiredArgsConstructor(staticName = "of")
 class ResourceStatus {
 
 	private static final String INVALID_DOMAIN_OBJECT = "Domain object %s is not an instance of the given PersistentEntity of type %s!";
 
-	private final @NonNull HttpHeadersPreparer preparer;
+	private final HttpHeadersPreparer preparer;
+
+	private ResourceStatus(HttpHeadersPreparer preparer) {
+
+		Assert.notNull(preparer, "HttpHeadersPreparer must not be null!");
+
+		this.preparer = preparer;
+	}
+
+	public static ResourceStatus of(HttpHeadersPreparer preparer) {
+		return new ResourceStatus(preparer);
+	}
 
 	/**
 	 * Returns the {@link StatusAndHeaders} calculated from the given {@link HttpHeaders}, domain object and
@@ -77,11 +82,22 @@ class ResourceStatus {
 				: StatusAndHeaders.modified(responseHeaders);
 	}
 
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class StatusAndHeaders {
 
-		private final @NonNull HttpHeaders headers;
-		private final @Getter(AccessLevel.PACKAGE) boolean modified;
+		private final HttpHeaders headers;
+		private final boolean modified;
+
+		private StatusAndHeaders(HttpHeaders headers, boolean modified) {
+
+			Assert.notNull(headers, "HttpHeaders must not be null!");
+
+			this.headers = headers;
+			this.modified = modified;
+		}
+
+		boolean isModified() {
+			return this.modified;
+		}
 
 		private static StatusAndHeaders notModified(HttpHeaders headers) {
 			return new StatusAndHeaders(headers, false);
@@ -99,7 +115,9 @@ class ResourceStatus {
 		 * @return
 		 */
 		public ResponseEntity<EntityModel<?>> toResponseEntity(Supplier<PersistentEntityResource> supplier) {
-			return modified ? new ResponseEntity<EntityModel<?>>(supplier.get(), headers, HttpStatus.OK)
+
+			return modified //
+					? new ResponseEntity<EntityModel<?>>(supplier.get(), headers, HttpStatus.OK) //
 					: new ResponseEntity<EntityModel<?>>(headers, HttpStatus.NOT_MODIFIED);
 		}
 	}

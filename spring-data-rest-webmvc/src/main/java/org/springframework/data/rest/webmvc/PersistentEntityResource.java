@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,15 +44,7 @@ public class PersistentEntityResource extends EntityModel<Object> {
 
 	private final PersistentEntity<?, ?> entity;
 	private final Iterable<EmbeddedWrapper> embeddeds;
-
-	/**
-	 * Returns whether the content of the resource is a new entity about to be created. Used to distinguish between
-	 * creation and updates for incoming requests.
-	 *
-	 * @return
-	 */
-	private final @Getter boolean isNew;
-	private final @Getter boolean nested;
+	private final boolean isNew, nested;
 
 	/**
 	 * Creates a new {@link PersistentEntityResource} for the given {@link PersistentEntity}, content, embedded
@@ -77,6 +67,20 @@ public class PersistentEntityResource extends EntityModel<Object> {
 		this.embeddeds = embeddeds == null ? NO_EMBEDDEDS : embeddeds;
 		this.isNew = isNew;
 		this.nested = nested;
+	}
+
+	/**
+	 * Returns whether the content of the resource is a new entity about to be created. Used to distinguish between
+	 * creation and updates for incoming requests.
+	 *
+	 * @return
+	 */
+	public boolean isNew() {
+		return this.isNew;
+	}
+
+	public boolean isNested() {
+		return this.nested;
 	}
 
 	/**

@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
@@ -48,6 +45,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.plugin.core.PluginRegistry;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -63,18 +61,36 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@RequiredArgsConstructor
 public class PersistentEntityResourceHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private static final String ERROR_MESSAGE = "Could not read an object of type %s from the request!";
 	private static final String NO_CONVERTER_FOUND = "No suitable HttpMessageConverter found to read request body into object of type %s from request with content type of %s!";
 
-	private final @NonNull List<HttpMessageConverter<?>> messageConverters;
-	private final @NonNull RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver;
-	private final @NonNull BackendIdHandlerMethodArgumentResolver idResolver;
-	private final @NonNull DomainObjectReader reader;
-	private final @NonNull PluginRegistry<EntityLookup<?>, Class<?>> lookups;
+	private final List<HttpMessageConverter<?>> messageConverters;
+	private final RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver;
+	private final BackendIdHandlerMethodArgumentResolver idResolver;
+	private final DomainObjectReader reader;
+	private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
 	private final ConversionService conversionService = new DefaultConversionService();
+
+	public PersistentEntityResourceHandlerMethodArgumentResolver(
+			List<HttpMessageConverter<?>> messageConverters,
+			RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver,
+			BackendIdHandlerMethodArgumentResolver idResolver, DomainObjectReader reader,
+			PluginRegistry<EntityLookup<?>, Class<?>> lookups) {
+
+		Assert.notNull(messageConverters, "HttpMessageConverters must not be null!");
+		Assert.notNull(resourceInformationResolver, "RootResourceInformation resolver must not be null!");
+		Assert.notNull(idResolver, "IdResolver must not be null!");
+		Assert.notNull(reader, "DomainObjectReader must not be null!");
+		Assert.notNull(lookups, "EntityLookups must not be null!");
+
+		this.messageConverters = messageConverters;
+		this.resourceInformationResolver = resourceInformationResolver;
+		this.idResolver = idResolver;
+		this.reader = reader;
+		this.lookups = lookups;
+	}
 
 	/*
 	 * (non-Javadoc)

@@ -15,10 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
+import org.springframework.util.Assert;
 
 /**
  * Abstract base class representing and providing support methods for patch operations.
@@ -27,11 +25,10 @@ import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
  * @author Mathias Düsterhöft
  * @author Oliver Gierke
  */
-@RequiredArgsConstructor
 public abstract class PatchOperation {
 
-	protected final @NonNull String op;
-	protected final @NonNull UntypedSpelPath path;
+	protected final String op;
+	protected final UntypedSpelPath path;
 	protected final Object value;
 
 	/**
@@ -42,6 +39,16 @@ public abstract class PatchOperation {
 	 */
 	public PatchOperation(String op, UntypedSpelPath path) {
 		this(op, path, null);
+	}
+
+	protected PatchOperation(String op, UntypedSpelPath path, Object value) {
+
+		Assert.hasText(op, "Operation must not be null or empty!");
+		Assert.notNull(path, "UntypedSpelPath must not be null!");
+
+		this.op = op;
+		this.path = path;
+		this.value = value;
 	}
 
 	/**

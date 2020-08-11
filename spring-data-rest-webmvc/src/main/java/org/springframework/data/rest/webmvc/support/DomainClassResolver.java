@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -38,12 +35,28 @@ import org.springframework.web.context.request.NativeWebRequest;
  * @author Oliver Gierke
  * @since 2.6
  */
-@RequiredArgsConstructor(staticName = "of")
 public class DomainClassResolver {
 
-	private final @NonNull Repositories repositories;
-	private final @NonNull ResourceMappings mappings;
-	private final @NonNull BaseUri baseUri;
+	private final Repositories repositories;
+	private final ResourceMappings mappings;
+	private final BaseUri baseUri;
+
+	private DomainClassResolver(Repositories repositories, ResourceMappings mappings,
+			BaseUri baseUri) {
+
+		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(baseUri, "BaseUri must not be null!");
+
+		this.repositories = repositories;
+		this.mappings = mappings;
+		this.baseUri = baseUri;
+	}
+
+	public static DomainClassResolver of(Repositories repositories,
+			ResourceMappings mappings, BaseUri baseUri) {
+		return new DomainClassResolver(repositories, mappings, baseUri);
+	}
 
 	/**
 	 * Resolves a domain class that is associated with the {@link NativeWebRequest}

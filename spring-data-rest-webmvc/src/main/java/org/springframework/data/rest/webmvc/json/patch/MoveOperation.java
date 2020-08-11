@@ -15,10 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
+import org.springframework.util.Assert;
 
 /**
  * <p>
@@ -56,10 +54,16 @@ class MoveOperation extends PatchOperation {
 		return new MoveOperationBuilder(from);
 	}
 
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	static class MoveOperationBuilder {
 
 		private final String from;
+
+		private MoveOperationBuilder(String from) {
+
+			Assert.hasText(from, "From must not be null or empty!");
+
+			this.from = from;
+		}
 
 		public MoveOperation to(String to) {
 			return new MoveOperation(SpelPath.untyped(to), SpelPath.untyped(from));

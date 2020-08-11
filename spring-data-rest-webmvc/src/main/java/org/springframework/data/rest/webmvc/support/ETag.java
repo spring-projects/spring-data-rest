@@ -17,8 +17,7 @@ package org.springframework.data.rest.webmvc.support;
 
 import static org.springframework.util.StringUtils.*;
 
-import lombok.EqualsAndHashCode;
-
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -33,7 +32,6 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  */
-@EqualsAndHashCode
 public final class ETag {
 
 	public static final ETag NO_ETAG = new ETag(null);
@@ -172,5 +170,34 @@ public final class ETag {
 		return Optional.ofNullable(entity.getVersionProperty())//
 				.map(it -> accessor.getProperty(it))//
 				.map(Object::toString);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (o == this) {
+			return true;
+		}
+
+		if (!(o instanceof ETag)) {
+			return false;
+		}
+
+		ETag other = (ETag) o;
+
+		return Objects.equals(value, other.value);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(value);
 	}
 }

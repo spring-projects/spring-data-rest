@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +46,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  * @since 2.6
  */
-@RequiredArgsConstructor
 public class JacksonMappingAwareSortTranslator {
 
 	private final Repositories repositories;
@@ -111,7 +107,6 @@ public class JacksonMappingAwareSortTranslator {
 	 * @author Oliver Gierke
 	 * @since 2.6
 	 */
-	@RequiredArgsConstructor
 	public static class SortTranslator {
 
 		private static final String DELIMITERS = "_\\.";
@@ -119,9 +114,20 @@ public class JacksonMappingAwareSortTranslator {
 
 		private static final Pattern SPLITTER = Pattern.compile("(?:[%s]?([%s]*?[^%s]+))".replaceAll("%s", DELIMITERS));
 
-		private final @NonNull PersistentEntities persistentEntities;
-		private final @NonNull ObjectMapper objectMapper;
-		private final @NonNull Associations associations;
+		private final PersistentEntities entities;
+		private final ObjectMapper objectMapper;
+		private final Associations associations;
+
+		public SortTranslator(PersistentEntities entities, ObjectMapper objectMapper, Associations associations) {
+
+			Assert.notNull(entities, "PersistentEntities must not be null!");
+			Assert.notNull(objectMapper, "ObjectMapper must not be null!");
+			Assert.notNull(associations, "Associations must not be null!");
+
+			this.entities = entities;
+			this.objectMapper = objectMapper;
+			this.associations = associations;
+		}
 
 		/**
 		 * Translates {@link Sort} orders from Jackson-mapped field names to {@link PersistentProperty} names. Properties
@@ -172,7 +178,7 @@ public class JacksonMappingAwareSortTranslator {
 
 			List<String> persistentPropertyPath = new ArrayList<String>(iteratorSource.size());
 
-			TypedSegment typedSegment = TypedSegment.create(persistentEntities, objectMapper, rootEntity);
+			TypedSegment typedSegment = TypedSegment.create(entities, objectMapper, rootEntity);
 
 			for (String field : iteratorSource) {
 

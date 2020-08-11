@@ -19,9 +19,6 @@ import static java.util.stream.Collectors.*;
 import static org.springframework.data.rest.webmvc.RestMediaTypes.*;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,6 +59,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -460,7 +459,6 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		}
 	}
 
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	static class HttpRequestMethodNotSupportedException extends RuntimeException {
 
 		private static final long serialVersionUID = 3704212056962845475L;
@@ -468,6 +466,17 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		private final HttpMethod rejectedMethod;
 		private final HttpMethod[] allowedMethods;
 		private final String message;
+
+		private HttpRequestMethodNotSupportedException(HttpMethod rejectedMethod, HttpMethod[] allowedMethods,
+				@Nullable String message) {
+
+			Assert.notNull(rejectedMethod, "Rejected HttpMethod must not be null!");
+			Assert.notNull(allowedMethods, "Allowed HttpMethod must not be null!");
+
+			this.rejectedMethod = rejectedMethod;
+			this.allowedMethods = allowedMethods;
+			this.message = message;
+		}
 
 		public static HttpRequestMethodNotSupportedException forRejectedMethod(HttpMethod method) {
 			return new HttpRequestMethodNotSupportedException(method, new HttpMethod[0], null);
@@ -486,6 +495,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		 * (non-Javadoc)
 		 * @see java.lang.Throwable#getMessage()
 		 */
+		@Nullable
 		@Override
 		public String getMessage() {
 			return message;

@@ -15,16 +15,11 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -52,14 +47,24 @@ import org.springframework.util.StringUtils;
  *
  * @author Oliver Gierke
  */
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 class SpelPath {
 
 	private static final SpelExpressionParser SPEL_EXPRESSION_PARSER = new SpelExpressionParser();
 	private static final String APPEND_CHARACTER = "-";
 	private static final Map<String, UntypedSpelPath> UNTYPED_PATHS = new ConcurrentReferenceHashMap<>(32);
 
-	protected final @Getter String path;
+	protected final String path;
+
+	private SpelPath(String path) {
+
+		Assert.notNull(path, "Path must not be null!");
+
+		this.path = path;
+	}
+
+	public String getPath() {
+		return this.path;
+	}
 
 	/**
 	 * Returns a {@link UntypedSpelPath} for the given source.
@@ -153,7 +158,6 @@ class SpelPath {
 	 *
 	 * @author Oliver Gierke
 	 */
-	@EqualsAndHashCode(callSuper = true)
 	static class TypedSpelPath extends SpelPath {
 
 		private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s!";
@@ -164,10 +168,62 @@ class SpelPath {
 		private final Expression expression;
 		private final Class<?> type;
 
-		@Value(staticConstructor = "of")
-		private static class CacheKey {
-			Class<?> type;
-			UntypedSpelPath path;
+		private static final class CacheKey {
+
+			private final Class<?> type;
+			private final UntypedSpelPath path;
+
+			private CacheKey(Class<?> type, UntypedSpelPath path) {
+
+				Assert.notNull(type, "Type must not be null!");
+				Assert.notNull(path, "UntypedSpelPath must not be null!");
+
+				this.type = type;
+				this.path = path;
+			}
+
+			public static CacheKey of(final Class<?> type, final UntypedSpelPath path) {
+				return new CacheKey(type, path);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#equals(java.lang.Object)
+			 */
+			@Override
+			public boolean equals(Object o) {
+
+				if (o == this) {
+					return true;
+				}
+
+				if (!(o instanceof CacheKey)) {
+					return false;
+				}
+
+				CacheKey that = (CacheKey) o;
+
+				return Objects.equals(type, that.type) //
+						&& Objects.equals(path, that.path);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#hashCode()
+			 */
+			@Override
+			public int hashCode() {
+				return Objects.hash(type, path);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#toString()
+			 */
+			@Override
+			public java.lang.String toString() {
+				return "SpelPath.TypedSpelPath.CacheKey(type=" + type + ", path=" + path + ")";
+			}
 		}
 
 		private TypedSpelPath(UntypedSpelPath path, Class<?> type) {
@@ -441,15 +497,29 @@ class SpelPath {
 			}
 		}
 
-		@Value
-		@RequiredArgsConstructor(access = AccessLevel.PRIVATE, staticName = "of")
-		private static class SkippedPropertyPath {
+		private static final class SkippedPropertyPath {
 
-			PropertyPath path;
-			boolean skipped;
+			private final PropertyPath path;
+			private final boolean skipped;
+
+			private SkippedPropertyPath(PropertyPath path, boolean skipped) {
+
+				Assert.notNull(path, "PropertyPath must not be null!");
+
+				this.path = path;
+				this.skipped = skipped;
+			}
 
 			public static SkippedPropertyPath of(String segment, Class<?> type) {
 				return of(PropertyPath.from(segment, type), false);
+			}
+
+			private static SkippedPropertyPath of(PropertyPath path, boolean skipped) {
+				return new SkippedPropertyPath(path, skipped);
+			}
+
+			public PropertyPath getPath() {
+				return this.path;
 			}
 
 			public SkippedPropertyPath nested(String segment) {
@@ -463,6 +533,44 @@ class SpelPath {
 				return typeInformation.isMap() || typeInformation.isCollectionLike() //
 						? SkippedPropertyPath.of(path, true) //
 						: SkippedPropertyPath.of(path.nested(segment), false);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#equals(java.lang.Object)
+			 */
+			@Override
+			public boolean equals(Object o) {
+
+				if (o == this) {
+					return true;
+				}
+
+				if (!(o instanceof SkippedPropertyPath)) {
+					return false;
+				}
+				SkippedPropertyPath other = (SkippedPropertyPath) o;
+
+				return Objects.equals(path, other.path) //
+						&& skipped == other.skipped;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#hashCode()
+			 */
+			@Override
+			public int hashCode() {
+				return Objects.hash(path, skipped);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#toString()
+			 */
+			@Override
+			public java.lang.String toString() {
+				return "SpelPath.TypedSpelPath.SkippedPropertyPath(path=" + path + ", skipped=" + skipped + ")";
 			}
 		}
 
@@ -494,8 +602,7 @@ class SpelPath {
 					.orElseGet(() -> SkippedPropertyPath.of(next, type));
 		}
 
-		@Value
-		private static class SpelExpressionBuilder {
+		private static final class SpelExpressionBuilder {
 
 			private static final TypeInformation<String> STRING_TYPE = ClassTypeInformation.from(String.class);
 
@@ -503,6 +610,35 @@ class SpelPath {
 			private final Class<?> type;
 			private final String spelSegment;
 			private final boolean skipped;
+
+			public SpelExpressionBuilder(@Nullable PropertyPath basePath, Class<?> type, String spelSegment,
+					boolean skipped) {
+
+				Assert.notNull(type, "Type must not be null!");
+				Assert.notNull(spelSegment, "SpEL segment must not be null!");
+
+				this.basePath = basePath;
+				this.type = type;
+				this.spelSegment = spelSegment;
+				this.skipped = skipped;
+			}
+
+			@Nullable
+			public PropertyPath getBasePath() {
+				return this.basePath;
+			}
+
+			public Class<?> getType() {
+				return this.type;
+			}
+
+			public String getSpelSegment() {
+				return this.spelSegment;
+			}
+
+			public boolean isSkipped() {
+				return this.skipped;
+			}
 
 			public String getExpression() {
 				return StringUtils.hasText(spelSegment) ? spelSegment : null;
@@ -570,6 +706,77 @@ class SpelPath {
 
 				return nested(segment);
 			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#equals(java.lang.Object)
+			 */
+			@Override
+			public boolean equals(Object o) {
+
+				if (o == this) {
+					return true;
+				}
+				if (!(o instanceof SpelExpressionBuilder)) {
+					return false;
+				}
+
+				SpelExpressionBuilder that = (SpelExpressionBuilder) o;
+
+				return Objects.equals(basePath, that.basePath) //
+						&& Objects.equals(type, that.type) //
+						&& Objects.equals(spelSegment, that.spelSegment) //
+						&& skipped == that.skipped;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#hashCode()
+			 */
+			@Override
+			public int hashCode() {
+				return Objects.hash(basePath, type, spelSegment, skipped);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Object#toString()
+			 */
+			@Override
+			public java.lang.String toString() {
+				return "SpelPath.TypedSpelPath.SpelExpressionBuilder(basePath=" + this.getBasePath() + ", type="
+						+ this.getType() + ", spelSegment=" + this.getSpelSegment() + ", skipped=" + this.isSkipped() + ")";
+			}
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.webmvc.json.patch.SpelPath#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(final java.lang.Object o) {
+
+			if (o == this) {
+				return true;
+			}
+
+			if (!(o instanceof TypedSpelPath) || !super.equals(o)) {
+				return false;
+			}
+
+			TypedSpelPath that = (TypedSpelPath) o;
+
+			return Objects.equals(expression, that.expression) //
+					&& Objects.equals(type, that.type);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.webmvc.json.patch.SpelPath#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(expression, type);
 		}
 	}
 }

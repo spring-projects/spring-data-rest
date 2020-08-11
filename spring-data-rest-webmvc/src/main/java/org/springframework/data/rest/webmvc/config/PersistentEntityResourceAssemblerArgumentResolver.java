@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.ProjectionFactory;
@@ -26,6 +23,7 @@ import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.PersistentEntityProjector;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -36,14 +34,30 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  *
  * @author Oliver Gierke
  */
-@RequiredArgsConstructor
 public class PersistentEntityResourceAssemblerArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private final @NonNull PersistentEntities entities;
-	private final @NonNull SelfLinkProvider linkProvider;
-	private final @NonNull ProjectionDefinitions projectionDefinitions;
-	private final @NonNull ProjectionFactory projectionFactory;
-	private final @NonNull Associations links;
+	private final PersistentEntities entities;
+	private final SelfLinkProvider linkProvider;
+	private final ProjectionDefinitions projectionDefinitions;
+	private final ProjectionFactory projectionFactory;
+	private final Associations associations;
+
+	public PersistentEntityResourceAssemblerArgumentResolver(PersistentEntities entities, SelfLinkProvider linkProvider,
+			ProjectionDefinitions projectionDefinitions, ProjectionFactory projectionFactory,
+			Associations associations) {
+
+		Assert.notNull(entities, "PersistentEntities must not be null!");
+		Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
+		Assert.notNull(projectionDefinitions, "ProjectionDefinitions must not be null!");
+		Assert.notNull(projectionFactory, "ProjectionFactory must not be null!");
+		Assert.notNull(associations, "Associations must not be null!");
+
+		this.entities = entities;
+		this.linkProvider = linkProvider;
+		this.projectionDefinitions = projectionDefinitions;
+		this.projectionFactory = projectionFactory;
+		this.associations = associations;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -64,8 +78,8 @@ public class PersistentEntityResourceAssemblerArgumentResolver implements Handle
 
 		String projectionParameter = webRequest.getParameter(projectionDefinitions.getParameterName());
 		PersistentEntityProjector projector = new PersistentEntityProjector(projectionDefinitions, projectionFactory,
-				projectionParameter, links.getMappings());
+				projectionParameter, associations.getMappings());
 
-		return new PersistentEntityResourceAssembler(entities, projector, links, linkProvider);
+		return new PersistentEntityResourceAssembler(entities, projector, associations, linkProvider);
 	}
 }

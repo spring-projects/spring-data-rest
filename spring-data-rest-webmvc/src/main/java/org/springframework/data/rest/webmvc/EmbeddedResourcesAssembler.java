@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -38,13 +35,24 @@ import org.springframework.util.Assert;
 /**
  * @author Oliver Gierke
  */
-@RequiredArgsConstructor
 public class EmbeddedResourcesAssembler {
 
-	private final @NonNull PersistentEntities entities;
-	private final @NonNull Associations associations;
-	private final @NonNull ExcerptProjector projector;
-	private final @NonNull EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+	private final PersistentEntities entities;
+	private final Associations associations;
+	private final ExcerptProjector projector;
+	private final EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+
+	public EmbeddedResourcesAssembler(PersistentEntities entities, Associations associations,
+			ExcerptProjector projector) {
+
+		Assert.notNull(entities, "PersistentEntities must not be null!");
+		Assert.notNull(associations, "Associations must not be null!");
+		Assert.notNull(projector, "ExcerptProjector must not be null!");
+
+		this.entities = entities;
+		this.associations = associations;
+		this.projector = projector;
+	}
 
 	/**
 	 * Returns the embedded resources to render. This will add an {@link RelatedResource} for linkable associations if

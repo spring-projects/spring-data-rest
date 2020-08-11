@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -178,11 +176,20 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	 * @since 3.2
 	 * @soundtrack Dave Matthews Band - #41 [4.20.02] (Best of What's Around – Encore Vol. 1)
 	 */
-	@RequiredArgsConstructor(staticName = "of")
 	private static class TranslatedEnum implements MessageSourceResolvable {
 
 		private final Enum<?> value;
 		private final boolean withDefaultTranslation;
+
+		private TranslatedEnum(Enum<?> value, boolean withDefaultTranslation) {
+
+			this.value = value;
+			this.withDefaultTranslation = withDefaultTranslation;
+		}
+
+		public static TranslatedEnum of(Enum<?> value, boolean withDefaultTranslation) {
+			return new TranslatedEnum(value, withDefaultTranslation);
+		}
 
 		/*
 		 * (non-Javadoc)

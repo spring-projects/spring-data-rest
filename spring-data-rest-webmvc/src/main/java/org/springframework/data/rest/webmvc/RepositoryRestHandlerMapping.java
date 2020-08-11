@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -300,12 +297,23 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	 * @author Oliver Gierke
 	 * @since 2.6
 	 */
-	@RequiredArgsConstructor
 	static class RepositoryCorsConfigurationAccessor {
 
-		private final @NonNull ResourceMappings mappings;
-		private final @NonNull StringValueResolver embeddedValueResolver;
-		private final @NonNull Optional<Repositories> repositories;
+		private final ResourceMappings mappings;
+		private final StringValueResolver embeddedValueResolver;
+		private final Optional<Repositories> repositories;
+
+		public RepositoryCorsConfigurationAccessor(ResourceMappings mappings, StringValueResolver embeddedValueResolver,
+				Optional<Repositories> repositories) {
+
+			Assert.notNull(mappings, "ResourceMappings must not be null!");
+			Assert.notNull(embeddedValueResolver, "StringValueResolver must not be null!");
+			Assert.notNull(repositories, "Repositories must not be null!");
+
+			this.mappings = mappings;
+			this.embeddedValueResolver = embeddedValueResolver;
+			this.repositories = repositories;
+		}
 
 		Optional<CorsConfiguration> findCorsConfiguration(String lookupPath) {
 

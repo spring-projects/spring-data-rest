@@ -15,23 +15,39 @@
  */
 package org.springframework.data.rest.webmvc.util;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import java.io.InputStream;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
+import org.springframework.util.Assert;
 
 /**
  * {@link HttpInputMessage} based on a plain {@link InputStream}, i.e. exposing no headers.
  *
  * @author Oliver Drotbohm
  */
-@RequiredArgsConstructor(staticName = "of")
 public class InputStreamHttpInputMessage implements HttpInputMessage {
 
-	private final @Getter InputStream body;
+	private final InputStream body;
+
+	private InputStreamHttpInputMessage(final InputStream body) {
+
+		Assert.notNull(body, "InputStream must not be null!");
+
+		this.body = body;
+	}
+
+	public static InputStreamHttpInputMessage of(final InputStream body) {
+		return new InputStreamHttpInputMessage(body);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.http.HttpInputMessage#getBody()
+	 */
+	public InputStream getBody() {
+		return this.body;
+	}
 
 	/*
 	 * (non-Javadoc)

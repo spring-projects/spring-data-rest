@@ -15,15 +15,12 @@
  */
 package org.springframework.data.rest.core.event;
 
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +33,7 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.annotation.*;
 import org.springframework.data.util.ProxyUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -175,18 +173,27 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		handlerMethods.put(eventType, events);
 	}
 
-	@ToString
-	@EqualsAndHashCode
-	@RequiredArgsConstructor
 	static class EventHandlerMethod implements Comparable<EventHandlerMethod> {
 
 		final Class<?> targetType;
 		final Method method;
 		final Object handler;
 
+		public EventHandlerMethod(Class<?> targetType, Method method, Object handler) {
+
+			Assert.notNull(targetType, "Target type must not be null!");
+			Assert.notNull(method, "Method must not be null!");
+			Assert.notNull(handler, "Handler must not be null!");
+
+			this.targetType = targetType;
+			this.method = method;
+			this.handler = handler;
+		}
+
 		public static EventHandlerMethod of(Class<?> targetType, Object handler, Method method) {
 
 			ReflectionUtils.makeAccessible(method);
+
 			return new EventHandlerMethod(targetType, method, handler);
 		}
 
@@ -197,6 +204,47 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		@Override
 		public int compareTo(EventHandlerMethod o) {
 			return AnnotationAwareOrderComparator.INSTANCE.compare(this.method, o.method);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(final java.lang.Object o) {
+
+			if (o == this) {
+				return true;
+			}
+
+			if (!(o instanceof EventHandlerMethod)) {
+				return false;
+			}
+
+			EventHandlerMethod other = (AnnotatedEventHandlerInvoker.EventHandlerMethod) o;
+
+			return Objects.equals(targetType, other.targetType) //
+					&& Objects.equals(method, other.method) //
+					&& Objects.equals(handler, other.handler);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(targetType, method, handler);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public java.lang.String toString() {
+			return "AnnotatedEventHandlerInvoker.EventHandlerMethod(targetType=" + this.targetType + ", method=" + this.method
+					+ ", handler=" + this.handler + ")";
 		}
 	}
 }

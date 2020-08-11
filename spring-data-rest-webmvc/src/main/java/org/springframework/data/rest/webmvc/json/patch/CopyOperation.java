@@ -15,9 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
+import org.springframework.util.Assert;
 
 /**
  * <p>
@@ -62,10 +61,16 @@ class CopyOperation extends PatchOperation {
 		return new CopyOperationBuilder(from);
 	}
 
-	@RequiredArgsConstructor
 	static class CopyOperationBuilder {
 
 		private final String from;
+
+		public CopyOperationBuilder(String from) {
+
+			Assert.hasText(from, "From must not be null!");
+
+			this.from = from;
+		}
 
 		CopyOperation to(String to) {
 			return new CopyOperation(SpelPath.untyped(to), SpelPath.untyped(from));

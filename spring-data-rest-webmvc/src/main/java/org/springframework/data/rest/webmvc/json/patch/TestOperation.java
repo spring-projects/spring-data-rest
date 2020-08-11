@@ -15,13 +15,11 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -52,10 +50,16 @@ class TestOperation extends PatchOperation {
 		return new TestOperationBuilder(path);
 	}
 
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	static class TestOperationBuilder {
 
 		private final String path;
+
+		private TestOperationBuilder(String path) {
+
+			Assert.hasText(path, "Path must not be null or empty!");
+
+			this.path = path;
+		}
 
 		public TestOperation hasValue(Object value) {
 			return new TestOperation(SpelPath.untyped(path), value);

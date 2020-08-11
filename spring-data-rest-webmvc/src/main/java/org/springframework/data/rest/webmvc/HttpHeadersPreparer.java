@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
@@ -39,14 +36,18 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @soundtrack Ron Spielman Trio - Matchstick
  */
-@RequiredArgsConstructor
 public class HttpHeadersPreparer {
 
-	private final @NonNull AuditableBeanWrapperFactory auditableBeanWrapperFactory;
+	private final AuditableBeanWrapperFactory auditableBeanWrapperFactory;
 	private final ConfigurableConversionService conversionService = new DefaultConversionService();
 
-	{
+	public HttpHeadersPreparer(AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
+
+		Assert.notNull(auditableBeanWrapperFactory, "AuditableBeanWrapperFactory must not be null!");
+
 		Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
+
+		this.auditableBeanWrapperFactory = auditableBeanWrapperFactory;
 	}
 
 	/**

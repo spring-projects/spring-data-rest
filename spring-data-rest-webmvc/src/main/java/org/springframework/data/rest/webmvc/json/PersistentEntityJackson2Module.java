@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -231,13 +228,26 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 *
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	static class AssociationOmittingSerializerModifier extends BeanSerializerModifier {
 
-		private final @NonNull PersistentEntities entities;
-		private final @NonNull Associations associations;
-		private final @NonNull NestedEntitySerializer nestedEntitySerializer;
-		private final @NonNull LookupObjectSerializer lookupObjectSerializer;
+		private final PersistentEntities entities;
+		private final Associations associations;
+		private final NestedEntitySerializer nestedEntitySerializer;
+		private final LookupObjectSerializer lookupObjectSerializer;
+
+		public AssociationOmittingSerializerModifier(PersistentEntities entities, Associations associations,
+				NestedEntitySerializer nestedEntitySerializer, LookupObjectSerializer lookupObjectSerializer) {
+
+			Assert.notNull(entities, "PersistentEntities must not be null!");
+			Assert.notNull(associations, "Associations must not be null!");
+			Assert.notNull(nestedEntitySerializer, "NestedEntitySerializer must not be null!");
+			Assert.notNull(lookupObjectSerializer, "LookupObjectSerializer must not be null!");
+
+			this.entities = entities;
+			this.associations = associations;
+			this.nestedEntitySerializer = nestedEntitySerializer;
+			this.lookupObjectSerializer = lookupObjectSerializer;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -403,13 +413,27 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 *
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	public static class AssociationUriResolvingDeserializerModifier extends BeanDeserializerModifier {
 
-		private final @NonNull PersistentEntities entities;
-		private final @NonNull Associations associationLinks;
-		private final @NonNull UriToEntityConverter converter;
-		private final @NonNull RepositoryInvokerFactory factory;
+		private final PersistentEntities entities;
+		private final Associations associationLinks;
+		private final UriToEntityConverter converter;
+		private final RepositoryInvokerFactory factory;
+
+		@java.lang.SuppressWarnings("all")
+		public AssociationUriResolvingDeserializerModifier(PersistentEntities entities, Associations associations,
+				UriToEntityConverter converter, RepositoryInvokerFactory factory) {
+
+			Assert.notNull(entities, "PersistentEntities must not be null!");
+			Assert.notNull(associations, "Associations must not be null!");
+			Assert.notNull(converter, "UriToEntityConverter must not be null!");
+			Assert.notNull(factory, "RepositoryInvokerFactory must not be null!");
+
+			this.entities = entities;
+			this.associationLinks = associations;
+			this.converter = converter;
+			this.factory = factory;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -846,11 +870,18 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 	}
 
-	@RequiredArgsConstructor
 	public static class LookupObjectSerializer extends ToStringSerializer {
 
 		private static final long serialVersionUID = -3033458643050330913L;
+
 		private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
+
+		public LookupObjectSerializer(PluginRegistry<EntityLookup<?>, Class<?>> lookups) {
+
+			Assert.notNull(lookups, "EntityLookups must not be null!");
+
+			this.lookups = lookups;
+		}
 
 		/*
 		 * (non-Javadoc)

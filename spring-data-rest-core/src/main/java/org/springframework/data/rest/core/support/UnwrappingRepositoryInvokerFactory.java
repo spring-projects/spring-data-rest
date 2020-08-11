@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.core.support;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -75,11 +72,19 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 	 *
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
 	private static class UnwrappingRepositoryInvoker implements RepositoryInvoker {
 
-		private final @NonNull RepositoryInvoker delegate;
-		private final @NonNull Optional<EntityLookup<?>> lookup;
+		private final RepositoryInvoker delegate;
+		private final Optional<EntityLookup<?>> lookup;
+
+		public UnwrappingRepositoryInvoker(RepositoryInvoker delegate, Optional<EntityLookup<?>> lookup) {
+
+			Assert.notNull(delegate, "Delegate RepositoryInvoker must not be null!");
+			Assert.notNull(lookup, "EntityLookup must not be null!");
+
+			this.delegate = delegate;
+			this.lookup = lookup;
+		}
 
 		/*
 		 * (non-Javadoc)

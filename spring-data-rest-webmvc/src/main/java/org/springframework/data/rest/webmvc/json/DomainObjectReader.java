@@ -15,10 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,11 +62,19 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Thomas Mrozinski
  * @since 2.2
  */
-@RequiredArgsConstructor
 public class DomainObjectReader {
 
-	private final @NonNull PersistentEntities entities;
-	private final @NonNull Associations associationLinks;
+	private final PersistentEntities entities;
+	private final Associations associationLinks;
+
+	public DomainObjectReader(PersistentEntities entities, Associations associationLinks) {
+
+		Assert.notNull(entities, "PersistentEntities must not be null!");
+		Assert.notNull(associationLinks, "Associations must not be null!");
+
+		this.entities = entities;
+		this.associationLinks = associationLinks;
+	}
 
 	/**
 	 * Reads the given input stream into an {@link ObjectNode} and applies that to the given existing instance.
@@ -572,11 +576,19 @@ public class DomainObjectReader {
 	 *
 	 * @author Oliver Gierke
 	 */
-	@RequiredArgsConstructor
-	private final class LinkedAssociationSkippingAssociationHandler implements SimpleAssociationHandler {
+	private static final class LinkedAssociationSkippingAssociationHandler implements SimpleAssociationHandler {
 
-		private final @NonNull Associations associations;
-		private final @NonNull SimplePropertyHandler delegate;
+		private final Associations associations;
+		private final SimplePropertyHandler delegate;
+
+		public LinkedAssociationSkippingAssociationHandler(Associations associations, SimplePropertyHandler delegate) {
+
+			Assert.notNull(associations, "Associations must not be null!");
+			Assert.notNull(delegate, "Delegate SimplePropertyHandler must not be null!");
+
+			this.associations = associations;
+			this.delegate = delegate;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -585,7 +597,7 @@ public class DomainObjectReader {
 		@Override
 		public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
 
-			if (associationLinks.isLinkableAssociation(association)) {
+			if (associations.isLinkableAssociation(association)) {
 				return;
 			}
 
@@ -600,7 +612,7 @@ public class DomainObjectReader {
 	 */
 	private class MergingPropertyHandler implements SimplePropertyHandler {
 
-		private final @Getter MappedProperties properties;
+		private final MappedProperties properties;
 		private final PersistentPropertyAccessor<?> targetAccessor;
 		private final PersistentPropertyAccessor<?> sourceAccessor;
 		private final ObjectMapper mapper;
@@ -626,6 +638,10 @@ public class DomainObjectReader {
 					new DefaultConversionService());
 			this.sourceAccessor = entity.getPropertyAccessor(source);
 			this.mapper = mapper;
+		}
+
+		public MappedProperties getProperties() {
+			return this.properties;
 		}
 
 		/*

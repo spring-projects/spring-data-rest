@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -117,11 +114,19 @@ class WrappedProperties {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	static class JacksonUnwrappedPropertiesResolver {
 
-		private final @NonNull PersistentEntities persistentEntities;
-		private final @NonNull ObjectMapper mapper;
+		private final PersistentEntities entities;
+		private final ObjectMapper mapper;
+
+		public JacksonUnwrappedPropertiesResolver(PersistentEntities entities, ObjectMapper mapper) {
+
+			Assert.notNull(entities, "PersistentEntities must not be null!");
+			Assert.notNull(mapper, "ObjectMapper must not be null!");
+
+			this.entities = entities;
+			this.mapper = mapper;
+		}
 
 		/**
 		 * Resolve {@code @JsonUnwrapped} field names to a list of involved {@link PersistentProperty properties}.
@@ -139,7 +144,7 @@ class WrappedProperties {
 		private Map<String, List<PersistentProperty<?>>> findUnwrappedPropertyPaths(Class<?> type,
 				NameTransformer nameTransformer, boolean considerRegularProperties) {
 
-			return persistentEntities.getPersistentEntity(type).map(entity -> {
+			return entities.getPersistentEntity(type).map(entity -> {
 
 				Map<String, List<PersistentProperty<?>>> mapping = new HashMap<String, List<PersistentProperty<?>>>();
 
