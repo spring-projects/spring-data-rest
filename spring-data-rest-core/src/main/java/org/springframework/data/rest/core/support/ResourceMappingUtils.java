@@ -15,8 +15,8 @@
  */
 package org.springframework.data.rest.core.support;
 
-import static org.springframework.data.rest.core.support.ResourceStringUtils.*;
 import static org.springframework.core.annotation.AnnotationUtils.*;
+import static org.springframework.data.rest.core.support.ResourceStringUtils.*;
 import static org.springframework.util.StringUtils.*;
 
 import java.lang.reflect.Method;
@@ -34,6 +34,7 @@ import org.springframework.data.rest.core.config.ResourceMapping;
  * @author Jon Brisbin
  * @author Florent Biville
  * @author Oliver Gierke
+ * @deprecated for removal in 3.5
  */
 @Deprecated
 public abstract class ResourceMappingUtils {
@@ -77,7 +78,7 @@ public abstract class ResourceMappingUtils {
 		ResourceMapping propertyMapping = entityMapping.getResourceMappingFor(persistentProperty.getName());
 
 		return String.format("%s.%s.%s", repoMapping.getRel(), entityMapping.getRel(),
-				(null != propertyMapping ? propertyMapping.getRel() : persistentProperty.getName()));
+				null != propertyMapping ? propertyMapping.getRel() : persistentProperty.getName());
 	}
 
 	public static String findPath(Class<?> type) {
@@ -121,7 +122,7 @@ public abstract class ResourceMappingUtils {
 			return null;
 		}
 		Class<?> repoType = repoInfo.getRepositoryInterface();
-		ResourceMapping mapping = (null != config ? config.getResourceMappingForRepository(repoType) : null);
+		ResourceMapping mapping = null != config ? config.getResourceMappingForRepository(repoType) : null;
 		return merge(repoType, mapping);
 	}
 
@@ -131,16 +132,16 @@ public abstract class ResourceMappingUtils {
 			return null;
 		}
 		Class<?> domainType = persistentEntity.getType();
-		ResourceMapping mapping = (null != config ? config.getResourceMappingForDomainType(domainType) : null);
+		ResourceMapping mapping = null != config ? config.getResourceMappingForDomainType(domainType) : null;
 		return merge(domainType, mapping);
 	}
 
 	public static ResourceMapping merge(Method method, ResourceMapping mapping) {
 		ResourceMapping defaultMapping = new ResourceMapping(findRel(method), findPath(method), findExported(method));
 		if (null != mapping) {
-			return new ResourceMapping((null != mapping.getRel() ? mapping.getRel() : defaultMapping.getRel()),
-					(null != mapping.getPath() ? mapping.getPath() : defaultMapping.getPath()),
-					(mapping.isExported() != defaultMapping.isExported() ? mapping.isExported() : defaultMapping.isExported()));
+			return new ResourceMapping(null != mapping.getRel() ? mapping.getRel() : defaultMapping.getRel(),
+					null != mapping.getPath() ? mapping.getPath() : defaultMapping.getPath(),
+					mapping.isExported() != defaultMapping.isExported() ? mapping.isExported() : defaultMapping.isExported());
 		}
 		return defaultMapping;
 	}
@@ -148,10 +149,10 @@ public abstract class ResourceMappingUtils {
 	public static ResourceMapping merge(Class<?> type, ResourceMapping mapping) {
 		ResourceMapping defaultMapping = new ResourceMapping(findRel(type), findPath(type), findExported(type));
 		if (null != mapping) {
-			return new ResourceMapping((null != mapping.getRel() ? mapping.getRel() : defaultMapping.getRel()),
-					(null != mapping.getPath() ? mapping.getPath() : defaultMapping.getPath()),
-					(mapping.isExported() != defaultMapping.isExported() ? mapping.isExported() : defaultMapping.isExported()))
-					.addResourceMappings(mapping.getResourceMappings());
+			return new ResourceMapping(null != mapping.getRel() ? mapping.getRel() : defaultMapping.getRel(),
+					null != mapping.getPath() ? mapping.getPath() : defaultMapping.getPath(),
+					mapping.isExported() != defaultMapping.isExported() ? mapping.isExported() : defaultMapping.isExported())
+							.addResourceMappings(mapping.getResourceMappings());
 		}
 		return defaultMapping;
 	}

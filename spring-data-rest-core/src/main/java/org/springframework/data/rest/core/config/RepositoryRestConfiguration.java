@@ -378,7 +378,9 @@ public class RepositoryRestConfiguration {
 	 *
 	 * @param domainType The {@link Class} of the domain type to configure a mapping for.
 	 * @return A new {@link ResourceMapping} for configuring how a domain type is mapped.
+	 * @deprecated for removal in 3.5
 	 */
+	@Deprecated
 	public ResourceMapping setResourceMappingForDomainType(Class<?> domainType) {
 		return domainMappings.setResourceMappingFor(domainType);
 	}
@@ -388,7 +390,9 @@ public class RepositoryRestConfiguration {
 	 *
 	 * @param domainType The {@link Class} of the domain type.
 	 * @return A {@link ResourceMapping} for that domain type or {@literal null} if none exists.
+	 * @deprecated for removal in 3.5
 	 */
+	@Deprecated
 	public ResourceMapping getResourceMappingForDomainType(Class<?> domainType) {
 		return domainMappings.getResourceMappingFor(domainType);
 	}
@@ -398,7 +402,9 @@ public class RepositoryRestConfiguration {
 	 *
 	 * @param domainType The domain type to find a {@link ResourceMapping} for.
 	 * @return {@literal true} if a {@link ResourceMapping} exists for this domain class, {@literal false} otherwise.
+	 * @deprecated for removal in 3.5
 	 */
+	@Deprecated
 	public boolean hasResourceMappingForDomainType(Class<?> domainType) {
 		return domainMappings.hasResourceMappingFor(domainType);
 	}
@@ -407,7 +413,9 @@ public class RepositoryRestConfiguration {
 	 * Get the {@link ResourceMappingConfiguration} that is currently configured.
 	 *
 	 * @return
+	 * @deprecated for removal in 3.5
 	 */
+	@Deprecated
 	public ResourceMappingConfiguration getDomainTypesResourceMappingConfiguration() {
 		return domainMappings;
 	}
@@ -417,7 +425,9 @@ public class RepositoryRestConfiguration {
 	 *
 	 * @param repositoryInterface The {@link Class} of the repository interface to configure a mapping for.
 	 * @return A new {@link ResourceMapping} for configuring how a repository interface is mapped.
+	 * @deprecated for removal in 3.5
 	 */
+	@Deprecated
 	public ResourceMapping setResourceMappingForRepository(Class<?> repositoryInterface) {
 		return repoMappings.setResourceMappingFor(repositoryInterface);
 	}
@@ -427,7 +437,9 @@ public class RepositoryRestConfiguration {
 	 *
 	 * @param repositoryInterface The {@link Class} of the repository interface.
 	 * @return A {@link ResourceMapping} for that repository interface or {@literal null} if none exists.
+	 * @deprecated for removal in 3.5
 	 */
+	@Deprecated
 	public ResourceMapping getResourceMappingForRepository(Class<?> repositoryInterface) {
 		return repoMappings.getResourceMappingFor(repositoryInterface);
 	}
@@ -437,11 +449,17 @@ public class RepositoryRestConfiguration {
 	 *
 	 * @param repositoryInterface
 	 * @return
+	 * @deprecated for removal in 3.5
 	 */
+	@Deprecated
 	public boolean hasResourceMappingForRepository(Class<?> repositoryInterface) {
 		return repoMappings.hasResourceMappingFor(repositoryInterface);
 	}
 
+	/**
+	 * @deprecated for removal in 3.5
+	 */
+	@Deprecated
 	public ResourceMapping findRepositoryMappingForPath(String path) {
 		Class<?> type = repoMappings.findTypeForPath(path);
 		if (null == type) {
