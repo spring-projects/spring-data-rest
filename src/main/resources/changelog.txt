@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.3.3.RELEASE (2020-08-12)
+---------------------------------------------
+* DATAREST-1548 - Release 3.3.3 (Neumann SR3).
+
+
 Changes in version 3.4.0-M2 (2020-08-12)
 ----------------------------------------
 * DATAREST-1553 - Remove deprecations introduced prior to 3.4.
@@ -1606,6 +1611,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
