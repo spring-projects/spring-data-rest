@@ -1,6 +1,17 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.4.0-M2 (2020-08-12)
+----------------------------------------
+* DATAREST-1553 - Remove deprecations introduced prior to 3.4.
+* DATAREST-1552 - Remove deprecated HAL Browser module.
+* DATAREST-1549 - Adopt to changed MappingException thrown by PersistentEntities.
+* DATAREST-1543 - Deprecate RepositoryRestConfiguration.getCorsRegistry().
+* DATAREST-1541 - Switch from testing against Spring Framework 5.2 snapshots to 5.3 snapshots.
+* DATAREST-1540 - Simplify HandlerMapping setup for Spring 5.3.
+* DATAREST-1539 - Release 3.4 M2 (2020.0.0).
+
+
 Changes in version 3.3.2.RELEASE (2020-07-22)
 ---------------------------------------------
 * DATAREST-1537 - Upgrade security tests to Spring Security 5.3.3.
@@ -1595,6 +1606,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
