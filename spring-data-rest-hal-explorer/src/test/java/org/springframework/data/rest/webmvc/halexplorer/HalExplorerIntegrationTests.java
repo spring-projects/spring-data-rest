@@ -19,18 +19,25 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.geo.GeoModule;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.mediatype.MessageResolver;
+import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,6 +47,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for {@link HalExplorer}.
@@ -61,7 +70,10 @@ public class HalExplorerIntegrationTests {
 	static class TestConfiguration extends RepositoryRestMvcConfiguration {
 
 		public TestConfiguration(ApplicationContext context, ObjectFactory<ConversionService> conversionService) {
-			super(context, conversionService);
+
+			super(context, conversionService, Optional.empty(), Optional.empty(), Optional.empty(),
+					new ObjectMapperProvider(), new RepresentationModelProcessorInvokerProvider(), MessageResolver.DEFAULTS_ONLY,
+					new GeoModule());
 		}
 
 		@Bean
@@ -118,5 +130,52 @@ public class HalExplorerIntegrationTests {
 		mvc.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON, MediaType.ALL)).//
 				andExpect(status().isOk()).//
 				andExpect(header().string(HttpHeaders.CONTENT_TYPE, startsWith(MediaType.APPLICATION_JSON_VALUE)));
+	}
+
+	private static class ObjectMapperProvider implements ObjectProvider<ObjectMapper> {
+
+		@Override
+		public ObjectMapper getObject(Object... args) throws BeansException {
+			return null;
+		}
+
+		@Override
+		public ObjectMapper getIfAvailable() throws BeansException {
+			return null;
+		}
+
+		@Override
+		public ObjectMapper getIfUnique() throws BeansException {
+			return null;
+		}
+
+		@Override
+		public ObjectMapper getObject() throws BeansException {
+			return null;
+		}
+	}
+
+	private static class RepresentationModelProcessorInvokerProvider
+			implements ObjectProvider<RepresentationModelProcessorInvoker> {
+
+		@Override
+		public RepresentationModelProcessorInvoker getObject(Object... args) throws BeansException {
+			return null;
+		}
+
+		@Override
+		public RepresentationModelProcessorInvoker getIfAvailable() throws BeansException {
+			return null;
+		}
+
+		@Override
+		public RepresentationModelProcessorInvoker getIfUnique() throws BeansException {
+			return null;
+		}
+
+		@Override
+		public RepresentationModelProcessorInvoker getObject() throws BeansException {
+			return null;
+		}
 	}
 }
