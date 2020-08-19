@@ -44,7 +44,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	 * Creates a new {@link ProjectionDefinitionConfiguration}.
 	 */
 	public ProjectionDefinitionConfiguration() {
-		this.projectionDefinitions = new HashSet<ProjectionDefinition>();
+		this.projectionDefinitions = new HashSet<>();
 	}
 
 	/*
