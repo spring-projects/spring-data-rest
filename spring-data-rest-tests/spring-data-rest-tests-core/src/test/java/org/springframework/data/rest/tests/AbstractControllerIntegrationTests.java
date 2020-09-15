@@ -19,25 +19,25 @@ import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.ConversionService;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
-import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
+import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.Projector;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -59,19 +59,16 @@ public abstract class AbstractControllerIntegrationTests {
 	public static final Path BASE = new Path("http://localhost");
 
 	@Configuration
-	public static class TestConfiguration extends RepositoryRestMvcConfiguration {
-
-		public TestConfiguration(ApplicationContext context, ObjectFactory<ConversionService> conversionService) {
-			super(context, conversionService);
-		}
+	@Import(RepositoryRestMvcConfiguration.class)
+	public static class TestConfiguration {
 
 		@Bean
-		public PersistentEntityResourceAssembler persistentEntityResourceAssembler() {
+		public PersistentEntityResourceAssembler persistentEntityResourceAssembler(PersistentEntities entities,
+				EntityLinks entityLinks, Associations associations) {
 
-			SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks(),
-					Collections.<EntityLookup<?>> emptyList());
+			SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(entities, entityLinks, Collections.emptyList());
 
-			return new PersistentEntityResourceAssembler(persistentEntities(), StubProjector.INSTANCE, associationLinks(),
+			return new PersistentEntityResourceAssembler(entities, StubProjector.INSTANCE, associations,
 					selfLinkProvider);
 		}
 	}
