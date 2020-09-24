@@ -32,8 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
@@ -144,13 +142,13 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
  * @author Jon Brisbin
  * @author Greg Turnquist
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 @Configuration(proxyBeanMethods = false)
 @EnableHypermediaSupport(type = HypermediaType.HAL)
-@ComponentScan(basePackageClasses = RepositoryRestController.class,
-		includeFilters = @Filter(BasePathAwareController.class), useDefaultFilters = false)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
-@Import({ SpringDataJacksonConfiguration.class, EnableSpringDataWebSupport.QuerydslActivator.class })
+@Import({ RestControllerImportSelector.class, SpringDataJacksonConfiguration.class,
+		EnableSpringDataWebSupport.QuerydslActivator.class })
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration
 		implements BeanClassLoaderAware {
 
