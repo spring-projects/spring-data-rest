@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.halexplorer;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.StaticResourceProvider;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -23,9 +25,11 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
  * {@link StaticResourceProvider} to expose the HAL Browser WebJar content via a static resource route.
  *
  * @author Oliver Drotbohm
+ * @author Christoph Strobl
  * @since 3.2
  * @soundtrack Tedeschi Trucks Band - Signs, High Times (Signs)
  */
+@Configuration(proxyBeanMethods = false)
 class HalExplorerConfiguration implements StaticResourceProvider {
 
 	/*
@@ -38,5 +42,18 @@ class HalExplorerConfiguration implements StaticResourceProvider {
 		String rootLocation = "classpath:META-INF/spring-data-rest/hal-explorer/";
 
 		registry.addResourceHandler(basePath.concat("/**")).addResourceLocations(rootLocation);
+	}
+
+	/**
+	 * The controller that exposes the {@link HalExplorer}.
+	 *
+	 * @return never {@literal null}.
+	 * @since 3.4
+	 */
+	@Bean
+	HalExplorer halExplorer() {
+
+		// TODO: maybe register this one directly on mvc via WebMvcConfigurer.addRedirectVieController()
+		return new HalExplorer();
 	}
 }
