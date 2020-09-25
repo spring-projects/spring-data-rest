@@ -61,7 +61,7 @@ public class RestControllerConfiguration {
 	 * @return never {@literal null}.
 	 */
 	@Bean
-	protected RepositoryController repositoryController(EntityLinks entityLinks) {
+	RepositoryController repositoryController(EntityLinks entityLinks) {
 		return new RepositoryController(resourcesAssembler, repositories, entityLinks, resourceMappings);
 	}
 
@@ -74,7 +74,7 @@ public class RestControllerConfiguration {
 	 * @return never {@literal null}.
 	 */
 	@Bean
-	protected RepositoryEntityController repositoryEntityController(RepositoryEntityLinks entityLinks,
+	RepositoryEntityController repositoryEntityController(RepositoryEntityLinks entityLinks,
 			HttpHeadersPreparer headersPreparer) {
 		return new RepositoryEntityController(repositories, restConfiguration, entityLinks, resourcesAssembler,
 				headersPreparer);
@@ -87,7 +87,7 @@ public class RestControllerConfiguration {
 	 * @return never {@literal null}.
 	 */
 	@Bean
-	protected RepositoryPropertyReferenceController repositoryPropertyReferenceController(
+	RepositoryPropertyReferenceController repositoryPropertyReferenceController(
 			RepositoryInvokerFactory repositoryInvokerFactory) {
 		return new RepositoryPropertyReferenceController(repositories, repositoryInvokerFactory, resourcesAssembler);
 	}
@@ -101,7 +101,7 @@ public class RestControllerConfiguration {
 	 * @return never {@literal null}.
 	 */
 	@Bean
-	protected RepositorySearchController repositorySearchController(RepositoryEntityLinks entityLinks,
+	RepositorySearchController repositorySearchController(RepositoryEntityLinks entityLinks,
 			HttpHeadersPreparer headersPreparer) {
 		return new RepositorySearchController(resourcesAssembler, entityLinks, resourceMappings, headersPreparer);
 	}
@@ -113,7 +113,7 @@ public class RestControllerConfiguration {
 	 * @return never {@literal null}.
 	 */
 	@Bean
-	protected RepositorySchemaController repositorySchemaController(
+	RepositorySchemaController repositorySchemaController(
 			PersistentEntityToJsonSchemaConverter jsonSchemaConverter) {
 		return new RepositorySchemaController(jsonSchemaConverter);
 	}
@@ -125,7 +125,7 @@ public class RestControllerConfiguration {
 	 * @return never {@literal null}.
 	 */
 	@Bean
-	protected AlpsController alpsController() {
+	AlpsController alpsController() {
 		return new AlpsController(restConfiguration);
 	}
 
@@ -135,7 +135,7 @@ public class RestControllerConfiguration {
 	 * @return never {@literal null}.
 	 */
 	@Bean
-	protected ProfileController profileController() {
+	ProfileController profileController() {
 		return new ProfileController(restConfiguration, resourceMappings, repositories);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 original author or authors.
+ * Copyright 2016-2020 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
@@ -46,7 +47,23 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @ContextConfiguration
 public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 
+	@Configuration
 	static class CorsConfig extends JpaRepositoryConfig {
+
+		@Bean
+		AuthorsPdfController authorsPdfController() {
+			return new AuthorsPdfController();
+		}
+
+		@Bean
+		BooksPdfController booksPdfController() {
+			return new BooksPdfController();
+		}
+
+		@Bean
+		BooksXmlController booksXmlController() {
+			return new BooksXmlController();
+		}
 
 		@Bean
 		RepositoryRestConfigurer repositoryRestConfigurer() {
