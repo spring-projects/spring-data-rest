@@ -17,12 +17,14 @@ package org.springframework.data.rest.webmvc.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import net.minidev.json.JSONArray;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -30,12 +32,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import net.minidev.json.JSONArray;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.tests.CommonWebTests;
+import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig.BooksHtmlController;
+import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig.OrdersJsonController;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
@@ -63,7 +68,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Ľubomír Varga
  */
 @Transactional
-@ContextConfiguration(classes = JpaRepositoryConfig.class)
+@ContextConfiguration(classes = JpaRepositoryConfig.class, initializers = JpaWebTests.JpaContextInitializer.class)
 public class JpaWebTests extends CommonWebTests {
 
 	private static final MediaType TEXT_URI_LIST = MediaType.valueOf("text/uri-list");
@@ -74,6 +79,17 @@ public class JpaWebTests extends CommonWebTests {
 	@Autowired LinkRelationProvider relProvider;
 
 	ObjectMapper mapper = new ObjectMapper();
+
+	static class JpaContextInitializer implements ApplicationContextInitializer<GenericApplicationContext> {
+
+		@Override
+		public void initialize(GenericApplicationContext ctx) {
+
+			ctx.registerBean(AuthorsController.class);
+			ctx.registerBean(BooksHtmlController.class);
+			ctx.registerBean(OrdersJsonController.class);
+		}
+	}
 
 	/*
 	 * (non-Javadoc)

@@ -147,7 +147,8 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 @Configuration(proxyBeanMethods = false)
 @EnableHypermediaSupport(type = HypermediaType.HAL)
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
-@Import({ RestControllerImportSelector.class, SpringDataJacksonConfiguration.class,
+@Import({ RestControllerImportSelector.class, //
+		SpringDataJacksonConfiguration.class, //
 		EnableSpringDataWebSupport.QuerydslActivator.class })
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration
 		implements BeanClassLoaderAware {

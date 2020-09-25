@@ -45,15 +45,14 @@ class HalExplorerConfiguration implements StaticResourceProvider {
 	}
 
 	/**
-	 * The controller that exposes the {@link HalExplorer}.
+	 * The controller that exposes the {@link HalExplorer}. TODO: Maybe register this one directly on mvc via
+	 * WebMvcConfigurer.addViewCntroller(…)?
 	 *
 	 * @return never {@literal null}.
 	 * @since 3.4
 	 */
 	@Bean
 	HalExplorer halExplorer() {
-
-		// TODO: maybe register this one directly on mvc via WebMvcConfigurer.addRedirectVieController()
 		return new HalExplorer();
 	}
 }

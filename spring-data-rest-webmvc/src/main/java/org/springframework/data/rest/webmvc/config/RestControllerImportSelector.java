@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.rest.webmvc.RestControllerConfiguration;
@@ -25,9 +28,12 @@ import org.springframework.util.ClassUtils;
  * present.
  *
  * @author Christoph Strobl
+ * @author Oliver Drotbohm
  * @since 3.4
  */
 class RestControllerImportSelector implements ImportSelector {
+
+	private static final String HAL_EXPLORER_CONFIGURATION = "org.springframework.data.rest.webmvc.halexplorer.HalExplorerConfiguration";
 
 	/*
 	 * (non-Javadoc)
@@ -36,13 +42,13 @@ class RestControllerImportSelector implements ImportSelector {
 	@Override
 	public String[] selectImports(AnnotationMetadata importingClassMetadata) {
 
-		if (ClassUtils.isPresent("org.springframework.data.rest.webmvc.halexplorer.HalExplorerConfiguration",
-				importingClassMetadata.getClass().getClassLoader())) {
+		List<String> configurations = new ArrayList<>();
+		configurations.add(RestControllerConfiguration.class.getName());
 
-			return new String[] { RestControllerConfiguration.class.getName(),
-					"org.springframework.data.rest.webmvc.halexplorer.HalExplorerConfiguration" };
+		if (ClassUtils.isPresent(HAL_EXPLORER_CONFIGURATION, importingClassMetadata.getClass().getClassLoader())) {
+			configurations.add(HAL_EXPLORER_CONFIGURATION);
 		}
 
-		return new String[] { RestControllerConfiguration.class.getName() };
+		return configurations.toArray(new String[configurations.size()]);
 	}
 }
