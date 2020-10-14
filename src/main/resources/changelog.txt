@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.4.0-RC2 (2020-10-14)
+-----------------------------------------
+* DATAREST-1567 - Remove ComponentScan from RepositoryRestMvcConfiguration.
+* DATAREST-1562 - Release 3.4 RC2 (2020.0.0).
+
+
 Changes in version 3.4.0-RC1 (2020-09-16)
 -----------------------------------------
 * DATAREST-1557 - Upgrade to HAL Explorer 0.13.
@@ -1638,6 +1644,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
