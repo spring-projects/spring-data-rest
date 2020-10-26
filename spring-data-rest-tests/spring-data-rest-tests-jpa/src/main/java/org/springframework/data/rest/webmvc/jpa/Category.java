@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import lombok.Data;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -23,41 +25,18 @@ import javax.persistence.Version;
 /**
  * @author Dario Seidl
  */
+@Data
 @Entity
-public class Category {
+class Category {
 
 	public @Id @GeneratedValue Long id;
 	public @Version Long version = 0L;
 	public String name;
 
-	public Category() {
-	}
+	@SuppressWarnings("unused")
+	private Category() {}
 
 	public Category(String name) {
-		this.name = name;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public Long getVersion() {
-		return version;
-	}
-
-	public void setVersion(Long version) {
-		this.version = version;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
 		this.name = name;
 	}
 }

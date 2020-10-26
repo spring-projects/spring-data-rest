@@ -21,7 +21,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 /**
  * @author Dario Seidl
  */
-@RepositoryRestResource(collectionResourceRel = "categories", path = "categories")
-public interface CategoryRepository extends CrudRepository<Category, Long> {
+@RepositoryRestResource
+interface CategoryRepository extends CrudRepository<Category, Long> {
 
 }

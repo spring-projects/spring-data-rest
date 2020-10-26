@@ -61,7 +61,7 @@ public class HttpHeadersPreparer {
 	public HttpHeaders prepareHeaders(Optional<PersistentEntityResource> resource) {
 
 		return resource//
-				.map(it -> prepareHeaders(it.getPersistentEntity(), it.getTargetEntity()))//
+				.map(it -> prepareHeaders(it.getPersistentEntity(), it.getTarget()))//
 				.orElseGet(() -> new HttpHeaders());
 	}
 

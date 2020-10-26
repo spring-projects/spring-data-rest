@@ -58,6 +58,7 @@ import org.springframework.web.util.UriTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ReadContext;
 
 /**
  * Web integration tests specific to JPA.
@@ -255,48 +256,6 @@ public class JpaWebTests extends CommonWebTests {
 
 		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), equalTo("Frodo"));
 		assertNull(JsonPath.read(frodo.getContentAsString(), "$.lastName"));
-	}
-
-	@Test // DATAREST-1213
-	public void createThenPatchWithProjection() throws Exception {
-
-		Link categoriesLink = client.discoverUnique(LinkRelation.of("categories"));
-
-		MockHttpServletResponse test = postAndGet(categoriesLink, "{ \"name\" : \"test\" }",
-			MediaType.APPLICATION_JSON);
-
-		Link testLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, test);
-
-		assertThat((String) JsonPath.read(test.getContentAsString(), "$.name")).isEqualTo("test");
-
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(testLink.getHref());
-		String uri = builder.queryParam("projection", "open").build().toUriString();
-
-		MockHttpServletResponse patched = patchAndGet(new Link(uri), "{ \"name\" : \"patched\" }", MediaType.APPLICATION_JSON);
-
-		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.name")).isEqualTo("patched");
-		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.calculatedName")).isEqualTo("calculated-patched");
-	}
-
-	@Test // DATAREST-1213
-	public void createThenPutWithProjection() throws Exception {
-
-		Link categoriesLink = client.discoverUnique(LinkRelation.of("categories"));
-
-		MockHttpServletResponse test = postAndGet(categoriesLink, "{ \"name\" : \"test\" }",
-			MediaType.APPLICATION_JSON);
-
-		Link testLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, test);
-
-		assertThat((String) JsonPath.read(test.getContentAsString(), "$.name")).isEqualTo("test");
-
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(testLink.getHref());
-		String uri = builder.queryParam("projection", "open").build().toUriString();
-
-		MockHttpServletResponse patched = putAndGet(new Link(uri), "{ \"name\" : \"put\" }", MediaType.APPLICATION_JSON);
-
-		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.name")).isEqualTo("put");
-		assertThat((String) JsonPath.read(patched.getContentAsString(), "$.calculatedName")).isEqualTo("calculated-put");
 	}
 
 	@Test
@@ -746,6 +705,32 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 	}
 
+	@Test // DATAREST-1213
+	public void createThenPatchWithProjection() throws Exception {
+
+		Link link = createCategory();
+		String payload = "{ \"name\" : \"patched\" }";
+
+		MockHttpServletResponse patched = patchAndGet(link, payload, MediaType.APPLICATION_JSON);
+		ReadContext content = JsonPath.parse(patched.getContentAsString());
+
+		assertThat(content.read("$.name", String.class)).isEqualTo("patched");
+		assertThat(content.read("$.calculatedName", String.class)).isEqualTo("calculated-patched");
+	}
+
+	@Test // DATAREST-1213
+	public void createThenPutWithProjection() throws Exception {
+
+		Link link = createCategory();
+		String payload = "{ \"name\" : \"put\" }";
+
+		MockHttpServletResponse patched = putAndGet(link, payload, MediaType.APPLICATION_JSON);
+		ReadContext content = JsonPath.parse(patched.getContentAsString());
+
+		assertThat(content.read("$.name", String.class)).isEqualTo("put");
+		assertThat(content.read("$.calculatedName", String.class)).isEqualTo("calculated-put");
+	}
+
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
 
 		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
@@ -829,6 +814,21 @@ public class JpaWebTests extends CommonWebTests {
 		client.follow(selfLink).//
 				andExpect(status().isOk()).//
 				andExpect(jsonPath("$._links.siblings", is(notNullValue())));
+	}
+
+	private Link createCategory() throws Exception {
+
+		Link categoriesLink = client.discoverUnique(LinkRelation.of("categories"));
+
+		MockHttpServletResponse test = postAndGet(categoriesLink, "{ \"name\" : \"test\" }",
+				MediaType.APPLICATION_JSON);
+
+		Link testLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, test);
+
+		assertThat((String) JsonPath.read(test.getContentAsString(), "$.name")).isEqualTo("test");
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(testLink.getHref());
+		return Link.of(builder.queryParam("projection", "open").build().toUriString());
 	}
 
 	private static String toUriList(Link... links) {
