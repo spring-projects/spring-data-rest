@@ -90,17 +90,19 @@ public class PersistentEntityResource extends EntityModel<Object> {
 	}
 
 	/**
-	 * Returns the underlying instance. If the instance is a dynamic JDK proxy, the proxy target is returned.
+	 * Returns the underlying instance. If the instance is a {@link TargetAware}, the {@link TargetAware}'s target is
+	 * returned.
 	 *
 	 * @return
+	 * @see #getContent()
 	 */
-	public Object getTargetEntity() {
+	public Object getTarget() {
+
 		Object content = getContent();
-		if (content instanceof TargetAware) {
-			return ((TargetAware) content).getTarget();
-		} else {
-			return content;
-		}
+
+		return content instanceof TargetAware
+				? ((TargetAware) content).getTarget()
+				: content;
 	}
 
 	/**
@@ -109,7 +111,7 @@ public class PersistentEntityResource extends EntityModel<Object> {
 	 * @return
 	 */
 	public PersistentPropertyAccessor<?> getPropertyAccessor() {
-		return entity.getPropertyAccessor(getTargetEntity());
+		return entity.getPropertyAccessor(getTarget());
 	}
 
 	/**
