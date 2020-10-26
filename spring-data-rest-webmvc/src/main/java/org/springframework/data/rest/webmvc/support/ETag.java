@@ -75,7 +75,7 @@ public final class ETag {
 
 		Assert.notNull(resource, "PersistentEntityResource must not be null!");
 
-		return from(resource.getPersistentEntity(), resource.getTargetEntity());
+		return from(resource.getPersistentEntity(), resource.getTarget());
 	}
 
 	/**
