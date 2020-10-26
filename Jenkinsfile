@@ -66,10 +66,10 @@ pipeline {
 						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -U -B -Pit,java11'
 					}
 				}
-				stage("test: baseline (jdk14)") {
+				stage("test: baseline (jdk15)") {
 					agent {
 						docker {
-							image 'springci/spring-data-openjdk14-with-mongodb-4.2.0:latest'
+							image 'springci/spring-data-openjdk15-with-mongodb-4.2.0:latest'
 							label 'data'
 							args '-v $HOME:/tmp/jenkins-home'
 						}
@@ -104,10 +104,10 @@ pipeline {
 						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -U -B -Pit,spring53-next'
 					}
 				}
-				stage("test: spring53-next (jdk14)") {
+				stage("test: spring53-next (jdk15)") {
 					agent {
 						docker {
-							image 'springci/spring-data-openjdk14-with-mongodb-4.2.0:latest'
+							image 'springci/spring-data-openjdk15-with-mongodb-4.2.0:latest'
 							label 'data'
 							args '-v $HOME:/tmp/jenkins-home'
 						}
