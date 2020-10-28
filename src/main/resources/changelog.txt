@@ -1,6 +1,12 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.4.0 (2020-10-28)
+-------------------------------------
+* DATAREST-1570 - Release 3.4 GA (2020.0.0).
+* DATAREST-1213 - Patch request on an Entity with @Version/ETag fails when using a projection.
+
+
 Changes in version 3.3.5.RELEASE (2020-10-28)
 ---------------------------------------------
 * DATAREST-1561 - Release 3.3.5 (Neumann SR5).
@@ -1661,6 +1667,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
