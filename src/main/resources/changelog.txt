@@ -1,6 +1,11 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.4.1 (2020-11-11)
+-------------------------------------
+* DATAREST-1577 - Release 3.4.1 (2020.0.1).
+
+
 Changes in version 3.4.0 (2020-10-28)
 -------------------------------------
 * DATAREST-1570 - Release 3.4 GA (2020.0.0).
@@ -1667,6 +1672,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
