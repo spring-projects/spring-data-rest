@@ -28,10 +28,13 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.mapping.HttpMethods;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.data.util.ProxyUtils;
+import org.springframework.data.util.Streamable;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.util.Assert;
@@ -57,6 +60,10 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Mark Paluch
  */
 public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
+
+	public static final HttpMethods DEFAULT_ALLOWED_METHODS = HttpMethods.none()
+			.and(HttpMethod.values())
+			.butWithout(HttpMethod.TRACE);
 
 	private static final PathPatternParser PARSER = new PathPatternParser();
 	static final String EFFECTIVE_LOOKUP_PATH_ATTRIBUTE = RepositoryRestHandlerMapping.class.getName()
@@ -361,7 +368,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 				config.addAllowedOrigin(resolveCorsAnnotationValue(origin));
 			}
 
-			for (RequestMethod method : annotation.methods()) {
+			for (HttpMethod method : getAllowedMethods(annotation)) {
 				config.addAllowedMethod(method.name());
 			}
 
@@ -391,6 +398,25 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 		private String resolveCorsAnnotationValue(String value) {
 			return this.embeddedValueResolver.resolveStringValue(value);
+		}
+
+		/**
+		 * Returns the {@link HttpMethods} configured on the given annotation or the default methods to support.
+		 *
+		 * @param annotation must not be {@literal null}.
+		 * @return
+		 * @see #DEFAULT_ALLOWED_METHODS
+		 */
+		private static HttpMethods getAllowedMethods(CrossOrigin annotation) {
+
+			RequestMethod[] methods = annotation.methods();
+
+			return methods.length == 0
+					? DEFAULT_ALLOWED_METHODS
+					: HttpMethods.of(Streamable.of(methods)
+							.map(RequestMethod::name)
+							.map(HttpMethod::resolve)
+							.toList());
 		}
 	}
 }
