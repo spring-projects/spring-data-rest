@@ -15,16 +15,19 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
+import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
@@ -53,9 +56,14 @@ public class LocalConfigCorsIntegrationTests extends AbstractWebIntegrationTests
 		Link findItems = client.discoverUnique(LinkRelation.of("items"));
 
 		// Preflight request
-		mvc.perform(options(findItems.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.example")
-				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
+		String header = mvc
+				.perform(options(findItems.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.example")
+						.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
 				.andExpect(status().isOk()) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,HEAD,POST"));
+				.andReturn().getResponse().getHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS);
+
+		assertThat(header.split(","))
+				.containsExactlyInAnyOrderElementsOf(
+						RepositoryRestHandlerMapping.DEFAULT_ALLOWED_METHODS.map(HttpMethod::name));
 	}
 }
