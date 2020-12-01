@@ -64,7 +64,9 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 		assertThat(configuration.getAllowCredentials()).isNull();
 		assertThat(configuration.getAllowedHeaders()).contains("*");
 		assertThat(configuration.getAllowedOrigins()).contains("*");
-		assertThat(configuration.getAllowedMethods()).contains("HEAD", "GET", "POST");
+		assertThat(configuration.getAllowedMethods())
+			.contains("HEAD", "GET", "POST", "PUT", "PATCH", "OPTIONS")
+			.doesNotContain("TRACE");
 		assertThat(configuration.getMaxAge()).isEqualTo(1800L);
 	}
 
