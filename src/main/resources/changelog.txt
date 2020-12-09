@@ -1,6 +1,14 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.5.0-M1 (2020-12-09)
+----------------------------------------
+* DATAREST-1587 - Remove Solr integration tests.
+* DATAREST-1581 - @Crossorigin Put Requests to association resources not working anymore.
+* DATAREST-1578 - Release 3.5 M1 (2021.0.0).
+* DATAREST-1542 - Remove Spring MVC dependency from core module.
+
+
 Changes in version 3.3.6.RELEASE (2020-12-09)
 ---------------------------------------------
 * DATAREST-1581 - @Crossorigin Put Requests to association resources not working anymore.
@@ -1684,6 +1692,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
