@@ -20,7 +20,6 @@
 		<module>spring-data-rest-tests-mongodb</module>
 		<module>spring-data-rest-tests-security</module>
 		<module>spring-data-rest-tests-shop</module>
-		<module>spring-data-rest-tests-solr</module>
 	</modules>
 
 	<properties>
