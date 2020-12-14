@@ -35,6 +35,7 @@ import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
+import org.springframework.data.util.Lazy;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
@@ -62,11 +63,18 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	private final Repositories repositories;
 	private final ResourceMappings mappings;
 	private final RepositoryRestConfiguration config;
-	private final PagingAndSortingTemplateVariables templateVariables;
+	private final Lazy<PagingAndSortingTemplateVariables> templateVariables;
 	private final PluginRegistry<BackendIdConverter, Class<?>> idConverters;
 
 	public RepositoryEntityLinks(Repositories repositories, ResourceMappings mappings, RepositoryRestConfiguration config,
 			PagingAndSortingTemplateVariables templateVariables, PluginRegistry<BackendIdConverter, Class<?>> idConverters) {
+		this(repositories, mappings, config, Lazy.of(templateVariables), idConverters);
+	}
+
+	public RepositoryEntityLinks(Repositories repositories, ResourceMappings mappings,
+			RepositoryRestConfiguration config,
+			Lazy<PagingAndSortingTemplateVariables> templateVariables,
+			PluginRegistry<BackendIdConverter, Class<?>> idConverters) {
 
 		Assert.notNull(repositories, "Repositories must not be null!");
 		Assert.notNull(mappings, "ResourceMappings must not be null!");
@@ -297,7 +305,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	private TemplateVariables getTemplateVariables(UriComponents components, ResourceMapping mapping, Pageable pageable) {
 
 		if (mapping.isPagingResource()) {
-			return templateVariables.getPaginationTemplateVariables(null, components);
+			return templateVariables.get().getPaginationTemplateVariables(null, components);
 		} else {
 			return TemplateVariables.NONE;
 		}
@@ -317,7 +325,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 			Pageable pageable, Sort sort) {
 
 		if (mapping.isSortableResource()) {
-			return templateVariables.getSortTemplateVariables(null, components);
+			return templateVariables.get().getSortTemplateVariables(null, components);
 		} else {
 			return getTemplateVariables(components, mapping, pageable);
 		}
@@ -362,7 +370,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 		if (mapping.isSortableResource()) {
 			UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(uri);
-			templateVariables.enhance(uriBuilder, null, sort);
+			templateVariables.get().enhance(uriBuilder, null, sort);
 			return uriBuilder.build();
 		} else {
 			return prepareUri(uri, mapping, pageable);
@@ -374,7 +382,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(uri);
 
 		if (mapping.isPagingResource()) {
-			templateVariables.enhance(uriBuilder, null, pageable);
+			templateVariables.get().enhance(uriBuilder, null, pageable);
 		}
 
 		return uriBuilder.build();
