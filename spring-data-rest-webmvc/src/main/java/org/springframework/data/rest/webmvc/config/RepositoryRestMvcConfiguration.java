@@ -158,18 +158,17 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Autowired ApplicationContext applicationContext;
 
 	@Autowired(required = false) List<BackendIdConverter> idConverters = Collections.emptyList();
-	@Autowired(required = false) List<RepositoryRestConfigurer> configurers = Collections.emptyList();
 	@Autowired(required = false) List<EntityLookup<?>> lookups = Collections.emptyList();
 
 	@Autowired List<HttpMessageConverter<?>> defaultMessageConverters;
 
-	Optional<LinkRelationProvider> relProvider;
-	Optional<CurieProvider> curieProvider;
-	Optional<HalConfiguration> halConfiguration;
+	ObjectProvider<LinkRelationProvider> relProvider;
+	ObjectProvider<CurieProvider> curieProvider;
+	ObjectProvider<HalConfiguration> halConfiguration;
 	ObjectProvider<ObjectMapper> objectMapper;
 	ObjectProvider<RepresentationModelProcessorInvoker> invoker;
-	MessageResolver resolver;
-	GeoModule geoModule;
+	ObjectProvider<MessageResolver> resolver;
+	ObjectProvider<GeoModule> geoModule;
 	ConversionService defaultConversionService;
 
 	private final Lazy<ObjectMapper> mapper;
@@ -200,13 +199,13 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public RepositoryRestMvcConfiguration( //
 			ApplicationContext context, //
 			@Qualifier("mvcConversionService") ObjectFactory<ConversionService> conversionService, //
-			Optional<LinkRelationProvider> relProvider, //
-			Optional<CurieProvider> curieProvider, //
-			Optional<HalConfiguration> halConfiguration, //
+			ObjectProvider<LinkRelationProvider> relProvider, //
+			ObjectProvider<CurieProvider> curieProvider, //
+			ObjectProvider<HalConfiguration> halConfiguration, //
 			ObjectProvider<ObjectMapper> objectMapper, //
 			ObjectProvider<RepresentationModelProcessorInvoker> invoker, //
-			MessageResolver resolver, //
-			GeoModule geoModule) {
+			ObjectProvider<MessageResolver> resolver, //
+			ObjectProvider<GeoModule> geoModule) {
 
 		super(context, conversionService);
 
@@ -389,7 +388,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @return
 	 */
 	@Bean
-	public AnnotatedEventHandlerInvoker annotatedEventHandlerInvoker() {
+	public static AnnotatedEventHandlerInvoker annotatedEventHandlerInvoker() {
 		return new AnnotatedEventHandlerInvoker();
 	}
 
@@ -456,13 +455,17 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @throws Exception
 	 */
 	@Bean
-	public RepositoryEntityLinks entityLinks(HateoasPageableHandlerMethodArgumentResolver pageableResolver,
-			Repositories repositories, RepositoryResourceMappings resourceMappings,
-			PluginRegistry<BackendIdConverter, Class<?>> backendIdConverterRegistry,
-			RepositoryRestConfiguration repositoryRestConfiguration, HateoasSortHandlerMethodArgumentResolver sortResolver) {
+	public RepositoryEntityLinks entityLinks(ObjectFactory<HateoasPageableHandlerMethodArgumentResolver> pageableResolver, //
+			Repositories repositories, //
+			RepositoryResourceMappings resourceMappings, //
+			PluginRegistry<BackendIdConverter, //
+					Class<?>> backendIdConverterRegistry, //
+			RepositoryRestConfiguration repositoryRestConfiguration, //
+			ObjectFactory<HateoasSortHandlerMethodArgumentResolver> sortResolver) {
 
-		PagingAndSortingTemplateVariables templateVariables = new ArgumentResolverPagingAndSortingTemplateVariables(
-				pageableResolver, sortResolver);
+		Lazy<PagingAndSortingTemplateVariables> templateVariables = Lazy
+				.of(() -> new ArgumentResolverPagingAndSortingTemplateVariables(pageableResolver.getObject(),
+						sortResolver.getObject()));
 
 		return new RepositoryEntityLinks(repositories, resourceMappings, repositoryRestConfiguration, templateVariables,
 				backendIdConverterRegistry);
@@ -497,7 +500,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			Associations associationLinks, @Qualifier RepositoryInvokerFactory repositoryInvokerFactory,
 			RepositoryRestConfiguration repositoryRestConfiguration) {
 
-		return new PersistentEntityToJsonSchemaConverter(persistentEntities, associationLinks, resolver, objectMapper(),
+		return new PersistentEntityToJsonSchemaConverter(persistentEntities, associationLinks, resolver.getObject(),
+				objectMapper(),
 				repositoryRestConfiguration, new ValueTypeSchemaPropertyCustomizerFactory(repositoryInvokerFactory));
 	}
 
@@ -569,11 +573,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	public ObjectMapper halObjectMapper(LinkCollector linkCollector) {
 
-		LinkRelationProvider defaultedRelProvider = this.relProvider.orElseGet(EvoInflectorLinkRelationProvider::new);
-		HalConfiguration halConfiguration = this.halConfiguration.orElseGet(HalConfiguration::new);
-
+		LinkRelationProvider defaultedRelProvider = this.relProvider.getIfUnique(EvoInflectorLinkRelationProvider::new);
+		HalConfiguration halConfiguration = this.halConfiguration.getIfUnique(HalConfiguration::new);
 		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider,
-				curieProvider.orElse(new DefaultCurieProvider(Collections.emptyMap())), resolver, halConfiguration);
+				curieProvider.getIfUnique(() -> new DefaultCurieProvider(Collections.emptyMap())), resolver.getObject(),
+				halConfiguration);
 
 		ObjectMapper mapper = basicObjectMapper();
 		mapper.registerModule(persistentEntityJackson2Module(linkCollector));
@@ -885,7 +889,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		// Configure custom Modules
 		configurerDelegate.get().configureJacksonObjectMapper(objectMapper);
 
-		objectMapper.registerModule(geoModule);
+		objectMapper.registerModule(geoModule.getObject());
 
 		if (repositoryRestConfiguration.get().isEnableEnumTranslation()) {
 			objectMapper.registerModule(new JacksonSerializers(enumTranslator.get()));
@@ -926,7 +930,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			Associations associationLinks, RepositoryRestConfiguration repositoryRestConfiguration) {
 
 		return new RootResourceInformationToAlpsDescriptorConverter(associationLinks, repositories, persistentEntities,
-				entityLinks, resolver, repositoryRestConfiguration, objectMapper(), enumTranslator);
+				entityLinks, resolver.getObject(), repositoryRestConfiguration, objectMapper(), enumTranslator);
 	}
 
 	@Bean
