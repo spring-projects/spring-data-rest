@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 the original author or authors.
+ * Copyright 2018-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public interface ExposureConfigurer {
 
 		/**
 		 * Returns a default filter that just returns all {@link HttpMethods} as is, i.e. does not apply any filtering.
-		 * 
+		 *
 		 * @return
 		 */
 		static AggregateResourceHttpMethodsFilter none() {
@@ -57,7 +57,7 @@ public interface ExposureConfigurer {
 
 		/**
 		 * Returns a default filter that just returns all {@link HttpMethods} as is, i.e. does not apply any filtering.
-		 * 
+		 *
 		 * @return
 		 */
 		static AssociationResourceHttpMethodsFilter none() {
@@ -67,7 +67,7 @@ public interface ExposureConfigurer {
 
 	/**
 	 * Registers the given {@link AggregateResourceHttpMethodsFilter} to be used for collection resources.
-	 * 
+	 *
 	 * @param filter must not be {@literal null}.
 	 * @return
 	 */
@@ -75,7 +75,7 @@ public interface ExposureConfigurer {
 
 	/**
 	 * Registers the given {@link AggregateResourceHttpMethodsFilter} to be used for item resources.
-	 * 
+	 *
 	 * @param filter
 	 * @return
 	 */
@@ -83,7 +83,7 @@ public interface ExposureConfigurer {
 
 	/**
 	 * Registers the given {@link AssociationResourceHttpMethodsFilter}.
-	 * 
+	 *
 	 * @param filter
 	 * @return
 	 */
@@ -91,7 +91,7 @@ public interface ExposureConfigurer {
 
 	/**
 	 * Disables the ability to create new item resources via {@link HttpMethod#PUT}.
-	 * 
+	 *
 	 * @return
 	 */
 	ExposureConfigurer disablePutForCreation();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 the original author or authors.
+ * Copyright 2018-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
 
 /**
  * A collection of {@link HttpMethod}s with some convenience methods to create alternate sets of those.
- * 
+ *
  * @author Oliver Gierke
  */
 public interface HttpMethods extends Streamable<HttpMethod> {
@@ -40,7 +40,7 @@ public interface HttpMethods extends Streamable<HttpMethod> {
 
 	/**
 	 * Returns a new {@link HttpMethods} with the given {@link HttpMethod}s.
-	 * 
+	 *
 	 * @param methods must not be {@literal null}.
 	 * @return
 	 */
@@ -53,7 +53,7 @@ public interface HttpMethods extends Streamable<HttpMethod> {
 
 	/**
 	 * Returns whether the given {@link HttpMethod} is contained in the current {@link HttpMethods}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @return
 	 */
@@ -61,7 +61,7 @@ public interface HttpMethods extends Streamable<HttpMethod> {
 
 	/**
 	 * Returns an unmodifiable {@link Set} of all underlying {@link HttpMethod}s.
-	 * 
+	 *
 	 * @return
 	 */
 	default Set<HttpMethod> toSet() {
@@ -70,7 +70,7 @@ public interface HttpMethods extends Streamable<HttpMethod> {
 
 	/**
 	 * Returns a new {@link HttpMethods} with the given {@link HttpMethod}s added.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @return
 	 */
@@ -80,7 +80,7 @@ public interface HttpMethods extends Streamable<HttpMethod> {
 
 	/**
 	 * Returns a new {@link HttpMethods} instance with the given {@link HttpMethod}s removed.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @return
 	 */

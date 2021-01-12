@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 the original author or authors.
+ * Copyright 2018-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.springframework.data.mapping.PersistentProperty;
 /**
  * Adapter for a {@link SupportedHttpMethods} instance that applies settings made through {@link ExposureConfiguration}
  * to the calculated {@link ConfigurableHttpMethods}
- * 
+ *
  * @author Oliver Gierke
  * @see ExposureConfiguration
  * @since 3.1
@@ -35,7 +35,7 @@ public class ConfigurationApplyingSupportedHttpMethodsAdapter implements Support
 	private final @NonNull ResourceMetadata resourceMetadata;
 	private final @NonNull SupportedHttpMethods delegate;
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getMethodsFor(org.springframework.data.rest.core.mapping.ResourceType)
 	 */
@@ -47,7 +47,7 @@ public class ConfigurationApplyingSupportedHttpMethodsAdapter implements Support
 		return configuration.filter(ConfigurableHttpMethods.of(methods), type, resourceMetadata);
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getMethodsFor(org.springframework.data.mapping.PersistentProperty)
 	 */
@@ -66,7 +66,7 @@ public class ConfigurationApplyingSupportedHttpMethodsAdapter implements Support
 		return configuration.filter(methods, PropertyAwareResourceMapping.class.cast(mapping));
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#allowsPutForCreation()
 	 */

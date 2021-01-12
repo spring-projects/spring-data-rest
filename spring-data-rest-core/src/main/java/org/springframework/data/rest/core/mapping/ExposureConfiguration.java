@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 the original author or authors.
+ * Copyright 2018-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
  * Configuration type to register filters customizing the HTTP methods supported. By default, filters registered are
  * applied globally. Domain type specific filters can be registered via {@link #forDomainType(Class)}. Useful global
  * shortcuts like {@link #disablePutOnItemResources()} do exist as well.
- * 
+ *
  * @author Oliver Gierke
  * @see #forDomainType(Class)
  * @since 3.1
@@ -92,7 +92,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 	 * {@link AggregateResourceHttpMethodsFilter} and {@link AssociationResourceHttpMethodsFilter}s which means the
 	 * configured filters will only be invoked for aggregates of the given type and properties owned by that type
 	 * respectively.
-	 * 
+	 *
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
@@ -104,7 +104,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 
 	/**
 	 * Disables the support for {@link HttpMethod#PUT} for item resources.
-	 * 
+	 *
 	 * @return
 	 */
 	public ExposureConfiguration disablePutOnItemResources() {
@@ -115,7 +115,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 
 	/**
 	 * Disables the support for {@link HttpMethod#PATCH} for item resources.
-	 * 
+	 *
 	 * @return
 	 */
 	public ExposureConfiguration disablePatchOnItemResources() {
@@ -127,7 +127,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 	/**
 	 * Returns whether PUT requests can be used to create new instances for the type backing the given
 	 * {@link ResourceMetadata}.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @return
 	 */
@@ -140,7 +140,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 
 	/**
 	 * Returns whether PUT requests can be used to create new instances of the given domain type.
-	 * 
+	 *
 	 * @param metadata must not be {@literal null}.
 	 * @return
 	 */
@@ -211,7 +211,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 			return this;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.mapping.ExposureConfiguration.ExposureConfigurer#withAssociationExposure(java.util.function.BiFunction)
 		 */
@@ -229,7 +229,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 			return this;
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.mapping.ExposureConfigurer#disableCreationViaPut()
 		 */

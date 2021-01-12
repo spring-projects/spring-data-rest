@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 the original author or authors.
+ * Copyright 2015-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -573,13 +573,13 @@ public class DomainObjectReaderUnitTests {
 		assertThat(result.lastLogin).isNotNull();
 		assertThat(result.email).isEqualTo("foo@bar.com");
 	}
-	
+
 	@Test // DATAREST-1068
 	public void arraysCanBeResizedDuringMerge() throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		ArrayHolder target = new ArrayHolder(new String[] { });
 		JsonNode node = mapper.readTree("{ \"array\" : [ \"new\" ] }");
-		
+
 		ArrayHolder updated = reader.doMerge((ObjectNode) node, target, mapper);
 		assertThat(updated.array).containsExactly("new");
 	}
@@ -807,7 +807,7 @@ public class DomainObjectReaderUnitTests {
 	static class WithNullCollection {
 		List<String> strings;
 	}
-	
+
 	// DATAREST-1068
 	@Value
 	static class ArrayHolder {
