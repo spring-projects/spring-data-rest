@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2014-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public interface SupportedHttpMethods {
 
 	/**
 	 * Returns whether {@link HttpMethod#PUT} requests are supported for item resource creation.
-	 * 
+	 *
 	 * @return
 	 */
 	default boolean allowsPutForCreation() {
@@ -77,7 +77,7 @@ public interface SupportedHttpMethods {
 			return HttpMethods.none();
 		}
 
-		/* 
+		/*
 		 * (non-Javadoc)
 		 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#allowsPutForCreation()
 		 */
