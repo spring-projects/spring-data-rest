@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.4.3 (2021-01-13)
+-------------------------------------
+* DATAREST-1584 - Update CI jobs with Docker Login.
+* #1952 - Update copyright year to 2021.
+* #1951 - Upgrade to Servlet API 4.0.1.
+
+
 Changes in version 3.4.2 (2020-12-09)
 -------------------------------------
 * DATAREST-1587 - Remove Solr integration tests.
@@ -1699,6 +1706,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
