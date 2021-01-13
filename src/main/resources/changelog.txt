@@ -1,6 +1,15 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.5.0-M2 (2021-01-13)
+----------------------------------------
+* DATAREST-1590 - 2.4.0/2.4.1 sprint-boot Rest Repositories initializr project reports lots of Beans is not eligible for getting processed by all BeanPostProcessors.
+* DATAREST-1584 - Update CI jobs with Docker Login.
+* #1952 - Update copyright year to 2021.
+* #1951 - Upgrade to Servlet API 4.0.1.
+* #424 - Update repository after GitHub issues migration.
+
+
 Changes in version 3.4.3 (2021-01-13)
 -------------------------------------
 * DATAREST-1584 - Update CI jobs with Docker Login.
@@ -1700,6 +1709,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
