@@ -183,7 +183,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private Lazy<BaseUri> baseUri;
 	private Lazy<RepositoryResourceMappings> resourceMappings;
 	private Lazy<Repositories> repositories;
-	private Lazy<AbstractHandlerMapping> restHandlerMapping;
+	private Lazy<DelegatingHandlerMapping> restHandlerMapping;
 	private Lazy<ResourceMetadataHandlerMethodArgumentResolver> resourceMetadataHandlerMethodArgumentResolver;
 	private Lazy<ExcerptProjector> excerptProjector;
 	private Lazy<PersistentEntities> persistentEntities;
@@ -241,7 +241,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		this.baseUri = Lazy.of(() -> context.getBean(BaseUri.class));
 		this.resourceMappings = Lazy.of(() -> context.getBean(RepositoryResourceMappings.class));
 		this.repositories = Lazy.of(() -> context.getBean(Repositories.class));
-		this.restHandlerMapping = Lazy.of(() -> context.getBean("restHandlerMapping", AbstractHandlerMapping.class));
+		this.restHandlerMapping = Lazy.of(() -> context.getBean("restHandlerMapping", DelegatingHandlerMapping.class));
 		this.resourceMetadataHandlerMethodArgumentResolver = Lazy
 				.of(() -> context.getBean(ResourceMetadataHandlerMethodArgumentResolver.class));
 		this.excerptProjector = Lazy.of(() -> context.getBean(ExcerptProjector.class));
@@ -638,7 +638,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @return
 	 */
 	@Bean
-	public AbstractHandlerMapping restHandlerMapping(Repositories repositories,
+	public DelegatingHandlerMapping restHandlerMapping(Repositories repositories,
 			RepositoryResourceMappings resourceMappings, Optional<JpaHelper> jpaHelper,
 			RepositoryRestConfiguration repositoryRestConfiguration, CorsConfigurationAware corsRestConfiguration) {
 

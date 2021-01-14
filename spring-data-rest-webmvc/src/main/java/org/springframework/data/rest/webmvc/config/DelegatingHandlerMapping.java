@@ -41,8 +41,8 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Oliver Gierke
  * @soundtrack Benny Greb - Stabila (Moving Parts)
  */
-class DelegatingHandlerMapping extends AbstractHandlerMapping
-		implements org.springframework.data.rest.webmvc.support.DelegatingHandlerMapping {
+class DelegatingHandlerMapping
+		implements org.springframework.data.rest.webmvc.support.DelegatingHandlerMapping, Ordered {
 
 	private final List<HandlerMapping> delegates;
 
@@ -58,20 +58,17 @@ class DelegatingHandlerMapping extends AbstractHandlerMapping
 		this.delegates = delegates;
 	}
 
-	@java.lang.SuppressWarnings("all")
-	public List<HandlerMapping> getDelegates() {
-		return this.delegates;
-	}
-
-	@Override
-	public void setPatternParser(PathPatternParser parser) {
-
-		super.setPatternParser(parser);
+	void setPatternParser(PathPatternParser parser) {
 
 		delegates.stream() //
 				.filter(AbstractHandlerMapping.class::isInstance) //
 				.map(AbstractHandlerMapping.class::cast) //
 				.forEach(it -> it.setPatternParser(parser));
+	}
+
+	@SuppressWarnings("all")
+	public List<HandlerMapping> getDelegates() {
+		return this.delegates;
 	}
 
 	/*
@@ -94,10 +91,10 @@ class DelegatingHandlerMapping extends AbstractHandlerMapping
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.AbstractHandlerMapping#getHandlerInternal(javax.servlet.http.HttpServletRequest)
+	 * @see org.springframework.web.servlet.HandlerMapping#getHandler(javax.servlet.http.HttpServletRequest)
 	 */
 	@Override
-	protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
+	public HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
 		return HandlerSelectionResult.from(request, delegates).resultOrException();
 	}
 
