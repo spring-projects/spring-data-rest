@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import lombok.Data;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -58,6 +59,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.jayway.jsonpath.JsonPath;
@@ -89,6 +91,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		mappingContext.getPersistentEntity(SampleWithAdditionalGetters.class);
 		mappingContext.getPersistentEntity(PersistentEntityJackson2ModuleUnitTests.PetOwner.class);
 		mappingContext.getPersistentEntity(Immutable.class);
+		mappingContext.getPersistentEntity(Wrapper.class);
 
 		this.persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
 
@@ -197,6 +200,16 @@ public class PersistentEntityJackson2ModuleUnitTests {
 				TypeDescriptor.valueOf(Home.class));
 	}
 
+	@Test // GH-1926
+	public void doesNotWrapJsonValueTypesIntoEntityModel() throws Exception {
+
+		Wrapper wrapper = new Wrapper();
+		wrapper.value = new ValueType();
+		wrapper.value.value = "sample";
+
+		assertThat(mapper.writeValueAsString(wrapper)).isEqualTo("{\"value\":\"sample\"}");
+	}
+
 	/**
 	 * @author Oliver Gierke
 	 */
@@ -256,5 +269,16 @@ public class PersistentEntityJackson2ModuleUnitTests {
 		public Immutable(@JsonProperty("home") Home home) {
 			this.home = home;
 		}
+	}
+
+	// GH-1926
+
+	@Data
+	static class Wrapper {
+		ValueType value;
+	}
+
+	static class ValueType {
+		@JsonValue String value;
 	}
 }
