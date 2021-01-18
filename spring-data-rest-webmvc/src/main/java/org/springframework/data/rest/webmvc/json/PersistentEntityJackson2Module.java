@@ -86,6 +86,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ser.std.JsonValueSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -365,7 +366,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				List<Object> resources = new ArrayList<Object>();
 
 				for (Object element : source) {
-					resources.add(toModel(element));
+					resources.add(toModel(element, provider));
 				}
 
 				provider.defaultSerializeValue(resources, gen);
@@ -376,13 +377,13 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				Map<Object, Object> resources = CollectionFactory.createApproximateMap(value.getClass(), source.size());
 
 				for (Entry<?, ?> entry : source.entrySet()) {
-					resources.put(entry.getKey(), toModel(entry.getValue()));
+					resources.put(entry.getKey(), toModel(entry.getValue(), provider));
 				}
 
 				provider.defaultSerializeValue(resources, gen);
 
 			} else {
-				provider.defaultSerializeValue(toModel(value), gen);
+				provider.defaultSerializeValue(toModel(value, provider), gen);
 			}
 		}
 
@@ -396,7 +397,13 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			serialize(value, gen, provider);
 		}
 
-		private EntityModel<Object> toModel(Object value) {
+		private Object toModel(Object value, SerializerProvider provider) throws JsonMappingException {
+
+			JsonSerializer<Object> serializer = provider.findValueSerializer(value.getClass());
+
+			if (JsonValueSerializer.class.isInstance(serializer)) {
+				return value;
+			}
 
 			PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(value.getClass());
 
