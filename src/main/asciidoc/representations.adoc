@@ -13,7 +13,7 @@ To accommodate the largest percentage of use cases, Spring Data REST tries very 
 
 === Abstract Class Registration
 
-One key configuration point you might need to hook into is when you use an abstract class (or an interface) in your domain model. By defualt, Jackson does not know what implementation to create for an interface. Consider the following example:
+One key configuration point you might need to hook into is when you use an abstract class (or an interface) in your domain model. By default, Jackson does not know what implementation to create for an interface. Consider the following example:
 
 ====
 [source,java]
