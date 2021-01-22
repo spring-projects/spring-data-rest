@@ -24,7 +24,7 @@ public class ScannerController {
         // do some intermediate processing, logging, etc. with the producers
         //
 
-        Resources<String> resources = new Resources<String>(producers); // <4>
+        CollectionModel<String> resources = CollectionModel.of(producers); // <4>
 
         resources.add(linkTo(methodOn(ScannerController.class).getProducers()).withSelfRel()); // <5>
 
@@ -39,12 +39,12 @@ public class ScannerController {
 <1> This example uses constructor injection.
 <2> This handler plugs in a custom handler for a Spring Data finder method.
 <3> This handler uses the underlying repository to fetch data, but then does some form of post processing before returning the final data set to the client.
-<4> The results need to be wrapped up in a Spring HATEOAS `Resources` object to return a collection but only a `Resource` for a single item.
+<4> The results of type T need to be wrapped up in a Spring HATEOAS `CollectionModel<T>` object to return a collection. `EntityModel<T>` or `RepresentationModel<T>` are suitable wrappers for a single item, respectively.
 <5> Add a link back to this exact method as a `self` link.
 <6> Returning the collection by using Spring MVC's `ResponseEntity` wrapper ensures that the collection is properly wrapped and rendered in the proper accept type.
 ====
 
-`Resources` is for a collection, while `Resource` is for a single item. These types can be combined. If you know the links for each item in a collection, use `Resources<Resource<String>>` (or whatever the core domain type is rather than `String`). Doing so lets you assemble links for each item as well as for the whole collection.
+`CollectionModel` is for a collection, while `EntityModel` -- or the more general class `RepresentationModel` -- is for a single item. These types can be combined. If you know the links for each item in a collection, use `CollectionModel<EntityModel<String>>` (or whatever the core domain type is rather than `String`). Doing so lets you assemble links for each item as well as for the whole collection.
 
 IMPORTANT: In this example, the combined path is `RepositoryRestConfiguration.getBasePath()` + `/scanners/search/listProducers`.
 
@@ -52,7 +52,7 @@ IMPORTANT: In this example, the combined path is `RepositoryRestConfiguration.ge
 == @RepositoryRestResource VS. @BasePathAwareController
 
 If you are not interested in entity-specific operations but still want to build custom operations underneath `basePath`, such as Spring MVC views, resources, and others, use `@BasePathAwareController`.
-If you're using `@RepositoryRestResource` on your custom controller, it will only handle the request if your request mappings blend into the URI space used by the repository.
+If you're using `@RepositoryRestController` on your custom controller, it will only handle the request if your request mappings blend into the URI space used by the repository.
 It will also apply the following extra functionality to the controller methods:
 
 . CORS configuration according as defined for the repository mapped to the base path segment used in the request mapping of the handler method.
