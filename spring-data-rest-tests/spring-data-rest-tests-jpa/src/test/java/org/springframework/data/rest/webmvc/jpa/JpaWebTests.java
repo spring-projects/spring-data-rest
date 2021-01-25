@@ -45,6 +45,7 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -729,6 +730,14 @@ public class JpaWebTests extends CommonWebTests {
 
 		assertThat(content.read("$.name", String.class)).isEqualTo("put");
 		assertThat(content.read("$.calculatedName", String.class)).isEqualTo("calculated-put");
+	}
+
+	@Test // #1991
+	public void answersToHalFormsRequests() throws Exception {
+
+		mvc.perform(get("/")
+				.accept(MediaTypes.HAL_FORMS_JSON))
+				.andExpect(status().isOk());
 	}
 
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {

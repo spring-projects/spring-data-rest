@@ -104,6 +104,8 @@ import org.springframework.hateoas.mediatype.hal.DefaultCurieProvider;
 import org.springframework.hateoas.mediatype.hal.HalConfiguration;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule.HalHandlerInstantiator;
+import org.springframework.hateoas.mediatype.hal.forms.HalFormsConfiguration;
+import org.springframework.hateoas.mediatype.hal.forms.Jackson2HalFormsModule;
 import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
@@ -143,7 +145,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
  * @author Christoph Strobl
  */
 @Configuration(proxyBeanMethods = false)
-@EnableHypermediaSupport(type = HypermediaType.HAL)
+@EnableHypermediaSupport(type = { HypermediaType.HAL, HypermediaType.HAL_FORMS })
 @ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 @Import({ RestControllerImportSelector.class, //
 		SpringDataJacksonConfiguration.class, //
@@ -573,13 +575,45 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return converter;
 	}
 
+	/**
+	 * {@link HttpMessageConverter} to support rendering HAL FORMS.
+	 *
+	 * @param linkCollector
+	 * @return
+	 * @since 3.5
+	 */
+	@Bean
+	TypeConstrainedMappingJackson2HttpMessageConverter halFormsJacksonHttpMessageConverter(LinkCollector linkCollector) {
+
+		LinkRelationProvider defaultedRelProvider = this.relProvider.getIfUnique(EvoInflectorLinkRelationProvider::new);
+		HalFormsConfiguration configuration = new HalFormsConfiguration(
+				halConfiguration.getIfUnique(() -> new HalConfiguration()));
+		CurieProvider curieProvider = this.curieProvider
+				.getIfUnique(() -> new DefaultCurieProvider(Collections.emptyMap()));
+		ObjectMapper mapper = basicObjectMapper();
+
+		mapper.registerModule(persistentEntityJackson2Module(linkCollector));
+		mapper.registerModule(new Jackson2HalFormsModule());
+		mapper.setHandlerInstantiator(new Jackson2HalModule.HalHandlerInstantiator(
+				defaultedRelProvider, curieProvider, resolver.getObject(), configuration.getHalConfiguration(),
+				applicationContext.getAutowireCapableBeanFactory()));
+
+		TypeConstrainedMappingJackson2HttpMessageConverter converter = new TypeConstrainedMappingJackson2HttpMessageConverter(
+				RepresentationModel.class);
+		converter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_FORMS_JSON));
+		converter.setObjectMapper(mapper);
+
+		return converter;
+	}
+
 	public ObjectMapper halObjectMapper(LinkCollector linkCollector) {
 
 		LinkRelationProvider defaultedRelProvider = this.relProvider.getIfUnique(EvoInflectorLinkRelationProvider::new);
 		HalConfiguration halConfiguration = this.halConfiguration.getIfUnique(HalConfiguration::new);
-		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider,
-				curieProvider.getIfUnique(() -> new DefaultCurieProvider(Collections.emptyMap())), resolver.getObject(),
-				halConfiguration, applicationContext.getAutowireCapableBeanFactory());
+		CurieProvider curieProvider = this.curieProvider
+				.getIfUnique(() -> new DefaultCurieProvider(Collections.emptyMap()));
+		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider, curieProvider,
+				resolver.getObject(), halConfiguration, applicationContext.getAutowireCapableBeanFactory());
 
 		ObjectMapper mapper = basicObjectMapper();
 		mapper.registerModule(persistentEntityJackson2Module(linkCollector));
@@ -739,6 +773,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public List<HttpMessageConverter<?>> defaultMessageConverters(
 			@Qualifier("jacksonHttpMessageConverter") TypeConstrainedMappingJackson2HttpMessageConverter jacksonHttpMessageConverter,
 			@Qualifier("halJacksonHttpMessageConverter") TypeConstrainedMappingJackson2HttpMessageConverter halJacksonHttpMessageConverter,
+			@Qualifier("halFormsJacksonHttpMessageConverter") TypeConstrainedMappingJackson2HttpMessageConverter halFormsJacksonHttpMessageConverter,
 			AlpsJsonHttpMessageConverter alpsJsonHttpMessageConverter,
 			UriListHttpMessageConverter uriListHttpMessageConverter, RepositoryRestConfigurerDelegate configurerDelegate,
 			RepositoryRestConfiguration repositoryRestConfiguration) {
@@ -756,6 +791,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			messageConverters.add(jacksonHttpMessageConverter);
 			messageConverters.add(halJacksonHttpMessageConverter);
 		}
+
+		messageConverters.add(halFormsJacksonHttpMessageConverter);
 
 		MappingJackson2HttpMessageConverter fallbackJsonConverter = new MappingJackson2HttpMessageConverter();
 		fallbackJsonConverter.setObjectMapper(basicObjectMapper());
