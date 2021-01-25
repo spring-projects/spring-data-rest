@@ -123,8 +123,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 		ProducesRequestCondition producesCondition = customize(info.getProducesCondition());
 
-		return new RequestMappingInfo(info.getPatternsCondition(), info.getMethodsCondition(), info.getParamsCondition(),
-				info.getHeadersCondition(), info.getConsumesCondition(), producesCondition, info.getCustomCondition());
+		return info.addCustomCondition(producesCondition);
 	}
 
 	/**

@@ -29,10 +29,8 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.servlet.handler.AbstractHandlerMapping;
 import org.springframework.web.servlet.handler.MatchableHandlerMapping;
 import org.springframework.web.servlet.handler.RequestMatchResult;
-import org.springframework.web.util.pattern.PathPatternParser;
 
 /**
  * A {@link HandlerMapping} that considers a {@link List} of delegates. It will keep on traversing the delegates in case
@@ -56,14 +54,6 @@ class DelegatingHandlerMapping
 		Assert.notNull(delegates, "Delegates must not be null!");
 
 		this.delegates = delegates;
-	}
-
-	void setPatternParser(PathPatternParser parser) {
-
-		delegates.stream() //
-				.filter(AbstractHandlerMapping.class::isInstance) //
-				.map(AbstractHandlerMapping.class::cast) //
-				.forEach(it -> it.setPatternParser(parser));
 	}
 
 	@SuppressWarnings("all")
