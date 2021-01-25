@@ -22,6 +22,7 @@ import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.Ordered;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -29,7 +30,6 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.servlet.handler.AbstractHandlerMapping;
 import org.springframework.web.servlet.handler.MatchableHandlerMapping;
 import org.springframework.web.servlet.handler.RequestMatchResult;
 import org.springframework.web.util.pattern.PathPatternParser;
@@ -45,25 +45,28 @@ class DelegatingHandlerMapping
 		implements org.springframework.data.rest.webmvc.support.DelegatingHandlerMapping, Ordered {
 
 	private final List<HandlerMapping> delegates;
+	private final @Nullable PathPatternParser parser;
 
 	/**
 	 * Creates a new {@link DelegatingHandlerMapping} for the given delegates.
 	 *
 	 * @param delegates must not be {@literal null}.
 	 */
-	public DelegatingHandlerMapping(List<HandlerMapping> delegates) {
+	public DelegatingHandlerMapping(List<HandlerMapping> delegates, @Nullable PathPatternParser parser) {
 
 		Assert.notNull(delegates, "Delegates must not be null!");
 
 		this.delegates = delegates;
+		this.parser = parser;
 	}
 
-	void setPatternParser(PathPatternParser parser) {
-
-		delegates.stream() //
-				.filter(AbstractHandlerMapping.class::isInstance) //
-				.map(AbstractHandlerMapping.class::cast) //
-				.forEach(it -> it.setPatternParser(parser));
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.web.servlet.HandlerMapping#usesPathPatterns()
+	 */
+	@Override
+	public boolean usesPathPatterns() {
+		return parser != null;
 	}
 
 	@SuppressWarnings("all")

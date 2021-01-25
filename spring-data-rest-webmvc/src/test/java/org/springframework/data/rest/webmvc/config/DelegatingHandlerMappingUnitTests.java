@@ -52,7 +52,7 @@ public class DelegatingHandlerMappingUnitTests {
 	@Test // DATAREST-490, DATAREST-522, DATAREST-1387
 	public void consultsAllHandlerMappingsAndThrowsExceptionEventually() throws Exception {
 
-		DelegatingHandlerMapping mapping = new DelegatingHandlerMapping(Arrays.asList(first, second));
+		DelegatingHandlerMapping mapping = new DelegatingHandlerMapping(Arrays.asList(first, second), null);
 
 		assertHandlerTriedButExceptionThrown(mapping, HttpMediaTypeNotAcceptableException.class);
 		assertHandlerTriedButExceptionThrown(mapping, HttpRequestMethodNotSupportedException.class);
@@ -73,7 +73,7 @@ public class DelegatingHandlerMappingUnitTests {
 		MatchableHandlerMapping fourth = mock(MatchableHandlerMapping.class, Answers.RETURNS_MOCKS);
 		doReturn(result).when(fourth).match(any(), any(String.class));
 
-		DelegatingHandlerMapping mapping = new DelegatingHandlerMapping(Arrays.asList(first, second, third, fourth));
+		DelegatingHandlerMapping mapping = new DelegatingHandlerMapping(Arrays.asList(first, second, third, fourth), null);
 
 		assertThat(mapping.match(request, "somePattern")).isEqualTo(result);
 	}
