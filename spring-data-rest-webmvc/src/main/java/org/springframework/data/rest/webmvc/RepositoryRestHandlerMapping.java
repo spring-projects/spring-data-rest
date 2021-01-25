@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.condition.PathPatternsRequestCondition;
 import org.springframework.web.servlet.mvc.condition.ProducesRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -266,13 +267,29 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 			return;
 		}
 
-		String pattern = mappingInfo.getPatternsCondition() //
-				.getMatchingCondition(request)//
-				.getPatterns() //
-				.iterator().next();
+		String pattern = getPattern(mappingInfo, request);
+
+		PathPatternParser parser = getPatternParser();
+		parser = parser != null ? parser : PARSER;
 
 		request.setAttribute(EFFECTIVE_LOOKUP_PATH_ATTRIBUTE,
-				PARSER.parse(pattern.replace("/{repository}", repositoryBasePath)));
+				parser.parse(pattern.replace("/{repository}", repositoryBasePath)));
+	}
+
+	private static String getPattern(RequestMappingInfo info, HttpServletRequest request) {
+
+		PathPatternsRequestCondition pathPatternsCondition = info.getPathPatternsCondition();
+
+		if (pathPatternsCondition != null) {
+			return pathPatternsCondition
+					.getMatchingCondition(request)
+					.getFirstPattern().getPatternString();
+		}
+
+		return info.getPatternsCondition() //
+				.getMatchingCondition(request)//
+				.getPatterns()
+				.iterator().next();
 	}
 
 	/**

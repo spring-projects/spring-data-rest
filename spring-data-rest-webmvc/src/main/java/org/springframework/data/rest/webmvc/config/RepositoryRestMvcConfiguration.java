@@ -119,11 +119,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.handler.AbstractHandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
@@ -170,9 +170,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	ObjectProvider<RepresentationModelProcessorInvoker> invoker;
 	ObjectProvider<MessageResolver> resolver;
 	ObjectProvider<GeoModule> geoModule;
+
 	ConversionService defaultConversionService;
 
 	private final Lazy<ObjectMapper> mapper;
+	private final ObjectProvider<PathPatternParser> parser;
 
 	private ClassLoader beanClassLoader;
 
@@ -183,7 +185,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private Lazy<BaseUri> baseUri;
 	private Lazy<RepositoryResourceMappings> resourceMappings;
 	private Lazy<Repositories> repositories;
-	private Lazy<DelegatingHandlerMapping> restHandlerMapping;
 	private Lazy<ResourceMetadataHandlerMethodArgumentResolver> resourceMetadataHandlerMethodArgumentResolver;
 	private Lazy<ExcerptProjector> excerptProjector;
 	private Lazy<PersistentEntities> persistentEntities;
@@ -206,7 +207,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			ObjectProvider<ObjectMapper> objectMapper, //
 			ObjectProvider<RepresentationModelProcessorInvoker> invoker, //
 			ObjectProvider<MessageResolver> resolver, //
-			ObjectProvider<GeoModule> geoModule) {
+			ObjectProvider<GeoModule> geoModule, //
+			ObjectProvider<PathPatternParser> parser) {
 
 		super(context, conversionService);
 
@@ -217,6 +219,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		this.invoker = invoker;
 		this.resolver = resolver;
 		this.geoModule = geoModule;
+		this.parser = parser;
 
 		this.mapper = Lazy.of(() -> {
 
@@ -241,7 +244,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		this.baseUri = Lazy.of(() -> context.getBean(BaseUri.class));
 		this.resourceMappings = Lazy.of(() -> context.getBean(RepositoryResourceMappings.class));
 		this.repositories = Lazy.of(() -> context.getBean(Repositories.class));
-		this.restHandlerMapping = Lazy.of(() -> context.getBean("restHandlerMapping", DelegatingHandlerMapping.class));
 		this.resourceMetadataHandlerMethodArgumentResolver = Lazy
 				.of(() -> context.getBean(ResourceMetadataHandlerMethodArgumentResolver.class));
 		this.excerptProjector = Lazy.of(() -> context.getBean(ExcerptProjector.class));
@@ -347,6 +349,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * Main configuration for the REST exporter.
 	 */
 	@Bean
+	@SuppressWarnings("unchecked")
 	public <T extends RepositoryRestConfiguration & CorsConfigurationAware> T repositoryRestConfiguration() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
@@ -643,33 +646,27 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			RepositoryRestConfiguration repositoryRestConfiguration, CorsConfigurationAware corsRestConfiguration) {
 
 		Map<String, CorsConfiguration> corsConfigurations = corsRestConfiguration.getCorsConfigurations();
+		PathPatternParser parser = this.parser.getIfAvailable();
 
 		RepositoryRestHandlerMapping repositoryMapping = new RepositoryRestHandlerMapping(resourceMappings,
 				repositoryRestConfiguration, repositories);
 		repositoryMapping.setJpaHelper(jpaHelper.orElse(null));
 		repositoryMapping.setApplicationContext(applicationContext);
 		repositoryMapping.setCorsConfigurations(corsConfigurations);
+		repositoryMapping.setPatternParser(parser);
 		repositoryMapping.afterPropertiesSet();
 
 		BasePathAwareHandlerMapping basePathMapping = new BasePathAwareHandlerMapping(repositoryRestConfiguration);
 		basePathMapping.setApplicationContext(applicationContext);
 		basePathMapping.setCorsConfigurations(corsConfigurations);
+		basePathMapping.setPatternParser(parser);
 		basePathMapping.afterPropertiesSet();
 
 		List<HandlerMapping> mappings = new ArrayList<>();
 		mappings.add(basePathMapping);
 		mappings.add(repositoryMapping);
 
-		return new DelegatingHandlerMapping(mappings);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurer#configurePathMatch(org.springframework.web.servlet.config.annotation.PathMatchConfigurer)
-	 */
-	@Override
-	public void configurePathMatch(PathMatchConfigurer configurer) {
-		restHandlerMapping.get().setPatternParser(configurer.getPatternParser());
+		return new DelegatingHandlerMapping(mappings, parser);
 	}
 
 	@Bean

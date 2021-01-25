@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -122,9 +123,11 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		}
 
 		ProducesRequestCondition producesCondition = customize(info.getProducesCondition());
+		Set<MediaType> mediaTypes = producesCondition.getProducibleMediaTypes();
 
-		return new RequestMappingInfo(info.getPatternsCondition(), info.getMethodsCondition(), info.getParamsCondition(),
-				info.getHeadersCondition(), info.getConsumesCondition(), producesCondition, info.getCustomCondition());
+		return info.mutate()
+				.produces(mediaTypes.stream().map(MediaType::toString).toArray(String[]::new))
+				.build();
 	}
 
 	/**
