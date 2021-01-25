@@ -120,7 +120,6 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.handler.AbstractHandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
@@ -577,7 +576,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		HalConfiguration halConfiguration = this.halConfiguration.getIfUnique(HalConfiguration::new);
 		HalHandlerInstantiator instantiator = new HalHandlerInstantiator(defaultedRelProvider,
 				curieProvider.getIfUnique(() -> new DefaultCurieProvider(Collections.emptyMap())), resolver.getObject(),
-				halConfiguration);
+				halConfiguration, applicationContext.getAutowireCapableBeanFactory());
 
 		ObjectMapper mapper = basicObjectMapper();
 		mapper.registerModule(persistentEntityJackson2Module(linkCollector));
