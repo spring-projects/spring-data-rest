@@ -30,6 +30,11 @@ pipeline {
                         }
                     }
                     options { timeout(time: 30, unit: 'MINUTES') }
+
+		            environment {
+		                ARTIFACTORY = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
+		            }
+
                     steps {
                         sh 'rm -rf ?'
                         sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
@@ -37,7 +42,7 @@ pipeline {
                         sh 'sleep 10'
                         sh 'mongo --eval "rs.initiate({_id: \'rs0\', members:[{_id: 0, host: \'127.0.0.1:27017\'}]});"'
                         sh 'sleep 15'
-                        sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -U -B -Pit'
+                        sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -U -B -Pit -s settings.xml'
                     }
                 }
             }
