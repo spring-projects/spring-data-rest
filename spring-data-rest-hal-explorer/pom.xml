@@ -13,7 +13,7 @@
 	<name>Spring Data REST - HAL Explorer</name>
 
 	<properties>
-		<explorer.version>0.14.0</explorer.version>
+		<explorer.version>0.15.0</explorer.version>
 		<json-editor.version>0.7.21</json-editor.version>
 		<java-module-name>spring.data.rest.hal.explorer</java-module-name>
 		<!--
