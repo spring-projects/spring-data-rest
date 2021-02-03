@@ -42,7 +42,7 @@ If the configuration values (`RepositoryRestConfiguration.returnBodyOnUpdate` an
 [[repository-resources.resource-discoverability]]
 === Resource Discoverability
 
-A core principle of https://spring.io/understanding/HATEOAS[HATEOAS] is that resources should be discoverable through the publication of links that point to the available resources. There are a few competing de-facto standards of how to represent links in JSON. By default, Spring Data REST uses https://tools.ietf.org/html/draft-kelly-json-hal[HAL] to render responses. HAL defines the links to be contained in a property of the returned document.
+A core principle of HATEOAS is that resources should be discoverable through the publication of links that point to the available resources. There are a few competing de-facto standards of how to represent links in JSON. By default, Spring Data REST uses https://tools.ietf.org/html/draft-kelly-json-hal[HAL] to render responses. HAL defines the links to be contained in a property of the returned document.
 
 Resource discovery starts at the top level of the application. By issuing a request to the root URL under which the Spring Data REST application is deployed, the client can extract, from the returned JSON object, a set of links that represent the next level of resources that are available to the client.
 
