@@ -104,7 +104,7 @@ Spring Data REST uses a `RepositoryDetectionStrategy` to determine whether a rep
 | Name         | Description
 | `DEFAULT`    | Exposes all public repository interfaces but considers the `exported` flag of `@(Repository)RestResource`.
 | `ALL`        | Exposes all repositories independently of type visibility and annotations.
-| `ANNOTATION` | Only repositories annotated with `@(Repository)RestResource` are exposed, unless their `exported` flag is set to `false`.
+| `ANNOTATED`  | Only repositories annotated with `@(Repository)RestResource` are exposed, unless their `exported` flag is set to `false`.
 | `VISIBILITY` | Only public repositories annotated are exposed.
 |===
 
