@@ -29,6 +29,8 @@ import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.Re
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.hateoas.server.core.AnnotationLinkRelationProvider;
+import org.springframework.hateoas.server.core.DelegatingLinkRelationProvider;
 import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -96,6 +98,10 @@ public class RepositoryRestConfiguration {
 		this.enumTranslationConfiguration = enumTranslationConfiguration;
 		this.entityLookupConfiguration = new EntityLookupConfiguration();
 		this.exposureConfiguration = new ExposureConfiguration();
+
+		this.relProvider = new DelegatingLinkRelationProvider( //
+				new AnnotationLinkRelationProvider(), //
+				new EvoInflectorLinkRelationProvider());
 	}
 
 	/**
