@@ -27,6 +27,7 @@ import org.springframework.data.rest.core.mapping.ExposureConfiguration;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 import org.springframework.data.rest.core.support.EntityLookup;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.hateoas.server.core.AnnotationLinkRelationProvider;
@@ -67,16 +68,14 @@ public class RepositoryRestConfiguration {
 	private RepositoryDetectionStrategy repositoryDetectionStrategy = RepositoryDetectionStrategies.DEFAULT;
 	private boolean exposeRepositoryMethodsByDefault = true;
 
-	/**
-	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
-	 */
-	private LinkRelationProvider relProvider = new EvoInflectorLinkRelationProvider();
 	private final ProjectionDefinitionConfiguration projectionConfiguration;
 	private final MetadataConfiguration metadataConfiguration;
 	private final EntityLookupConfiguration entityLookupConfiguration;
 
 	private final ExposureConfiguration exposureConfiguration;
 	private final EnumTranslationConfiguration enumTranslationConfiguration;
+
+	private LinkRelationProvider linkRelationProvider;
 	private boolean enableEnumTranslation = false;
 
 	/**
@@ -99,7 +98,7 @@ public class RepositoryRestConfiguration {
 		this.entityLookupConfiguration = new EntityLookupConfiguration();
 		this.exposureConfiguration = new ExposureConfiguration();
 
-		this.relProvider = new DelegatingLinkRelationProvider( //
+		this.linkRelationProvider = new DelegatingLinkRelationProvider( //
 				new AnnotationLinkRelationProvider(), //
 				new EvoInflectorLinkRelationProvider());
 	}
@@ -666,20 +665,56 @@ public class RepositoryRestConfiguration {
 	}
 
 	/**
-	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
+	 * The {@link LinkRelationProvider} to be used to calculate the link relation defaults for repositories.
+	 *
+	 * @deprecated since 3.5, use {@link #getLinkRelationProvider()} instead.
 	 */
+	@Deprecated
 	public LinkRelationProvider getRelProvider() {
-		return this.relProvider;
+		return this.linkRelationProvider;
 	}
 
 	/**
 	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
+	 *
+	 * @deprecated since 3.5, use {@link #setLinkRelationProvider(LinkRelationProvider)} instead.
 	 */
+	@Deprecated
 	public void setRelProvider(LinkRelationProvider relProvider) {
+		setLinkRelationProvider(relProvider);
+	}
 
-		Assert.notNull(relProvider, "LinkRelationProvider must not be null!");
+	/**
+	 * Returns the {@link LinkRelationProvider} configured to calculate the link relation defaults for repositories.
+	 * Defaults to a delegating wrapper around an {@link AnnotationLinkRelationProvider} and
+	 * {@link EvoInflectorLinkRelationProvider}.
+	 *
+	 * @return
+	 * @see #setLinkRelationProvider(LinkRelationProvider)
+	 * @see AnnotationLinkRelationProvider
+	 * @see EvoInflectorLinkRelationProvider
+	 * @since 3.5
+	 */
+	public LinkRelationProvider getLinkRelationProvider() {
+		return this.linkRelationProvider;
+	}
 
-		this.relProvider = relProvider;
+	/**
+	 * Configures the {@link LinkRelationProvider} to be used to calculate the {@link LinkRelation} defaults for
+	 * repositories. The provided instance will replace the default setup completely. For details on the defaults and
+	 * setting up a similar, delegating arrangement, see {@link #getLinkRelationProvider()}.
+	 *
+	 * @param provider must not be {@literal null}.
+	 * @return the current instance
+	 * @since 3.5
+	 */
+	public RepositoryRestConfiguration setLinkRelationProvider(LinkRelationProvider provider) {
+
+		Assert.notNull(provider, "LinkRelationProvider must not be null!");
+
+		this.linkRelationProvider = provider;
+
+		return this;
 	}
 
 	public ExposureConfiguration getExposureConfiguration() {

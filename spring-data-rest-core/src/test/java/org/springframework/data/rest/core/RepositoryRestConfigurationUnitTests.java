@@ -119,12 +119,13 @@ public class RepositoryRestConfigurationUnitTests {
 
 	@Test // DATAREST-1076
 	public void rejectsNullRelProvider() {
-		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> configuration.setRelProvider(null));
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> configuration.setLinkRelationProvider(null));
 	}
 
 	@Test // #1974
 	public void considersAtRelationOnTypesByDefault() {
-		assertThat(configuration.getRelProvider().getItemResourceRelFor(Sample.class))
+		assertThat(configuration.getLinkRelationProvider().getItemResourceRelFor(Sample.class))
 				.isEqualTo(LinkRelation.of("something"));
 	}
 

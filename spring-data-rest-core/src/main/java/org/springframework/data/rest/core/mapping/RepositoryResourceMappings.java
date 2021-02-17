@@ -73,7 +73,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 			PersistentEntity<?, ?> entity = repositories.getPersistentEntity(type);
 
 			RepositoryDetectionStrategy strategy = configuration.getRepositoryDetectionStrategy();
-			LinkRelationProvider provider = configuration.getRelProvider();
+			LinkRelationProvider provider = configuration.getLinkRelationProvider();
 
 			CollectionResourceMapping mapping = new RepositoryCollectionResourceMapping(repositoryInformation, strategy,
 					provider);
