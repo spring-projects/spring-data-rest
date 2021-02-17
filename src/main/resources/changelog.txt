@@ -1,6 +1,21 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.5.0-M3 (2021-02-17)
+----------------------------------------
+* #1971 - Upgrade MongoDB tests to 4.2 driver.
+* #1970 - Repository Detection Strategy is labeled "ANNOTATION" in documentation vs "ANNOTATED" in codebase.
+* #1967 - Link to HATEOAS in docs results in a 404.
+* #1965 - Avoid late registration of PathPatternParser on DelegatingHandlerMapping.
+* #1964 - Adapt to changes in HalHandlerInstantiator constructor.
+* #1962 - Documentation: Reflect API changes in Spring HATEOAS 1.0+.
+* #1961 - Fix typo in the spring-data-rest documentation.
+* #1957 - Upgrade to Hal Explorer 0.15.0.
+* #1955 - Duplicate calls of a custom HandlerInterceptor's methods after updating to Spring Data REST 3.4.
+* #1926 - Using @JsonValue in embedded collection values causes an exception [DATAREST-1564].
+* #424 - Update repository after GitHub issues migration.
+
+
 Changes in version 3.4.4 (2021-02-17)
 -------------------------------------
 * #1965 - Avoid late registration of PathPatternParser on DelegatingHandlerMapping.
@@ -1736,6 +1751,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
