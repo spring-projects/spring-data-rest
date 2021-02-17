@@ -1,6 +1,15 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.4.4 (2021-02-17)
+-------------------------------------
+* #1965 - Avoid late registration of PathPatternParser on DelegatingHandlerMapping.
+* #1955 - Duplicate calls of a custom HandlerInterceptor's methods after updating to Spring Data REST 3.4.
+* #1926 - Using @JsonValue in embedded collection values causes an exception [DATAREST-1564].
+* #1921 - 2.4.0/2.4.1 sprint-boot Rest Repositories initializr project reports lots of Beans is not eligible for getting processed by all BeanPostProcessors [DATAREST-1590].
+* #424 - Update repository after GitHub issues migration.
+
+
 Changes in version 3.3.7.RELEASE (2021-02-17)
 ---------------------------------------------
 * DATAREST-1587 - Remove Solr integration tests.
@@ -1727,6 +1736,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
