@@ -29,6 +29,8 @@ import org.springframework.data.rest.core.config.RepositoryCorsRegistry;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.domain.Profile;
 import org.springframework.data.rest.core.domain.ProfileRepository;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.server.core.Relation;
 import org.springframework.http.MediaType;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -135,5 +137,16 @@ public class RepositoryRestConfigurationUnitTests {
 	@Test // DATAREST-1076
 	public void rejectsNullRelProvider() {
 		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> configuration.setRelProvider(null));
+	}
+
+	@Test // #1974
+	public void considersAtRelationOnTypesByDefault() {
+		assertThat(configuration.getRelProvider().getItemResourceRelFor(Sample.class))
+				.isEqualTo(LinkRelation.of("something"));
+	}
+
+	@Relation("something")
+	static class Sample {
+
 	}
 }
