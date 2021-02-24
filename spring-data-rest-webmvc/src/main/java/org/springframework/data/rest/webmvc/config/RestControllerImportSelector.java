@@ -34,6 +34,7 @@ import org.springframework.util.ClassUtils;
 class RestControllerImportSelector implements ImportSelector {
 
 	private static final String HAL_EXPLORER_CONFIGURATION = "org.springframework.data.rest.webmvc.halexplorer.HalExplorerConfiguration";
+	private static final String JMOLECULES_SPRING = "org.jmolecules.spring.IdentifierToPrimitivesConverter";
 
 	/*
 	 * (non-Javadoc)
@@ -45,8 +46,14 @@ class RestControllerImportSelector implements ImportSelector {
 		List<String> configurations = new ArrayList<>();
 		configurations.add(RestControllerConfiguration.class.getName());
 
-		if (ClassUtils.isPresent(HAL_EXPLORER_CONFIGURATION, importingClassMetadata.getClass().getClassLoader())) {
+		ClassLoader classLoader = importingClassMetadata.getClass().getClassLoader();
+
+		if (ClassUtils.isPresent(HAL_EXPLORER_CONFIGURATION, classLoader)) {
 			configurations.add(HAL_EXPLORER_CONFIGURATION);
+		}
+
+		if (ClassUtils.isPresent(JMOLECULES_SPRING, classLoader)) {
+			configurations.add(JMoleculesConfigurer.class.getName());
 		}
 
 		return configurations.toArray(new String[configurations.size()]);

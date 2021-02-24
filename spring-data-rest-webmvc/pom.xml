@@ -35,6 +35,13 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.jmolecules.integrations</groupId>
+			<artifactId>jmolecules-spring</artifactId>
+			<version>${jmolecules-integration}</version>
+			<optional>true</optional>
+		</dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
