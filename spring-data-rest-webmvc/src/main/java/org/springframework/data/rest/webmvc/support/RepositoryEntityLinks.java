@@ -156,13 +156,26 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		Assert.isInstanceOf(Serializable.class, id, "Id must be assignable to Serializable!");
 
 		ResourceMetadata metadata = mappings.getMetadataFor(type);
+		Link link = linkForItemResource(type, id).withRel(metadata.getItemResourceRel());
+
+		return Link.of(UriTemplate.of(link.getHref()).with(getProjectionVariable(type)).toString(),
+				metadata.getItemResourceRel());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.hateoas.server.core.AbstractEntityLinks#linkForItemResource(java.lang.Class, java.lang.Object)
+	 */
+	@Override
+	public LinkBuilder linkForItemResource(Class<?> type, Object id) {
+
+		Assert.isInstanceOf(Serializable.class, id, "Id must be assignable to Serializable!");
+
 		String mappedId = idConverters.getPluginFor(type)//
 				.orElse(DefaultIdConverter.INSTANCE)//
 				.toRequestId((Serializable) id, type);
 
-		Link link = linkFor(type).slash(mappedId).withRel(metadata.getItemResourceRel());
-		return Link.of(UriTemplate.of(link.getHref()).with(getProjectionVariable(type)).toString(),
-				metadata.getItemResourceRel());
+		return linkFor(type).slash(mappedId);
 	}
 
 	/**
