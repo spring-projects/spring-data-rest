@@ -18,7 +18,6 @@ package org.springframework.data.rest.webmvc.support;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -156,5 +155,13 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 		for (Link link : entityLinks.linksToSearchResources(Book.class)) {
 			assertThat(link.getVariableNames()).contains("projection");
 		}
+	}
+
+	@Test // #1980
+	public void considersIdConverterInLinkForItemResource() {
+
+		Link link = entityLinks.linkForItemResource(Book.class, 7L).withSelfRel();
+
+		assertThat(link.getHref()).endsWith("/books/7-7-7-7-7-7-7");
 	}
 }
