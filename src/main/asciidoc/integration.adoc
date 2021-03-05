@@ -40,7 +40,7 @@ With the class in the preceding example, you can use the following operations:
 |`entityLinks.linkToCollectionResource(Person.class)`
 |Provide a link to the collection resource of the specified type (`Person`, in this case).
 
-|`entityLinks.linkToSingleResource(Person.class, 1)`
+|`entityLinks.linkToItemResource(Person.class, 1)`
 |Provide a link to a single resource.
 
 |`entityLinks.linkToPagedResource(Person.class, new PageRequest(...))`
