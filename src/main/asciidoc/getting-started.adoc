@@ -80,7 +80,7 @@ Spring Data REST configuration is defined in a class called `RepositoryRestMvcCo
 
 IMPORTANT: This step is unnecessary if you use Spring Boot's auto-configuration. Spring Boot automatically enables Spring Data REST when you include *spring-boot-starter-data-rest* and, in your list of dependencies, your app is flagged with either `@SpringBootApplication` or `@EnableAutoConfiguration`.
 
-To customize the configuration, register a `RepositoryRestConfigurer` (or extend `RepositoryRestConfigurerAdapter`) and implement or override the `configure…`-methods relevant to your use case.
+To customize the configuration, register a `RepositoryRestConfigurer` and implement or override the `configure…`-methods relevant to your use case.
 
 Make sure you also configure Spring Data repositories for the store you use. For details on that, see the reference documentation for the https://projects.spring.io/spring-data/[corresponding Spring Data module].
 
@@ -133,10 +133,10 @@ class CustomRestMvcConfiguration {
   @Bean
   public RepositoryRestConfigurer repositoryRestConfigurer() {
 
-    return new RepositoryRestConfigurerAdapter() {
+    return new RepositoryRestConfigurer() {
 
       @Override
-      public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+      public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
         config.setBasePath("/api");
       }
     };
@@ -151,10 +151,10 @@ Alternatively, you can register a custom implementation of `RepositoryRestConfig
 [source,java]
 ----
 @Component
-public class CustomizedRestMvcConfiguration extends RepositoryRestConfigurerAdapter {
+public class CustomizedRestMvcConfiguration extends RepositoryRestConfigurer {
 
   @Override
-  public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+  public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
     config.setBasePath("/api");
   }
 }

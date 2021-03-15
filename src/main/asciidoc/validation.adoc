@@ -7,13 +7,13 @@ In order to tell Spring Data REST you want a particular `Validator` assigned to 
 
 == Assigning Validators Manually
 
-If you would rather not use the bean name prefix approach, you need to register an instance of your validator with the bean whose job it is to invoke validators after the correct event. In your configuration that implements `RepositoryRestConfigurer` or subclasses Spring Data REST's `RepositoryRestConfigurerAdapter`, override the `configureValidatingRepositoryEventListener` method and call `addValidator` on the `ValidatingRepositoryEventListener`, passing the event on which you want this validator to be triggered and an instance of the validator. The following example shows how to do so:
+If you would rather not use the bean name prefix approach, you need to register an instance of your validator with the bean whose job it is to invoke validators after the correct event. In your configuration that implements `RepositoryRestConfigurer`, override the `configureValidatingRepositoryEventListener` method and call `addValidator` on the `ValidatingRepositoryEventListener`, passing the event on which you want this validator to be triggered and an instance of the validator. The following example shows how to do so:
 
 ====
 [source,java]
 ----
 @Override
-protected void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
+void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
   v.addValidator("beforeSave", new BeforeSaveValidator());
 }
 ----

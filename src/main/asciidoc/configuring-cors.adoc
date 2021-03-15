@@ -65,12 +65,12 @@ The following example sets an allowed origin, adds the PUT and DELETE HTTP metho
 [source, java]
 ----
 @Component
-public class SpringDataRestCustomization extends RepositoryRestConfigurerAdapter {
+public class SpringDataRestCustomization implements RepositoryRestConfigurer {
 
   @Override
-  public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+  public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
 
-    config.getCorsRegistry().addMapping("/person/**")
+    cors.addMapping("/person/**")
       .allowedOrigins("http://domain2.example")
       .allowedMethods("PUT", "DELETE")
       .allowedHeaders("header1", "header2", "header3")
