@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.3.8.RELEASE (2021-03-17)
+---------------------------------------------
+* #1984 - Fix usage of RepositoryEntityLinks in the ref docs.
+* #1980 - RepositoryEntityLinks should override ….linkForItemResource(…).
+* #1974 - @Relation annotation not considered for link relation defaults.
+
+
 Changes in version 3.5.0-M4 (2021-02-18)
 ----------------------------------------
 
@@ -1759,6 +1766,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
