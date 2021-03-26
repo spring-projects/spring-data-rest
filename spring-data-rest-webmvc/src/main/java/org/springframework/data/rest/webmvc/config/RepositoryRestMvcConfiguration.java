@@ -259,15 +259,14 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				new DefaultRepositoryInvokerFactory(repositories.get(), defaultConversionService), getEntityLookups()));
 
 		this.defaultConversionService = new DefaultFormattingConversionService();
-		this.configurerDelegate = Lazy.of(() -> context.getBean(RepositoryRestConfigurerDelegate.class));
+
+		this.configurerDelegate = Lazy.of(() -> {
+			return new RepositoryRestConfigurerDelegate(context.getBeansOfType(RepositoryRestConfigurer.class).values());
+		});
+
 		this.repositoryRestConfiguration = Lazy.of(() -> context.getBean(RepositoryRestConfiguration.class));
 		this.pageableResolver = Lazy.of(() -> context.getBean(HateoasPageableHandlerMethodArgumentResolver.class));
 		this.sortResolver = Lazy.of(() -> context.getBean(HateoasSortHandlerMethodArgumentResolver.class));
-	}
-
-	@Bean
-	public static RepositoryRestConfigurerDelegate configurerDelegate(List<RepositoryRestConfigurer> configurers) {
-		return new RepositoryRestConfigurerDelegate(configurers);
 	}
 
 	/*
@@ -305,8 +304,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	@Qualifier
 	public DefaultFormattingConversionService defaultConversionService(PersistentEntities persistentEntities,
-			RepositoryInvokerFactory repositoryInvokerFactory, Repositories repositories,
-			RepositoryRestConfigurerDelegate configurerDelegate) {
+			RepositoryInvokerFactory repositoryInvokerFactory, Repositories repositories) {
 
 		DefaultFormattingConversionService conversionService = (DefaultFormattingConversionService) defaultConversionService;
 
@@ -316,7 +314,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		conversionService.addConverter(StringToLdapNameConverter.INSTANCE);
 		addFormatters(conversionService);
 
-		configurerDelegate.configureConversionService(conversionService);
+		configurerDelegate.get().configureConversionService(conversionService);
 
 		return conversionService;
 	}
@@ -326,11 +324,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * {@link org.springframework.validation.Validator} instances assigned to specific domain types.
 	 */
 	@Bean
-	public ValidatingRepositoryEventListener validatingRepositoryEventListener(ObjectFactory<PersistentEntities> entities,
-			RepositoryRestConfigurerDelegate configurerDelegate) {
+	public ValidatingRepositoryEventListener validatingRepositoryEventListener(
+			ObjectFactory<PersistentEntities> entities) {
 
 		ValidatingRepositoryEventListener listener = new ValidatingRepositoryEventListener(entities);
-		configurerDelegate.configureValidatingRepositoryEventListener(listener);
+		configurerDelegate.get().configureValidatingRepositoryEventListener(listener);
 
 		return listener;
 	}
@@ -775,7 +773,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			@Qualifier("halJacksonHttpMessageConverter") TypeConstrainedMappingJackson2HttpMessageConverter halJacksonHttpMessageConverter,
 			@Qualifier("halFormsJacksonHttpMessageConverter") TypeConstrainedMappingJackson2HttpMessageConverter halFormsJacksonHttpMessageConverter,
 			AlpsJsonHttpMessageConverter alpsJsonHttpMessageConverter,
-			UriListHttpMessageConverter uriListHttpMessageConverter, RepositoryRestConfigurerDelegate configurerDelegate,
+			UriListHttpMessageConverter uriListHttpMessageConverter,
 			RepositoryRestConfiguration repositoryRestConfiguration) {
 
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
@@ -800,7 +798,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		messageConverters.add(fallbackJsonConverter);
 		messageConverters.add(uriListHttpMessageConverter);
 
-		configurerDelegate.configureHttpMessageConverters(messageConverters);
+		configurerDelegate.get().configureHttpMessageConverters(messageConverters);
 
 		return messageConverters;
 	}
