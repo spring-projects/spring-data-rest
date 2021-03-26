@@ -146,7 +146,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
  */
 @Configuration(proxyBeanMethods = false)
 @EnableHypermediaSupport(type = { HypermediaType.HAL, HypermediaType.HAL_FORMS })
-@ImportResource("classpath*:META-INF/spring-data-rest/**/*.xml")
 @Import({ RestControllerImportSelector.class, //
 		SpringDataJacksonConfiguration.class, //
 		EnableSpringDataWebSupport.QuerydslActivator.class })
