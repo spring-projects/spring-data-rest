@@ -17,9 +17,13 @@ package org.springframework.data.rest.core.support;
 
 import java.util.List;
 
+import org.springframework.core.convert.ConversionService;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.EntityLinks;
+import org.springframework.lang.Nullable;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 
@@ -36,6 +40,7 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 	private final PersistentEntities entities;
 	private final EntityLinks entityLinks;
 	private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
+	private final ConversionService conversionService;
 
 	/**
 	 * Creates a new {@link DefaultSelfLinkProvider} from the {@link PersistentEntities}, {@link EntityLinks} and
@@ -46,7 +51,7 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 	 * @param lookups must not be {@literal null}.
 	 */
 	public DefaultSelfLinkProvider(PersistentEntities entities, EntityLinks entityLinks,
-			List<? extends EntityLookup<?>> lookups) {
+			List<? extends EntityLookup<?>> lookups, ConversionService conversionService) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
 		Assert.notNull(entityLinks, "EntityLinks must not be null!");
@@ -55,6 +60,7 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 		this.entities = entities;
 		this.entityLinks = entityLinks;
 		this.lookups = PluginRegistry.of(lookups);
+		this.conversionService = conversionService;
 	}
 
 	/*
@@ -65,29 +71,54 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 
 		Assert.notNull(instance, "Domain object must not be null!");
 
-		return entityLinks.linkToItemResource(instance.getClass(), getResourceId(instance));
+		return createSelfLinkFor(instance.getClass(), instance);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.support.SelfLinkProvider#createSelfLinkFor(java.lang.Class, java.lang.Object)
+	 */
+	public Link createSelfLinkFor(Class<?> type, Object reference) {
+
+		if (type.isInstance(reference)) {
+			return entityLinks.linkToItemResource(type, getResourceId(type, reference));
+		}
+
+		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(type);
+		PersistentProperty<?> idProperty = entity.getRequiredIdProperty();
+
+		Object identifier = conversionService.convert(reference, idProperty.getType());
+
+		if (lookups.hasPluginFor(type)) {
+			identifier = getResourceId(type, conversionService.convert(identifier, type));
+		}
+
+		return entityLinks.linkToItemResource(type, identifier);
 	}
 
 	/**
 	 * Returns the identifier to be used to create the self link URI.
 	 *
-	 * @param instance must not be {@literal null}.
+	 * @param reference must not be {@literal null}.
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	private Object getResourceId(Object instance) {
+	@Nullable
+	private Object getResourceId(Class<?> type, Object reference) {
 
-		Class<? extends Object> instanceType = instance.getClass();
+		if (!lookups.hasPluginFor(type)) {
+			return entityIdentifierOrNull(reference);
+		}
 
-		return lookups.getPluginFor(instanceType)//
+		return lookups.getPluginFor(type)//
 				.map(it -> it.getClass().cast(it))//
-				.map(it -> it.getResourceIdentifier(instance))//
-				.orElseGet(() -> identifierOrNull(instance));
+				.map(it -> it.getResourceIdentifier(reference))//
+				.orElseGet(() -> entityIdentifierOrNull(reference));
 	}
 
-	private Object identifierOrNull(Object instance) {
+	private Object entityIdentifierOrNull(Object instance) {
 
-		return entities.getRequiredPersistentEntity(instance.getClass())//
-				.getIdentifierAccessor(instance).getIdentifier();
+		return entities.getRequiredPersistentEntity(instance.getClass()) //
+				.getIdentifierAccessor(instance) //
+				.getIdentifier();
 	}
 }

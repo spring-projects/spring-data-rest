@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
@@ -66,7 +67,8 @@ public abstract class AbstractControllerIntegrationTests {
 		public PersistentEntityResourceAssembler persistentEntityResourceAssembler(PersistentEntities entities,
 				EntityLinks entityLinks, Associations associations) {
 
-			SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(entities, entityLinks, Collections.emptyList());
+			SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(entities, entityLinks, Collections.emptyList(),
+					new DefaultConversionService());
 
 			return new PersistentEntityResourceAssembler(entities, StubProjector.INSTANCE, associations,
 					selfLinkProvider);

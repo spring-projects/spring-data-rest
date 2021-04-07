@@ -183,7 +183,7 @@ public class LinkCollector {
 		private final SelfLinkProvider selfLinks;
 		private final PersistentPropertyAccessor<?> accessor;
 		private final Associations associations;
-		private final List<Link> links = new ArrayList<Link>();
+		private Links links = Links.NONE;
 
 		public NestedLinkCollectingAssociationHandler(SelfLinkProvider selfLinks,
 				PersistentPropertyAccessor<?> accessor, Associations associations) {
@@ -198,7 +198,7 @@ public class LinkCollector {
 		}
 
 		public List<Link> getLinks() {
-			return this.links;
+			return this.links.toList();
 		}
 
 		/*
@@ -223,9 +223,10 @@ public class LinkCollector {
 			ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 			for (Object element : asCollection(value)) {
-				if (element != null) {
-					links.add(getLinkFor(element, propertyMapping));
-				}
+
+				links = links.andIf(element != null,
+						() -> selfLinks.createSelfLinkFor(property.getAssociationTargetType(), element)
+								.withRel(propertyMapping.getRel()));
 			}
 		}
 

@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
@@ -112,7 +113,7 @@ public class RepositoryTestsConfig {
 		EntityLinks entityLinks = new RepositoryEntityLinks(repositories(), mappings, config(),
 				mock(PagingAndSortingTemplateVariables.class), PluginRegistry.of(DefaultIdConverter.INSTANCE));
 		SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks,
-				Collections.<EntityLookup<?>> emptyList());
+				Collections.<EntityLookup<?>> emptyList(), new DefaultConversionService());
 
 		DefaultRepositoryInvokerFactory invokerFactory = new DefaultRepositoryInvokerFactory(repositories());
 		UriToEntityConverter uriToEntityConverter = new UriToEntityConverter(persistentEntities(), invokerFactory,

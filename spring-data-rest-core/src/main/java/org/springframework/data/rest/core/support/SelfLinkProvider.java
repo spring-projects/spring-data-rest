@@ -27,10 +27,24 @@ import org.springframework.hateoas.Link;
 public interface SelfLinkProvider {
 
 	/**
-	 * Returns the self link for the given entity instance.
+	 * Returns the self link for the given entity instance. Only call this with an actual entity instance. Otherwise,
+	 * prefer {@link #createSelfLinkFor(Class, Object)}.
 	 *
 	 * @param instance must never be {@literal null}.
 	 * @return will never be {@literal null}.
+	 * @see #createSelfLinkFor(Class, Object)
 	 */
 	Link createSelfLinkFor(Object instance);
+
+	/**
+	 * Returns the self link for the entity of the given type and the given reference. The latter can be an instance of
+	 * the former, an identifier value of the former or anything that can be converted into an identifier in the first
+	 * place.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @param reference must not be {@literal null}.
+	 * @return will never be {@literal null}.
+	 * @since 3.5
+	 */
+	Link createSelfLinkFor(Class<?> type, Object reference);
 }

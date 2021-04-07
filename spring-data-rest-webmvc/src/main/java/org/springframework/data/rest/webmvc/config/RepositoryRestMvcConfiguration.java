@@ -34,7 +34,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.Ordered;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.support.SpringFactoriesLoader;
@@ -861,8 +860,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public SelfLinkProvider selfLinkProvider(PersistentEntities persistentEntities, RepositoryEntityLinks entityLinks) {
-		return new DefaultSelfLinkProvider(persistentEntities, entityLinks, getEntityLookups());
+	public SelfLinkProvider selfLinkProvider(PersistentEntities persistentEntities, RepositoryEntityLinks entityLinks,
+			@Qualifier("mvcConversionService") ObjectProvider<ConversionService> conversionService) {
+		return new DefaultSelfLinkProvider(persistentEntities, entityLinks, getEntityLookups(),
+				conversionService.getIfUnique(() -> defaultConversionService));
 	}
 
 	@Bean
