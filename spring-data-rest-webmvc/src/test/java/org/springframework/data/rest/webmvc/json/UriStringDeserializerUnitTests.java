@@ -30,7 +30,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.UriStringDeserializer;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -51,7 +50,6 @@ public class UriStringDeserializerUnitTests {
 	public @Rule ExpectedException exception = ExpectedException.none();
 
 	@Mock UriToEntityConverter converter;
-	@Mock PersistentProperty<?> property;
 
 	@Mock JsonParser parser;
 	DeserializationContext context;
@@ -61,7 +59,7 @@ public class UriStringDeserializerUnitTests {
 	@Before
 	public void setUp() {
 
-		this.deserializer = new UriStringDeserializer(property, converter);
+		this.deserializer = new UriStringDeserializer(Object.class, converter);
 
 		// Need to hack the context as there's virtually no way wo set up a combined parser and context easily
 		this.context = new ObjectMapper().getDeserializationContext();
@@ -94,10 +92,8 @@ public class UriStringDeserializerUnitTests {
 		invokeConverterWith("{ \"foo\" : \"bar\" }");
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Object invokeConverterWith(String source) throws Exception {
 
-		when(property.getActualType()).thenReturn((Class) Object.class);
 		when(parser.getValueAsString()).thenReturn(source);
 
 		return deserializer.deserialize(parser, context);

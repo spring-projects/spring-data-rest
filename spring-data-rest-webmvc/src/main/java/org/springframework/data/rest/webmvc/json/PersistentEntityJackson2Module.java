@@ -48,6 +48,7 @@ import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.util.CastUtils;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
@@ -427,7 +428,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		private final UriToEntityConverter converter;
 		private final RepositoryInvokerFactory factory;
 
-		@java.lang.SuppressWarnings("all")
 		public AssociationUriResolvingDeserializerModifier(PersistentEntities entities, Associations associations,
 				UriToEntityConverter converter, RepositoryInvokerFactory factory) {
 
@@ -451,7 +451,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				BeanDeserializerBuilder builder) {
 
 			ValueInstantiatorCustomizer customizer = new ValueInstantiatorCustomizer(builder.getValueInstantiator(), config);
-
 			Iterator<SettableBeanProperty> properties = builder.getProperties();
 
 			entities.getPersistentEntity(beanDesc.getBeanClass()).ifPresent(entity -> {
@@ -459,19 +458,19 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				while (properties.hasNext()) {
 
 					SettableBeanProperty property = properties.next();
-
 					PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getName());
 
 					if (persistentProperty == null) {
 						continue;
 					}
 
+					TypeInformation<?> propertyType = persistentProperty.getTypeInformation();
+
 					if (associationLinks.isLookupType(persistentProperty)) {
 
 						RepositoryInvokingDeserializer repositoryInvokingDeserializer = new RepositoryInvokingDeserializer(factory,
 								persistentProperty);
-						JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, repositoryInvokingDeserializer,
-								config);
+						JsonDeserializer<?> deserializer = wrapIfCollection(propertyType, repositoryInvokingDeserializer, config);
 
 						builder.addOrReplaceProperty(property.withValueDeserializer(deserializer), false);
 						continue;
@@ -481,8 +480,9 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 						continue;
 					}
 
-					UriStringDeserializer uriStringDeserializer = new UriStringDeserializer(persistentProperty, converter);
-					JsonDeserializer<?> deserializer = wrapIfCollection(persistentProperty, uriStringDeserializer, config);
+					Class<?> actualPropertyType = persistentProperty.getActualType();
+					UriStringDeserializer uriStringDeserializer = new UriStringDeserializer(actualPropertyType, converter);
+					JsonDeserializer<?> deserializer = wrapIfCollection(propertyType, uriStringDeserializer, config);
 
 					customizer.replacePropertyIfNeeded(builder, property.withValueDeserializer(deserializer));
 				}
@@ -519,7 +519,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			/**
 			 * Replaces the logically same property with the given {@link SettableBeanProperty} on the given
-			 * {@link BeanDeserializerBuilder}. In case we get a {@link CreatorProperty} we als register that one to be later
+			 * {@link BeanDeserializerBuilder}. In case we get a {@link CreatorProperty} we also register that one to be later
 			 * exposed via the {@link ValueInstantiator} backing the {@link BeanDeserializerBuilder}.
 			 *
 			 * @param builder must not be {@literal null}.
@@ -559,7 +559,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 		}
 
-		private static JsonDeserializer<?> wrapIfCollection(PersistentProperty<?> property,
+		private static JsonDeserializer<?> wrapIfCollection(TypeInformation<?> property,
 				JsonDeserializer<Object> elementDeserializer, DeserializationConfig config) {
 
 			if (!property.isCollectionLike()) {
@@ -567,7 +567,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 
 			CollectionLikeType collectionType = config.getTypeFactory().constructCollectionLikeType(property.getType(),
-					property.getActualType());
+					property.getActualType().getType());
 			CollectionValueInstantiator instantiator = new CollectionValueInstantiator(property);
 			return new CollectionDeserializer(collectionType, elementDeserializer, null, instantiator);
 		}
@@ -580,26 +580,26 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * @author Oliver Gierke
 	 * @author Valentin Rentschler
 	 */
-	static class UriStringDeserializer extends StdDeserializer<Object> {
+	public static class UriStringDeserializer extends StdDeserializer<Object> {
 
 		private static final long serialVersionUID = -2175900204153350125L;
 		private static final String UNEXPECTED_VALUE = "Expected URI cause property %s points to the managed domain type!";
 
-		private final PersistentProperty<?> property;
+		private final Class<?> type;
 		private final UriToEntityConverter converter;
 
 		/**
 		 * Creates a new {@link UriStringDeserializer} for the given {@link PersistentProperty} using the given
 		 * {@link UriToEntityConverter}.
 		 *
-		 * @param property must not be {@literal null}.
+		 * @param type must not be {@literal null}.
 		 * @param converter must not be {@literal null}.
 		 */
-		public UriStringDeserializer(PersistentProperty<?> property, UriToEntityConverter converter) {
+		public UriStringDeserializer(Class<?> type, UriToEntityConverter converter) {
 
-			super(property.getActualType());
+			super(type);
 
-			this.property = property;
+			this.type = type;
 			this.converter = converter;
 		}
 
@@ -618,11 +618,11 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			try {
 				URI uri = UriTemplate.of(source).expand();
-				TypeDescriptor typeDescriptor = TypeDescriptor.valueOf(property.getActualType());
+				TypeDescriptor typeDescriptor = TypeDescriptor.valueOf(type);
 
 				return converter.convert(uri, URI_DESCRIPTOR, typeDescriptor);
 			} catch (IllegalArgumentException o_O) {
-				throw ctxt.weirdStringException(source, URI.class, String.format(UNEXPECTED_VALUE, property));
+				throw ctxt.weirdStringException(source, URI.class, String.format(UNEXPECTED_VALUE, type));
 			}
 		}
 
@@ -813,16 +813,16 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 *
 	 * @author Oliver Gierke
 	 */
-	private static class CollectionValueInstantiator extends ValueInstantiator {
+	static class CollectionValueInstantiator extends ValueInstantiator {
 
-		private final PersistentProperty<?> property;
+		private final TypeInformation<?> property;
 
 		/**
 		 * Creates a new {@link CollectionValueInstantiator} for the given {@link PersistentProperty}.
 		 *
 		 * @param property must not be {@literal null} and must be a collection.
 		 */
-		public CollectionValueInstantiator(PersistentProperty<?> property) {
+		public CollectionValueInstantiator(TypeInformation<?> property) {
 
 			Assert.notNull(property, "Property must not be null!");
 			Assert.isTrue(property.isCollectionLike() || property.isMap(), "Property must be a collection or map property!");

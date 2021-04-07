@@ -921,6 +921,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		configurerDelegate.get().configureJacksonObjectMapper(objectMapper);
 
 		objectMapper.registerModule(geoModule.getObject());
+		objectMapper.registerModule(new AggregateReferenceResolvingModule(
+				new UriToEntityConverter(persistentEntities.get(), repositoryInvokerFactory.get(), repositories.get()),
+				resourceMappings.get()));
 
 		if (repositoryRestConfiguration.get().isEnableEnumTranslation()) {
 			objectMapper.registerModule(new JacksonSerializers(enumTranslator.get()));
