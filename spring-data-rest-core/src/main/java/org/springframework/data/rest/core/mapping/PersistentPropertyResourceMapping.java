@@ -91,7 +91,10 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 		}
 
 		ResourceMapping typeMapping = mappings.getMetadataFor(property.getAssociationTargetType());
-		return !typeMapping.isExported() ? false : annotation.map(it -> it.exported()).orElse(true);
+
+		return typeMapping != null && typeMapping.isExported()
+				? annotation.map(it -> it.exported()).orElse(true)
+				: false;
 	}
 
 	/*

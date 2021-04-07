@@ -16,6 +16,7 @@
 package org.springframework.data.rest.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +28,8 @@ import org.springframework.data.annotation.Reference;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.Description;
@@ -96,6 +99,20 @@ public class PersistentPropertyResourceMappingUnitTests {
 		ResourceDescription description = mapping.getDescription();
 		assertThat(description.isDefault()).isFalse();
 		assertThat(description.getMessage()).isEqualTo("Some description");
+	}
+
+	@Test // #1994
+	public void doesNotConsiderPropertyExportedIfTargetTypeIsNotMapped() {
+
+		PersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(Entity.class);
+		PersistentProperty<?> property = entity.getRequiredPersistentProperty("third");
+
+		ResourceMappings mappings = mock(ResourceMappings.class);
+		when(mappings.getMetadataFor(property.getType())).thenReturn(null);
+
+		ResourceMapping mapping = new PersistentPropertyResourceMapping(property, mappings);
+
+		assertThat(mapping.isExported()).isFalse();
 	}
 
 	private ResourceMapping getPropertyMappingFor(Class<?> entity, String propertyName) {
