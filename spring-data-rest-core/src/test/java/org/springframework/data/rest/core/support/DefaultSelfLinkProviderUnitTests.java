@@ -28,7 +28,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -51,6 +52,7 @@ public class DefaultSelfLinkProviderUnitTests {
 	@Mock EntityLinks entityLinks;
 	PersistentEntities entities;
 	List<EntityLookup<?>> lookups;
+	ConversionService conversionService;
 
 	@Before
 	public void setUp() {
@@ -69,22 +71,23 @@ public class DefaultSelfLinkProviderUnitTests {
 
 		this.entities = new PersistentEntities(Arrays.asList(context));
 		this.lookups = Collections.emptyList();
-		this.provider = new DefaultSelfLinkProvider(entities, entityLinks, lookups);
+		this.conversionService = new DefaultConversionService();
+		this.provider = new DefaultSelfLinkProvider(entities, entityLinks, lookups, conversionService);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATAREST-724
 	public void rejectsNullEntities() {
-		new DefaultSelfLinkProvider(null, entityLinks, lookups);
+		new DefaultSelfLinkProvider(null, entityLinks, lookups, conversionService);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATAREST-724
 	public void rejectsNullEntityLinks() {
-		new DefaultSelfLinkProvider(entities, null, lookups);
+		new DefaultSelfLinkProvider(entities, null, lookups, conversionService);
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATAREST-724
 	public void rejectsNullEntityLookups() {
-		new DefaultSelfLinkProvider(entities, entityLinks, null);
+		new DefaultSelfLinkProvider(entities, entityLinks, null, conversionService);
 	}
 
 	@Test // DATAREST-724
@@ -104,7 +107,8 @@ public class DefaultSelfLinkProviderUnitTests {
 		when(lookup.supports(Profile.class)).thenReturn(true);
 		when(lookup.getResourceIdentifier(any(Profile.class))).thenReturn("foo");
 
-		this.provider = new DefaultSelfLinkProvider(entities, entityLinks, Collections.singletonList(lookup));
+		this.provider = new DefaultSelfLinkProvider(entities, entityLinks, Collections.singletonList(lookup),
+				conversionService);
 
 		Link link = provider.createSelfLinkFor(new Profile("Name", "Type"));
 
@@ -114,7 +118,8 @@ public class DefaultSelfLinkProviderUnitTests {
 	@Test // DATAREST-724, DATAREST-1549
 	public void rejectsLinkCreationForUnknownEntity() {
 
-		assertThatExceptionOfType(MappingException.class).isThrownBy(() -> provider.createSelfLinkFor(new Object())) //
+		assertThatExceptionOfType(MappingException.class) //
+				.isThrownBy(() -> provider.createSelfLinkFor(new Object())) //
 				.withMessageContaining(Object.class.getName()) //
 				.withMessageContaining("Couldn't find PersistentEntity for");
 	}

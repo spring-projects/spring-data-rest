@@ -51,6 +51,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ReadContext;
 
 /**
  * Integration tests for entity (de)serialization.
@@ -129,7 +130,9 @@ public class PersistentEntitySerializationTests {
 		PersistentEntityResource resource = PersistentEntityResource
 				.build(dave, repositories.getPersistentEntity(User.class)).build();
 
-		assertThat(JsonPath.parse(mapper.writeValueAsString(resource)).read("$.colleaguesMap.carter._links.user.href",
-				String.class)).isNotNull();
+		String result = mapper.writeValueAsString(resource);
+		ReadContext document = JsonPath.parse(result);
+
+		assertThat(document.read("$.colleaguesMap.carter._links.user.href", String.class)).isNotNull();
 	}
 }

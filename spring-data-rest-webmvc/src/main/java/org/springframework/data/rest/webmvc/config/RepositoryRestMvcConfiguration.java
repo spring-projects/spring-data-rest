@@ -829,8 +829,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public SelfLinkProvider selfLinkProvider(PersistentEntities persistentEntities, RepositoryEntityLinks entityLinks) {
-		return new DefaultSelfLinkProvider(persistentEntities, entityLinks, getEntityLookups());
+	public SelfLinkProvider selfLinkProvider(PersistentEntities persistentEntities, RepositoryEntityLinks entityLinks,
+			@Qualifier("mvcConversionService") ObjectProvider<ConversionService> conversionService) {
+		return new DefaultSelfLinkProvider(persistentEntities, entityLinks, getEntityLookups(),
+				conversionService.getIfUnique(() -> defaultConversionService));
 	}
 
 	@Bean
