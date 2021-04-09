@@ -28,7 +28,6 @@ import javax.naming.ldap.LdapName;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -36,6 +35,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
@@ -45,6 +45,8 @@ import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
+import org.springframework.data.util.Lazy;
+import org.springframework.data.util.Streamable;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.hateoas.MediaTypes;
@@ -54,6 +56,7 @@ import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2Http
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -192,6 +195,22 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(service.canConvert(String.class, LdapName.class)).isTrue();
 	}
 
+	@Test // #1995
+	@SuppressWarnings("unchecked")
+	public void registersRepositoryRestConfigurersInDeclaredOrder() {
+
+		RepositoryRestMvcConfiguration configuration = context.getBean(RepositoryRestMvcConfiguration.class);
+		ExtendingConfiguration userConfig = context.getBean(ExtendingConfiguration.class);
+
+		Lazy<RepositoryRestConfigurerDelegate> delegate = (Lazy<RepositoryRestConfigurerDelegate>) ReflectionTestUtils
+				.getField(configuration, "configurerDelegate");
+		Iterable<RepositoryRestConfigurer> configurations = (Iterable<RepositoryRestConfigurer>) ReflectionTestUtils
+				.getField(delegate.get(), "delegates");
+
+		assertThat(Streamable.of(configurations).toList())
+				.containsSequence(userConfig.otherConfigurer(), userConfig.configurer());
+	}
+
 	private static ObjectMapper getObjectMapper() {
 
 		AbstractJackson2HttpMessageConverter converter = context.getBean("halJacksonHttpMessageConverter",
@@ -214,6 +233,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		}
 
 		@Bean
+		@Order(200)
 		RepositoryRestConfigurer configurer() {
 
 			return RepositoryRestConfigurer.withConfig(config -> {
@@ -224,6 +244,12 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 				config.setLimitParamName("mySize");
 				config.setSortParamName("mySort");
 			});
+		}
+
+		@Bean
+		@Order(100)
+		RepositoryRestConfigurer otherConfigurer() {
+			return RepositoryRestConfigurer.withConfig(__ -> {});
 		}
 	}
 

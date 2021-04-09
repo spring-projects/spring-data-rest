@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -259,7 +260,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		this.defaultConversionService = new DefaultFormattingConversionService();
 
 		this.configurerDelegate = Lazy.of(() -> {
-			return new RepositoryRestConfigurerDelegate(context.getBeansOfType(RepositoryRestConfigurer.class).values());
+
+			return new RepositoryRestConfigurerDelegate(context.getBeanProvider(RepositoryRestConfigurer.class)
+					.orderedStream()
+					.collect(Collectors.toList()));
 		});
 
 		this.repositoryRestConfiguration = Lazy.of(() -> context.getBean(RepositoryRestConfiguration.class));
