@@ -1,6 +1,6 @@
 = Continuous Integration
 
-image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2Fmaster&subject=Moore%20(master)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/]
+image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2Fmain&subject=Moore%20(main)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/]
 image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2F3.1.x&subject=Lovelace%20(3.1.x)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/]
 image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2F2.6.x&subject=Ingalls%20(2.6.x)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/]
 
