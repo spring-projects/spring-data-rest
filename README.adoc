@@ -17,7 +17,7 @@ The first exporter implemented is a JPA Repository exporter. This takes your JPA
 * Allows to https://docs.spring.io/spring-data/rest/docs/current/reference/html/#events[hook into the handling of REST requests] by handling Spring `ApplicationEvents`.
 * https://docs.spring.io/spring-data/rest/docs/current/reference/html/#metadata[Exposes metadata] about the model discovered as ALPS and JSON Schema.
 * Allows to define client specific representations through https://docs.spring.io/spring-data/rest/docs/current/reference/html/#projections-excerpts[projections].
-* Ships a customized variant of the https://docs.spring.io/spring-data/rest/docs/current/reference/html/#_the_hal_browser[HAL Browser] to leverage the exposed metadata.
+* Ships the latest release of https://docs.spring.io/spring-data/rest/docs/current/reference/html/#_the_hal_explorer[HAL Explorer] to easily explore HAL based responses.
 * Currently supports JPA, MongoDB, Neo4j, Solr, Cassandra, Gemfire.
 * Allows https://docs.spring.io/spring-data/rest/docs/current/reference/html/#customizing-sdr[advanced customizations] of the default resources exposed.
 
