@@ -69,6 +69,20 @@ class DelegatingHandlerMapping
 		return parser != null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.web.servlet.handler.MatchableHandlerMapping#getPatternParser()
+	 */
+	@Nullable
+	@Override
+	public PathPatternParser getPatternParser() {
+		return parser;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.support.DelegatingHandlerMapping#getDelegates()
+	 */
 	@SuppressWarnings("all")
 	public List<HandlerMapping> getDelegates() {
 		return this.delegates;
