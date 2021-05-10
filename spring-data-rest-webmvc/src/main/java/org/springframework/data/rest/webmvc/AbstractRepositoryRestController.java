@@ -78,9 +78,9 @@ class AbstractRepositoryRestController {
 			return entitiesToResources(page, assembler, domainType, baseLink);
 		} else if (source instanceof Iterable) {
 			return entitiesToResources((Iterable<Object>) source, assembler, domainType);
-		} else {
-			return CollectionModel.empty();
 		}
+		return CollectionModel.empty();
+
 	}
 
 	protected CollectionModel<?> entitiesToResources(Page<Object> page, PersistentEntityResourceAssembler assembler,

@@ -115,5 +115,6 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Represe
 		}
 
 		writer.flush();
+		writer.close();
 	}
 }

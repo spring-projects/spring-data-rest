@@ -135,11 +135,6 @@ public final class ETag {
 
 		Assert.notNull(headers, "HttpHeaders must not be null!");
 		String stringValue = toString();
-
-		if (stringValue == null) {
-			return headers;
-		}
-
 		headers.setETag(stringValue);
 		return headers;
 	}
