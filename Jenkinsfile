@@ -74,7 +74,7 @@ pipeline {
 						}
 					}
 				}
-				stage("test: baseline (jdk15)") {
+				stage("test: baseline (jdk16)") {
 					agent {
 						label 'data'
 					}
@@ -85,7 +85,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('springci/spring-data-openjdk15-with-mongodb-4.2.0:latest').inside('-v $HOME:/tmp/jenkins-home') {
+								docker.image('springci/spring-data-openjdk16-with-mongodb-4.2.0:latest').inside('-v $HOME:/tmp/jenkins-home') {
 									sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 									sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 									sh 'sleep 10'
@@ -120,7 +120,7 @@ pipeline {
 						}
 					}
 				}
-				stage("test: spring53-next (jdk15)") {
+				stage("test: spring53-next (jdk16)") {
 					agent {
 						label 'data'
 					}
@@ -131,7 +131,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('springci/spring-data-openjdk15-with-mongodb-4.2.0:latest').inside('-v $HOME:/tmp/jenkins-home') {
+								docker.image('springci/spring-data-openjdk16-with-mongodb-4.2.0:latest').inside('-v $HOME:/tmp/jenkins-home') {
 									sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 									sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 									sh 'sleep 10'
