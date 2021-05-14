@@ -1,6 +1,13 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.4.9 (2021-05-14)
+-------------------------------------
+* #2007 - DelegatingHandlerMapping does not implement MatchableHandlerMapping correctly.
+* #2005 - docs: replace HAL Browser documentation with HAL Explorer documentation.
+* #1994 - Potential `NullPointerException` in `PersistentPropertyResourceMapping.isExported()`.
+
+
 Changes in version 3.5.0 (2021-04-14)
 -------------------------------------
 * #1996 - Upgrade to HAL Explorer 0.16.0.
@@ -1813,6 +1820,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
