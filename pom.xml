@@ -35,6 +35,7 @@
 		<springdata.solr>4.4.0-SNAPSHOT</springdata.solr>
 		<springdata.cassandra>3.3.0-SNAPSHOT</springdata.cassandra>
 		<springdata.keyvalue>2.6.0-SNAPSHOT</springdata.keyvalue>
+		<spring-hateoas>1.3.2-SNAPSHOT</spring-hateoas>
 		<servlet.version>4.0.1</servlet.version>
 
 		<hibernate.version>5.4.8.Final</hibernate.version>
