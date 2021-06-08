@@ -26,7 +26,7 @@ If you extend `CrudRepository` you usually expose all methods required to expose
 Each of the resources listed below will define which of the methods need to be present so that a particular HTTP method can be exposed for each of the resources.
 That means, that repositories that are not exposing those methods -- either by not declaring them at all or explicitly using `@RestResource(exported = false)` -- won't expose those HTTP methods on those resources.
 
-For details on how to tweak the default method exposure or dedicated HTTP methods individually see
+For details on how to tweak the default method exposure or dedicated HTTP methods individually see <<customizing-sdr.http-methods>>.
 
 [[repository-resources.default-status-codes]]
 === Default Status Codes
