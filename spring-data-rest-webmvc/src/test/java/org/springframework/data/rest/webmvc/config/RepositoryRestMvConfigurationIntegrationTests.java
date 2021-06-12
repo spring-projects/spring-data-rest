@@ -53,6 +53,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.hateoas.server.core.DefaultLinkRelationProvider;
 import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -69,6 +70,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Greg Turnquist
+ * @author Sebastian Ullrich
  */
 public class RepositoryRestMvConfigurationIntegrationTests {
 
@@ -209,6 +211,27 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 
 		assertThat(Streamable.of(configurations).toList())
 				.containsSequence(userConfig.otherConfigurer(), userConfig.configurer());
+	}
+
+	@Test // DATAREST-2023
+	public void messageConverterSupportsRelevantMediaTypes() {
+		TypeConstrainedMappingJackson2HttpMessageConverter converter = context.getBean("jacksonHttpMessageConverter",
+				TypeConstrainedMappingJackson2HttpMessageConverter.class);
+
+		assertThat(converter.getSupportedMediaTypes())
+				.contains(RestMediaTypes.HAL_JSON, RestMediaTypes.SCHEMA_JSON, //
+						RestMediaTypes.JSON_PATCH_JSON, RestMediaTypes.MERGE_PATCH_JSON, //
+						RestMediaTypes.SPRING_DATA_VERBOSE_JSON, RestMediaTypes.SPRING_DATA_COMPACT_JSON);
+	}
+
+	@Test // DATAREST-2023
+	public void messageConverterSupportsRelevantMediaTypeIfHalIsDisabledAsDefaultMediaType() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(NonHalConfiguration.class);
+		TypeConstrainedMappingJackson2HttpMessageConverter converter = context.getBean("jacksonHttpMessageConverter",
+				TypeConstrainedMappingJackson2HttpMessageConverter.class);
+
+		assertThat(converter.getSupportedMediaTypes())
+				.contains(MediaType.APPLICATION_JSON);
 	}
 
 	private static ObjectMapper getObjectMapper() {

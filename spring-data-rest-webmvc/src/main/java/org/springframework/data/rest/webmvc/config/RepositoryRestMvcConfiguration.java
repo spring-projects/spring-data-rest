@@ -143,6 +143,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
  * @author Greg Turnquist
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Sebastian Ullrich
  */
 @Configuration(proxyBeanMethods = false)
 @EnableHypermediaSupport(type = { HypermediaType.HAL, HypermediaType.HAL_FORMS })
@@ -537,7 +538,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		int order = repositoryRestConfiguration.useHalAsDefaultJsonMediaType() ? Ordered.LOWEST_PRECEDENCE - 1
 				: Ordered.LOWEST_PRECEDENCE - 10;
 
-		mediaTypes.addAll(Arrays.asList(RestMediaTypes.SCHEMA_JSON, //
+		mediaTypes.addAll(Arrays.asList(RestMediaTypes.HAL_JSON, RestMediaTypes.SCHEMA_JSON, //
 				RestMediaTypes.JSON_PATCH_JSON, RestMediaTypes.MERGE_PATCH_JSON, //
 				RestMediaTypes.SPRING_DATA_VERBOSE_JSON, RestMediaTypes.SPRING_DATA_COMPACT_JSON));
 
