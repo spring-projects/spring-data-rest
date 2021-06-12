@@ -213,7 +213,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 				.containsSequence(userConfig.otherConfigurer(), userConfig.configurer());
 	}
 
-	@Test // DATAREST-2023
+	@Test // #2023
 	public void messageConverterSupportsRelevantMediaTypes() {
 		TypeConstrainedMappingJackson2HttpMessageConverter converter = context.getBean("jacksonHttpMessageConverter",
 				TypeConstrainedMappingJackson2HttpMessageConverter.class);
@@ -224,7 +224,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 						RestMediaTypes.SPRING_DATA_VERBOSE_JSON, RestMediaTypes.SPRING_DATA_COMPACT_JSON);
 	}
 
-	@Test // DATAREST-2023
+	@Test // #2023
 	public void messageConverterSupportsRelevantMediaTypeIfHalIsDisabledAsDefaultMediaType() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(NonHalConfiguration.class);
 		TypeConstrainedMappingJackson2HttpMessageConverter converter = context.getBean("jacksonHttpMessageConverter",
