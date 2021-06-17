@@ -13,6 +13,59 @@ pipeline {
 	}
 
 	stages {
+		stage("Docker images") {
+			parallel {
+				stage('Publish JDK 8 + MongoDB 4.4') {
+					when {
+						changeset "ci/openjdk8-mongodb-4.4/**"
+					}
+					agent { label 'data' }
+					options { timeout(time: 30, unit: 'MINUTES') }
+
+					steps {
+						script {
+							def image = docker.build("springci/spring-data-rest-openjdk8-with-mongodb-4.4", "ci/openjdk8-mongodb-4.4/")
+							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+								image.push()
+							}
+						}
+					}
+				}
+				stage('Publish JDK 11 + MongoDB 4.4') {
+					when {
+						changeset "ci/openjdk11-mongodb-4.4/**"
+					}
+					agent { label 'data' }
+					options { timeout(time: 30, unit: 'MINUTES') }
+
+					steps {
+						script {
+							def image = docker.build("springci/spring-data-rest-openjdk11-with-mongodb-4.4", "ci/openjdk8-mongodb-4.4/")
+							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+								image.push()
+							}
+						}
+					}
+				}
+				stage('Publish JDK 16 + MongoDB 4.4') {
+					when {
+						changeset "ci/openjdk16-mongodb-4.4/**"
+					}
+					agent { label 'data' }
+					options { timeout(time: 30, unit: 'MINUTES') }
+
+					steps {
+						script {
+							def image = docker.build("springci/spring-data-rest-openjdk16-with-mongodb-4.4", "ci/openjdk16-mongodb-4.4/")
+							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+								image.push()
+							}
+						}
+					}
+				}
+			}
+		}
+
 		stage("test: baseline (jdk8)") {
 			when {
 				anyOf {
@@ -30,7 +83,7 @@ pipeline {
 			steps {
 				script {
 					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('springci/spring-data-openjdk8-with-mongodb-4.2.0:latest').inside('-v $HOME:/tmp/jenkins-home') {
+						docker.image('springci/spring-data-rest-openjdk8-with-mongodb-4.4:latest').inside('-v $HOME:/tmp/jenkins-home') {
 							sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 							sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 							sh 'sleep 10'
@@ -62,7 +115,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('springci/spring-data-openjdk11-with-mongodb-4.2.0:latest').inside('-v $HOME:/tmp/jenkins-home') {
+								docker.image('springci/spring-data-rest-openjdk11-with-mongodb-4.4:latest').inside('-v $HOME:/tmp/jenkins-home') {
 									sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 									sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 									sh 'sleep 10'
@@ -85,7 +138,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('springci/spring-data-openjdk16-with-mongodb-4.2.0:latest').inside('-v $HOME:/tmp/jenkins-home') {
+								docker.image('springci/spring-data-rest-openjdk16-with-mongodb-4.4:latest').inside('-v $HOME:/tmp/jenkins-home') {
 									sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 									sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 									sh 'sleep 10'
@@ -108,7 +161,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('springci/spring-data-openjdk8-with-mongodb-4.2.0:latest').inside('-v $HOME:/tmp/jenkins-home') {
+								docker.image('springci/spring-data-rest-openjdk8-with-mongodb-4.4:latest').inside('-v $HOME:/tmp/jenkins-home') {
 									sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 									sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 									sh 'sleep 10'
@@ -131,7 +184,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('springci/spring-data-openjdk16-with-mongodb-4.2.0:latest').inside('-v $HOME:/tmp/jenkins-home') {
+								docker.image('springci/spring-data-rest-openjdk16-with-mongodb-4.4:latest').inside('-v $HOME:/tmp/jenkins-home') {
 									sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 									sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 									sh 'sleep 10'
