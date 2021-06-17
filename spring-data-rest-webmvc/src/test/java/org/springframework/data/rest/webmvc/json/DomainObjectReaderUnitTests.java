@@ -28,6 +28,7 @@ import lombok.Value;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import org.junit.Before;
@@ -64,7 +65,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Charsets;
 
 /**
  * Unit tests for {@link DomainObjectReader}.
@@ -240,7 +240,7 @@ public class DomainObjectReaderUnitTests {
 		user.phones.add(phone);
 
 		ByteArrayInputStream source = new ByteArrayInputStream(
-				"{ \"phones\" : [ { \"label\" : \"some label\" } ] }".getBytes(Charsets.UTF_8));
+				"{ \"phones\" : [ { \"label\" : \"some label\" } ] }".getBytes(StandardCharsets.UTF_8));
 
 		User result = reader.read(source, user, new ObjectMapper());
 
