@@ -1,0 +1,5 @@
+{
+    "resources" : [
+        { "pattern" : "META-INF/spring-data-rest/hal-explorer/.*" }
+    ]
+}
