@@ -36,7 +36,6 @@
 		<springdata.solr>4.2.7.BUILD-SNAPSHOT</springdata.solr>
 		<springdata.cassandra>3.0.10.BUILD-SNAPSHOT</springdata.cassandra>
 		<springdata.keyvalue>2.3.10.BUILD-SNAPSHOT</springdata.keyvalue>
-		<spring-hateoas>1.1.6.BUILD-SNAPSHOT</spring-hateoas>
 		<hibernate.version>5.4.8.Final</hibernate.version>
 		<bundlor.enabled>false</bundlor.enabled>
 	</properties>
