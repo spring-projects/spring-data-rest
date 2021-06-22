@@ -1,6 +1,15 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.4.10 (2021-06-22)
+--------------------------------------
+* #2026 - Avoid using Guava's Charset.
+* #2021 - Upgrade security related tests to Spring Security 5.3.9.
+* #2019 - Use Spring HATEOAS snapshots.
+* #2018 - Drop explicit dependency on JSON Path.
+* #2016 - Fix missing link in the documentations.
+
+
 Changes in version 3.5.1 (2021-05-14)
 -------------------------------------
 * #2010 - Upgrade to HAL Explorer 0.17.
@@ -1826,6 +1835,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
