@@ -61,16 +61,21 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 
 		this.repositories = repositories;
 		this.configuration = configuration;
-		this.populateCache(repositories, configuration);
+		this.populateCache(entities, configuration);
 	}
 
-	private void populateCache(Repositories repositories, RepositoryRestConfiguration configuration) {
+	private void populateCache(PersistentEntities entities, RepositoryRestConfiguration configuration) {
 
-		for (Class<?> type : repositories) {
+		for (PersistentEntity<?, ? extends PersistentProperty<?>> entity : entities) {
+
+			Class<?> type = entity.getType();
+
+			if (!repositories.hasRepositoryFor(type)) {
+				continue;
+			}
 
 			RepositoryInformation repositoryInformation = repositories.getRequiredRepositoryInformation(type);
 			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
-			PersistentEntity<?, ?> entity = repositories.getPersistentEntity(type);
 
 			RepositoryDetectionStrategy strategy = configuration.getRepositoryDetectionStrategy();
 			LinkRelationProvider provider = configuration.getLinkRelationProvider();
