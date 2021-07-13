@@ -3,8 +3,7 @@ pipeline {
 
 	triggers {
 		pollSCM 'H/10 * * * *'
-		upstream(upstreamProjects: "spring-hateoas/1.1.x,spring-data-cassandra/3.0.x,spring-data-couchbase/4.0.x,spring-data-elasticsearch/3.0.x,spring-data-gemfire/2.3.x," +
-				"spring-data-geode/2.3.x,spring-data-jpa/2.3.x,spring-data-ldap/2.3.x,spring-data-mongodb/3.0.x,spring-data-neo4j/5.3.x,spring-data-redis/2.3.x,spring-data-solr/4.2.x", threshold: hudson.model.Result.SUCCESS)
+		upstream(upstreamProjects: "spring-hateoas/1.1.x,spring-data-commons/2.3.x", threshold: hudson.model.Result.SUCCESS)
 	}
 
 	options {
