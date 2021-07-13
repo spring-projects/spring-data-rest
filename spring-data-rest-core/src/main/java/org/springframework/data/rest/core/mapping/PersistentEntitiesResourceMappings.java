@@ -133,7 +133,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	 */
 	@Override
 	public boolean hasMappingFor(Class<?> type) {
-		return cache.get(type) != null;
+		return getMappingMetadataFor(type) != null;
 	}
 
 	/*

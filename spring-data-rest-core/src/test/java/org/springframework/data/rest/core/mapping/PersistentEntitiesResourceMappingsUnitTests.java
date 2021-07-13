@@ -39,4 +39,18 @@ public class PersistentEntitiesResourceMappingsUnitTests {
 		assertThat(mappings.getMetadataFor(String.class)).isNull();
 		assertThat(mappings.hasMappingFor(String.class)).isFalse();
 	}
+
+	@Test // GH-2033
+	public void transparentlyAddsValueToCacheOnHasMappingRequests() {
+
+		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
+		context.getPersistentEntity(Sample.class);
+
+		PersistentEntitiesResourceMappings mappings = new PersistentEntitiesResourceMappings(
+				PersistentEntities.of(context));
+
+		assertThat(mappings.hasMappingFor(Sample.class)).isTrue();
+	}
+
+	class Sample {}
 }
