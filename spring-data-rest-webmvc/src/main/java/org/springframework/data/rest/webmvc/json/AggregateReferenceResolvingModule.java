@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.deser.BeanDeserializerBuilder;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.std.CollectionDeserializer;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.CollectionLikeType;
 
@@ -89,23 +90,28 @@ public class AggregateReferenceResolvingModule extends SimpleModule {
 		 * @see com.fasterxml.jackson.databind.deser.BeanDeserializerModifier#updateBuilder(com.fasterxml.jackson.databind.DeserializationConfig, com.fasterxml.jackson.databind.BeanDescription, com.fasterxml.jackson.databind.deser.BeanDeserializerBuilder)
 		 */
 		@Override
-		public BeanDeserializerBuilder updateBuilder(DeserializationConfig config, BeanDescription beanDesc,
+		public BeanDeserializerBuilder updateBuilder(DeserializationConfig config, BeanDescription description,
 				BeanDeserializerBuilder builder) {
 
 			// Type is aggregate itself, already handled by AssociationUriResolvingDeserializerModifier
-			if (mappings.hasMappingFor(beanDesc.getBeanClass())) {
+			if (mappings.hasMappingFor(description.getBeanClass())) {
 				return builder;
 			}
 
-			TypeInformation<?> type = ClassTypeInformation.from(beanDesc.getBeanClass());
+			TypeInformation<?> type = ClassTypeInformation.from(description.getBeanClass());
 			ValueInstantiatorCustomizer customizer = new ValueInstantiatorCustomizer(builder.getValueInstantiator(), config);
 			Iterator<SettableBeanProperty> properties = builder.getProperties();
 
 			while (properties.hasNext()) {
 
 				SettableBeanProperty property = properties.next();
+				String originalPropertyName = coerceOriginalPropertyName(property, description);
+				TypeInformation<?> propertyType = type.getProperty(originalPropertyName);
 
-				TypeInformation<?> propertyType = type.getProperty(property.getName());
+				if (propertyType == null) {
+					continue;
+				}
+
 				TypeInformation<?> actualType = propertyType.getActualType();
 
 				if (!mappings.exportsMappingFor(actualType.getType())) {
@@ -133,6 +139,25 @@ public class AggregateReferenceResolvingModule extends SimpleModule {
 			CollectionValueInstantiator instantiator = new CollectionValueInstantiator(type);
 
 			return new CollectionDeserializer(collectionType, elementDeserializer, null, instantiator);
+		}
+
+		/**
+		 * Tries to find the internal property name for a {@link SettableBeanProperty} that unfortunately does not allow
+		 * accessing the original name anymore.
+		 *
+		 * @param property must not be {@literal null}.
+		 * @param description must not be {@literal null}.
+		 * @return
+		 */
+		private static String coerceOriginalPropertyName(SettableBeanProperty property, BeanDescription description) {
+
+			for (BeanPropertyDefinition properties : description.findProperties()) {
+				if (properties.hasName(property.getFullName())) {
+					return properties.getInternalName();
+				}
+			}
+
+			return property.getName();
 		}
 	}
 }
