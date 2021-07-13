@@ -21,6 +21,7 @@ import static org.springframework.data.rest.tests.mongodb.TestUtils.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -59,7 +61,10 @@ public class JsonPatchHandlerUnitTests {
 	@Before
 	public void setUp() {
 
+		MongoCustomConversions conversions = new MongoCustomConversions(Collections.emptyList());
+
 		MongoMappingContext context = new MongoMappingContext();
+		context.setSimpleTypeHolder(conversions.getSimpleTypeHolder());
 		context.getPersistentEntity(User.class);
 
 		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
