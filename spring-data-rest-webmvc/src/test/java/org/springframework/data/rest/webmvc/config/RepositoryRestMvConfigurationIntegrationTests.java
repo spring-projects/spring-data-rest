@@ -16,6 +16,7 @@
 package org.springframework.data.rest.webmvc.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.webmvc.util.AssertionUtils.*;
 
 import java.util.Collection;
@@ -37,6 +38,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.geo.Distance;
@@ -211,6 +213,14 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 				.containsSequence(userConfig.otherConfigurer(), userConfig.configurer());
 	}
 
+	@Test // #2040
+	public void appliesAuditingBeanWrapperFactoryCustomizer() {
+
+		AuditableBeanWrapperFactory factory = context.getBean(AuditableBeanWrapperFactory.class);
+
+		assertThat(factory).isEqualTo(ExtendingConfiguration.auditableBeanWrapperFactory);
+	}
+
 	private static ObjectMapper getObjectMapper() {
 
 		AbstractJackson2HttpMessageConverter converter = context.getBean("halJacksonHttpMessageConverter",
@@ -221,6 +231,8 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	@Configuration
 	@Import(RepositoryRestMvcConfiguration.class)
 	static class ExtendingConfiguration {
+
+		static AuditableBeanWrapperFactory auditableBeanWrapperFactory = mock(AuditableBeanWrapperFactory.class);
 
 		@Bean
 		DefaultLinkRelationProvider relProvider() {
@@ -250,6 +262,19 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		@Order(100)
 		RepositoryRestConfigurer otherConfigurer() {
 			return RepositoryRestConfigurer.withConfig(__ -> {});
+		}
+
+		@Bean
+		@Order(300) // #2040
+		RepositoryRestConfigurer auditingBeanWrapperCustomizer() {
+
+			return new RepositoryRestConfigurer() {
+
+				@Override
+				public AuditableBeanWrapperFactory customizeAuditableBeanWrapperFactory(AuditableBeanWrapperFactory factory) {
+					return auditableBeanWrapperFactory;
+				}
+			};
 		}
 	}
 

@@ -20,6 +20,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -132,4 +133,15 @@ public interface RepositoryRestConfigurer {
 	 * @param objectMapper The {@literal ObjectMapper} to be used by the system.
 	 */
 	default void configureJacksonObjectMapper(ObjectMapper objectMapper) {}
+
+	/**
+	 * Customize the {@link AuditableBeanWrapperFactory} to be used.
+	 *
+	 * @param factory will never be {@literal null}.
+	 * @return must not be {@literal null}.
+	 * @since 3.5
+	 */
+	default AuditableBeanWrapperFactory customizeAuditableBeanWrapperFactory(AuditableBeanWrapperFactory factory) {
+		return factory;
+	}
 }

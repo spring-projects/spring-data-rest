@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.config;
 import java.util.List;
 
 import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -120,5 +121,19 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		for (RepositoryRestConfigurer configurer : delegates) {
 			configurer.configureValidatingRepositoryEventListener(validatingListener);
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureAuditableBeanWrapperFactory(org.springframework.data.auditing.AuditableBeanWrapperFactory)
+	 */
+	@Override
+	public AuditableBeanWrapperFactory customizeAuditableBeanWrapperFactory(AuditableBeanWrapperFactory factory) {
+
+		for (RepositoryRestConfigurer configurer : delegates) {
+			factory = configurer.customizeAuditableBeanWrapperFactory(factory);
+		}
+
+		return factory;
 	}
 }

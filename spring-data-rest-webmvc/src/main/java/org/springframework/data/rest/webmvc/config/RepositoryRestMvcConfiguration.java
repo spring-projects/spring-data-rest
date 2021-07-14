@@ -169,6 +169,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	ObjectProvider<RepresentationModelProcessorInvoker> invoker;
 	ObjectProvider<MessageResolver> resolver;
 	ObjectProvider<GeoModule> geoModule;
+	ObjectProvider<AuditableBeanWrapperFactory> auditingBeanWrapperFactoryProvider;
 
 	ConversionService defaultConversionService;
 
@@ -855,7 +856,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public AuditableBeanWrapperFactory auditableBeanWrapperFactory(PersistentEntities persistentEntities) {
-		return new MappingAuditableBeanWrapperFactory(persistentEntities);
+
+		AuditableBeanWrapperFactory factory = new MappingAuditableBeanWrapperFactory(persistentEntities);
+
+		return configurerDelegate.get().customizeAuditableBeanWrapperFactory(factory);
 	}
 
 	@Bean
