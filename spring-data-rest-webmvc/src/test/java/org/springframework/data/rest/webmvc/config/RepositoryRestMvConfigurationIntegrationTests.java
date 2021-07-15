@@ -47,6 +47,7 @@ import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
+import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
@@ -221,6 +222,14 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(factory).isEqualTo(ExtendingConfiguration.auditableBeanWrapperFactory);
 	}
 
+	@Test // #2042
+	public void appliesLinkCollectorCustomizer() {
+
+		LinkCollector factory = context.getBean(LinkCollector.class);
+
+		assertThat(factory).isEqualTo(ExtendingConfiguration.collector);
+	}
+
 	private static ObjectMapper getObjectMapper() {
 
 		AbstractJackson2HttpMessageConverter converter = context.getBean("halJacksonHttpMessageConverter",
@@ -233,6 +242,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	static class ExtendingConfiguration {
 
 		static AuditableBeanWrapperFactory auditableBeanWrapperFactory = mock(AuditableBeanWrapperFactory.class);
+		static LinkCollector collector = mock(LinkCollector.class);
 
 		@Bean
 		DefaultLinkRelationProvider relProvider() {
@@ -265,14 +275,19 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		}
 
 		@Bean
-		@Order(300) // #2040
-		RepositoryRestConfigurer auditingBeanWrapperCustomizer() {
+		@Order(300) // #2040, #2042
+		RepositoryRestConfigurer customizer() {
 
 			return new RepositoryRestConfigurer() {
 
 				@Override
 				public AuditableBeanWrapperFactory customizeAuditableBeanWrapperFactory(AuditableBeanWrapperFactory factory) {
 					return auditableBeanWrapperFactory;
+				}
+
+				@Override
+				public LinkCollector customizeLinkCollector(LinkCollector collector) {
+					return ExtendingConfiguration.collector;
 				}
 			};
 		}

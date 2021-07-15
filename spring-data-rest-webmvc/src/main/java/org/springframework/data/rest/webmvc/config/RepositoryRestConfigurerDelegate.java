@@ -21,6 +21,7 @@ import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
+import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -135,5 +136,19 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 
 		return factory;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#customizeLinkCollector(org.springframework.data.rest.webmvc.mapping.LinkCollector)
+	 */
+	@Override
+	public LinkCollector customizeLinkCollector(LinkCollector collector) {
+
+		for (RepositoryRestConfigurer configurer : delegates) {
+			collector = configurer.customizeLinkCollector(collector);
+		}
+
+		return collector;
 	}
 }

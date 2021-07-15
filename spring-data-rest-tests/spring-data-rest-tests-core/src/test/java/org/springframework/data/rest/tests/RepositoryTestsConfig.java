@@ -43,6 +43,7 @@ import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
 import org.springframework.data.rest.webmvc.mapping.Associations;
+import org.springframework.data.rest.webmvc.mapping.DefaultLinkCollector;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter.DefaultIdConverter;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
@@ -120,7 +121,7 @@ public class RepositoryTestsConfig {
 				repositories());
 
 		Associations associations = new Associations(mappings, config());
-		LinkCollector collector = new LinkCollector(persistentEntities(), selfLinkProvider, associations);
+		LinkCollector collector = new DefaultLinkCollector(persistentEntities(), selfLinkProvider, associations);
 
 		return new PersistentEntityJackson2Module(associations, persistentEntities(), uriToEntityConverter, collector,
 				invokerFactory, mock(LookupObjectSerializer.class),

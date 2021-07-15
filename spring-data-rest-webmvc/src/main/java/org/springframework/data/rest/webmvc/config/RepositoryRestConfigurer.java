@@ -23,6 +23,7 @@ import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.data.auditing.AuditableBeanWrapperFactory;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
+import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -143,5 +144,16 @@ public interface RepositoryRestConfigurer {
 	 */
 	default AuditableBeanWrapperFactory customizeAuditableBeanWrapperFactory(AuditableBeanWrapperFactory factory) {
 		return factory;
+	}
+
+	/**
+	 * Customize the {@link LinkCollector} to be used.
+	 *
+	 * @param collector will never be {@literal null}.
+	 * @return must not be {@literal null}.
+	 * @since 3.5
+	 */
+	default LinkCollector customizeLinkCollector(LinkCollector collector) {
+		return collector;
 	}
 }
