@@ -37,6 +37,7 @@ public class BeforeSaveEventListener extends AbstractRepositoryEventListener {
 
 One thing to note with this approach, however, is that it makes no distinction based on the type of the entity. You have to inspect that yourself.
 
+[[events.annotated-handler]]
 == Writing an Annotated Handler
 
 Another approach is to use an annotated handler, which filters events based on domain type.

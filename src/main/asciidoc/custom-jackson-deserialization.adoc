@@ -5,6 +5,7 @@ Sometimes, the behavior of the Spring Data REST `ObjectMapper` (which has been s
 
 To accommodate the largest percentage of the use cases, Spring Data REST tries to render your object graph correctly. It tries to serialize unmanaged beans as normal POJOs, and tries to create links to managed beans where necessary. However, if your domain model does not easily lend itself to reading or writing plain JSON, you may want to configure Jackson's `ObjectMapper` with your own custom type mappings and (de)serializers.
 
+[[customizing-sdr.custom-jackson-deserialization.abstract-classes]]
 == Abstract Class Registration
 
 One key configuration point you might need to hook into is when you use an abstract class (or an interface) in your domain model. Jackson does not, by default, know what implementation to create for an interface. Consider the following example:
@@ -46,6 +47,7 @@ public class MyCustomModule extends SimpleModule {
 
 Once you have access to the `SetupContext` object in your `Module`, you can do all sorts of cool things to configure Jackon's JSON mapping. You can read more about how https://wiki.fasterxml.com/JacksonFeatureModules[Modules work on Jackson's wiki].
 
+[[customizing-sdr.custom-jackson-deserialization.custom-serializers]]
 == Adding Custom Serializers for Domain Types
 
 If you want to serialize or deserialize a domain type in a special way, you can register your own implementations with Jackson's `ObjectMapper`. Then the Spring Data REST exporter transparently handles those domain objects correctly.
