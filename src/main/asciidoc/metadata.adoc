@@ -118,7 +118,6 @@ If you navigate to `/profile/persons` and look at the profile data for a `Person
   } ]
 }
 ----
-
 <1> A detailed listing of the attributes of a `Person` resource, identified as `#person-representation`, lists the names
 of the attributes.
 <2> The supported operations. This one indicates how to create a new `Person`.

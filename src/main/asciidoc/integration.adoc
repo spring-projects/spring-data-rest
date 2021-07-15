@@ -4,6 +4,7 @@
 
 This section details various ways to integrate with Spring Data REST components, whether from a Spring application that is using Spring Data REST or from other means.
 
+[[integration.programmatic-links]]
 == Programmatic Links
 
 Sometimes you need to add links to exported resources in your own custom-built Spring MVC controllers. There are three basic levels of linking available:
