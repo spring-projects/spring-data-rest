@@ -33,12 +33,14 @@ The following example shows the corresponding XML configuration:
 
 When your ApplicationContext comes across this bean definition, it bootstraps the necessary Spring MVC resources to fully configure the controller for exporting the repositories it finds in that `ApplicationContext` and any parent contexts.
 
+[[customizing-sdr.adding-sdr-to-spring-mvc-app.required-config]]
 == More on Required Configuration
 
 Spring Data REST depends on a couple Spring MVC resources that must be configured correctly for it to work inside an existing Spring MVC application. We tried to isolate those resources from whatever similar resources already exist within your application, but it may be that you want to customize some of the behavior of Spring Data REST by modifying these MVC components.
 
 You should pay special attention to configuring `RepositoryRestHandlerMapping`, covered in the next section.
 
+[[customizing-sdr.adding-sdr-to-spring-mvc-app.required-config.mapping]]
 === `RepositoryRestHandlerMapping`
 
 We register a custom `HandlerMapping` instance that responds only to the `RepositoryRestController` and only if a path is meant to be handled by Spring Data REST. In order to keep paths that are meant to be handled by your application separate from those handled by Spring Data REST, this custom `HandlerMapping` class inspects the URL path and checks to see if a repository has been exported under that name. If it has, the custom `HandlerMapping` class lets the request be handled by Spring Data REST. If there is no Repository exported under that name, it returns `null`, which means "`let other `HandlerMapping` instances try to service this request`".

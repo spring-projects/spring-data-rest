@@ -3,6 +3,7 @@
 
 There are many options to tailor Spring Data REST. These subsections show how.
 
+[[customizing-sdr.item-resource-uris]]
 == Customizing Item Resource URIs
 
 By default, the URI for item resources are comprised of the path segment used for the collection resource with the database identifier appended.

@@ -2,9 +2,10 @@
 = Tools
 :spring-data-rest-root: ../../../..
 
-== The HAL Browser
+[[tools.hal-explorer]]
+== The HAL Explorer
 
-The developer of the http://stateless.co/hal_specification.html[HAL specification] has a useful application: https://github.com/mikekelly/hal-browser[the HAL Browser]. It is a web application that stirs in a little HAL-powered JavaScript. You can point it at any Spring Data REST API and use it to navigate the app and create new resources.
+There is a useful application to explore APIs using the http://stateless.co/hal_specification.html[HAL specification]: https://github.com/toedter/hal-explorer[the HAL Explorer]. It is a web application that stirs in a little HAL-powered JavaScript. You can point it at any HAL API and use it to navigate the app and create new resources.
 
 Instead of pulling down the files, embedding them in your application, and crafting a Spring MVC controller to serve them up, all you need to do is add a single dependency.
 
@@ -14,10 +15,10 @@ The following listing shows how to add the dependency in Maven:
 [source,xml]
 ----
 <dependencies>
-    <dependency>
-        <groupId>org.springframework.data</groupId>
-        <artifactId>spring-data-rest-hal-browser</artifactId>
-    </dependency>
+  <dependency>
+   <groupId>org.springframework.data</groupId>
+   <artifactId>spring-data-rest-hal-explorer</artifactId>
+  </dependency>
 </dependencies>
 ----
 ====
@@ -28,14 +29,14 @@ The following listing shows how to add the dependency in Gradle:
 [source,groovy]
 ----
 dependencies {
-    compile 'org.springframework.data:spring-data-rest-hal-browser'
+    compile 'org.springframework.data:spring-data-rest-hal-explorer'
 }
 ----
 ====
 
 NOTE: If you use Spring Boot or the Spring Data BOM (bill of materials), you do not need to specify the version.
 
-This dependency auto-configures the HAL Browser to be served up when you visit your application's root URI in a browser. (NOTE: http://localhost:8080 was plugged into the browser, and it redirected to the URL shown in the following image.)
+This dependency auto-configures the HAL Explorer to be served up when you visit your application's root URI in a browser. (NOTE: http://localhost:8080 was plugged into the browser, and it redirected to the URL shown in the following image.)
 
 image::hal-browser-1.png[]
 
