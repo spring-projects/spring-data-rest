@@ -58,6 +58,7 @@ interface PersonRepository extends CrudRepository<Person, Long> {
 
 Now the query method in the preceding example is exposed at `http://localhost:8080/people/search/names`.
 
+[[customizing-sdr.configuring-the-rest-url-path.rels]]
 == Handling `rel` Attributes
 
 Since these resources are all discoverable, you can also affect how the `rel` attribute is displayed in the links sent out by the exporter.

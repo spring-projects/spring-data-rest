@@ -7,10 +7,12 @@ Currently, only JSON representations are supported. Other representation types c
 
 Sometimes, the behavior of the Spring Data REST `ObjectMapper` (which has been specially configured to use intelligent serializers that can turn domain objects into links and back again) may not handle your domain model correctly. There are so many ways you can structure your data that you may find your own domain model is not translated to JSON correctly. It is also sometimes not practical in these cases to try and support a complex domain model in a generic way. Sometimes, depending on the complexity, it is not even possible to offer a generic solution.
 
+[[representations.serializers-and-deserializers]]
 == Adding Custom Serializers and Deserializers to Jackson's ObjectMapper
 
 To accommodate the largest percentage of use cases, Spring Data REST tries very hard to render your object graph correctly. It tries to serialize unmanaged beans as normal POJOs, and it tries to create links to managed beans where necessary. However, if your domain model does not easily lend itself to reading or writing plain JSON, you may want to configure Jackson's ObjectMapper with your own custom mappings, serializers, and deserializers.
 
+[[representations.serializers-and-deserializers.abstract-classes]]
 === Abstract Class Registration
 
 One key configuration point you might need to hook into is when you use an abstract class (or an interface) in your domain model. By default, Jackson does not know what implementation to create for an interface. Consider the following example:
@@ -35,21 +37,23 @@ To add your own Jackson configuration to the `ObjectMapper` used by Spring Data 
 ----
 @Override
 protected void configureJacksonObjectMapper(ObjectMapper objectMapper) {
-    objectMapper.registerModule(new SimpleModule("MyCustomModule") {
-        @Override
-        public void setupModule(SetupContext context) {
-            context.addAbstractTypeResolver(
-                new SimpleAbstractTypeResolver().addMapping(MyInterface.class,
-                                                            MyInterfaceImpl.class)
-            );
-        }
-    });
+
+  objectMapper.registerModule(new SimpleModule("MyCustomModule") {
+
+    @Override
+    public void setupModule(SetupContext context) {
+      context.addAbstractTypeResolver(
+        new SimpleAbstractTypeResolver()
+          .addMapping(MyInterface.class, MyInterfaceImpl.class));
+    }
+  });
 }
 ----
 ====
 
 Once you have access to the `SetupContext` object in your `Module`, you can do all sorts of cool things to configure Jackson's JSON mapping. You can read more about how `Module` instances work on https://wiki.fasterxml.com/JacksonFeatureModules[Jackson's wiki].
 
+[[representations.serializers-and-deserializers.serializers]]
 === Adding Custom Serializers for Domain Types
 
 If you want to serialize or deserialize a domain type in a special way, you can register your own implementations with Jackson's `ObjectMapper`, and the Spring Data REST exporter transparently handles those domain objects correctly. To add serializers from your `setupModule` method implementation, you can do something like the following:
@@ -59,6 +63,7 @@ If you want to serialize or deserialize a domain type in a special way, you can 
 ----
 @Override
 public void setupModule(SetupContext context) {
+
   SimpleSerializers serializers = new SimpleSerializers();
   SimpleDeserializers deserializers = new SimpleDeserializers();
 

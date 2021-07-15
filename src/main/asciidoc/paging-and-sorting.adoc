@@ -3,6 +3,7 @@
 
 This section documents Spring Data REST's usage of the Spring Data Repository paging and sorting abstractions. To familiarize yourself with those features, see the Spring Data documentation for the repository implementation you use (such as Spring Data JPA).
 
+[[paging-and-sorting.paging]]
 == Paging
 
 Rather than return everything from a large result set, Spring Data REST recognizes some URL parameters that influence the page size and the starting page number.
@@ -29,7 +30,7 @@ public Page findByNameStartsWith(@Param("name") String name, Pageable p);
 
 The Spring Data REST exporter recognizes the returned `Page` and gives you the results in the body of the response, just as it would with a non-paged response, but additional links are added to the resource to represent the previous and next pages of data.
 
-[[paging-and-sorting.prev-and-next-links]]
+[[paging-and-sorting.paging.prev-and-next-links]]
 === Previous and Next Links
 
 Each paged response returns links to the previous and next pages of results based on the current page by using the IANA-defined link relations https://www.w3.org/TR/html5/links.html#link-type-prev[`prev`] and https://www.w3.org/TR/html5/links.html#link-type-next[`next`]. If you are currently at the first page of results, however, no `prev` link is rendered. For the last page of results, no `next` link is rendered.
@@ -57,7 +58,7 @@ curl localhost:8080/people?size=5
     }
   },
   "_embedded" : {
-  	... data ...
+  	… data …
   },
   "page" : { <3>
     "size" : 5,

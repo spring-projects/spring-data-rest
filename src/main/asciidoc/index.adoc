@@ -1,6 +1,6 @@
 [[spring-data-rest-reference]]
 = Spring Data REST Reference Guide
-Jon Brisbin, Oliver Gierke, Greg Turnquist, Jay Bryant
+Jon Brisbin, Oliver Drotbohm, Greg Turnquist, Jay Bryant
 :revnumber: {version}
 :revdate: {localdate}
 ifdef::backend-epub3[:front-cover-image: image:epub-cover.png[Front Cover,1050,1600]]
