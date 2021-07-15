@@ -48,17 +48,6 @@ public class Patch implements Streamable<PatchOperation> {
 	}
 
 	/**
-	 * Returns all underlying {@link PatchOperation}s.
-	 *
-	 * @return
-	 * @deprecated since 3.2, prefer streaming via {@link #stream()}.
-	 */
-	@Deprecated
-	public List<PatchOperation> getOperations() {
-		return operations;
-	}
-
-	/**
 	 * Applies the Patch to a given Object graph. Makes a copy of the given object so that it will remain unchanged after
 	 * application of the patch and in case any errors occur while performing the patch.
 	 *

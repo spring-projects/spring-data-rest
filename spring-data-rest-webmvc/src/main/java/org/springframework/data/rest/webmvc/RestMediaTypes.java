@@ -26,23 +26,10 @@ import org.springframework.http.MediaType;
  */
 public class RestMediaTypes {
 
-
 	public static final MediaType HAL_JSON = MediaTypes.HAL_JSON;
 
 	public static final MediaType JSON_PATCH_JSON = MediaType.valueOf("application/json-patch+json");
 	public static final MediaType MERGE_PATCH_JSON = MediaType.valueOf("application/merge-patch+json");
-
-	/**
-	 * @deprecated Migrate to {@link MediaTypes#ALPS_JSON_VALUE}.
-	 */
-	@Deprecated
-	public static final String ALPS_JSON_VALUE = "application/alps+json";
-
-	/**
-	 * @deprecated Migrate to {@link MediaTypes#ALPS_JSON}.
-	 */
-	@Deprecated
-	public static final MediaType ALPS_JSON = MediaType.parseMediaType(MediaTypes.ALPS_JSON_VALUE);
 
 	public static final String SCHEMA_JSON_VALUE = "application/schema+json";
 	public static final MediaType SCHEMA_JSON = MediaType.valueOf(SCHEMA_JSON_VALUE);

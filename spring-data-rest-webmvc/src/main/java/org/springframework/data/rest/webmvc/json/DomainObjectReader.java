@@ -189,10 +189,8 @@ public class DomainObjectReader {
 	 * @param target
 	 * @param mapper
 	 * @return
-	 * @deprecated
 	 */
-	@Deprecated
-	public <T> T merge(ObjectNode source, T target, ObjectMapper mapper) {
+	<T> T merge(ObjectNode source, T target, ObjectMapper mapper) {
 
 		try {
 			return doMerge(source, target, mapper);

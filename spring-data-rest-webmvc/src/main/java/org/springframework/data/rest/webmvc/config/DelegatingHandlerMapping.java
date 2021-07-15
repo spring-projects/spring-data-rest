@@ -41,8 +41,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Oliver Gierke
  * @soundtrack Benny Greb - Stabila (Moving Parts)
  */
-class DelegatingHandlerMapping
-		implements org.springframework.data.rest.webmvc.support.DelegatingHandlerMapping, Ordered {
+class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<HandlerMapping>, Ordered {
 
 	private final List<HandlerMapping> delegates;
 	private final @Nullable PathPatternParser parser;
