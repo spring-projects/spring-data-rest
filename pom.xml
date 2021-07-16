@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>2.4.11</version>
+		<version>2.4.12-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 
@@ -28,13 +28,13 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-rest</dist.id>
 
-		<springdata.commons>2.4.11</springdata.commons>
-		<springdata.jpa>2.4.11</springdata.jpa>
-		<springdata.mongodb>3.1.11</springdata.mongodb>
-		<springdata.geode>2.4.11</springdata.geode>
+		<springdata.commons>2.4.12-SNAPSHOT</springdata.commons>
+		<springdata.jpa>2.4.12-SNAPSHOT</springdata.jpa>
+		<springdata.mongodb>3.1.12-SNAPSHOT</springdata.mongodb>
+		<springdata.geode>2.4.12-SNAPSHOT</springdata.geode>
 		<springdata.solr>4.3.2-SNAPSHOT</springdata.solr>
-		<springdata.cassandra>3.1.11</springdata.cassandra>
-		<springdata.keyvalue>2.4.11</springdata.keyvalue>
+		<springdata.cassandra>3.1.12-SNAPSHOT</springdata.cassandra>
+		<springdata.keyvalue>2.4.12-SNAPSHOT</springdata.keyvalue>
 		<servlet.version>4.0.1</servlet.version>
 
 		<hibernate.version>5.4.8.Final</hibernate.version>
@@ -143,8 +143,8 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-release</id>
-			<url>https://repo.spring.io/libs-release</url>
+			<id>spring-libs-snapshot</id>
+			<url>https://repo.spring.io/libs-snapshot</url>
 		</repository>
 	</repositories>
 
