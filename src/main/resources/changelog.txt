@@ -1,6 +1,28 @@
 Spring Data REST Changelog
 ==========================
 
+Changes in version 3.6.0-M1 (2021-07-16)
+----------------------------------------
+* #2042 - Allow customization of `LinkCollector`.
+* #2040 - Allow customizing `AuditableBeanWrapperFactory`.
+* #2027 - Use a custom container for CI testing.
+* #2026 - Avoid using Guava's Charset.
+* #2025 - Add GraalVM resource-config.json to allow HAL Explorer usage with native images.
+* #2020 - Upgrade security related tests to Spring Security 5.5.0.
+* #2019 - Use Spring HATEOAS snapshots.
+* #2018 - Drop explicit dependency on JSON Path.
+* #2016 - Fix missing link in the documentations.
+* #2013 - Update HAL Explorer screenshots to version 0.17.0.
+* #2010 - Upgrade to HAL Explorer 0.17.
+* #2007 - DelegatingHandlerMapping does not implement MatchableHandlerMapping correctly.
+* #2005 - docs: replace HAL Browser documentation with HAL Explorer documentation.
+* #1989 - Update CI to Java 16.
+* #379 - Wording changes in reference documentation.
+* #372 - improve docs on assocation resource.
+* #370 - [docs] Correct resource name in query method section.
+* #356 - DATAREST-1392 - repository.resources.adoc HATEOAS broken link.
+
+
 Changes in version 3.4.11 (2021-07-16)
 --------------------------------------
 * #379 - Wording changes in reference documentation.
@@ -1852,6 +1874,7 @@ Changes in version 2.0.0 M1 (2013-11-21)
     * [DATAREST-170] - Upgrade to dependencies of the Codd release train
     * [DATAREST-185] - Upgrade to Spring 3.2.5
     * [DATAREST-193] - Release 2.0 M1.
+
 
 
 
