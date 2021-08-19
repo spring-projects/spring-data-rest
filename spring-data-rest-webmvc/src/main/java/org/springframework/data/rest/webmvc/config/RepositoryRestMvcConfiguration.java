@@ -158,7 +158,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Autowired ApplicationContext applicationContext;
 
-	@Autowired(required = false) List<BackendIdConverter> idConverters = Collections.emptyList();
 	@Autowired(required = false) List<EntityLookup<?>> lookups = Collections.emptyList();
 
 	@Autowired List<HttpMessageConverter<?>> defaultMessageConverters;
@@ -809,10 +808,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public PluginRegistry<BackendIdConverter, Class<?>> backendIdConverterRegistry() {
+	public PluginRegistry<BackendIdConverter, Class<?>> backendIdConverterRegistry(
+			List<BackendIdConverter> backendIdConverter) {
 
-		List<BackendIdConverter> converters = new ArrayList<>(idConverters.size());
-		converters.addAll(this.idConverters);
+		List<BackendIdConverter> converters = new ArrayList<>(backendIdConverter);
 		converters.add(DefaultIdConverter.INSTANCE);
 
 		return PluginRegistry.of(converters);
