@@ -29,7 +29,6 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -89,6 +88,7 @@ import org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVari
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.data.util.AnnotatedTypeScanner;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
@@ -156,47 +156,42 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private static final boolean IS_JPA_AVAILABLE = ClassUtils.isPresent("javax.persistence.EntityManager",
 			RepositoryRestMvcConfiguration.class.getClassLoader());
 
-	@Autowired ApplicationContext applicationContext;
+	private final ApplicationContext applicationContext;
+	private final ConversionService defaultConversionService;
 
-	@Autowired(required = false) List<EntityLookup<?>> lookups = Collections.emptyList();
-
-	@Autowired List<HttpMessageConverter<?>> defaultMessageConverters;
-
-	ObjectProvider<LinkRelationProvider> relProvider;
-	ObjectProvider<CurieProvider> curieProvider;
-	ObjectProvider<HalConfiguration> halConfiguration;
-	ObjectProvider<ObjectMapper> objectMapper;
-	ObjectProvider<RepresentationModelProcessorInvoker> invoker;
-	ObjectProvider<MessageResolver> resolver;
-	ObjectProvider<GeoModule> geoModule;
-	ObjectProvider<AuditableBeanWrapperFactory> auditingBeanWrapperFactoryProvider;
-
-	ConversionService defaultConversionService;
-
-	private final Lazy<ObjectMapper> mapper;
+	private final ObjectProvider<LinkRelationProvider> relProvider;
+	private final ObjectProvider<CurieProvider> curieProvider;
+	private final ObjectProvider<HalConfiguration> halConfiguration;
+	private final ObjectProvider<ObjectMapper> objectMapper;
+	private final ObjectProvider<RepresentationModelProcessorInvoker> invoker;
+	private final ObjectProvider<MessageResolver> resolver;
+	private final ObjectProvider<GeoModule> geoModule;
 	private final ObjectProvider<PathPatternParser> parser;
 
-	private ClassLoader beanClassLoader;
+	private final Lazy<ObjectMapper> mapper;
+	private final Lazy<? extends List<EntityLookup<?>>> lookups;
+	private final Lazy<? extends List<HttpMessageConverter<?>>> defaultMessageConverters;
+	private final Lazy<RepositoryRestConfigurerDelegate> configurerDelegate;
+	private final Lazy<SelfLinkProvider> selfLinkProvider;
+	private final Lazy<PersistentEntityResourceHandlerMethodArgumentResolver> persistentEntityArgumentResolver;
+	private final Lazy<RootResourceInformationHandlerMethodArgumentResolver> repoRequestArgumentResolver;
+	private final Lazy<BaseUri> baseUri;
+	private final Lazy<RepositoryResourceMappings> resourceMappings;
+	private final Lazy<Repositories> repositories;
+	private final Lazy<ResourceMetadataHandlerMethodArgumentResolver> resourceMetadataHandlerMethodArgumentResolver;
+	private final Lazy<ExcerptProjector> excerptProjector;
+	private final Lazy<PersistentEntities> persistentEntities;
+	private final Lazy<BackendIdHandlerMethodArgumentResolver> backendIdHandlerMethodArgumentResolver;
+	private final Lazy<Associations> associationLinks;
+	private final Lazy<EnumTranslator> enumTranslator;
+	private final Lazy<ServerHttpRequestMethodArgumentResolver> serverHttpRequestMethodArgumentResolver;
+	private final Lazy<ETagArgumentResolver> eTagArgumentResolver;
+	private final Lazy<RepositoryInvokerFactory> repositoryInvokerFactory;
+	private final Lazy<RepositoryRestConfiguration> repositoryRestConfiguration;
+	private final Lazy<HateoasPageableHandlerMethodArgumentResolver> pageableResolver;
+	private final Lazy<HateoasSortHandlerMethodArgumentResolver> sortResolver;
 
-	private Lazy<RepositoryRestConfigurerDelegate> configurerDelegate;
-	private Lazy<SelfLinkProvider> selfLinkProvider;
-	private Lazy<PersistentEntityResourceHandlerMethodArgumentResolver> persistentEntityArgumentResolver;
-	private Lazy<RootResourceInformationHandlerMethodArgumentResolver> repoRequestArgumentResolver;
-	private Lazy<BaseUri> baseUri;
-	private Lazy<RepositoryResourceMappings> resourceMappings;
-	private Lazy<Repositories> repositories;
-	private Lazy<ResourceMetadataHandlerMethodArgumentResolver> resourceMetadataHandlerMethodArgumentResolver;
-	private Lazy<ExcerptProjector> excerptProjector;
-	private Lazy<PersistentEntities> persistentEntities;
-	private Lazy<BackendIdHandlerMethodArgumentResolver> backendIdHandlerMethodArgumentResolver;
-	private Lazy<Associations> associationLinks;
-	private Lazy<EnumTranslator> enumTranslator;
-	private Lazy<ServerHttpRequestMethodArgumentResolver> serverHttpRequestMethodArgumentResolver;
-	private Lazy<ETagArgumentResolver> eTagArgumentResolver;
-	private Lazy<RepositoryInvokerFactory> repositoryInvokerFactory;
-	private Lazy<RepositoryRestConfiguration> repositoryRestConfiguration;
-	private Lazy<HateoasPageableHandlerMethodArgumentResolver> pageableResolver;
-	private Lazy<HateoasSortHandlerMethodArgumentResolver> sortResolver;
+	private ClassLoader beanClassLoader;
 
 	public RepositoryRestMvcConfiguration( //
 			ApplicationContext context, //
@@ -212,6 +207,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		super(context, conversionService);
 
+		this.applicationContext = context;
 		this.relProvider = relProvider;
 		this.curieProvider = curieProvider;
 		this.halConfiguration = halConfiguration;
@@ -220,6 +216,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		this.resolver = resolver;
 		this.geoModule = geoModule;
 		this.parser = parser;
+		this.defaultConversionService = new DefaultFormattingConversionService();
 
 		this.mapper = Lazy.of(() -> {
 
@@ -255,10 +252,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		this.serverHttpRequestMethodArgumentResolver = Lazy
 				.of(() -> context.getBean(ServerHttpRequestMethodArgumentResolver.class));
 		this.eTagArgumentResolver = Lazy.of(() -> context.getBean(ETagArgumentResolver.class));
+
 		this.repositoryInvokerFactory = Lazy.of(() -> new UnwrappingRepositoryInvokerFactory(
 				new DefaultRepositoryInvokerFactory(repositories.get(), defaultConversionService), getEntityLookups()));
-
-		this.defaultConversionService = new DefaultFormattingConversionService();
 
 		this.configurerDelegate = Lazy.of(() -> {
 
@@ -270,6 +266,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		this.repositoryRestConfiguration = Lazy.of(() -> context.getBean(RepositoryRestConfiguration.class));
 		this.pageableResolver = Lazy.of(() -> context.getBean(HateoasPageableHandlerMethodArgumentResolver.class));
 		this.sortResolver = Lazy.of(() -> context.getBean(HateoasSortHandlerMethodArgumentResolver.class));
+
+		// Resolution via ResolvableType needed to make the wildcard assignment work
+
+		this.lookups = beansOfType(context, EntityLookup.class);
+		this.defaultMessageConverters = beansOfType(context, HttpMessageConverter.class);
 	}
 
 	/*
@@ -751,7 +752,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		ExceptionHandlerExceptionResolver er = new ExceptionHandlerExceptionResolver();
 		er.setCustomArgumentResolvers(defaultMethodArgumentResolvers(selfLinkProvider.get(),
 				persistentEntityArgumentResolver.get(), repoRequestArgumentResolver.get()));
-		er.setMessageConverters(defaultMessageConverters);
+		er.setMessageConverters(defaultMessageConverters.get());
 
 		configurerDelegate.get().configureExceptionHandlerExceptionResolver(er);
 
@@ -886,7 +887,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		List<EntityLookup<?>> lookups = new ArrayList<>();
 		lookups.addAll(repositoryRestConfiguration.get().getEntityLookups(repositories.get()));
-		lookups.addAll(this.lookups);
+		lookups.addAll(this.lookups.get());
 
 		return lookups;
 	}
@@ -995,6 +996,23 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		SpringFactoriesLoader.loadFactories(StaticResourceProvider.class, beanClassLoader)
 				.forEach(it -> it.customizeResources(registry, repositoryRestConfiguration.get()));
+	}
+
+	/**
+	 * Helper to be able to obtain a {@link List} of generic types. Otherwise the assignment from {@code Foo} to
+	 * {@code Foo<?>} doesn't work.
+	 *
+	 * @param <S>
+	 * @param context
+	 * @param type
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private static <S> Lazy<List<S>> beansOfType(ApplicationContext context, Class<?> type) {
+
+		return Lazy.of(() -> (List<S>) context.getBeanProvider(type)
+				.orderedStream()
+				.collect(StreamUtils.toUnmodifiableList()));
 	}
 
 	private static class ResourceSupportHttpMessageConverter extends TypeConstrainedMappingJackson2HttpMessageConverter
