@@ -30,7 +30,7 @@ import org.springframework.web.servlet.HandlerMapping;
  * them from standard Spring MVC handling.
  * <p>
  * Note, that this annotation should only be used by application controllers that map to URIs that are managed by Spring
- * Data REST as the get handled by a special {@link HandlerMapping} implementation that applies additional
+ * Data REST as they get handled by a special {@link HandlerMapping} implementation that applies additional
  * functionality:
  * <ul>
  * <li>CORS configuration defined for the repository backing the path.</li>
