@@ -123,6 +123,7 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import org.springframework.web.util.pattern.PathPatternParser;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -658,9 +659,14 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		handlerAdapter.setWebBindingInitializer(initializer);
 		handlerAdapter.setMessageConverters(defaultMessageConverters);
 
+		List<ResponseBodyAdvice<?>> advices = new ArrayList<>();
+		advices.add(new HalFormsAdaptingResponseBodyAdvice<>());
+
 		if (repositoryRestConfiguration.getMetadataConfiguration().alpsEnabled()) {
-			handlerAdapter.setResponseBodyAdvice(Arrays.asList(alpsJsonHttpMessageConverter));
+			advices.addAll(Arrays.asList(alpsJsonHttpMessageConverter));
 		}
+
+		handlerAdapter.setResponseBodyAdvice(advices);
 
 		return handlerAdapter;
 	}

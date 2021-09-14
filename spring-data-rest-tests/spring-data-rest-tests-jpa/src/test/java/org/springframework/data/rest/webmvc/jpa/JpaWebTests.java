@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertThat;
 import static org.springframework.data.rest.webmvc.util.TestUtils.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -39,6 +40,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.tests.CommonWebTests;
+import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig.BooksHtmlController;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig.OrdersJsonController;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -47,6 +49,7 @@ import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -91,6 +94,27 @@ public class JpaWebTests extends CommonWebTests {
 			ctx.registerBean(AuthorsController.class);
 			ctx.registerBean(BooksHtmlController.class);
 			ctx.registerBean(OrdersJsonController.class);
+			ctx.registerBean(RepositoryLinkAffordanceAdder.class);
+		}
+	}
+
+	/**
+	 * Registered to add an affordance to the {@link RepositoryLinksResource} to make sure HAL FORMS can be requested in
+	 * {@link JpaWebTests#answersToHalFormsRequests()}.
+	 *
+	 * @author Oliver Drotbohm
+	 */
+	static class RepositoryLinkAffordanceAdder implements RepresentationModelProcessor<RepositoryLinksResource> {
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.hateoas.server.RepresentationModelProcessor#process(org.springframework.hateoas.RepresentationModel)
+		 */
+		@Override
+		public RepositoryLinksResource process(RepositoryLinksResource model) {
+
+			return model.mapLink(LinkRelation.of("authors"),
+					link -> link.andAffordance(afford(methodOn(AuthorsController.class).deleteAuthor(null))));
 		}
 	}
 
