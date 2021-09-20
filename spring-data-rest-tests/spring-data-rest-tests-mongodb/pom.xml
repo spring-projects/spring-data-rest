@@ -59,13 +59,6 @@
 			<version>${querydsl}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<version>${jodatime}</version>
-			<optional>true</optional>
-		</dependency>
-
 	</dependencies>
 
 	<build>

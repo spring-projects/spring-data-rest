@@ -48,7 +48,6 @@ public class User {
 	public Gender gender;
 	public @ReadOnlyProperty EmailAddress email;
 	public LocalDateTime java8DateTime;
-	public org.joda.time.LocalDateTime jodaDateTime;
 	public TypeWithPattern pattern;
 	public @DBRef(lazy = true) List<User> colleagues;
 	public @DBRef(lazy = true) User manager;

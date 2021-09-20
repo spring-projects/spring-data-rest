@@ -129,8 +129,6 @@ class PersistentEntityToJsonSchemaConverterUnitTests {
 		constraints.add(new Constraint("$.properties.gender.type", is("string"), "Enums are strings."));
 		constraints.add(new Constraint("$.properties.gender.enum", is(notNullValue()), "Exposes enum values."));
 		constraints
-				.add(new Constraint("$.properties.jodaDateTime.format", is("date-time"), "Exposes JodaTime dates in format."));
-		constraints
 				.add(new Constraint("$.properties.java8DateTime.format", is("date-time"), "Exposes Java 8 dates in format."));
 		constraints.add(new Constraint("$.properties.nicknames.type", is("array"), "Exposes collection of simple types."));
 		constraints.add(new Constraint("$.properties.nicknames.items.type", is("string"),
