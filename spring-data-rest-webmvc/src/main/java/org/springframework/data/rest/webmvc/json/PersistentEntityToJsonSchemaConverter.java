@@ -87,10 +87,11 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * {@link ResourceMappings}.
 	 *
 	 * @param entities must not be {@literal null}.
-	 * @param mappings must not be {@literal null}.
+	 * @param associations must not be {@literal null}.
 	 * @param resolver must not be {@literal null}.
 	 * @param objectMapper must not be {@literal null}.
 	 * @param configuration must not be {@literal null}.
+	 * @param customizerFactory must not be {@literal null}.
 	 */
 	public PersistentEntityToJsonSchemaConverter(PersistentEntities entities, Associations associations,
 			MessageResolver resolver, ObjectMapper objectMapper, RepositoryRestConfiguration configuration,
@@ -101,6 +102,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		Assert.notNull(resolver, "MessageResolver must not be null!");
 		Assert.notNull(objectMapper, "ObjectMapper must not be null!");
 		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
+		Assert.notNull(customizerFactory, "ValueTypeSchemaPropertyCustomizerFactory must not be null!");
 
 		this.entities = entities;
 		this.associations = associations;

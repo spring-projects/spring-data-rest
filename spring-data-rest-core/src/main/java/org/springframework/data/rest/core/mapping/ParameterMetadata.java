@@ -33,10 +33,12 @@ public final class ParameterMetadata {
 	/**
 	 * Creates a new {@link ParameterMetadata} for the given {@link MethodParameter} and base rel.
 	 *
-	 * @param name must not be {@literal null} or empty.
+	 * @param parameter must not be {@literal null} or empty.
 	 * @param baseRel must not be {@literal null} or empty.
 	 */
 	public ParameterMetadata(MethodParameter parameter, String baseRel) {
+
+		Assert.notNull(parameter, "MethodParameter must not be null!");
 
 		this.name = parameter.getParameterName();
 

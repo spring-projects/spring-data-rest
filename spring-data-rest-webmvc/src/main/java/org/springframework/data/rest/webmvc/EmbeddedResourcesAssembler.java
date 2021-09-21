@@ -55,8 +55,8 @@ public class EmbeddedResourcesAssembler {
 	}
 
 	/**
-	 * Returns the embedded resources to render. This will add an {@link RelatedResource} for linkable associations if
-	 * they have an excerpt projection registered.
+	 * Returns the embedded resources to render. This will add a projection for linkable associations if they have an
+	 * excerpt projection registered.
 	 *
 	 * @param instance must not be {@literal null}.
 	 * @return

@@ -46,7 +46,6 @@ import org.springframework.util.StringUtils;
  * @author Greg Turnquist
  * @author Mark Paluch
  */
-@SuppressWarnings("deprecation")
 public class RepositoryRestConfiguration {
 
 	static final URI NO_URI = URI.create("");
@@ -367,7 +366,7 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Set whether to return a response body after updating an entity.
 	 *
-	 * @param returnBody can be {@literal null}, expressing the decision shall be derived from the presence of an
+	 * @param returnBodyOnUpdate can be {@literal null}, expressing the decision shall be derived from the presence of an
 	 *          {@code Accept} header in the request.
 	 * @return {@literal this}
 	 */
@@ -535,7 +534,7 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Configures whether to enable enum value translation via the Spring Data REST default resource bundle. Defaults to
 	 * {@literal false} for backwards compatibility reasons. Will use the fully qualified enum name as key. For further
-	 * details see {@link EnumTranslator}.
+	 * details see {code EnumTranslator}.
 	 *
 	 * @param enableEnumTranslation
 	 * @see #getEnumTranslationConfiguration()
@@ -675,7 +674,7 @@ public class RepositoryRestConfiguration {
 	}
 
 	/**
-	 * The {@link RelProvider} to be used to calculate the link relation defaults for repositories.
+	 * The {@link LinkRelationProvider} to be used to calculate the link relation defaults for repositories.
 	 *
 	 * @deprecated since 3.5, use {@link #setLinkRelationProvider(LinkRelationProvider)} instead.
 	 */

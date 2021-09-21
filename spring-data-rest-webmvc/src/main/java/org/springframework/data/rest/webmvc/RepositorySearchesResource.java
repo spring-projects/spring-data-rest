@@ -16,13 +16,14 @@
 package org.springframework.data.rest.webmvc;
 
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * A custom {@link ResourceSupport} type to be able to write custom {@link ResourceProcessor}s to add additional links
- * to ones automatically exposed for Spring Data repository query methods.
+ * A custom {@link RepresentationModel} type to be able to write custom {@link RepresentationModelProcessor}s to add
+ * additional links to ones automatically exposed for Spring Data repository query methods.
  *
  * @author Oliver Gierke
  */

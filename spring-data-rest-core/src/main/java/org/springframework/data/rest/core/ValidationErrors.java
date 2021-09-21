@@ -51,7 +51,7 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 	 * Creates a new {@link ValidationErrors} instance for the given source object and {@link PersistentEntity}.
 	 *
 	 * @param source the source object to gather validation errors on, must not be {@literal null}.
-	 * @param entity the {@link PersistentEntity} for the given source instance, must not be {@literal null}.
+	 * @param entities the {@link PersistentEntities} for the given source instance, must not be {@literal null}.
 	 */
 	public ValidationErrors(Object source, PersistentEntities entities) {
 

@@ -65,9 +65,8 @@ public interface ResourceMetadata extends CollectionResourceMapping {
 	SearchResourceMappings getSearchResourceMappings();
 
 	/**
-	 * Returns the supported {@link HttpMethod}s for the given {@link ResourceType}.
+	 * Returns the supported {@link HttpMethod}s.
 	 *
-	 * @param resourcType must not be {@literal null}.
 	 * @return
 	 */
 	SupportedHttpMethods getSupportedHttpMethods();
