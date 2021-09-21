@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.rest.webmvc.support;
 
 import static org.springframework.http.HttpHeaders.*;
@@ -27,7 +26,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
- * {@link HandlerMethodArgumentResolver} to resolve If-Match headers for optimistic locking handling {@link IfMatch}.
+ * {@link HandlerMethodArgumentResolver} to resolve If-Match headers for optimistic locking handling {@link ETag}.
  *
  * @author Pablo Lozano
  * @author Oliver Gierke

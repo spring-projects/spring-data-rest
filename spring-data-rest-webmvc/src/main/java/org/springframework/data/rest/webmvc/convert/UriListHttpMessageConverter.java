@@ -36,8 +36,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 
 /**
- * {@link Converter} to render all {@link Link}s contained in a {@link ResourceSupport} as {@code text/uri-list} and
- * parse a request of that media type back into a {@link ResourceSupport} instance.
+ * {@link Converter} to render all {@link Link}s contained in a {@link RepresentationModel} as {@code text/uri-list} and
+ * parse a request of that media type back into a {@link RepresentationModel} instance.
  *
  * @author Jon Brisbin
  * @author Greg Turnquist

@@ -27,7 +27,7 @@ import org.springframework.hateoas.server.core.EmbeddedWrapper;
 import org.springframework.util.Assert;
 
 /**
- * {@link ResourceAssembler} to create {@link PersistentEntityResource}s for arbitrary domain objects.
+ * {@link RepresentationModelAssembler} to create {@link PersistentEntityResource}s for arbitrary domain objects.
  *
  * @author Oliver Gierke
  */

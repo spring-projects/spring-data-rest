@@ -24,9 +24,9 @@ package org.springframework.data.rest.webmvc.support;
 public interface ExcerptProjector {
 
 	/**
-	 * Creates a excerpt projection for the given source. If no excerpt projection is available, the call will fall back
-	 * to the behavior of {@link #project(Object)}. If you completely wish to skip handling the object, check for the
-	 * presence of an excerpt projection using {@link #hasExcerptProjection(Class)}.
+	 * Creates a excerpt projection for the given source. If no excerpt projection is available, the object will be
+	 * returned as is. If you completely wish to skip handling the object, check for the presence of an excerpt projection
+	 * using {@link #hasExcerptProjection(Class)}.
 	 *
 	 * @param source must not be {@literal null}.
 	 * @return

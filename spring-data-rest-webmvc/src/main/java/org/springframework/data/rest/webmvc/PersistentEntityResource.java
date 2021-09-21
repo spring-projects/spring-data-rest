@@ -33,7 +33,8 @@ import org.springframework.util.Assert;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * A Spring HATEOAS {@link Resource} subclass that holds a reference to the entity's {@link PersistentEntity} metadata.
+ * A Spring HATEOAS {@link EntityModel} subclass that holds a reference to the entity's {@link PersistentEntity}
+ * metadata.
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
@@ -168,8 +169,9 @@ public class PersistentEntityResource extends EntityModel<Object> {
 		}
 
 		/**
-		 * Configures the builder to embed the given {@link EmbeddedWrapper} instances. Creates a {@link Resources} instance
-		 * to make sure the {@link EmbeddedWrapper} handling gets applied to the serialization output ignoring the links.
+		 * Configures the builder to embed the given {@link EmbeddedWrapper} instances. Creates a {@link CollectionModel}
+		 * instance to make sure the {@link EmbeddedWrapper} handling gets applied to the serialization output ignoring the
+		 * links.
 		 *
 		 * @param resources can be {@literal null}.
 		 * @return the builder

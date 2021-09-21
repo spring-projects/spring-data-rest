@@ -37,11 +37,9 @@ public class RepositoryRestHandlerAdapter extends RequestMappingHandlerAdapter {
 	private final List<HandlerMethodArgumentResolver> argumentResolvers;
 
 	/**
-	 * Creates a new {@link RepositoryRestHandlerAdapter} using the given {@link HandlerMethodArgumentResolver} and
-	 * {@link org.springframework.hateoas.server.mvc.ResourceProcessorInvoker}.
+	 * Creates a new {@link RepositoryRestHandlerAdapter} using the given {@link HandlerMethodArgumentResolver}s.
 	 *
 	 * @param argumentResolvers must not be {@literal null}.
-	 * @param invoker must not be {@literal null}.
 	 */
 	public RepositoryRestHandlerAdapter(List<HandlerMethodArgumentResolver> argumentResolvers) {
 

@@ -146,7 +146,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 	/**
 	 * Custom {@link JsonSerializer} for {@link PersistentEntityResource}s to turn associations into {@link Link}s.
-	 * Delegates to standard {@link Resource} serialization afterwards.
+	 * Delegates to standard {@link EntityModel} serialization afterwards.
 	 *
 	 * @author Oliver Gierke
 	 */
@@ -331,7 +331,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	}
 
 	/**
-	 * Serializer to wrap values into an {@link Resource} instance and collecting all association links.
+	 * Serializer to wrap values into an {@link EntityModel} instance and collecting all association links.
 	 *
 	 * @author Oliver Gierke
 	 * @author Alex Leigh
