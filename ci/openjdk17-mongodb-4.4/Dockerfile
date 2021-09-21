@@ -1,7 +1,9 @@
-FROM adoptopenjdk/openjdk16:latest 
+FROM openjdk:17-bullseye
 
 ENV TZ=Etc/UTC
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN sed -i -e 's/http/https/g' /etc/apt/sources.list
 
 RUN set -eux; \
 	apt-get update && apt-get install -y apt-transport-https apt-utils gnupg2 ; \
