@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ObjectFactory;
@@ -112,6 +114,7 @@ import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2Http
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
@@ -120,7 +123,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.handler.AbstractHandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.pattern.PathPatternParser;
@@ -134,7 +136,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 /**
  * Main application configuration for Spring Data REST. To customize how the exporter works, subclass this and override
  * any of the {@literal configure*} methods.
- * <p/>
+ * <p>
  * Any XML files located in the classpath under the {@literal META-INF/spring-data-rest/} path will be automatically
  * found and loaded into this {@link org.springframework.context.ApplicationContext}.
  *
@@ -384,20 +386,13 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new BaseUri(repositoryRestConfiguration.getBasePath());
 	}
 
-	/**
-	 * {@link org.springframework.beans.factory.config.BeanPostProcessor} to turn beans annotated as
-	 * {@link org.springframework.data.rest.repository.annotation.RepositoryEventHandler}s.
-	 *
-	 * @return
-	 */
 	@Bean
 	public static AnnotatedEventHandlerInvoker annotatedEventHandlerInvoker() {
 		return new AnnotatedEventHandlerInvoker();
 	}
 
 	/**
-	 * Turns an {@link javax.servlet.http.HttpServletRequest} into a
-	 * {@link org.springframework.http.server.ServerHttpRequest}.
+	 * Turns an {@link HttpServletRequest} into a {@link ServerHttpRequest}.
 	 *
 	 * @return
 	 */
@@ -455,7 +450,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * configuration into account when generating links.
 	 *
 	 * @return
-	 * @throws Exception
 	 */
 	@Bean
 	public RepositoryEntityLinks entityLinks(ObjectFactory<HateoasPageableHandlerMethodArgumentResolver> pageableResolver, //
@@ -604,7 +598,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * Special {@link org.springframework.web.servlet.HandlerAdapter} that only recognizes handler methods defined in the
 	 * provided controller classes.
 	 *
-	 * @param resourceProcessors {@link ResourceProcessor}s available in the {@link ApplicationContext}.
 	 * @return
 	 */
 	@Bean

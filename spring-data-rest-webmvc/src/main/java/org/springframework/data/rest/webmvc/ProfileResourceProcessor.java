@@ -15,14 +15,14 @@
  */
 package org.springframework.data.rest.webmvc;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.util.Assert;
 
 /**
- * {@link ResourceProcessor} to add a {@code profile} link to the root resource to point to multiple forms of metadata.
+ * {@link RepresentationModelProcessor} to add a {@code profile} link to the root resource to point to multiple forms of
+ * metadata.
  *
  * @author Oliver Gierke
  * @author Greg Turnquist
@@ -39,7 +39,6 @@ public class ProfileResourceProcessor implements RepresentationModelProcessor<Re
 	 *
 	 * @param configuration must not be {@literal null}.
 	 */
-	@Autowired
 	public ProfileResourceProcessor(RepositoryRestConfiguration configuration) {
 
 		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");

@@ -139,7 +139,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 	/**
 	 * Returns whether PUT requests can be used to create new instances of the given domain type.
 	 *
-	 * @param metadata must not be {@literal null}.
+	 * @param domainType must not be {@literal null}.
 	 * @return
 	 */
 	public boolean allowsPutForCreation(Class<?> domainType) {

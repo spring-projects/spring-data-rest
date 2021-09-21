@@ -19,12 +19,11 @@ import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 /**
- * SPI to be able to register extensions that add static resource routes.
+ * SPI to be able to register extensions that add static resource routes. See
+ * {@code org.springframework.data.rest.webmvc.halexplorer.HalExplorerConfiguration} in the HAL Explorer module.
  *
  * @author Oliver Drotbohm
  * @since 3.2
- * @see org.springframework.data.rest.webmvc.halbrowser.HalBrowserConfiguration
- * @see org.springframework.data.rest.webmvc.halexplorer.HalExplorerConfiguration
  */
 public interface StaticResourceProvider {
 

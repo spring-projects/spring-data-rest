@@ -58,7 +58,7 @@ public class MetadataConfiguration {
 	/**
 	 * Configures whether to expose the ALPS resources.
 	 *
-	 * @param alpsEnabled the alpsEnabled to set
+	 * @param enableAlps whether to expose ALPS resources.
 	 */
 	public void setAlpsEnabled(boolean enableAlps) {
 		this.alpsEnabled = enableAlps;

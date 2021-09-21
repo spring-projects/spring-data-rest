@@ -24,7 +24,7 @@ import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.util.Assert;
 
 /**
- * A {@link RelProvider} based on the {@link ResourceMappings} for the registered repositories.
+ * A {@link LinkRelationProvider} based on the {@link ResourceMappings} for the registered repositories.
  *
  * @author Oliver Gierke
  */

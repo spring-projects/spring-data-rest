@@ -52,7 +52,7 @@ public class ControllerUtils {
 	}
 
 	/**
-	 * Wrap a resource as a {@link ResourceEntity} and attach given headers and status.
+	 * Wrap a resource as a {@link ResponseEntity} and attach given headers and status.
 	 *
 	 * @param status
 	 * @param headers
