@@ -15,14 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 

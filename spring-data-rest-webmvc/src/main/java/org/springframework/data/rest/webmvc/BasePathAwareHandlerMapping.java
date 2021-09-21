@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -75,7 +78,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#lookupHandlerMethod(java.lang.String, javax.servlet.http.HttpServletRequest)
+	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#lookupHandlerMethod(java.lang.String, jakarta.servlet.http.HttpServletRequest)
 	 */
 	@Override
 	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
@@ -214,7 +217,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 		/*
 		 * (non-Javadoc)
-		 * @see javax.servlet.http.HttpServletRequestWrapper#getHeader(java.lang.String)
+		 * @see jakarta.servlet.http.HttpServletRequestWrapper#getHeader(java.lang.String)
 		 */
 		@Override
 		public String getHeader(String name) {
@@ -226,7 +229,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 		/*
 		 * (non-Javadoc)
-		 * @see javax.servlet.http.HttpServletRequestWrapper#getHeaders(java.lang.String)
+		 * @see jakarta.servlet.http.HttpServletRequestWrapper#getHeaders(java.lang.String)
 		 */
 		@Override
 		public Enumeration<String> getHeaders(String name) {

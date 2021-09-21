@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.halexplorer;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.http.MediaType;

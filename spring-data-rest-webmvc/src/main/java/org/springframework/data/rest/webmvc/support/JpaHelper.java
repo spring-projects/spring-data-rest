@@ -1,8 +1,9 @@
 package org.springframework.data.rest.webmvc.support;
 
+import jakarta.persistence.EntityManagerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.EntityManagerFactory;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;

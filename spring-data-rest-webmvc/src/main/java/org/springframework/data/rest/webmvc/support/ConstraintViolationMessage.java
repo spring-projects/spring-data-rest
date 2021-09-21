@@ -2,15 +2,17 @@ package org.springframework.data.rest.webmvc.support;
 
 import static java.lang.String.*;
 
+import jakarta.validation.ConstraintViolation;
+
 import java.util.Locale;
-import javax.validation.ConstraintViolation;
+
+import org.springframework.context.MessageSource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.context.MessageSource;
 
 /**
  * A helper class to encapsulate {@link ConstraintViolation} errors.
- * 
+ *
  * @author Jon Brisbin
  */
 public class ConstraintViolationMessage {
@@ -22,7 +24,8 @@ public class ConstraintViolationMessage {
 		this.violation = violation;
 		this.message = msgSrc.getMessage(violation.getMessageTemplate(),
 				new Object[] { violation.getLeafBean().getClass().getSimpleName(), violation.getPropertyPath().toString(),
-						violation.getInvalidValue() }, violation.getMessage(), locale);
+						violation.getInvalidValue() },
+				violation.getMessage(), locale);
 	}
 
 	@JsonProperty("entity")

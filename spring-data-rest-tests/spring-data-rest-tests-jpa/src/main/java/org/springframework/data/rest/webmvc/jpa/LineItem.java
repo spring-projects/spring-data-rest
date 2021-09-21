@@ -15,9 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 
 /**
  * @author Oliver Gierke
@@ -25,7 +25,7 @@ import javax.persistence.Id;
 @Entity
 public class LineItem {
 
-	@Id @GeneratedValue//
+	@Id @GeneratedValue //
 	private Long id;
 	private String name;
 

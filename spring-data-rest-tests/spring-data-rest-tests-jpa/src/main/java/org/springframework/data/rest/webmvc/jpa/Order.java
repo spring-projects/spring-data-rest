@@ -15,18 +15,18 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 /**
  * @author Oliver Gierke
@@ -35,11 +35,11 @@ import javax.persistence.Table;
 @Table(name = "ORDERS")
 public class Order {
 
-	@Id @GeneratedValue//
+	@Id @GeneratedValue //
 	private Long id;
-	@ManyToOne(fetch = FetchType.LAZY)//
+	@ManyToOne(fetch = FetchType.LAZY) //
 	private Person creator;
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)//
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true) //
 	private List<LineItem> lineItems = new ArrayList<LineItem>();
 	private Type type = Type.TAKE_AWAY;
 

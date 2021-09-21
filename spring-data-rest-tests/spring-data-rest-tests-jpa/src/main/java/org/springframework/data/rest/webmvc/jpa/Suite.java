@@ -15,10 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 import lombok.Data;
-
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
 
 /**
  * @author Alex Leigh

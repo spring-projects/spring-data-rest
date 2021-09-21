@@ -28,6 +28,11 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-rest</dist.id>
 
+		<!-- Temporarily here -->
+		<spring>6.0.0-SNAPSHOT</spring>
+		<spring-hateoas>2.0.0-SNAPSHOT</spring-hateoas>
+		<validation>3.0.0</validation>
+
 		<springdata.commons>3.0.0-SNAPSHOT</springdata.commons>
 		<springdata.jpa>2.6.0-SNAPSHOT</springdata.jpa>
 		<springdata.mongodb>3.3.0-SNAPSHOT</springdata.mongodb>
@@ -35,9 +40,9 @@
 		<springdata.solr>4.4.0-SNAPSHOT</springdata.solr>
 		<springdata.cassandra>3.3.0-SNAPSHOT</springdata.cassandra>
 		<springdata.keyvalue>2.6.0-SNAPSHOT</springdata.keyvalue>
-		<servlet.version>4.0.1</servlet.version>
+		<servlet.version>5.0.0</servlet.version>
 
-		<hibernate.version>5.4.8.Final</hibernate.version>
+		<hibernate.version>5.5.7.Final</hibernate.version>
 		<bundlor.enabled>false</bundlor.enabled>
 	</properties>
 
@@ -119,8 +124,8 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>javax.validation</groupId>
-			<artifactId>validation-api</artifactId>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
 			<version>${validation}</version>
 			<optional>true</optional>
 		</dependency>
@@ -144,7 +149,7 @@
 	<repositories>
 		<repository>
 			<id>spring-libs-snapshot</id>
-			<url>https://repo.spring.io/libs-snapshot</url>
+			<url>https://repo.spring.io/snapshot</url>
 		</repository>
 	</repositories>
 

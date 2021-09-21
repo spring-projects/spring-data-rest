@@ -15,11 +15,11 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.Ordered;
 import org.springframework.lang.Nullable;
@@ -107,7 +107,7 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.HandlerMapping#getHandler(javax.servlet.http.HttpServletRequest)
+	 * @see org.springframework.web.servlet.HandlerMapping#getHandler(jakarta.servlet.http.HttpServletRequest)
 	 */
 	@Override
 	public HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
@@ -116,7 +116,7 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.MatchableHandlerMapping#match(javax.servlet.http.HttpServletRequest, java.lang.String)
+	 * @see org.springframework.web.servlet.handler.MatchableHandlerMapping#match(jakarta.servlet.http.HttpServletRequest, java.lang.String)
 	 */
 	@Override
 	public RequestMatchResult match(HttpServletRequest request, String pattern) {

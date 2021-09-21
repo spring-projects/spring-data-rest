@@ -15,9 +15,9 @@
  */
 package org.springframework.data.rest.tests.shop;
 
-import java.math.BigDecimal;
+import jakarta.annotation.PostConstruct;
 
-import javax.annotation.PostConstruct;
+import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

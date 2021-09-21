@@ -17,10 +17,9 @@ package org.springframework.data.rest.webmvc.jpa.groovy;
 
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 
 /**
  * Simulates a Groovy domain object by extending {@link GroovyObject}.

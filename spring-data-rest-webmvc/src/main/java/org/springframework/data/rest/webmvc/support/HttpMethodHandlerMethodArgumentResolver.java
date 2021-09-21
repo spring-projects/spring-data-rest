@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpMethod;

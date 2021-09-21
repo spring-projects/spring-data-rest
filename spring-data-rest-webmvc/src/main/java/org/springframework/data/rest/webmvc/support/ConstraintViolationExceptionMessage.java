@@ -1,13 +1,15 @@
 package org.springframework.data.rest.webmvc.support;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+
+import org.springframework.context.MessageSource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.context.MessageSource;
 
 /**
  * @author Jon Brisbin

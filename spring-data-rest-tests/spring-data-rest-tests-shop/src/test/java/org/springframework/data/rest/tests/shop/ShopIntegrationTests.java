@@ -28,6 +28,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -69,6 +70,7 @@ class ShopIntegrationTests extends AbstractWebIntegrationTests {
 
 		client.follow(client.discoverUnique("products").expand(arguments))//
 				.andExpect(status().isOk())//
+				.andDo(MockMvcResultHandlers.print()) //
 				.andExpect(jsonPath("$._embedded.products[0].name", notNullValue()))//
 				.andExpect(jsonPath("$._embedded.products[0].price").doesNotExist());
 	}

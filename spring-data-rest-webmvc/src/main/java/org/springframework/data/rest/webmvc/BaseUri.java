@@ -17,11 +17,11 @@ package org.springframework.data.rest.webmvc;
 
 import static org.springframework.util.StringUtils.*;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.data.rest.core.Path;
 import org.springframework.util.Assert;

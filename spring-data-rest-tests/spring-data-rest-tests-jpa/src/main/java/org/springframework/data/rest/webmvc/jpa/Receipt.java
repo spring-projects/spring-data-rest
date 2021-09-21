@@ -16,15 +16,15 @@
 
 package org.springframework.data.rest.webmvc.jpa;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
+
 import java.math.BigDecimal;
 import java.util.Date;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Version;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -34,51 +34,46 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Pablo Lozano
  */
 @Entity
-@JsonIgnoreProperties({"version"})
+@JsonIgnoreProperties({ "version" })
 public class Receipt {
 
-    @Id
-    @GeneratedValue
-    private Long id;
+	@Id @GeneratedValue private Long id;
 
-    private String saleItem;
+	private String saleItem;
 
-    private BigDecimal amount;
+	private BigDecimal amount;
 
-    @Version
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date version;
+	@Version @Temporal(TemporalType.TIMESTAMP) private Date version;
 
-    public Long getId() {
-        return id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public String getSaleItem() {
-        return saleItem;
-    }
+	public String getSaleItem() {
+		return saleItem;
+	}
 
-    public void setSaleItem(String saleItem) {
-        this.saleItem = saleItem;
-    }
+	public void setSaleItem(String saleItem) {
+		this.saleItem = saleItem;
+	}
 
-    public BigDecimal getAmount() {
-        return amount;
-    }
+	public BigDecimal getAmount() {
+		return amount;
+	}
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
+	public void setAmount(BigDecimal amount) {
+		this.amount = amount;
+	}
 
+	public Date getVersion() {
+		return version;
+	}
 
-    public Date getVersion() {
-        return version;
-    }
-
-    public void setVersion(Date version) {
-        this.version = version;
-    }
+	public void setVersion(Date version) {
+		this.version = version;
+	}
 }

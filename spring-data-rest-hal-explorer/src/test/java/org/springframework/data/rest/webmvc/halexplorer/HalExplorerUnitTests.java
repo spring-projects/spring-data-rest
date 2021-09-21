@@ -17,11 +17,11 @@ package org.springframework.data.rest.webmvc.halexplorer;
 
 import static org.assertj.core.api.Assertions.*;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
 import java.util.Collections;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;

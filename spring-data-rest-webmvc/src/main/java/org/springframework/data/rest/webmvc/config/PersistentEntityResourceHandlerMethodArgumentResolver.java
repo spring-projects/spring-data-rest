@@ -15,12 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;

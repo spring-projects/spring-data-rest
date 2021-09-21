@@ -15,13 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 
 /**
  * @author Oliver Gierke
@@ -29,11 +29,11 @@ import javax.persistence.ManyToMany;
 @Entity
 public class Author {
 
-	@Id @GeneratedValue//
+	@Id @GeneratedValue //
 	Long id;
 	public String name;
 
-	@ManyToMany(mappedBy = "authors")//
+	@ManyToMany(mappedBy = "authors") //
 	public Set<Book> books = new HashSet<Book>();
 
 	protected Author() {}

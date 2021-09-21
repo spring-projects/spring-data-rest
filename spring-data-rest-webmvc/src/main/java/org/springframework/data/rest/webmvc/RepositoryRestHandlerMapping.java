@@ -15,14 +15,14 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.repository.support.Repositories;
@@ -139,7 +139,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#lookupHandlerMethod(java.lang.String, javax.servlet.http.HttpServletRequest)
+	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#lookupHandlerMethod(java.lang.String, jakarta.servlet.http.HttpServletRequest)
 	 */
 	@Override
 	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
@@ -170,7 +170,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping#handleNoMatch(java.util.Set, java.lang.String, javax.servlet.http.HttpServletRequest)
+	 * @see org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping#handleNoMatch(java.util.Set, java.lang.String, jakarta.servlet.http.HttpServletRequest)
 	 */
 	@Override
 	protected HandlerMethod handleNoMatch(Set<RequestMappingInfo> requestMappingInfos, String lookupPath,
@@ -219,7 +219,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#getCorsConfiguration(java.lang.Object, javax.servlet.http.HttpServletRequest)
+	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#getCorsConfiguration(java.lang.Object, jakarta.servlet.http.HttpServletRequest)
 	 */
 	@Override
 	protected CorsConfiguration getCorsConfiguration(Object handler, HttpServletRequest request) {

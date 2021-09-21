@@ -17,7 +17,7 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.assertj.core.api.Assertions.*;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

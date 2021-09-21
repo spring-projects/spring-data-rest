@@ -15,19 +15,18 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -43,8 +42,7 @@ public class Book {
 	public @Id @GeneratedValue Long id;
 	public String isbn, title;
 
-	@JsonProperty("sales")
-	public long soldUnits;
+	@JsonProperty("sales") public long soldUnits;
 
 	@ManyToMany(cascade = { CascadeType.MERGE }) //
 	@RestResource(path = "creators") //

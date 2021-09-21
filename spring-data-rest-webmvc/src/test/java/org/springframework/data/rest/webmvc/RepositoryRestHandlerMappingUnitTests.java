@@ -18,12 +18,12 @@ package org.springframework.data.rest.webmvc;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Collections;
 import java.util.function.Supplier;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -339,7 +339,7 @@ class RepositoryRestHandlerMappingUnitTests {
 
 		/*
 		 * (non-Javadoc)
-		 * @see org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping#getHandlerInternal(javax.servlet.http.HttpServletRequest)
+		 * @see org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping#getHandlerInternal(jakarta.servlet.http.HttpServletRequest)
 		 */
 		@Override
 		public HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
