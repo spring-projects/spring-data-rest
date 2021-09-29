@@ -35,9 +35,11 @@ For the resources exposed, we use a set of default status codes:
 
 * `200 OK`: For plain `GET` requests.
 * `201 Created`: For `POST` and `PUT` requests that create new resources.
-* `204 No Content`: For `PUT`, `PATCH`, and `DELETE` requests when the configuration is set to not return response bodies for resource updates (`RepositoryRestConfiguration.returnBodyOnUpdate`). If the configuration value is set to include responses for `PUT`, `200 OK` is returned for updates, and `201 Created` is returned for resource created through `PUT`.
+* `204 No Content`: For `PUT`, `PATCH`, and `DELETE` requests when the configuration is set to not return response bodies for resource updates (`RepositoryRestConfiguration.setReturnBodyOnUpdate(…)`).
+If the configuration value is set to include responses for `PUT`, `200 OK` is returned for updates, and `201 Created` is returned for resource created through `PUT`.
 
-If the configuration values (`RepositoryRestConfiguration.returnBodyOnUpdate` and `RepositoryRestConfiguration.returnBodyCreate)` are explicitly set to `null`, the presence of the HTTP Accept header is used to determine the response code.
+If the configuration values (`RepositoryRestConfiguration.returnBodyOnUpdate(…)` and `RepositoryRestConfiguration.returnBodyCreate(…)`) are explicitly set to `null` -- which they are by default --, the presence of the HTTP Accept header is used to determine the response code.
+Read more on this in the detailed description of <<repository-resources.collection-resource.supported-methods.post, collection>> and <<repository-resources.item-resource.supported-methods.put, item resources>>.
 
 [[repository-resources.resource-discoverability]]
 === Resource Discoverability
@@ -144,6 +146,10 @@ For more information on the default exposure of methods, see <<repository-resour
 ==== `POST`
 
 The `POST` method creates a new entity from the given request body.
+By default, whether the response contains a body is controlled by the `Accept` header sent with the request.
+If one is sent, a response body is created.
+If not, the response body is empty and a representation of the resource created can be obtained by following link contained in the `Location` response header.
+This behavior can be overridden by configuring `RepositoryRestConfiguration.setReturnBodyOnCreate(…)` accordingly.
 
 ===== Methods used for invocation
 
@@ -223,6 +229,10 @@ For more information on the default exposure of methods, see <<repository-resour
 ==== `PUT`
 
 The `PUT` method replaces the state of the target resource with the supplied request body.
+By default, whether the response contains a body is controlled by the `Accept` header sent with the request.
+If the request header is present, a response body and a status code of `200 OK` is returned.
+If no header is present, the response body is empty and a successful request returns a status of `204 No Content`.
+This behavior can be overridden by configuring `RepositoryRestConfiguration.setReturnBodyOnUpdate(…)` accordingly.
 
 ===== Methods used for invocation
 
