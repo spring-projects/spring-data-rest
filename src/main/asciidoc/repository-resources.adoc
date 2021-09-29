@@ -15,7 +15,7 @@ public interface OrderRepository extends CrudRepository<Order, Long> { }
 
 For this repository, Spring Data REST exposes a collection resource at `/orders`. The path is derived from the uncapitalized, pluralized, simple class name of the domain class being managed. It also exposes an item resource for each of the items managed by the repository under the URI template `/orders/{id}`.
 
-By default the HTTP methods to interact with these resources map to the according methods of `CrudRepository`. Read more on that in the sections on <<repository-resources.collection-resource,collection resources>> and <<repository-resources.item-resource,item resources>>.
+By default the HTTP methods to interact with these resources map to the according methods of `CrudRepository`. Read more on that in the sections on <<repository-resources.collection-resource, collection resources>> and <<repository-resources.item-resource, item resources>>.
 
 [[repository-resources.methods]]
 === Repository methods exposure
@@ -92,7 +92,7 @@ If the repository is a paging repository we include the pagination links if nece
 
 ===== Methods used for invocation
 
-The following methods are used if present (decending order):
+The following methods are used if present (descending order):
 
 - `findAll(Pageable)`
 - `findAll(Sort)`
@@ -134,7 +134,7 @@ The `HEAD` method returns whether the collection resource is available. It has n
 
 ===== Methods used for invocation
 
-The following methods are used if present (decending order):
+The following methods are used if present (descending order):
 
 - `findAll(Pageable)`
 - `findAll(Sort)`
@@ -153,7 +153,7 @@ This behavior can be overridden by configuring `RepositoryRestConfiguration.setR
 
 ===== Methods used for invocation
 
-The following methods are used if present (decending order):
+The following methods are used if present (descending order):
 
 - `save(…)`
 
@@ -189,7 +189,7 @@ The `GET` method returns a single entity.
 
 ===== Methods used for invocation
 
-The following methods are used if present (decending order):
+The following methods are used if present (descending order):
 
 - `findById(…)`
 
@@ -219,7 +219,7 @@ The `HEAD` method returns whether the item resource is available. It has no stat
 
 ===== Methods used for invocation
 
-The following methods are used if present (decending order):
+The following methods are used if present (descending order):
 
 - `findById(…)`
 
@@ -236,7 +236,7 @@ This behavior can be overridden by configuring `RepositoryRestConfiguration.setR
 
 ===== Methods used for invocation
 
-The following methods are used if present (decending order):
+The following methods are used if present (descending order):
 
 - `save(…)`
 
@@ -262,7 +262,7 @@ The `PATCH` method is similar to the `PUT` method but partially updates the reso
 
 ===== Methods used for invocation
 
-The following methods are used if present (decending order):
+The following methods are used if present (descending order):
 
 - `save(…)`
 
