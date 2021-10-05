@@ -59,10 +59,9 @@ public class JpaRepositoryConfig extends JpaInfrastructureConfig {
 	}
 
 	@RepositoryRestController
-	@RequestMapping("orders")
 	static class OrdersJsonController {
 
-		@RequestMapping(value = "/search/sort", method = RequestMethod.POST, produces = "application/hal+json")
+		@RequestMapping(value = "/orders/search/sort", method = RequestMethod.POST, produces = "application/hal+json")
 		void someMethodWithArgs(Sort sort, Pageable pageable, DefaultedPageable defaultedPageable) {}
 	}
 }

@@ -28,12 +28,14 @@ import java.util.function.Predicate;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.util.ProxyUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.condition.ProducesRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -46,6 +48,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
+	private static final String AT_REQUEST_MAPPING_ON_TYPE = "Spring Data REST controller %s must not use @RequestMapping on class level as this would cause double registration with Spring MVC!";
 	private final RepositoryRestConfiguration configuration;
 
 	/**
@@ -140,15 +143,38 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		return condition;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Returns whether the given type is considered a handler. Performs additional configuration checks. If you only want
+	 * to customize the handler selection criteria, override {@link #isHandlerInternal(Class)}. Will be made final in 4.0.
+	 *
 	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping#isHandler(java.lang.Class)
+	 * @deprecated for overriding in 3.6. Will be made final in 4.0.
 	 */
 	@Override
+	@Deprecated
 	protected boolean isHandler(Class<?> beanType) {
 
 		Class<?> type = ProxyUtils.getUserClass(beanType);
+		boolean isSpringDataRestHandler = isHandlerInternal(type);
 
+		if (!isSpringDataRestHandler) {
+			return false;
+		}
+
+		if (AnnotatedElementUtils.hasAnnotation(type, RequestMapping.class)) {
+			throw new IllegalStateException(String.format(AT_REQUEST_MAPPING_ON_TYPE, beanType.getName()));
+		}
+
+		return isSpringDataRestHandler;
+	}
+
+	/**
+	 * Returns whether the given controller type is considered a handler.
+	 *
+	 * @param type will never be {@literal null}.
+	 * @return
+	 */
+	protected boolean isHandlerInternal(Class<?> type) {
 		return type.isAnnotationPresent(BasePathAwareController.class);
 	}
 

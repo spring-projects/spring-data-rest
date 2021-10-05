@@ -25,6 +25,8 @@ import org.junit.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * Unit tests for {@link BasePathAwareHandlerMapping}.
@@ -60,6 +62,23 @@ public class BasePathAwareHandlerMappingUnitTests {
 		assertThat(mapping.isHandler(type)).isFalse();
 	}
 
+	@Test // #1342, #1628, #1686, #1946
+	public void rejectsAtRequestMappingOnCustomController() {
+
+		assertThatIllegalStateException()
+				.isThrownBy(() -> {
+					mapping.isHandler(InvalidController.class);
+				})
+				.withMessageContaining(InvalidController.class.getName());
+	}
+
+	@Test // #1342, #1628, #1686, #1946
+	public void doesNotRejectAtRequestMappingOnStandardMvcController() {
+
+		assertThatNoException()
+				.isThrownBy(() -> mapping.isHandler(ValidController.class));
+	}
+
 	private static Class<?> createProxy(Object source) {
 
 		ProxyFactory factory = new ProxyFactory(source);
@@ -87,4 +106,12 @@ public class BasePathAwareHandlerMappingUnitTests {
 			return super.isHandler(beanType);
 		}
 	}
+
+	@BasePathAwareController
+	@RequestMapping("/sample")
+	static class InvalidController {}
+
+	@Controller
+	@RequestMapping("/sample")
+	static class ValidController {}
 }
