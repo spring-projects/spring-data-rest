@@ -25,14 +25,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.HttpMethods;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
-import org.springframework.data.util.ProxyUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -181,14 +179,11 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping#isHandler(java.lang.Class)
+	 * @see org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping#isHandlerInternal(java.lang.Class)
 	 */
 	@Override
-	protected boolean isHandler(Class<?> beanType) {
-
-		Class<?> type = ProxyUtils.getUserClass(beanType);
-
-		return AnnotationUtils.findAnnotation(type, RepositoryRestController.class) != null;
+	protected boolean isHandlerInternal(Class<?> type) {
+		return AnnotatedElementUtils.hasAnnotation(type, RepositoryRestController.class);
 	}
 
 	/*
