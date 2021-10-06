@@ -61,8 +61,8 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 
 		SupportedHttpMethods supportedMethods = getSupportedHttpMethodsFor(RawRepository.class);
 
-		assertMethodsSupported(supportedMethods, COLLECTION, true, OPTIONS);
-		assertMethodsSupported(supportedMethods, COLLECTION, false, GET, PUT, POST, PATCH, DELETE, HEAD);
+		assertMethodsSupported(supportedMethods, ResourceType.COLLECTION, true, OPTIONS);
+		assertMethodsSupported(supportedMethods, ResourceType.COLLECTION, false, GET, PUT, POST, PATCH, DELETE, HEAD);
 
 		assertMethodsSupported(supportedMethods, ITEM, true, OPTIONS);
 		assertMethodsSupported(supportedMethods, ITEM, false, GET, PUT, POST, PATCH, DELETE, HEAD);
@@ -82,8 +82,8 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 
 		SupportedHttpMethods supportedHttpMethods = getSupportedHttpMethodsFor(SampleRepository.class);
 
-		assertMethodsSupported(supportedHttpMethods, COLLECTION, true, GET, POST, OPTIONS, HEAD);
-		assertMethodsSupported(supportedHttpMethods, COLLECTION, false, PUT, PATCH, DELETE);
+		assertMethodsSupported(supportedHttpMethods, ResourceType.COLLECTION, true, GET, POST, OPTIONS, HEAD);
+		assertMethodsSupported(supportedHttpMethods, ResourceType.COLLECTION, false, PUT, PATCH, DELETE);
 	}
 
 	@Test // DATACMNS-589, DATAREST-409
@@ -133,7 +133,8 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 		reset(mappings);
 		when(mappings.exposeMethodsByDefault()).thenReturn(false);
 
-		assertMethodsSupported(getSupportedHttpMethodsFor(MethodsExplicitlyExportedRepository.class), COLLECTION, true,
+		assertMethodsSupported(getSupportedHttpMethodsFor(MethodsExplicitlyExportedRepository.class),
+				ResourceType.COLLECTION, true,
 				POST, OPTIONS);
 		assertMethodsSupported(getSupportedHttpMethodsFor(MethodsExplicitlyExportedRepository.class), ITEM, true, OPTIONS,
 				PUT, PATCH);

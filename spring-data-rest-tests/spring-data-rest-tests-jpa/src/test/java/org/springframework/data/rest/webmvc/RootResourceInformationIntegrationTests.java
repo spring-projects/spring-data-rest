@@ -16,11 +16,11 @@
 package org.springframework.data.rest.webmvc;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.webmvc.jpa.Address;
@@ -43,13 +43,13 @@ public class RootResourceInformationIntegrationTests extends AbstractControllerI
 	public void getIsNotSupportedIfFindAllIsNotExported() {
 
 		SupportedHttpMethods supportedMethods = getResourceInformation(Address.class).getSupportedMethods();
-		assertThat(supportedMethods.getMethodsFor(COLLECTION)).doesNotContain(GET);
+		assertThat(supportedMethods.getMethodsFor(ResourceType.COLLECTION)).doesNotContain(GET);
 	}
 
 	@Test // DATAREST-217
 	public void postIsNotSupportedIfSaveIsNotExported() {
 
 		SupportedHttpMethods supportedMethods = getResourceInformation(Address.class).getSupportedMethods();
-		assertThat(supportedMethods.getMethodsFor(COLLECTION)).doesNotContain(POST);
+		assertThat(supportedMethods.getMethodsFor(ResourceType.COLLECTION)).doesNotContain(POST);
 	}
 }
