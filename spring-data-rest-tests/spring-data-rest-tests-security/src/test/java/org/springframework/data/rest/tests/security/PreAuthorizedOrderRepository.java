@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.tests.security;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.repository.CrudRepository;
@@ -27,6 +28,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 // tag::code[]
 @PreAuthorize("hasRole('ROLE_USER')") // <1>
 public interface PreAuthorizedOrderRepository extends CrudRepository<Order, UUID> {
+
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@Override
+	Optional<Order> findById(UUID id);
 
 	@PreAuthorize("hasRole('ROLE_ADMIN')") // <2>
 	@Override

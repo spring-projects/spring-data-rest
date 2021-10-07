@@ -37,6 +37,7 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -228,5 +229,18 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 		mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
 				with(user("user").roles("USER", "ADMIN"))).//
 				andExpect(status().isOk());
+	}
+
+	@Test // #2070
+	public void rejectsAccessToItemResourceIfNotAuthorized() throws Exception {
+
+		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
+				with(user("user").roles("USER"))).//
+				andReturn().getResponse();
+		String href = assertHasJsonPathValue("$._embedded.orders[0]._links.self.href", response);
+
+		mvc.perform(get(href).with(user("user").roles("USER")))
+				.andDo(MockMvcResultHandlers.print())
+				.andExpect(status().isForbidden());
 	}
 }
