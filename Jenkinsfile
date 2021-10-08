@@ -9,44 +9,12 @@ pipeline {
 	options {
 		disableConcurrentBuilds()
 		buildDiscarder(logRotator(numToKeepStr: '14'))
-		quietPeriod(300)
+		quietPeriod(10)
 	}
 
 	stages {
 		stage("Docker images") {
 			parallel {
-				stage('Publish JDK 17 + MongoDB 4.4') {
-					when {
-						changeset "ci/openjdk8-mongodb-4.4/**"
-					}
-					agent { label 'data' }
-					options { timeout(time: 30, unit: 'MINUTES') }
-
-					steps {
-						script {
-							def image = docker.build("springci/spring-data-rest-openjdk8-with-mongodb-4.4", "ci/openjdk8-mongodb-4.4/")
-							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								image.push()
-							}
-						}
-					}
-				}
-				stage('Publish JDK 11 + MongoDB 4.4') {
-					when {
-						changeset "ci/openjdk11-mongodb-4.4/**"
-					}
-					agent { label 'data' }
-					options { timeout(time: 30, unit: 'MINUTES') }
-
-					steps {
-						script {
-							def image = docker.build("springci/spring-data-rest-openjdk11-with-mongodb-4.4", "ci/openjdk8-mongodb-4.4/")
-							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								image.push()
-							}
-						}
-					}
-				}
 				stage('Publish JDK 17/ + MongoDB 4.4') {
 					when {
 						changeset "ci/openjdk17-mongodb-4.4/**"
