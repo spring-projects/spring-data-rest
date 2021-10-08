@@ -230,7 +230,6 @@ public class PersistentEntityResource extends EntityModel<Object> {
 
 	private static class NoLinksResources<T> extends CollectionModel<T> {
 
-		@SuppressWarnings("deprecation")
 		public NoLinksResources(Iterable<T> content) {
 			super(content);
 		}

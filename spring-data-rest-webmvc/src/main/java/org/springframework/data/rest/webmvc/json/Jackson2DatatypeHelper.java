@@ -19,10 +19,7 @@ import org.hibernate.Version;
 import org.springframework.util.ClassUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 
 /**
  * Helper class to register datatype modules based on their presence in the classpath.
@@ -34,50 +31,21 @@ public class Jackson2DatatypeHelper {
 
 	private static final boolean IS_HIBERNATE_AVAILABLE = ClassUtils.isPresent("org.hibernate.Version",
 			Jackson2DatatypeHelper.class.getClassLoader());
-	private static final boolean IS_HIBERNATE4_MODULE_AVAILABLE = ClassUtils.isPresent(
-			"com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module", Jackson2DatatypeHelper.class.getClassLoader());
 	private static final boolean IS_HIBERNATE5_MODULE_AVAILABLE = ClassUtils.isPresent(
-			"com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module", Jackson2DatatypeHelper.class.getClassLoader());
-
-	private static final boolean IS_JODA_MODULE_AVAILABLE = ClassUtils
-			.isPresent("com.fasterxml.jackson.datatype.joda.JodaModule", Jackson2DatatypeHelper.class.getClassLoader());
+			"com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule",
+			Jackson2DatatypeHelper.class.getClassLoader());
 
 	public static void configureObjectMapper(ObjectMapper mapper) {
 
-		// Hibernate types
-		if (IS_HIBERNATE_AVAILABLE && HibernateVersions.isHibernate4() && IS_HIBERNATE4_MODULE_AVAILABLE) {
-			new Hibernate4ModuleRegistrar().registerModule(mapper);
-		}
-
 		if (IS_HIBERNATE_AVAILABLE && HibernateVersions.isHibernate5() && IS_HIBERNATE5_MODULE_AVAILABLE) {
 			new Hibernate5ModuleRegistrar().registerModule(mapper);
-		}
-
-		// JODA time
-		if (IS_JODA_MODULE_AVAILABLE) {
-			JodaModuleRegistrar.registerModule(mapper);
 		}
 	}
 
 	private static class HibernateVersions {
 
-		public static boolean isHibernate4() {
-			return Version.getVersionString().startsWith("4");
-		}
-
 		public static boolean isHibernate5() {
 			return Version.getVersionString().startsWith("5");
-		}
-	}
-
-	private static class Hibernate4ModuleRegistrar {
-
-		public void registerModule(ObjectMapper mapper) {
-
-			Hibernate4Module module = new Hibernate4Module();
-			module.enable(Hibernate4Module.Feature.FORCE_LAZY_LOADING);
-
-			mapper.registerModule(module);
 		}
 	}
 
@@ -85,18 +53,10 @@ public class Jackson2DatatypeHelper {
 
 		public void registerModule(ObjectMapper mapper) {
 
-			Hibernate5Module module = new Hibernate5Module();
-			module.enable(Hibernate5Module.Feature.FORCE_LAZY_LOADING);
+			Hibernate5JakartaModule module = new Hibernate5JakartaModule();
+			module.enable(Hibernate5JakartaModule.Feature.FORCE_LAZY_LOADING);
 
 			mapper.registerModule(module);
-		}
-	}
-
-	private static class JodaModuleRegistrar {
-
-		public static void registerModule(ObjectMapper mapper) {
-			mapper.registerModule(new JodaModule());
-			mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 		}
 	}
 }

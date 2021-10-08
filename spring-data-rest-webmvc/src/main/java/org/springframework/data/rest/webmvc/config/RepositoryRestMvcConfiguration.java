@@ -157,7 +157,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration
 		implements BeanClassLoaderAware {
 
-	private static final boolean IS_JPA_AVAILABLE = ClassUtils.isPresent("javax.persistence.EntityManager",
+	private static final boolean IS_JPA_AVAILABLE = ClassUtils.isPresent("jakarta.persistence.EntityManager",
 			RepositoryRestMvcConfiguration.class.getClassLoader());
 
 	private final ApplicationContext applicationContext;

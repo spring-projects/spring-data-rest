@@ -73,13 +73,7 @@
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-hibernate4</artifactId>
-			<optional>true</optional>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-hibernate5</artifactId>
+			<artifactId>jackson-datatype-hibernate5-jakarta</artifactId>
 			<optional>true</optional>
 		</dependency>
 
@@ -87,14 +81,6 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
 			<version>${hibernate.version}</version>
-			<optional>true</optional>
-		</dependency>
-
-		<!-- Jackson JodaTime -->
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-joda</artifactId>
 			<optional>true</optional>
 		</dependency>
 
