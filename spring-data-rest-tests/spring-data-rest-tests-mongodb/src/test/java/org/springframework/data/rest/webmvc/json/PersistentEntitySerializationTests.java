@@ -107,7 +107,7 @@ public class PersistentEntitySerializationTests {
 				withLink(Link.of("/users/1")).//
 				build();
 
-		PagedModel<PersistentEntityResource> persistentEntityResource = new PagedModel<PersistentEntityResource>(
+		PagedModel<PersistentEntityResource> persistentEntityResource = PagedModel.of(
 				Arrays.asList(userResource), new PageMetadata(1, 0, 10));
 
 		String result = mapper.writeValueAsString(persistentEntityResource);

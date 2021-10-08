@@ -200,7 +200,7 @@ public class PersistentEntitySerializationTests {
 				withLink(Link.of("/orders/1")).//
 				build();
 
-		PagedModel<PersistentEntityResource> persistentEntityResource = new PagedModel<PersistentEntityResource>(
+		PagedModel<PersistentEntityResource> persistentEntityResource = PagedModel.of(
 				Arrays.asList(orderResource), new PageMetadata(1, 0, 10));
 
 		String result = mapper.writeValueAsString(persistentEntityResource);
@@ -256,7 +256,7 @@ public class PersistentEntitySerializationTests {
 		ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 		PersonSummary projection = factory.createProjection(PersonSummary.class, person);
 
-		String result = mapper.writeValueAsString(new EntityModel<PersonSummary>(projection));
+		String result = mapper.writeValueAsString(EntityModel.of(projection));
 
 		assertThat(JsonPath.<Object> read(result, "$._links.self")).isNotNull();
 	}
