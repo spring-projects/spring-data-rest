@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
@@ -34,8 +34,8 @@ import org.springframework.data.rest.core.annotation.RestResource;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class MappingResourceMetadataUnitTests {
+@ExtendWith(MockitoExtension.class)
+class MappingResourceMetadataUnitTests {
 
 	KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 
@@ -45,7 +45,7 @@ public class MappingResourceMetadataUnitTests {
 	MappingResourceMetadata metadata = new MappingResourceMetadata(entity, resourceMappings);
 
 	@Test // DATAREST-514
-	public void allowsLookupOfPropertyByMappedName() {
+	void allowsLookupOfPropertyByMappedName() {
 
 		KeyValuePersistentProperty<?> property = entity.getRequiredPersistentProperty("related");
 
@@ -57,13 +57,13 @@ public class MappingResourceMetadataUnitTests {
 	}
 
 	@Test // DATAREST-518
-	public void isNotExportedByDefault() {
+	void isNotExportedByDefault() {
 
 		assertThat(metadata.isExported()).isFalse();
 	}
 
 	@Test // DATAREST-518
-	public void isExportedIfExplicitlyAnnotated() {
+	void isExportedIfExplicitlyAnnotated() {
 
 		MappingResourceMetadata metadata = new MappingResourceMetadata(context.getRequiredPersistentEntity(Related.class),
 				resourceMappings);

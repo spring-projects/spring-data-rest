@@ -17,7 +17,7 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Oliver Gierke
  */
-public class MappedPropertiesUnitTests {
+class MappedPropertiesUnitTests {
 
 	ObjectMapper mapper = new ObjectMapper();
 	KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
@@ -42,28 +42,28 @@ public class MappedPropertiesUnitTests {
 	MappedProperties properties = MappedProperties.forDeserialization(entity, mapper);
 
 	@Test // DATAREST-575
-	public void doesNotExposeMappedPropertyForNonSpringDataPersistentProperty() {
+	void doesNotExposeMappedPropertyForNonSpringDataPersistentProperty() {
 
 		assertThat(properties.hasPersistentPropertyForField("notExposedBySpringData")).isFalse();
 		assertThat(properties.getPersistentProperty("notExposedBySpringData")).isNull();
 	}
 
 	@Test // DATAREST-575
-	public void doesNotExposeMappedPropertyForNonJacksonProperty() {
+	void doesNotExposeMappedPropertyForNonJacksonProperty() {
 
 		assertThat(properties.hasPersistentPropertyForField("notExposedByJackson")).isFalse();
 		assertThat(properties.getPersistentProperty("notExposedByJackson")).isNull();
 	}
 
 	@Test // DATAREST-575
-	public void exposesProperty() {
+	void exposesProperty() {
 
 		assertThat(properties.hasPersistentPropertyForField("exposedProperty")).isTrue();
 		assertThat(properties.getPersistentProperty("exposedProperty")).isNotNull();
 	}
 
 	@Test // DATAREST-575
-	public void exposesRenamedPropertyByExternalName() {
+	void exposesRenamedPropertyByExternalName() {
 
 		assertThat(properties.hasPersistentPropertyForField("email")).isTrue();
 		assertThat(properties.getPersistentProperty("email")).isNotNull();
@@ -71,14 +71,14 @@ public class MappedPropertiesUnitTests {
 	}
 
 	@Test // DATAREST-1006
-	public void doesNotExposeIgnoredPropertyViaJsonProperty() {
+	void doesNotExposeIgnoredPropertyViaJsonProperty() {
 
 		assertThat(properties.hasPersistentPropertyForField("readOnlyProperty")).isFalse();
 		assertThat(properties.getPersistentProperty("readOnlyProperty")).isNull();
 	}
 
 	@Test // DATAREST-1248
-	public void doesNotExcludeReadOnlyPropertiesForSerialization() {
+	void doesNotExcludeReadOnlyPropertiesForSerialization() {
 
 		MappedProperties properties = MappedProperties.forSerialization(entity, mapper);
 
@@ -87,7 +87,7 @@ public class MappedPropertiesUnitTests {
 	}
 
 	@Test // DATAREST-1383
-	public void doesNotRegardReadOnlyPropertyForDeserialization() {
+	void doesNotRegardReadOnlyPropertyForDeserialization() {
 
 		MappedProperties properties = MappedProperties.forDeserialization(entity, mapper);
 
@@ -101,7 +101,7 @@ public class MappedPropertiesUnitTests {
 	}
 
 	@Test // DATAREST-1440
-	public void exposesExistanceOfCatchAllMethod() {
+	void exposesExistanceOfCatchAllMethod() {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(SampleWithJsonAnySetter.class);
 
@@ -132,6 +132,6 @@ public class MappedPropertiesUnitTests {
 		public @ReadOnlyProperty String anotherReadOnlyProperty;
 
 		@JsonAnySetter
-		public void set(String key, String value) {}
+		void set(String key, String value) {}
 	}
 }

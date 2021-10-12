@@ -24,13 +24,13 @@ import lombok.Value;
 import java.util.Date;
 import java.util.function.Supplier;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
@@ -43,8 +43,9 @@ import org.springframework.http.HttpStatus;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ResourceStatusUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class ResourceStatusUnitTests {
 
 	ResourceStatus status;
 	KeyValuePersistentEntity<?, ?> entity;
@@ -52,10 +53,8 @@ public class ResourceStatusUnitTests {
 	@Mock HttpHeadersPreparer preparer;
 	@Mock Supplier<PersistentEntityResource> supplier;
 
-	public @Rule ExpectedException exception = ExpectedException.none();
-
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.status = ResourceStatus.of(preparer);
 
@@ -65,18 +64,20 @@ public class ResourceStatusUnitTests {
 		doReturn(new HttpHeaders()).when(preparer).prepareHeaders(eq(entity), any());
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-835
-	public void rejectsNullPreparer() {
-		ResourceStatus.of(null);
+	@Test // DATAREST-835
+	void rejectsNullPreparer() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> ResourceStatus.of(null));
 	}
 
 	@Test // DATAREST-835
-	public void returnsModifiedIfNoHeadersGiven() {
+	void returnsModifiedIfNoHeadersGiven() {
 		assertModified(status.getStatusAndHeaders(new HttpHeaders(), new Sample(0), entity));
 	}
 
 	@Test // DATAREST-835
-	public void returnsNotModifiedForEntityWithRequestedETag() {
+	void returnsNotModifiedForEntityWithRequestedETag() {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setIfNoneMatch("\"1\"");
@@ -85,7 +86,7 @@ public class ResourceStatusUnitTests {
 	}
 
 	@Test // DATAREST-835
-	public void returnsNotModifiedIfEntityIsStillConsideredValid() {
+	void returnsNotModifiedIfEntityIsStillConsideredValid() {
 
 		doReturn(true).when(preparer).isObjectStillValid(any(), any(HttpHeaders.class));
 
@@ -93,12 +94,11 @@ public class ResourceStatusUnitTests {
 	}
 
 	@Test // DATAREST-1121
-	public void rejectsInvalidPersistentEntityDomainObjectCombination() {
+	void rejectsInvalidPersistentEntityDomainObjectCombination() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage(entity.getType().getName());
-
-		assertModified(status.getStatusAndHeaders(new HttpHeaders(), new Date(), entity));
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> assertModified(status.getStatusAndHeaders(new HttpHeaders(), new Date(), entity)))
+				.withMessageContaining(entity.getType().getName());
 	}
 
 	private void assertModified(StatusAndHeaders statusAndHeaders) {

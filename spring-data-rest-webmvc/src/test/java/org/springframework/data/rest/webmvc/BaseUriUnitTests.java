@@ -19,24 +19,24 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.net.URI;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link BaseUri}.
  *
  * @author Oliver Gierke
  */
-public class BaseUriUnitTests {
+class BaseUriUnitTests {
 
 	@Test // DATAREST-276
-	public void doesNotMatchNonOverlap() {
+	void doesNotMatchNonOverlap() {
 
 		assertThat(new BaseUri(URI.create("foo")).getRepositoryLookupPath("/bar")).isNull();
 		assertThat(new BaseUri(URI.create("http://localhost:8080/foo/")).getRepositoryLookupPath("/bar")).isNull();
 	}
 
 	@Test // DATAREST-276
-	public void matchesSimpleBaseUri() {
+	void matchesSimpleBaseUri() {
 
 		BaseUri uri = new BaseUri(URI.create("foo"));
 
@@ -44,7 +44,7 @@ public class BaseUriUnitTests {
 	}
 
 	@Test // DATAREST-276
-	public void ignoresTrailingSlash() {
+	void ignoresTrailingSlash() {
 
 		BaseUri uri = new BaseUri(URI.create("foo/"));
 
@@ -53,7 +53,7 @@ public class BaseUriUnitTests {
 	}
 
 	@Test // DATAREST-276
-	public void ignoresLeadingSlash() {
+	void ignoresLeadingSlash() {
 
 		BaseUri uri = new BaseUri(URI.create("/foo"));
 
@@ -62,7 +62,7 @@ public class BaseUriUnitTests {
 	}
 
 	@Test // DATAREST-276
-	public void matchesAbsoluteBaseUriOnOverlap() {
+	void matchesAbsoluteBaseUriOnOverlap() {
 
 		BaseUri uri = new BaseUri(URI.create("http://localhost:8080/foo/"));
 
@@ -73,7 +73,7 @@ public class BaseUriUnitTests {
 	}
 
 	@Test // DATAREST-674, SPR-13455
-	public void repositoryLookupPathHandlesDoubleSlashes() {
+	void repositoryLookupPathHandlesDoubleSlashes() {
 		assertThat(BaseUri.NONE.getRepositoryLookupPath("/books//1")).isEqualTo("/books/1");
 	}
 }

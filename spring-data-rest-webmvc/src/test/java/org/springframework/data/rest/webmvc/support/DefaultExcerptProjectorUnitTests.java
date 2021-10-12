@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -30,14 +30,14 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
  *
  * @author Oliver Drotbohm
  */
-public class DefaultExcerptProjectorUnitTests {
+class DefaultExcerptProjectorUnitTests {
 
 	ProjectionFactory factory = mock(ProjectionFactory.class);
 	ResourceMappings mappings = mock(ResourceMappings.class);
 	ResourceMetadata metadata = mock(ResourceMetadata.class);
 
 	@Test // DATAREST-1446
-	public void doesNotHaveExcerptProjectionIfMetadataReturnsNone() {
+	void doesNotHaveExcerptProjectionIfMetadataReturnsNone() {
 
 		when(mappings.getMetadataFor(Object.class)).thenReturn(metadata);
 		when(metadata.getExcerptProjection()).thenReturn(Optional.empty());

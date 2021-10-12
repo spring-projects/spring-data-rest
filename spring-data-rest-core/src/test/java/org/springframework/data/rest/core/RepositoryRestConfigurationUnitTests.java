@@ -18,8 +18,8 @@ package org.springframework.data.rest.core;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
@@ -37,40 +37,40 @@ import org.springframework.http.MediaType;
  * @author Mark Paluch
  * @soundtrack Adam F - Circles (Colors)
  */
-public class RepositoryRestConfigurationUnitTests {
+class RepositoryRestConfigurationUnitTests {
 
 	RepositoryRestConfiguration configuration;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.configuration = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
 				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
 	}
 
 	@Test // DATAREST-34
-	public void returnsBodiesIfAcceptHeaderPresentByDefault() {
+	void returnsBodiesIfAcceptHeaderPresentByDefault() {
 
 		assertThat(configuration.returnBodyOnCreate(MediaType.APPLICATION_JSON_VALUE)).isTrue();
 		assertThat(configuration.returnBodyOnUpdate(MediaType.APPLICATION_JSON_VALUE)).isTrue();
 	}
 
 	@Test // DATAREST-34
-	public void doesNotReturnBodiesIfNoAcceptHeaderPresentByDefault() {
+	void doesNotReturnBodiesIfNoAcceptHeaderPresentByDefault() {
 
 		assertThat(configuration.returnBodyOnCreate(null)).isFalse();
 		assertThat(configuration.returnBodyOnUpdate(null)).isFalse();
 	}
 
 	@Test // DATAREST-34
-	public void doesNotReturnBodiesIfEmptyAcceptHeaderPresentByDefault() {
+	void doesNotReturnBodiesIfEmptyAcceptHeaderPresentByDefault() {
 
 		assertThat(configuration.returnBodyOnCreate("")).isFalse();
 		assertThat(configuration.returnBodyOnUpdate("")).isFalse();
 	}
 
 	@Test // DATAREST-34
-	public void doesNotReturnBodyForUpdateIfExplicitlyDeactivated() {
+	void doesNotReturnBodyForUpdateIfExplicitlyDeactivated() {
 
 		configuration.setReturnBodyOnUpdate(false);
 
@@ -80,7 +80,7 @@ public class RepositoryRestConfigurationUnitTests {
 	}
 
 	@Test // DATAREST-34
-	public void doesNotReturnBodyForCreateIfExplicitlyDeactivated() {
+	void doesNotReturnBodyForCreateIfExplicitlyDeactivated() {
 
 		configuration.setReturnBodyOnCreate(false);
 
@@ -90,7 +90,7 @@ public class RepositoryRestConfigurationUnitTests {
 	}
 
 	@Test // DATAREST-34
-	public void returnsBodyForUpdateIfExplicitlyActivated() {
+	void returnsBodyForUpdateIfExplicitlyActivated() {
 
 		configuration.setReturnBodyOnUpdate(true);
 
@@ -100,7 +100,7 @@ public class RepositoryRestConfigurationUnitTests {
 	}
 
 	@Test // DATAREST-34
-	public void returnsBodyForCreateIfExplicitlyActivated() {
+	void returnsBodyForCreateIfExplicitlyActivated() {
 
 		configuration.setReturnBodyOnCreate(true);
 
@@ -110,7 +110,7 @@ public class RepositoryRestConfigurationUnitTests {
 	}
 
 	@Test // DATAREST-776
-	public void considersDomainTypeOfValueRepositoryLookupTypes() {
+	void considersDomainTypeOfValueRepositoryLookupTypes() {
 
 		configuration.withEntityLookup().forLookupRepository(ProfileRepository.class);
 

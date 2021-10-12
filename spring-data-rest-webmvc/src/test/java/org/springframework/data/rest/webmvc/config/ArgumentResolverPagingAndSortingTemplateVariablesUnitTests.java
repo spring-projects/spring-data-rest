@@ -19,11 +19,11 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,25 +39,29 @@ import org.springframework.web.util.UriComponentsBuilder;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ArgumentResolverPagingAndSortingTemplateVariablesUnitTests {
+@ExtendWith(MockitoExtension.class)
+class ArgumentResolverPagingAndSortingTemplateVariablesUnitTests {
 
 	@Mock HateoasPageableHandlerMethodArgumentResolver pageableResolver;
 	@Mock HateoasSortHandlerMethodArgumentResolver sortResolver;
 	@Mock UriComponentsBuilder builder;
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-467
-	public void rejectsNullArgumentResolverForPageable() {
-		new ArgumentResolverPagingAndSortingTemplateVariables(null, sortResolver);
-	}
+	@Test // DATAREST-467
+	void rejectsNullArgumentResolverForPageable() {
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-467
-	public void rejectsNullArgumentResolverForSort() {
-		new ArgumentResolverPagingAndSortingTemplateVariables(pageableResolver, null);
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new ArgumentResolverPagingAndSortingTemplateVariables(null, sortResolver));
 	}
 
 	@Test // DATAREST-467
-	public void supportsPageableAndSortMethodParameters() {
+	void rejectsNullArgumentResolverForSort() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new ArgumentResolverPagingAndSortingTemplateVariables(pageableResolver, null));
+	}
+
+	@Test // DATAREST-467
+	void supportsPageableAndSortMethodParameters() {
 
 		PagingAndSortingTemplateVariables variables = new ArgumentResolverPagingAndSortingTemplateVariables(
 				pageableResolver, sortResolver);
@@ -68,12 +72,12 @@ public class ArgumentResolverPagingAndSortingTemplateVariablesUnitTests {
 	}
 
 	@Test // DATAREST-467
-	public void forwardsEnhanceRequestForPageable() {
+	void forwardsEnhanceRequestForPageable() {
 		assertForwardsEnhanceFor(PageRequest.of(0, 10), pageableResolver, sortResolver);
 	}
 
 	@Test // DATAREST-467
-	public void forwardsEnhanceRequestForSort() {
+	void forwardsEnhanceRequestForSort() {
 		assertForwardsEnhanceFor(Sort.by("property"), sortResolver, pageableResolver);
 	}
 

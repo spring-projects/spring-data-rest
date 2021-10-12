@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  * @author Oliver Gierke
  */
 @Component
-public class ProfileLoader implements InitializingBean {
+class ProfileLoader implements InitializingBean {
 
 	@Autowired ProfileRepository profiles;
 

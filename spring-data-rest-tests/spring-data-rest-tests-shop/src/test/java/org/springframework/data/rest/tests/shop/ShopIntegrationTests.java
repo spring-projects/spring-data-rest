@@ -21,12 +21,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.ResultActions;
 
 import com.jayway.jsonpath.JsonPath;
@@ -37,12 +37,12 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Gierke
  * @author Craig Andrews
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = ShopConfiguration.class)
-public class ShopIntegrationTests extends AbstractWebIntegrationTests {
+class ShopIntegrationTests extends AbstractWebIntegrationTests {
 
 	@Test
-	public void rendersRepresentationCorrectly() throws Exception {
+	void rendersRepresentationCorrectly() throws Exception {
 
 		Link ordersLink = client.discoverUnique("orders");
 		String selfLink = JsonPath.parse(client.request(ordersLink).getContentAsString())
@@ -63,7 +63,7 @@ public class ShopIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-221
-	public void renderProductNameOnlyProjection() throws Exception {
+	void renderProductNameOnlyProjection() throws Exception {
 
 		Map<String, Object> arguments = Collections.singletonMap("projection", "nameOnly");
 
@@ -74,7 +74,7 @@ public class ShopIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-221
-	public void renderProductNameOnlyProjectionResourceProcessor() throws Exception {
+	void renderProductNameOnlyProjectionResourceProcessor() throws Exception {
 
 		Map<String, Object> arguments = Collections.singletonMap("projection", "nameOnly");
 
@@ -84,7 +84,7 @@ public class ShopIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-221
-	public void renderOrderItemsOnlyProjectionResourceProcessor() throws Exception {
+	void renderOrderItemsOnlyProjectionResourceProcessor() throws Exception {
 
 		Map<String, Object> arguments = Collections.singletonMap("projection", "itemsOnly");
 

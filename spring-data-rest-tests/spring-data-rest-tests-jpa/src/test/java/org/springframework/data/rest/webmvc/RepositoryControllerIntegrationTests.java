@@ -18,7 +18,7 @@ package org.springframework.data.rest.webmvc;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.tests.TestMvcClient.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
@@ -36,24 +36,24 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
-public class RepositoryControllerIntegrationTests extends AbstractControllerIntegrationTests {
+class RepositoryControllerIntegrationTests extends AbstractControllerIntegrationTests {
 
 	@Autowired RepositoryController controller;
 
 	@Test // DATAREST-333
-	public void rootResourceExposesGetOnly() {
+	void rootResourceExposesGetOnly() {
 
 		HttpEntity<?> response = controller.optionsForRepositories();
 		assertAllowHeaders(response, HttpMethod.GET);
 	}
 
 	@Test // DATAREST-333, DATAREST-330
-	public void headRequestReturnsNoContent() {
+	void headRequestReturnsNoContent() {
 		assertThat(controller.headForRepositories().getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
 	@Test // DATAREST-160, DATAREST-333, DATAREST-463
-	public void exposesLinksToRepositories() {
+	void exposesLinksToRepositories() {
 
 		RepositoryLinksResource resource = controller.listRepositories().getBody();
 

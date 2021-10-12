@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
@@ -48,7 +48,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @soundtrack 2 Unlimited - No Limit
  */
 @ContextConfiguration
-public class CorsIntegrationTests extends AbstractWebIntegrationTests {
+class CorsIntegrationTests extends AbstractWebIntegrationTests {
 
 	@Configuration
 	static class CorsConfig extends JpaRepositoryConfig {
@@ -81,7 +81,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-573
-	public void appliesSelectiveDefaultCorsConfiguration() throws Exception {
+	void appliesSelectiveDefaultCorsConfiguration() throws Exception {
 
 		Link findItems = client.discoverUnique(LinkRelation.of("items"));
 
@@ -98,7 +98,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-573
-	public void appliesGlobalCorsConfiguration() throws Exception {
+	void appliesGlobalCorsConfiguration() throws Exception {
 
 		Link findBooks = client.discoverUnique(LinkRelation.of("books"));
 
@@ -119,7 +119,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	 * @see BooksXmlController
 	 */
 	@Test // DATAREST-573
-	public void appliesCorsConfigurationOnCustomControllers() throws Exception {
+	void appliesCorsConfigurationOnCustomControllers() throws Exception {
 
 		// Preflight request
 		mvc.perform(options("/books/xml/1234") //
@@ -143,7 +143,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	 * @see BooksPdfController
 	 */
 	@Test // DATAREST-573
-	public void appliesCorsConfigurationOnCustomControllerMethod() throws Exception {
+	void appliesCorsConfigurationOnCustomControllerMethod() throws Exception {
 
 		// Preflight request
 		mvc.perform(options("/books/pdf/1234").header(HttpHeaders.ORIGIN, "http://far.far.example")
@@ -156,7 +156,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-573
-	public void appliesCorsConfigurationOnRepository() throws Exception {
+	void appliesCorsConfigurationOnRepository() throws Exception {
 
 		Link authorsLink = client.discoverUnique(LinkRelation.of("authors"));
 
@@ -170,7 +170,7 @@ public class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-573
-	public void appliesCorsConfigurationOnRepositoryToCustomControllers() throws Exception {
+	void appliesCorsConfigurationOnRepositoryToCustomControllers() throws Exception {
 
 		// Preflight request
 		mvc.perform(options("/authors/pdf/1234").header(HttpHeaders.ORIGIN, "http://not.so.far.example")

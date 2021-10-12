@@ -20,10 +20,10 @@ import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -41,8 +41,8 @@ import org.springframework.data.web.PagedResourcesAssembler;
  *
  * @author Jeroen Reijn
  */
-@RunWith(MockitoJUnitRunner.class)
-public class RepositoryEntityControllerTest {
+@ExtendWith(MockitoExtension.class)
+class RepositoryEntityControllerTest {
 
 	@Mock Repositories repositories;
 	@Mock RepositoryRestConfiguration restConfiguration;
@@ -54,7 +54,7 @@ public class RepositoryEntityControllerTest {
 	KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
 
 	@Test // DATAREST-1143
-	public void testUnknownItemThrowsResourceNotFound() throws Exception {
+	void testUnknownItemThrowsResourceNotFound() throws Exception {
 
 		KeyValuePersistentEntity<?, ?> entity = mappingContext
 				.getRequiredPersistentEntity(RepositoryPropertyReferenceControllerUnitTests.Sample.class);

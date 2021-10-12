@@ -15,17 +15,17 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RemoveOperationTests {
+class RemoveOperationTests {
 
 	@Test
-	public void removePropertyFromObject() throws Exception {
+	void removePropertyFromObject() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -34,11 +34,11 @@ public class RemoveOperationTests {
 
 		RemoveOperation.valueAt("/1/description").perform(todos, Todo.class);
 
-		assertNull(todos.get(1).getDescription());
+		assertThat(todos.get(1).getDescription()).isNull();
 	}
 
 	@Test
-	public void removeItemFromList() throws Exception {
+	void removeItemFromList() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -47,9 +47,8 @@ public class RemoveOperationTests {
 
 		RemoveOperation.valueAt("/1").perform(todos, Todo.class);
 
-		assertEquals(2, todos.size());
-		assertEquals("A", todos.get(0).getDescription());
-		assertEquals("C", todos.get(1).getDescription());
+		assertThat(todos.size()).isEqualTo(2);
+		assertThat(todos.get(0).getDescription()).isEqualTo("A");
+		assertThat(todos.get(1).getDescription()).isEqualTo("C");
 	}
-
 }

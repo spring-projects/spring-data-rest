@@ -23,10 +23,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
@@ -53,8 +53,8 @@ import org.springframework.http.HttpMethod;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class RepositoryPropertyReferenceControllerUnitTests {
+@ExtendWith(MockitoExtension.class)
+class RepositoryPropertyReferenceControllerUnitTests {
 
 	@Mock Repositories repositories;
 	@Mock PagedResourcesAssembler<Object> assembler;
@@ -65,7 +65,7 @@ public class RepositoryPropertyReferenceControllerUnitTests {
 	KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
 
 	@Test // DATAREST-791
-	public void usesRepositoryInvokerToLookupRelatedInstance() throws Exception {
+	void usesRepositoryInvokerToLookupRelatedInstance() throws Exception {
 
 		KeyValuePersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(Sample.class);
 

@@ -15,15 +15,16 @@
  */
 package org.springframework.data.rest.webmvc.alps;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import net.minidev.json.JSONArray;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,8 +49,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.JsonPath;
 
-import net.minidev.json.JSONArray;
-
 /**
  * Integration tests for {@link AlpsController}.
  *
@@ -58,7 +57,7 @@ import net.minidev.json.JSONArray;
  */
 @WebAppConfiguration
 @ContextConfiguration(classes = { JpaRepositoryConfig.class, AlpsControllerIntegrationTests.Config.class })
-public class AlpsControllerIntegrationTests extends AbstractControllerIntegrationTests {
+class AlpsControllerIntegrationTests extends AbstractControllerIntegrationTests {
 
 	@Autowired WebApplicationContext context;
 	@Autowired LinkDiscoverers discoverers;
@@ -81,20 +80,20 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 
 	TestMvcClient client;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(context).build();
 		this.client = new TestMvcClient(mvc, this.discoverers);
 	}
 
-	@After
-	public void tearDown() {
+	@AfterEach
+	void tearDown() {
 		configuration.setEnableEnumTranslation(false);
 	}
 
 	@Test // DATAREST-230
-	public void exposesAlpsCollectionResources() throws Exception {
+	void exposesAlpsCollectionResources() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
 		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
@@ -105,7 +104,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	}
 
 	@Test // DATAREST-638
-	public void verifyThatAlpsIsDefaultProfileFormat() throws Exception {
+	void verifyThatAlpsIsDefaultProfileFormat() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
 		Link peopleLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
@@ -117,7 +116,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	}
 
 	@Test // DATAREST-463
-	public void verifyThatAttributesIgnoredDontAppearInAlps() throws Exception {
+	void verifyThatAttributesIgnoredDontAppearInAlps() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
@@ -132,7 +131,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	}
 
 	@Test // DATAREST-494
-	public void linksToJsonSchemaFromRepresentationDescriptor() throws Exception {
+	void linksToJsonSchemaFromRepresentationDescriptor() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
@@ -143,11 +142,11 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 		String href = JsonPath.<JSONArray> read(result, "$.alps.descriptor[?(@.id == 'item-representation')].href").get(0)
 				.toString();
 
-		assertThat(href, endsWith("/profile/items"));
+		assertThat(href).endsWith("/profile/items");
 	}
 
 	@Test // DATAREST-516
-	public void referenceToAssociatedEntityDesciptorPointsToRepresentationDescriptor() throws Exception {
+	void referenceToAssociatedEntityDesciptorPointsToRepresentationDescriptor() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
 		Link usersLink = client.discoverUnique(profileLink, "people", MediaType.ALL);
@@ -164,7 +163,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	}
 
 	@Test // DATAREST-630
-	public void onlyExposesIdAttributesWhenExposedInTheConfiguration() throws Exception {
+	void onlyExposesIdAttributesWhenExposedInTheConfiguration() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
 		Link itemsLink = client.discoverUnique(profileLink, "items", MediaType.ALL);
@@ -175,7 +174,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	}
 
 	@Test // DATAREST-683
-	public void enumValueListingsAreTranslatedIfEnabled() throws Exception {
+	void enumValueListingsAreTranslatedIfEnabled() throws Exception {
 
 		configuration.setEnableEnumTranslation(true);
 
@@ -193,7 +192,7 @@ public class AlpsControllerIntegrationTests extends AbstractControllerIntegratio
 	}
 
 	@Test // DATAREST-753
-	public void alpsCanHandleGroovyDomainObjects() throws Exception {
+	void alpsCanHandleGroovyDomainObjects() throws Exception {
 
 		Link profileLink = client.discoverUnique("profile");
 		Link groovyDomainObjectLink = client.discoverUnique(profileLink, "simulatedGroovyDomainClasses");

@@ -18,7 +18,7 @@ package org.springframework.data.rest.webmvc.config;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -31,10 +31,10 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
  *
  * @author Oliver Gierke
  */
-public class ResourceMetadataHandlerMethodArgumentResolverUnitTests {
+class ResourceMetadataHandlerMethodArgumentResolverUnitTests {
 
 	@Test // DATAREST-1250
-	public void supportsResourceMetadataParameterType() {
+	void supportsResourceMetadataParameterType() {
 
 		HandlerMethodArgumentResolver resolver = new ResourceMetadataHandlerMethodArgumentResolver(mock(Repositories.class),
 				mock(ResourceMappings.class), BaseUri.NONE);

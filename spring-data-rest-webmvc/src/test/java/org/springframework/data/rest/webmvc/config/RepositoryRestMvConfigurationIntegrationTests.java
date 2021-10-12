@@ -25,10 +25,9 @@ import java.util.List;
 import javax.naming.Name;
 import javax.naming.ldap.LdapName;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -67,16 +66,16 @@ import com.jayway.jsonpath.JsonPath;
  * @author Mark Paluch
  * @author Greg Turnquist
  */
-public class RepositoryRestMvConfigurationIntegrationTests {
+class RepositoryRestMvConfigurationIntegrationTests {
 
 	static AbstractApplicationContext context;
 
-	@BeforeClass
+	@BeforeAll
 	public static void setUp() {
 		context = new AnnotationConfigApplicationContext(ExtendingConfiguration.class);
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void tearDown() {
 		if (context != null) {
 			context.close();
@@ -84,14 +83,14 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	}
 
 	@Test // DATAREST-210
-	public void assertEnableHypermediaSupportWorkingCorrectly() {
+	void assertEnableHypermediaSupportWorkingCorrectly() {
 
 		assertThat(context.getBean("entityLinksPluginRegistry")).isNotNull();
 		assertThat(context.getBean(LinkDiscoverers.class)).isNotNull();
 	}
 
 	@Test
-	public void assertBeansBeingSetUp() throws Exception {
+	void assertBeansBeingSetUp() throws Exception {
 
 		context.getBean(PageableHandlerMethodArgumentResolver.class);
 
@@ -100,7 +99,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	}
 
 	@Test // DATAREST-271
-	public void assetConsidersPaginationCustomization() {
+	void assetConsidersPaginationCustomization() {
 
 		HateoasPageableHandlerMethodArgumentResolver resolver = context
 				.getBean(HateoasPageableHandlerMethodArgumentResolver.class);
@@ -118,7 +117,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	}
 
 	@Test // DATAREST-336 DATAREST-1509
-	public void objectMapperRendersDatesInIsoByDefault() throws Exception {
+	void objectMapperRendersDatesInIsoByDefault() throws Exception {
 
 		Sample sample = new Sample();
 		sample.date = new Date();
@@ -132,13 +131,15 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 				.or(suffix("+00:00")), "ISO-8601-TZ1, ISO-8601-TZ2, or ISO-8601-TZ3");
 	}
 
-	@Test(expected = NoSuchBeanDefinitionException.class) // DATAREST-362
-	public void doesNotExposePersistentEntityJackson2ModuleAsBean() {
-		context.getBean(PersistentEntityJackson2Module.class);
+	@Test // DATAREST-362
+	void doesNotExposePersistentEntityJackson2ModuleAsBean() {
+
+		assertThatExceptionOfType(NoSuchBeanDefinitionException.class) //
+				.isThrownBy(() -> context.getBean(PersistentEntityJackson2Module.class));
 	}
 
 	@Test // DATAREST-362
-	public void registeredHttpMessageConvertersAreTypeConstrained() {
+	void registeredHttpMessageConvertersAreTypeConstrained() {
 
 		Collection<MappingJackson2HttpMessageConverter> converters = context
 				.getBeansOfType(MappingJackson2HttpMessageConverter.class).values();
@@ -150,7 +151,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	}
 
 	@Test // DATAREST-424
-	public void halHttpMethodConverterIsRegisteredBeforeTheGeneralOne() {
+	void halHttpMethodConverterIsRegisteredBeforeTheGeneralOne() {
 
 		CollectingComponent component = context.getBean(CollectingComponent.class);
 		List<HttpMessageConverter<?>> converters = component.converters;
@@ -160,7 +161,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	}
 
 	@Test // DATAREST-424
-	public void halHttpMethodConverterIsRegisteredAfterTheGeneralOneIfHalIsDisabledAsDefaultMediaType() {
+	void halHttpMethodConverterIsRegisteredAfterTheGeneralOneIfHalIsDisabledAsDefaultMediaType() {
 
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(NonHalConfiguration.class);
 		CollectingComponent component = context.getBean(CollectingComponent.class);
@@ -173,7 +174,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	}
 
 	@Test // DATAREST-431, DATACMNS-626
-	public void hasConvertersForPointAndDistance() {
+	void hasConvertersForPointAndDistance() {
 
 		ConversionService service = context.getBean("defaultConversionService", ConversionService.class);
 
@@ -184,7 +185,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 	}
 
 	@Test // DATAREST-1198
-	public void hasConvertersForNamAndLdapName() {
+	void hasConvertersForNamAndLdapName() {
 
 		ConversionService service = context.getBean("defaultConversionService", ConversionService.class);
 
@@ -252,7 +253,7 @@ public class RepositoryRestMvConfigurationIntegrationTests {
 		List<HttpMessageConverter<?>> converters;
 
 		@Autowired
-		public void setConverters(List<HttpMessageConverter<?>> converters) {
+		void setConverters(List<HttpMessageConverter<?>> converters) {
 			this.converters = converters;
 		}
 	}

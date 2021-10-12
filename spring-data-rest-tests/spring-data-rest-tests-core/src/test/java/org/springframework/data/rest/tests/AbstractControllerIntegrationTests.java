@@ -1,4 +1,3 @@
-package org.springframework.data.rest.tests;
 /*
  * Copyright 2013-2021 the original author or authors.
  *
@@ -14,11 +13,12 @@ package org.springframework.data.rest.tests;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.springframework.data.rest.tests;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,7 +41,7 @@ import org.springframework.data.rest.webmvc.support.Projector;
 import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -53,7 +53,7 @@ import org.springframework.web.context.request.WebRequest;
  *
  * @author Oliver Gierke
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration
 public abstract class AbstractControllerIntegrationTests {
 
@@ -79,7 +79,7 @@ public abstract class AbstractControllerIntegrationTests {
 	@Autowired RepositoryInvokerFactory invokerFactory;
 	@Autowired ResourceMappings mappings;
 
-	@Before
+	@BeforeEach
 	public void initWebInfrastructure() {
 		TestMvcClient.initWebTest();
 	}

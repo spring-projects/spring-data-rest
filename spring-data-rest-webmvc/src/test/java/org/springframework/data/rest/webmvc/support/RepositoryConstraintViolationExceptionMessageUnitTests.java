@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
@@ -37,13 +37,13 @@ import org.springframework.validation.MapBindingResult;
  *
  * @author Oliver Gierke
  */
-public class RepositoryConstraintViolationExceptionMessageUnitTests {
+class RepositoryConstraintViolationExceptionMessageUnitTests {
 
 	MessageSourceAccessor accessor;
 	RepositoryConstraintViolationException exception;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		StaticMessageSource messageSource = new StaticMessageSource();
 		messageSource.addMessage("code", Locale.ENGLISH, "message");
@@ -52,18 +52,22 @@ public class RepositoryConstraintViolationExceptionMessageUnitTests {
 		this.exception = new RepositoryConstraintViolationException(new MapBindingResult(Collections.emptyMap(), "object"));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullException() {
-		new RepositoryConstraintViolationExceptionMessage(null, accessor);
-	}
+	@Test
+	void rejectsNullException() {
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullAccessor() {
-		new RepositoryConstraintViolationExceptionMessage(exception, null);
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new RepositoryConstraintViolationExceptionMessage(null, accessor));
 	}
 
 	@Test
-	public void calidationErrorsCaptureRejectedValueAsIs() {
+	void rejectsNullAccessor() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new RepositoryConstraintViolationExceptionMessage(exception, null));
+	}
+
+	@Test
+	void calidationErrorsCaptureRejectedValueAsIs() {
 
 		assertRejectedValue("stringValue", "string");
 		assertRejectedValue("intValue", 1);

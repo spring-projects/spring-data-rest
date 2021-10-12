@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -49,7 +49,7 @@ import org.springframework.web.context.WebApplicationContext;
  */
 @WebAppConfiguration
 @ContextConfiguration(classes = { JpaRepositoryConfig.class, ProfileIntegrationTests.Config.class })
-public class ProfileIntegrationTests extends AbstractControllerIntegrationTests {
+class ProfileIntegrationTests extends AbstractControllerIntegrationTests {
 
 	@Autowired WebApplicationContext context;
 	@Autowired LinkDiscoverers discoverers;
@@ -67,15 +67,15 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 
 	TestMvcClient client;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(context).build();
 		this.client = new TestMvcClient(mvc, this.discoverers);
 	}
 
 	@Test // DATAREST-230, DATAREST-638
-	public void exposesProfileLink() throws Exception {
+	void exposesProfileLink() throws Exception {
 
 		client.follow(ROOT_URI)//
 				.andExpect(status().is2xxSuccessful())//
@@ -83,7 +83,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 	}
 
 	@Test // DATAREST-230, DATAREST-638
-	public void profileRootLinkContainsMetadataForEachRepo() throws Exception {
+	void profileRootLinkContainsMetadataForEachRepo() throws Exception {
 
 		Link profileLink = client.discoverUnique(Link.of(ROOT_URI), ProfileResourceProcessor.PROFILE_REL);
 
@@ -99,7 +99,7 @@ public class ProfileIntegrationTests extends AbstractControllerIntegrationTests 
 	}
 
 	@Test // DATAREST-638
-	public void profileLinkOnCollectionResourceLeadsToRepositorySpecificMetadata() throws Exception {
+	void profileLinkOnCollectionResourceLeadsToRepositorySpecificMetadata() throws Exception {
 
 		Link peopleLink = client.discoverUnique(Link.of(ROOT_URI), "people");
 		Link profileLink = client.discoverUnique(peopleLink, ProfileResourceProcessor.PROFILE_REL);

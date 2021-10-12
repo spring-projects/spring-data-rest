@@ -21,8 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -50,7 +50,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Mark Paluch
  */
 @ContextConfiguration
-public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
+class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 
 	@Configuration
 	@Import({ RepositoryRestMvcConfiguration.class, JpaRepositoryConfig.class })
@@ -87,14 +87,14 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 	@Autowired ApplicationContext context;
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() {
 		loader.populateRepositories();
 		super.setUp();
 	}
 
 	@Test // DATAREST-906
-	public void executesSearchThatTakesAMappedSortProperty() throws Exception {
+	void executesSearchThatTakesAMappedSortProperty() throws Exception {
 
 		Link findBySortedLink = client.discoverUnique(LinkRelation.of("books"), IanaLinkRelations.SEARCH,
 				LinkRelation.of("find-spring-books-sorted"));
@@ -114,7 +114,7 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-906
-	public void shouldApplyDefaultPageable() throws Exception {
+	void shouldApplyDefaultPageable() throws Exception {
 
 		mvc.perform(get("/books/default-pageable"))//
 				.andExpect(jsonPath("$.content[0].sales").value(0)) //
@@ -122,7 +122,7 @@ public class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-906
-	public void shouldOverrideDefaultPageable() throws Exception {
+	void shouldOverrideDefaultPageable() throws Exception {
 
 		mvc.perform(get("/books/default-pageable?size=10"))//
 				.andExpect(jsonPath("$.content[0].sales").value(0)) //

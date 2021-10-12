@@ -28,10 +28,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @Configuration // <1>
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true) // <2>
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter { // <3>
+class SecurityConfiguration extends WebSecurityConfigurerAdapter { // <3>
 // end::code[]
 	@Autowired
-	public void configureAuth(AuthenticationManagerBuilder auth) throws Exception {
+	void configureAuth(AuthenticationManagerBuilder auth) throws Exception {
 
 		auth.inMemoryAuthentication()
 			.withUser("user").password("user").roles("USER").and()

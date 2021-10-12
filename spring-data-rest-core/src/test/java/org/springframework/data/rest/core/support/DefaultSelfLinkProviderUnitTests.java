@@ -23,11 +23,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
@@ -44,18 +44,18 @@ import org.springframework.hateoas.server.EntityLinks;
  * @author Mark Paluch
  * @soundtrack Trio Rotation - Triopane
  */
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultSelfLinkProviderUnitTests {
+@ExtendWith(MockitoExtension.class)
+class DefaultSelfLinkProviderUnitTests {
 
 	SelfLinkProvider provider;
 
-	@Mock EntityLinks entityLinks;
+	@Mock(lenient = true) EntityLinks entityLinks;
 	PersistentEntities entities;
 	List<EntityLookup<?>> lookups;
 	ConversionService conversionService;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		when(entityLinks.linkToItemResource(any(Class.class), any(Object.class))).then(invocation -> {
 
@@ -75,23 +75,29 @@ public class DefaultSelfLinkProviderUnitTests {
 		this.provider = new DefaultSelfLinkProvider(entities, entityLinks, lookups, conversionService);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-724
-	public void rejectsNullEntities() {
-		new DefaultSelfLinkProvider(null, entityLinks, lookups, conversionService);
-	}
+	@Test // DATAREST-724
+	void rejectsNullEntities() {
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-724
-	public void rejectsNullEntityLinks() {
-		new DefaultSelfLinkProvider(entities, null, lookups, conversionService);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATAREST-724
-	public void rejectsNullEntityLookups() {
-		new DefaultSelfLinkProvider(entities, entityLinks, null, conversionService);
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new DefaultSelfLinkProvider(null, entityLinks, lookups, conversionService));
 	}
 
 	@Test // DATAREST-724
-	public void usesEntityIdIfNoLookupDefined() {
+	void rejectsNullEntityLinks() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new DefaultSelfLinkProvider(entities, null, lookups, conversionService));
+	}
+
+	@Test // DATAREST-724
+	void rejectsNullEntityLookups() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new DefaultSelfLinkProvider(entities, entityLinks, null, conversionService));
+	}
+
+	@Test // DATAREST-724
+	void usesEntityIdIfNoLookupDefined() {
 
 		Profile profile = new Profile("Name", "Type");
 		Link link = provider.createSelfLinkFor(profile);
@@ -101,7 +107,7 @@ public class DefaultSelfLinkProviderUnitTests {
 
 	@Test // DATAREST-724
 	@SuppressWarnings("unchecked")
-	public void usesEntityLookupIfDefined() {
+	void usesEntityLookupIfDefined() {
 
 		EntityLookup<Object> lookup = mock(EntityLookup.class);
 		when(lookup.supports(Profile.class)).thenReturn(true);
@@ -116,7 +122,7 @@ public class DefaultSelfLinkProviderUnitTests {
 	}
 
 	@Test // DATAREST-724, DATAREST-1549
-	public void rejectsLinkCreationForUnknownEntity() {
+	void rejectsLinkCreationForUnknownEntity() {
 
 		assertThatExceptionOfType(MappingException.class) //
 				.isThrownBy(() -> provider.createSelfLinkFor(new Object())) //

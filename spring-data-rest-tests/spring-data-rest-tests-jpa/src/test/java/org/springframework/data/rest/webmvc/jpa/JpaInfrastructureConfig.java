@@ -31,7 +31,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @author Oliver Gierke
  */
 @Configuration
-public class JpaInfrastructureConfig {
+class JpaInfrastructureConfig {
 
 	@Bean
 	public DataSource dataSource() {

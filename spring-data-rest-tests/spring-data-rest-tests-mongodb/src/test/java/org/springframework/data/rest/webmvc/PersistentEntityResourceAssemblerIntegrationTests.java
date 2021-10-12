@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 import java.math.BigInteger;
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
@@ -46,14 +46,14 @@ import org.springframework.test.context.ContextConfiguration;
  * @author Oliver Gierke
  */
 @ContextConfiguration(classes = { TestConfiguration.class, MongoDbRepositoryConfig.class })
-public class PersistentEntityResourceAssemblerIntegrationTests extends AbstractControllerIntegrationTests {
+class PersistentEntityResourceAssemblerIntegrationTests extends AbstractControllerIntegrationTests {
 
 	@Autowired PersistentEntities entities;
 	@Autowired EntityLinks entityLinks;
 	@Autowired Associations associations;
 
 	@Test // DATAREST-609
-	public void addsSelfAndSingleResourceLinkToResourceByDefault() throws Exception {
+	void addsSelfAndSingleResourceLinkToResourceByDefault() throws Exception {
 
 		Projector projector = mock(Projector.class);
 

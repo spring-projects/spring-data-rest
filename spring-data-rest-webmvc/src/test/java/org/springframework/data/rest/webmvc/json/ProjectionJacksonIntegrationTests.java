@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.hateoas.CollectionModel;
@@ -40,13 +40,13 @@ import com.jayway.jsonpath.JsonPath;
  *
  * @author Oliver Gierke
  */
-public class ProjectionJacksonIntegrationTests {
+class ProjectionJacksonIntegrationTests {
 
 	ObjectMapper mapper;
 	ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(new Jackson2HalModule());
@@ -55,7 +55,7 @@ public class ProjectionJacksonIntegrationTests {
 	}
 
 	@Test // DATAREST-221
-	public void considersJacksonAnnotationsOnProjectionInterfaces() throws Exception {
+	void considersJacksonAnnotationsOnProjectionInterfaces() throws Exception {
 
 		Customer customer = new Customer();
 		customer.firstname = "Dave";
@@ -69,7 +69,7 @@ public class ProjectionJacksonIntegrationTests {
 	}
 
 	@Test // DATAREST-221
-	public void rendersHalContentCorrectly() throws Exception {
+	void rendersHalContentCorrectly() throws Exception {
 
 		Customer customer = new Customer();
 		customer.firstname = "Dave";

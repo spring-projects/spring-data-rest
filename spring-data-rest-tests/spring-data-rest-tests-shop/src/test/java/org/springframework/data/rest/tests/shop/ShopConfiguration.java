@@ -36,7 +36,7 @@ import org.springframework.hateoas.server.RepresentationModelProcessor;
  */
 @Configuration
 @EnableMapRepositories
-public class ShopConfiguration {
+class ShopConfiguration {
 
 	@Autowired CustomerRepository customers;
 	@Autowired OrderRepository orders;
@@ -77,7 +77,7 @@ public class ShopConfiguration {
 	}
 
 	@PostConstruct
-	public void init() {
+	void init() {
 
 		LineItemType lineItemType = lineItemTypes.save(new LineItemType("good"));
 

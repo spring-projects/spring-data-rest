@@ -15,10 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.jpa;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.data.rest.webmvc.util.TestUtils.*;
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -32,8 +31,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
@@ -98,7 +97,7 @@ public class JpaWebTests extends CommonWebTests {
 	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#setUp()
 	 */
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() {
 		loader.populateRepositories();
 		super.setUp();
@@ -137,7 +136,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-99
-	public void doesNotExposeCreditCardRepository() throws Exception {
+	void doesNotExposeCreditCardRepository() throws Exception {
 
 		mvc.perform(get("/")). //
 				andExpect(status().isOk()). //
@@ -145,7 +144,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test
-	public void accessPersons() throws Exception {
+	void accessPersons() throws Exception {
 
 		MockHttpServletResponse response = client.request("/people?page=0&size=1");
 
@@ -162,7 +161,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-169
-	public void exposesLinkForRelatedResource() throws Exception {
+	void exposesLinkForRelatedResource() throws Exception {
 
 		MockHttpServletResponse response = client.request("/");
 		Link ordersLink = client.assertHasLinkWithRel(LinkRelation.of("orders"), response);
@@ -174,7 +173,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-200
-	public void exposesInlinedEntities() throws Exception {
+	void exposesInlinedEntities() throws Exception {
 
 		MockHttpServletResponse response = client.request("/");
 		Link ordersLink = client.assertHasLinkWithRel(LinkRelation.of("orders"), response);
@@ -184,7 +183,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-199
-	public void createsOrderUsingPut() throws Exception {
+	void createsOrderUsingPut() throws Exception {
 
 		mvc.perform(//
 				put("/orders/{id}", 4711).//
@@ -193,7 +192,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-117
-	public void createPersonThenVerifyIgnoredAttributesDontExist() throws Exception {
+	void createPersonThenVerifyIgnoredAttributesDontExist() throws Exception {
 
 		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 		ObjectMapper mapper = new ObjectMapper();
@@ -213,7 +212,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-95
-	public void createThenPatch() throws Exception {
+	void createThenPatch() throws Exception {
 
 		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 
@@ -237,7 +236,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-150
-	public void createThenPut() throws Exception {
+	void createThenPut() throws Exception {
 
 		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 
@@ -247,29 +246,29 @@ public class JpaWebTests extends CommonWebTests {
 
 		Link bilboLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, bilbo);
 
-		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName"), equalTo("Bilbo"));
-		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName"), equalTo("Baggins"));
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.firstName")).isEqualTo("Bilbo");
+		assertThat((String) JsonPath.read(bilbo.getContentAsString(), "$.lastName")).isEqualTo("Baggins");
 
 		MockHttpServletResponse frodo = putAndGet(bilboLink, //
 				"{ \"firstName\" : \"Frodo\" }", //
 				MediaType.APPLICATION_JSON);
 
-		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName"), equalTo("Frodo"));
-		assertNull(JsonPath.read(frodo.getContentAsString(), "$.lastName"));
+		assertThat((String) JsonPath.read(frodo.getContentAsString(), "$.firstName")).isEqualTo("Frodo");
+		assertThat(JsonPath.<Object> read(frodo.getContentAsString(), "$.lastName")).isNull();
 	}
 
 	@Test
-	public void listsSiblingsWithContentCorrectly() throws Exception {
+	void listsSiblingsWithContentCorrectly() throws Exception {
 		assertPersonWithNameAndSiblingLink("John");
 	}
 
 	@Test
-	public void listsEmptySiblingsCorrectly() throws Exception {
+	void listsEmptySiblingsCorrectly() throws Exception {
 		assertPersonWithNameAndSiblingLink("Billy Bob");
 	}
 
 	@Test // DATAREST-219
-	public void manipulatePropertyCollectionRestfullyWithMultiplePosts() throws Exception {
+	void manipulatePropertyCollectionRestfullyWithMultiplePosts() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
 				new Person("Bilbo", "Baggins"), //
@@ -286,7 +285,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-219
-	public void manipulatePropertyCollectionRestfullyWithSinglePost() throws Exception {
+	void manipulatePropertyCollectionRestfullyWithSinglePost() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
 				new Person("Bilbo", "Baggins"), //
@@ -301,7 +300,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-219
-	public void manipulatePropertyCollectionRestfullyWithMultiplePuts() throws Exception {
+	void manipulatePropertyCollectionRestfullyWithMultiplePuts() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
 				new Person("Bilbo", "Baggins"), //
@@ -320,7 +319,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-219
-	public void manipulatePropertyCollectionRestfullyWithSinglePut() throws Exception {
+	void manipulatePropertyCollectionRestfullyWithSinglePut() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
 				new Person("Bilbo", "Baggins"), //
@@ -344,7 +343,7 @@ public class JpaWebTests extends CommonWebTests {
 	 * checks for its first name. Than it sets Pippin Baggins as creator of the Order. Check for first name is done again.
 	 */
 	@Test // DATAREST-1356
-	public void associateCreatorToOrderWithSinglePut() throws Exception {
+	void associateCreatorToOrderWithSinglePut() throws Exception {
 
 		Link firstCreatorLink = preparePersonResource(new Person("Frodo", "Baggins"));
 		Link secondCreatorLink = preparePersonResource(new Person("Pippin", "Baggins"));
@@ -362,7 +361,7 @@ public class JpaWebTests extends CommonWebTests {
 	 * will contain "send only 1 link" substring.
 	 */
 	@Test // DATAREST-1356
-	public void associateTwoCreatorsToOrderWithSinglePut() throws Exception {
+	void associateTwoCreatorsToOrderWithSinglePut() throws Exception {
 
 		Link firstCreatorLink = preparePersonResource(new Person("Frodo", "Baggins"));
 		Link secondCreatorLink = preparePersonResource(new Person("Pippin", "Baggins"));
@@ -374,7 +373,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-219
-	public void manipulatePropertyCollectionRestfullyWithDelete() throws Exception {
+	void manipulatePropertyCollectionRestfullyWithDelete() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
 				new Person("Bilbo", "Baggins"), //
@@ -394,7 +393,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-50
-	public void propertiesCanHaveNulls() throws Exception {
+	void propertiesCanHaveNulls() throws Exception {
 
 		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 
@@ -411,7 +410,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-238
-	public void putShouldWorkDespiteExistingLinks() throws Exception {
+	void putShouldWorkDespiteExistingLinks() throws Exception {
 
 		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 
@@ -433,7 +432,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-217
-	public void doesNotAllowGetToCollectionResourceIfFindAllIsNotExported() throws Exception {
+	void doesNotAllowGetToCollectionResourceIfFindAllIsNotExported() throws Exception {
 
 		Link link = client.discoverUnique(LinkRelation.of("addresses"));
 
@@ -442,7 +441,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-217
-	public void doesNotAllowPostToCollectionResourceIfSaveIsNotExported() throws Exception {
+	void doesNotAllowPostToCollectionResourceIfSaveIsNotExported() throws Exception {
 
 		Link link = client.discoverUnique(LinkRelation.of("addresses"));
 
@@ -456,7 +455,7 @@ public class JpaWebTests extends CommonWebTests {
 	 * @see OrderSummary
 	 */
 	@Test // DATAREST-221
-	public void returnsProjectionIfRequested() throws Exception {
+	void returnsProjectionIfRequested() throws Exception {
 
 		Link orders = client.discoverUnique(LinkRelation.of("orders"));
 
@@ -475,12 +474,12 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-261
-	public void relProviderDetectsCustomizedMapping() {
+	void relProviderDetectsCustomizedMapping() {
 		assertThat(relProvider.getCollectionResourceRelFor(Person.class)).isEqualTo(LinkRelation.of("people"));
 	}
 
 	@Test // DATAREST-311
-	public void onlyLinksShouldAppearWhenExecuteSearchCompact() throws Exception {
+	void onlyLinksShouldAppearWhenExecuteSearchCompact() throws Exception {
 
 		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
 		Person daenerys = new Person("Daenerys", "Targaryen");
@@ -506,7 +505,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-317
-	public void rendersExcerptProjectionsCorrectly() throws Exception {
+	void rendersExcerptProjectionsCorrectly() throws Exception {
 
 		Link authorsLink = client.discoverUnique("authors");
 
@@ -529,7 +528,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-353
-	public void returns404WhenTryingToDeleteANonExistingResource() throws Exception {
+	void returns404WhenTryingToDeleteANonExistingResource() throws Exception {
 
 		Link receiptsLink = client.discoverUnique("receipts");
 
@@ -538,7 +537,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-384
-	public void exectuesSearchThatTakesASort() throws Exception {
+	void exectuesSearchThatTakesASort() throws Exception {
 
 		Link booksLink = client.discoverUnique("books");
 		Link searchLink = client.discoverUnique(booksLink, "search");
@@ -561,7 +560,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-160
-	public void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
+	void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
 
 		Link receiptLink = client.discoverUnique("receipts");
 
@@ -588,7 +587,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-423
-	public void invokesCustomControllerAndBindsDomainObjectCorrectly() throws Exception {
+	void invokesCustomControllerAndBindsDomainObjectCorrectly() throws Exception {
 
 		MockHttpServletResponse authorsResponse = client.request(client.discoverUnique("authors"));
 
@@ -599,7 +598,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-523
-	public void augmentsCollectionAssociationUsingPost() throws Exception {
+	void augmentsCollectionAssociationUsingPost() throws Exception {
 
 		List<Link> links = preparePersonResources(new Person("Frodo", "Baggins"), //
 				new Person("Bilbo", "Baggins"));
@@ -620,7 +619,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-658
-	public void returnsLinkHeadersForHeadRequestToItemResource() throws Exception {
+	void returnsLinkHeadersForHeadRequestToItemResource() throws Exception {
 
 		MockHttpServletResponse response = client.request(client.discoverUnique(LinkRelation.of("people")));
 		String personHref = JsonPath.read(response.getContentAsString(), "$._embedded.people[0]._links.self.href");
@@ -635,7 +634,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-883
-	public void exectuesSearchThatTakesAMappedSortProperty() throws Exception {
+	void exectuesSearchThatTakesAMappedSortProperty() throws Exception {
 
 		Link findBySortedLink = client.discoverUnique("books", "search", "find-by-sorted");
 
@@ -656,7 +655,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-883
-	public void exectuesCustomQuerySearchThatTakesAMappedSortProperty() throws Exception {
+	void exectuesCustomQuerySearchThatTakesAMappedSortProperty() throws Exception {
 
 		Link findByLink = client.discoverUnique("books", "search", "find-spring-books-sorted");
 
@@ -676,14 +675,14 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-910
-	public void callUnmappedCustomRepositoryController() throws Exception {
+	void callUnmappedCustomRepositoryController() throws Exception {
 
 		mvc.perform(post("/orders/search/sort")).andExpect(status().isOk());
 		mvc.perform(post("/orders/search/sort?sort=type&page=1&size=10")).andExpect(status().isOk());
 	}
 
 	@Test // DATAREST-976
-	public void appliesSortByEmbeddedAssociation() throws Exception {
+	void appliesSortByEmbeddedAssociation() throws Exception {
 
 		Link booksLink = client.discoverUnique("books");
 		Link searchLink = client.discoverUnique(booksLink, "search");
@@ -706,7 +705,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-1213
-	public void createThenPatchWithProjection() throws Exception {
+	void createThenPatchWithProjection() throws Exception {
 
 		Link link = createCategory();
 		String payload = "{ \"name\" : \"patched\" }";
@@ -719,7 +718,7 @@ public class JpaWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-1213
-	public void createThenPutWithProjection() throws Exception {
+	void createThenPutWithProjection() throws Exception {
 
 		Link link = createCategory();
 		String payload = "{ \"name\" : \"put\" }";

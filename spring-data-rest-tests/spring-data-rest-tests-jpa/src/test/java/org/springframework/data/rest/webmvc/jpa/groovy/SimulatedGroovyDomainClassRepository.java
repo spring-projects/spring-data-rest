@@ -16,7 +16,6 @@
 package org.springframework.data.rest.webmvc.jpa.groovy;
 
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.rest.webmvc.jpa.groovy.SimulatedGroovyDomainClass;
 
 /**
  * Simulates a repository built on a Groovy domain object.

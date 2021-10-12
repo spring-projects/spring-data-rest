@@ -16,8 +16,6 @@
 package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,15 +24,15 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AddOperationUnitTests {
+class AddOperationUnitTests {
 
 	@Test
-	public void addBooleanPropertyValue() throws Exception {
+	void addBooleanPropertyValue() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -44,11 +42,11 @@ public class AddOperationUnitTests {
 		AddOperation add = AddOperation.of("/1/complete", true);
 		add.perform(todos, Todo.class);
 
-		assertTrue(todos.get(1).isComplete());
+		assertThat(todos.get(1).isComplete()).isTrue();
 	}
 
 	@Test
-	public void addStringPropertyValue() throws Exception {
+	void addStringPropertyValue() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -58,11 +56,11 @@ public class AddOperationUnitTests {
 		AddOperation add = AddOperation.of("/1/description", "BBB");
 		add.perform(todos, Todo.class);
 
-		assertEquals("BBB", todos.get(1).getDescription());
+		assertThat(todos.get(1).getDescription()).isEqualTo("BBB");
 	}
 
 	@Test
-	public void addItemToList() throws Exception {
+	void addItemToList() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -72,19 +70,19 @@ public class AddOperationUnitTests {
 		AddOperation add = AddOperation.of("/1", new Todo(null, "D", true));
 		add.perform(todos, Todo.class);
 
-		assertEquals(4, todos.size());
-		assertEquals("A", todos.get(0).getDescription());
-		assertFalse(todos.get(0).isComplete());
-		assertEquals("D", todos.get(1).getDescription());
-		assertTrue(todos.get(1).isComplete());
-		assertEquals("B", todos.get(2).getDescription());
-		assertFalse(todos.get(2).isComplete());
-		assertEquals("C", todos.get(3).getDescription());
-		assertFalse(todos.get(3).isComplete());
+		assertThat(todos.size()).isEqualTo(4);
+		assertThat(todos.get(0).getDescription()).isEqualTo("A");
+		assertThat(todos.get(0).isComplete()).isFalse();
+		assertThat(todos.get(1).getDescription()).isEqualTo("D");
+		assertThat(todos.get(1).isComplete()).isTrue();
+		assertThat(todos.get(2).getDescription()).isEqualTo("B");
+		assertThat(todos.get(2).isComplete()).isFalse();
+		assertThat(todos.get(3).getDescription()).isEqualTo("C");
+		assertThat(todos.get(3).isComplete()).isFalse();
 	}
 
 	@Test // DATAREST-995
-	public void addsItemsToNestedList() {
+	void addsItemsToNestedList() {
 
 		Todo todo = new Todo(1L, "description", false);
 
@@ -94,7 +92,7 @@ public class AddOperationUnitTests {
 	}
 
 	@Test // DATAREST-1039
-	public void addsLazilyEvaluatedObjectToList() throws Exception {
+	void addsLazilyEvaluatedObjectToList() throws Exception {
 
 		Todo todo = new Todo(1L, "description", false);
 
@@ -108,7 +106,7 @@ public class AddOperationUnitTests {
 	}
 
 	@Test // DATAREST-1039
-	public void initializesNullCollectionsOnAppend() {
+	void initializesNullCollectionsOnAppend() {
 
 		Todo todo = new Todo(1L, "description", false);
 
@@ -118,7 +116,7 @@ public class AddOperationUnitTests {
 	}
 
 	@Test // DATAREST-1273
-	public void addsItemToTheEndOfACollectionViaIndex() {
+	void addsItemToTheEndOfACollectionViaIndex() {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -130,7 +128,7 @@ public class AddOperationUnitTests {
 	}
 
 	@Test // DATAREST-1273
-	public void rejectsAdditionBeyondEndOfList() {
+	void rejectsAdditionBeyondEndOfList() {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -143,7 +141,7 @@ public class AddOperationUnitTests {
 	}
 
 	@Test // DATAREST-1479
-	public void manipulatesNestedCollectionProperly() {
+	void manipulatesNestedCollectionProperly() {
 
 		List<Todo> todos = new ArrayList<>();
 		todos.add(new Todo(1L, "A", false));

@@ -15,14 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.TypedSpelPath;
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
 
@@ -31,10 +30,10 @@ import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
  *
  * @author Oliver Gierke
  */
-public class SpelPathUnitTests {
+class SpelPathUnitTests {
 
 	@Test
-	public void listIndex() {
+	void listIndex() {
 
 		UntypedSpelPath expr = SpelPath.untyped("/1/description");
 
@@ -43,11 +42,13 @@ public class SpelPathUnitTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		assertEquals("B", expr.bindTo(Todo.class).getValue(todos));
+		Object value = expr.bindTo(Todo.class).getValue(todos);
+
+		assertThat(value).isEqualTo("B");
 	}
 
 	@Test
-	public void accessesLastCollectionElementWithDash() {
+	void accessesLastCollectionElementWithDash() {
 
 		UntypedSpelPath expr = SpelPath.untyped("/-/description");
 
@@ -56,35 +57,37 @@ public class SpelPathUnitTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		assertEquals("C", expr.bindTo(Todo.class).getValue(todos));
+		Object value = expr.bindTo(Todo.class).getValue(todos);
+
+		assertThat(value).isEqualTo("C");
 	}
 
 	@Test // DATAREST-1152
-	public void cachesSpelPath() {
+	void cachesSpelPath() {
 
 		UntypedSpelPath left = SpelPath.untyped("/description");
 		UntypedSpelPath right = SpelPath.untyped("/description");
 
-		assertSame(left, right);
+		assertThat(left).isSameAs(right);
 	}
 
 	@Test // DATAREST-1152
-	public void cachesTypedSpelPath() {
+	void cachesTypedSpelPath() {
 
 		UntypedSpelPath source = SpelPath.untyped("/description");
 		TypedSpelPath left = source.bindTo(Todo.class);
 		TypedSpelPath right = source.bindTo(Todo.class);
 
-		assertSame(left, right);
+		assertThat(left).isSameAs(right);
 	}
 
 	@Test // DATAREST-1274
-	public void supportsMultiDigitCollectionIndex() {
+	void supportsMultiDigitCollectionIndex() {
 		assertThat(SpelPath.untyped("/11/description").bindTo(Todo.class).getLeafType()).isEqualTo(String.class);
 	}
 
 	@Test // DATAREST-1338
-	public void handlesStringMapKeysInPathExpressions() {
+	void handlesStringMapKeysInPathExpressions() {
 
 		TypedSpelPath path = SpelPath.untyped("people/Dave/name").bindTo(MapWrapper.class);
 
@@ -93,7 +96,7 @@ public class SpelPathUnitTests {
 	}
 
 	@Test // DATAREST-1338
-	public void handlesIntegerMapKeysInPathExpressions() {
+	void handlesIntegerMapKeysInPathExpressions() {
 
 		TypedSpelPath path = SpelPath.untyped("peopleByInt/0/name").bindTo(MapWrapper.class);
 

@@ -15,15 +15,17 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TestOperationUnitTests {
+class TestOperationUnitTests {
 
 	@Test
-	public void testPropertyValueEquals() throws Exception {
+	void testPropertyValueEquals() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -38,8 +40,8 @@ public class TestOperationUnitTests {
 
 	}
 
-	@Test(expected = PatchException.class)
-	public void testPropertyValueNotEquals() throws Exception {
+	@Test
+	void testPropertyValueNotEquals() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -47,11 +49,13 @@ public class TestOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		TestOperation test = TestOperation.whetherValueAt("/0/complete").hasValue(true);
-		test.perform(todos, Todo.class);
+
+		assertThatExceptionOfType(PatchException.class) //
+				.isThrownBy(() -> test.perform(todos, Todo.class));
 	}
 
 	@Test
-	public void testListElementEquals() throws Exception {
+	void testListElementEquals() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));

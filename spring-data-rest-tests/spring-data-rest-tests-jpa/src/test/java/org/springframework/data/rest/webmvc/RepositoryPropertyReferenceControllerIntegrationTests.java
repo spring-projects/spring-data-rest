@@ -18,9 +18,8 @@ package org.springframework.data.rest.webmvc;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.webmvc.jpa.Book;
@@ -36,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
-public class RepositoryPropertyReferenceControllerIntegrationTests extends AbstractControllerIntegrationTests {
+class RepositoryPropertyReferenceControllerIntegrationTests extends AbstractControllerIntegrationTests {
 
 	@Autowired RepositoryPropertyReferenceController controller;
 	@Autowired TestDataPopulator populator;
@@ -45,8 +44,8 @@ public class RepositoryPropertyReferenceControllerIntegrationTests extends Abstr
 	PersistentEntityResourceAssembler assembler;
 	RootResourceInformation information;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.assembler = mock(PersistentEntityResourceAssembler.class);
 		this.information = getResourceInformation(Book.class);
@@ -54,7 +53,7 @@ public class RepositoryPropertyReferenceControllerIntegrationTests extends Abstr
 	}
 
 	@Test
-	public void exposesResourceForCustomizedPropertyResourcePath() throws Exception {
+	void exposesResourceForCustomizedPropertyResourcePath() throws Exception {
 
 		Book book = books.findAll().iterator().next();
 
@@ -62,11 +61,12 @@ public class RepositoryPropertyReferenceControllerIntegrationTests extends Abstr
 				.isEqualTo(HttpStatus.OK);
 	}
 
-	@Test(expected = ResourceNotFoundException.class)
-	public void doesNotExposeOriginalPathIfPropertyResourcePathIsCustomized() throws Exception {
+	@Test
+	void doesNotExposeOriginalPathIfPropertyResourcePathIsCustomized() {
 
 		Book book = books.findAll().iterator().next();
 
-		controller.followPropertyReference(information, book.id, "authors", assembler);
+		assertThatExceptionOfType(ResourceNotFoundException.class) //
+				.isThrownBy(() -> controller.followPropertyReference(information, book.id, "authors", assembler));
 	}
 }

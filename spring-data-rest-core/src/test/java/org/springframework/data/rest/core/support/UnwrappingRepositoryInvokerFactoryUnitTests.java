@@ -20,18 +20,10 @@ import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
-import java.util.function.Consumer;
 
-import org.assertj.core.api.AbstractOptionalAssert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.domain.Profile;
@@ -41,8 +33,7 @@ import org.springframework.data.rest.core.domain.Profile;
  *
  * @author Oliver Gierke
  */
-@RunWith(Parameterized.class)
-public class UnwrappingRepositoryInvokerFactoryUnitTests {
+class UnwrappingRepositoryInvokerFactoryUnitTests {
 
 	static final Object REFERENCE = new Object();
 
@@ -52,11 +43,8 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 	RepositoryInvokerFactory factory;
 	Method method;
 
-	public @Parameter(0) Object source;
-	public @Parameter(1) Consumer<AbstractOptionalAssert<?, Object>> value;
-
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 
 		when(delegate.getInvokerFor(Object.class)).thenReturn(invoker);
 
@@ -64,21 +52,9 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 		this.method = Object.class.getMethod("toString");
 	}
 
-	@Parameters
-	public static Collection<Object[]> data() {
-
-		return Arrays.asList(new Object[][] { //
-				{ null, $(it -> it.isEmpty()) }, //
-				{ Optional.empty(), $(it -> it.isEmpty()) }, //
-				{ Optional.of(REFERENCE), $(it -> it.hasValue(REFERENCE)) }, //
-				{ com.google.common.base.Optional.absent(), $(it -> it.isEmpty()) }, //
-				{ com.google.common.base.Optional.of(REFERENCE), $(it -> it.hasValue(REFERENCE)) } //
-		});
-	}
-
 	@Test // DATAREST-724, DATAREST-1261
 	@SuppressWarnings("unchecked")
-	public void usesRegisteredEntityLookup() {
+	void usesRegisteredEntityLookup() {
 
 		EntityLookup<Object> lookup = mock(EntityLookup.class);
 
@@ -90,9 +66,5 @@ public class UnwrappingRepositoryInvokerFactoryUnitTests {
 
 		verify(lookup, times(1)).lookupEntity(eq(1L));
 		verify(invoker, never()).invokeFindById(eq(1L)); // DATAREST-1261
-	}
-
-	private static Consumer<AbstractOptionalAssert<?, Object>> $(Consumer<AbstractOptionalAssert<?, Object>> consumer) {
-		return consumer;
 	}
 }

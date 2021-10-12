@@ -24,8 +24,8 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.annotation.Id;
@@ -53,15 +53,15 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  *
  * @author Oliver Gierke
  */
-public class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
+class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
 
 	HttpMessageConverter<?> converter;
 	RootResourceInformationHandlerMethodArgumentResolver rootResourceResolver;
 	BackendIdHandlerMethodArgumentResolver backendIdResolver;
 	DomainObjectReader reader;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 
 		this.converter = mock(HttpMessageConverter.class);
 		when(this.converter.canRead((Class<?>) any(), (MediaType) any())).thenReturn(true);
@@ -75,7 +75,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
 
 	@Test // DATAREST-1050
 	@SuppressWarnings("unchecked")
-	public void returnsAggregateInstanceWithIdentifierPopulatedForPutRequests() throws Exception {
+	void returnsAggregateInstanceWithIdentifierPopulatedForPutRequests() throws Exception {
 
 		PersistentEntityResourceHandlerMethodArgumentResolver argumentResolver = new PersistentEntityResourceHandlerMethodArgumentResolver(
 				Arrays.<HttpMessageConverter<?>> asList(converter), rootResourceResolver, backendIdResolver, reader,
@@ -95,7 +95,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
 
 	@Test // DATAREST-1304
 	@SuppressWarnings("unchecked")
-	public void setsLookupPropertyForEntitiesWithCustomLookup() throws Exception {
+	void setsLookupPropertyForEntitiesWithCustomLookup() throws Exception {
 
 		EntityLookup<?> lookup = mock(EntityLookup.class);
 		doReturn(Optional.of("name")).when(lookup).getLookupProperty();

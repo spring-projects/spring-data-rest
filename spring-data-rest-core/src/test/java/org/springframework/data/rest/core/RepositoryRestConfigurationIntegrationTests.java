@@ -17,7 +17,7 @@ package org.springframework.data.rest.core;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -36,13 +36,13 @@ import org.springframework.test.annotation.DirtiesContext;
  * @author Oliver Gierke
  */
 @SuppressWarnings("deprecation")
-public class RepositoryRestConfigurationIntegrationTests extends AbstractIntegrationTests {
+class RepositoryRestConfigurationIntegrationTests extends AbstractIntegrationTests {
 
 	@Autowired RepositoryRestConfiguration config;
 	@Autowired Repositories repositories;
 
 	@Test
-	public void shouldProvideResourceMappingForConfiguredRepository() throws Exception {
+	void shouldProvideResourceMappingForConfiguredRepository() throws Exception {
 
 		ResourceMapping mapping = config.getResourceMappingForRepository(ConfiguredPersonRepository.class);
 
@@ -54,7 +54,7 @@ public class RepositoryRestConfigurationIntegrationTests extends AbstractIntegra
 
 	@Test // DATAREST-1304
 	@DirtiesContext
-	public void exposesLookupPropertyFromLambda() {
+	void exposesLookupPropertyFromLambda() {
 
 		config.withEntityLookup() //
 				.forRepository(ProfileRepository.class) //

@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -37,14 +37,14 @@ import org.springframework.hateoas.LinkRelation;
  *
  * @author Oliver Gierke
  */
-public class RepositoryMethodResourceMappingUnitTests {
+class RepositoryMethodResourceMappingUnitTests {
 
 	RepositoryMetadata metadata = new DefaultRepositoryMetadata(PersonRepository.class);
 	RepositoryCollectionResourceMapping resourceMapping = new RepositoryCollectionResourceMapping(metadata,
 			RepositoryDetectionStrategies.DEFAULT);
 
 	@Test
-	public void defaultsMappingToMethodName() throws Exception {
+	void defaultsMappingToMethodName() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
 		ResourceMapping mapping = getMappingFor(method);
@@ -53,7 +53,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	@Test
-	public void usesConfiguredNameWithLeadingSlash() throws Exception {
+	void usesConfiguredNameWithLeadingSlash() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
 		ResourceMapping mapping = getMappingFor(method);
@@ -62,7 +62,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-31
-	public void discoversParametersIfCompiledWithCorrespondingFlag() throws Exception {
+	void discoversParametersIfCompiledWithCorrespondingFlag() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
 		MethodResourceMapping mapping = getMappingFor(method);
@@ -71,7 +71,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-31
-	public void resolvesParameterNamesIfNotAnnotated() throws Exception {
+	void resolvesParameterNamesIfNotAnnotated() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
 		MethodResourceMapping mapping = getMappingFor(method);
@@ -81,7 +81,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-229
-	public void considersPagingFinderAPagingResource() throws Exception {
+	void considersPagingFinderAPagingResource() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
 		MethodResourceMapping mapping = getMappingFor(method);
@@ -90,7 +90,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	@Test
-	public void usesMethodNameAsRelFallbackEvenIfPathIsConfigured() throws Exception {
+	void usesMethodNameAsRelFallbackEvenIfPathIsConfigured() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Pageable.class);
 		MethodResourceMapping mapping = getMappingFor(method);
@@ -99,7 +99,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-384
-	public void considersResourceSortableIfSortParameterIsPresent() throws Exception {
+	void considersResourceSortableIfSortParameterIsPresent() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByEmailAddress", String.class, Sort.class);
 		RepositoryMethodResourceMapping mapping = getMappingFor(method);
@@ -113,7 +113,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-467
-	public void returnsDomainTypeAsProjectionSourceType() throws Exception {
+	void returnsDomainTypeAsProjectionSourceType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class);
 		MethodResourceMapping mapping = getMappingFor(method);
@@ -122,7 +122,7 @@ public class RepositoryMethodResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-699
-	public void doesNotIncludePageableAsParameter() throws Exception {
+	void doesNotIncludePageableAsParameter() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByLastname", String.class, Pageable.class);
 		RepositoryMethodResourceMapping mapping = getMappingFor(method);

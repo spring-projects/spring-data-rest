@@ -17,63 +17,63 @@ package org.springframework.data.rest.core;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link Path}.
  *
  * @author Oliver Gierke
  */
-public class PathUnitTests {
+class PathUnitTests {
 
 	@Test
-	public void combinesSimplePaths() {
+	void combinesSimplePaths() {
 
 		Path builder = new Path("foo").slash("bar");
 		assertThat(builder.toString()).isEqualTo("/foo/bar");
 	}
 
 	@Test
-	public void removesLeadingAndTrailingSlashes() {
+	void removesLeadingAndTrailingSlashes() {
 
 		Path builder = new Path("foo/").slash("/bar").slash("//foobar///");
 		assertThat(builder.toString()).isEqualTo("/foo/bar/foobar");
 	}
 
 	@Test
-	public void removesWhitespace() {
+	void removesWhitespace() {
 
 		Path builder = new Path("foo/ ").slash("/ b a r").slash("  //foobar///   ");
 		assertThat(builder.toString()).isEqualTo("/foo/bar/foobar");
 	}
 
 	@Test
-	public void matchesWithLeadingSlash() {
+	void matchesWithLeadingSlash() {
 		assertThat(new Path("/foobar").matches("/foobar")).isTrue();
 	}
 
 	@Test
-	public void matchesWithoutLeadingSlash() {
+	void matchesWithoutLeadingSlash() {
 		assertThat(new Path("/foobar").matches("foobar")).isTrue();
 	}
 
 	@Test
-	public void doesNotMatchIfDifferent() {
+	void doesNotMatchIfDifferent() {
 		assertThat(new Path("/foobar").matches("barfoo")).isFalse();
 	}
 
 	@Test
-	public void doesNotPrefixAbsoluteUris() {
+	void doesNotPrefixAbsoluteUris() {
 		assertThat(new Path("http://localhost").toString()).isEqualTo("http://localhost");
 	}
 
 	@Test // DATAREST-222
-	public void doesNotMatchIfReferenceContainsReservedCharacters() {
+	void doesNotMatchIfReferenceContainsReservedCharacters() {
 		assertThat(new Path("/foobar").matches("barfoo{?foo}")).isFalse();
 	}
 
 	@Test // DATAREST-222
-	public void doesNotMatchNullReference() {
+	void doesNotMatchNullReference() {
 		assertThat(new Path("/foobar").matches(null)).isFalse();
 	}
 }

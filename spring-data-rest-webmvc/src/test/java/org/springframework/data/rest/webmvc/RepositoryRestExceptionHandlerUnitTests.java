@@ -20,9 +20,9 @@ import static org.assertj.core.api.Assertions.*;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -37,14 +37,14 @@ import org.springframework.mock.http.MockHttpInputMessage;
  *
  * @author Oliver Gierke
  */
-public class RepositoryRestExceptionHandlerUnitTests {
+class RepositoryRestExceptionHandlerUnitTests {
 
 	static final RepositoryRestExceptionHandler HANDLER = new RepositoryRestExceptionHandler(new StaticMessageSource());
 
 	static Logger logger;
 	static Level logLevel;
 
-	@BeforeClass
+	@BeforeAll
 	public static void silenceLog() {
 
 		logger = (Logger) LoggerFactory.getLogger(RepositoryRestExceptionHandler.class);
@@ -52,13 +52,13 @@ public class RepositoryRestExceptionHandlerUnitTests {
 		logger.setLevel(Level.OFF);
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void enableLogging() {
 		logger.setLevel(logLevel);
 	}
 
 	@Test // DATAREST-427
-	public void handlesHttpMessageNotReadableException() {
+	void handlesHttpMessageNotReadableException() {
 
 		ResponseEntity<ExceptionMessage> result = HANDLER
 				.handleNotReadable(new HttpMessageNotReadableException("Message!", new MockHttpInputMessage(new byte[0])));
@@ -67,7 +67,7 @@ public class RepositoryRestExceptionHandlerUnitTests {
 	}
 
 	@Test // DATAREST-507
-	public void handlesConflictCorrectly() {
+	void handlesConflictCorrectly() {
 
 		ResponseEntity<ExceptionMessage> result = HANDLER.handleConflict(new DataIntegrityViolationException("Message!"));
 
@@ -75,7 +75,7 @@ public class RepositoryRestExceptionHandlerUnitTests {
 	}
 
 	@Test // DATAREST-706
-	public void forwardsExceptionForMiscellaneousFailure() {
+	void forwardsExceptionForMiscellaneousFailure() {
 
 		String message = "My Message!";
 

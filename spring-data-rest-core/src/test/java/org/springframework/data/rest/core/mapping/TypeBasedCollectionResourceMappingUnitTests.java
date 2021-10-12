@@ -17,7 +17,7 @@ package org.springframework.data.rest.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.rest.core.Path;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.hateoas.LinkRelation;
@@ -27,10 +27,10 @@ import org.springframework.hateoas.LinkRelation;
  *
  * @author Oliver Gierke
  */
-public class TypeBasedCollectionResourceMappingUnitTests {
+class TypeBasedCollectionResourceMappingUnitTests {
 
 	@Test
-	public void defaultsMappingsByType() {
+	void defaultsMappingsByType() {
 
 		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(Sample.class);
 
@@ -41,7 +41,7 @@ public class TypeBasedCollectionResourceMappingUnitTests {
 	}
 
 	@Test
-	public void usesCustomizedRel() {
+	void usesCustomizedRel() {
 
 		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(CustomizedSample.class);
 
@@ -52,7 +52,7 @@ public class TypeBasedCollectionResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-99
-	public void doesNotExportNonPublicTypesByDefault() {
+	void doesNotExportNonPublicTypesByDefault() {
 
 		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(HiddenSample.class);
 
@@ -63,7 +63,7 @@ public class TypeBasedCollectionResourceMappingUnitTests {
 	 * @see
 	 */
 	@Test
-	public void usesDefaultDescriptionIfNoAnnotationPresent() {
+	void usesDefaultDescriptionIfNoAnnotationPresent() {
 
 		CollectionResourceMapping mapping = new TypeBasedCollectionResourceMapping(Sample.class);
 		ResourceDescription description = mapping.getDescription();

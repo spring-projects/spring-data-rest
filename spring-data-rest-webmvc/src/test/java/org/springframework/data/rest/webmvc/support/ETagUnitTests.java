@@ -17,9 +17,9 @@ package org.springframework.data.rest.webmvc.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentEntity;
@@ -32,25 +32,27 @@ import org.springframework.http.HttpHeaders;
  * @author Pablo Lozano
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ETagUnitTests {
+@ExtendWith(MockitoExtension.class)
+class ETagUnitTests {
 
 	KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 
-	@Test(expected = ETagDoesntMatchException.class) // DATAREST-160
-	public void expectWrongEtag() throws Exception {
+	@Test // DATAREST-160
+	void expectWrongEtag() throws Exception {
 
 		ETag eTag = ETag.from("1");
-		eTag.verify(context.getRequiredPersistentEntity(Sample.class), new Sample(0L));
+
+		assertThatExceptionOfType(ETagDoesntMatchException.class) //
+				.isThrownBy(() -> eTag.verify(context.getRequiredPersistentEntity(Sample.class), new Sample(0L)));
 	}
 
 	@Test // DATAREST-160
-	public void expectCorrectEtag() throws Exception {
+	void expectCorrectEtag() throws Exception {
 		ETag.from("0").verify(context.getRequiredPersistentEntity(Sample.class), new Sample(0L));
 	}
 
 	@Test // DATAREST-160
-	public void createsETagFromVersionValue() throws Exception {
+	void createsETagFromVersionValue() throws Exception {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(Sample.class);
 		ETag from = ETag.from(PersistentEntityResource.build(new Sample(0L), entity).build());
@@ -59,17 +61,17 @@ public class ETagUnitTests {
 	}
 
 	@Test // DATAREST-160
-	public void surroundsValueWithQuotationMarksOnToString() {
+	void surroundsValueWithQuotationMarksOnToString() {
 		assertThat(ETag.from("1").toString()).isEqualTo("\"1\"");
 	}
 
 	@Test // DATAREST-160
-	public void returnsNoEtagForNullStringSource() {
+	void returnsNoEtagForNullStringSource() {
 		assertThat(ETag.from((String) null)).isEqualTo(ETag.NO_ETAG);
 	}
 
 	@Test // DATAREST-160
-	public void returnsNoEtagForNullPersistentEntityResourceSource() {
+	void returnsNoEtagForNullPersistentEntityResourceSource() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> {
 			ETag.from((PersistentEntityResource) null);
@@ -77,7 +79,7 @@ public class ETagUnitTests {
 	}
 
 	@Test // DATAREST-160
-	public void hasValueObjectEqualsSemantics() {
+	void hasValueObjectEqualsSemantics() {
 
 		ETag one = ETag.from("1");
 		ETag two = ETag.from("2");
@@ -92,7 +94,7 @@ public class ETagUnitTests {
 	}
 
 	@Test // DATAREST-160
-	public void returnsNoEtagForEntityWithoutVersionProperty() {
+	void returnsNoEtagForEntityWithoutVersionProperty() {
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(SampleWithoutVersion.class);
 		assertThat(ETag.from(PersistentEntityResource.build(new SampleWithoutVersion(), entity).build()))
@@ -100,36 +102,36 @@ public class ETagUnitTests {
 	}
 
 	@Test // DATAREST-160
-	public void noETagReturnsNullForToString() {
+	void noETagReturnsNullForToString() {
 		assertThat(ETag.NO_ETAG.toString()).isNull();
 	}
 
 	@Test // DATAREST-160
-	public void noETagDoesNotRejectVerification() {
+	void noETagDoesNotRejectVerification() {
 		ETag.NO_ETAG.verify(context.getRequiredPersistentEntity(Sample.class), new Sample(5L));
 	}
 
 	@Test // DATAREST-160
-	public void verificationDoesNotRejectNullEntity() {
+	void verificationDoesNotRejectNullEntity() {
 		ETag.from("5").verify(context.getRequiredPersistentEntity(Sample.class), null);
 	}
 
 	@Test // DATAREST-160
-	public void stripsTrailingAndLeadingQuotesOnCreation() {
+	void stripsTrailingAndLeadingQuotesOnCreation() {
 
 		assertThat(ETag.from("\"1\"")).isEqualTo(ETag.from("1"));
 		assertThat(ETag.from("\"\"1\"\"")).isEqualTo(ETag.from("1"));
 	}
 
 	@Test // DATAREST-160
-	public void addsETagToHeadersIfNotNoETag() {
+	void addsETagToHeadersIfNotNoETag() {
 
 		HttpHeaders headers = ETag.from("1").addTo(new HttpHeaders());
 		assertThat(headers.getETag()).isNotNull();
 	}
 
 	@Test // DATAREST-160
-	public void doesNotAddHeaderForNoETag() {
+	void doesNotAddHeaderForNoETag() {
 
 		HttpHeaders headers = ETag.NO_ETAG.addTo(new HttpHeaders());
 
@@ -137,7 +139,7 @@ public class ETagUnitTests {
 	}
 
 	// tag::versioned-sample[]
-	public class Sample {
+	class Sample {
 
 		@Version Long version; // <1>
 
@@ -147,5 +149,5 @@ public class ETagUnitTests {
 	}
 	// end::versioned-sample[]
 
-	public class SampleWithoutVersion {}
+	class SampleWithoutVersion {}
 }

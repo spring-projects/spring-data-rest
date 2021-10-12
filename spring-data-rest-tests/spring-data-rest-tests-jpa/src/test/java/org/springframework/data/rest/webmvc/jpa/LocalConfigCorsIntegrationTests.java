@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
@@ -37,7 +37,7 @@ import org.springframework.test.context.ContextConfiguration;
  * @soundtrack RFLKTD - Liquid Crystals
  */
 @ContextConfiguration
-public class LocalConfigCorsIntegrationTests extends AbstractWebIntegrationTests {
+class LocalConfigCorsIntegrationTests extends AbstractWebIntegrationTests {
 
 	static class CorsConfig extends JpaRepositoryConfig {
 
@@ -51,7 +51,7 @@ public class LocalConfigCorsIntegrationTests extends AbstractWebIntegrationTests
 	 * @see ItemRepository
 	 */
 	@Test // DATAREST-1397
-	public void appliesRepositoryCorsConfiguration() throws Exception {
+	void appliesRepositoryCorsConfiguration() throws Exception {
 
 		Link findItems = client.discoverUnique(LinkRelation.of("items"));
 

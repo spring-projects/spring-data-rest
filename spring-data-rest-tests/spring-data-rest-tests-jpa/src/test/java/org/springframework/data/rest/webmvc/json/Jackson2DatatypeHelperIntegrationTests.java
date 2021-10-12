@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import javax.persistence.EntityManager;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mapping.PersistentEntity;
@@ -36,7 +36,7 @@ import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,10 +46,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Oliver Gierke
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { JpaRepositoryConfig.class, RepositoryRestMvcConfiguration.class })
 @Transactional
-public class Jackson2DatatypeHelperIntegrationTests {
+class Jackson2DatatypeHelperIntegrationTests {
 
 	@Autowired PersistentEntities entities;
 	@Autowired ApplicationContext context;
@@ -62,8 +62,8 @@ public class Jackson2DatatypeHelperIntegrationTests {
 
 	Order order;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.order = orders.save(new Order(people.save(new Person("Dave", "Matthews"))));
 		this.objectMapper = context.getBean("halJacksonHttpMessageConverter", AbstractJackson2HttpMessageConverter.class)
@@ -75,7 +75,7 @@ public class Jackson2DatatypeHelperIntegrationTests {
 	}
 
 	@Test // DATAREST-500
-	public void configuresHibernate4ModuleToLoadLazyLoadingProxies() throws Exception {
+	void configuresHibernate4ModuleToLoadLazyLoadingProxies() throws Exception {
 
 		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(Order.class);
 		PersistentProperty<?> property = entity.getRequiredPersistentProperty("creator");

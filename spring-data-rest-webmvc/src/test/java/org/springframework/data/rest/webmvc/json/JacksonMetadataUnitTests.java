@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -42,13 +42,13 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
  * @author Oliver Gierke
  * @soundtrack Four Sided Cube - Bad Day's Remembrance (Bunch of Sides)
  */
-public class JacksonMetadataUnitTests {
+class JacksonMetadataUnitTests {
 
 	MappingContext<?, ?> context;
 	ObjectMapper mapper;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.context = new KeyValueMappingContext<>();
 
@@ -57,7 +57,7 @@ public class JacksonMetadataUnitTests {
 	}
 
 	@Test // DATAREST-644
-	public void detectsReadOnlyProperty() {
+	void detectsReadOnlyProperty() {
 
 		JacksonMetadata metadata = new JacksonMetadata(mapper, User.class);
 
@@ -69,7 +69,7 @@ public class JacksonMetadataUnitTests {
 	}
 
 	@Test // DATAREST-644
-	public void reportsConstructorArgumentAsJacksonWritable() {
+	void reportsConstructorArgumentAsJacksonWritable() {
 
 		JacksonMetadata metadata = new JacksonMetadata(mapper, Value.class);
 
@@ -80,7 +80,7 @@ public class JacksonMetadataUnitTests {
 	}
 
 	@Test // DATAREST-644
-	public void detectsCustomSerializerFortType() {
+	void detectsCustomSerializerFortType() {
 
 		JsonSerializer<?> serializer = new JacksonMetadata(new ObjectMapper(), SomeBean.class)
 				.getTypeSerializer(SomeBean.class);

@@ -15,18 +15,18 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -47,7 +47,7 @@ import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaCon
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,9 +58,9 @@ import com.jayway.jsonpath.PathNotFoundException;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { MongoDbRepositoryConfig.class, TestConfiguration.class })
-public class PersistentEntityToJsonSchemaConverterUnitTests {
+class PersistentEntityToJsonSchemaConverterUnitTests {
 
 	@Autowired MessageResolver resolver;
 	@Autowired RepositoryRestConfiguration configuration;
@@ -85,8 +85,8 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 
 	PersistentEntityToJsonSchemaConverter converter;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		TestMvcClient.initWebTest();
 
@@ -97,7 +97,7 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 	}
 
 	@Test // DATAREST-631, DATAREST-632
-	public void fulfillsConstraintsForProfile() {
+	void fulfillsConstraintsForProfile() {
 
 		List<Constraint> constraints = new ArrayList<Constraint>();
 		constraints.add(new Constraint("$.properties.id", is(notNullValue()), "Has descriptor for id property"));
@@ -110,7 +110,7 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 	}
 
 	@Test // DATAREST-632
-	public void fulfillsConstraintsForUser() throws Exception {
+	void fulfillsConstraintsForUser() throws Exception {
 
 		List<Constraint> constraints = new ArrayList<Constraint>();
 		constraints.add(new Constraint("$.properties.id", is(nullValue()), "Does NOT have descriptor for id property"));
@@ -162,7 +162,7 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 	}
 
 	@Test // DATAREST-754
-	public void handlesGroovyDomainObjects() {
+	void handlesGroovyDomainObjects() {
 
 		List<Constraint> constraints = new ArrayList<Constraint>();
 		constraints.add(new Constraint("$.properties.name", is(notNullValue()), "Has descriptor for name property"));
@@ -178,11 +178,12 @@ public class PersistentEntityToJsonSchemaConverterUnitTests {
 		for (Constraint constraint : constraints) {
 
 			try {
-				assertThat(constraint.description, JsonPath.read(writeSchemaFor, constraint.selector), constraint.matcher);
+				MatcherAssert.assertThat(constraint.description, JsonPath.read(writeSchemaFor, constraint.selector),
+						constraint.matcher);
 			} catch (PathNotFoundException e) {
 				assertThat(constraint.matcher.matches(null)).isTrue();
 			} catch (RuntimeException e) {
-				assertThat(e, constraint.matcher);
+				MatcherAssert.assertThat(e, constraint.matcher);
 			}
 		}
 	}

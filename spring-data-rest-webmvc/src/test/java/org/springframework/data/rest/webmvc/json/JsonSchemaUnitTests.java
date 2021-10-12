@@ -17,7 +17,7 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
@@ -27,12 +27,12 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Oliver Gierke
  */
-public class JsonSchemaUnitTests {
+class JsonSchemaUnitTests {
 
 	static final TypeInformation<?> type = ClassTypeInformation.from(Sample.class);
 
 	@Test // DATAREST-492
-	public void considersNumberPrimitivesJsonSchemaNumbers() {
+	void considersNumberPrimitivesJsonSchemaNumbers() {
 
 		JsonSchemaProperty property = new JsonSchemaProperty("foo", null, "bar", false);
 

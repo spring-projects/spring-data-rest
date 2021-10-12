@@ -15,10 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -29,15 +29,15 @@ import org.springframework.web.context.WebApplicationContext;
  *
  * @author Oliver Gierke
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 public abstract class AbstractRepositoryRestMvcConfigurationIntegrationTests {
 
 	@Autowired WebApplicationContext context;
 	protected MockMvc mvc;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		this.mvc = MockMvcBuilders.webAppContextSetup(context).build();
 	}
 }

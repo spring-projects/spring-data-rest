@@ -17,16 +17,17 @@ package org.springframework.data.rest.tests;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assume.*;
+import static org.junit.jupiter.api.Assumptions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import net.minidev.json.JSONArray;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import net.minidev.json.JSONArray;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
@@ -57,7 +58,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	// Root test cases
 
 	@Test
-	public void exposesRootResource() throws Exception {
+	void exposesRootResource() throws Exception {
 
 		ResultActions actions = mvc.perform(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)).andExpect(status().isOk());
 
@@ -67,7 +68,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-113, DATAREST-638
-	public void exposesSchemasForResourcesExposed() throws Exception {
+	void exposesSchemasForResourcesExposed() throws Exception {
 
 		MockHttpServletResponse response = client.request("/");
 
@@ -92,7 +93,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-203
-	public void servesHalWhenRequested() throws Exception {
+	void servesHalWhenRequested() throws Exception {
 
 		mvc.perform(get("/")). //
 				andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON)). //
@@ -100,7 +101,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-203
-	public void servesHalWhenJsonIsRequested() throws Exception {
+	void servesHalWhenJsonIsRequested() throws Exception {
 
 		mvc.perform(get("/").accept(MediaType.APPLICATION_JSON)). //
 				andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)). //
@@ -108,7 +109,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-203
-	public void exposesSearchesForRootResources() throws Exception {
+	void exposesSearchesForRootResources() throws Exception {
 
 		MockHttpServletResponse response = client.request("/");
 
@@ -135,7 +136,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test
-	public void nic() throws Exception {
+	void nic() throws Exception {
 
 		Map<LinkRelation, String> payloads = getPayloadToPost();
 		assumeFalse(payloads.isEmpty());
@@ -162,7 +163,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-198
-	public void accessLinkedResources() throws Exception {
+	void accessLinkedResources() throws Exception {
 
 		MockHttpServletResponse rootResource = client.request("/");
 
@@ -188,7 +189,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-230
-	public void exposesDescriptionAsAlpsDocuments() throws Exception {
+	void exposesDescriptionAsAlpsDocuments() throws Exception {
 
 		MediaType ALPS_MEDIA_TYPE = MediaType.valueOf("application/alps+json");
 
@@ -204,14 +205,14 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-448
-	public void returnsNotFoundForUriNotBackedByARepository() throws Exception {
+	void returnsNotFoundForUriNotBackedByARepository() throws Exception {
 
 		mvc.perform(get("/index.html")).//
 				andExpect(status().isNotFound());
 	}
 
 	@Test // DATAREST-658
-	public void collectionResourcesExposeLinksAsHeadersForHeadRequest() throws Exception {
+	void collectionResourcesExposeLinksAsHeadersForHeadRequest() throws Exception {
 
 		for (LinkRelation rel : expectedRootLinkRels()) {
 
@@ -229,7 +230,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-661
-	public void patchToNonExistingResourceReturnsNotFound() throws Exception {
+	void patchToNonExistingResourceReturnsNotFound() throws Exception {
 
 		LinkRelation rel = expectedRootLinkRels().iterator().next();
 		String uri = client.discoverUnique(rel).expand().getHref().concat("/");
@@ -249,7 +250,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-1003
-	public void rejectsUnsupportedAcceptTypeForResources() throws Exception {
+	void rejectsUnsupportedAcceptTypeForResources() throws Exception {
 
 		for (LinkRelation string : expectedRootLinkRels()) {
 

@@ -17,7 +17,7 @@ package org.springframework.data.rest.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 
@@ -26,10 +26,10 @@ import org.springframework.data.mapping.context.PersistentEntities;
  *
  * @author Oliver Gierke
  */
-public class PersistentEntitiesResourceMappingsUnitTests {
+class PersistentEntitiesResourceMappingsUnitTests {
 
 	@Test // DATAREST-1320
-	public void doesNotConsiderCachedNullValuesToIndicateMappingAvailable() {
+	void doesNotConsiderCachedNullValuesToIndicateMappingAvailable() {
 
 		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 
@@ -41,7 +41,7 @@ public class PersistentEntitiesResourceMappingsUnitTests {
 	}
 
 	@Test // GH-2033
-	public void transparentlyAddsValueToCacheOnHasMappingRequests() {
+	void transparentlyAddsValueToCacheOnHasMappingRequests() {
 
 		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 		context.getPersistentEntity(Sample.class);
