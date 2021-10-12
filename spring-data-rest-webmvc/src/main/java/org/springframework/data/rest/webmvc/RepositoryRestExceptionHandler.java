@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.core.log.LogFormatUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
@@ -165,7 +166,7 @@ public class RepositoryRestExceptionHandler {
 		if (exception != null) {
 
 			String message = exception.getMessage();
-			LOG.error(message, exception);
+			LOG.debug(LogFormatUtils.formatValue(message, -1, true), exception);
 
 			if (StringUtils.hasText(message)) {
 				return response(status, headers, new ExceptionMessage(exception));
