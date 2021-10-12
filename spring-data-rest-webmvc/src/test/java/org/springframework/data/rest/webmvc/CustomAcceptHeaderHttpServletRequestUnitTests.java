@@ -23,8 +23,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping.CustomAcceptHeaderHttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,12 +36,12 @@ import org.springframework.util.StringUtils;
  * @author Oliver Gierke
  * @soundtrack Spring engineering team meeting @ SpringOne Platform 2016
  */
-public class CustomAcceptHeaderHttpServletRequestUnitTests {
+class CustomAcceptHeaderHttpServletRequestUnitTests {
 
 	HttpServletRequest request = new MockHttpServletRequest();
 
 	@Test // DATAREST-863
-	public void returnsRegisterdHeadersOnAccessForMultipleOnes() {
+	void returnsRegisterdHeadersOnAccessForMultipleOnes() {
 
 		List<MediaType> mediaTypes = Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_ATOM_XML);
 		HttpServletRequest servletRequest = new CustomAcceptHeaderHttpServletRequest(request, mediaTypes);

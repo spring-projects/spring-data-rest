@@ -19,9 +19,9 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +32,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -45,10 +45,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
  * @author Oliver Gierke
  * @soundtrack Miles Davis - Blue in green (Kind of blue)
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextConfiguration
-public class HalExplorerIntegrationTests {
+class HalExplorerIntegrationTests {
 
 	static final String BASE_PATH = "/api";
 	static final String EXPLORER_INDEX = "/explorer/index.html";
@@ -69,14 +69,14 @@ public class HalExplorerIntegrationTests {
 
 	MockMvc mvc;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		this.mvc = MockMvcBuilders.webAppContextSetup(context).//
 				defaultRequest(get(BASE_PATH).accept(MediaType.TEXT_HTML)).build();
 	}
 
 	@Test // DATAREST-293
-	public void exposesJsonUnderApiRootByDefault() throws Exception {
+	void exposesJsonUnderApiRootByDefault() throws Exception {
 
 		mvc.perform(get(BASE_PATH).accept(MediaType.ALL)).//
 				andExpect(status().isOk()).//
@@ -84,7 +84,7 @@ public class HalExplorerIntegrationTests {
 	}
 
 	@Test // DATAREST-293
-	public void redirectsToBrowserForApiRootAndHtml() throws Exception {
+	void redirectsToBrowserForApiRootAndHtml() throws Exception {
 
 		mvc.perform(get(BASE_PATH).accept(MediaType.TEXT_HTML)).//
 				andExpect(status().isFound()).//
@@ -92,7 +92,7 @@ public class HalExplorerIntegrationTests {
 	}
 
 	@Test // DATAREST-293
-	public void forwardsBrowserToIndexHtml() throws Exception {
+	void forwardsBrowserToIndexHtml() throws Exception {
 
 		mvc.perform(get(BASE_PATH.concat("/explorer"))).//
 				andExpect(status().isFound()).//
@@ -100,7 +100,7 @@ public class HalExplorerIntegrationTests {
 	}
 
 	@Test // DATAREST-293
-	public void exposesHalBrowser() throws Exception {
+	void exposesHalBrowser() throws Exception {
 
 		mvc.perform(get(BASE_PATH.concat("/explorer/index.html"))).//
 				andExpect(status().isOk()).//
@@ -108,7 +108,7 @@ public class HalExplorerIntegrationTests {
 	}
 
 	@Test // DATAREST-293
-	public void retrunsApiIfHtmlIsNotExplicitlyListed() throws Exception {
+	void retrunsApiIfHtmlIsNotExplicitlyListed() throws Exception {
 
 		mvc.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON, MediaType.ALL)).//
 				andExpect(status().isOk()).//

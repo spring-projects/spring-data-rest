@@ -21,8 +21,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.NotReadablePropertyException;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -33,12 +33,12 @@ import org.springframework.validation.Errors;
  *
  * @author Oliver Gierke
  */
-public class ValidationErrorsUnitTests {
+class ValidationErrorsUnitTests {
 
 	PersistentEntities entities;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 		context.getPersistentEntity(Foo.class);
@@ -47,7 +47,7 @@ public class ValidationErrorsUnitTests {
 	}
 
 	@Test // DATAREST-798
-	public void exposesNestedViolationsCorrectly() {
+	void exposesNestedViolationsCorrectly() {
 
 		ValidationErrors errors = new ValidationErrors(new Foo(), entities);
 
@@ -59,12 +59,12 @@ public class ValidationErrorsUnitTests {
 	}
 
 	@Test // DATAREST-801
-	public void getsTheNestedFieldsValue() {
+	void getsTheNestedFieldsValue() {
 		expectedErrorBehavior(new ValidationErrors(new Foo(), entities));
 	}
 
 	@Test // DATAREST-1163
-	public void returnsNullForPropertyValue() {
+	void returnsNullForPropertyValue() {
 
 		ValidationErrors errors = new ValidationErrors(new Foo(), entities);
 

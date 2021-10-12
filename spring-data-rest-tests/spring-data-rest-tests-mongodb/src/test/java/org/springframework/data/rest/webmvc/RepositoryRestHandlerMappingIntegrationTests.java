@@ -17,7 +17,7 @@ package org.springframework.data.rest.webmvc;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.tests.mongodb.MongoDbRepositoryConfig;
@@ -34,12 +34,12 @@ import org.springframework.web.servlet.HandlerMapping;
  * @soundtrack Elephants Crossing - Echo (Irrelephant)
  */
 @ContextConfiguration(classes = MongoDbRepositoryConfig.class)
-public class RepositoryRestHandlerMappingIntegrationTests extends AbstractControllerIntegrationTests {
+class RepositoryRestHandlerMappingIntegrationTests extends AbstractControllerIntegrationTests {
 
 	@Autowired HandlerMapping mapping;
 
 	@Test // DATAREST-617
-	public void usesMethodsWithoutProducesClauseForGeneralJsonRequests() throws Exception {
+	void usesMethodsWithoutProducesClauseForGeneralJsonRequests() throws Exception {
 
 		MockHttpServletRequest mockRequest = new MockHttpServletRequest("GET", "/users");
 		mockRequest.addHeader("Accept", "application/*+json");

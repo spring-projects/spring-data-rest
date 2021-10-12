@@ -25,10 +25,9 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +45,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -61,9 +60,9 @@ import com.jayway.jsonpath.JsonPath;
  *
  * @author Oliver Gierke
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration
-public class DataRest262Tests {
+class DataRest262Tests {
 
 	@Configuration
 	@Import({ RepositoryRestMvcConfiguration.class, JpaInfrastructureConfig.class })
@@ -78,8 +77,8 @@ public class DataRest262Tests {
 
 	ObjectMapper mapper;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.mapper = beanFactory //
 				.getBean("halJacksonHttpMessageConverter", AbstractJackson2HttpMessageConverter.class) //
@@ -90,7 +89,7 @@ public class DataRest262Tests {
 	}
 
 	@Test // DATAREST-262
-	public void deserializesNestedAssociation() throws Exception {
+	void deserializesNestedAssociation() throws Exception {
 
 		Airport airport = repository.save(new Airport());
 		String payload = "{\"orgOrDstFlightPart\":{\"airport\":\"/api/airports/" + airport.id + "\"}}";
@@ -100,7 +99,7 @@ public class DataRest262Tests {
 	}
 
 	@Test // DATAREST-262
-	public void serializesLinksToNestedAssociations() throws Exception {
+	void serializesLinksToNestedAssociations() throws Exception {
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addHeader(HttpHeaders.ACCEPT, MediaTypes.HAL_JSON_VALUE);

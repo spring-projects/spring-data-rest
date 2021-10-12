@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration.ProjectionDefinition;
 
 /**
@@ -27,40 +27,53 @@ import org.springframework.data.rest.core.config.ProjectionDefinitionConfigurati
  *
  * @author Oliver Gierke
  */
-public class ProjectionDefinitionConfigurationUnitTests {
+class ProjectionDefinitionConfigurationUnitTests {
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-221
-	public void rejectsNullProjectionTypeForAutoConfiguration() {
-		new ProjectionDefinitionConfiguration().addProjection(null);
-	}
+	@Test // DATAREST-221
+	void rejectsNullProjectionTypeForAutoConfiguration() {
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-221
-	public void rejectsUnannotatedClassForConfigurationShortcut() {
-		new ProjectionDefinitionConfiguration().addProjection(String.class);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATAREST-221
-	public void rejectsNullProjectionTypeForManualConfiguration() {
-		new ProjectionDefinitionConfiguration().addProjection(null, "name", Object.class);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATAREST-221
-	public void rejectsNullNameForManualConfiguration() {
-		new ProjectionDefinitionConfiguration().addProjection(String.class, (String) null, Object.class);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATAREST-221
-	public void rejectsEmptyNameForManualConfiguration() {
-		new ProjectionDefinitionConfiguration().addProjection(String.class, "", Object.class);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATAREST-221
-	public void rejectsEmptySourceTypes() {
-		new ProjectionDefinitionConfiguration().addProjection(String.class, "name", new Class<?>[0]);
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new ProjectionDefinitionConfiguration().addProjection(null));
 	}
 
 	@Test // DATAREST-221
-	public void findsRegisteredProjection() {
+	void rejectsUnannotatedClassForConfigurationShortcut() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new ProjectionDefinitionConfiguration().addProjection(String.class));
+	}
+
+	@Test // DATAREST-221
+	void rejectsNullProjectionTypeForManualConfiguration() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new ProjectionDefinitionConfiguration().addProjection(null, "name", Object.class));
+	}
+
+	@Test // DATAREST-221
+	void rejectsNullNameForManualConfiguration() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(
+						() -> new ProjectionDefinitionConfiguration().addProjection(String.class, (String) null, Object.class));
+	}
+
+	@Test // DATAREST-221
+	void rejectsEmptyNameForManualConfiguration() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new ProjectionDefinitionConfiguration().addProjection(String.class, "", Object.class));
+	}
+
+	@Test // DATAREST-221
+	void rejectsEmptySourceTypes() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new ProjectionDefinitionConfiguration().addProjection(String.class, "name", new Class<?>[0]));
+	}
+
+	@Test // DATAREST-221
+	void findsRegisteredProjection() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
 		configuration.addProjection(Integer.class, "name", String.class);
@@ -69,7 +82,7 @@ public class ProjectionDefinitionConfigurationUnitTests {
 	}
 
 	@Test // DATAREST-221
-	public void registersAnnotatedProjection() {
+	void registersAnnotatedProjection() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
 		configuration.addProjection(SampleProjection.class);
@@ -78,7 +91,7 @@ public class ProjectionDefinitionConfigurationUnitTests {
 	}
 
 	@Test // DATAREST-221
-	public void defaultsNameToSimpleClassNameIfNotAnnotated() {
+	void defaultsNameToSimpleClassNameIfNotAnnotated() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
 		configuration.addProjection(Default.class);
@@ -87,7 +100,7 @@ public class ProjectionDefinitionConfigurationUnitTests {
 	}
 
 	@Test // DATAREST-221
-	public void definitionEquals() {
+	void definitionEquals() {
 
 		ProjectionDefinition objectName = ProjectionDefinition.of(Object.class, Object.class, "name");
 		ProjectionDefinition sameObjectName = ProjectionDefinition.of(Object.class, Object.class, "name");
@@ -108,7 +121,7 @@ public class ProjectionDefinitionConfigurationUnitTests {
 	}
 
 	@Test // DATAREST-385
-	public void returnsProjectionForParentClass() {
+	void returnsProjectionForParentClass() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
 		configuration.addProjection(ParentProjection.class);
@@ -119,12 +132,12 @@ public class ProjectionDefinitionConfigurationUnitTests {
 	}
 
 	@Test // DATAREST-221
-	public void defaultsParamternameToProjection() {
+	void defaultsParamternameToProjection() {
 		assertThat(new ProjectionDefinitionConfiguration().getParameterName()).isEqualTo("projection");
 	}
 
 	@Test // DATAREST-747
-	public void returnsMostConcreteProjectionForSourceType() {
+	void returnsMostConcreteProjectionForSourceType() {
 
 		ProjectionDefinitionConfiguration configuration = new ProjectionDefinitionConfiguration();
 		configuration.addProjection(ParentProjection.class);

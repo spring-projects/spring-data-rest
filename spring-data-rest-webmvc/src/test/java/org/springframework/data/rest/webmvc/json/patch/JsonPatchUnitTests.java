@@ -16,18 +16,13 @@
 package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.*;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -43,12 +38,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Mathias Düsterhöft
  * @author Oliver Trosien
  */
-public class JsonPatchUnitTests {
-
-	public @Rule ExpectedException exception = ExpectedException.none();
+class JsonPatchUnitTests {
 
 	@Test
-	public void manySuccessfulOperations() throws Exception {
+	void manySuccessfulOperations() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -59,18 +52,18 @@ public class JsonPatchUnitTests {
 		todos.add(new Todo(6L, "F", false));
 
 		Patch patch = readJsonPatch("patch-many-successful-operations.json");
-		assertEquals(6, patch.size());
+		assertThat(patch.size()).isEqualTo(6);
 
 		List<Todo> patchedTodos = patch.apply(todos, Todo.class);
 
-		assertEquals(6, todos.size());
-		assertTrue(patchedTodos.get(1).isComplete());
-		assertEquals("C", patchedTodos.get(3).getDescription());
-		assertEquals("A", patchedTodos.get(4).getDescription());
+		assertThat(todos.size()).isEqualTo(6);
+		assertThat(patchedTodos.get(1).isComplete()).isTrue();
+		assertThat(patchedTodos.get(3).getDescription()).isEqualTo("C");
+		assertThat(patchedTodos.get(4).getDescription()).isEqualTo("A");
 	}
 
 	@Test
-	public void failureAtBeginning() throws Exception {
+	void failureAtBeginning() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -82,22 +75,19 @@ public class JsonPatchUnitTests {
 
 		Patch patch = readJsonPatch("patch-failing-operation-first.json");
 
-		try {
-			patch.apply(todos, Todo.class);
-			fail();
-		} catch (PatchException e) {
-			assertEquals("Test against path '/5/description' failed.", e.getMessage());
-		}
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> patch.apply(todos, Todo.class))
+				.withMessage("Test against path '/5/description' failed.");
 
-		assertEquals(6, todos.size());
-		assertFalse(todos.get(1).isComplete());
-		assertEquals("D", todos.get(3).getDescription());
-		assertEquals("E", todos.get(4).getDescription());
-		assertEquals("F", todos.get(5).getDescription());
+		assertThat(todos.size()).isEqualTo(6);
+		assertThat(todos.get(1).isComplete()).isFalse();
+		assertThat(todos.get(3).getDescription()).isEqualTo("D");
+		assertThat(todos.get(4).getDescription()).isEqualTo("E");
+		assertThat(todos.get(5).getDescription()).isEqualTo("F");
 	}
 
 	@Test
-	public void failureInMiddle() throws Exception {
+	void failureInMiddle() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -109,63 +99,58 @@ public class JsonPatchUnitTests {
 
 		Patch patch = readJsonPatch("patch-failing-operation-in-middle.json");
 
-		try {
-			patch.apply(todos, Todo.class);
-			fail();
-		} catch (PatchException e) {
-			assertEquals("Test against path '/5/description' failed.", e.getMessage());
-		}
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> patch.apply(todos, Todo.class))
+				.withMessage("Test against path '/5/description' failed.");
 
-		assertEquals(6, todos.size());
-		assertFalse(todos.get(1).isComplete());
-		assertEquals("D", todos.get(3).getDescription());
-		assertEquals("E", todos.get(4).getDescription());
-		assertEquals("F", todos.get(5).getDescription());
+		assertThat(todos.size()).isEqualTo(6);
+		assertThat(todos.get(1).isComplete()).isFalse();
+		assertThat(todos.get(3).getDescription()).isEqualTo("D");
+		assertThat(todos.get(4).getDescription()).isEqualTo("E");
+		assertThat(todos.get(5).getDescription()).isEqualTo("F");
 	}
 
 	@Test // DATAREST-889
-	public void patchArray() throws Exception {
+	void patchArray() throws Exception {
 
 		Todo todo = new Todo(1L, "F", false);
 
 		Patch patch = readJsonPatch("patch-array.json");
-		assertEquals(1, patch.size());
+		assertThat(patch.size()).isEqualTo(1);
 
 		Todo patchedTodo = patch.apply(todo, Todo.class);
-		assertEquals(Arrays.asList("one", "two", "three"), patchedTodo.getItems());
+		assertThat(patchedTodo.getItems()).contains("one", "two", "three");
 	}
 
 	@Test // DATAREST-889
-	public void patchUnknownType() throws Exception {
+	void patchUnknownType() {
 
 		Todo todo = new Todo();
 		todo.setAmount(BigInteger.ONE);
 
-		exception.expect(PatchException.class);
-		exception.expectMessage("/amount");
-		exception.expectMessage("18446744073709551616");
-
-		readJsonPatch("patch-biginteger.json");
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> readJsonPatch("patch-biginteger.json"))
+				.withMessageContaining("/amount")
+				.withMessageContaining("18446744073709551616");
 	}
 
 	@Test // DATAREST-889
-	public void failureWithInvalidPatchContent() throws Exception {
+	void failureWithInvalidPatchContent() throws Exception {
 
 		Todo todo = new Todo();
 		todo.setDescription("Description");
 
 		Patch patch = readJsonPatch("patch-failing-with-invalid-content.json");
 
-		exception.expect(PatchException.class);
-		exception.expectMessage("content");
-		exception.expectMessage("blabla");
-		exception.expectMessage(String.class.toString());
-
-		patch.apply(todo, Todo.class);
+		assertThatExceptionOfType(PatchException.class) //
+				.isThrownBy(() -> patch.apply(todo, Todo.class)) //
+				.withMessageContaining("content") //
+				.withMessageContaining("blabla") //
+				.withMessageContaining(String.class.getName().toString());
 	}
 
 	@Test // DATAREST-1127
-	public void rejectsInvalidPaths() throws Exception {
+	void rejectsInvalidPaths() {
 
 		assertThatExceptionOfType(PatchException.class).isThrownBy(() -> {
 			readJsonPatch("patch-invalid-path.json").apply(new Todo(), Todo.class);

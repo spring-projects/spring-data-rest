@@ -23,8 +23,7 @@ import java.util.Collections;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -41,10 +40,10 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Mark Paluch
  * @soundtrack Nils Wülker - Homeless Diamond (feat. Lauren Flynn)
  */
-public class HalExplorerUnitTests {
+class HalExplorerUnitTests {
 
 	@Test // DATAREST-565, DATAREST-720
-	public void createsContextRelativeRedirectForBrowser() throws Exception {
+	void createsContextRelativeRedirectForBrowser() throws Exception {
 
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -64,7 +63,7 @@ public class HalExplorerUnitTests {
 	}
 
 	@Test // DATAREST-1264
-	public void producesProxyRelativeRedirectIfNecessary() throws ServletException, IOException {
+	void producesProxyRelativeRedirectIfNecessary() throws ServletException, IOException {
 
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/explorer");

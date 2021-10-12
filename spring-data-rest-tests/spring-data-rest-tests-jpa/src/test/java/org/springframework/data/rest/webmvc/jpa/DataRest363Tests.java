@@ -19,10 +19,9 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,7 +33,7 @@ import org.springframework.hateoas.client.LinkDiscoverer;
 import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -47,11 +46,11 @@ import org.springframework.web.context.WebApplicationContext;
  * @author Greg Turnquist
  * @author Oliver Gierke
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextConfiguration(
 		classes = { JpaRepositoryConfig.class, RepositoryRestMvcConfiguration.class, DataRest363Tests.Config.class })
-public class DataRest363Tests {
+class DataRest363Tests {
 
 	private static MediaType MEDIA_TYPE = MediaType.APPLICATION_JSON;
 
@@ -78,8 +77,8 @@ public class DataRest363Tests {
 		}
 	}
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		MockMvc mvc = MockMvcBuilders.webAppContextSetup(context).//
 				defaultRequest(get("/")).build();
@@ -89,7 +88,7 @@ public class DataRest363Tests {
 	}
 
 	@Test // DATAREST-363
-	public void testBasics() throws Exception {
+	void testBasics() throws Exception {
 
 		ResultActions frodoActions = testMvcClient.follow("/people/".concat(frodo.getId().toString()));
 

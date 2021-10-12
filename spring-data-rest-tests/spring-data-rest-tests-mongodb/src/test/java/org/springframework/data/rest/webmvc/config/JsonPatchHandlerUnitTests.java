@@ -23,13 +23,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
@@ -49,17 +47,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class JsonPatchHandlerUnitTests {
+@ExtendWith(MockitoExtension.class)
+class JsonPatchHandlerUnitTests {
 
 	JsonPatchHandler handler;
 	User user;
 
 	@Mock ResourceMappings mappings;
-	public @Rule ExpectedException exception = ExpectedException.none();
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		MongoCustomConversions conversions = new MongoCustomConversions(Collections.emptyList());
 
@@ -84,7 +81,7 @@ public class JsonPatchHandlerUnitTests {
 	}
 
 	@Test // DATAREST-348
-	public void appliesRemoveOperationCorrectly() throws Exception {
+	void appliesRemoveOperationCorrectly() throws Exception {
 
 		String input = "[{ \"op\": \"replace\", \"path\": \"/address/zipCode\", \"value\": \"ZIP\" },"
 				+ "{ \"op\": \"remove\", \"path\": \"/lastname\" }]";
@@ -96,7 +93,7 @@ public class JsonPatchHandlerUnitTests {
 	}
 
 	@Test // DATAREST-348
-	public void appliesMergePatchCorrectly() throws Exception {
+	void appliesMergePatchCorrectly() throws Exception {
 
 		String input = "{ \"address\" : { \"zipCode\" : \"ZIP\"}, \"lastname\" : null }";
 
@@ -110,7 +107,7 @@ public class JsonPatchHandlerUnitTests {
 	 * DATAREST-537
 	 */
 	@Test
-	public void removesArrayItemCorrectly() throws Exception {
+	void removesArrayItemCorrectly() throws Exception {
 
 		User thomas = new User();
 		thomas.firstname = "Thomas";
@@ -129,11 +126,10 @@ public class JsonPatchHandlerUnitTests {
 	}
 
 	@Test // DATAREST-609
-	public void hintsToMediaTypeIfBodyCantBeRead() throws Exception {
+	void hintsToMediaTypeIfBodyCantBeRead() throws Exception {
 
-		exception.expect(HttpMessageNotReadableException.class);
-		exception.expectMessage(RestMediaTypes.JSON_PATCH_JSON.toString());
-
-		handler.applyPatch(asStream("{ \"foo\" : \"bar\" }"), new User());
+		assertThatExceptionOfType(HttpMessageNotReadableException.class)
+				.isThrownBy(() -> handler.applyPatch(asStream("{ \"foo\" : \"bar\" }"), new User()))
+				.withMessageContaining(RestMediaTypes.JSON_PATCH_JSON.toString());
 	}
 }

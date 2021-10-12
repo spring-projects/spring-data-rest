@@ -22,9 +22,9 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,7 +48,7 @@ import org.springframework.hateoas.server.core.EmbeddedWrapper;
 import org.springframework.hateoas.server.core.EmbeddedWrappers;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -65,10 +65,10 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Gierke
  * @author Alex Leigh
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { JpaRepositoryConfig.class, PersistentEntitySerializationTests.TestConfig.class })
 @Transactional
-public class PersistentEntitySerializationTests {
+class PersistentEntitySerializationTests {
 
 	private static final String PERSON_JSON_IN = "{\"firstName\": \"John\",\"lastName\": \"Doe\"}";
 
@@ -94,8 +94,8 @@ public class PersistentEntitySerializationTests {
 	LinkDiscoverer discoverer;
 	ProjectionFactory projectionFactory;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		RequestContextHolder.setRequestAttributes(new ServletWebRequest(new MockHttpServletRequest()));
 
@@ -104,7 +104,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test
-	public void deserializesPersonEntity() throws IOException {
+	void deserializesPersonEntity() throws IOException {
 
 		Person p = mapper.readValue(PERSON_JSON_IN, Person.class);
 
@@ -114,7 +114,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-238
-	public void deserializePersonWithLinks() throws IOException {
+	void deserializePersonWithLinks() throws IOException {
 
 		String bilbo = "{\n" + "  \"_links\" : {\n" + "    \"self\" : {\n"
 				+ "      \"href\" : \"http://localhost/people/4\"\n" + "    },\n" + "    \"siblings\" : {\n"
@@ -129,7 +129,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-238
-	public void serializesPersonEntity() throws IOException, InterruptedException {
+	void serializesPersonEntity() throws IOException, InterruptedException {
 
 		PersistentEntity<?, ?> persistentEntity = repositories.getPersistentEntity(Person.class);
 		Person person = people.save(new Person("John", "Doe"));
@@ -154,7 +154,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-248
-	public void deserializesPersonWithLinkToOtherPersonCorrectly() throws Exception {
+	void deserializesPersonWithLinkToOtherPersonCorrectly() throws Exception {
 
 		Person father = people.save(new Person("John", "Doe"));
 
@@ -165,7 +165,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-248
-	public void deserializesPersonWithLinkToOtherPersonsCorrectly() throws Exception {
+	void deserializesPersonWithLinkToOtherPersonsCorrectly() throws Exception {
 
 		Person firstSibling = people.save(new Person("John", "Doe"));
 		Person secondSibling = people.save(new Person("Dave", "Doe"));
@@ -178,7 +178,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-248
-	public void deserializesEmbeddedAssociationsCorrectly() throws Exception {
+	void deserializesEmbeddedAssociationsCorrectly() throws Exception {
 
 		String content = TestUtils.readFileFromClasspath("order.json");
 
@@ -187,7 +187,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-250
-	public void serializesReferencesWithinPagedResourceCorrectly() throws Exception {
+	void serializesReferencesWithinPagedResourceCorrectly() throws Exception {
 
 		Person creator = new Person("Dave", "Matthews");
 
@@ -209,7 +209,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-521
-	public void serializesLinksForExcerpts() throws Exception {
+	void serializesLinksForExcerpts() throws Exception {
 
 		Person dave = new Person("Dave", "Matthews");
 		dave.setId(1L);
@@ -232,7 +232,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-521
-	public void rendersAdditionalLinksRegisteredWithResource() throws Exception {
+	void rendersAdditionalLinksRegisteredWithResource() throws Exception {
 
 		Person dave = new Person("Dave", "Matthews");
 
@@ -248,7 +248,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-697
-	public void rendersProjectionWithinSimpleResourceCorrectly() throws Exception {
+	void rendersProjectionWithinSimpleResourceCorrectly() throws Exception {
 
 		Person person = new Person("Dave", "Matthews");
 		person.setId(1L);
@@ -262,7 +262,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-880
-	public void unwrapsNestedTypeCorrectly() throws Exception {
+	void unwrapsNestedTypeCorrectly() throws Exception {
 
 		CreditCard creditCard = new CreditCard(new CreditCard.CCN("1234123412341234"));
 
@@ -270,7 +270,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-872
-	public void serializesInheritance() throws Exception {
+	void serializesInheritance() throws Exception {
 
 		Suite suite = new Suite();
 		suite.setSuiteCode("Suite 42");

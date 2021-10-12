@@ -15,36 +15,34 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MoveOperationUnitTests {
+class MoveOperationUnitTests {
 
 	@Test
-	public void moveBooleanPropertyValue() throws Exception {
+	void moveBooleanPropertyValue() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		try {
-			MoveOperation move = MoveOperation.from("/0/complete").to("/1/complete");
-			move.perform(todos, Todo.class);
-			fail();
-		} catch (PatchException e) {
-			assertEquals("Path '/0/complete' is not nullable.", e.getMessage());
-		}
+		MoveOperation move = MoveOperation.from("/0/complete").to("/1/complete");
 
-		assertFalse(todos.get(1).isComplete());
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> move.perform(todos, Todo.class))
+				.withMessage("Path '/0/complete' is not nullable.");
+
+		assertThat(todos.get(1).isComplete()).isFalse();
 	}
 
 	@Test
-	public void moveStringPropertyValue() throws Exception {
+	void moveStringPropertyValue() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -54,25 +52,24 @@ public class MoveOperationUnitTests {
 		MoveOperation move = MoveOperation.from("/0/description").to("/1/description");
 		move.perform(todos, Todo.class);
 
-		assertEquals("A", todos.get(1).getDescription());
+		assertThat(todos.get(1).getDescription()).isEqualTo("A");
 	}
 
 	@Test
-	public void moveBooleanPropertyValueIntoStringProperty() throws Exception {
+	void moveBooleanPropertyValueIntoStringProperty() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		try {
-			MoveOperation move = MoveOperation.from("/0/complete").to("/1/description");
-			move.perform(todos, Todo.class);
-			fail();
-		} catch (PatchException e) {
-			assertEquals("Path '/0/complete' is not nullable.", e.getMessage());
-		}
-		assertEquals("B", todos.get(1).getDescription());
+		MoveOperation move = MoveOperation.from("/0/complete").to("/1/description");
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> move.perform(todos, Todo.class))
+				.withMessage("Path '/0/complete' is not nullable.");
+
+		assertThat(todos.get(1).getDescription()).isEqualTo("B");
 	}
 
 	//
@@ -84,7 +81,7 @@ public class MoveOperationUnitTests {
 	//
 
 	@Test
-	public void moveListElementToBeginningOfList() throws Exception {
+	void moveListElementToBeginningOfList() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -94,14 +91,14 @@ public class MoveOperationUnitTests {
 		MoveOperation move = MoveOperation.from("/1").to("/0");
 		move.perform(todos, Todo.class);
 
-		assertEquals(3, todos.size());
-		assertEquals(2L, todos.get(0).getId().longValue());
-		assertEquals("B", todos.get(0).getDescription());
-		assertTrue(todos.get(0).isComplete());
+		assertThat(todos.size()).isEqualTo(3);
+		assertThat(todos.get(0).getId().longValue()).isEqualTo(2L);
+		assertThat(todos.get(0).getDescription()).isEqualTo("B");
+		assertThat(todos.get(0).isComplete()).isTrue();
 	}
 
 	@Test
-	public void moveListElementToMiddleOfList() throws Exception {
+	void moveListElementToMiddleOfList() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -111,14 +108,14 @@ public class MoveOperationUnitTests {
 		MoveOperation move = MoveOperation.from("/0").to("/2");
 		move.perform(todos, Todo.class);
 
-		assertEquals(3, todos.size());
-		assertEquals(1L, todos.get(2).getId().longValue());
-		assertEquals("A", todos.get(2).getDescription());
-		assertTrue(todos.get(2).isComplete());
+		assertThat(todos.size()).isEqualTo(3);
+		assertThat(todos.get(2).getId().longValue()).isEqualTo(1L);
+		assertThat(todos.get(2).getDescription()).isEqualTo("A");
+		assertThat(todos.get(2).isComplete()).isTrue();
 	}
 
 	@Test
-	public void moveListElementToEndOfList_usingIndex() throws Exception {
+	void moveListElementToEndOfList_usingIndex() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -128,14 +125,14 @@ public class MoveOperationUnitTests {
 		MoveOperation move = MoveOperation.from("/0").to("/2");
 		move.perform(todos, Todo.class);
 
-		assertEquals(3, todos.size());
-		assertEquals(1L, todos.get(2).getId().longValue());
-		assertEquals("A", todos.get(2).getDescription());
-		assertTrue(todos.get(2).isComplete());
+		assertThat(todos.size()).isEqualTo(3);
+		assertThat(todos.get(2).getId().longValue()).isEqualTo(1L);
+		assertThat(todos.get(2).getDescription()).isEqualTo("A");
+		assertThat(todos.get(2).isComplete()).isTrue();
 	}
 
 	@Test
-	public void moveListElementToBeginningOfList_usingDash() throws Exception {
+	void moveListElementToBeginningOfList_usingDash() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -151,11 +148,12 @@ public class MoveOperationUnitTests {
 
 		MoveOperation move = MoveOperation.from("/-").to("/1");
 		move.perform(todos, Todo.class);
-		assertEquals(expected, todos);
+
+		assertThat(todos).isEqualTo(expected);
 	}
 
 	@Test
-	public void moveListElementToEndOfList_usingDash() throws Exception {
+	void moveListElementToEndOfList_usingDash() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -171,7 +169,7 @@ public class MoveOperationUnitTests {
 
 		MoveOperation move = MoveOperation.from("/1").to("/-");
 		move.perform(todos, Todo.class);
-		assertEquals(expected, todos);
-	}
 
+		assertThat(todos).isEqualTo(expected);
+	}
 }

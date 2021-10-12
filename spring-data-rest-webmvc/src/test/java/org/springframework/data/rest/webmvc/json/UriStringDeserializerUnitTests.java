@@ -21,14 +21,12 @@ import static org.mockito.Mockito.*;
 
 import java.net.URI;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.UriStringDeserializer;
@@ -44,10 +42,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class UriStringDeserializerUnitTests {
-
-	public @Rule ExpectedException exception = ExpectedException.none();
+@ExtendWith(MockitoExtension.class)
+class UriStringDeserializerUnitTests {
 
 	@Mock UriToEntityConverter converter;
 
@@ -56,8 +52,8 @@ public class UriStringDeserializerUnitTests {
 
 	UriStringDeserializer deserializer;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.deserializer = new UriStringDeserializer(Object.class, converter);
 
@@ -67,29 +63,28 @@ public class UriStringDeserializerUnitTests {
 	}
 
 	@Test // DATAREST-316
-	public void extractsUriToForwardToConverter() throws Exception {
+	void extractsUriToForwardToConverter() throws Exception {
 		assertConverterInvokedWithUri("/foo/32", URI.create("/foo/32"));
 	}
 
 	@Test // DATAREST-316
-	public void extractsUriFromTemplateToForwardToConverter() throws Exception {
+	void extractsUriFromTemplateToForwardToConverter() throws Exception {
 		assertConverterInvokedWithUri("/foo/32{?projection}", URI.create("/foo/32"));
 	}
 
 	@Test // DATAREST-377
-	public void returnsNullUriIfSourceIsEmptyOrNull() throws Exception {
+	void returnsNullUriIfSourceIsEmptyOrNull() throws Exception {
 
 		assertThat(invokeConverterWith("")).isNull();
 		assertThat(invokeConverterWith(null)).isNull();
 	}
 
 	@Test // DATAREST-377
-	public void rejectsNonUriValue() throws Exception {
+	void rejectsNonUriValue() throws Exception {
 
-		exception.expect(JsonMappingException.class);
-		exception.expectMessage("managed domain type");
-
-		invokeConverterWith("{ \"foo\" : \"bar\" }");
+		assertThatExceptionOfType(JsonMappingException.class) //
+				.isThrownBy(() -> invokeConverterWith("{ \"foo\" : \"bar\" }"))
+				.withMessageContaining("managed domain type");
 	}
 
 	private Object invokeConverterWith(String source) throws Exception {

@@ -45,7 +45,7 @@ import org.springframework.web.HttpMediaTypeNotAcceptableException;
  * @author Oliver Drotbohm
  */
 @ExtendWith(MockitoExtension.class)
-public class HalFormsAdaptingResponseBodyAdviceTests<T extends RepresentationModel<T>> {
+class HalFormsAdaptingResponseBodyAdviceTests<T extends RepresentationModel<T>> {
 
 	HalFormsAdaptingResponseBodyAdvice<T> advice = new HalFormsAdaptingResponseBodyAdvice<>();
 

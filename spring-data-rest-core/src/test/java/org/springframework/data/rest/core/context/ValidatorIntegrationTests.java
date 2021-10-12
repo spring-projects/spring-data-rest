@@ -15,8 +15,10 @@
  */
 package org.springframework.data.rest.core.context;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.assertj.core.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -33,7 +35,7 @@ import org.springframework.data.rest.core.domain.PersonNameValidator;
 import org.springframework.data.rest.core.event.BeforeSaveEvent;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Tests to check the {@link org.springframework.validation.Validator} integration.
@@ -41,9 +43,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration
-public class ValidatorIntegrationTests {
+class ValidatorIntegrationTests {
 
 	@Configuration
 	@Import({ RepositoryTestsConfig.class, JpaRepositoryConfig.class })
@@ -62,12 +64,14 @@ public class ValidatorIntegrationTests {
 	@Autowired ConfigurableApplicationContext context;
 	@Autowired KeyValueMappingContext<?, ?> mappingContext;
 
-	@Test(expected = RepositoryConstraintViolationException.class)
-	public void shouldValidateLastName() throws Exception {
+	@Test
+	void shouldValidateLastName() throws Exception {
 
 		mappingContext.getPersistentEntity(Person.class);
 
 		// Empty name should be rejected by PersonNameValidator
-		context.publishEvent(new BeforeSaveEvent(new Person("Dave", "")));
+
+		assertThatExceptionOfType(RepositoryConstraintViolationException.class)
+				.isThrownBy(() -> context.publishEvent(new BeforeSaveEvent(new Person("Dave", ""))));
 	}
 }

@@ -21,9 +21,9 @@ import static org.mockito.Mockito.*;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
@@ -42,13 +42,13 @@ import org.springframework.hateoas.LinkRelation;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class PersistentPropertyResourceMappingUnitTests {
+@ExtendWith(MockitoExtension.class)
+class PersistentPropertyResourceMappingUnitTests {
 
 	KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
 
 	@Test // DATAREST-175
-	public void usesPropertyNameAsDefaultResourceMappingRelAndPath() {
+	void usesPropertyNameAsDefaultResourceMappingRelAndPath() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "first");
 
@@ -59,7 +59,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-175
-	public void considersMappingAnnotationOnDomainClassProperty() {
+	void considersMappingAnnotationOnDomainClassProperty() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "second");
 
@@ -70,7 +70,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-175
-	public void considersMappingAnnotationOnDomainClassPropertyMethod() {
+	void considersMappingAnnotationOnDomainClassPropertyMethod() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "third");
 
@@ -81,7 +81,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-233
-	public void returnsDefaultDescriptionKey() {
+	void returnsDefaultDescriptionKey() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "second");
 
@@ -92,7 +92,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-233
-	public void considersAtDescription() {
+	void considersAtDescription() {
 
 		ResourceMapping mapping = getPropertyMappingFor(Entity.class, "fourth");
 
@@ -102,7 +102,7 @@ public class PersistentPropertyResourceMappingUnitTests {
 	}
 
 	@Test // #1994
-	public void doesNotConsiderPropertyExportedIfTargetTypeIsNotMapped() {
+	void doesNotConsiderPropertyExportedIfTargetTypeIsNotMapped() {
 
 		PersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(Entity.class);
 		PersistentProperty<?> property = entity.getRequiredPersistentProperty("third");

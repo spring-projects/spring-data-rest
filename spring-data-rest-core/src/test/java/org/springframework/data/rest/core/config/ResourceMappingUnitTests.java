@@ -20,7 +20,7 @@ import static org.springframework.data.rest.core.support.ResourceMappingUtils.*;
 
 import java.lang.reflect.Method;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
@@ -36,12 +36,12 @@ import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
  * @author Jon Brisbin
  */
 @SuppressWarnings("deprecation")
-public class ResourceMappingUnitTests {
+class ResourceMappingUnitTests {
 
 	LinkRelationProvider relProvider = new EvoInflectorLinkRelationProvider();
 
 	@Test
-	public void shouldDetectPathAndRemoveLeadingSlashIfAny() {
+	void shouldDetectPathAndRemoveLeadingSlashIfAny() {
 
 		org.springframework.data.rest.core.config.ResourceMapping mapping = new org.springframework.data.rest.core.config.ResourceMapping(
 				findRel(AnnotatedWithLeadingSlashPersonRepository.class),
@@ -56,7 +56,7 @@ public class ResourceMappingUnitTests {
 	}
 
 	@Test
-	public void shouldDetectPathAndRemoveLeadingSlashIfAnyOnMethod() throws Exception {
+	void shouldDetectPathAndRemoveLeadingSlashIfAnyOnMethod() throws Exception {
 		Method method = AnnotatedWithLeadingSlashPersonRepository.class.getMethod("findByFirstName", String.class,
 				Pageable.class);
 		org.springframework.data.rest.core.config.ResourceMapping mapping = new org.springframework.data.rest.core.config.ResourceMapping(
@@ -70,7 +70,7 @@ public class ResourceMappingUnitTests {
 	}
 
 	@Test
-	public void shouldReturnDefaultIfPathContainsOnlySlashTextOnMethod() throws Exception {
+	void shouldReturnDefaultIfPathContainsOnlySlashTextOnMethod() throws Exception {
 		Method method = AnnotatedWithLeadingSlashPersonRepository.class.getMethod("findByLastName", String.class,
 				Pageable.class);
 		org.springframework.data.rest.core.config.ResourceMapping mapping = new org.springframework.data.rest.core.config.ResourceMapping(

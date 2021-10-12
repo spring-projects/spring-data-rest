@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
@@ -44,7 +44,7 @@ import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.domain.Profile;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Integration tests for {@link RepositoryResourceMappings}.
@@ -52,17 +52,17 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
-public class RepositoryResourceMappingsIntegrationTests {
+class RepositoryResourceMappingsIntegrationTests {
 
 	@Autowired ListableBeanFactory factory;
 	@Autowired KeyValueMappingContext<?, ?> mappingContext;
 
 	ResourceMappings mappings;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		mappingContext.getPersistentEntity(Profile.class);
 
@@ -75,12 +75,12 @@ public class RepositoryResourceMappingsIntegrationTests {
 	}
 
 	@Test
-	public void detectsAllMappings() {
+	void detectsAllMappings() {
 		assertThat(mappings).hasSize(5);
 	}
 
 	@Test
-	public void exportsResourceAndSearchesForPersons() {
+	void exportsResourceAndSearchesForPersons() {
 
 		ResourceMetadata personMappings = mappings.getMetadataFor(Person.class);
 
@@ -89,7 +89,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 	}
 
 	@Test
-	public void doesNotExportAnyMappingsForHiddenRepository() {
+	void doesNotExportAnyMappingsForHiddenRepository() {
 
 		ResourceMetadata creditCardMapping = mappings.getMetadataFor(CreditCard.class);
 
@@ -98,7 +98,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 	}
 
 	@Test // DATAREST-112
-	public void usesPropertyNameAsRelForPropertyResourceMapping() {
+	void usesPropertyNameAsRelForPropertyResourceMapping() {
 
 		Repositories repositories = new Repositories(factory);
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(Person.class);
@@ -113,7 +113,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 	}
 
 	@Test // DATAREST-111
-	public void exposesResourceByPath() {
+	void exposesResourceByPath() {
 
 		assertThat(mappings.exportsTopLevelResourceFor("people")).isTrue();
 		assertThat(mappings.exportsTopLevelResourceFor("orders")).isTrue();
@@ -126,7 +126,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 	}
 
 	@Test // DATAREST-107
-	public void skipsSearchMethodsNotExported() {
+	void skipsSearchMethodsNotExported() {
 
 		ResourceMetadata creditCardMetadata = mappings.getMetadataFor(CreditCard.class);
 		SearchResourceMappings searchResourceMappings = creditCardMetadata.getSearchResourceMappings();
@@ -145,7 +145,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 	}
 
 	@Test // DATAREST-325
-	public void exposesMethodResourceMappingInPackageProtectedButExportedRepo() {
+	void exposesMethodResourceMappingInPackageProtectedButExportedRepo() {
 
 		ResourceMetadata metadata = mappings.getMetadataFor(Author.class);
 		assertThat(metadata.isExported()).isTrue();
@@ -163,7 +163,7 @@ public class RepositoryResourceMappingsIntegrationTests {
 	}
 
 	@Test
-	public void testname() {
+	void testname() {
 
 		ResourceMetadata metadata = mappings.getMetadataFor(Person.class);
 

@@ -31,12 +31,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Immutable;
@@ -75,16 +75,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Ken Dombeck
  * @author Thomas Mrozinski
  */
-@RunWith(MockitoJUnitRunner.class)
-public class DomainObjectReaderUnitTests {
+@ExtendWith(MockitoExtension.class)
+class DomainObjectReaderUnitTests {
 
 	@Mock ResourceMappings mappings;
 
 	DomainObjectReader reader;
 	PersistentEntities entities;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
 		mappingContext.getPersistentEntity(SampleUser.class);
@@ -111,7 +111,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-461
-	public void doesNotConsiderIgnoredProperties() throws Exception {
+	void doesNotConsiderIgnoredProperties() throws Exception {
 
 		SampleUser user = new SampleUser("firstname", "password");
 		JsonNode node = new ObjectMapper().readTree("{}");
@@ -123,7 +123,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-556
-	public void considersMappedFieldNamesWhenApplyingNodeToDomainObject() throws Exception {
+	void considersMappedFieldNamesWhenApplyingNodeToDomainObject() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.setPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE);
@@ -137,7 +137,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-605
-	public void mergesMapCorrectly() throws Exception {
+	void mergesMapCorrectly() throws Exception {
 
 		SampleUser user = new SampleUser("firstname", "password");
 		user.relatedUsers = Collections.singletonMap("parent", new SampleUser("firstname", "password"));
@@ -154,7 +154,7 @@ public class DomainObjectReaderUnitTests {
 
 	@Test // DATAREST-701
 	@SuppressWarnings("unchecked")
-	public void mergesNestedMapWithoutTypeInformation() throws Exception {
+	void mergesNestedMapWithoutTypeInformation() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode node = mapper.readTree("{\"map\" : {\"a\": \"1\", \"b\": {\"c\": \"2\"}}}");
@@ -172,17 +172,18 @@ public class DomainObjectReaderUnitTests {
 		assertThat(((Map<Object, Object>) object).get("c")).isEqualTo("2");
 	}
 
-	@Test(expected = JsonMappingException.class) // DATAREST-701
-	public void rejectsMergingUnknownDomainObject() throws Exception {
+	@Test // DATAREST-701
+	void rejectsMergingUnknownDomainObject() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode node = (ObjectNode) mapper.readTree("{}");
 
-		reader.readPut(node, "", mapper);
+		assertThatExceptionOfType(JsonMappingException.class) //
+				.isThrownBy(() -> reader.readPut(node, "", mapper));
 	}
 
 	@Test // DATAREST-705
-	public void doesNotWipeIdAndVersionPropertyForPut() throws Exception {
+	void doesNotWipeIdAndVersionPropertyForPut() throws Exception {
 
 		VersionedType type = new VersionedType();
 		type.id = 1L;
@@ -201,7 +202,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-1006
-	public void doesNotWipeReadOnlyJsonPropertyForPut() throws Exception {
+	void doesNotWipeReadOnlyJsonPropertyForPut() throws Exception {
 
 		SampleUser sampleUser = new SampleUser("name", "password");
 		sampleUser.lastLogin = new Date();
@@ -217,7 +218,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-873
-	public void doesNotApplyInputToReadOnlyFields() throws Exception {
+	void doesNotApplyInputToReadOnlyFields() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode node = (ObjectNode) mapper.readTree("{}");
@@ -231,7 +232,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-931
-	public void readsPatchForEntityNestedInCollection() throws Exception {
+	void readsPatchForEntityNestedInCollection() throws Exception {
 
 		Phone phone = new Phone();
 		phone.creationDate = new GregorianCalendar();
@@ -249,7 +250,7 @@ public class DomainObjectReaderUnitTests {
 
 	@Test // DATAREST-919
 	@SuppressWarnings("unchecked")
-	public void readsComplexNestedMapsAndArrays() throws Exception {
+	void readsComplexNestedMapsAndArrays() throws Exception {
 
 		Map<String, Object> childMap = new HashMap<String, Object>();
 		childMap.put("child1", "ok");
@@ -286,7 +287,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-938
-	public void nestedEntitiesAreUpdated() throws Exception {
+	void nestedEntitiesAreUpdated() throws Exception {
 
 		Inner inner = new Inner();
 		inner.name = "inner name";
@@ -309,7 +310,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-937
-	public void considersTransientProperties() throws Exception {
+	void considersTransientProperties() throws Exception {
 
 		SampleWithTransient sample = new SampleWithTransient();
 		sample.name = "name";
@@ -324,7 +325,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-953
-	public void writesArrayForPut() throws Exception {
+	void writesArrayForPut() throws Exception {
 
 		Child inner = new Child();
 		inner.items = new ArrayList<Item>();
@@ -341,7 +342,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-956
-	public void writesArrayWithAddedItemForPut() throws Exception {
+	void writesArrayWithAddedItemForPut() throws Exception {
 
 		Child inner = new Child();
 		inner.items = new ArrayList<Item>();
@@ -362,7 +363,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-956
-	public void writesArrayWithRemovedItemForPut() throws Exception {
+	void writesArrayWithRemovedItemForPut() throws Exception {
 
 		Child inner = new Child();
 		inner.items = new ArrayList<Item>();
@@ -382,7 +383,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-959
-	public void addsElementToPreviouslyEmptyCollection() throws Exception {
+	void addsElementToPreviouslyEmptyCollection() throws Exception {
 
 		Parent source = new Parent();
 		source.inner = new Child();
@@ -398,7 +399,7 @@ public class DomainObjectReaderUnitTests {
 
 	@Test // DATAREST-959
 	@SuppressWarnings("unchecked")
-	public void turnsObjectIntoCollection() throws Exception {
+	void turnsObjectIntoCollection() throws Exception {
 
 		Parent source = new Parent();
 		source.inner = new Child();
@@ -419,7 +420,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-965
-	public void writesObjectWithRemovedItemsForPut() throws Exception {
+	void writesObjectWithRemovedItemsForPut() throws Exception {
 
 		Child inner = new Child();
 		inner.items = new ArrayList<Item>();
@@ -438,7 +439,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-965
-	public void writesArrayWithRemovedObjectForPut() throws Exception {
+	void writesArrayWithRemovedObjectForPut() throws Exception {
 
 		Child inner = new Child();
 		inner.object = "value";
@@ -456,7 +457,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-986
-	public void readsComplexMap() throws Exception {
+	void readsComplexMap() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode node = mapper.readTree(
@@ -469,7 +470,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-987
-	public void handlesTransientPropertyWithoutFieldProperly() throws Exception {
+	void handlesTransientPropertyWithoutFieldProperly() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode node = mapper.readTree("{ \"name\" : \"Foo\" }");
@@ -478,7 +479,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-977
-	public void readsCollectionOfComplexEnum() throws Exception {
+	void readsCollectionOfComplexEnum() throws Exception {
 
 		CollectionOfEnumWithMethods sample = new CollectionOfEnumWithMethods();
 		sample.enums.add(SampleEnum.FIRST);
@@ -493,7 +494,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-944
-	public void mergesAssociations() {
+	void mergesAssociations() {
 
 		List<Nested> originalCollection = Arrays.asList(new Nested(2, 3));
 		SampleWithReference source = new SampleWithReference(Arrays.asList(new Nested(1, 2), new Nested(2, 3)));
@@ -506,7 +507,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-944
-	public void mergesAssociationsAndKeepsMutableCollection() {
+	void mergesAssociationsAndKeepsMutableCollection() {
 
 		ArrayList<Nested> originalCollection = new ArrayList<Nested>(Arrays.asList(new Nested(2, 3)));
 		SampleWithReference source = new SampleWithReference(
@@ -520,7 +521,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-1030
-	public void patchWithReferenceToRelatedEntityIsResolvedCorrectly() throws Exception {
+	void patchWithReferenceToRelatedEntityIsResolvedCorrectly() throws Exception {
 
 		Associations associations = mock(Associations.class);
 		PersistentProperty<?> any = ArgumentMatchers.any(PersistentProperty.class);
@@ -549,7 +550,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-1249
-	public void mergesIntoUninitializedCollection() throws Exception {
+	void mergesIntoUninitializedCollection() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode source = (ObjectNode) mapper.readTree("{ \"strings\" : [ \"value\" ] }");
@@ -560,7 +561,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-1383
-	public void doesNotWipeReadOnlyPropertyForPatch() throws Exception {
+	void doesNotWipeReadOnlyPropertyForPatch() throws Exception {
 
 		SampleUser user = new SampleUser("name", "password");
 		user.lastLogin = new Date();
@@ -577,7 +578,7 @@ public class DomainObjectReaderUnitTests {
 	}
 
 	@Test // DATAREST-1068
-	public void arraysCanBeResizedDuringMerge() throws Exception {
+	void arraysCanBeResizedDuringMerge() throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		ArrayHolder target = new ArrayHolder(new String[] {});
 		JsonNode node = mapper.readTree("{ \"array\" : [ \"new\" ] }");
@@ -724,7 +725,7 @@ public class DomainObjectReaderUnitTests {
 			return null;
 		}
 
-		public void setName(String name) {}
+		void setName(String name) {}
 	}
 
 	// DATAREST-977

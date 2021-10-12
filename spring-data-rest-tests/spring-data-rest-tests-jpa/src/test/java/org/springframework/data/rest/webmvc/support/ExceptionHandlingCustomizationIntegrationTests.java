@@ -18,7 +18,7 @@ package org.springframework.data.rest.webmvc.support;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  * @author Oliver Gierke
  */
 @ContextConfiguration
-public class ExceptionHandlingCustomizationIntegrationTests extends AbstractWebIntegrationTests {
+class ExceptionHandlingCustomizationIntegrationTests extends AbstractWebIntegrationTests {
 
 	@Configuration
 	@Import(JpaRepositoryConfig.class)
@@ -63,7 +63,7 @@ public class ExceptionHandlingCustomizationIntegrationTests extends AbstractWebI
 	}
 
 	@Test
-	public void httpRequestMethodNotSupportedExceptionShouldNowReturnHttpStatus500Over405() throws Exception {
+	void httpRequestMethodNotSupportedExceptionShouldNowReturnHttpStatus500Over405() throws Exception {
 
 		Link link = client.discoverUnique("addresses");
 

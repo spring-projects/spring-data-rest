@@ -23,11 +23,11 @@ import static org.springframework.http.HttpMethod.*;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
@@ -46,18 +46,18 @@ import org.springframework.http.HttpMethod;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class CrudMethodsSupportedHttpMethodsUnitTests {
+@ExtendWith(MockitoExtension.class)
+class CrudMethodsSupportedHttpMethodsUnitTests {
 
 	@Mock RepositoryResourceMappings mappings;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		when(mappings.exposeMethodsByDefault()).thenReturn(true);
 	}
 
 	@Test // DATACMNS-589, DATAREST-409
-	public void doesNotSupportAnyHttpMethodForEmptyRepository() {
+	void doesNotSupportAnyHttpMethodForEmptyRepository() {
 
 		SupportedHttpMethods supportedMethods = getSupportedHttpMethodsFor(RawRepository.class);
 
@@ -69,7 +69,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 	}
 
 	@Test // DATAREST-217, DATAREST-330, DATACMNS-589, DATAREST-409
-	public void defaultsSupportedHttpMethodsForItemResource() {
+	void defaultsSupportedHttpMethodsForItemResource() {
 
 		SupportedHttpMethods supportedHttpMethods = getSupportedHttpMethodsFor(SampleRepository.class);
 
@@ -78,7 +78,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 	}
 
 	@Test // DATAREST-217, DATAREST-330, DATACMNS-589, DATAREST-409
-	public void defaultsSupportedHttpMethodsForCollectionResource() {
+	void defaultsSupportedHttpMethodsForCollectionResource() {
 
 		SupportedHttpMethods supportedHttpMethods = getSupportedHttpMethodsFor(SampleRepository.class);
 
@@ -87,7 +87,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 	}
 
 	@Test // DATACMNS-589, DATAREST-409
-	public void doesNotSupportDeleteIfDeleteMethodIsNotExported() {
+	void doesNotSupportDeleteIfDeleteMethodIsNotExported() {
 
 		SupportedHttpMethods supportedHttpMethods = getSupportedHttpMethodsFor(HidesDelete.class);
 
@@ -95,7 +95,7 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 	}
 
 	@Test // DATAREST-523
-	public void exposesMethodsForProperties() {
+	void exposesMethodsForProperties() {
 
 		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 		KeyValuePersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(Entity.class);
@@ -118,17 +118,17 @@ public class CrudMethodsSupportedHttpMethodsUnitTests {
 	}
 
 	@Test // DATAREST-825
-	public void supportsDeleteIfFindOneIsHidden() {
+	void supportsDeleteIfFindOneIsHidden() {
 		assertMethodsSupported(getSupportedHttpMethodsFor(HidesFindOne.class), ITEM, true, DELETE, PATCH, PUT, OPTIONS);
 	}
 
 	@Test // DATAREST-825
-	public void doesNotSupportDeleteIfNoFindOneAvailable() {
+	void doesNotSupportDeleteIfNoFindOneAvailable() {
 		assertMethodsSupported(getSupportedHttpMethodsFor(NoFindOne.class), ITEM, false, DELETE);
 	}
 
 	@Test // DATAREST-1176
-	public void onlyExposesExplicitlyAnnotatedMethodsIfConfigured() {
+	void onlyExposesExplicitlyAnnotatedMethodsIfConfigured() {
 
 		reset(mappings);
 		when(mappings.exposeMethodsByDefault()).thenReturn(false);

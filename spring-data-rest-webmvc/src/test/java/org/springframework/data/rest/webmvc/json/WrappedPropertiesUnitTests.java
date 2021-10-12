@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -39,15 +39,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Mark Paluch
  */
-public class WrappedPropertiesUnitTests {
+class WrappedPropertiesUnitTests {
 
 	static final ObjectMapper MAPPER = new ObjectMapper();
 
 	KeyValueMappingContext<?, ?> mappingContext;
 	PersistentEntities persistentEntities;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		mappingContext = new KeyValueMappingContext<>();
 		mappingContext.getPersistentEntity(MultiLevelNesting.class);
@@ -57,7 +57,7 @@ public class WrappedPropertiesUnitTests {
 	}
 
 	@Test // DATAREST-910
-	public void wrappedPropertiesShouldConsiderSingleLevelUnwrapping() {
+	void wrappedPropertiesShouldConsiderSingleLevelUnwrapping() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(OneLevelNesting.class);
 		WrappedProperties wrappedProperties = WrappedProperties.fromJacksonProperties(persistentEntities, persistentEntity,
@@ -76,7 +76,7 @@ public class WrappedPropertiesUnitTests {
 	}
 
 	@Test // DATAREST-910
-	public void wrappedPropertiesShouldConsiderMultiLevelUnwrapping() {
+	void wrappedPropertiesShouldConsiderMultiLevelUnwrapping() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(MultiLevelNesting.class);
 		WrappedProperties wrappedProperties = WrappedProperties.fromJacksonProperties(persistentEntities, persistentEntity,
@@ -98,7 +98,7 @@ public class WrappedPropertiesUnitTests {
 	}
 
 	@Test // DATAREST-910
-	public void wrappedPropertiesShouldConsiderJacksonFieldNames() {
+	void wrappedPropertiesShouldConsiderJacksonFieldNames() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(MultiLevelNesting.class);
 		WrappedProperties wrappedProperties = WrappedProperties.fromJacksonProperties(persistentEntities, persistentEntity,
@@ -108,7 +108,7 @@ public class WrappedPropertiesUnitTests {
 	}
 
 	@Test // DATAREST-910
-	public void wrappedPropertiesShouldIgnoreIgnoredJacksonFields() {
+	void wrappedPropertiesShouldIgnoreIgnoredJacksonFields() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(MultiLevelNesting.class);
 		WrappedProperties wrappedProperties = WrappedProperties.fromJacksonProperties(persistentEntities, persistentEntity,
@@ -118,7 +118,7 @@ public class WrappedPropertiesUnitTests {
 	}
 
 	@Test // DATAREST-910
-	public void wrappedPropertiesShouldIgnoreSyntheticProperties() {
+	void wrappedPropertiesShouldIgnoreSyntheticProperties() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(SyntheticProperties.class);
 		WrappedProperties wrappedProperties = WrappedProperties.fromJacksonProperties(persistentEntities, persistentEntity,

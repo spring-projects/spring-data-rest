@@ -20,9 +20,9 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,7 +45,7 @@ import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.hateoas.mediatype.hal.HalLinkDiscoverer;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletWebRequest;
 
@@ -60,10 +60,10 @@ import com.jayway.jsonpath.ReadContext;
  * @author Greg Turnquist
  * @author Oliver Gierke
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { MongoDbRepositoryConfig.class, RepositoryTestsConfig.class,
 		PersistentEntitySerializationTests.TestConfig.class })
-public class PersistentEntitySerializationTests {
+class PersistentEntitySerializationTests {
 
 	@Autowired ObjectMapper mapper;
 	@Autowired Repositories repositories;
@@ -86,8 +86,8 @@ public class PersistentEntitySerializationTests {
 	LinkDiscoverer linkDiscoverer;
 	ProjectionFactory projectionFactory;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		RequestContextHolder.setRequestAttributes(new ServletWebRequest(new MockHttpServletRequest()));
 
@@ -96,7 +96,7 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-250
-	public void serializesEmbeddedReferencesCorrectly() throws Exception {
+	void serializesEmbeddedReferencesCorrectly() throws Exception {
 
 		User user = new User();
 		user.address = new Address();
@@ -116,12 +116,12 @@ public class PersistentEntitySerializationTests {
 	}
 
 	@Test // DATAREST-654
-	public void deserializesTranslatedEnumProperty() throws Exception {
+	void deserializesTranslatedEnumProperty() throws Exception {
 		assertThat(mapper.readValue("{ \"gender\" : \"Male\" }", User.class).gender).isEqualTo(Gender.MALE);
 	}
 
 	@Test // DATAREST-864
-	public void createsNestedResourceForMap() throws Exception {
+	void createsNestedResourceForMap() throws Exception {
 
 		User dave = users.save(new User());
 		dave.colleaguesMap = new HashMap<String, Nested>();

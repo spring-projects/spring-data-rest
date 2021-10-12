@@ -20,9 +20,9 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.map.repository.config.EnableMapRepositories;
@@ -36,7 +36,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -49,10 +49,10 @@ import org.springframework.web.context.WebApplicationContext;
  * @author Greg Turnquist
  * @author Rob Winch
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { SecurityIntegrationTests.Config.class, SecurityConfiguration.class,
 		RepositoryRestMvcConfiguration.class })
-public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
+class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 
 	@Autowired WebApplicationContext context;
 	@Autowired MethodSecurityInterceptor methodSecurityInterceptor;
@@ -64,7 +64,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	@EnableMapRepositories
 	static class Config {}
 
-	@Before
+	@BeforeEach
 	@Override
 	public void setUp() {
 
@@ -97,7 +97,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-327
-	public void deletePersonAccessDeniedForNoCredentials() throws Exception {
+	void deletePersonAccessDeniedForNoCredentials() throws Exception {
 
 		// Getting the collection is not tested here. This is to get the URI that will later be tested for DELETE
 		final String people = client.discoverUnique("people").expand().getHref();
@@ -114,7 +114,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-327
-	public void deletePersonAccessDeniedForUsers() throws Exception {
+	void deletePersonAccessDeniedForUsers() throws Exception {
 
 		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("people").expand().getHref()).//
 				with(user("user").roles("USER"))).//
@@ -129,7 +129,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-327
-	public void deletePersonAccessGrantedForAdmins() throws Exception {
+	void deletePersonAccessGrantedForAdmins() throws Exception {
 
 		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("people").expand().getHref()).//
 				with(user("user").roles("USER", "ADMIN"))).//
@@ -144,14 +144,14 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-327
-	public void findAllPeopleAccessDeniedForNoCredentials() throws Throwable {
+	void findAllPeopleAccessDeniedForNoCredentials() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("people").expand().getHref())).//
 				andExpect(status().isUnauthorized());
 	}
 
 	@Test // DATAREST-327
-	public void findAllPeopleAccessGrantedForUsers() throws Throwable {
+	void findAllPeopleAccessGrantedForUsers() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("people").expand().getHref()).//
 				with(user("user").roles("USER"))).//
@@ -159,7 +159,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-327
-	public void findAllPeopleAccessGrantedForAdmins() throws Throwable {
+	void findAllPeopleAccessGrantedForAdmins() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("people").expand().getHref()).//
 				with(user("user").roles("USER", "ADMIN"))).//
@@ -167,7 +167,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-327
-	public void deleteOrderAccessDeniedForNoCredentials() throws Exception {
+	void deleteOrderAccessDeniedForNoCredentials() throws Exception {
 
 		// Getting the collection is not tested here. This is to get the URI that will later be tested for DELETE
 		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
@@ -182,7 +182,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-327
-	public void deleteOrderAccessDeniedForUsers() throws Exception {
+	void deleteOrderAccessDeniedForUsers() throws Exception {
 
 		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
 				with(user("user").roles("USER"))).//
@@ -194,7 +194,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-327
-	public void deleteOrderAccessGrantedForAdmins() throws Exception {
+	void deleteOrderAccessGrantedForAdmins() throws Exception {
 
 		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
 				with(user("user").roles("USER"))).//
@@ -209,14 +209,14 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-327
-	public void findAllOrdersAccessDeniedForNoCredentials() throws Throwable {
+	void findAllOrdersAccessDeniedForNoCredentials() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("orders").expand().getHref())).//
 				andExpect(status().isUnauthorized());
 	}
 
 	@Test // DATAREST-327
-	public void findAllOrdersAccessGrantedForUsers() throws Throwable {
+	void findAllOrdersAccessGrantedForUsers() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
 				with(user("user").roles("USER"))).//
@@ -224,7 +224,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-327
-	public void findAllOrdersAccessGrantedForAdmins() throws Throwable {
+	void findAllOrdersAccessGrantedForAdmins() throws Throwable {
 
 		mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
 				with(user("user").roles("USER", "ADMIN"))).//
@@ -232,7 +232,7 @@ public class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // #2070
-	public void rejectsAccessToItemResourceIfNotAuthorized() throws Exception {
+	void rejectsAccessToItemResourceIfNotAuthorized() throws Exception {
 
 		MockHttpServletResponse response = mvc.perform(get(client.discoverUnique("orders").expand().getHref()).//
 				with(user("user").roles("USER"))).//

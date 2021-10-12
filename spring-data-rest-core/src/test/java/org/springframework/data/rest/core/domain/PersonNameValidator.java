@@ -10,7 +10,7 @@ import org.springframework.validation.Validator;
 
 /**
  * A test {@link Validator} that checks for non-blank names.
- * 
+ *
  * @author Jon Brisbin
  */
 @Component

@@ -15,21 +15,22 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
+import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 /**
@@ -37,8 +38,8 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class RootResourceInformationUnitTests {
+@ExtendWith(MockitoExtension.class)
+class RootResourceInformationUnitTests {
 
 	@Mock ResourceMetadata metadata;
 	@Mock PersistentEntity<?, ?> entity;
@@ -46,18 +47,21 @@ public class RootResourceInformationUnitTests {
 
 	RootResourceInformation information;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.invoker = mock(RepositoryInvoker.class, new DefaultBooleanToTrue());
 		this.information = new RootResourceInformation(metadata, entity, invoker);
 	}
 
-	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
-	public void throwsExceptionOnVerificationIfResourceIsNotExported() throws HttpRequestMethodNotSupportedException {
+	@Test // DATAREST-330
+	void throwsExceptionOnVerificationIfResourceIsNotExported() throws HttpRequestMethodNotSupportedException {
 
 		when(metadata.isExported()).thenReturn(false);
-		information.verifySupportedMethod(HEAD, COLLECTION);
+
+		assertThatExceptionOfType(ResourceNotFoundException.class) //
+				.isThrownBy(() -> information.verifySupportedMethod(HEAD, ResourceType.COLLECTION));
+
 	}
 
 	/**

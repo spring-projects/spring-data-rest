@@ -17,7 +17,7 @@ package org.springframework.data.rest.webmvc;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link RepositorySearchesResource}
@@ -25,15 +25,17 @@ import org.junit.Test;
  * @author Oliver Gierke
  * @soundtrack Bakkushan - Gefahr (Bakkushan)
  */
-public class RepositorySearchesResourceUnitTests {
+class RepositorySearchesResourceUnitTests {
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-515
-	public void rejectsNullDomainType() {
-		new RepositorySearchesResource(null);
+	@Test // DATAREST-515
+	void rejectsNullDomainType() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new RepositorySearchesResource(null));
 	}
 
 	@Test // DATAREST-515
-	public void returnsConfiguredDomainType() {
+	void returnsConfiguredDomainType() {
 		assertThat(new RepositorySearchesResource(String.class).getDomainType()).isAssignableFrom(String.class);
 	}
 }

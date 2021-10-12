@@ -17,29 +17,25 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Arrays;
+import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
 /**
  * General unit tests for {@link PatchOperation} implementations.
  *
  * @author Oliver Gierke
  */
-@RunWith(Parameterized.class)
-public class PatchOperationUnitTests {
+class PatchOperationUnitTests {
 
-	@Parameters
-	public static Iterable<? extends PatchOperation> operations() {
+	@TestFactory // DATAREST-1137
+	Stream<DynamicTest> invalidPathGetsRejected() {
 
 		String invalidPath = "/nonExistant";
 		String validPath = "/1/description";
 
-		return Arrays.asList( //
+		return DynamicTest.stream(Stream.of( //
 
 				AddOperation.of(invalidPath, null), //
 				RemoveOperation.valueAt(invalidPath), //
@@ -51,17 +47,13 @@ public class PatchOperationUnitTests {
 
 				MoveOperation.from(invalidPath).to(validPath), //
 				MoveOperation.from(validPath).to(invalidPath) //
-		);
-	}
 
-	public @Parameter(0) PatchOperation operation;
+		), it -> it.toString(), it -> {
 
-	@Test // DATAREST-1137
-	public void invalidPathGetsRejected() {
+			Todo todo = new Todo(1L, "A", false);
 
-		Todo todo = new Todo(1L, "A", false);
-
-		assertThatExceptionOfType(PatchException.class) //
-				.isThrownBy(() -> operation.perform(todo, Todo.class));
+			assertThatExceptionOfType(PatchException.class) //
+					.isThrownBy(() -> it.perform(todo, Todo.class));
+		});
 	}
 }

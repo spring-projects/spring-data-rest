@@ -15,23 +15,22 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ReplaceOperationTests {
+class ReplaceOperationTests {
 
 	@Test
-	public void replaceBooleanPropertyValue() throws Exception {
+	void replaceBooleanPropertyValue() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -41,11 +40,11 @@ public class ReplaceOperationTests {
 		ReplaceOperation replace = ReplaceOperation.valueAt("/1/complete").with(true);
 		replace.perform(todos, Todo.class);
 
-		assertTrue(todos.get(1).isComplete());
+		assertThat(todos.get(1).isComplete()).isTrue();
 	}
 
 	@Test
-	public void replaceTextPropertyValue() throws Exception {
+	void replaceTextPropertyValue() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -55,11 +54,11 @@ public class ReplaceOperationTests {
 		ReplaceOperation replace = ReplaceOperation.valueAt("/1/description").with("BBB");
 		replace.perform(todos, Todo.class);
 
-		assertEquals("BBB", todos.get(1).getDescription());
+		assertThat(todos.get(1).getDescription()).isEqualTo("BBB");
 	}
 
 	@Test
-	public void replaceTextPropertyValueWithANumber() throws Exception {
+	void replaceTextPropertyValueWithANumber() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -69,11 +68,11 @@ public class ReplaceOperationTests {
 		ReplaceOperation replace = ReplaceOperation.valueAt("/1/description").with(22);
 		replace.perform(todos, Todo.class);
 
-		assertEquals("22", todos.get(1).getDescription());
+		assertThat(todos.get(1).getDescription()).isEqualTo("22");
 	}
 
 	@Test // DATAREST-885
-	public void replaceObjectPropertyValue() throws Exception {
+	void replaceObjectPropertyValue() throws Exception {
 
 		Todo todo = new Todo(1L, "A", false);
 
@@ -82,13 +81,13 @@ public class ReplaceOperationTests {
 				.with(new JsonLateObjectEvaluator(mapper, mapper.readTree("{ \"value\" : \"new\" }")));
 		replace.perform(todo, Todo.class);
 
-		assertNotNull(todo.getType());
-		assertNotNull(todo.getType().getValue());
-		assertTrue(todo.getType().getValue().equals("new"));
+		assertThat(todo.getType()).isNotNull();
+		assertThat(todo.getType().getValue()).isNotNull();
+		assertThat(todo.getType().getValue().equals("new")).isTrue();
 	}
 
 	@Test // DATAREST-1338
-	public void replacesMapValueCorrectly() throws Exception {
+	void replacesMapValueCorrectly() throws Exception {
 
 		Book book = new Book();
 		book.characters = new HashMap<>();

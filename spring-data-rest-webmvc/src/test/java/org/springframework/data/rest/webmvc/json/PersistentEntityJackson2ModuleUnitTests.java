@@ -28,11 +28,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentProperty;
@@ -70,8 +72,9 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Gierke
  * @author Valentin Rentschler
  */
-@RunWith(MockitoJUnitRunner.class)
-public class PersistentEntityJackson2ModuleUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class PersistentEntityJackson2ModuleUnitTests {
 
 	@Mock Associations associations;
 	@Mock UriToEntityConverter converter;
@@ -83,8 +86,8 @@ public class PersistentEntityJackson2ModuleUnitTests {
 	PersistentEntities persistentEntities;
 	ObjectMapper mapper;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
 		mappingContext.getPersistentEntity(Sample.class);
@@ -111,7 +114,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 	}
 
 	@Test // DATAREST-328, DATAREST-320
-	public void doesNotDropPropertiesWithCustomizedNames() throws Exception {
+	void doesNotDropPropertiesWithCustomizedNames() throws Exception {
 
 		Sample sample = new Sample();
 		sample.name = "bar";
@@ -122,7 +125,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 	}
 
 	@Test // DATAREST-340
-	public void rendersAdditionalJsonPropertiesNotBackedByAPersistentField() throws Exception {
+	void rendersAdditionalJsonPropertiesNotBackedByAPersistentField() throws Exception {
 
 		SampleWithAdditionalGetters sample = new SampleWithAdditionalGetters();
 
@@ -132,7 +135,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 	}
 
 	@Test // DATAREST-662
-	public void resolvesReferenceToSubtypeCorrectly() throws IOException {
+	void resolvesReferenceToSubtypeCorrectly() throws IOException {
 
 		PersistentProperty<?> property = persistentEntities.getRequiredPersistentEntity(PetOwner.class)
 				.getRequiredPersistentProperty("pet");
@@ -148,7 +151,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 	}
 
 	@Test // DATAREST-1321
-	public void allowsNumericIdsForLookupTypes() throws Exception {
+	void allowsNumericIdsForLookupTypes() throws Exception {
 
 		RepositoryInvoker invoker = mock(RepositoryInvoker.class);
 		when(invoker.invokeFindById(any(Long.class))).thenReturn(Optional.of(new Home()));
@@ -167,7 +170,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 	}
 
 	@Test // DATAREST-1321
-	public void serializesNonStringLookupValues() throws Exception {
+	void serializesNonStringLookupValues() throws Exception {
 
 		// Given Pet defined as lookup type
 		PersistentProperty<?> property = persistentEntities.getRequiredPersistentEntity(PetOwner.class)
@@ -186,7 +189,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 	}
 
 	@Test // DATAREST-1393
-	public void customizesDeserializerForCreatorProperties() throws Exception {
+	void customizesDeserializerForCreatorProperties() throws Exception {
 
 		PersistentProperty<?> property = persistentEntities //
 				.getRequiredPersistentEntity(Immutable.class) //
@@ -201,7 +204,7 @@ public class PersistentEntityJackson2ModuleUnitTests {
 	}
 
 	@Test // GH-1926
-	public void doesNotWrapJsonValueTypesIntoEntityModel() throws Exception {
+	void doesNotWrapJsonValueTypesIntoEntityModel() throws Exception {
 
 		Wrapper wrapper = new Wrapper();
 		wrapper.value = new ValueType();

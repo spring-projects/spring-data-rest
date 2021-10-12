@@ -19,11 +19,11 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
@@ -36,8 +36,8 @@ import org.springframework.hateoas.server.core.EmbeddedWrappers;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class PersistentEntityResourceUnitTests {
+@ExtendWith(MockitoExtension.class)
+class PersistentEntityResourceUnitTests {
 
 	@Mock Object payload;
 	@Mock PersistentEntity<?, ?> entity;
@@ -45,26 +45,30 @@ public class PersistentEntityResourceUnitTests {
 	CollectionModel<EmbeddedWrapper> resources;
 	Link link = Link.of("http://localhost", "foo");
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
 		EmbeddedWrapper wrapper = wrappers.wrap("Embedded", LinkRelation.of("foo"));
 		this.resources = CollectionModel.of(Collections.singleton(wrapper));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-317
-	public void rejectsNullPayload() {
-		PersistentEntityResource.build(null, entity);
-	}
+	@Test // DATAREST-317
+	void rejectsNullPayload() {
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-317
-	public void rejectsNullPersistentEntity() {
-		PersistentEntityResource.build(payload, null);
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> PersistentEntityResource.build(null, entity));
 	}
 
 	@Test // DATAREST-317
-	public void defaultsEmbeddedsToEmptyResources() {
+	void rejectsNullPersistentEntity() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> PersistentEntityResource.build(payload, null));
+	}
+
+	@Test // DATAREST-317
+	void defaultsEmbeddedsToEmptyResources() {
 
 		PersistentEntityResource resource = PersistentEntityResource.build(payload, entity).build();
 

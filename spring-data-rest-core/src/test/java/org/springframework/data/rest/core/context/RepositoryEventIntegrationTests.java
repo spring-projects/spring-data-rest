@@ -15,10 +15,11 @@
  */
 package org.springframework.data.rest.core.context;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.assertj.core.api.Assertions.*;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +33,7 @@ import org.springframework.data.rest.core.domain.PersonBeforeSaveHandler;
 import org.springframework.data.rest.core.domain.PersonRepository;
 import org.springframework.data.rest.core.event.*;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Tests around the {@link org.springframework.context.ApplicationEvent} handling abstractions.
@@ -40,9 +41,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration
-public class RepositoryEventIntegrationTests {
+class RepositoryEventIntegrationTests {
 
 	@Configuration
 	@Import({ RepositoryTestsConfig.class })
@@ -68,58 +69,78 @@ public class RepositoryEventIntegrationTests {
 	@Autowired PersonRepository people;
 	Person person;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		person = people.save(new Person("Jane", "Doe"));
 	}
 
-	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
-	public void shouldDispatchBeforeCreate() throws Exception {
-		appCtx.publishEvent(new BeforeCreateEvent(person));
+	@Test // DATAREST-388
+	void shouldDispatchBeforeCreate() throws Exception {
+
+		assertThatExceptionOfType(EventHandlerInvokedException.class) //
+				.isThrownBy(() -> appCtx.publishEvent(new BeforeCreateEvent(person)));
 	}
 
-	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
-	public void shouldDispatchAfterCreate() throws Exception {
-		appCtx.publishEvent(new AfterCreateEvent(person));
+	@Test // DATAREST-388
+	void shouldDispatchAfterCreate() throws Exception {
+
+		assertThatExceptionOfType(EventHandlerInvokedException.class) //
+				.isThrownBy(() -> appCtx.publishEvent(new AfterCreateEvent(person)));
 	}
 
-	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
-	public void shouldDispatchBeforeSave() throws Exception {
-		appCtx.publishEvent(new BeforeSaveEvent(person));
+	@Test // DATAREST-388
+	void shouldDispatchBeforeSave() throws Exception {
+
+		assertThatExceptionOfType(EventHandlerInvokedException.class) //
+				.isThrownBy(() -> appCtx.publishEvent(new BeforeSaveEvent(person)));
 	}
 
-	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
-	public void shouldDispatchAfterSave() throws Exception {
-		appCtx.publishEvent(new AfterSaveEvent(person));
+	@Test // DATAREST-388
+	void shouldDispatchAfterSave() throws Exception {
+
+		assertThatExceptionOfType(EventHandlerInvokedException.class) //
+				.isThrownBy(() -> appCtx.publishEvent(new AfterSaveEvent(person)));
 	}
 
-	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
-	public void shouldDispatchBeforeDelete() throws Exception {
-		appCtx.publishEvent(new BeforeDeleteEvent(person));
+	@Test // DATAREST-388
+	void shouldDispatchBeforeDelete() throws Exception {
+
+		assertThatExceptionOfType(EventHandlerInvokedException.class) //
+				.isThrownBy(() -> appCtx.publishEvent(new BeforeDeleteEvent(person)));
 	}
 
-	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
-	public void shouldDispatchAfterDelete() throws Exception {
-		appCtx.publishEvent(new AfterDeleteEvent(person));
+	@Test // DATAREST-388
+	void shouldDispatchAfterDelete() throws Exception {
+
+		assertThatExceptionOfType(EventHandlerInvokedException.class) //
+				.isThrownBy(() -> appCtx.publishEvent(new AfterDeleteEvent(person)));
 	}
 
-	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
-	public void shouldDispatchBeforeLinkSave() throws Exception {
-		appCtx.publishEvent(new BeforeLinkSaveEvent(person, new Object()));
+	@Test // DATAREST-388
+	void shouldDispatchBeforeLinkSave() throws Exception {
+
+		assertThatExceptionOfType(EventHandlerInvokedException.class) //
+				.isThrownBy(() -> appCtx.publishEvent(new BeforeLinkSaveEvent(person, new Object())));
 	}
 
-	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
-	public void shouldDispatchAfterLinkSave() throws Exception {
-		appCtx.publishEvent(new AfterLinkSaveEvent(person, new Object()));
+	@Test // DATAREST-388
+	void shouldDispatchAfterLinkSave() throws Exception {
+
+		assertThatExceptionOfType(EventHandlerInvokedException.class) //
+				.isThrownBy(() -> appCtx.publishEvent(new AfterLinkSaveEvent(person, new Object())));
 	}
 
-	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
-	public void shouldDispatchBeforeLinkDelete() throws Exception {
-		appCtx.publishEvent(new BeforeLinkDeleteEvent(person, new Object()));
+	@Test // DATAREST-388
+	void shouldDispatchBeforeLinkDelete() throws Exception {
+
+		assertThatExceptionOfType(EventHandlerInvokedException.class) //
+				.isThrownBy(() -> appCtx.publishEvent(new BeforeLinkDeleteEvent(person, new Object())));
 	}
 
-	@Test(expected = EventHandlerInvokedException.class) // DATAREST-388
-	public void shouldDispatchAfterLinkDelete() throws Exception {
-		appCtx.publishEvent(new AfterLinkDeleteEvent(person, new Object()));
+	@Test // DATAREST-388
+	void shouldDispatchAfterLinkDelete() throws Exception {
+
+		assertThatExceptionOfType(EventHandlerInvokedException.class) //
+				.isThrownBy(() -> appCtx.publishEvent(new AfterLinkDeleteEvent(person, new Object())));
 	}
 }

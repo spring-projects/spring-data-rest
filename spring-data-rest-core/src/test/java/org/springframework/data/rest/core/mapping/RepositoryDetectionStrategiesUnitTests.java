@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -35,10 +35,10 @@ import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.Re
  * @soundtrack Katinka - Ausverkauf
  */
 @SuppressWarnings("serial")
-public class RepositoryDetectionStrategiesUnitTests {
+class RepositoryDetectionStrategiesUnitTests {
 
 	@Test // DATAREST-473
-	public void allExposesAllRepositories() {
+	void allExposesAllRepositories() {
 
 		assertExposures(ALL, new HashMap<Class<?>, Boolean>() {
 			{
@@ -51,7 +51,7 @@ public class RepositoryDetectionStrategiesUnitTests {
 	}
 
 	@Test // DATAREST-473
-	public void defaultHonorsVisibilityAndAnnotations() {
+	void defaultHonorsVisibilityAndAnnotations() {
 
 		assertExposures(DEFAULT, new HashMap<Class<?>, Boolean>() {
 			{
@@ -64,7 +64,7 @@ public class RepositoryDetectionStrategiesUnitTests {
 	}
 
 	@Test // DATAREST-473
-	public void visibilityHonorsTypeVisibilityOnly() {
+	void visibilityHonorsTypeVisibilityOnly() {
 
 		assertExposures(VISIBILITY, new HashMap<Class<?>, Boolean>() {
 			{
@@ -77,7 +77,7 @@ public class RepositoryDetectionStrategiesUnitTests {
 	}
 
 	@Test // DATAREST-473
-	public void annotatedHonorsAnnotationsOnly() {
+	void annotatedHonorsAnnotationsOnly() {
 
 		assertExposures(ANNOTATED, new HashMap<Class<?>, Boolean>() {
 			{

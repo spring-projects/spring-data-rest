@@ -21,7 +21,7 @@ import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.ldap.LdapName;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
 
 /**
@@ -29,10 +29,10 @@ import org.springframework.core.convert.support.DefaultConversionService;
  *
  * @author Mark Paluch
  */
-public class StringToLdapNameConverterUnitTests {
+class StringToLdapNameConverterUnitTests {
 
 	@Test // DATAREST-1198
-	public void shouldCreateLdapName() throws InvalidNameException {
+	void shouldCreateLdapName() throws InvalidNameException {
 
 		LdapName converted = StringToLdapNameConverter.INSTANCE.convert("dc=foo");
 
@@ -40,14 +40,14 @@ public class StringToLdapNameConverterUnitTests {
 	}
 
 	@Test // DATAREST-1198
-	public void failedConversionShouldThrowIAE() {
+	void failedConversionShouldThrowIAE() {
 
 		assertThatThrownBy(() -> StringToLdapNameConverter.INSTANCE.convert("foo"))
 				.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test // DATAREST-1198
-	public void shouldConvertStringInNameViaConversionService() {
+	void shouldConvertStringInNameViaConversionService() {
 
 		DefaultConversionService conversionService = new DefaultConversionService();
 		conversionService.addConverter(StringToLdapNameConverter.INSTANCE);

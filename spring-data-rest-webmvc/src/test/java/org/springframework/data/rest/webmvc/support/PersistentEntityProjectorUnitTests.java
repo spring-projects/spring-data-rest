@@ -20,11 +20,13 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.core.config.ProjectionDefinitionConfiguration;
@@ -36,8 +38,9 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class PersistentEntityProjectorUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class PersistentEntityProjectorUnitTests {
 
 	@Mock ResourceMappings mappings;
 
@@ -45,8 +48,8 @@ public class PersistentEntityProjectorUnitTests {
 	ProjectionFactory factory;
 	ProjectionDefinitionConfiguration configuration;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.configuration = new ProjectionDefinitionConfiguration();
 		this.factory = new SpelAwareProxyProjectionFactory();
@@ -58,7 +61,7 @@ public class PersistentEntityProjectorUnitTests {
 	}
 
 	@Test // DATAREST-221
-	public void returnsObjectAsIsIfNoProjectionTypeFound() {
+	void returnsObjectAsIsIfNoProjectionTypeFound() {
 
 		Object object = new Object();
 
@@ -66,7 +69,7 @@ public class PersistentEntityProjectorUnitTests {
 	}
 
 	@Test // DATAREST-221
-	public void invokesProjectionFactoryIfProjectionFound() {
+	void invokesProjectionFactoryIfProjectionFound() {
 
 		configuration.addProjection(Sample.class, Object.class);
 
@@ -74,7 +77,7 @@ public class PersistentEntityProjectorUnitTests {
 	}
 
 	@Test // DATAREST-806
-	public void favorsExplicitProjectionOverExcerpt() {
+	void favorsExplicitProjectionOverExcerpt() {
 
 		configuration.addProjection(Sample.class, Object.class);
 
@@ -82,12 +85,12 @@ public class PersistentEntityProjectorUnitTests {
 	}
 
 	@Test // DATAREST-806
-	public void excerptProjectionIsUsedForExcerpt() {
+	void excerptProjectionIsUsedForExcerpt() {
 		assertThat(projector.projectExcerpt(new Object())).isInstanceOf(Excerpt.class);
 	}
 
 	@Test // DATAREST-806
-	public void usesExcerptProjectionIfNoExplicitProjectionWasRequested() {
+	void usesExcerptProjectionIfNoExplicitProjectionWasRequested() {
 
 		configuration.addProjection(Sample.class, Object.class);
 

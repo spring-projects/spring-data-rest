@@ -20,8 +20,8 @@ import static org.mockito.Mockito.*;
 
 import java.net.URI;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -33,12 +33,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
  *
  * @author Oliver Gierke
  */
-public class BasePathAwareHandlerMappingUnitTests {
+class BasePathAwareHandlerMappingUnitTests {
 
 	HandlerMappingStub mapping;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		RepositoryRestConfiguration configuration = mock(RepositoryRestConfiguration.class);
 		doReturn(URI.create("")).when(configuration).getBasePath();
@@ -47,7 +47,7 @@ public class BasePathAwareHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-1132
-	public void detectsAnnotationsOnProxies() {
+	void detectsAnnotationsOnProxies() {
 
 		Class<?> type = createProxy(new SomeController());
 
@@ -55,7 +55,7 @@ public class BasePathAwareHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-1132
-	public void doesNotConsiderMetaAnnotation() {
+	void doesNotConsiderMetaAnnotation() {
 
 		Class<?> type = createProxy(new RepositoryController());
 
@@ -63,7 +63,7 @@ public class BasePathAwareHandlerMappingUnitTests {
 	}
 
 	@Test // #1342, #1628, #1686, #1946
-	public void rejectsAtRequestMappingOnCustomController() {
+	void rejectsAtRequestMappingOnCustomController() {
 
 		assertThatIllegalStateException()
 				.isThrownBy(() -> {
@@ -73,7 +73,7 @@ public class BasePathAwareHandlerMappingUnitTests {
 	}
 
 	@Test // #1342, #1628, #1686, #1946
-	public void doesNotRejectAtRequestMappingOnStandardMvcController() {
+	void doesNotRejectAtRequestMappingOnStandardMvcController() {
 
 		assertThatNoException()
 				.isThrownBy(() -> mapping.isHandler(ValidController.class));

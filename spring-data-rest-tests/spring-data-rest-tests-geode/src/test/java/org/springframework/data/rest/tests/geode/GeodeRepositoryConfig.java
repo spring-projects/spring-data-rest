@@ -32,7 +32,7 @@ import org.springframework.data.util.AnnotatedTypeScanner;
 @Configuration
 @ImportResource("classpath:META-INF/spring/cache-config.xml")
 @EnableGemfireRepositories
-public class GeodeRepositoryConfig {
+class GeodeRepositoryConfig {
 
 	/**
 	 * TODO: Remove, once Spring Data Gemfire exposes a mapping context.

@@ -15,9 +15,7 @@
  */
 package org.springframework.data.rest.tests;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -26,10 +24,10 @@ import java.util.Iterator;
 import java.util.Optional;
 
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.client.LinkDiscoverer;
-import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.Links;
+import org.springframework.hateoas.client.LinkDiscoverer;
+import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -85,8 +83,8 @@ public class TestMvcClient {
 
 		HttpHeaders headers = response.getHeaders();
 
-		assertThat(headers.getAllow(), hasSize(methods.length));
-		assertThat(headers.getAllow(), hasItems(methods));
+		assertThat(headers.getAllow()).hasSize(methods.length);
+		assertThat(headers.getAllow()).contains(methods);
 	}
 
 	/**
@@ -356,8 +354,10 @@ public class TestMvcClient {
 			MockHttpServletResponse response = result.getResponse();
 			String s = response.getContentAsString();
 
-			assertThat("Expected to find link with rel " + rel + " but found none in " + s, //
-					getDiscoverer(response).findLinkWithRel(rel, s), notNullValue());
+			assertThat(getDiscoverer(response).findLinkWithRel(rel, s)) //
+					.as(() -> "Expected to find link with rel " + rel + " but found none in " + s) //
+					.isNotNull();
+
 		};
 	}
 

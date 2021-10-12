@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,7 +39,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
-public class AugmentingHandlerMappingUnitTests {
+class AugmentingHandlerMappingUnitTests {
 
 	@Configuration
 	static class Config {
@@ -51,7 +51,7 @@ public class AugmentingHandlerMappingUnitTests {
 	}
 
 	@Test
-	public void augmentsRequestMappingsWithBaseUriFromConfiguration() {
+	void augmentsRequestMappingsWithBaseUriFromConfiguration() {
 
 		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
 				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));

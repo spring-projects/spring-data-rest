@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -29,10 +29,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
  *
  * @author Mark Paluch
  */
-public class UriUtilsUnitTests {
+class UriUtilsUnitTests {
 
 	@Test // DATAREST-910
-	public void pathSegmentsShouldDiscoverPathUsingMethodMapping() throws Exception {
+	void pathSegmentsShouldDiscoverPathUsingMethodMapping() throws Exception {
 
 		Method method = ClassUtils.getMethod(MappedMethod.class, "method");
 		List<String> pathSegments = UriUtils.getPathSegments(method);
@@ -41,7 +41,7 @@ public class UriUtilsUnitTests {
 	}
 
 	@Test // DATAREST-910
-	public void pathSegmentsShouldDiscoverPathUsingTypeAndMethodMapping() throws Exception {
+	void pathSegmentsShouldDiscoverPathUsingTypeAndMethodMapping() throws Exception {
 
 		Method method = ClassUtils.getMethod(MappedClassAndMethod.class, "method");
 		List<String> pathSegments = UriUtils.getPathSegments(method);

@@ -18,11 +18,11 @@ package org.springframework.data.rest.webmvc.json;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,8 +39,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Mark Paluch
  * @author Oliver Drotbohm
  */
-@RunWith(MockitoJUnitRunner.class)
-public class MappingAwarePageableArgumentResolverUnitTests {
+@ExtendWith(MockitoExtension.class)
+class MappingAwarePageableArgumentResolverUnitTests {
 
 	@Mock JacksonMappingAwareSortTranslator translator;
 	@Mock PageableHandlerMethodArgumentResolver delegate;
@@ -51,13 +51,13 @@ public class MappingAwarePageableArgumentResolverUnitTests {
 
 	MappingAwarePageableArgumentResolver resolver;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		resolver = new MappingAwarePageableArgumentResolver(translator, delegate);
 	}
 
 	@Test // DATAREST-906
-	public void resolveArgumentShouldReturnTranslatedPageable() throws Exception {
+	void resolveArgumentShouldReturnTranslatedPageable() throws Exception {
 
 		Sort translated = Sort.by("world");
 		Pageable pageable = PageRequest.of(0, 1, Direction.ASC, "hello");
@@ -73,7 +73,7 @@ public class MappingAwarePageableArgumentResolverUnitTests {
 	}
 
 	@Test // DATAREST-906
-	public void resolveArgumentShouldReturnPageableWithoutSort() throws Exception {
+	void resolveArgumentShouldReturnPageableWithoutSort() throws Exception {
 
 		Pageable pageable = PageRequest.of(0, 1);
 
@@ -87,7 +87,7 @@ public class MappingAwarePageableArgumentResolverUnitTests {
 	}
 
 	@Test // DATAREST-906
-	public void resolveArgumentShouldReturnUnpagedPageable() throws Exception {
+	void resolveArgumentShouldReturnUnpagedPageable() throws Exception {
 
 		when(delegate.resolveArgument(parameter, modelAndViewContainer, webRequest, binderFactory))
 				.thenReturn(Pageable.unpaged());
