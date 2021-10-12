@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
@@ -38,13 +38,13 @@ import org.springframework.web.context.request.ServletWebRequest;
  * @author Oliver Gierke
  */
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
-public class BackendIdConverterHandlerMethodArgumentResolverIntegrationTests
+class BackendIdConverterHandlerMethodArgumentResolverIntegrationTests
 		extends AbstractControllerIntegrationTests {
 
 	@Autowired BackendIdHandlerMethodArgumentResolver resolver;
 
 	@Test // DATAREST-155
-	public void translatesUriToBackendId() throws Exception {
+	void translatesUriToBackendId() throws Exception {
 
 		Method method = ReflectionUtils.findMethod(SampleController.class, "resolveId", Serializable.class);
 		MethodParameter parameter = new MethodParameter(method, 0);

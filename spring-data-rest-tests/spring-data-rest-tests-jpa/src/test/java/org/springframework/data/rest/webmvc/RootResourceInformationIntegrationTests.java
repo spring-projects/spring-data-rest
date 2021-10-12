@@ -19,14 +19,15 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.core.mapping.ResourceType.*;
 import static org.springframework.http.HttpMethod.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.webmvc.jpa.Address;
 import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -34,20 +35,20 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Oliver Gierke
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
-public class RootResourceInformationIntegrationTests extends AbstractControllerIntegrationTests {
+class RootResourceInformationIntegrationTests extends AbstractControllerIntegrationTests {
 
 	@Test // DATAREST-217
-	public void getIsNotSupportedIfFindAllIsNotExported() {
+	void getIsNotSupportedIfFindAllIsNotExported() {
 
 		SupportedHttpMethods supportedMethods = getResourceInformation(Address.class).getSupportedMethods();
 		assertThat(supportedMethods.getMethodsFor(COLLECTION)).doesNotContain(GET);
 	}
 
 	@Test // DATAREST-217
-	public void postIsNotSupportedIfSaveIsNotExported() {
+	void postIsNotSupportedIfSaveIsNotExported() {
 
 		SupportedHttpMethods supportedMethods = getResourceInformation(Address.class).getSupportedMethods();
 		assertThat(supportedMethods.getMethodsFor(COLLECTION)).doesNotContain(POST);

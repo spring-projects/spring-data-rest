@@ -17,54 +17,53 @@ package org.springframework.data.rest.core.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Arrays;
-import java.util.Collection;
+import lombok.Value;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
 /**
  * Ensures proper detection and removal of leading slash in strings.
  *
  * @author Florent Biville
  */
-@RunWith(Parameterized.class)
-public class ResourceStringUtilsTests {
+class ResourceStringUtilsTests {
 
-	final String actual;
-	final String expected;
-	final boolean hasText;
+	@TestFactory
+	Stream<DynamicTest> shouldDetectTextPresence() {
 
-	public ResourceStringUtilsTests(String testDescription, String actual, String expected, boolean hasText) {
-
-		this.actual = actual;
-		this.expected = expected;
-		this.hasText = hasText;
+		return DynamicTest.stream(fixtures(), Fixture::getName, it -> {
+			assertThat(ResourceStringUtils.hasTextExceptSlash(it.getActual())).isEqualTo(it.hasText);
+		});
 	}
 
-	@Parameters(name = "{0}")
-	public static Collection<?> parameters() {
-		return Arrays
-				.asList(
-						new Object[][] { { "empty string has no text and should remain empty", "", "", false },
-								{ "blank string has no text and should remain as is", "  ", "  ", false },
-								{ "string made of only a leading slash has no text and should be returned empty", "/", "", false },
-								{ "blank string with only slashes has no text and should be returned as is", "   /   ", "   /   ",
-										false },
-								{ "normal string has text and should be returned as such", "hello", "hello", true },
-								{ "normal string with leading slash has text and should be returned without leading slash", "/hello",
-										"hello", true }, });
+	@TestFactory
+	Stream<DynamicTest> shouldRemoveLeadingSlashIfAny() {
+
+		return DynamicTest.stream(fixtures(), Fixture::getName, it -> {
+			assertThat(ResourceStringUtils.removeLeadingSlash(it.getActual())).isEqualTo(it.getExpected());
+		});
 	}
 
-	@Test
-	public void shouldDetectTextPresence() {
-		assertThat(ResourceStringUtils.hasTextExceptSlash(actual)).isEqualTo(hasText);
+	static Stream<Fixture> fixtures() {
+
+		return Stream.of(
+				Fixture.of("empty string has no text and should remain empty", "", "", false),
+				Fixture.of("blank string has no text and should remain as is", "  ", "  ", false),
+				Fixture.of("string made of only a leading slash has no text and should be returned empty", "/", "", false),
+				Fixture.of("blank string with only slashes has no text and should be returned as is", "   /   ", "   /   ",
+						false),
+				Fixture.of("normal string has text and should be returned as such", "hello", "hello", true),
+				Fixture.of("normal string with leading slash has text and should be returned without leading slash", "/hello",
+						"hello", true));
 	}
 
-	@Test
-	public void shouldRemoveLeadingSlashIfAny() {
-		assertThat(ResourceStringUtils.removeLeadingSlash(actual)).isEqualTo(expected);
+	@Value(staticConstructor = "of")
+	static class Fixture {
+
+		String name, actual, expected;
+		boolean hasText;
 	}
 }

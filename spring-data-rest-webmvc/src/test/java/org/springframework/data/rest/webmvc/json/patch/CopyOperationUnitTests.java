@@ -15,17 +15,17 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CopyOperationUnitTests {
+class CopyOperationUnitTests {
 
 	@Test
-	public void copyBooleanPropertyValue() throws Exception {
+	void copyBooleanPropertyValue() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -35,11 +35,11 @@ public class CopyOperationUnitTests {
 		CopyOperation copy = CopyOperation.from("/0/complete").to("/1/complete");
 		copy.perform(todos, Todo.class);
 
-		assertTrue(todos.get(1).isComplete());
+		assertThat(todos.get(1).isComplete()).isTrue();
 	}
 
 	@Test
-	public void copyStringPropertyValue() throws Exception {
+	void copyStringPropertyValue() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -49,11 +49,11 @@ public class CopyOperationUnitTests {
 		CopyOperation copy = CopyOperation.from("/0/description").to("/1/description");
 		copy.perform(todos, Todo.class);
 
-		assertEquals("A", todos.get(1).getDescription());
+		assertThat(todos.get(1).getDescription()).isEqualTo("A");
 	}
 
 	@Test
-	public void copyBooleanPropertyValueIntoStringProperty() throws Exception {
+	void copyBooleanPropertyValueIntoStringProperty() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -63,11 +63,11 @@ public class CopyOperationUnitTests {
 		CopyOperation copy = CopyOperation.from("/0/complete").to("/1/description");
 		copy.perform(todos, Todo.class);
 
-		assertEquals("true", todos.get(1).getDescription());
+		assertThat(todos.get(1).getDescription()).isEqualTo("true");
 	}
 
 	@Test
-	public void copyListElementToBeginningOfList() throws Exception {
+	void copyListElementToBeginningOfList() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", false));
@@ -77,15 +77,16 @@ public class CopyOperationUnitTests {
 		CopyOperation copy = CopyOperation.from("/1").to("/0");
 		copy.perform(todos, Todo.class);
 
-		assertEquals(4, todos.size());
-		assertEquals(2L, todos.get(0).getId().longValue()); // NOTE: This could be problematic if you try to save it to a DB
-																												// because there'll be duplicate IDs
-		assertEquals("B", todos.get(0).getDescription());
-		assertTrue(todos.get(0).isComplete());
+		assertThat(todos.size()).isEqualTo(4);
+		assertThat(todos.get(0).getId().longValue()).isEqualTo(2L); // NOTE: This could be problematic if you try to save it
+																																// to a DB
+		// because there'll be duplicate IDs
+		assertThat(todos.get(0).getDescription()).isEqualTo("B");
+		assertThat(todos.get(0).isComplete()).isTrue();
 	}
 
 	@Test
-	public void copyListElementToMiddleOfList() throws Exception {
+	void copyListElementToMiddleOfList() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -95,15 +96,16 @@ public class CopyOperationUnitTests {
 		CopyOperation copy = CopyOperation.from("/0").to("/2");
 		copy.perform(todos, Todo.class);
 
-		assertEquals(4, todos.size());
-		assertEquals(1L, todos.get(2).getId().longValue()); // NOTE: This could be problematic if you try to save it to a DB
-																												// because there'll be duplicate IDs
-		assertEquals("A", todos.get(2).getDescription());
-		assertTrue(todos.get(2).isComplete());
+		assertThat(todos.size()).isEqualTo(4);
+		assertThat(todos.get(2).getId().longValue()).isEqualTo(1L); // NOTE: This could be problematic if you try to save it
+																																// to a DB
+		// because there'll be duplicate IDs
+		assertThat(todos.get(2).getDescription()).isEqualTo("A");
+		assertThat(todos.get(2).isComplete()).isTrue();
 	}
 
 	@Test
-	public void copyListElementToEndOfList_usingIndex() throws Exception {
+	void copyListElementToEndOfList_usingIndex() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -113,15 +115,16 @@ public class CopyOperationUnitTests {
 		CopyOperation copy = CopyOperation.from("/0").to("/3");
 		copy.perform(todos, Todo.class);
 
-		assertEquals(4, todos.size());
-		assertEquals(1L, todos.get(3).getId().longValue()); // NOTE: This could be problematic if you try to save it to a DB
-																												// because there'll be duplicate IDs
-		assertEquals("A", todos.get(3).getDescription());
-		assertTrue(todos.get(3).isComplete());
+		assertThat(todos.size()).isEqualTo(4);
+		assertThat(todos.get(3).getId().longValue()).isEqualTo(1L); // NOTE: This could be problematic if you try to save it
+																																// to a DB
+		// because there'll be duplicate IDs
+		assertThat(todos.get(3).getDescription()).isEqualTo("A");
+		assertThat(todos.get(3).isComplete()).isTrue();
 	}
 
 	@Test
-	public void copyListElementToEndOfList_usingDash() throws Exception {
+	void copyListElementToEndOfList_usingDash() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -131,13 +134,13 @@ public class CopyOperationUnitTests {
 		CopyOperation copy = CopyOperation.from("/0").to("/-");
 		copy.perform(todos, Todo.class);
 
-		assertEquals(4, todos.size());
-		assertEquals(new Todo(1L, "A", true), todos.get(3)); // NOTE: This could be problematic if you try to save it to a
-																													// DB because there'll be duplicate IDs
+		assertThat(todos.size()).isEqualTo(4);
+		assertThat(todos.get(3)).isEqualTo(new Todo(1L, "A", true)); // NOTE: This could be problematic if you try to save
+																																	// it to a DB because there'll be duplicate IDs
 	}
 
 	@Test
-	public void copyListElementFromEndOfList_usingDash() throws Exception {
+	void copyListElementFromEndOfList_usingDash() throws Exception {
 
 		List<Todo> todos = new ArrayList<Todo>();
 		todos.add(new Todo(1L, "A", true));
@@ -147,8 +150,8 @@ public class CopyOperationUnitTests {
 		CopyOperation copy = CopyOperation.from("/-").to("/0");
 		copy.perform(todos, Todo.class);
 
-		assertEquals(4, todos.size());
-		assertEquals(new Todo(3L, "C", false), todos.get(0)); // NOTE: This could be problematic if you try to save it to a
-																													// DB because there'll be duplicate IDs
+		assertThat(todos.size()).isEqualTo(4);
+		assertThat(todos.get(0)).isEqualTo(new Todo(3L, "C", false)); // NOTE: This could be problematic if you try to save
+																																	// it to a DB because there'll be duplicate IDs
 	}
 }

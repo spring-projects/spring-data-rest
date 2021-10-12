@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
@@ -43,11 +43,11 @@ import org.springframework.util.ReflectionUtils;
  * @author Fabian Trampusch
  * @author Joseph Valerio
  */
-public class AnnotatedEventHandlerInvokerUnitTests {
+class AnnotatedEventHandlerInvokerUnitTests {
 
 	@Test // DATAREST-582
 	@SuppressWarnings("unchecked")
-	public void doesNotDiscoverMethodsOnProxyClasses() {
+	void doesNotDiscoverMethodsOnProxyClasses() {
 
 		ProxyFactory factory = new ProxyFactory();
 		factory.setTarget(new Sample());
@@ -63,7 +63,7 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 	}
 
 	@Test // DATAREST-606
-	public void invokesPrivateEventHandlerMethods() {
+	void invokesPrivateEventHandlerMethods() {
 
 		SampleWithPrivateHandler sampleHandler = new SampleWithPrivateHandler();
 
@@ -76,7 +76,7 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 	}
 
 	@Test // DATAREST-970
-	public void invokesEventHandlerInOrderMethods() {
+	void invokesEventHandlerInOrderMethods() {
 
 		SampleOrderEventHandler1 orderHandler1 = new SampleOrderEventHandler1();
 		SampleOrderEventHandler2 orderHandler2 = new SampleOrderEventHandler2();
@@ -94,7 +94,7 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 	}
 
 	@Test // DATAREST-983
-	public void invokesEventHandlerOnParentClass() {
+	void invokesEventHandlerOnParentClass() {
 
 		FirstEventHandler firstHandler = new FirstEventHandler();
 		SecondEventHandler secondHandler = new SecondEventHandler();
@@ -111,7 +111,7 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 	}
 
 	@Test // DATAREST-1075
-	public void doesInvokeMethodOnlyOnceForMockitoSpy() {
+	void doesInvokeMethodOnlyOnceForMockitoSpy() {
 
 		EventHandler handler = spy(new EventHandler());
 		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
@@ -124,7 +124,7 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 	}
 
 	@Test // DATAREST-582
-	public void invocesInterceptorForProxiedListener() {
+	void invocesInterceptorForProxiedListener() {
 
 		SampleInterceptor interceptor = new SampleInterceptor();
 
@@ -147,7 +147,7 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 	static class Sample {
 
 		@HandleBeforeCreate
-		public void method(Sample sample) {}
+		void method(Sample sample) {}
 	}
 
 	@RepositoryEventHandler
@@ -216,7 +216,7 @@ public class AnnotatedEventHandlerInvokerUnitTests {
 	static class EventHandler {
 
 		@HandleAfterCreate
-		public void doAfterCreate(Payload bar) {}
+		void doAfterCreate(Payload bar) {}
 	}
 
 	static class Payload {}

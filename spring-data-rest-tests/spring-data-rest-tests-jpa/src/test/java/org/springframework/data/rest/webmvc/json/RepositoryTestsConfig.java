@@ -72,7 +72,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Configuration
 @SuppressWarnings("deprecation")
-public class RepositoryTestsConfig {
+class RepositoryTestsConfig {
 
 	@Autowired ApplicationContext appCtx;
 	@Autowired(required = false) List<MappingContext<?, ?>> mappingContexts = Collections.emptyList();

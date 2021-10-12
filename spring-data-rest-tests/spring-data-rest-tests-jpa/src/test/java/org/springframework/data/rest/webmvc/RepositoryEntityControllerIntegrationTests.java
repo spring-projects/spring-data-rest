@@ -23,7 +23,7 @@ import static org.springframework.http.HttpMethod.*;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -62,7 +62,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
  */
 @ContextConfiguration(classes = { ConfigurationCustomizer.class, JpaRepositoryConfig.class })
 @Transactional
-public class RepositoryEntityControllerIntegrationTests extends AbstractControllerIntegrationTests {
+class RepositoryEntityControllerIntegrationTests extends AbstractControllerIntegrationTests {
 
 	@Autowired RepositoryEntityController controller;
 	@Autowired AddressRepository repository;
@@ -82,25 +82,28 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		}
 	}
 
-	@Test(expected = HttpRequestMethodNotSupportedException.class) // DATAREST-217
-	public void returnsNotFoundForListingEntitiesIfFindAllNotExported() throws Exception {
+	@Test // DATAREST-217
+	void returnsNotFoundForListingEntitiesIfFindAllNotExported() throws Exception {
 
 		repository.save(new Address());
 
 		RootResourceInformation request = getResourceInformation(Address.class);
-		controller.getCollectionResource(request, null, null, null);
+
+		assertThatExceptionOfType(HttpRequestMethodNotSupportedException.class) //
+				.isThrownBy(() -> controller.getCollectionResource(request, null, null, null));
 	}
 
-	@Test(expected = HttpRequestMethodNotSupportedException.class) // DATAREST-217
-	public void rejectsEntityCreationIfSaveIsNotExported() throws Exception {
+	@Test // DATAREST-217
+	void rejectsEntityCreationIfSaveIsNotExported() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Address.class);
 
-		controller.postCollectionResource(request, null, null, MediaType.APPLICATION_JSON_VALUE);
+		assertThatExceptionOfType(HttpRequestMethodNotSupportedException.class) //
+				.isThrownBy(() -> controller.postCollectionResource(request, null, null, MediaType.APPLICATION_JSON_VALUE));
 	}
 
 	@Test // DATAREST-301
-	public void setsExpandedSelfUriInLocationHeader() throws Exception {
+	void setsExpandedSelfUriInLocationHeader() throws Exception {
 
 		RootResourceInformation information = getResourceInformation(Order.class);
 
@@ -114,20 +117,25 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test // DATAREST-330
-	public void exposesHeadForCollectionResourceIfExported() throws Exception {
+	void exposesHeadForCollectionResourceIfExported() throws Exception {
 		ResponseEntity<?> entity = controller.headCollectionResource(getResourceInformation(Person.class),
 				new DefaultedPageable(Pageable.unpaged(), false));
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
-	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
-	public void doesNotExposeHeadForCollectionResourceIfNotExported() throws Exception {
-		controller.headCollectionResource(getResourceInformation(CreditCard.class),
-				new DefaultedPageable(Pageable.unpaged(), false));
+	@Test // DATAREST-330
+	void doesNotExposeHeadForCollectionResourceIfNotExported() throws Exception {
+
+		assertThatExceptionOfType(ResourceNotFoundException.class) //
+				.isThrownBy(() -> {
+
+					controller.headCollectionResource(getResourceInformation(CreditCard.class),
+							new DefaultedPageable(Pageable.unpaged(), false));
+				});
 	}
 
 	@Test // DATAREST-330
-	public void exposesHeadForItemResourceIfExported() throws Exception {
+	void exposesHeadForItemResourceIfExported() throws Exception {
 
 		Address address = repository.save(new Address());
 
@@ -137,34 +145,36 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
-	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
-	public void doesNotExposeHeadForItemResourceIfNotExisting() throws Exception {
-		controller.headForItemResource(getResourceInformation(CreditCard.class), 1L, assembler);
+	@Test // DATAREST-330
+	void doesNotExposeHeadForItemResourceIfNotExisting() throws Exception {
+
+		assertThatExceptionOfType(ResourceNotFoundException.class) //
+				.isThrownBy(() -> controller.headForItemResource(getResourceInformation(CreditCard.class), 1L, assembler));
 	}
 
 	@Test // DATAREST-333
-	public void doesNotExposeMethodsForOptionsIfNotHttpMethodsSupportedForCollectionResource() {
+	void doesNotExposeMethodsForOptionsIfNotHttpMethodsSupportedForCollectionResource() {
 
 		HttpEntity<?> response = controller.optionsForCollectionResource(getResourceInformation(Address.class));
 		assertAllowHeaders(response, OPTIONS);
 	}
 
 	@Test // DATAREST-333
-	public void exposesSupportedHttpMethodsInAllowHeaderForOptionsRequestToCollectionResource() {
+	void exposesSupportedHttpMethodsInAllowHeaderForOptionsRequestToCollectionResource() {
 
 		HttpEntity<?> response = controller.optionsForCollectionResource(getResourceInformation(Person.class));
 		assertAllowHeaders(response, GET, POST, HEAD, OPTIONS);
 	}
 
 	@Test // DATAREST-333
-	public void exposesSupportedHttpMethodsInAllowHeaderForOptionsRequestToItemResource() {
+	void exposesSupportedHttpMethodsInAllowHeaderForOptionsRequestToItemResource() {
 
 		HttpEntity<?> response = controller.optionsForItemResource(getResourceInformation(Person.class));
 		assertAllowHeaders(response, GET, PUT, PATCH, DELETE, HEAD, OPTIONS);
 	}
 
 	@Test // DATAREST-333, DATAREST-348
-	public void optionsForItermResourceSetsAllowPatchHeader() {
+	void optionsForItermResourceSetsAllowPatchHeader() {
 
 		ResponseEntity<?> entity = controller.optionsForItemResource(getResourceInformation(Person.class));
 
@@ -176,7 +186,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test // DATAREST-34
-	public void returnsBodyOnPutForUpdateIfAcceptHeaderPresentByDefault() throws Exception {
+	void returnsBodyOnPutForUpdateIfAcceptHeaderPresentByDefault() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		Order order = request.getInvoker().invokeSave(new Order(new Person()));
@@ -189,7 +199,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test // DATAREST-34
-	public void returnsBodyForCreatingPutIfAcceptHeaderPresentByDefault() throws HttpRequestMethodNotSupportedException {
+	void returnsBodyForCreatingPutIfAcceptHeaderPresentByDefault() throws HttpRequestMethodNotSupportedException {
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
@@ -200,7 +210,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test // DATAREST-34
-	public void returnsBodyForPostIfAcceptHeaderIsPresentByDefault() throws Exception {
+	void returnsBodyForPostIfAcceptHeaderIsPresentByDefault() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
@@ -212,7 +222,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test // DATAREST-34
-	public void doesNotReturnBodyForPostIfNoAcceptHeaderPresentByDefault() throws Exception {
+	void doesNotReturnBodyForPostIfNoAcceptHeaderPresentByDefault() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Order.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource
@@ -224,7 +234,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test // DATAREST-581
-	public void createsEtagForProjectedEntityCorrectly() throws Exception {
+	void createsEtagForProjectedEntityCorrectly() throws Exception {
 
 		Address address = repository.save(new Address());
 
@@ -244,7 +254,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test // DATAREST-724
-	public void deletesEntityWithCustomLookupCorrectly() throws Exception {
+	void deletesEntityWithCustomLookupCorrectly() throws Exception {
 
 		Address address = repository.save(new Address());
 		assertThat(repository.findById(address.id)).isNotNull();
@@ -262,7 +272,7 @@ public class RepositoryEntityControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test // DATAREST-948
-	public void rejectsPutForCreationIfConfigured() throws HttpRequestMethodNotSupportedException {
+	void rejectsPutForCreationIfConfigured() throws HttpRequestMethodNotSupportedException {
 
 		RootResourceInformation request = getResourceInformation(Address.class);
 		PersistentEntityResource persistentEntityResource = PersistentEntityResource

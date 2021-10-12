@@ -21,9 +21,8 @@ import static org.mockito.Mockito.*;
 import java.util.Collection;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.rest.webmvc.json.JacksonSerializersUnitTests.Sample.SampleEnum;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,12 +33,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  * @soundtrack James Bay - Move Together (Chaos And The Calm)
  */
-public class JacksonSerializersUnitTests {
+class JacksonSerializersUnitTests {
 
 	ObjectMapper mapper;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		EnumTranslator translator = mock(EnumTranslator.class);
 		doReturn(SampleEnum.VALUE).when(translator).fromText(SampleEnum.class, "value");
@@ -49,7 +48,7 @@ public class JacksonSerializersUnitTests {
 	}
 
 	@Test // DATAREST-929
-	public void translatesPlainEnumCorrectly() throws Exception {
+	void translatesPlainEnumCorrectly() throws Exception {
 
 		Sample result = mapper.readValue("{ \"property\" : \"value\"}", Sample.class);
 
@@ -57,7 +56,7 @@ public class JacksonSerializersUnitTests {
 	}
 
 	@Test // DATAREST-929
-	public void translatesCollectionOfEnumsCorrectly() throws Exception {
+	void translatesCollectionOfEnumsCorrectly() throws Exception {
 
 		Sample result = mapper.readValue("{ \"collection\" : [ \"value\" ] }", Sample.class);
 
@@ -65,7 +64,7 @@ public class JacksonSerializersUnitTests {
 	}
 
 	@Test // DATAREST-929
-	public void translatesEnumArraysCorrectly() throws Exception {
+	void translatesEnumArraysCorrectly() throws Exception {
 
 		Sample result = mapper.readValue("{ \"array\" : [ \"value\" ] }", Sample.class);
 
@@ -73,7 +72,7 @@ public class JacksonSerializersUnitTests {
 	}
 
 	@Test // DATAREST-929
-	public void translatesMapEnumValueCorrectly() throws Exception {
+	void translatesMapEnumValueCorrectly() throws Exception {
 
 		Sample result = mapper.readValue("{ \"mapToEnum\" : { \"foo\" : \"value\" } }", Sample.class);
 

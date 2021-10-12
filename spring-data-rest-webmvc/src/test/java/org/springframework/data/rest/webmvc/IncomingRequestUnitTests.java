@@ -17,8 +17,8 @@ package org.springframework.data.rest.webmvc;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -27,17 +27,17 @@ import org.springframework.mock.web.MockHttpServletRequest;
  *
  * @author Oliver Gierke
  */
-public class IncomingRequestUnitTests {
+class IncomingRequestUnitTests {
 
 	MockHttpServletRequest request;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		this.request = new MockHttpServletRequest("PATCH", "/");
 	}
 
 	@Test // DATAREST-498
-	public void identifiesJsonPatchRequestForRequestWithContentTypeParameters() {
+	void identifiesJsonPatchRequestForRequestWithContentTypeParameters() {
 
 		request.addHeader("Content-Type", "application/json-patch+json;charset=UTF-8");
 
@@ -48,7 +48,7 @@ public class IncomingRequestUnitTests {
 	}
 
 	@Test // DATAREST-498
-	public void identifiesJsonMergePatchRequestForRequestWithContentTypeParameters() {
+	void identifiesJsonMergePatchRequestForRequestWithContentTypeParameters() {
 
 		request.addHeader("Content-Type", "application/merge-patch+json;charset=UTF-8");
 

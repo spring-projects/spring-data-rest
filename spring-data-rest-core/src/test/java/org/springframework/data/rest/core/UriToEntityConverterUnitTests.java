@@ -24,11 +24,11 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
@@ -47,8 +47,8 @@ import org.springframework.data.util.Streamable;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class UriToEntityConverterUnitTests {
+@ExtendWith(MockitoExtension.class)
+class UriToEntityConverterUnitTests {
 
 	static final TypeDescriptor URI_TYPE = TypeDescriptor.valueOf(URI.class);
 	static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
@@ -60,8 +60,8 @@ public class UriToEntityConverterUnitTests {
 	KeyValueMappingContext<?, ?> context;
 	UriToEntityConverter converter;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.context = new KeyValueMappingContext<>();
 		this.context.setInitialEntitySet(new HashSet<Class<?>>(Arrays.asList(Entity.class, NonEntity.class)));
@@ -72,7 +72,7 @@ public class UriToEntityConverterUnitTests {
 	}
 
 	@Test // DATAREST-427
-	public void supportsOnlyEntitiesWithIdProperty() {
+	void supportsOnlyEntitiesWithIdProperty() {
 
 		Set<ConvertiblePair> result = converter.getConvertibleTypes();
 
@@ -81,12 +81,12 @@ public class UriToEntityConverterUnitTests {
 	}
 
 	@Test // DATAREST-427
-	public void cannotConvertEntityWithIdPropertyIfStringConversionMissing() {
+	void cannotConvertEntityWithIdPropertyIfStringConversionMissing() {
 		assertThat(converter.matches(URI_TYPE, ENTITY_TYPE)).isFalse();
 	}
 
 	@Test // DATAREST-427
-	public void canConvertEntityWithIdPropertyAndFromStringConversionPossible() {
+	void canConvertEntityWithIdPropertyAndFromStringConversionPossible() {
 
 		doReturn(Optional.of(mock(RepositoryInformation.class))).when(repositories)
 				.getRepositoryInformationFor(ENTITY_TYPE.getType());
@@ -95,12 +95,12 @@ public class UriToEntityConverterUnitTests {
 	}
 
 	@Test // DATAREST-427
-	public void cannotConvertEntityWithoutIdentifier() {
+	void cannotConvertEntityWithoutIdentifier() {
 		assertThat(converter.matches(URI_TYPE, TypeDescriptor.valueOf(NonEntity.class))).isFalse();
 	}
 
 	@Test // DATAREST-427
-	public void invokesConverterWithLastUriPathSegment() {
+	void invokesConverterWithLastUriPathSegment() {
 
 		Entity reference = new Entity();
 
@@ -108,39 +108,49 @@ public class UriToEntityConverterUnitTests {
 		doReturn(Optional.of(reference)).when(invoker).invokeFindById("1");
 		doReturn(invoker).when(invokerFactory).getInvokerFor(ENTITY_TYPE.getType());
 
-		assertThat(converter.convert(URI.create("/foo/bar/1"), URI_TYPE, ENTITY_TYPE)).isEqualTo((Object) reference);
+		assertThat(converter.convert(URI.create("/foo/bar/1"), URI_TYPE, ENTITY_TYPE)).isEqualTo(reference);
 	}
 
-	@Test(expected = ConversionFailedException.class) // DATAREST-427
-	public void rejectsUnknownType() {
-		converter.convert(URI.create("/foo/1"), URI_TYPE, STRING_TYPE);
+	@Test // DATAREST-427
+	void rejectsUnknownType() {
+
+		assertThatExceptionOfType(ConversionFailedException.class) //
+				.isThrownBy(() -> converter.convert(URI.create("/foo/1"), URI_TYPE, STRING_TYPE));
 	}
 
-	@Test(expected = ConversionFailedException.class) // DATAREST-427
-	public void rejectsUriWithLessThanTwoSegments() {
-		converter.convert(URI.create("1"), URI_TYPE, ENTITY_TYPE);
+	@Test // DATAREST-427
+	void rejectsUriWithLessThanTwoSegments() {
+
+		assertThatExceptionOfType(ConversionFailedException.class) //
+				.isThrownBy(() -> converter.convert(URI.create("1"), URI_TYPE, ENTITY_TYPE));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-741
-	public void rejectsNullPersistentEntities() {
-		new UriToEntityConverter(null, invokerFactory, repositories);
+	@Test // DATAREST-741
+	void rejectsNullPersistentEntities() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new UriToEntityConverter(null, invokerFactory, repositories));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-741
-	public void rejectsNullRepositoryInvokerFactory() {
-		new UriToEntityConverter(mock(PersistentEntities.class), null, repositories);
+	@Test // DATAREST-741
+	void rejectsNullRepositoryInvokerFactory() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new UriToEntityConverter(mock(PersistentEntities.class), null, repositories));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-741
-	public void rejectsNullRepositories() {
-		new UriToEntityConverter(mock(PersistentEntities.class), invokerFactory, null);
+	@Test // DATAREST-741
+	void rejectsNullRepositories() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new UriToEntityConverter(mock(PersistentEntities.class), invokerFactory, null));
 	}
 
 	/**
 	 * @see DATAREST-1018
 	 */
 	@Test
-	public void doesNotRegisterTypeWithUnmanagedRawType() {
+	void doesNotRegisterTypeWithUnmanagedRawType() {
 
 		PersistentEntities entities = mock(PersistentEntities.class);
 		doReturn(Streamable.of(ClassTypeInformation.OBJECT)).when(entities).getManagedTypes();

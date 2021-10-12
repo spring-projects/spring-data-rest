@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2018 original author or authors.
+ * Copyright 2014-2021 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,28 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link ETagDoesntMatchException}.
  *
  * @author Oliver Gierke
  */
-public class ETagDoesntMatchExceptionUnitTests {
+class ETagDoesntMatchExceptionUnitTests {
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-160
-	public void rejectsNullTargetBean() {
-		new ETagDoesntMatchException(null, ETag.from("1"));
+	@Test // DATAREST-160
+	void rejectsNullTargetBean() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new ETagDoesntMatchException(null, ETag.from("1")));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-160
-	public void rejectsNullExpectedETag() {
-		new ETagDoesntMatchException(new Object(), null);
+	@Test // DATAREST-160
+	void rejectsNullExpectedETag() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new ETagDoesntMatchException(new Object(), null));
 	}
 }

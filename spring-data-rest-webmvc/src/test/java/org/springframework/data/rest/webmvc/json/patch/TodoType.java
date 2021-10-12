@@ -26,6 +26,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TodoType {
+class TodoType {
 	private String value = "none";
 }

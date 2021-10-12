@@ -23,7 +23,7 @@ import org.springframework.test.context.ContextConfiguration;
  * @author Oliver Gierke
  */
 @ContextConfiguration(classes = GeodeRepositoryConfig.class)
-public class GeodeWebTests extends CommonWebTests {
+class GeodeWebTests extends CommonWebTests {
 
 	/*
 	 * (non-Javadoc)

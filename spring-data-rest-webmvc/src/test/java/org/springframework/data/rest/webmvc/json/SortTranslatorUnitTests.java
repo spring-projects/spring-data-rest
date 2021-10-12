@@ -21,8 +21,8 @@ import static org.mockito.Mockito.*;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
@@ -45,15 +45,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Gierke
  * @soundtrack dkn - Out Of This World (original version)
  */
-public class SortTranslatorUnitTests {
+class SortTranslatorUnitTests {
 
 	ObjectMapper objectMapper = new ObjectMapper();
 	KeyValueMappingContext<?, ?> mappingContext;
 	PersistentEntities persistentEntities;
 	SortTranslator sortTranslator;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		mappingContext = new KeyValueMappingContext<>();
 		mappingContext.getPersistentEntity(Plain.class);
@@ -68,7 +68,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-883
-	public void shouldMapKnownProperties() {
+	void shouldMapKnownProperties() {
 
 		Sort translatedSort = sortTranslator.translateSort(Sort.by("hello", "name"),
 				mappingContext.getRequiredPersistentEntity(Plain.class));
@@ -78,7 +78,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-883
-	public void returnsNullSortIfNoPropertiesMatch() {
+	void returnsNullSortIfNoPropertiesMatch() {
 
 		Sort translatedSort = sortTranslator.translateSort(Sort.by("hello", "world"),
 				mappingContext.getRequiredPersistentEntity(Plain.class));
@@ -87,7 +87,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-883
-	public void shouldMapKnownPropertiesWithJsonProperty() {
+	void shouldMapKnownPropertiesWithJsonProperty() {
 
 		Sort translatedSort = sortTranslator.translateSort(Sort.by("hello", "foo"),
 				mappingContext.getRequiredPersistentEntity(WithJsonProperty.class));
@@ -97,7 +97,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-883
-	public void shouldJacksonFieldNameForMapping() {
+	void shouldJacksonFieldNameForMapping() {
 
 		Sort translatedSort = sortTranslator.translateSort(Sort.by("name"),
 				mappingContext.getRequiredPersistentEntity(WithJsonProperty.class));
@@ -106,7 +106,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-910
-	public void shouldMapKnownNestedProperties() {
+	void shouldMapKnownNestedProperties() {
 
 		Sort translatedSort = sortTranslator.translateSort(
 				Sort.by("embedded.name", "embedded.collection", "embedded.someInterface"),
@@ -118,7 +118,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-910
-	public void shouldSkipWrongNestedProperties() {
+	void shouldSkipWrongNestedProperties() {
 
 		Sort translatedSort = sortTranslator.translateSort(Sort.by("embedded.unknown"),
 				mappingContext.getRequiredPersistentEntity(Plain.class));
@@ -127,7 +127,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-910, DATAREST-976
-	public void shouldSkipKnownAssociationProperties() {
+	void shouldSkipKnownAssociationProperties() {
 
 		Sort translatedSort = sortTranslator.translateSort(Sort.by("association.name"),
 				mappingContext.getRequiredPersistentEntity(Plain.class));
@@ -136,7 +136,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-976
-	public void shouldMapEmbeddableAssociationProperties() {
+	void shouldMapEmbeddableAssociationProperties() {
 
 		Sort translatedSort = sortTranslator.translateSort(Sort.by("refEmbedded.name"),
 				mappingContext.getRequiredPersistentEntity(Plain.class));
@@ -145,7 +145,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-910
-	public void shouldJacksonFieldNameForNestedFieldMapping() {
+	void shouldJacksonFieldNameForNestedFieldMapping() {
 
 		Sort translatedSort = sortTranslator.translateSort(Sort.by("em.foo"),
 				mappingContext.getRequiredPersistentEntity(WithJsonProperty.class));
@@ -154,7 +154,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-910
-	public void shouldTranslatePathForSingleLevelJsonUnwrappedObject() {
+	void shouldTranslatePathForSingleLevelJsonUnwrappedObject() {
 
 		Sort translatedSort = sortTranslator.translateSort(Sort.by("un-name"),
 				mappingContext.getRequiredPersistentEntity(UnwrapEmbedded.class));
@@ -163,7 +163,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-910
-	public void shouldTranslatePathForMultiLevelLevelJsonUnwrappedObject() {
+	void shouldTranslatePathForMultiLevelLevelJsonUnwrappedObject() {
 
 		Sort translatedSort = sortTranslator.translateSort(Sort.by("un-name", "burrito.un-name"),
 				mappingContext.getRequiredPersistentEntity(MultiUnwrapped.class));
@@ -173,7 +173,7 @@ public class SortTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-1248
-	public void allowsSortingByReadOnlyProperty() {
+	void allowsSortingByReadOnlyProperty() {
 
 		Sort sort = sortTranslator.translateSort(Sort.by("readOnly"),
 				mappingContext.getRequiredPersistentEntity(Plain.class));

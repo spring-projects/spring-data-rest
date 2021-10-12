@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Locale;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.hateoas.mediatype.MessageResolver;
@@ -30,13 +30,13 @@ import org.springframework.hateoas.mediatype.MessageResolver;
  *
  * @author Oliver Gierke
  */
-public class EnumTranslatorUnitTests {
+class EnumTranslatorUnitTests {
 
 	StaticMessageSource messageSource;
 	EnumTranslator configuration;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		LocaleContextHolder.setLocale(Locale.US);
 
@@ -46,28 +46,30 @@ public class EnumTranslatorUnitTests {
 		this.configuration = new EnumTranslator(MessageResolver.of(messageSource));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-654
-	public void rejectsNullMessageSourceAccessor() {
-		new EnumTranslator(null);
+	@Test // DATAREST-654
+	void rejectsNullMessageSourceAccessor() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new EnumTranslator(null));
 	}
 
 	@Test // DATAREST-654
-	public void parsesNullForNullSource() {
+	void parsesNullForNullSource() {
 		assertThat(configuration.fromText(MyEnum.class, null)).isNull();
 	}
 
 	@Test // DATAREST-654
-	public void parsesNullForEmptySource() {
+	void parsesNullForEmptySource() {
 		assertThat(configuration.fromText(MyEnum.class, null)).isNull();
 	}
 
 	@Test // DATAREST-654
-	public void parsesNullForUnknownValue() {
+	void parsesNullForUnknownValue() {
 		assertThat(configuration.fromText(MyEnum.class, "Foobar")).isNull();
 	}
 
 	@Test // DATAREST-654
-	public void returnsEnumNameIfDefaultTranslationIsDisabled() {
+	void returnsEnumNameIfDefaultTranslationIsDisabled() {
 
 		configuration.setEnableDefaultTranslation(false);
 
@@ -75,13 +77,13 @@ public class EnumTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-654
-	public void returnsDefaultTranslationByDefault() {
+	void returnsDefaultTranslationByDefault() {
 
 		assertThat(configuration.asText(MyEnum.SECOND_VALUE)).isEqualTo("Second value");
 	}
 
 	@Test // DATAREST-654
-	public void parsesEnumNameIfDefaultTranslationIsDisabled() {
+	void parsesEnumNameIfDefaultTranslationIsDisabled() {
 
 		configuration.setEnableDefaultTranslation(false);
 
@@ -89,14 +91,14 @@ public class EnumTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-654
-	public void parsesStandardTranslationAndEnumNameByDefault() {
+	void parsesStandardTranslationAndEnumNameByDefault() {
 
 		assertThat(configuration.fromText(MyEnum.class, "FIRST_VALUE")).isEqualTo(MyEnum.FIRST_VALUE);
 		assertThat(configuration.fromText(MyEnum.class, "Second value")).isEqualTo(MyEnum.SECOND_VALUE);
 	}
 
 	@Test // DATAREST-654
-	public void translatesEnumName() {
+	void translatesEnumName() {
 
 		LocaleContextHolder.setLocale(Locale.US);
 
@@ -107,7 +109,7 @@ public class EnumTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-654
-	public void parsesEnumNameByDefaultEvenIfMessageDefined() {
+	void parsesEnumNameByDefaultEvenIfMessageDefined() {
 
 		// Parses resolved message and enum name
 		assertThat(configuration.fromText(MyEnum.class, "Translated")).isEqualTo(MyEnum.FIRST_VALUE);
@@ -122,7 +124,7 @@ public class EnumTranslatorUnitTests {
 	}
 
 	@Test // DATAREST-654
-	public void parsesEnumWithDefaultTranslationDisabled() {
+	void parsesEnumWithDefaultTranslationDisabled() {
 
 		configuration.setEnableDefaultTranslation(false);
 
@@ -132,7 +134,7 @@ public class EnumTranslatorUnitTests {
 	}
 
 	@Test
-	public void doesNotResolveEnumNameAsFallbackIfConfigured() {
+	void doesNotResolveEnumNameAsFallbackIfConfigured() {
 
 		configuration.setParseEnumNameAsFallback(false);
 

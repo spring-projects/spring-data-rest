@@ -20,13 +20,14 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import net.minidev.json.JSONArray;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import net.minidev.json.JSONArray;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.Link;
@@ -36,7 +37,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -61,7 +62,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Christoph Strobl
  * @author Ľubomír Varga
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = { RepositoryRestMvcConfiguration.class, DelegatingWebMvcConfiguration.class })
 public abstract class AbstractWebIntegrationTests {
@@ -74,7 +75,7 @@ public abstract class AbstractWebIntegrationTests {
 	protected TestMvcClient client;
 	protected MockMvc mvc;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		setupMockMvc();
 		this.client = new TestMvcClient(mvc, discoverers);

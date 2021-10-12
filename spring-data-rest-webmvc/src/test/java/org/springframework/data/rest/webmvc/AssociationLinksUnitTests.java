@@ -21,11 +21,13 @@ import static org.mockito.Mockito.*;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentEntity;
@@ -47,8 +49,9 @@ import org.springframework.hateoas.Link;
  * @author Oliver Gierke
  * @author Haroun Pacquee
  */
-@RunWith(MockitoJUnitRunner.class)
-public class AssociationLinksUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class AssociationLinksUnitTests {
 
 	Associations links;
 
@@ -60,8 +63,8 @@ public class AssociationLinksUnitTests {
 	@Mock RepositoryRestConfiguration config;
 	@Mock ProjectionDefinitionConfiguration projectionDefinitionConfig;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		doReturn(projectionDefinitionConfig).when(config).getProjectionConfiguration();
 
@@ -71,18 +74,22 @@ public class AssociationLinksUnitTests {
 		this.links = new Associations(mappings, config);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATAREST-262
-	public void rejectsNullMappings() {
-		new Associations(null, mock(RepositoryRestConfiguration.class));
+	@Test // DATAREST-262
+	void rejectsNullMappings() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new Associations(null, mock(RepositoryRestConfiguration.class)));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullConfiguration() {
-		new Associations(mappings, null);
+	@Test
+	void rejectsNullConfiguration() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new Associations(mappings, null));
 	}
 
 	@Test // DATAREST-262
-	public void rejectsNullPropertyForIsLinkable() {
+	void rejectsNullPropertyForIsLinkable() {
 
 		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> {
 			links.isLinkableAssociation((PersistentProperty<?>) null);
@@ -90,12 +97,12 @@ public class AssociationLinksUnitTests {
 	}
 
 	@Test // DATAREST-262
-	public void consideredHiddenPropertyUnlinkable() {
+	void consideredHiddenPropertyUnlinkable() {
 		assertThat(links.isLinkableAssociation(entity.getRequiredPersistentProperty("hiddenProperty"))).isFalse();
 	}
 
 	@Test // DATAREST-262
-	public void createsLinkToAssociationProperty() {
+	void createsLinkToAssociationProperty() {
 
 		PersistentProperty<?> property = entity.getRequiredPersistentProperty("property");
 		List<Link> associationLinks = links.getLinksFor(property.getRequiredAssociation(), new Path("/base"));
@@ -105,14 +112,14 @@ public class AssociationLinksUnitTests {
 	}
 
 	@Test // DATAREST-262
-	public void doesNotCreateLinksForHiddenProperty() {
+	void doesNotCreateLinksForHiddenProperty() {
 
 		PersistentProperty<?> property = entity.getRequiredPersistentProperty("hiddenProperty");
 		assertThat(links.getLinksFor(property.getRequiredAssociation(), new Path("/sample"))).hasSize(0);
 	}
 
 	@Test
-	public void detectsLookupTypes() {
+	void detectsLookupTypes() {
 
 		doReturn(true).when(config).isLookupType(Property.class);
 
@@ -120,7 +127,7 @@ public class AssociationLinksUnitTests {
 	}
 
 	@Test
-	public void delegatesResourceMetadataLookupToMappings() {
+	void delegatesResourceMetadataLookupToMappings() {
 		assertThat(links.getMetadataFor(Property.class)).isEqualTo(mappings.getMetadataFor(Property.class));
 	}
 

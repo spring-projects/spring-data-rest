@@ -18,8 +18,8 @@ package org.springframework.data.rest.webmvc;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.rest.tests.TestMvcClient.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -35,9 +35,9 @@ import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.TestDataPopulator;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -55,7 +55,7 @@ import org.springframework.util.MultiValueMap;
  */
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
-public class RepositorySearchControllerIntegrationTests extends AbstractControllerIntegrationTests {
+class RepositorySearchControllerIntegrationTests extends AbstractControllerIntegrationTests {
 
 	static final DefaultedPageable PAGEABLE = new DefaultedPageable(PageRequest.of(0, 10), true);
 
@@ -63,16 +63,16 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	@Autowired RepositorySearchController controller;
 	@Autowired PersistentEntityResourceAssembler assembler;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		loader.populateRepositories();
 	}
 
 	@Test
-	public void rendersCorrectSearchLinksForPersons() throws Exception {
+	void rendersCorrectSearchLinksForPersons() throws Exception {
 
 		RootResourceInformation request = getResourceInformation(Person.class);
-		RepresentationModel resource = controller.listSearches(request);
+		RepresentationModel<?> resource = controller.listSearches(request);
 
 		ResourceTester tester = ResourceTester.of(resource);
 		tester.assertNumberOfLinks(7); // Self link included
@@ -86,18 +86,22 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		tester.assertHasLinkEndingWith("findCreatedDateByLastName", "findCreatedDateByLastName{?lastname}");
 	}
 
-	@Test(expected = ResourceNotFoundException.class)
-	public void returns404ForUnexportedRepository() {
-		controller.listSearches(getResourceInformation(CreditCard.class));
-	}
+	@Test
+	void returns404ForUnexportedRepository() {
 
-	@Test(expected = ResourceNotFoundException.class)
-	public void returns404ForRepositoryWithoutSearches() {
-		controller.listSearches(getResourceInformation(Author.class));
+		assertThatExceptionOfType(ResourceNotFoundException.class) //
+				.isThrownBy(() -> controller.listSearches(getResourceInformation(CreditCard.class)));
 	}
 
 	@Test
-	public void executesSearchAgainstRepository() {
+	void returns404ForRepositoryWithoutSearches() {
+
+		assertThatExceptionOfType(ResourceNotFoundException.class) //
+				.isThrownBy(() -> controller.listSearches(getResourceInformation(Author.class)));
+	}
+
+	@Test
+	void executesSearchAgainstRepository() {
 
 		RootResourceInformation resourceInformation = getResourceInformation(Person.class);
 		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>(1);
@@ -114,43 +118,51 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 		tester.withContentResource(new HasSelfLink(BASE.slash(metadata.getPath()).slash("{id}")));
 	}
 
-	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
-	public void doesNotExposeHeadForSearchResourceIfResourceDoesnHaveSearches() {
-		controller.headForSearches(getResourceInformation(Author.class));
-	}
+	@Test // DATAREST-330
+	void doesNotExposeHeadForSearchResourceIfResourceDoesnHaveSearches() {
 
-	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
-	public void exposesHeadForSearchResourceIfResourceIsNotExposed() {
-		controller.headForSearches(getResourceInformation(CreditCard.class));
+		assertThatExceptionOfType(ResourceNotFoundException.class) //
+				.isThrownBy(() -> controller.headForSearches(getResourceInformation(Author.class)));
 	}
 
 	@Test // DATAREST-330
-	public void exposesHeadForSearchResourceIfResourceIsExposed() {
+	void exposesHeadForSearchResourceIfResourceIsNotExposed() {
+
+		assertThatExceptionOfType(ResourceNotFoundException.class) //
+				.isThrownBy(() -> controller.headForSearches(getResourceInformation(CreditCard.class)));
+	}
+
+	@Test // DATAREST-330
+	void exposesHeadForSearchResourceIfResourceIsExposed() {
 		controller.headForSearches(getResourceInformation(Person.class));
 	}
 
 	@Test // DATAREST-330
-	public void exposesHeadForExistingQueryMethodResource() {
+	void exposesHeadForExistingQueryMethodResource() {
 		controller.headForSearch(getResourceInformation(Person.class), "findByCreatedUsingISO8601Date");
 	}
 
-	@Test(expected = ResourceNotFoundException.class) // DATAREST-330
-	public void doesNotExposeHeadForInvalidQueryMethodResource() {
-		controller.headForSearch(getResourceInformation(Person.class), "foobar");
+	@Test // DATAREST-330
+	void doesNotExposeHeadForInvalidQueryMethodResource() {
+
+		assertThatExceptionOfType(ResourceNotFoundException.class) //
+				.isThrownBy(() -> controller.headForSearch(getResourceInformation(Person.class), "foobar"));
 	}
 
 	@Test // DATAREST-333
-	public void searchResourceSupportsGetOnly() {
+	void searchResourceSupportsGetOnly() {
 		assertAllowHeaders(controller.optionsForSearches(getResourceInformation(Person.class)), HttpMethod.GET);
 	}
 
-	@Test(expected = ResourceNotFoundException.class) // DATAREST-333
-	public void returns404ForOptionsForRepositoryWithoutSearches() {
-		controller.optionsForSearches(getResourceInformation(Address.class));
+	@Test // DATAREST-333
+	void returns404ForOptionsForRepositoryWithoutSearches() {
+
+		assertThatExceptionOfType(ResourceNotFoundException.class) //
+				.isThrownBy(() -> controller.optionsForSearches(getResourceInformation(Address.class)));
 	}
 
 	@Test // DATAREST-333
-	public void queryMethodResourceSupportsGetOnly() {
+	void queryMethodResourceSupportsGetOnly() {
 
 		RootResourceInformation resourceInformation = getResourceInformation(Person.class);
 		HttpEntity<Object> response = controller.optionsForSearch(resourceInformation, "firstname");
@@ -159,7 +171,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test // DATAREST-502
-	public void interpretsUriAsReferenceToRelatedEntity() {
+	void interpretsUriAsReferenceToRelatedEntity() {
 
 		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>(1);
 		parameters.add("author", "/author/1");
@@ -173,7 +185,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test // DATAREST-515
-	public void repositorySearchResourceExposesDomainType() {
+	void repositorySearchResourceExposesDomainType() {
 
 		RepositorySearchesResource searches = controller.listSearches(getResourceInformation(Person.class));
 
@@ -181,7 +193,7 @@ public class RepositorySearchControllerIntegrationTests extends AbstractControll
 	}
 
 	@Test // DATAREST-1121
-	public void returnsSimpleResponseEntityForQueryMethod() {
+	void returnsSimpleResponseEntityForQueryMethod() {
 
 		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
 		parameters.add("lastname", "Thornton");

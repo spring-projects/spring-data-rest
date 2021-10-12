@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Oliver Drotbohm
  */
 @ExtendWith(MockitoExtension.class)
-public class AggregateReferenceResolvingModuleUnitTests {
+class AggregateReferenceResolvingModuleUnitTests {
 
 	@Mock UriToEntityConverter uriToEntityConverter;
 
@@ -60,7 +60,7 @@ public class AggregateReferenceResolvingModuleUnitTests {
 
 	public static class SomeType {
 
-		public void setSomeProperty(Other other) {}
+		void setSomeProperty(Other other) {}
 	}
 
 	@RestResource

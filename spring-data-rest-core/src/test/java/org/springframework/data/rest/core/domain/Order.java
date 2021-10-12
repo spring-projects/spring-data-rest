@@ -26,7 +26,7 @@ import org.springframework.data.annotation.Reference;
  * @author Oliver Gierke
  */
 @Value
-public class Order {
+class Order {
 
 	@Id UUID id = UUID.randomUUID();
 	@Reference Person creator;

@@ -20,11 +20,11 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping.NoOpStringValueResolver;
@@ -41,22 +41,22 @@ import org.springframework.web.cors.CorsConfiguration;
  * @soundtrack Aso Mamiko - Drive Me Crazy (Club Mix)
  * @since 2.6
  */
-@RunWith(MockitoJUnitRunner.class)
-public class RepositoryCorsConfigurationAccessorUnitTests {
+@ExtendWith(MockitoExtension.class)
+class RepositoryCorsConfigurationAccessorUnitTests {
 
 	RepositoryCorsConfigurationAccessor accessor;
 
 	@Mock ResourceMappings mappings;
 	@Mock Repositories repositories;
 
-	@Before
-	public void before() throws Exception {
+	@BeforeEach
+	void before() throws Exception {
 		accessor = new RepositoryCorsConfigurationAccessor(mappings, NoOpStringValueResolver.INSTANCE,
 				Optional.of(repositories));
 	}
 
 	@Test // DATAREST-573
-	public void createConfigurationShouldConstructCorsConfiguration() {
+	void createConfigurationShouldConstructCorsConfiguration() {
 
 		CorsConfiguration configuration = accessor.createConfiguration(AnnotatedRepository.class);
 
@@ -71,7 +71,7 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 	}
 
 	@Test // DATAREST-573
-	public void createConfigurationShouldConstructFullCorsConfiguration() {
+	void createConfigurationShouldConstructFullCorsConfiguration() {
 
 		CorsConfiguration configuration = accessor.createConfiguration(FullyConfiguredCorsRepository.class);
 
@@ -87,7 +87,7 @@ public class RepositoryCorsConfigurationAccessorUnitTests {
 	}
 
 	@Test // DATAREST-994
-	public void returnsNoCorsConfigurationWithNoRepositories() {
+	void returnsNoCorsConfigurationWithNoRepositories() {
 
 		accessor = new RepositoryCorsConfigurationAccessor(mappings, NoOpStringValueResolver.INSTANCE, Optional.empty());
 

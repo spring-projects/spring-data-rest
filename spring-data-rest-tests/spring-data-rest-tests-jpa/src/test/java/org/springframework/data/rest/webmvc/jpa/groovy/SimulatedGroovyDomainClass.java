@@ -29,7 +29,7 @@ import javax.persistence.Id;
  * @author Oliver Gierke
  */
 @Entity
-public class SimulatedGroovyDomainClass implements GroovyObject {
+class SimulatedGroovyDomainClass implements GroovyObject {
 
 	private @Id @GeneratedValue Long id;
 	private String name;
@@ -38,7 +38,7 @@ public class SimulatedGroovyDomainClass implements GroovyObject {
 		return id;
 	}
 
-	public void setId(Long id) {
+	void setId(Long id) {
 		this.id = id;
 	}
 
@@ -46,7 +46,7 @@ public class SimulatedGroovyDomainClass implements GroovyObject {
 		return name;
 	}
 
-	public void setName(String name) {
+	void setName(String name) {
 		this.name = name;
 	}
 

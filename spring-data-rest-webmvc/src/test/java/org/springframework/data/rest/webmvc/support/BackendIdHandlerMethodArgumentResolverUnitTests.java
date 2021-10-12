@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.BaseUri;
@@ -39,7 +39,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  *
  * @author Oliver Drotbohm
  */
-public class BackendIdHandlerMethodArgumentResolverUnitTests {
+class BackendIdHandlerMethodArgumentResolverUnitTests {
 
 	BackendIdConverter converter = mock(BackendIdConverter.class);
 	ResourceMetadataHandlerMethodArgumentResolver delegate = mock(ResourceMetadataHandlerMethodArgumentResolver.class);
@@ -47,7 +47,7 @@ public class BackendIdHandlerMethodArgumentResolverUnitTests {
 			PluginRegistry.of(converter), delegate, BaseUri.NONE);
 
 	@Test // DATAREST-1382
-	public void returnsNullForUrisNotNotContainingUri() throws Exception {
+	void returnsNullForUrisNotNotContainingUri() throws Exception {
 
 		ResourceMetadata metadata = mock(ResourceMetadata.class);
 

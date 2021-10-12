@@ -30,9 +30,9 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.Condition;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.CommonWebTests;
 import org.springframework.data.rest.tests.TestMatchers;
@@ -62,7 +62,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Greg Turnquist
  */
 @ContextConfiguration(classes = MongoDbRepositoryConfig.class)
-public class MongoWebTests extends CommonWebTests {
+class MongoWebTests extends CommonWebTests {
 
 	private static final MediaType TEXT_URI_LIST = MediaType.parseMediaType("text/uri-list");
 
@@ -72,8 +72,8 @@ public class MongoWebTests extends CommonWebTests {
 
 	ObjectMapper mapper = new ObjectMapper();
 
-	@Before
-	public void populateProfiles() {
+	@BeforeEach
+	void populateProfiles() {
 
 		mapper.setSerializationInclusion(Include.NON_NULL);
 
@@ -122,8 +122,8 @@ public class MongoWebTests extends CommonWebTests {
 
 	}
 
-	@After
-	public void cleanUp() {
+	@AfterEach
+	void cleanUp() {
 		repository.deleteAll();
 		userRepository.deleteAll();
 	}
@@ -138,7 +138,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test
-	public void foo() throws Exception {
+	void foo() throws Exception {
 
 		Link profileLink = client.discoverUnique("profiles");
 		client.follow(profileLink).//
@@ -146,7 +146,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test
-	public void rendersEmbeddedDocuments() throws Exception {
+	void rendersEmbeddedDocuments() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
@@ -155,7 +155,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-247
-	public void executeQueryMethodWithPrimitiveReturnType() throws Exception {
+	void executeQueryMethodWithPrimitiveReturnType() throws Exception {
 
 		Link profiles = client.discoverUnique("profiles");
 		Link profileSearches = client.discoverUnique(profiles, "search");
@@ -169,7 +169,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test
-	public void testname() throws Exception {
+	void testname() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
@@ -183,7 +183,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test
-	public void testname2() throws Exception {
+	void testname2() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
@@ -199,7 +199,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-160
-	public void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
+	void returnConflictWhenConcurrentlyEditingVersionedEntity() throws Exception {
 
 		Link receiptLink = client.discoverUnique("receipts");
 
@@ -226,7 +226,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-471
-	public void auditableResourceHasLastModifiedHeaderSet() throws Exception {
+	void auditableResourceHasLastModifiedHeaderSet() throws Exception {
 
 		Profile profile = repository.findAll().iterator().next();
 
@@ -237,7 +237,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-482
-	public void putDoesNotRemoveAssociations() throws Exception {
+	void putDoesNotRemoveAssociations() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
@@ -260,7 +260,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-482
-	public void emptiesAssociationForEmptyUriList() throws Exception {
+	void emptiesAssociationForEmptyUriList() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
@@ -274,7 +274,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-491
-	public void updatesMapPropertyCorrectly() throws Exception {
+	void updatesMapPropertyCorrectly() throws Exception {
 
 		Link profilesLink = client.discoverUnique("profiles");
 		Link profileLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(profilesLink));
@@ -288,7 +288,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-506
-	public void supportsConditionalGetsOnItemResource() throws Exception {
+	void supportsConditionalGetsOnItemResource() throws Exception {
 
 		Receipt receipt = new Receipt();
 		receipt.amount = new BigDecimal(50);
@@ -313,7 +313,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-511
-	public void invokesQueryResourceReturningAnOptional() throws Exception {
+	void invokesQueryResourceReturningAnOptional() throws Exception {
 
 		Profile profile = repository.findAll().iterator().next();
 
@@ -324,7 +324,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-517
-	public void returnsNotFoundIfQueryExecutionDoesNotReturnResult() throws Exception {
+	void returnsNotFoundIfQueryExecutionDoesNotReturnResult() throws Exception {
 
 		Link link = client.discoverUnique("profiles", "search", "findProfileById");
 
@@ -333,7 +333,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-712
-	public void invokesQueryMethodTakingAReferenceCorrectly() throws Exception {
+	void invokesQueryMethodTakingAReferenceCorrectly() throws Exception {
 
 		Link link = client.discoverUnique("users", "search", "findByColleaguesContains");
 
@@ -346,7 +346,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-835
-	public void exposesETagHeaderForSearchResourceYieldingItemResource() throws Exception {
+	void exposesETagHeaderForSearchResourceYieldingItemResource() throws Exception {
 
 		Link link = client.discoverUnique("profiles", "search", "findProfileById");
 
@@ -358,7 +358,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-835
-	public void doesNotAddETagHeaderForCollectionQueryResource() throws Exception {
+	void doesNotAddETagHeaderForCollectionQueryResource() throws Exception {
 
 		Link link = client.discoverUnique("profiles", "search", "findByType");
 
@@ -370,7 +370,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-1458
-	public void accessCollectionAssociationResourceAsUriList() throws Exception {
+	void accessCollectionAssociationResourceAsUriList() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
@@ -383,7 +383,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-1458
-	public void accessAssociationResourceAsUriList() throws Exception {
+	void accessAssociationResourceAsUriList() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
@@ -395,7 +395,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-1458
-	public void accessMapCollectionAssociationResourceAsUriList() throws Exception {
+	void accessMapCollectionAssociationResourceAsUriList() throws Exception {
 
 		Link usersLink = client.discoverUnique("users");
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
@@ -409,7 +409,7 @@ public class MongoWebTests extends CommonWebTests {
 	}
 
 	@Test // DATAREST-762
-	public void paginatedLinksContainQuerydslPropertyReferences() throws Exception {
+	void paginatedLinksContainQuerydslPropertyReferences() throws Exception {
 
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("page", "0");

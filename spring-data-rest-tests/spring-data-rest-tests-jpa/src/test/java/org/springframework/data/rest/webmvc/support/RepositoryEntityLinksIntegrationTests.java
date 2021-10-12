@@ -17,7 +17,7 @@ package org.springframework.data.rest.webmvc.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -40,13 +40,13 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Oliver Gierke
  */
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
-public class RepositoryEntityLinksIntegrationTests extends AbstractControllerIntegrationTests {
+class RepositoryEntityLinksIntegrationTests extends AbstractControllerIntegrationTests {
 
 	@Autowired RepositoryRestConfiguration configuration;
 	@Autowired RepositoryEntityLinks entityLinks;
 
 	@Test
-	public void returnsLinkToSingleResource() {
+	void returnsLinkToSingleResource() {
 
 		Link link = entityLinks.linkToItemResource(Person.class, 1);
 
@@ -55,7 +55,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	}
 
 	@Test
-	public void returnsTemplatedLinkForPagingResource() {
+	void returnsTemplatedLinkForPagingResource() {
 
 		Link link = entityLinks.linkToCollectionResource(Person.class);
 
@@ -65,7 +65,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	}
 
 	@Test // DATAREST-221
-	public void returnsLinkWithProjectionTemplateVariableIfProjectionIsDefined() {
+	void returnsLinkWithProjectionTemplateVariableIfProjectionIsDefined() {
 
 		Link link = entityLinks.linkToItemResource(Order.class, 1);
 
@@ -74,14 +74,14 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	}
 
 	@Test // DATAREST-155
-	public void usesCustomGeneratedBackendId() {
+	void usesCustomGeneratedBackendId() {
 
 		Link link = entityLinks.linkToItemResource(Book.class, 7L);
 		assertThat(link.expand().getHref()).endsWith("/7-7-7-7-7-7-7");
 	}
 
 	@Test // DATAREST-317
-	public void adaptsToExistingPageable() {
+	void adaptsToExistingPageable() {
 
 		Link link = entityLinks.linkToPagedResource(Person.class, PageRequest.of(0, 10));
 
@@ -91,7 +91,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	}
 
 	@Test // DATAREST-467
-	public void returnsLinksToSearchResources() {
+	void returnsLinksToSearchResources() {
 
 		Links links = entityLinks.linksToSearchResources(Person.class);
 
@@ -103,7 +103,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	}
 
 	@Test // DATAREST-467
-	public void returnsLinkToSearchResource() {
+	void returnsLinkToSearchResource() {
 
 		Link link = entityLinks.linkToSearchResource(Person.class, LinkRelation.of("firstname"));
 
@@ -113,7 +113,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	}
 
 	@Test // DATAREST-467, DATAREST-519
-	public void prepopulatesPaginationInformationForSearchResourceLink() {
+	void prepopulatesPaginationInformationForSearchResourceLink() {
 
 		Link link = entityLinks.linkToSearchResource(Person.class, LinkRelation.of("firstname"), PageRequest.of(0, 10));
 
@@ -127,7 +127,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	}
 
 	@Test // DATAREST-467
-	public void returnsTemplatedLinkForSortedSearchResource() {
+	void returnsTemplatedLinkForSortedSearchResource() {
 
 		Link link = entityLinks.linkToSearchResource(Person.class, LinkRelation.of("lastname"));
 
@@ -136,7 +136,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	}
 
 	@Test // DATAREST-467, DATAREST-519
-	public void prepopulatesSortInformationForSearchResourceLink() {
+	void prepopulatesSortInformationForSearchResourceLink() {
 
 		Link link = entityLinks.linkToSearchResource(Person.class, LinkRelation.of("lastname"), Sort.by("firstname"));
 
@@ -150,7 +150,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	}
 
 	@Test // DATAREST-668, DATAREST-519, DATAREST-467
-	public void addsProjectVariableToSearchResourceIfAvailable() {
+	void addsProjectVariableToSearchResourceIfAvailable() {
 
 		for (Link link : entityLinks.linksToSearchResources(Book.class)) {
 			assertThat(link.getVariableNames()).contains("projection");
@@ -158,7 +158,7 @@ public class RepositoryEntityLinksIntegrationTests extends AbstractControllerInt
 	}
 
 	@Test // #1980
-	public void considersIdConverterInLinkForItemResource() {
+	void considersIdConverterInLinkForItemResource() {
 
 		Link link = entityLinks.linkForItemResource(Book.class, 7L).withSelfRel();
 

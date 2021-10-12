@@ -23,12 +23,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter;
@@ -54,23 +54,23 @@ import com.querydsl.core.types.Predicate;
  *
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUnitTests {
+@ExtendWith(MockitoExtension.class)
+class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUnitTests {
 
 	static final Map<String, String[]> NO_PARAMETERS = Collections.emptyMap();
 
 	@Mock Repositories repositories;
 	@Mock RepositoryInvokerFactory invokerFactory;
 	@Mock ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver;
-	@Mock QuerydslPredicateBuilder builder;
+	@Mock(lenient = true) QuerydslPredicateBuilder builder;
 
 	@Mock RepositoryInvoker invoker;
 	@Mock MethodParameter parameter;
 
 	QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver resolver;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		QuerydslBindingsFactory factory = new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE);
 		ReflectionTestUtils.setField(factory, "repositories", Optional.of(repositories));
@@ -83,7 +83,7 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 	}
 
 	@Test // DATAREST-616
-	public void returnsInvokerIfRepositoryIsNotQuerydslAware() {
+	void returnsInvokerIfRepositoryIsNotQuerydslAware() {
 
 		ReceiptRepository repository = mock(ReceiptRepository.class);
 		when(repositories.getRepositoryFor(Receipt.class)).thenReturn(Optional.of(repository));
@@ -94,7 +94,7 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 	}
 
 	@Test // DATAREST-616
-	public void wrapsInvokerInQuerydslAdapter() {
+	void wrapsInvokerInQuerydslAdapter() {
 
 		Object repository = mock(QuerydslUserRepository.class);
 		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(repository));
@@ -105,7 +105,7 @@ public class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUn
 	}
 
 	@Test // DATAREST-616
-	public void invokesCustomizationOnRepositoryIfItImplementsCustomizer() {
+	void invokesCustomizationOnRepositoryIfItImplementsCustomizer() {
 
 		QuerydslCustomizingUserRepository repository = mock(QuerydslCustomizingUserRepository.class);
 		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(repository));

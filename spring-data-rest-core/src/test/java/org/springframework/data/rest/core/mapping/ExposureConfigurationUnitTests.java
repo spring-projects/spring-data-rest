@@ -19,17 +19,17 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpMethod.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link ExposureConfiguration}.
  *
  * @author Oliver Gierke
  */
-public class ExposureConfigurationUnitTests {
+class ExposureConfigurationUnitTests {
 
 	@Test // DATAREST-948
-	public void appliesTypeBasedCollectionFiltersOnlyForMatchingTypes() {
+	void appliesTypeBasedCollectionFiltersOnlyForMatchingTypes() {
 
 		ExposureConfiguration configuration = new ExposureConfiguration();
 
@@ -43,7 +43,7 @@ public class ExposureConfigurationUnitTests {
 	}
 
 	@Test // DATAREST-948
-	public void appliesTypeBasedItemFiltersOnlyForMatchingTypes() {
+	void appliesTypeBasedItemFiltersOnlyForMatchingTypes() {
 
 		ExposureConfiguration configuration = new ExposureConfiguration();
 
@@ -57,7 +57,7 @@ public class ExposureConfigurationUnitTests {
 	}
 
 	@Test // DATAREST-948
-	public void appliesTypeSpecificFilterForAggregateSubTypes() {
+	void appliesTypeSpecificFilterForAggregateSubTypes() {
 
 		ExposureConfiguration configuration = new ExposureConfiguration();
 		configuration.forDomainType(Sample.class).withItemExposure((metadata, methods) -> methods.disable(POST));

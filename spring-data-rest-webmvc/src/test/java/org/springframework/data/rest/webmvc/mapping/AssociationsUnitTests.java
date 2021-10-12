@@ -21,11 +21,13 @@ import static org.mockito.Mockito.*;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
@@ -45,8 +47,9 @@ import org.springframework.hateoas.Link;
 /**
  * @author Oliver Gierke
  */
-@RunWith(MockitoJUnitRunner.class)
-public class AssociationsUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class AssociationsUnitTests {
 
 	@Mock RepositoryRestConfiguration configuration;
 	@Mock ProjectionDefinitionConfiguration projectionDefinitionConfiguration;
@@ -59,8 +62,8 @@ public class AssociationsUnitTests {
 	KeyValueMappingContext<?, ?> mappingContext;
 	ResourceMappings mappings;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		doReturn(projectionDefinitionConfiguration).when(configuration).getProjectionConfiguration();
 
 		this.mappingContext = new KeyValueMappingContext<>();
@@ -71,23 +74,27 @@ public class AssociationsUnitTests {
 		this.associations = new Associations(mappings, configuration);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullMappings() {
-		new Associations(null, configuration);
-	}
+	@Test
+	void rejectsNullMappings() {
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullConfiguration() {
-		new Associations(mappings, null);
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new Associations(null, configuration));
 	}
 
 	@Test
-	public void handlesNullPropertyForLookupTypeCheck() {
+	void rejectsNullConfiguration() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new Associations(mappings, null));
+	}
+
+	@Test
+	void handlesNullPropertyForLookupTypeCheck() {
 		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> associations.isLookupType(null));
 	}
 
 	@Test
-	public void forwardsLookupTypeCheckToConfiguration() {
+	void forwardsLookupTypeCheckToConfiguration() {
 
 		doReturn(Root.class).when(property).getActualType();
 		assertThat(associations.isLookupType(property)).isFalse();
@@ -97,7 +104,7 @@ public class AssociationsUnitTests {
 	}
 
 	@Test
-	public void forwardsIdExposureCheckToConfiguration() {
+	void forwardsIdExposureCheckToConfiguration() {
 
 		doReturn(Root.class).when(entity).getType();
 		assertThat(associations.isIdExposed(entity)).isFalse();
@@ -107,17 +114,17 @@ public class AssociationsUnitTests {
 	}
 
 	@Test
-	public void exposesConfiguredMapping() {
+	void exposesConfiguredMapping() {
 		assertThat(associations.getMappings()).isEqualTo(mappings);
 	}
 
 	@Test
-	public void forwardsMetadataLookupToMappings() {
+	void forwardsMetadataLookupToMappings() {
 		assertThat(associations.getMetadataFor(Root.class)).isNotNull();
 	}
 
 	@Test
-	public void detectsAssociationLinks() {
+	void detectsAssociationLinks() {
 
 		List<Link> links = associations.getLinksFor(getAssociation(Root.class, "relatedAndExported"), new Path(""));
 
@@ -126,7 +133,7 @@ public class AssociationsUnitTests {
 	}
 
 	@Test
-	public void doesNotCreateAssociationLinkIfTargetIsNotExported() {
+	void doesNotCreateAssociationLinkIfTargetIsNotExported() {
 
 		List<Link> links = associations.getLinksFor(getAssociation(Root.class, "relatedButNotExported"), new Path(""));
 
@@ -134,7 +141,7 @@ public class AssociationsUnitTests {
 	}
 
 	@Test // DATAREST-1105
-	public void detectsProjectionsForAssociationLinks() {
+	void detectsProjectionsForAssociationLinks() {
 
 		String projectionParameterName = "projection";
 

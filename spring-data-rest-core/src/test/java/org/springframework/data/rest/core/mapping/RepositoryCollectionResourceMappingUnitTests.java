@@ -17,7 +17,7 @@ package org.springframework.data.rest.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.Repository;
@@ -34,10 +34,10 @@ import org.springframework.hateoas.LinkRelation;
  *
  * @author Oliver Gierke
  */
-public class RepositoryCollectionResourceMappingUnitTests {
+class RepositoryCollectionResourceMappingUnitTests {
 
 	@Test
-	public void buildsDefaultMappingForRepository() {
+	void buildsDefaultMappingForRepository() {
 
 		CollectionResourceMapping mapping = getResourceMappingFor(PersonRepository.class);
 
@@ -48,7 +48,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 	}
 
 	@Test
-	public void honorsAnnotatedsMapping() {
+	void honorsAnnotatedsMapping() {
 
 		CollectionResourceMapping mapping = getResourceMappingFor(AnnotatedPersonRepository.class);
 
@@ -59,7 +59,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 	}
 
 	@Test
-	public void repositoryAnnotationTrumpsDomainTypeMapping() {
+	void repositoryAnnotationTrumpsDomainTypeMapping() {
 
 		CollectionResourceMapping mapping = getResourceMappingFor(AnnotatedAnnotatedPersonRepository.class);
 
@@ -70,19 +70,19 @@ public class RepositoryCollectionResourceMappingUnitTests {
 	}
 
 	@Test
-	public void doesNotExposeRepositoryForPublicDomainTypeIfRepoIsPackageProtected() {
+	void doesNotExposeRepositoryForPublicDomainTypeIfRepoIsPackageProtected() {
 
 		ResourceMapping mapping = getResourceMappingFor(PackageProtectedRepository.class);
 		assertThat(mapping.isExported()).isFalse();
 	}
 
 	@Test // DATAREST-229
-	public void detectsPagingRepository() {
+	void detectsPagingRepository() {
 		assertThat(getResourceMappingFor(PersonRepository.class).isPagingResource()).isTrue();
 	}
 
 	@Test
-	public void discoversCustomizationsUsingRestRepositoryResource() {
+	void discoversCustomizationsUsingRestRepositoryResource() {
 
 		CollectionResourceMapping mapping = getResourceMappingFor(RepositoryAnnotatedRepository.class);
 		assertThat(mapping.getRel()).isEqualTo(LinkRelation.of("foo"));
@@ -90,7 +90,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-445
-	public void usesDomainTypeFromRepositoryMetadata() {
+	void usesDomainTypeFromRepositoryMetadata() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(PersonRepository.class) {
 
@@ -107,7 +107,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-1401
-	public void rejectsPathsWithMultipleSegments() {
+	void rejectsPathsWithMultipleSegments() {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(InvalidPath.class);
 
@@ -119,7 +119,7 @@ public class RepositoryCollectionResourceMappingUnitTests {
 	}
 
 	@Test // DATAREST-1401
-	public void exposesProjectionTypeIfConfigured() {
+	void exposesProjectionTypeIfConfigured() {
 
 		assertThat(getResourceMappingFor(WithProjection.class).getExcerptProjection()).hasValue(Object.class);
 		assertThat(getResourceMappingFor(WithoutProjection.class).getExcerptProjection()).isEmpty();

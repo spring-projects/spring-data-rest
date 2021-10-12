@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings;
@@ -34,12 +34,12 @@ import org.springframework.hateoas.Link;
  *
  * @author Oliver Gierke
  */
-public class RepositoryLinkBuildUnitTests {
+class RepositoryLinkBuildUnitTests {
 
 	MongoMappingContext context = new MongoMappingContext();
 
 	@Test // DATAREST-292
-	public void usesCurrentRequestsUriBaseForRelativeBaseUri() {
+	void usesCurrentRequestsUriBaseForRelativeBaseUri() {
 
 		TestMvcClient.initWebTest();
 
@@ -47,7 +47,7 @@ public class RepositoryLinkBuildUnitTests {
 	}
 
 	@Test // DATAREST-292, DATAREST-296
-	public void usesBaseUriOnlyIfItIsAbsolute() {
+	void usesBaseUriOnlyIfItIsAbsolute() {
 		assertRootUriFor("http://foobar/api", "http://foobar/api/profile");
 	}
 

@@ -25,11 +25,11 @@ import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.data.domain.Sort;
@@ -57,8 +57,8 @@ import org.springframework.web.util.pattern.PathPattern;
  * @author Greg Turnquist
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class RepositoryRestHandlerMappingUnitTests {
+@ExtendWith(MockitoExtension.class)
+class RepositoryRestHandlerMappingUnitTests {
 
 	static final AnnotationConfigWebApplicationContext CONTEXT = new AnnotationConfigWebApplicationContext();
 
@@ -68,8 +68,8 @@ public class RepositoryRestHandlerMappingUnitTests {
 		CONTEXT.refresh();
 	}
 
-	@Mock ResourceMappings mappings;
-	@Mock ResourceMetadata resourceMetadata;
+	@Mock(lenient = true) ResourceMappings mappings;
+	@Mock(lenient = true) ResourceMetadata resourceMetadata;
 	@Mock Repositories repositories;
 
 	RepositoryRestConfiguration configuration;
@@ -77,8 +77,8 @@ public class RepositoryRestHandlerMappingUnitTests {
 	MockHttpServletRequest mockRequest;
 	Method listEntitiesMethod, rootHandlerMethod;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 
 		configuration = new RepositoryRestConfiguration(new ProjectionDefinitionConfiguration(),
 				new MetadataConfiguration(), mock(EnumTranslationConfiguration.class));
@@ -99,23 +99,27 @@ public class RepositoryRestHandlerMappingUnitTests {
 		rootHandlerMethod = RepositoryController.class.getMethod("listRepositories");
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullMappings() {
-		new RepositoryRestHandlerMapping(null, configuration);
+	@Test
+	void rejectsNullMappings() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new RepositoryRestHandlerMapping(null, configuration));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void rejectsNullConfiguration() {
-		new RepositoryRestHandlerMapping(mappings, null);
+	@Test
+	void rejectsNullConfiguration() {
+
+		assertThatIllegalArgumentException() //
+				.isThrownBy(() -> new RepositoryRestHandlerMapping(mappings, null));
 	}
 
 	@Test // DATAREST-111
-	public void returnsNullForUriNotMapped() throws Exception {
+	void returnsNullForUriNotMapped() throws Exception {
 		assertThat(handlerMapping.get().getHandler(mockRequest)).isNull();
 	}
 
 	@Test // DATAREST-111
-	public void looksUpRepositoryEntityControllerMethodCorrectly() throws Exception {
+	void looksUpRepositoryEntityControllerMethodCorrectly() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/people");
@@ -127,7 +131,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-292
-	public void returnsRepositoryHandlerMethodWithBaseUriConfigured() throws Exception {
+	void returnsRepositoryHandlerMethodWithBaseUriConfigured() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/base/people");
@@ -141,7 +145,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-292
-	public void returnsRootHandlerMethodWithBaseUriConfigured() throws Exception {
+	void returnsRootHandlerMethodWithBaseUriConfigured() throws Exception {
 
 		mockRequest = new MockHttpServletRequest("GET", "/base");
 
@@ -154,7 +158,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-276
-	public void returnsRepositoryHandlerMethodForAbsoluteBaseUri() throws Exception {
+	void returnsRepositoryHandlerMethodForAbsoluteBaseUri() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/base/people/");
@@ -168,7 +172,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-276
-	public void returnsRepositoryHandlerMethodForAbsoluteBaseUriWithServletMapping() throws Exception {
+	void returnsRepositoryHandlerMethodForAbsoluteBaseUriWithServletMapping() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 		mockRequest = new MockHttpServletRequest("GET", "/base/people");
@@ -183,7 +187,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-276
-	public void refrainsFromMappingIfTheRequestDoesNotPointIntoAbsolutelyDefinedUriSpace() throws Exception {
+	void refrainsFromMappingIfTheRequestDoesNotPointIntoAbsolutelyDefinedUriSpace() throws Exception {
 
 		mockRequest = new MockHttpServletRequest("GET", "/servlet-path");
 		mockRequest.setServletPath("/servlet-path");
@@ -196,7 +200,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-276
-	public void refrainsFromMappingWhenUrisDontMatch() throws Exception {
+	void refrainsFromMappingWhenUrisDontMatch() throws Exception {
 
 		String baseUri = "foo";
 		String uri = baseUri.concat("/people");
@@ -213,7 +217,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-609
-	public void rejectsUnexpandedUriTemplateWithNotFound() throws Exception {
+	void rejectsUnexpandedUriTemplateWithNotFound() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 
@@ -223,7 +227,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-1019
-	public void resolvesCorsConfigurationFromRequestUri() {
+	void resolvesCorsConfigurationFromRequestUri() {
 
 		String uri = "/people";
 
@@ -240,7 +244,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-1019
-	public void stripsBaseUriForCorsConfigurationResolution() {
+	void stripsBaseUriForCorsConfigurationResolution() {
 
 		String baseUri = "/foo";
 		String uri = baseUri.concat("/people");
@@ -260,12 +264,12 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-994
-	public void twoArgumentConstructorDoesNotThrowException() {
+	void twoArgumentConstructorDoesNotThrowException() {
 		new RepositoryRestHandlerMapping(mappings, configuration);
 	}
 
 	@Test // DATAREST-1132
-	public void detectsAnnotationsOnProxies() {
+	void detectsAnnotationsOnProxies() {
 
 		Class<?> type = createProxy(new SomeController());
 
@@ -278,7 +282,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-1294
-	public void exposesEffectiveRepositoryLookupPathAsRequestAttribute() throws Exception {
+	void exposesEffectiveRepositoryLookupPathAsRequestAttribute() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 
@@ -293,7 +297,7 @@ public class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-1332
-	public void handlesCorsPreflightRequestsProperly() throws Exception {
+	void handlesCorsPreflightRequestsProperly() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
 
