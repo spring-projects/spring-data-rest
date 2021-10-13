@@ -46,12 +46,14 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
+import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.AssociationOmittingSerializerModifier;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
@@ -62,8 +64,11 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -95,6 +100,7 @@ class PersistentEntityJackson2ModuleUnitTests {
 		mappingContext.getPersistentEntity(PersistentEntityJackson2ModuleUnitTests.PetOwner.class);
 		mappingContext.getPersistentEntity(Immutable.class);
 		mappingContext.getPersistentEntity(Wrapper.class);
+		mappingContext.getPersistentEntity(Surrounding.class);
 
 		this.persistentEntities = new PersistentEntities(Arrays.asList(mappingContext));
 
@@ -102,12 +108,13 @@ class PersistentEntityJackson2ModuleUnitTests {
 
 		NestedEntitySerializer nestedEntitySerializer = new NestedEntitySerializer(persistentEntities,
 				new EmbeddedResourcesAssembler(persistentEntities, associations, mock(ExcerptProjector.class)), invoker);
-		SimpleModule module = new SimpleModule();
 
+		SimpleModule module = new SimpleModule();
 		module.setSerializerModifier(new AssociationOmittingSerializerModifier(persistentEntities, associations,
 				nestedEntitySerializer, new LookupObjectSerializer(PluginRegistry.of(new HomeLookup()))));
 		module.setDeserializerModifier(
 				new AssociationUriResolvingDeserializerModifier(persistentEntities, associations, converter, factory));
+		module.addSerializer(new CustomTypeSerializer());
 
 		this.mapper = new ObjectMapper();
 		this.mapper.registerModule(module);
@@ -213,6 +220,14 @@ class PersistentEntityJackson2ModuleUnitTests {
 		assertThat(mapper.writeValueAsString(wrapper)).isEqualTo("{\"value\":\"sample\"}");
 	}
 
+	@Test // GH-2056
+	void doesNotWrapValuesWithoutUnwrappingSerializer() {
+
+		EntityModel<Surrounding> model = PersistentEntityResource.of(new Surrounding());
+
+		assertThatNoException().isThrownBy(() -> mapper.writeValueAsString(model));
+	}
+
 	/**
 	 * @author Oliver Gierke
 	 */
@@ -283,5 +298,36 @@ class PersistentEntityJackson2ModuleUnitTests {
 
 	static class ValueType {
 		@JsonValue String value;
+	}
+
+	// GH-2056
+
+	@Data
+	static class Surrounding {
+		CustomType custom = new CustomType();
+	}
+
+	static class CustomType {}
+
+	static class CustomTypeSerializer extends StdSerializer<CustomType> {
+
+		private static final long serialVersionUID = -3841651446883968079L;
+
+		public CustomTypeSerializer() {
+			super(CustomType.class);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
+		 */
+		@Override
+		public void serialize(CustomType value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+
+			gen.writeStartObject();
+			gen.writeFieldName("foo");
+			gen.writeString("bar");
+			gen.writeEndObject();
+		}
 	}
 }
