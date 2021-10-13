@@ -406,6 +406,12 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				return value;
 			}
 
+			JsonSerializer<Object> unwrappingSerializer = serializer.unwrappingSerializer(NameTransformer.NOP);
+
+			if (!unwrappingSerializer.isUnwrappingSerializer()) {
+				return value;
+			}
+
 			PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(value.getClass());
 
 			return invoker.invokeProcessorsFor(PersistentEntityResource.build(value, entity).//
