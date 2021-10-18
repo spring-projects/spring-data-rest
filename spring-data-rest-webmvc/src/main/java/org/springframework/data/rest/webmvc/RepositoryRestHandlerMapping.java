@@ -392,6 +392,10 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 				config.addExposedHeader(resolveCorsAnnotationValue(header));
 			}
 
+			for (String originPattern : annotation.originPatterns()) {
+				config.addAllowedOriginPattern(originPattern);
+			}
+
 			String allowCredentials = resolveCorsAnnotationValue(annotation.allowCredentials());
 
 			if ("true".equalsIgnoreCase(allowCredentials)) {

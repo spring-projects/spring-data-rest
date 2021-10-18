@@ -70,7 +70,7 @@ class RepositoryCorsConfigurationAccessorUnitTests {
 		assertThat(configuration.getMaxAge()).isEqualTo(1800L);
 	}
 
-	@Test // DATAREST-573
+	@Test // DATAREST-573, #2077
 	void createConfigurationShouldConstructFullCorsConfiguration() {
 
 		CorsConfiguration configuration = accessor.createConfiguration(FullyConfiguredCorsRepository.class);
@@ -84,6 +84,7 @@ class RepositoryCorsConfigurationAccessorUnitTests {
 		assertThat(configuration.getAllowedMethods()).doesNotContain("DELETE");
 		assertThat(configuration.getAllowCredentials()).isTrue();
 		assertThat(configuration.getMaxAge()).isEqualTo(1234L);
+		assertThat(configuration.getAllowedOriginPatterns()).containsExactly("somePattern");
 	}
 
 	@Test // DATAREST-994
@@ -105,6 +106,7 @@ class RepositoryCorsConfigurationAccessorUnitTests {
 			allowedHeaders = "Content-type", //
 			maxAge = 1234, exposedHeaders = "Accept", //
 			methods = RequestMethod.PATCH, //
-			allowCredentials = "true")
+			allowCredentials = "true", //
+			originPatterns = "somePattern")
 	interface FullyConfiguredCorsRepository {}
 }
