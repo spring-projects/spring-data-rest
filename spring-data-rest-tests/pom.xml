@@ -18,7 +18,7 @@
 		<module>spring-data-rest-tests-geode</module>
 		<module>spring-data-rest-tests-jpa</module>
 		<module>spring-data-rest-tests-mongodb</module>
-		<!--<module>spring-data-rest-tests-security</module>-->
+		<module>spring-data-rest-tests-security</module>
 		<module>spring-data-rest-tests-shop</module>
 	</modules>
 
