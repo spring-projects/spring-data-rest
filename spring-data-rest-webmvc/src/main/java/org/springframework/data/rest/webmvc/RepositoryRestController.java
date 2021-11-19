@@ -21,6 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerMapping;
@@ -46,4 +47,9 @@ import org.springframework.web.servlet.HandlerMapping;
 @Target({ ElementType.TYPE, ElementType.ANNOTATION_TYPE })
 @BasePathAwareController
 public @interface RepositoryRestController {
+    @AliasFor("path")
+    String[] value() default {};
+
+    @AliasFor("value")
+    String[] path() default {};
 }
