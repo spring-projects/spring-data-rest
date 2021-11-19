@@ -19,11 +19,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -41,6 +38,8 @@ import org.springframework.web.servlet.mvc.condition.ProducesRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import static org.springframework.core.annotation.AnnotatedElementUtils.*;
+
 /**
  * A {@link RequestMappingHandlerMapping} that augments the request mappings
  *
@@ -50,6 +49,8 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 	private static final String AT_REQUEST_MAPPING_ON_TYPE = "Spring Data REST controller %s must not use @RequestMapping on class level as this would cause double registration with Spring MVC!";
 	private final RepositoryRestConfiguration configuration;
+
+	private final String baseUri;
 
 	/**
 	 * Creates a new {@link BasePathAwareHandlerMapping} using the given {@link RepositoryRestConfiguration}.
@@ -61,16 +62,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
 
 		this.configuration = configuration;
-
-		String baseUri = configuration.getBasePath().toString();
-
-		if (StringUtils.hasText(baseUri)) {
-
-			Map<String, Predicate<Class<?>>> prefixes = new HashMap<>();
-			prefixes.put(baseUri, it -> true);
-
-			this.setPathPrefixes(prefixes);
-		}
+		this.baseUri = configuration.getBasePath().toString();
 	}
 
 	/*
@@ -128,9 +120,22 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		ProducesRequestCondition producesCondition = customize(info.getProducesCondition());
 		Set<MediaType> mediaTypes = producesCondition.getProducibleMediaTypes();
 
+		BasePathAwareController mergedAnnotation = findMergedAnnotation(handlerType, BasePathAwareController.class);
+		if (mergedAnnotation != null) {
+			info = appendPathPrefix(info, mergedAnnotation.value());
+		}
+		info = appendPathPrefix(info, new String[]{this.baseUri});
 		return info.mutate()
 				.produces(mediaTypes.stream().map(MediaType::toString).toArray(String[]::new))
 				.build();
+	}
+
+	private RequestMappingInfo appendPathPrefix(RequestMappingInfo info, String[] pathPrefix) {
+		if (pathPrefix.length > 0) {
+			String[] paths = this.resolveEmbeddedValuesInPatterns(pathPrefix);
+			return info.mutate().paths(paths).build().combine(info);
+		}
+		return info;
 	}
 
 	/**
