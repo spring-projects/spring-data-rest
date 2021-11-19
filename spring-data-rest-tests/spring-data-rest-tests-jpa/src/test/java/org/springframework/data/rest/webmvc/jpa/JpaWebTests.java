@@ -682,10 +682,13 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 	}
 
-	@Test // DATAREST-910
+	@Test // DATAREST-910 DATAREST-2088
 	void callUnmappedCustomRepositoryController() throws Exception {
-
+		mvc.perform(post("/orders/v3/search/sort")).andExpect(status().isNotFound());
 		mvc.perform(post("/orders/search/sort")).andExpect(status().isOk());
+		mvc.perform(post("/orders/search/sorted")).andExpect(status().isOk());
+		mvc.perform(post("/orders/v2/search/sort")).andExpect(status().isOk());
+		mvc.perform(post("/orders/v2/search/sorted")).andExpect(status().isOk());
 		mvc.perform(post("/orders/search/sort?sort=type&page=1&size=10")).andExpect(status().isOk());
 	}
 
