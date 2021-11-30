@@ -449,35 +449,35 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 	private static String prefix(HttpMethod method) {
 
-		switch (method) {
-			case GET:
-				return "get-";
-			case POST:
-				return "create-";
-			case DELETE:
-				return "delete-";
-			case PUT:
-				return "update-";
-			case PATCH:
-				return "patch-";
-			default:
-				throw new IllegalArgumentException(method.name());
+		if (HttpMethod.GET.equals(method)) {
+			return "get-";
+		} else if (HttpMethod.POST.equals(method)) {
+			return "create-";
+		} else if (HttpMethod.DELETE.equals(method)) {
+			return "delete-";
+		} else if (HttpMethod.PUT.equals(method)) {
+			return "update-";
+		} else if (HttpMethod.PATCH.equals(method)) {
+			return "patch-";
+		} else {
+			throw new IllegalArgumentException(method.name());
 		}
 	}
 
 	private static Type getType(HttpMethod method) {
 
-		switch (method) {
-			case GET:
-				return Type.SAFE;
-			case PUT:
-			case DELETE:
-				return Type.IDEMPOTENT;
-			case POST:
-			case PATCH:
-				return Type.UNSAFE;
-			default:
-				return null;
+		if (HttpMethod.GET.equals(method)) {
+			return Type.SAFE;
+		} else if (HttpMethod.PUT.equals(method)) {
+			return Type.IDEMPOTENT;
+		} else if (HttpMethod.DELETE.equals(method)) {
+			return Type.IDEMPOTENT;
+		} else if (HttpMethod.POST.equals(method)) {
+			return Type.UNSAFE;
+		} else if (HttpMethod.PATCH.equals(method)) {
+			return Type.UNSAFE;
+		} else {
+			return null;
 		}
 	}
 }
