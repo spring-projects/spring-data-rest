@@ -29,10 +29,6 @@ public enum JsonSchemaFormat {
 
 	EMAIL, DATE_TIME, HOSTNAME, IPV4, IPV6, URI;
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Enum#toString()
-	 */
 	@JsonValue
 	public String toString() {
 		return name().toLowerCase(Locale.US).replaceAll("_", "-");

@@ -64,19 +64,11 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 		this.baseUri = baseUri;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
-	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		return parameter.hasParameterAnnotation(BackendId.class);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
-	 */
 	@Override
 	public Serializable resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest request, WebDataBinderFactory binderFactory) throws Exception {

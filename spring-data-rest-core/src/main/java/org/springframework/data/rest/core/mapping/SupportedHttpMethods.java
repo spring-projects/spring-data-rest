@@ -59,28 +59,16 @@ public interface SupportedHttpMethods {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getSupportedHttpMethods(org.springframework.data.rest.core.mapping.ResourceType)
-		 */
 		@Override
 		public HttpMethods getMethodsFor(ResourceType resourcType) {
 			return HttpMethods.none();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getMethodsFor(org.springframework.data.mapping.PersistentProperty)
-		 */
 		@Override
 		public HttpMethods getMethodsFor(PersistentProperty<?> property) {
 			return HttpMethods.none();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#allowsPutForCreation()
-		 */
 		@Override
 		public boolean allowsPutForCreation() {
 			return false;

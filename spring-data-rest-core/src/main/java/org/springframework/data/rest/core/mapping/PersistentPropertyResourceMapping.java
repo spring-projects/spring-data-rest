@@ -55,10 +55,6 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 		this.description = Optional.ofNullable(property.findAnnotation(Description.class));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getPath()
-	 */
 	@Override
 	public Path getPath() {
 
@@ -67,10 +63,6 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 				.orElseGet(() -> new Path(property.getName()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
-	 */
 	@Override
 	public LinkRelation getRel() {
 
@@ -79,10 +71,6 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 				.orElseGet(() -> property.getName()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
-	 */
 	@Override
 	public boolean isExported() {
 
@@ -97,19 +85,11 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 				: false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isPagingResource()
-	 */
 	@Override
 	public boolean isPagingResource() {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
-	 */
 	@Override
 	public ResourceDescription getDescription() {
 
@@ -122,10 +102,6 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 				.orElse(fallback);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.PropertyAwareResourceMapping#getProperty()
-	 */
 	@Override
 	public PersistentProperty<?> getProperty() {
 		return property;

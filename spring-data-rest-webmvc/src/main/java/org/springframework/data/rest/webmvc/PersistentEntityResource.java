@@ -234,10 +234,6 @@ public class PersistentEntityResource extends EntityModel<Object> {
 			super(content);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.hateoas.RepresentationModel#getLinks()
-		 */
 		@Override
 		@JsonIgnore
 		public Links getLinks() {

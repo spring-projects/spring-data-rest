@@ -588,10 +588,6 @@ public class DomainObjectReader {
 			this.delegate = delegate;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
-		 */
 		@Override
 		public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
 
@@ -642,10 +638,6 @@ public class DomainObjectReader {
 			return this.properties;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.SimplePropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
-		 */
 		@Override
 		public void doWithPersistentProperty(PersistentProperty<?> property) {
 

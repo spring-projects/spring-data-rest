@@ -76,10 +76,6 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#lookupHandlerMethod(java.lang.String, jakarta.servlet.http.HttpServletRequest)
-	 */
 	@Override
 	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
 
@@ -106,19 +102,11 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		return super.lookupHandlerMethod(lookupPath, new CustomAcceptHeaderHttpServletRequest(request, mediaTypes));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.AbstractHandlerMapping#hasCorsConfigurationSource(java.lang.Object)
-	 */
 	@Override
 	protected boolean hasCorsConfigurationSource(Object handler) {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping#getMappingForMethod(java.lang.reflect.Method, java.lang.Class)
-	 */
 	@Override
 	protected RequestMappingInfo getMappingForMethod(Method method, Class<?> handlerType) {
 
@@ -215,10 +203,6 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 			this.acceptMediaTypeStrings = acceptMediaTypeStrings;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see jakarta.servlet.http.HttpServletRequestWrapper#getHeader(java.lang.String)
-		 */
 		@Override
 		public String getHeader(String name) {
 
@@ -227,10 +211,6 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 					: super.getHeader(name);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see jakarta.servlet.http.HttpServletRequestWrapper#getHeaders(java.lang.String)
-		 */
 		@Override
 		public Enumeration<String> getHeaders(String name) {
 

@@ -107,10 +107,6 @@ public class JpaWebTests extends CommonWebTests {
 	 */
 	static class RepositoryLinkAffordanceAdder implements RepresentationModelProcessor<RepositoryLinksResource> {
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.hateoas.server.RepresentationModelProcessor#process(org.springframework.hateoas.RepresentationModel)
-		 */
 		@Override
 		public RepositoryLinksResource process(RepositoryLinksResource model) {
 
@@ -119,10 +115,6 @@ public class JpaWebTests extends CommonWebTests {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#setUp()
-	 */
 	@Override
 	@BeforeEach
 	public void setUp() {
@@ -130,28 +122,16 @@ public class JpaWebTests extends CommonWebTests {
 		super.setUp();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
-	 */
 	@Override
 	protected Iterable<LinkRelation> expectedRootLinkRels() {
 		return LinkRelation.manyOf("people", "authors", "books");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#getPayloadToPost()
-	 */
 	@Override
 	protected Map<LinkRelation, String> getPayloadToPost() throws Exception {
 		return Collections.singletonMap(LinkRelation.of("people"), readFileFromClasspath("person.json"));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#getRootAndLinkedResources()
-	 */
 	@Override
 	protected MultiValueMap<LinkRelation, String> getRootAndLinkedResources() {
 

@@ -55,19 +55,11 @@ public class AnnotationBasedResourceDescription extends ResolvableResourceDescri
 		this.fallback = fallback;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.MessageSourceResolvable#getCodes()
-	 */
 	@Override
 	public String[] getCodes() {
 		return fallback.getCodes();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceDescription#getMessage()
-	 */
 	@Override
 	public String getMessage() {
 		return StringUtils.hasText(message) ? message : fallback.getMessage();
@@ -80,10 +72,6 @@ public class AnnotationBasedResourceDescription extends ResolvableResourceDescri
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceDescription#isDefault()
-	 */
 	@Override
 	public boolean isDefault() {
 		return !StringUtils.hasText(message);

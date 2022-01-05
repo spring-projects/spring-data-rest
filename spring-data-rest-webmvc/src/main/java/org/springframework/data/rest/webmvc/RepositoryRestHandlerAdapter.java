@@ -46,29 +46,17 @@ public class RepositoryRestHandlerAdapter extends RequestMappingHandlerAdapter {
 		this.argumentResolvers = argumentResolvers;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.RepresentationModelProcessorInvokingHandlerAdapter#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() {
 		setCustomArgumentResolvers(argumentResolvers);
 		super.afterPropertiesSet();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter#getOrder()
-	 */
 	@Override
 	public int getOrder() {
 		return Ordered.HIGHEST_PRECEDENCE;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter#supportsInternal(org.springframework.web.method.HandlerMethod)
-	 */
 	@Override
 	protected boolean supportsInternal(HandlerMethod handlerMethod) {
 

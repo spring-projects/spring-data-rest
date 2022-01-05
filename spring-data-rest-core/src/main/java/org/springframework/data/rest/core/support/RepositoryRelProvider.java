@@ -44,28 +44,16 @@ public class RepositoryRelProvider implements LinkRelationProvider {
 		this.mappings = mappings;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.LinkRelationProvider#getCollectionResourceRelFor(java.lang.Class)
-	 */
 	@Override
 	public LinkRelation getCollectionResourceRelFor(Class<?> type) {
 		return mappings.getObject().getMetadataFor(type).getRel();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.LinkRelationProvider#getItemResourceRelFor(java.lang.Class)
-	 */
 	@Override
 	public LinkRelation getItemResourceRelFor(Class<?> type) {
 		return mappings.getObject().getMetadataFor(type).getItemResourceRel();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
-	 */
 	@Override
 	public boolean supports(LookupContext context) {
 		return mappings.getObject().hasMappingFor(context.getType());

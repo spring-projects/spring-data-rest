@@ -65,38 +65,22 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 		setSupportedMediaTypes(Arrays.asList(MediaTypes.ALPS_JSON, MediaType.APPLICATION_JSON, MediaType.ALL));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
-	 */
 	@Override
 	public boolean canWrite(Class<?> clazz, MediaType mediaType) {
 		return (clazz.isAssignableFrom(Alps.class) || clazz.isAssignableFrom(RootResourceInformation.class))
 				&& super.canWrite(clazz, mediaType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.AbstractGenericHttpMessageConverter#canWrite(java.lang.reflect.Type, java.lang.Class, org.springframework.http.MediaType)
-	 */
 	@Override
 	public boolean canWrite(Type type, Class<?> clazz, MediaType mediaType) {
 		return canWrite(clazz, mediaType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter#canRead(java.lang.reflect.Type, java.lang.Class, org.springframework.http.MediaType)
-	 */
 	@Override
 	public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice#beforeBodyWrite(java.lang.Object, org.springframework.core.MethodParameter, org.springframework.http.MediaType, java.lang.Class, org.springframework.http.server.ServerHttpRequest, org.springframework.http.server.ServerHttpResponse)
-	 */
 	@Override
 	public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
 			Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request,
@@ -107,10 +91,6 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 				: body;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice#supports(org.springframework.core.MethodParameter, java.lang.Class)
-	 */
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
 		return converterType.equals(AlpsJsonHttpMessageConverter.class);

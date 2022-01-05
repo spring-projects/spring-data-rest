@@ -72,10 +72,6 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 		this.factory = factory;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.RootResourceInformationHandlerMethodArgumentResolver#postProcess(org.springframework.data.repository.support.RepositoryInvoker, java.lang.Class, java.util.Map)
-	 */
 	@Override
 	protected RepositoryInvoker postProcess(MethodParameter parameter, RepositoryInvoker invoker, Class<?> domainType,
 			Map<String, String[]> parameters) {

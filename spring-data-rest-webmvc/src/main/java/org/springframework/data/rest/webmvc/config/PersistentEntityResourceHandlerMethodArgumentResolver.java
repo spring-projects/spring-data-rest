@@ -92,19 +92,11 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 		this.lookups = lookups;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
-	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		return PersistentEntityResource.class.isAssignableFrom(parameter.getParameterType());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
-	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,

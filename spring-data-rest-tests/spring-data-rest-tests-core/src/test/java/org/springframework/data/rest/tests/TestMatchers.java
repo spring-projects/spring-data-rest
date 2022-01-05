@@ -39,19 +39,11 @@ public class TestMatchers {
 
 		return new TypeSafeMatcher<String>(String.class) {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.hamcrest.SelfDescribing#describeTo(org.hamcrest.Description)
-			 */
 			@Override
 			public void describeTo(Description description) {
 				description.appendText("contains " + number + " lines");
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.hamcrest.TypeSafeMatcher#describeMismatchSafely(java.lang.Object, org.hamcrest.Description)
-			 */
 			@Override
 			protected void describeMismatchSafely(String item, Description mismatchDescription) {
 
@@ -61,10 +53,6 @@ public class TestMatchers {
 						.appendText(" lines");
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.hamcrest.TypeSafeMatcher#matchesSafely(java.lang.Object)
-			 */
 			@Override
 			protected boolean matchesSafely(String item) {
 				return numberOfLines(item) == number;

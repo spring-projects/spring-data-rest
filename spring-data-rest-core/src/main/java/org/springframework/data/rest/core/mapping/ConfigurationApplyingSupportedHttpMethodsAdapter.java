@@ -45,10 +45,6 @@ class ConfigurationApplyingSupportedHttpMethodsAdapter implements SupportedHttpM
 		this.delegate = delegate;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getMethodsFor(org.springframework.data.rest.core.mapping.ResourceType)
-	 */
 	@Override
 	public HttpMethods getMethodsFor(ResourceType type) {
 
@@ -57,10 +53,6 @@ class ConfigurationApplyingSupportedHttpMethodsAdapter implements SupportedHttpM
 		return configuration.filter(ConfigurableHttpMethods.of(methods), type, resourceMetadata);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getMethodsFor(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Override
 	public HttpMethods getMethodsFor(PersistentProperty<?> property) {
 
@@ -76,10 +68,6 @@ class ConfigurationApplyingSupportedHttpMethodsAdapter implements SupportedHttpM
 		return configuration.filter(methods, PropertyAwareResourceMapping.class.cast(mapping));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#allowsPutForCreation()
-	 */
 	@Override
 	public boolean allowsPutForCreation() {
 		return configuration.allowsPutForCreation(resourceMetadata);

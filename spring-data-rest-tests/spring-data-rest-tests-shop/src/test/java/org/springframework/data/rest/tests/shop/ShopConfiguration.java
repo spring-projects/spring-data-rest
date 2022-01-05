@@ -47,10 +47,6 @@ class ShopConfiguration {
 	public RepresentationModelProcessor<EntityModel<LineItem>> lineItemResourceProcessor() {
 		return new RepresentationModelProcessor<EntityModel<LineItem>>() {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.hateoas.server.RepresentationModelProcessor#process(org.springframework.hateoas.RepresentationModel)
-			 */
 			@Override
 			public EntityModel<LineItem> process(EntityModel<LineItem> resource) {
 				resource.add(Link.of("foo", "bar"));
@@ -64,10 +60,6 @@ class ShopConfiguration {
 
 		return new RepresentationModelProcessor<EntityModel<ProductNameOnlyProjection>>() {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.hateoas.server.RepresentationModelProcessor#process(org.springframework.hateoas.RepresentationModel)
-			 */
 			@Override
 			public EntityModel<ProductNameOnlyProjection> process(EntityModel<Product.ProductNameOnlyProjection> resource) {
 				resource.add(Link.of("alpha", "beta"));

@@ -77,19 +77,11 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return AnnotationUtils.findAnnotation(repositoryMetadata.getRepositoryInterface(), Primary.class) != null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getDomainType()
-	 */
 	@Override
 	public Class<?> getDomainType() {
 		return repositoryMetadata.getDomainType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.RootResourceMetadata#getProperty(java.lang.String)
-	 */
 	@Override
 	public PropertyAwareResourceMapping getProperty(String mappedPath) {
 
@@ -100,109 +92,61 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 		return mappingMetadata.getProperty(mappedPath);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#getMappingFor(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Override
 	public ResourceMapping getMappingFor(PersistentProperty<?> property) {
 		return provider.getMappingFor(property);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#hasMappingFor(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Override
 	public boolean isExported(PersistentProperty<?> property) {
 		return provider.isMapped(property);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#isExported()
-	 */
 	@Override
 	public boolean isExported() {
 		return mapping.isExported();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getCollectionRel()
-	 */
 	@Override
 	public LinkRelation getRel() {
 		return mapping.getRel();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getSingleResourceRel()
-	 */
 	@Override
 	public LinkRelation getItemResourceRel() {
 		return mapping.getItemResourceRel();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getPath()
-	 */
 	@Override
 	public Path getPath() {
 		return mapping.getPath();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#isPagingResource()
-	 */
 	@Override
 	public boolean isPagingResource() {
 		return mapping.isPagingResource();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
-	 */
 	@Override
 	public ResourceDescription getDescription() {
 		return mapping.getDescription();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getItemResourceDescription()
-	 */
 	@Override
 	public ResourceDescription getItemResourceDescription() {
 		return mapping.getItemResourceDescription();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getExcerptProjection()
-	 */
 	@Override
 	public Optional<Class<?>> getExcerptProjection() {
 		return mapping.getExcerptProjection();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getSearchResourceMappings()
-	 */
 	@Override
 	public SearchResourceMappings getSearchResourceMappings() {
 		return provider.getSearchResourceMappings(repositoryMetadata.getDomainType());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getSupportedHttpMethods()
-	 */
 	@Override
 	public SupportedHttpMethods getSupportedHttpMethods() {
 		return crudMethodsSupportedHttpMethods;

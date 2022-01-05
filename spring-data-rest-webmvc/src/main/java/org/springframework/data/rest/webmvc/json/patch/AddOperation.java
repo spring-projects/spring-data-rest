@@ -40,19 +40,11 @@ class AddOperation extends PatchOperation {
 		return new AddOperation(SpelPath.untyped(path), value);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	void perform(Object targetObject, Class<?> type) {
 		path.bindTo(type).addValue(targetObject, evaluateValueFromTarget(targetObject, type));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#evaluateValueFromTarget(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	protected Object evaluateValueFromTarget(Object targetObject, Class<?> entityType) {
 

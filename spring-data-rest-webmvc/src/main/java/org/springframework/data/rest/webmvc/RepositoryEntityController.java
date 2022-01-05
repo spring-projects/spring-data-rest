@@ -117,10 +117,6 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 		this.resourceStatus = ResourceStatus.of(headersPreparer);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
-	 */
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
 		this.publisher = publisher;

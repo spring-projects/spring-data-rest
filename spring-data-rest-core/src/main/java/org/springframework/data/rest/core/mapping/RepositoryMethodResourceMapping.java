@@ -102,82 +102,46 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 		return Collections.unmodifiableList(result);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
-	 */
 	@Override
 	public boolean isExported() {
 		return isExported;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
-	 */
 	@Override
 	public LinkRelation getRel() {
 		return rel;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getPath()
-	 */
 	@Override
 	public Path getPath() {
 		return path;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#getMethod()
-	 */
 	@Override
 	public Method getMethod() {
 		return method;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#getParameterMetadata()
-	 */
 	@Override
 	public ParametersMetadata getParametersMetadata() {
 		return new ParametersMetadata(parameterMetadata);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isPagingResource()
-	 */
 	@Override
 	public boolean isPagingResource() {
 		return paging;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#isSortableResource()
-	 */
 	@Override
 	public boolean isSortableResource() {
 		return sorting;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
-	 */
 	@Override
 	public ResourceDescription getDescription() {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.MethodResourceMapping#getProjectionSourceType()
-	 */
 	@Override
 	public Class<?> getReturnedDomainType() {
 		return metadata.getReturnedDomainClass(method);

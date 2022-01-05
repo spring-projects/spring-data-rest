@@ -43,10 +43,6 @@ public class DefaultExcerptProjector implements ExcerptProjector {
 		this.mappings = mappings;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.support.ExcerptProjector#projectExcerpt(java.lang.Object)
-	 */
 	@Override
 	public Object projectExcerpt(Object source) {
 
@@ -62,10 +58,6 @@ public class DefaultExcerptProjector implements ExcerptProjector {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.support.ExcerptProjector#hasExcerptProjection(java.lang.Class)
-	 */
 	@Override
 	public boolean hasExcerptProjection(Class<?> type) {
 

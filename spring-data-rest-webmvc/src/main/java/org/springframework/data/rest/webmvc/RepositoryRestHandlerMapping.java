@@ -124,10 +124,6 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		this.jpaHelper = Optional.ofNullable(jpaHelper);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping#setEmbeddedValueResolver(org.springframework.util.StringValueResolver)
-	 */
 	@Override
 	public void setEmbeddedValueResolver(StringValueResolver resolver) {
 
@@ -137,10 +133,6 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 				resolver == null ? NoOpStringValueResolver.INSTANCE : resolver, repositories);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#lookupHandlerMethod(java.lang.String, jakarta.servlet.http.HttpServletRequest)
-	 */
 	@Override
 	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
 
@@ -168,29 +160,17 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		return handlerMethod;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping#handleNoMatch(java.util.Set, java.lang.String, jakarta.servlet.http.HttpServletRequest)
-	 */
 	@Override
 	protected HandlerMethod handleNoMatch(Set<RequestMappingInfo> requestMappingInfos, String lookupPath,
 			HttpServletRequest request) throws ServletException {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping#isHandlerInternal(java.lang.Class)
-	 */
 	@Override
 	protected boolean isHandlerInternal(Class<?> type) {
 		return AnnotatedElementUtils.hasAnnotation(type, RepositoryRestController.class);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.AbstractHandlerMapping#extendInterceptors(java.util.List)
-	 */
 	@Override
 	protected void extendInterceptors(List<Object> interceptors) {
 
@@ -199,10 +179,6 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 				.forEach(interceptors::add);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping#process(org.springframework.web.servlet.mvc.condition.ProducesRequestCondition)
-	 */
 	@Override
 	protected ProducesRequestCondition customize(ProducesRequestCondition condition) {
 
@@ -218,9 +194,6 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		return new ProducesRequestCondition(mediaTypes.toArray(new String[mediaTypes.size()]));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#getCorsConfiguration(java.lang.Object, jakarta.servlet.http.HttpServletRequest)
-	 */
 	@Override
 	protected CorsConfiguration getCorsConfiguration(Object handler, HttpServletRequest request) {
 
@@ -299,10 +272,6 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.util.StringValueResolver#resolveStringValue(java.lang.String)
-		 */
 		@Override
 		public String resolveStringValue(String value) {
 			return value;

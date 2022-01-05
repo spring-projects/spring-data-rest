@@ -53,28 +53,16 @@ public interface BackendIdConverter extends Plugin<Class<?>> {
 
 		INSTANCE;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#fromRequestId(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		public Serializable fromRequestId(String id, Class<?> entityType) {
 			return id;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#toRequestId(java.lang.Object, java.lang.Class)
-		 */
 		@Override
 		public String toRequestId(Serializable id, Class<?> entityType) {
 			return id.toString();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
-		 */
 		@Override
 		public boolean supports(Class<?> delimiter) {
 			return true;

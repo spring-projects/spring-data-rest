@@ -23,10 +23,6 @@ import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;
  */
 public class PersonBeforeSaveHandler extends AbstractRepositoryEventListener<Person> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onBeforeSave(java.lang.Object)
-	 */
 	@Override
 	protected void onBeforeSave(Person person) {
 		throw new EventHandlerInvokedException();

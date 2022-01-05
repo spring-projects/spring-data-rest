@@ -30,10 +30,6 @@ public abstract class AbstractRepositoryEventListener<T> implements ApplicationL
 
 	private final Class<?> INTERESTED_TYPE = resolveTypeArgument(getClass(), AbstractRepositoryEventListener.class);
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-	 */
 	@Override
 	@SuppressWarnings({ "unchecked" })
 	public final void onApplicationEvent(RepositoryEvent event) {

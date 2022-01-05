@@ -64,10 +64,6 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 		this.source = source;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.validation.AbstractPropertyBindingResult#getPropertyAccessor()
-	 */
 	@Override
 	public ConfigurablePropertyAccessor getPropertyAccessor() {
 
@@ -109,10 +105,6 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 		};
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.validation.AbstractBindingResult#getTarget()
-	 */
 	@Override
 	public Object getTarget() {
 		return source;

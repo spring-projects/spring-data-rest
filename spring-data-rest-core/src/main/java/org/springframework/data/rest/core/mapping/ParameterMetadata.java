@@ -70,10 +70,6 @@ public final class ParameterMetadata {
 		return description;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -89,10 +85,6 @@ public final class ParameterMetadata {
 		return this.name.equals(that.name) && this.description.equals(that.description);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 

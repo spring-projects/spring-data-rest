@@ -32,28 +32,16 @@ import com.mongodb.client.MongoClients;
 @EnableMongoAuditing
 public class MongoDbRepositoryConfig extends AbstractMongoClientConfiguration {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.config.AbstractMongoConfiguration#getDatabaseName()
-	 */
 	@Override
 	protected String getDatabaseName() {
 		return "spring-data-rest-sample";
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.config.AbstractMongoConfiguration#getMappingBasePackage()
-	 */
 	@Override
 	protected String getMappingBasePackage() {
 		return "";
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.config.AbstractMongoConfiguration#mongo()
-	 */
 	@Override
 	public MongoClient mongoClient() {
 		return MongoClients.create();

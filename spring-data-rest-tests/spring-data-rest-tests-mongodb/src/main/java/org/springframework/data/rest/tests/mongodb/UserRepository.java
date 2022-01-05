@@ -34,10 +34,6 @@ public interface UserRepository extends PagingAndSortingRepository<User, BigInte
 
 	List<User> findByColleaguesContains(@Param("colleagues") User colleague);
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.querydsl.binding.QuerydslBinderCustomizer#customize(org.springframework.data.querydsl.binding.QuerydslBindings, com.querydsl.core.types.EntityPath)
-	 */
 	@Override
 	default void customize(QuerydslBindings bindings, QUser root) {
 		bindings.bind(root.firstname).first((path, value) -> path.containsIgnoreCase(value));

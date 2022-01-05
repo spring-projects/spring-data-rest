@@ -85,10 +85,6 @@ public class AggregateReferenceResolvingModule extends SimpleModule {
 			this.mappings = mappings;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.deser.BeanDeserializerModifier#updateBuilder(com.fasterxml.jackson.databind.DeserializationConfig, com.fasterxml.jackson.databind.BeanDescription, com.fasterxml.jackson.databind.deser.BeanDeserializerBuilder)
-		 */
 		@Override
 		public BeanDeserializerBuilder updateBuilder(DeserializationConfig config, BeanDescription description,
 				BeanDeserializerBuilder builder) {

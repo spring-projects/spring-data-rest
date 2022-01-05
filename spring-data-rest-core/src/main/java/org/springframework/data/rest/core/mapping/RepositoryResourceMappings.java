@@ -93,10 +93,6 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#getSearchResourceMappings(java.lang.Class)
-	 */
 	@Override
 	public SearchResourceMappings getSearchResourceMappings(Class<?> domainType) {
 
@@ -125,10 +121,6 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		return searchResourceMappings;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#hasMappingFor(java.lang.Class)
-	 */
 	@Override
 	public boolean hasMappingFor(Class<?> type) {
 
@@ -143,10 +135,6 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings#isMapped(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Override
 	public boolean isMapped(PersistentProperty<?> property) {
 		return repositories.hasRepositoryFor(property.getActualType()) && super.isMapped(property);

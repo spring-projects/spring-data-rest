@@ -32,10 +32,6 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 @Configuration(proxyBeanMethods = false)
 class HalExplorerConfiguration implements StaticResourceProvider {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.StaticResourceProvider#customizeResources(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry, org.springframework.data.rest.core.config.RepositoryRestConfiguration)
-	 */
 	public void customizeResources(ResourceHandlerRegistry registry, RepositoryRestConfiguration configuration) {
 
 		String basePath = configuration.getBasePath().toString().concat(HalExplorer.EXPLORER);

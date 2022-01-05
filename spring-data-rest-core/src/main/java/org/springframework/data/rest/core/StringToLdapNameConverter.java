@@ -31,10 +31,6 @@ public enum StringToLdapNameConverter implements Converter<String, Name> {
 
 	INSTANCE;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-	 */
 	@Override
 	public LdapName convert(String source) {
 

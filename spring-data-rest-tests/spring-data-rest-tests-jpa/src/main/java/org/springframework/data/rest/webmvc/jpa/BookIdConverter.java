@@ -29,19 +29,11 @@ import org.springframework.util.StringUtils;
  */
 public class BookIdConverter implements BackendIdConverter {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#fromRequestId(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public Serializable fromRequestId(String id, Class<?> entityType) {
 		return Long.parseLong(id.substring(0, id.indexOf('-')));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.support.BackendIdConverter#toRequestId(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public String toRequestId(Serializable id, Class<?> entityType) {
 
@@ -55,10 +47,6 @@ public class BookIdConverter implements BackendIdConverter {
 		return StringUtils.collectionToDelimitedString(ids, "-");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
-	 */
 	@Override
 	public boolean supports(Class<?> delimiter) {
 		return Book.class.equals(delimiter);

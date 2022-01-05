@@ -99,10 +99,6 @@ public class RepositoryConstraintViolationExceptionMessage {
 			return this.message;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -122,19 +118,11 @@ public class RepositoryConstraintViolationExceptionMessage {
 					&& Objects.equals(message, other.message);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			return Objects.hash(entity, property, invalidValue, message);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public java.lang.String toString() {
 			return "RepositoryConstraintViolationExceptionMessage.ValidationError(entity=" + entity + ", property=" + property

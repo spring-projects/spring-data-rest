@@ -42,10 +42,6 @@ class JsonLateObjectEvaluator implements LateObjectEvaluator {
 		this.node = node;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.LateObjectEvaluator#evaluate(java.lang.Class)
-	 */
 	@Override
 	public Object evaluate(Class<?> type) {
 

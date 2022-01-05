@@ -48,19 +48,11 @@ class HalFormsAdaptingResponseBodyAdvice<T extends RepresentationModel<T>>
 	private static final List<MediaType> SUPPORTED_MEDIA_TYPES = Arrays.asList(MediaTypes.HAL_JSON,
 			MediaType.APPLICATION_JSON);
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice#supports(org.springframework.core.MethodParameter, java.lang.Class)
-	 */
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
 		return TypeConstrainedMappingJackson2HttpMessageConverter.class.isAssignableFrom(converterType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice#beforeBodyWrite(java.lang.Object, org.springframework.core.MethodParameter, org.springframework.http.MediaType, java.lang.Class, org.springframework.http.server.ServerHttpRequest, org.springframework.http.server.ServerHttpResponse)
-	 */
 	@Override
 	@SneakyThrows
 	public RepresentationModel<T> beforeBodyWrite(RepresentationModel<T> body, MethodParameter returnType,

@@ -52,10 +52,6 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		this.delegates = delegates;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration, org.springframework.web.servlet.config.annotation.CorsRegistry)
-	 */
 	@Override
 	public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
 
@@ -64,10 +60,6 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureConversionService(org.springframework.core.convert.support.ConfigurableConversionService)
-	 */
 	@Override
 	public void configureConversionService(ConfigurableConversionService conversionService) {
 
@@ -76,10 +68,6 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureExceptionHandlerExceptionResolver(org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver)
-	 */
 	@Override
 	public void configureExceptionHandlerExceptionResolver(ExceptionHandlerExceptionResolver exceptionResolver) {
 
@@ -88,10 +76,6 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureHttpMessageConverters(java.util.List)
-	 */
 	@Override
 	public void configureHttpMessageConverters(List<HttpMessageConverter<?>> messageConverters) {
 
@@ -100,10 +84,6 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureJacksonObjectMapper(com.fasterxml.jackson.databind.ObjectMapper)
-	 */
 	@Override
 	public void configureJacksonObjectMapper(ObjectMapper objectMapper) {
 
@@ -112,10 +92,6 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureValidatingRepositoryEventListener(org.springframework.data.rest.core.event.ValidatingRepositoryEventListener)
-	 */
 	@Override
 	public void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener validatingListener) {
 
@@ -124,10 +100,6 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureAuditableBeanWrapperFactory(org.springframework.data.auditing.AuditableBeanWrapperFactory)
-	 */
 	@Override
 	public AuditableBeanWrapperFactory customizeAuditableBeanWrapperFactory(AuditableBeanWrapperFactory factory) {
 
@@ -138,10 +110,6 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 		return factory;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#customizeLinkCollector(org.springframework.data.rest.webmvc.mapping.LinkCollector)
-	 */
 	@Override
 	public LinkCollector customizeLinkCollector(LinkCollector collector) {
 

@@ -50,34 +50,18 @@ public class SimpleResourceDescription extends ResolvableResourceDescriptionSupp
 		return new SimpleResourceDescription(String.format("%s.%s", DEFAULT_KEY_PREFIX, rel.value()), DEFAULT_MEDIA_TYPE);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceDescription#getMessage()
-	 */
 	public String getMessage() {
 		return message;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceDescription#getType()
-	 */
 	public MediaType getType() {
 		return mediaType;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceDescription#isDefault()
-	 */
 	public boolean isDefault() {
 		return StringUtils.hasText(message) && message.startsWith(DEFAULT_KEY_PREFIX);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.MessageSourceResolvable#getCodes()
-	 */
 	@Override
 	public String[] getCodes() {
 		return new String[] { message };

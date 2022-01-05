@@ -788,10 +788,6 @@ class DomainObjectReaderUnitTests {
 
 		private final Map<? extends Object, T> values;
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
-		 */
 		@Override
 		public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 

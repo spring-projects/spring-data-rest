@@ -47,10 +47,6 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		this.projectionDefinitions = new HashSet<>();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.projection.ProjectionDefinitions#getParameterName()
-	 */
 	public String getParameterName() {
 		return parameterName;
 	}
@@ -128,19 +124,11 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.config.ProjectionDefinitions#getProjectionType(java.lang.Class, java.lang.String)
-	 */
 	@Override
 	public Class<?> getProjectionType(Class<?> sourceType, String name) {
 		return getProjectionsFor(sourceType).get(name);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.projection.ProjectionDefinitions#hasProjectionFor(java.lang.Class)
-	 */
 	@Override
 	public boolean hasProjectionFor(Class<?> sourceType) {
 
@@ -236,10 +224,6 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 			return this.name;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -258,19 +242,11 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 					&& Objects.equals(getName(), that.getName());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			return Objects.hash(getSourceType(), getTargetType(), getName());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public java.lang.String toString() {
 			return "ProjectionDefinitionConfiguration.ProjectionDefinition(sourceType=" + this.getSourceType()

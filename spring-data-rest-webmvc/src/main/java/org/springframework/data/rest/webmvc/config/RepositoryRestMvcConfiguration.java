@@ -277,10 +277,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		this.defaultMessageConverters = beansOfType(context, HttpMessageConverter.class);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
-	 */
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
@@ -742,10 +738,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new DefaultExcerptProjector(projectionFactory, resourceMappings);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#extendHandlerExceptionResolvers(java.util.List)
-	 */
 	@Override
 	public void extendHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
 
@@ -815,10 +807,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return new AlpsJsonHttpMessageConverter(alpsConverter);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration#pageableResolver()
-	 */
 	@Bean
 	@Override
 	public HateoasPageableHandlerMethodArgumentResolver pageableResolver() {
@@ -833,10 +821,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		return resolver;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.web.config.HateoasAwareSpringDataWebConfiguration#sortResolver()
-	 */
 	@Bean
 	@Override
 	public HateoasSortHandlerMethodArgumentResolver sortResolver() {
@@ -987,10 +971,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	// HAL Browser
 	//
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry)
-	 */
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
@@ -1030,10 +1010,6 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			this.order = order;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.Ordered#getOrder()
-		 */
 		@Override
 		public int getOrder() {
 			return order;

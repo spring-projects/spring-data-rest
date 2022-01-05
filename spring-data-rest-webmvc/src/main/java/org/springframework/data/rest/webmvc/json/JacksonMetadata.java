@@ -173,10 +173,6 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<BeanPropertyDefinition> iterator() {
 		return definitions.iterator();

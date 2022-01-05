@@ -128,10 +128,6 @@ class MongoWebTests extends CommonWebTests {
 		userRepository.deleteAll();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
-	 */
 	@Override
 	protected Iterable<LinkRelation> expectedRootLinkRels() {
 		return LinkRelation.manyOf("profiles", "users");

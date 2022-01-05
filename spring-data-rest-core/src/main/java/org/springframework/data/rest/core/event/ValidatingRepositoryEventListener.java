@@ -87,73 +87,41 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onBeforeCreate(java.lang.Object)
-	 */
 	@Override
 	protected void onBeforeCreate(Object entity) {
 		validate("beforeCreate", entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onAfterCreate(java.lang.Object)
-	 */
 	@Override
 	protected void onAfterCreate(Object entity) {
 		validate("afterCreate", entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onBeforeSave(java.lang.Object)
-	 */
 	@Override
 	protected void onBeforeSave(Object entity) {
 		validate("beforeSave", entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onAfterSave(java.lang.Object)
-	 */
 	@Override
 	protected void onAfterSave(Object entity) {
 		validate("afterSave", entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onBeforeLinkSave(java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	protected void onBeforeLinkSave(Object parent, Object linked) {
 		validate("beforeLinkSave", parent);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onAfterLinkSave(java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	protected void onAfterLinkSave(Object parent, Object linked) {
 		validate("afterLinkSave", parent);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onBeforeDelete(java.lang.Object)
-	 */
 	@Override
 	protected void onBeforeDelete(Object entity) {
 		validate("beforeDelete", entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onAfterDelete(java.lang.Object)
-	 */
 	@Override
 	protected void onAfterDelete(Object entity) {
 		validate("afterDelete", entity);

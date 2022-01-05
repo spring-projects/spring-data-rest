@@ -41,18 +41,10 @@ public class InputStreamHttpInputMessage implements HttpInputMessage {
 		return new InputStreamHttpInputMessage(body);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.HttpInputMessage#getBody()
-	 */
 	public InputStream getBody() {
 		return this.body;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.HttpMessage#getHeaders()
-	 */
 	@Override
 	public HttpHeaders getHeaders() {
 		return HttpHeaders.EMPTY;

@@ -66,10 +66,6 @@ public final class DefaultedPageable {
 		return isDefault ? Pageable.unpaged() : pageable;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -87,19 +83,11 @@ public final class DefaultedPageable {
 				&& isDefault == that.isDefault;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(pageable, isDefault);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public java.lang.String toString() {
 		return "DefaultedPageable(pageable=" + pageable + ", isDefault=" + isDefault + ")";

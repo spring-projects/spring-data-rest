@@ -24,19 +24,11 @@ import org.springframework.context.MessageSourceResolvable;
  */
 public abstract class ResolvableResourceDescriptionSupport implements ResourceDescription {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.MessageSourceResolvable#getArguments()
-	 */
 	@Override
 	public Object[] getArguments() {
 		return new Object[0];
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.MessageSourceResolvable#getDefaultMessage()
-	 */
 	@Override
 	public String getDefaultMessage() {
 		return null;

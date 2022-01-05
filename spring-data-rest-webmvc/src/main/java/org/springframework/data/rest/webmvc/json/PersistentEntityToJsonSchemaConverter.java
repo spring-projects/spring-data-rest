@@ -116,20 +116,12 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-	 */
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 		return Class.class.isAssignableFrom(sourceType.getType())
 				&& JsonSchema.class.isAssignableFrom(targetType.getType());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-	 */
 	@Override
 	public Set<ConvertiblePair> getConvertibleTypes() {
 		return convertiblePairs;
@@ -145,10 +137,6 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		return convert(domainType, STRING_TYPE, SCHEMA_TYPE);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-	 */
 	@Override
 	public JsonSchema convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
@@ -338,10 +326,6 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 			return new JsonSchemaPropertyCustomizer() {
 
-				/*
-				 * (non-Javadoc)
-				 * @see org.springframework.data.rest.webmvc.json.JsonSchemaPropertyCustomizer#customize(org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty, org.springframework.data.util.TypeInformation)
-				 */
 				@Override
 				public JsonSchemaProperty customize(JsonSchemaProperty property, TypeInformation<?> type) {
 
@@ -540,28 +524,16 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			this.delegate = delegate;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.context.MessageSourceResolvable#getArguments()
-		 */
 		@Override
 		public Object[] getArguments() {
 			return delegate.getArguments();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.context.MessageSourceResolvable#getCodes()
-		 */
 		@Override
 		public String[] getCodes() {
 			return delegate.getCodes();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.context.MessageSourceResolvable#getDefaultMessage()
-		 */
 		@Override
 		public String getDefaultMessage() {
 			String defaultMessage = delegate.getDefaultMessage();

@@ -63,10 +63,6 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 		this.metadata = metadata;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.core.LinkBuilderSupport#slash(java.lang.Object)
-	 */
 	@Override
 	public RepositoryLinkBuilder slash(Object object) {
 
@@ -83,19 +79,11 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 		return withRel(metadata.getRel());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.core.LinkBuilderSupport#createNewInstance(org.springframework.web.util.UriComponentsBuilder, java.util.List)
-	 */
 	@Override
 	protected RepositoryLinkBuilder createNewInstance(UriComponents components, List<Affordance> affordances) {
 		return new RepositoryLinkBuilder(this.metadata, components, affordances);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.core.LinkBuilderSupport#getThis()
-	 */
 	@Override
 	protected RepositoryLinkBuilder getThis() {
 		return this;

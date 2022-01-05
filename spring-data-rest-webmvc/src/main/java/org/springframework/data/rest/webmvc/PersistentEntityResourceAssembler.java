@@ -62,10 +62,6 @@ public class PersistentEntityResourceAssembler
 		this.embeddedAssembler = new EmbeddedResourcesAssembler(entities, associations, projector);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.RepresentationModelAssembler#toModel(java.lang.Object)
-	 */
 	@Override
 	public PersistentEntityResource toModel(Object instance) {
 

@@ -32,10 +32,6 @@ public class Address {
 	private @Id UUID id = UUID.randomUUID();
 	private final String street, zipCode, city, state;
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	public String toString() {
 		return String.format("%s, %s %s, %s", street, zipCode, city, state);
 	}

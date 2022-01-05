@@ -61,64 +61,36 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 				.orElse(false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getDomainType()
-	 */
 	@Override
 	public Class<?> getDomainType() {
 		return entity.getType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#isExported(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Override
 	public boolean isExported(PersistentProperty<?> property) {
 		return getMappingFor(property).isExported();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getMappingFor(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Override
 	public ResourceMapping getMappingFor(PersistentProperty<?> property) {
 		return propertyMappings.getMappingFor(property);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getSearchResourceMappings()
-	 */
 	@Override
 	public SearchResourceMappings getSearchResourceMappings() {
 		return new SearchResourceMappings(Collections.<MethodResourceMapping> emptyList());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadata#getSupportedHttpMethods()
-	 */
 	@Override
 	public SupportedHttpMethods getSupportedHttpMethods() {
 		return NoSupportedMethods.INSTANCE;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.RootResourceMetadata#getProperty(java.lang.String)
-	 */
 	@Override
 	public PropertyAwareResourceMapping getProperty(String mappedPath) {
 		return propertyMappings.getMappingFor(mappedPath);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.TypeBasedCollectionResourceMapping#isExported()
-	 */
 	@Override
 	public boolean isExported() {
 		return explicitlyExported;
@@ -148,19 +120,11 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 			this.propertyMappings = new HashMap<PersistentProperty<?>, PropertyAwareResourceMapping>();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
-		 */
 		@Override
 		public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
 			doWithPersistentProperty(association.getInverse());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.SimplePropertyHandler#doWithPersistentProperty(org.springframework.data.mapping.PersistentProperty)
-		 */
 		@Override
 		public void doWithPersistentProperty(PersistentProperty<?> property) {
 

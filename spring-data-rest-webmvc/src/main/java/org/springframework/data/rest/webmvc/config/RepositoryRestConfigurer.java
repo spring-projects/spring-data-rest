@@ -54,10 +54,6 @@ public interface RepositoryRestConfigurer {
 
 		return new RepositoryRestConfigurer() {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration, org.springframework.web.servlet.config.annotation.CorsRegistry)
-			 */
 			@Override
 			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
 				consumer.accept(config);
@@ -79,10 +75,6 @@ public interface RepositoryRestConfigurer {
 
 		return new RepositoryRestConfigurer() {
 
-			/*
-			 * (non-Javadoc)
-			 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureRepositoryRestConfiguration(org.springframework.data.rest.core.config.RepositoryRestConfiguration, org.springframework.web.servlet.config.annotation.CorsRegistry)
-			 */
 			@Override
 			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
 				consumer.accept(config, cors);

@@ -41,10 +41,6 @@ public class ExposureConfiguration implements ExposureConfigurer {
 
 	private Function<Class<?>, Boolean> creationViaPut = __ -> true;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ExposureConfigurer#withCollectionExposure(org.springframework.data.rest.core.mapping.ExposureConfigurer.AggregateResourceHttpMethodsFilter)
-	 */
 	@Override
 	public ExposureConfiguration withCollectionExposure(AggregateResourceHttpMethodsFilter filter) {
 
@@ -52,10 +48,6 @@ public class ExposureConfiguration implements ExposureConfigurer {
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ExposureConfigurer#withItemExposure(org.springframework.data.rest.core.mapping.ExposureConfigurer.AggregateResourceHttpMethodsFilter)
-	 */
 	@Override
 	public ExposureConfiguration withItemExposure(AggregateResourceHttpMethodsFilter filter) {
 
@@ -63,10 +55,6 @@ public class ExposureConfiguration implements ExposureConfigurer {
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ExposureConfigurer#withAssociationExposure(org.springframework.data.rest.core.mapping.ExposureConfigurer.AssociationResourceHttpMethodsFilter)
-	 */
 	@Override
 	public ExposureConfiguration withAssociationExposure(AssociationResourceHttpMethodsFilter filter) {
 
@@ -74,10 +62,6 @@ public class ExposureConfiguration implements ExposureConfigurer {
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ExposureConfigurer#disablePutForCreation()
-	 */
 	@Override
 	public ExposureConfiguration disablePutForCreation() {
 
@@ -191,10 +175,6 @@ public class ExposureConfiguration implements ExposureConfigurer {
 			this.type = type;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ExposureConfigurer#withCollectionExposure(org.springframework.data.rest.core.mapping.ExposureConfigurer.AggregateResourceHttpMethodsFilter)
-		 */
 		public ExposureConfigurer withCollectionExposure(AggregateResourceHttpMethodsFilter filter) {
 
 			ExposureConfiguration config = ExposureConfiguration.this;
@@ -203,10 +183,6 @@ public class ExposureConfiguration implements ExposureConfigurer {
 			return this;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ExposureConfigurer#withItemExposure(org.springframework.data.rest.core.mapping.ExposureConfigurer.AggregateResourceHttpMethodsFilter)
-		 */
 		public ExposureConfigurer withItemExposure(AggregateResourceHttpMethodsFilter filter) {
 
 			ExposureConfiguration config = ExposureConfiguration.this;
@@ -215,10 +191,6 @@ public class ExposureConfiguration implements ExposureConfigurer {
 			return this;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ExposureConfiguration.ExposureConfigurer#withAssociationExposure(java.util.function.BiFunction)
-		 */
 		@Override
 		public ExposureConfigurer withAssociationExposure(AssociationResourceHttpMethodsFilter filter) {
 
@@ -233,10 +205,6 @@ public class ExposureConfiguration implements ExposureConfigurer {
 			return this;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ExposureConfigurer#disableCreationViaPut()
-		 */
 		@Override
 		public ExposureConfigurer disablePutForCreation() {
 

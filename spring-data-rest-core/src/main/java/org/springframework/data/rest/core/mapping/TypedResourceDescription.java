@@ -63,19 +63,11 @@ public class TypedResourceDescription extends SimpleResourceDescription {
 		return new TypedResourceDescription(message, DEFAULT_MEDIA_TYPE, type);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResolvableResourceDescriptionSupport#getArguments()
-	 */
 	@Override
 	public Object[] getArguments() {
 		return type.isEnum() ? new Object[] { getEnumValues(type) } : new Object[0];
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResolvableResourceDescriptionSupport#getDefaultMessage()
-	 */
 	@Override
 	public String getDefaultMessage() {
 		return type.isEnum() ? getEnumValues(type) : null;

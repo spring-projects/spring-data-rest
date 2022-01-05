@@ -115,10 +115,6 @@ public class ConfigurableHttpMethods implements HttpMethods {
 		return ConfigurableHttpMethods.of(Stream.concat(this.methods.stream(), toAdd.stream()).collect(Collectors.toSet()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.HttpMethods#contains(org.springframework.http.HttpMethod)
-	 */
 	@Override
 	public boolean contains(HttpMethod method) {
 
@@ -127,10 +123,6 @@ public class ConfigurableHttpMethods implements HttpMethods {
 		return methods.contains(method);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<HttpMethod> iterator() {
 		return methods.iterator();

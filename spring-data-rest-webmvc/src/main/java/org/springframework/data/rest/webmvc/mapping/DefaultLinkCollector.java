@@ -161,10 +161,6 @@ public class DefaultLinkCollector implements LinkCollector {
 			return Links.of(links);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
-		 */
 		@Override
 		public void doWithAssociation(final Association<? extends PersistentProperty<?>> association) {
 
@@ -207,10 +203,6 @@ public class DefaultLinkCollector implements LinkCollector {
 			return this.links.toList();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.SimpleAssociationHandler#doWithAssociation(org.springframework.data.mapping.Association)
-		 */
 		@Override
 		public void doWithAssociation(Association<? extends PersistentProperty<?>> association) {
 

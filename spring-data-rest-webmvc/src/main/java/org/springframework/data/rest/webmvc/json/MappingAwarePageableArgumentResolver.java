@@ -53,19 +53,11 @@ public class MappingAwarePageableArgumentResolver implements HandlerMethodArgume
 		this.delegate = delegate;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)
-	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		return delegate.supportsParameter(parameter);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.web.PageableArgumentResolver#resolveArgument(org.springframework.core.MethodParameter, org.springframework.web.method.support.ModelAndViewContainer, org.springframework.web.context.request.NativeWebRequest, org.springframework.web.bind.support.WebDataBinderFactory)
-	 */
 	@Override
 	public Pageable resolveArgument(MethodParameter methodParameter, ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {

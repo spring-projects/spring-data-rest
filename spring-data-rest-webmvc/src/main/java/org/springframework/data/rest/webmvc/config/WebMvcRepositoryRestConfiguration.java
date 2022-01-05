@@ -57,10 +57,6 @@ class WebMvcRepositoryRestConfiguration extends RepositoryRestConfiguration impl
 
 	private final RepositoryCorsRegistry registry;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.CorsConfigurationAware#getCorsConfigurations()
-	 */
 	@Override
 	public Map<String, CorsConfiguration> getCorsConfigurations() {
 		return registry.getCorsConfigurations();

@@ -24,19 +24,11 @@ import org.springframework.util.StringUtils;
  */
 public class SimpleRelProvider implements LinkRelationProvider {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
-	 */
 	@Override
 	public boolean supports(LookupContext context) {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.LinkRelationProvider#getItemResourceRelFor(java.lang.Class)
-	 */
 	@Override
 	public LinkRelation getItemResourceRelFor(Class<?> type) {
 
@@ -44,10 +36,6 @@ public class SimpleRelProvider implements LinkRelationProvider {
 		return LinkRelation.of(String.format("%s.%s", collectionRel.value(), collectionRel.value()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.LinkRelationProvider#getCollectionResourceRelFor(java.lang.Class)
-	 */
 	@Override
 	public LinkRelation getCollectionResourceRelFor(Class<?> type) {
 		return LinkRelation.of(StringUtils.uncapitalize(type.getSimpleName()));

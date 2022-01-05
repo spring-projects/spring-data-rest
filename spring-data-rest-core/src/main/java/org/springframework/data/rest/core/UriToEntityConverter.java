@@ -81,29 +81,17 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 		this.repositories = repositories;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.ConditionalConverter#matches(org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-	 */
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 		return !sourceType.equals(URI_TYPE) ? false
 				: repositories.getRepositoryInformationFor(targetType.getType()).isPresent();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.GenericConverter#getConvertibleTypes()
-	 */
 	@Override
 	public Set<ConvertiblePair> getConvertibleTypes() {
 		return convertiblePairs;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.GenericConverter#convert(java.lang.Object, org.springframework.core.convert.TypeDescriptor, org.springframework.core.convert.TypeDescriptor)
-	 */
 	@Override
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 

@@ -89,19 +89,11 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		this.idConverters = idConverters;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
-	 */
 	@Override
 	public boolean supports(Class<?> delimiter) {
 		return repositories.hasRepositoryFor(delimiter);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.EntityLinks#linkFor(java.lang.Class)
-	 */
 	@Override
 	public LinkBuilder linkFor(Class<?> type) {
 
@@ -109,10 +101,6 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		return new RepositoryLinkBuilder(metadata, new BaseUri(config.getBasePath()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.EntityLinks#linkFor(java.lang.Class, java.lang.Object[])
-	 */
 	@Override
 	public LinkBuilder linkFor(Class<?> type, Object... parameters) {
 		return linkFor(type);
@@ -137,19 +125,11 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		return Link.of(UriTemplate.of(href).with(variables), metadata.getRel());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.EntityLinks#linkToCollectionResource(java.lang.Class)
-	 */
 	@Override
 	public Link linkToCollectionResource(Class<?> type) {
 		return linkToPagedResource(type, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.EntityLinks#linkToItemResource(java.lang.Class, java.lang.Object)
-	 */
 	@Override
 	public Link linkToItemResource(Class<?> type, Object id) {
 
@@ -162,10 +142,6 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 				metadata.getItemResourceRel());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.core.AbstractEntityLinks#linkForItemResource(java.lang.Class, java.lang.Object)
-	 */
 	@Override
 	public LinkBuilder linkForItemResource(Class<?> type, Object id) {
 

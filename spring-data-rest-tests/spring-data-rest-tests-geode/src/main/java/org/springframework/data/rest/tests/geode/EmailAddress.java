@@ -60,19 +60,11 @@ public final class EmailAddress {
 		return candidate == null ? false : PATTERN.matcher(candidate).matches();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return value;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -88,10 +80,6 @@ public final class EmailAddress {
 		return this.value.equals(that.value);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return value.hashCode();
@@ -100,10 +88,6 @@ public final class EmailAddress {
 	@Component
 	static class EmailAddressToStringConverter implements Converter<EmailAddress, String> {
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@Override
 		public String convert(EmailAddress source) {
 			return source == null ? null : source.value;
@@ -113,10 +97,6 @@ public final class EmailAddress {
 	@Component
 	static class StringToEmailAddressConverter implements Converter<String, EmailAddress> {
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		public EmailAddress convert(String source) {
 			return StringUtils.hasText(source) ? new EmailAddress(source) : null;
 		}

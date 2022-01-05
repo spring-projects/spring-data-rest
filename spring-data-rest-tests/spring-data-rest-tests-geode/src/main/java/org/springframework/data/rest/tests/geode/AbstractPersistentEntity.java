@@ -44,10 +44,6 @@ public class AbstractPersistentEntity {
 		this.id = null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -64,10 +60,6 @@ public class AbstractPersistentEntity {
 		return this.id.equals(that.getId());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return id == null ? 0 : id.hashCode();

@@ -52,10 +52,6 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 
 	private final MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = new LinkedMultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod>();
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-	 */
 	@Override
 	public void onApplicationEvent(RepositoryEvent event) {
 
@@ -88,19 +84,11 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessBeforeInitialization(java.lang.Object, java.lang.String)
-	 */
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		return bean;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessAfterInitialization(java.lang.Object, java.lang.String)
-	 */
 	@Override
 	public Object postProcessAfterInitialization(final Object bean, String beanName) throws BeansException {
 
@@ -197,19 +185,11 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 			return new EventHandlerMethod(targetType, method, handler);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Comparable#compareTo(java.lang.Object)
-		 */
 		@Override
 		public int compareTo(EventHandlerMethod o) {
 			return AnnotationAwareOrderComparator.INSTANCE.compare(this.method, o.method);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(final java.lang.Object o) {
 
@@ -228,19 +208,11 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 					&& Objects.equals(handler, other.handler);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			return Objects.hash(targetType, method, handler);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public java.lang.String toString() {
 			return "AnnotatedEventHandlerInvoker.EventHandlerMethod(targetType=" + this.targetType + ", method=" + this.method

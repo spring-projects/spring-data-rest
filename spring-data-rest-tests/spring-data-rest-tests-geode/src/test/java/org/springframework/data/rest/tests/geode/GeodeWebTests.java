@@ -25,10 +25,6 @@ import org.springframework.test.context.ContextConfiguration;
 @ContextConfiguration(classes = GeodeRepositoryConfig.class)
 class GeodeWebTests extends CommonWebTests {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.AbstractWebIntegrationTests#expectedRootLinkRels()
-	 */
 	@Override
 	protected Iterable<LinkRelation> expectedRootLinkRels() {
 		return LinkRelation.manyOf("products");

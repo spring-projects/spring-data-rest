@@ -51,10 +51,6 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Represe
 		MEDIA_TYPES.add(MediaType.parseMediaType("text/uri-list"));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.HttpMessageConverter#canRead(java.lang.Class, org.springframework.http.MediaType)
-	 */
 	@Override
 	public boolean canRead(Class<?> clazz, MediaType mediaType) {
 
@@ -63,28 +59,16 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Represe
 				&& mediaType.getSubtype().contains("uri-list");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.HttpMessageConverter#canWrite(java.lang.Class, org.springframework.http.MediaType)
-	 */
 	@Override
 	public boolean canWrite(Class<?> clazz, MediaType mediaType) {
 		return canRead(clazz, mediaType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.HttpMessageConverter#getSupportedMediaTypes()
-	 */
 	@Override
 	public List<MediaType> getSupportedMediaTypes() {
 		return MEDIA_TYPES;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.HttpMessageConverter#read(java.lang.Class, org.springframework.http.HttpInputMessage)
-	 */
 	@Override
 	public RepresentationModel<?> read(Class<? extends RepresentationModel<?>> clazz, HttpInputMessage inputMessage)
 			throws IOException, HttpMessageNotReadableException {
@@ -99,10 +83,6 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Represe
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.http.converter.HttpMessageConverter#write(java.lang.Object, org.springframework.http.MediaType, org.springframework.http.HttpOutputMessage)
-	 */
 	@Override
 	public void write(RepresentationModel<?> resource, MediaType contentType, HttpOutputMessage outputMessage)
 			throws IOException, HttpMessageNotWritableException {

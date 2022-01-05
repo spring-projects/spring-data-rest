@@ -58,10 +58,6 @@ public class ParametersMetadata implements Iterable<ParameterMetadata> {
 		return names;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<ParameterMetadata> iterator() {
 		return parameterMetadata.iterator();

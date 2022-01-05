@@ -63,10 +63,6 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 		this.conversionService = conversionService;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.support.SelfLinkProvider#createSelfLinkFor(java.lang.Object)
-	 */
 	public Link createSelfLinkFor(Object instance) {
 
 		Assert.notNull(instance, "Domain object must not be null!");
@@ -74,10 +70,6 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 		return createSelfLinkFor(instance.getClass(), instance);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.support.SelfLinkProvider#createSelfLinkFor(java.lang.Class, java.lang.Object)
-	 */
 	public Link createSelfLinkFor(Class<?> type, Object reference) {
 
 		if (type.isInstance(reference)) {

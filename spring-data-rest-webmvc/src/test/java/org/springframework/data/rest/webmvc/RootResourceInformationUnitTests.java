@@ -73,10 +73,6 @@ class RootResourceInformationUnitTests {
 
 		private static final Answer<Object> DEFAULT = Mockito.RETURNS_DEFAULTS;
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.mockito.stubbing.Answer#answer(org.mockito.invocation.InvocationOnMock)
-		 */
 		@Override
 		public Object answer(InvocationOnMock invocation) throws Throwable {
 

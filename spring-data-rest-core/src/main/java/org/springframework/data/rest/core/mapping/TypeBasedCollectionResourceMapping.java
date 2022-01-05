@@ -109,19 +109,11 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 		});
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getPath()
-	 */
 	@Override
 	public Path getPath() {
 		return path.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
-	 */
 	@Override
 	public boolean isExported() {
 
@@ -130,55 +122,31 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 				.orElseGet(() -> Modifier.isPublic(type.getModifiers()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
-	 */
 	@Override
 	public LinkRelation getRel() {
 		return rel.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getSingleResourceRel()
-	 */
 	@Override
 	public LinkRelation getItemResourceRel() {
 		return relProvider.getItemResourceRelFor(type);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#isPagingResource()
-	 */
 	@Override
 	public boolean isPagingResource() {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
-	 */
 	@Override
 	public ResourceDescription getDescription() {
 		return description.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getItemResourceDescription()
-	 */
 	@Override
 	public ResourceDescription getItemResourceDescription() {
 		return itemResourceDescription.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.CollectionResourceMapping#getExcerptProjection()
-	 */
 	@Override
 	public Optional<Class<?>> getExcerptProjection() {
 		return Optional.empty();

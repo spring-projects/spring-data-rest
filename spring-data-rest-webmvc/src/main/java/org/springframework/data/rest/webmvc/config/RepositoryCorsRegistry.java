@@ -29,9 +29,6 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
  */
 class RepositoryCorsRegistry extends CorsRegistry {
 
-	/* (non-Javadoc)
-	 * @see org.springframework.web.servlet.config.annotation.CorsRegistry#getCorsConfigurations()
-	 */
 	@Override
 	public Map<String, CorsConfiguration> getCorsConfigurations() {
 		return super.getCorsConfigurations();

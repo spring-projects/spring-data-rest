@@ -55,10 +55,6 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 		this.exposedMethods = new DefaultExposureAwareCrudMethods(crudMethods, methodsExposedByDefault);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getSupportedHttpMethods(org.springframework.data.rest.core.mapping.ResourceType)
-	 */
 	@Override
 	public HttpMethods getMethodsFor(ResourceType resourceType) {
 
@@ -107,10 +103,6 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 		return HttpMethods.of(methods);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.SupportedHttpMethods#getMethodsFor(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Override
 	public HttpMethods getMethodsFor(PersistentProperty<?> property) {
 
@@ -159,37 +151,21 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 			this.exportedDefault = exportedDefault;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ExposureAwareCrudMethods#exposesSave()
-		 */
 		@Override
 		public boolean exposesSave() {
 			return exposesSave.get();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ExposureAwareCrudMethods#exposesDelete()
-		 */
 		@Override
 		public boolean exposesDelete() {
 			return exposesDelete.get();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ExposureAwareCrudMethods#exposesFindOne()
-		 */
 		@Override
 		public boolean exposesFindOne() {
 			return exposesFindOne.get();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.mapping.ExposureAwareCrudMethods#exposesFindAll()
-		 */
 		@Override
 		public boolean exposesFindAll() {
 			return exposesFindAll.get();

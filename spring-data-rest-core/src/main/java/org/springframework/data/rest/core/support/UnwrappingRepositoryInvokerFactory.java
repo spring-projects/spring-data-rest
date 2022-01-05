@@ -54,10 +54,6 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 		this.lookups = PluginRegistry.of(lookups);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.support.RepositoryInvokerFactory#getInvokerFor(java.lang.Class)
-	 */
 	@Override
 	public RepositoryInvoker getInvokerFor(Class<?> domainType) {
 
@@ -86,10 +82,6 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 			this.lookup = lookup;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindOne(java.io.Serializable)
-		 */
 		@Override
 		@SuppressWarnings("unchecked")
 		public <T> Optional<T> invokeFindById(Object id) {
@@ -99,83 +91,47 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 					: delegate.invokeFindById(id);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeQueryMethod(java.lang.reflect.Method, org.springframework.util.MultiValueMap, org.springframework.data.domain.Pageable, org.springframework.data.domain.Sort)
-		 */
 		@Override
 		public Optional<Object> invokeQueryMethod(Method method, MultiValueMap<String, ? extends Object> parameters,
 				Pageable pageable, Sort sort) {
 			return delegate.invokeQueryMethod(method, parameters, pageable, sort);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvocationInformation#hasDeleteMethod()
-		 */
 		@Override
 		public boolean hasDeleteMethod() {
 			return delegate.hasDeleteMethod();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvocationInformation#hasFindAllMethod()
-		 */
 		@Override
 		public boolean hasFindAllMethod() {
 			return delegate.hasFindAllMethod();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvocationInformation#hasFindOneMethod()
-		 */
 		@Override
 		public boolean hasFindOneMethod() {
 			return delegate.hasFindOneMethod();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvocationInformation#hasSaveMethod()
-		 */
 		@Override
 		public boolean hasSaveMethod() {
 			return delegate.hasSaveMethod();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeDeleteById(java.lang.Object)
-		 */
 		@Override
 		public void invokeDeleteById(Object id) {
 			delegate.invokeDeleteById(id);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindAll(org.springframework.data.domain.Pageable)
-		 */
 		@Override
 		public Iterable<Object> invokeFindAll(Pageable pageable) {
 			return delegate.invokeFindAll(pageable);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeFindAll(org.springframework.data.domain.Sort)
-		 */
 		@Override
 		public Iterable<Object> invokeFindAll(Sort sort) {
 			return delegate.invokeFindAll(sort);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.repository.support.RepositoryInvoker#invokeSave(java.lang.Object)
-		 */
 		@Override
 		public <T> T invokeSave(T object) {
 			return delegate.invokeSave(object);

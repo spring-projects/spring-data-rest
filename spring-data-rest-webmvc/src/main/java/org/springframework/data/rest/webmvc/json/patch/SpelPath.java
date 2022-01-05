@@ -95,19 +95,11 @@ class SpelPath {
 		return path.endsWith("-");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return path;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -124,10 +116,6 @@ class SpelPath {
 		return this.path.equals(that.path);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return path.hashCode();
@@ -186,10 +174,6 @@ class SpelPath {
 				return new CacheKey(type, path);
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#equals(java.lang.Object)
-			 */
 			@Override
 			public boolean equals(Object o) {
 
@@ -207,19 +191,11 @@ class SpelPath {
 						&& Objects.equals(path, that.path);
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#hashCode()
-			 */
 			@Override
 			public int hashCode() {
 				return Objects.hash(type, path);
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#toString()
-			 */
 			@Override
 			public java.lang.String toString() {
 				return "SpelPath.TypedSpelPath.CacheKey(type=" + type + ", path=" + path + ")";
@@ -430,10 +406,6 @@ class SpelPath {
 			}
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.json.patch.SpelPath#toString()
-		 */
 		@Override
 		public String toString() {
 			return String.format("%s on %s -> %s", path, type.getName(), getExpressionString());
@@ -535,10 +507,6 @@ class SpelPath {
 						: SkippedPropertyPath.of(path.nested(segment), false);
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#equals(java.lang.Object)
-			 */
 			@Override
 			public boolean equals(Object o) {
 
@@ -555,19 +523,11 @@ class SpelPath {
 						&& skipped == other.skipped;
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#hashCode()
-			 */
 			@Override
 			public int hashCode() {
 				return Objects.hash(path, skipped);
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#toString()
-			 */
 			@Override
 			public java.lang.String toString() {
 				return "SpelPath.TypedSpelPath.SkippedPropertyPath(path=" + path + ", skipped=" + skipped + ")";
@@ -707,10 +667,6 @@ class SpelPath {
 				return nested(segment);
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#equals(java.lang.Object)
-			 */
 			@Override
 			public boolean equals(Object o) {
 
@@ -729,19 +685,11 @@ class SpelPath {
 						&& skipped == that.skipped;
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#hashCode()
-			 */
 			@Override
 			public int hashCode() {
 				return Objects.hash(basePath, type, spelSegment, skipped);
 			}
 
-			/*
-			 * (non-Javadoc)
-			 * @see java.lang.Object#toString()
-			 */
 			@Override
 			public java.lang.String toString() {
 				return "SpelPath.TypedSpelPath.SpelExpressionBuilder(basePath=" + this.getBasePath() + ", type="
@@ -749,10 +697,6 @@ class SpelPath {
 			}
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.json.patch.SpelPath#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(final java.lang.Object o) {
 
@@ -770,10 +714,6 @@ class SpelPath {
 					&& Objects.equals(type, that.type);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.json.patch.SpelPath#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			return Objects.hash(expression, type);

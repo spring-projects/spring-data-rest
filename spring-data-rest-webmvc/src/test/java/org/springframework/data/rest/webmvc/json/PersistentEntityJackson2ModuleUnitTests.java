@@ -317,10 +317,6 @@ class PersistentEntityJackson2ModuleUnitTests {
 			super(CustomType.class);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
-		 */
 		@Override
 		public void serialize(CustomType value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 

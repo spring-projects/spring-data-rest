@@ -130,55 +130,31 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getPath()
-	 */
 	@Override
 	public Path getPath() {
 		return PATH;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getRel()
-	 */
 	@Override
 	public LinkRelation getRel() {
 		return REL;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isExported()
-	 */
 	@Override
 	public boolean isExported() {
 		return !mappings.isEmpty();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#isPagingResource()
-	 */
 	@Override
 	public boolean isPagingResource() {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMapping#getDescription()
-	 */
 	@Override
 	public ResourceDescription getDescription() {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<MethodResourceMapping> iterator() {
 		return mappings.values().iterator();

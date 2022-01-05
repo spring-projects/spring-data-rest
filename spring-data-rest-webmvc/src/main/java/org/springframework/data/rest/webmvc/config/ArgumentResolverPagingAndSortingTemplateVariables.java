@@ -64,28 +64,16 @@ class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSort
 		this.sortResolver = sortResolver;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables#getPaginationTemplateVariables(org.springframework.core.MethodParameter, org.springframework.web.util.UriComponents)
-	 */
 	@Override
 	public TemplateVariables getPaginationTemplateVariables(MethodParameter parameter, UriComponents components) {
 		return pagingResolver.getPaginationTemplateVariables(parameter, components);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.support.PagingAndSortingTemplateVariables#getSortTemplateVariables(org.springframework.core.MethodParameter, org.springframework.web.util.UriComponents)
-	 */
 	@Override
 	public TemplateVariables getSortTemplateVariables(MethodParameter parameter, UriComponents template) {
 		return sortResolver.getSortTemplateVariables(parameter, template);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.mvc.UriComponentsContributor#enhance(org.springframework.web.util.UriComponentsBuilder, org.springframework.core.MethodParameter, java.lang.Object)
-	 */
 	@Override
 	public void enhance(UriComponentsBuilder builder, MethodParameter parameter, Object value) {
 
@@ -96,10 +84,6 @@ class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSort
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.hateoas.server.mvc.UriComponentsContributor#supportsParameter(org.springframework.core.MethodParameter)
-	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		return SUPPORTED_TYPES.contains(parameter.getParameterType());

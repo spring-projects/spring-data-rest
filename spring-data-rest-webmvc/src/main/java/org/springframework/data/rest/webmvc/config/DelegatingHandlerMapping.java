@@ -59,65 +59,37 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 		this.parser = parser;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.HandlerMapping#usesPathPatterns()
-	 */
 	@Override
 	public boolean usesPathPatterns() {
 		return parser != null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.MatchableHandlerMapping#getPatternParser()
-	 */
 	@Nullable
 	@Override
 	public PathPatternParser getPatternParser() {
 		return parser;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.support.DelegatingHandlerMapping#getDelegates()
-	 */
 	@SuppressWarnings("all")
 	public List<HandlerMapping> getDelegates() {
 		return this.delegates;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<HandlerMapping> iterator() {
 		return delegates.iterator();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.Ordered#getOrder()
-	 */
 	@Override
 	public int getOrder() {
 		return Ordered.LOWEST_PRECEDENCE - 100;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.HandlerMapping#getHandler(jakarta.servlet.http.HttpServletRequest)
-	 */
 	@Override
 	public HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
 		return HandlerSelectionResult.from(request, delegates).resultOrException();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.handler.MatchableHandlerMapping#match(jakarta.servlet.http.HttpServletRequest, java.lang.String)
-	 */
 	@Override
 	public RequestMatchResult match(HttpServletRequest request, String pattern) {
 
@@ -200,10 +172,6 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 			this.ignoredException = ignoredException;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(final java.lang.Object o) {
 
@@ -223,19 +191,11 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 					&& Objects.equals(ignoredException, other.ignoredException);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			return Objects.hash(request, mapping, result, ignoredException);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public java.lang.String toString() {
 			return "DelegatingHandlerMapping.HandlerSelectionResult(request=" + request + ", mapping=" + mapping + ", result="

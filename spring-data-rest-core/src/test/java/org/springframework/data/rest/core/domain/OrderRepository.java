@@ -25,18 +25,10 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface OrderRepository extends CrudRepository<Order, UUID> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Object)
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	Order save(Order entity);
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findById(java.lang.Object)
-	 */
 	@Override
 	Optional<Order> findById(UUID id);
 }

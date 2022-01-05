@@ -55,10 +55,6 @@ public class ProjectionDefinitionRegistar implements SmartInstantiationAwareBean
 		this.config = config;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter#postProcessAfterInitialization(java.lang.Object, java.lang.String)
-	 */
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 

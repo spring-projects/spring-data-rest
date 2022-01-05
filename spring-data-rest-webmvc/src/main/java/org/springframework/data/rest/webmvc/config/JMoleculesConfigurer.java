@@ -53,10 +53,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration(proxyBeanMethods = false)
 class JMoleculesConfigurer implements WebMvcConfigurer, RepositoryRestConfigurer {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurer#addFormatters(org.springframework.format.FormatterRegistry)
-	 */
 	@Override
 	public void addFormatters(FormatterRegistry registry) {
 
@@ -72,10 +68,6 @@ class JMoleculesConfigurer implements WebMvcConfigurer, RepositoryRestConfigurer
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureConversionService(org.springframework.core.convert.support.ConfigurableConversionService)
-	 */
 	@Override
 	public void configureConversionService(ConfigurableConversionService conversionService) {
 
@@ -121,10 +113,6 @@ class JMoleculesConfigurer implements WebMvcConfigurer, RepositoryRestConfigurer
 			this.entities = entities;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.spi.BackendIdConverter#fromRequestId(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		public Serializable fromRequestId(String id, Class<?> entityType) {
 
@@ -135,19 +123,11 @@ class JMoleculesConfigurer implements WebMvcConfigurer, RepositoryRestConfigurer
 					TypeDescriptor.valueOf(idType));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.spi.BackendIdConverter#toRequestId(java.io.Serializable, java.lang.Class)
-		 */
 		@Override
 		public String toRequestId(Serializable id, Class<?> entityType) {
 			return (String) primitivesConverter.convert(id, TypeDescriptor.forObject(id), STRING_DESCRIPTOR);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
-		 */
 		@Override
 		public boolean supports(Class<?> delimiter) {
 

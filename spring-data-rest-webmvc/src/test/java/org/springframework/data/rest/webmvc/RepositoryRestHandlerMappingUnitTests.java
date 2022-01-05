@@ -337,10 +337,6 @@ class RepositoryRestHandlerMappingUnitTests {
 			return super.isHandler(beanType);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping#getHandlerInternal(jakarta.servlet.http.HttpServletRequest)
-		 */
 		@Override
 		public HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
 			return super.getHandlerInternal(request);

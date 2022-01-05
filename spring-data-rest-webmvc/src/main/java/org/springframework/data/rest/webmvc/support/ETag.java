@@ -144,10 +144,6 @@ public final class ETag {
 		return headers;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return value == null ? null : "\"".concat(value).concat("\"");
@@ -173,10 +169,6 @@ public final class ETag {
 				.map(Object::toString);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -193,10 +185,6 @@ public final class ETag {
 		return Objects.equals(value, other.value);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(value);

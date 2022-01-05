@@ -85,10 +85,6 @@ public class Patch implements Streamable<PatchOperation> {
 		return in;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<PatchOperation> iterator() {
 		return operations.iterator();

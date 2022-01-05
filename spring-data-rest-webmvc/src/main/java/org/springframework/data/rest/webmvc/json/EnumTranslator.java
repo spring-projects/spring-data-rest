@@ -53,19 +53,11 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 		this.parseEnumNameAsFallback = true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.config.EnumTranslationConfiguration#setEnableDefaultTranslation(boolean)
-	 */
 	@Override
 	public void setEnableDefaultTranslation(boolean enableDefaultTranslation) {
 		this.enableDefaultTranslation = enableDefaultTranslation;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.config.EnumTranslationConfiguration#setParseEnumNameAsFallback(boolean)
-	 */
 	@Override
 	public void setParseEnumNameAsFallback(boolean parseEnumNameAsFallback) {
 		this.parseEnumNameAsFallback = parseEnumNameAsFallback;
@@ -191,19 +183,11 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 			return new TranslatedEnum(value, withDefaultTranslation);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.context.MessageSourceResolvable#getCodes()
-		 */
 		@Override
 		public String[] getCodes() {
 			return new String[] { String.format("%s.%s", value.getDeclaringClass().getName(), value.name()) };
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.context.MessageSourceResolvable#getDefaultMessage()
-		 */
 		@Override
 		public String getDefaultMessage() {
 			return withDefaultTranslation ? toDefault(value) : value.name();

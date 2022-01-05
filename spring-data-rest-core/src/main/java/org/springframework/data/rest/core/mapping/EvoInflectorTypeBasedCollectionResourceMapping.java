@@ -36,10 +36,6 @@ class EvoInflectorTypeBasedCollectionResourceMapping extends TypeBasedCollection
 		super(type, relProvider);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.TypeBasedCollectionResourceMapping#getDefaultPathFor(java.lang.Class)
-	 */
 	@Override
 	protected String getDefaultPathFor(Class<?> type) {
 		return English.plural(super.getDefaultPathFor(type));

@@ -95,19 +95,11 @@ public class JacksonSerializers extends SimpleModule {
 			this.translator = translator;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
-		 */
 		@Override
 		public void serialize(Enum value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 			gen.writeString(translator.asText(value));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.json.JsonSchemaPropertyCustomizer#customize(org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty, org.springframework.data.util.TypeInformation)
-		 */
 		@Override
 		public JsonSchemaProperty customize(JsonSchemaProperty property, TypeInformation<?> type) {
 
@@ -160,20 +152,12 @@ public class JacksonSerializers extends SimpleModule {
 			this.property = property;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.deser.ContextualDeserializer#createContextual(com.fasterxml.jackson.databind.DeserializationContext, com.fasterxml.jackson.databind.BeanProperty)
-		 */
 		@Override
 		public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property)
 				throws JsonMappingException {
 			return new EnumTranslatingDeserializer(translator, property);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
-		 */
 		@Override
 		@SuppressWarnings("unchecked")
 		public Enum deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {

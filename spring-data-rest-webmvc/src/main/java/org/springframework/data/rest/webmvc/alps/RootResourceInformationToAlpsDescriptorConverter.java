@@ -112,10 +112,6 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 		this.translator = translator;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-	 */
 	public Alps convert(RootResourceInformation resourceInformation) {
 
 		Class<?> type = resourceInformation.getDomainType();

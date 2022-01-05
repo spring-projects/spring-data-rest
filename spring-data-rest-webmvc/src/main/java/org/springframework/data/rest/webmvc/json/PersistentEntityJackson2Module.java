@@ -168,10 +168,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.collector = collector;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
-		 */
 		@Override
 		public void serialize(final PersistentEntityResource resource, final JsonGenerator jgen,
 				final SerializerProvider provider) throws IOException, JsonGenerationException {
@@ -251,10 +247,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.lookupObjectSerializer = lookupObjectSerializer;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.ser.BeanSerializerModifier#changeProperties(com.fasterxml.jackson.databind.SerializationConfig, com.fasterxml.jackson.databind.BeanDescription, java.util.List)
-		 */
 		@Override
 		public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc,
 				List<BeanPropertyWriter> beanProperties) {
@@ -354,10 +346,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.invoker = invoker;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
-		 */
 		@Override
 		public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 
@@ -388,10 +376,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.JsonSerializer#serializeWithType(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider, com.fasterxml.jackson.databind.jsontype.TypeSerializer)
-		 */
 		@Override
 		public void serializeWithType(Object value, JsonGenerator gen, SerializerProvider provider,
 				TypeSerializer typeSerializer) throws IOException {
@@ -448,10 +432,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.factory = factory;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.deser.BeanDeserializerModifier#updateBuilder(com.fasterxml.jackson.databind.DeserializationConfig, com.fasterxml.jackson.databind.BeanDescription, com.fasterxml.jackson.databind.deser.BeanDeserializerBuilder)
-		 */
 		@Override
 		public BeanDeserializerBuilder updateBuilder(DeserializationConfig config, BeanDescription beanDesc,
 				BeanDeserializerBuilder builder) {
@@ -609,10 +589,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.converter = converter;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
-		 */
 		@Override
 		public Object deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
@@ -675,10 +651,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.unwrapping = unwrapping;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
-		 */
 		@Override
 		public void serialize(TargetAware value, JsonGenerator jgen, SerializerProvider provider)
 				throws IOException, JsonGenerationException {
@@ -697,19 +669,11 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.JsonSerializer#isUnwrappingSerializer()
-		 */
 		@Override
 		public boolean isUnwrappingSerializer() {
 			return unwrapping;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.JsonSerializer#unwrappingSerializer(com.fasterxml.jackson.databind.util.NameTransformer)
-		 */
 		@Override
 		public JsonSerializer<TargetAware> unwrappingSerializer(NameTransformer unwrapper) {
 			return new ProjectionSerializer(collector, associations, invoker, true);
@@ -780,10 +744,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.unwrapping = unwrapping;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.ser.std.StdSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
-		 */
 		@Override
 		public void serialize(ProjectionResourceContent value, JsonGenerator jgen, SerializerProvider provider)
 				throws IOException, JsonGenerationException {
@@ -794,19 +754,11 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					serialize(value.getProjection(), jgen, provider);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.JsonSerializer#isUnwrappingSerializer()
-		 */
 		@Override
 		public boolean isUnwrappingSerializer() {
 			return unwrapping;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.JsonSerializer#unwrappingSerializer(com.fasterxml.jackson.databind.util.NameTransformer)
-		 */
 		@Override
 		public JsonSerializer<ProjectionResourceContent> unwrappingSerializer(NameTransformer unwrapper) {
 			return new ProjectionResourceContentSerializer(true);
@@ -836,19 +788,11 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.property = property;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.deser.ValueInstantiator#getValueTypeDesc()
-		 */
 		@Override
 		public String getValueTypeDesc() {
 			return property.getType().getName();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.deser.ValueInstantiator#createUsingDefault(com.fasterxml.jackson.databind.DeserializationContext)
-		 */
 		@Override
 		public Object createUsingDefault(DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
@@ -870,10 +814,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.invoker = factory.getInvokerFor(_valueClass);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
-		 */
 		@Override
 		public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
@@ -896,10 +836,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			this.lookups = lookups;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see com.fasterxml.jackson.databind.ser.std.ToStringSerializer#serialize(java.lang.Object, com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
-		 */
 		@Override
 		public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 

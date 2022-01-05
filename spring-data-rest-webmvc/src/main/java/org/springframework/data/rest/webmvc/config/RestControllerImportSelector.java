@@ -36,10 +36,6 @@ class RestControllerImportSelector implements ImportSelector {
 	private static final String HAL_EXPLORER_CONFIGURATION = "org.springframework.data.rest.webmvc.halexplorer.HalExplorerConfiguration";
 	private static final String JMOLECULES_SPRING = "org.jmolecules.spring.IdentifierToPrimitivesConverter";
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.annotation.ImportSelector#selectImports(org.springframework.core.type.AnnotationMetadata)
-	 */
 	@Override
 	public String[] selectImports(AnnotationMetadata importingClassMetadata) {
 

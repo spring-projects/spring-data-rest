@@ -55,18 +55,10 @@ public class PersistentEntityProjector extends DefaultExcerptProjector implement
 		this.projection = projection;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.support.Projector#project(java.lang.Object)
-	 */
 	public Object project(Object source) {
 		return projectWithDefault(source, Function.identity());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.support.DefaultExcerptProjector#projectExcerpt(java.lang.Object)
-	 */
 	@Override
 	public Object projectExcerpt(Object source) {
 		return projectWithDefault(source, PersistentEntityProjector.super::projectExcerpt);

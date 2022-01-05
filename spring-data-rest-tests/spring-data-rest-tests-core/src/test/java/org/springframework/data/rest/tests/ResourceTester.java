@@ -142,10 +142,6 @@ public class ResourceTester {
 			this.template = template;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.webmvc.ResourceTester.ContentResourceHandler#doWith(org.springframework.data.rest.webmvc.ResourceTester)
-		 */
 		@Override
 		public void doWith(ResourceTester content) {
 

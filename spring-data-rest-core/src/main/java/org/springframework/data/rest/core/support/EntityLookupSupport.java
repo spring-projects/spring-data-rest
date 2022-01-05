@@ -36,10 +36,6 @@ public abstract class EntityLookupSupport<T> implements EntityLookup<T> {
 		this.domainType = GenericTypeResolver.resolveTypeArgument(getClass(), EntityLookup.class);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
-	 */
 	@Override
 	public boolean supports(Class<?> delimiter) {
 		return domainType.isAssignableFrom(delimiter);

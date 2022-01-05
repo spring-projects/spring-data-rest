@@ -53,10 +53,6 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		this.entities = entities;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#getMappingFor(java.lang.Class)
-	 */
 	@Override
 	public ResourceMetadata getMetadataFor(Class<?> type) {
 
@@ -85,19 +81,11 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		});
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#getSearchResourceMappings(java.lang.Class)
-	 */
 	@Override
 	public SearchResourceMappings getSearchResourceMappings(Class<?> domainType) {
 		return searchResourceMappings;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#exportsMappingFor(java.lang.Class)
-	 */
 	@Override
 	public boolean exportsMappingFor(Class<?> type) {
 
@@ -109,10 +97,6 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		return metadata.isExported();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#exportsTopLevelResourceFor(java.lang.String)
-	 */
 	@Override
 	public boolean exportsTopLevelResourceFor(String path) {
 
@@ -127,19 +111,11 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMappings#hasMappingFor(java.lang.Class)
-	 */
 	@Override
 	public boolean hasMappingFor(Class<?> type) {
 		return getMappingMetadataFor(type) != null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.mapping.ResourceMetadataProvider#getMappingFor(org.springframework.data.mapping.PersistentProperty)
-	 */
 	public ResourceMapping getMappingFor(PersistentProperty<?> property) {
 		return propertyCache.computeIfAbsent(property, it -> new PersistentPropertyResourceMapping(property, this));
 	}
@@ -150,10 +126,6 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 		return metadata != null && metadata.isExported();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<ResourceMetadata> iterator() {
 

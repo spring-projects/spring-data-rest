@@ -99,10 +99,6 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		this.repositoryInvokerFactory = repositoryInvokerFactory;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
-	 */
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.publisher = applicationEventPublisher;
@@ -491,10 +487,6 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					String.format(message, parameters));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Throwable#getMessage()
-		 */
 		@Nullable
 		@Override
 		public String getMessage() {

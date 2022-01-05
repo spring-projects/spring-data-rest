@@ -43,10 +43,6 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 	private final List<LookupInformation<Object, Object, Repository<? extends Object, ?>>> lookupInformation = new ArrayList<>();
 	private final List<Class<?>> lookupTypes = new ArrayList<>();
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar#forRepository(java.lang.Class, org.springframework.core.convert.converter.Converter, org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupRegistrar.Lookup)
-	 */
 	@Override
 	public <T, ID, R extends Repository<T, ?>> EntityLookupRegistrar forRepository(Class<R> repositoryType,
 			Converter<T, ID> converter, Lookup<R, ID> lookup) {
@@ -56,10 +52,6 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		return this;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar#forValueRepository(java.lang.Class)
-	 */
 	@Override
 	public <T, ID, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forLookupRepository(Class<R> type) {
 
@@ -68,19 +60,11 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		return forRepository(type);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar#forRepository(java.lang.Class)
-	 */
 	@Override
 	public <T, ID, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forRepository(Class<R> type) {
 		return new MappingBuilder<T, ID, R>(type);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar#forValueRepository(java.lang.Class, org.springframework.core.convert.converter.Converter, org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupRegistrar.Lookup)
-	 */
 	@Override
 	public <T, ID, R extends Repository<T, ?>> EntityLookupRegistrar forValueRepository(Class<R> type,
 			Converter<T, ID> identifierMapping, Lookup<R, ID> lookup) {
@@ -125,10 +109,6 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			this.idMapping = mapping;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupRegistrar#withLookup(org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupRegistrar.Lookup)
-		 */
 		@Override
 		@SuppressWarnings("unchecked")
 		public EntityLookupRegistrar withLookup(Lookup<R, ID> lookup) {
@@ -140,10 +120,6 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			return EntityLookupConfiguration.this;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.config.EntityLookupRegistrar.IdMappingRegistrar#withIdMapping(org.springframework.core.convert.converter.Converter)
-		 */
 		@Override
 		public <ID2> LookupRegistrar<T, ID2, R> withIdMapping(Converter<T, ID2> idMapping) {
 			return new MappingBuilder<T, ID2, R>(repositoryType, idMapping);
@@ -207,19 +183,11 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 					MethodInvocationRecorder.forProxyOf(it).record(lookupInfo.identifierMapping::convert).getPropertyPath());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.support.EntityLookup#getResourceIdentifier(java.lang.Object)
-		 */
 		@Override
 		public Object getResourceIdentifier(T entity) {
 			return lookupInfo.getIdentifierMapping().convert(entity);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.support.EntityLookup#lookupEntity(java.io.Serializable)
-		 */
 		@Override
 		@SuppressWarnings("unchecked")
 		public Optional<T> lookupEntity(Object id) {
@@ -229,19 +197,11 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			return Optional.class.isInstance(result) ? (Optional<T>) result : Optional.ofNullable((T) result);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.plugin.core.Plugin#supports(java.lang.Object)
-		 */
 		@Override
 		public boolean supports(Class<?> delimiter) {
 			return domainType.isAssignableFrom(delimiter);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.rest.core.support.EntityLookup#getLookupProperty()
-		 */
 		public Optional<String> getLookupProperty() {
 			return this.lookupProperty;
 		}
@@ -277,10 +237,6 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			return this.lookup;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(final java.lang.Object o) {
 
@@ -299,20 +255,11 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 					&& Objects.equals(getLookup(), that.getLookup());
 		}
 
-		/*
-		 *
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			return Objects.hash(getRepositoryType(), getIdentifierMapping(), getLookup());
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public java.lang.String toString() {
 			return "EntityLookupConfiguration.LookupInformation(repositoryType=" + this.getRepositoryType()
