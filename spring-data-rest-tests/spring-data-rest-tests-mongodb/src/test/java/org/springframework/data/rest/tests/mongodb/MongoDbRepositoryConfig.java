@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.tests.mongodb;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
@@ -38,8 +41,8 @@ public class MongoDbRepositoryConfig extends AbstractMongoClientConfiguration {
 	}
 
 	@Override
-	protected String getMappingBasePackage() {
-		return "";
+	protected Collection<String> getMappingBasePackages() {
+		return Collections.singleton("");
 	}
 
 	@Override
