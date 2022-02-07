@@ -1,3 +1,9 @@
+def p = [:]
+node {
+	checkout scm
+	p = readProperties interpolate: true, file: 'ci/pipeline.properties'
+}
+
 pipeline {
 	agent none
 
@@ -13,28 +19,7 @@ pipeline {
 	}
 
 	stages {
-		stage("Docker images") {
-			parallel {
-				stage('Publish JDK 17/ + MongoDB 4.4') {
-					when {
-						changeset "ci/openjdk17-mongodb-4.4/**"
-					}
-					agent { label 'data' }
-					options { timeout(time: 30, unit: 'MINUTES') }
-
-					steps {
-						script {
-							def image = docker.build("springci/spring-data-rest-openjdk17-with-mongodb-4.4", "ci/openjdk17-mongodb-4.4/")
-							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								image.push()
-							}
-						}
-					}
-				}
-			}
-		}
-
-		stage("test: baseline (JDK 17)") {
+		stage("test: baseline (main)") {
 			when {
 				beforeAgent(true)
 				anyOf {
@@ -47,12 +32,12 @@ pipeline {
 			}
 			options { timeout(time: 30, unit: 'MINUTES') }
 			environment {
-				ARTIFACTORY = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
+				ARTIFACTORY = credentials("${p['artifactory.credentials']}")
 			}
 			steps {
 				script {
-					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('springci/spring-data-rest-openjdk17-with-mongodb-4.4:latest').inside('-v $HOME:/tmp/jenkins-home') {
+					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
+						docker.image("springci/spring-data-with-mongodb-4.4:${p['java.main.tag']}").inside(p['docker.java.inside.basic']) {
 							sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 							sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 							sh 'sleep 10'
@@ -79,13 +64,13 @@ pipeline {
 			options { timeout(time: 20, unit: 'MINUTES') }
 
 			environment {
-				ARTIFACTORY = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
+				ARTIFACTORY = credentials("${p['artifactory.credentials']}")
 			}
 
 			steps {
 				script {
-					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('openjdk:17').inside('-v $HOME:/tmp/jenkins-home') {
+					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
+						docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,artifactory ' +
 									'-Dartifactory.server=https://repo.spring.io ' +
 									"-Dartifactory.username=${ARTIFACTORY_USR} " +
