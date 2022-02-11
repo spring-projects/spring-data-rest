@@ -15,7 +15,10 @@
 
 	<modules>
 		<module>spring-data-rest-tests-core</module>
-		<module>spring-data-rest-tests-geode</module>
+		<!-- Disabled until Apache Geode can be made work with having Micrometer 2 in the class path.
+		See https://github.com/spring-projects/spring-data-rest/issues/2106 and
+		https://github.com/spring-projects/spring-data-geode/issues/572 -->
+		<!-- <module>spring-data-rest-tests-geode</module> -->
 		<module>spring-data-rest-tests-jpa</module>
 		<module>spring-data-rest-tests-mongodb</module>
 		<module>spring-data-rest-tests-security</module>
