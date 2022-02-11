@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -36,7 +37,7 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
  * @author Oliver Gierke
  */
 @RepositoryRestResource(collectionResourceRel = "people", path = "people")
-public interface PersonRepository extends PagingAndSortingRepository<Person, Long> {
+public interface PersonRepository extends PagingAndSortingRepository<Person, Long>, CrudRepository<Person, Long> {
 
 	@RestResource(rel = "firstname", path = "firstname")
 	Page<Person> findByFirstName(@Param("firstname") String firstName, Pageable pageable);

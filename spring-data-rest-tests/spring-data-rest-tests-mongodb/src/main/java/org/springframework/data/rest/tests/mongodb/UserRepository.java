@@ -21,13 +21,14 @@ import java.util.List;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
 /**
  * @author Oliver Gierke
  */
-public interface UserRepository extends PagingAndSortingRepository<User, BigInteger>, QuerydslPredicateExecutor<User>,
+public interface UserRepository extends PagingAndSortingRepository<User, BigInteger>, CrudRepository<User, BigInteger>, QuerydslPredicateExecutor<User>,
 		QuerydslBinderCustomizer<QUser> {
 
 	List<User> findByFirstname(String firstname);
