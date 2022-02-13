@@ -29,6 +29,7 @@ import javax.naming.ldap.LdapName;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -44,6 +45,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
+import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
@@ -60,7 +62,11 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.MultiValueMap;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -191,6 +197,18 @@ class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(service.canConvert(Distance.class, String.class)).isTrue();
 	}
 
+	@Test // DATAREST-593
+	void assertValidatorSupportWorkingCorrectly() {
+
+		RepositoryRestHandlerAdapter repositoryRestHandlerAdapter =
+				context.getBean("repositoryExporterHandlerAdapter", RepositoryRestHandlerAdapter.class);
+
+		ConfigurableWebBindingInitializer configurableWebBindingInitializer =
+				(ConfigurableWebBindingInitializer) repositoryRestHandlerAdapter.getWebBindingInitializer();
+
+		assertThat(configurableWebBindingInitializer.getValidator()).isNotNull();
+	}
+
 	@Test // DATAREST-1198
 	void hasConvertersForNamAndLdapName() {
 
@@ -292,6 +310,14 @@ class RepositoryRestMvConfigurationIntegrationTests {
 					return ExtendingConfiguration.collector;
 				}
 			};
+		}
+
+		@Bean
+		@Order(200) // #967
+		public Validator mvcValidator() throws ClassNotFoundException {
+			String className = "org.springframework.validation.beanvalidation.OptionalValidatorFactoryBean";
+			Class clazz = ClassUtils.forName(className, WebMvcConfigurationSupport.class.getClassLoader());
+			return (Validator) BeanUtils.instantiateClass(clazz);
 		}
 	}
 
