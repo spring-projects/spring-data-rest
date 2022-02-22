@@ -56,7 +56,7 @@ pipeline {
 				}
 			}
 			parallel {
-				stage("test: baseline (jdk15") {
+				stage("test: baseline (LTS)") {
 					agent {
 						label 'data'
 					}
@@ -67,13 +67,13 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
-								docker.image("springci/spring-data-with-mongodb-4.4:${p['java.15.tag']}").inside(p['docker.java.inside.basic']) {
+								docker.image("springci/spring-data-with-mongodb-4.4:${p['java.lts.tag']}").inside(p['docker.java.inside.basic']) {
 									sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 									sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 									sh 'sleep 10'
 									sh 'mongo --eval "rs.initiate({_id: \'rs0\', members:[{_id: 0, host: \'127.0.0.1:27017\'}]});"'
 									sh 'sleep 15'
-									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list test -Dsort -U -B -Pit,java11'
+									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list test -Dsort -U -B -Pit'
 								}
 							}
 						}
@@ -102,7 +102,7 @@ pipeline {
 						}
 					}
 				}
-				stage("test: spring53-next (jdk15)") {
+				stage("test: spring53-next (LTS)") {
 					agent {
 						label 'data'
 					}
@@ -113,13 +113,13 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
-								docker.image("springci/spring-data-with-mongodb-4.4:${p['java.15.tag']}").inside(p['docker.java.inside.basic']) {
+								docker.image("springci/spring-data-with-mongodb-4.4:${p['java.lts.tag']}").inside(p['docker.java.inside.basic']) {
 									sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 									sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 									sh 'sleep 10'
 									sh 'mongo --eval "rs.initiate({_id: \'rs0\', members:[{_id: 0, host: \'127.0.0.1:27017\'}]});"'
 									sh 'sleep 15'
-									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list test -Dsort -U -B -Pit,spring53-next,java11'
+									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list test -Dsort -U -B -Pit,spring53-next'
 								}
 							}
 						}
@@ -147,7 +147,7 @@ pipeline {
 			steps {
 				script {
 					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
-						docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
+						docker.image(p['docker.java.lts.image']).inside(p['docker.java.inside.basic']) {
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,artifactory ' +
 									'-Dartifactory.server=https://repo.spring.io ' +
 									"-Dartifactory.username=${ARTIFACTORY_USR} " +
