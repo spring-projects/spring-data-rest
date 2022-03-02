@@ -39,6 +39,7 @@ import org.springframework.validation.Validator;
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Chris Midgley
  */
 public class ValidatingRepositoryEventListener extends AbstractRepositoryEventListener<Object> {
 
@@ -139,6 +140,24 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 	@Override
 	protected void onAfterLinkSave(Object parent, Object linked) {
 		validate("afterLinkSave", parent);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onBeforeLinkDelete(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	protected void onBeforeLinkDelete(Object parent, Object linked) {
+		validate("beforeLinkDelete", parent);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.core.event.AbstractRepositoryEventListener#onAfterLinkDelete(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	protected void onAfterLinkDelete(Object parent, Object linked) {
+		validate("afterLinkDelete", parent);
 	}
 
 	/*
