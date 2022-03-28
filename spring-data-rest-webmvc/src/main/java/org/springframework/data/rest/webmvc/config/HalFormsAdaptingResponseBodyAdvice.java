@@ -30,6 +30,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.lang.Nullable;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
@@ -55,7 +56,7 @@ class HalFormsAdaptingResponseBodyAdvice<T extends RepresentationModel<T>>
 
 	@Override
 	@SneakyThrows
-	public RepresentationModel<T> beforeBodyWrite(RepresentationModel<T> body, MethodParameter returnType,
+	public RepresentationModel<T> beforeBodyWrite(@Nullable RepresentationModel<T> body, MethodParameter returnType,
 			MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType,
 			ServerHttpRequest request, ServerHttpResponse response) {
 
@@ -66,7 +67,7 @@ class HalFormsAdaptingResponseBodyAdvice<T extends RepresentationModel<T>>
 
 		List<MediaType> accept = request.getHeaders().getAccept();
 
-		boolean hasAffordances = body.getLinks().stream()
+		boolean hasAffordances = body != null && body.getLinks().stream()
 				.anyMatch(it -> !it.getAffordances().isEmpty());
 
 		// Affordances registered -> we're fine as we will render templates
