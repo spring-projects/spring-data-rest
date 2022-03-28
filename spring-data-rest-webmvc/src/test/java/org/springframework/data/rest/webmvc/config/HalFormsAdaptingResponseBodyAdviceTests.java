@@ -35,6 +35,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.http.server.ServletServerHttpResponse;
+import org.springframework.lang.Nullable;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -95,7 +96,16 @@ class HalFormsAdaptingResponseBodyAdviceTests<T extends RepresentationModel<T>> 
 				.isThrownBy(() -> assertResponseContentType(model, MediaTypes.HAL_JSON));
 	}
 
-	private void assertResponseContentType(RepresentationModel<T> model, MediaType mediaType) {
+	@Test // #2123
+	void handlesNullBodyCorrectly() {
+
+		request.addHeader(HttpHeaders.ACCEPT,
+				MediaType.toString(Arrays.asList(MediaTypes.HAL_JSON)));
+
+		assertThatNoException().isThrownBy(() -> assertResponseContentType(null, MediaTypes.HAL_JSON));
+	}
+
+	private void assertResponseContentType(@Nullable RepresentationModel<T> model, MediaType mediaType) {
 
 		this.response.addHeader(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_FORMS_JSON_VALUE);
 		ServletServerHttpResponse response = new ServletServerHttpResponse(this.response);
