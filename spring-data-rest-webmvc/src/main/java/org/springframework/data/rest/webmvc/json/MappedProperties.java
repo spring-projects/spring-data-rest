@@ -200,6 +200,16 @@ class MappedProperties {
 	}
 
 	/**
+	 * Returns all property names of ignored properties.
+	 *
+	 * @return will never be {@literal null}.
+	 * @since 3.5.11, 3.6.4
+	 */
+	public Iterable<String> getIgnoredProperties() {
+		return ignoredPropertyNames;
+	}
+
+	/**
 	 * Returns whether the given {@link PersistentProperty} is mapped, i.e. known to both Jackson and Spring Data.
 	 *
 	 * @param property must not be {@literal null}.
