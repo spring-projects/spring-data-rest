@@ -55,6 +55,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -104,6 +107,8 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Note.class);
 		mappingContext.getPersistentEntity(WithNullCollection.class);
 		mappingContext.getPersistentEntity(ArrayHolder.class);
+		mappingContext.getPersistentEntity(Apple.class);
+		mappingContext.getPersistentEntity(Pear.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -587,6 +592,32 @@ class DomainObjectReaderUnitTests {
 		assertThat(updated.array).containsExactly("new");
 	}
 
+	@Test // #2130
+	void writesPolymorphicArrayWithSwitchedItemForPut() throws Exception {
+
+		Apple apple = new Apple();
+		apple.apple = "apple";
+		apple.color = "red";
+		apple.ignored = "ignored";
+
+		Pear pear = new Pear();
+		pear.pear = "pear";
+
+		Fruit result = reader.mergeForPut(pear, apple, new ObjectMapper());
+
+		assertThat(result).isInstanceOfSatisfying(Pear.class, it -> {
+
+			// Exposed property is wiped as expected for PUT
+			assertThat(it.color).isNull();
+
+			// Non-exposed state is transferred
+			assertThat(it.ignored).isEqualTo("ignored");
+
+			// Type specific state applied, too
+			assertThat(it.pear).isEqualTo("pear");
+		});
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -811,5 +842,33 @@ class DomainObjectReaderUnitTests {
 	@Value
 	static class ArrayHolder {
 		String[] array;
+	}
+
+	// DATAREST-1026
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Basket {
+
+		@Id Long id;
+		List<Fruit> fruits;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "type")
+	@JsonSubTypes({ @JsonSubTypes.Type(name = "Apple", value = Apple.class),
+			@JsonSubTypes.Type(name = "Pear", value = Pear.class) })
+	static class Fruit {
+		String color;
+		@JsonIgnore String ignored;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Apple extends Fruit {
+		String apple;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Pear extends Fruit {
+		String pear;
 	}
 }

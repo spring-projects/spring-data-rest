@@ -115,6 +115,11 @@ class MappedPropertiesUnitTests {
 		assertThat(properties.isWritableProperty("someRandomProperty")).isTrue();
 	}
 
+	@Test // #2130
+	void exposesIgnoredProperties() {
+		assertThat(properties.getIgnoredProperties()).contains("notExposedByJackson");
+	}
+
 	static class Sample {
 
 		public @Transient String notExposedBySpringData;

@@ -42,6 +42,7 @@ import org.springframework.data.rest.webmvc.util.InputStreamHttpInputMessage;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -124,6 +125,7 @@ public class DomainObjectReader {
 	 * @param mapper must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	<T> T mergeForPut(T source, T target, final ObjectMapper mapper) {
 
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
@@ -132,11 +134,23 @@ public class DomainObjectReader {
 			return source;
 		}
 
-		Class<? extends Object> type = target.getClass();
+		boolean isTypeChange = !source.getClass().isInstance(target);
 
-		return entities.getPersistentEntity(type) //
-				.filter(it -> !it.isImmutable()) //
+		boolean immutableTarget = entities.getPersistentEntity(target.getClass())
+				.map(PersistentEntity::isImmutable)
+				.orElse(true); // Not a Spring Data managed type -> no detailed merging
+
+		return entities.getPersistentEntity(isTypeChange ? source.getClass() : target.getClass()) //
 				.map(it -> {
+
+					MappedProperties properties = MappedProperties.forDeserialization(it, mapper);
+
+					if (isTypeChange || immutableTarget || it.isImmutable()) {
+
+						copyRemainingProperties(properties.getIgnoredProperties(), target, source);
+
+						return source;
+					}
 
 					MergingPropertyHandler propertyHandler = new MergingPropertyHandler(source, target, it, mapper);
 
@@ -145,7 +159,7 @@ public class DomainObjectReader {
 
 					// Need to copy unmapped properties as the PersistentProperty model currently does not contain any transient
 					// properties
-					copyRemainingProperties(propertyHandler.getProperties(), source, target);
+					copyRemainingProperties(properties.getSpringDataUnmappedProperties(), source, target);
 
 					return target;
 
@@ -153,20 +167,20 @@ public class DomainObjectReader {
 	}
 
 	/**
-	 * Copies the unmapped properties of the given {@link MappedProperties} from the source object to the target instance.
+	 * Copies the given properties from the source object to the target instance.
 	 *
-	 * @param properties must not be {@literal null}.
+	 * @param propertyNames must not be {@literal null}.
 	 * @param source must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 */
-	private static void copyRemainingProperties(MappedProperties properties, Object source, Object target) {
+	private static void copyRemainingProperties(Iterable<String> propertyNames, Object source, Object target) {
 
 		PropertyAccessor sourceFieldAccessor = PropertyAccessorFactory.forDirectFieldAccess(source);
 		PropertyAccessor sourcePropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(source);
 		PropertyAccessor targetFieldAccessor = PropertyAccessorFactory.forDirectFieldAccess(target);
 		PropertyAccessor targetPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(target);
 
-		for (String property : properties.getSpringDataUnmappedProperties()) {
+		for (String property : propertyNames) {
 
 			// If there's a field we can just copy it.
 			if (targetFieldAccessor.isWritableProperty(property)) {
