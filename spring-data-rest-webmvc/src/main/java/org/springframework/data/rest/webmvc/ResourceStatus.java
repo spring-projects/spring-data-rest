@@ -53,7 +53,7 @@ class ResourceStatus {
 
 	/**
 	 * Returns the {@link StatusAndHeaders} calculated from the given {@link HttpHeaders}, domain object and
-	 * {@link RootResourceInformation.
+	 * {@link RootResourceInformation}
 	 *
 	 * @param requestHeaders must not be {@literal null}.
 	 * @param domainObject must not be {@literal null}.
