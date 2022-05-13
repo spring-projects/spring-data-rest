@@ -1,374 +1,155 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    	
-  
-  <modelVersion>4.0.0</modelVersion>
-    	
-  
-  <groupId>org.springframework.data</groupId>
-    	
-  
-  <artifactId>spring-data-rest-parent</artifactId>
-    	
-  
-  <version>4.0.0-SNAPSHOT</version>
-    	
-  
-  <packaging>pom</packaging>
-    	
-  
-  <name>Spring Data REST</name>
-    	
-  
-  <parent>
-        		
-    
-    <groupId>org.springframework.data.build</groupId>
-        		
-    
-    <artifactId>spring-data-parent</artifactId>
-        		
-    
-    <version>3.0.0-SNAPSHOT</version>
-        		
-    
-    <relativePath/>
-        	
-  
-  </parent>
-    	
-  
-  <modules>
-        		
-    
-    <module>spring-data-rest-core</module>
-        		
-    
-    <module>spring-data-rest-webmvc</module>
-        		
-    
-    <module>spring-data-rest-distribution</module>
-        		
-    
-    <module>spring-data-rest-hal-explorer</module>
-        	
-  
-  </modules>
-    	
-  
-  <properties>
-        		
-    
-    <project.type>multi</project.type>
-        		
-    
-    <dist.id>spring-data-rest</dist.id>
-        		
-    
-    <springdata.commons>3.0.0-SNAPSHOT</springdata.commons>
-        		
-    
-    <springdata.jpa>3.0.0-SNAPSHOT</springdata.jpa>
-        		
-    
-    <springdata.mongodb>4.0.0-SNAPSHOT</springdata.mongodb>
-        		
-    
-    <springdata.geode>3.0.0-SNAPSHOT</springdata.geode>
-        		
-    
-    <springdata.keyvalue>3.0.0-SNAPSHOT</springdata.keyvalue>
-        		
-    
-    <servlet.version>5.0.0</servlet.version>
-        		
-    
-    <hibernate.version>5.5.7.Final</hibernate.version>
-        	
-  
-  </properties>
-    	
-  
-  <developers>
-        		
-    
-    <developer>
-            			
-      
-      <id>ogierke</id>
-            			
-      
-      <name>Oliver Gierke</name>
-            			
-      
-      <email>ogierke at pivotal.io</email>
-            			
-      
-      <organization>Pivotal</organization>
-            			
-      
-      <organizationUrl>https://www.pivotal.io</organizationUrl>
-            			
-      
-      <roles>
-                				
-        
-        <role>Project Lead</role>
-                			
-      
-      </roles>
-            			
-      
-      <timezone>+1</timezone>
-            		
-    
-    </developer>
-        		
-    
-    <developer>
-            			
-      
-      <id>gturnquist</id>
-            			
-      
-      <name>Greg Turnquist</name>
-            			
-      
-      <email>gturnquist at pivotal.io</email>
-            			
-      
-      <organization>Pivotal</organization>
-            			
-      
-      <organizationUrl>https://www.pivotal.io</organizationUrl>
-            			
-      
-      <roles>
-                				
-        
-        <role>Developer</role>
-                			
-      
-      </roles>
-            			
-      
-      <timezone>-6</timezone>
-            		
-    
-    </developer>
-        	
-  
-  </developers>
-    	
-  
-  <profiles>
-        		
-    
-    <profile>
-            			
-      
-      <id>it</id>
-            			
-      
-      <modules>
-                				
-        
-        <module>spring-data-rest-core</module>
-                				
-        
-        <module>spring-data-rest-webmvc</module>
-                				
-        
-        <module>spring-data-rest-distribution</module>
-                				
-        
-        <module>spring-data-rest-hal-explorer</module>
-                				
-        
-        <module>spring-data-rest-tests</module>
-                			
-      
-      </modules>
-            		
-    
-    </profile>
-        		
-    
-    <profile>
-            			
-      
-      <id>ci</id>
-            			
-      
-      <build>
-                				
-        
-        <plugins>
-                    					
-          
-          <plugin>
-                        						
-            
-            <groupId>org.apache.maven.plugins</groupId>
-                        						
-            
-            <artifactId>maven-checkstyle-plugin</artifactId>
-                        						
-            
-            <configuration>
-                            							
-              
-              <checkstyleRules>
-                                								
-                
-                <module name="Checker">
-                                    									
-                  
-                  <!-- Configure checker to use UTF-8 encoding -->
-                                    									
-                  
-                  <property name="charset" value="UTF-8"/>
-                                    									
-                  
-                  <module name="io.spring.nohttp.checkstyle.check.NoHttpCheck">
-                                        										
-                    
-                    <!-- XML requires double escaping, config gets XML-processed twice -->
-                                        										
-                    
-                    <property name="allowlist" value="http://www\.querydsl\.com.*&amp;#10;http://stateless\.co.*&amp;#10;http://json-schema\.org.*&amp;#10;http://alps\.io.*"/>
-                                        									
-                  
-                  </module>
-                                    								
-                
-                </module>
-                                							
-              
-              </checkstyleRules>
-                            							
-              
-              <includes>**/*</includes>
-                            							
-              
-              <excludes>.git/**/*,target/**/*,**/target/**/*,.idea/**/*,**/spring.schemas,**/*.svg,mvnw,mvnw.cmd,**/cassandra.yaml</excludes>
-                            							
-              
-              <sourceDirectories>./</sourceDirectories>
-                            						
-            
-            </configuration>
-                        					
-          
-          </plugin>
-                    				
-        
-        </plugins>
-                			
-      
-      </build>
-            		
-    
-    </profile>
-        	
-  
-  </profiles>
-    	
-  
-  <dependencies>
-        		
-    
-    <dependency>
-            			
-      
-      <groupId>jakarta.validation</groupId>
-            			
-      
-      <artifactId>jakarta.validation-api</artifactId>
-            			
-      
-      <version>${validation}</version>
-            			
-      
-      <optional>true</optional>
-            		
-    
-    </dependency>
-        		
-    
-    <dependency>
-            			
-      
-      <groupId>org.hamcrest</groupId>
-            			
-      
-      <artifactId>hamcrest-library</artifactId>
-            			
-      
-      <version>${hamcrest}</version>
-            			
-      
-      <scope>test</scope>
-            		
-    
-    </dependency>
-        		
-    
-    <dependency>
-            			
-      
-      <groupId>org.hamcrest</groupId>
-            			
-      
-      <artifactId>hamcrest-core</artifactId>
-            			
-      
-      <version>${hamcrest}</version>
-            			
-      
-      <scope>test</scope>
-            		
-    
-    </dependency>
-        	
-  
-  </dependencies>
-    	
-  
-  <repositories>
-        		
-    
-    <repository>
-            			
-      
-      <id>spring-libs-snapshot</id>
-            			
-      
-      <url>https://repo.spring.io/libs-snapshot</url>
-            		
-    
-    </repository>
-        	
-  
-  </repositories>
-    	
-  
-  <pluginRepositories>
-        		
-    
-    <pluginRepository>
-            			
-      
-      <id>spring-plugins-release</id>
-            			
-      
-      <url>https://repo.spring.io/plugins-release</url>
-            		
-    
-    </pluginRepository>
-        	
-  
-  </pluginRepositories>
-    
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.springframework.data</groupId>
+	<artifactId>spring-data-rest-parent</artifactId>
+	<version>4.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<name>Spring Data REST</name>
+
+	<parent>
+		<groupId>org.springframework.data.build</groupId>
+		<artifactId>spring-data-parent</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+		<relativePath/>
+	</parent>
+
+	<modules>
+		<module>spring-data-rest-core</module>
+		<module>spring-data-rest-webmvc</module>
+		<module>spring-data-rest-distribution</module>
+		<module>spring-data-rest-hal-explorer</module>
+	</modules>
+
+	<properties>
+		<project.type>multi</project.type>
+		<dist.id>spring-data-rest</dist.id>
+
+		<springdata.commons>3.0.0-SNAPSHOT</springdata.commons>
+		<springdata.jpa>3.0.0-SNAPSHOT</springdata.jpa>
+		<springdata.mongodb>4.0.0-SNAPSHOT</springdata.mongodb>
+		<springdata.geode>3.0.0-SNAPSHOT</springdata.geode>
+		<springdata.keyvalue>3.0.0-SNAPSHOT</springdata.keyvalue>
+		<servlet.version>5.0.0</servlet.version>
+
+		<hibernate.version>5.5.7.Final</hibernate.version>
+	</properties>
+
+	<developers>
+		<developer>
+			<id>ogierke</id>
+			<name>Oliver Gierke</name>
+			<email>ogierke at pivotal.io</email>
+			<organization>Pivotal</organization>
+			<organizationUrl>https://www.pivotal.io</organizationUrl>
+			<roles>
+				<role>Project Lead</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+		<developer>
+			<id>gturnquist</id>
+			<name>Greg Turnquist</name>
+			<email>gturnquist at pivotal.io</email>
+			<organization>Pivotal</organization>
+			<organizationUrl>https://www.pivotal.io</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<timezone>-6</timezone>
+		</developer>
+	</developers>
+
+	<profiles>
+
+		<profile>
+
+			<id>it</id>
+
+			<modules>
+				<module>spring-data-rest-core</module>
+				<module>spring-data-rest-webmvc</module>
+				<module>spring-data-rest-distribution</module>
+				<module>spring-data-rest-hal-explorer</module>
+				<module>spring-data-rest-tests</module>
+			</modules>
+
+		</profile>
+
+		<profile>
+
+			<id>ci</id>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-checkstyle-plugin</artifactId>
+						<configuration>
+							<checkstyleRules>
+								<module name="Checker">
+
+									<!-- Configure checker to use UTF-8 encoding -->
+									<property name="charset" value="UTF-8"/>
+
+									<module name="io.spring.nohttp.checkstyle.check.NoHttpCheck">
+										<!-- XML requires double escaping, config gets XML-processed twice -->
+										<property name="allowlist" value="http://www\.querydsl\.com.*&amp;#10;http://stateless\.co.*&amp;#10;http://json-schema\.org.*&amp;#10;http://alps\.io.*"/>
+									</module>
+								</module>
+							</checkstyleRules>
+							<includes>**/*</includes>
+							<excludes>.git/**/*,target/**/*,**/target/**/*,.idea/**/*,**/spring.schemas,**/*.svg,mvnw,mvnw.cmd,**/cassandra.yaml</excludes>
+							<sourceDirectories>./</sourceDirectories>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+
+		</profile>
+
+	</profiles>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
+			<version>${validation}</version>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-library</artifactId>
+			<version>${hamcrest}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-core</artifactId>
+			<version>${hamcrest}</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>spring-libs-snapshot</id>
+			<url>https://repo.spring.io/libs-snapshot</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-plugins-release</id>
+			<url>https://repo.spring.io/plugins-release</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 </project>
