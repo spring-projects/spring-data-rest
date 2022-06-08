@@ -45,9 +45,9 @@ public class EmbeddedResourcesAssembler {
 	public EmbeddedResourcesAssembler(PersistentEntities entities, Associations associations,
 			ExcerptProjector projector) {
 
-		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(associations, "Associations must not be null!");
-		Assert.notNull(projector, "ExcerptProjector must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null");
+		Assert.notNull(associations, "Associations must not be null");
+		Assert.notNull(projector, "ExcerptProjector must not be null");
 
 		this.entities = entities;
 		this.associations = associations;
@@ -63,7 +63,7 @@ public class EmbeddedResourcesAssembler {
 	 */
 	public Iterable<EmbeddedWrapper> getEmbeddedResources(Object instance) {
 
-		Assert.notNull(instance, "Entity instance must not be null!");
+		Assert.notNull(instance, "Entity instance must not be null");
 
 		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(instance.getClass());
 

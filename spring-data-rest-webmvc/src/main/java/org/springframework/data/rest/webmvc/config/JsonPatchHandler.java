@@ -56,8 +56,8 @@ class JsonPatchHandler {
 	 */
 	public JsonPatchHandler(ObjectMapper mapper, DomainObjectReader reader) {
 
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
-		Assert.notNull(reader, "DomainObjectReader must not be null!");
+		Assert.notNull(mapper, "ObjectMapper must not be null");
+		Assert.notNull(reader, "DomainObjectReader must not be null");
 
 		this.mapper = mapper;
 		this.reader = reader;
@@ -76,9 +76,9 @@ class JsonPatchHandler {
 	 */
 	public <T> T apply(IncomingRequest request, T target) throws Exception {
 
-		Assert.notNull(request, "Request must not be null!");
-		Assert.isTrue(request.isPatchRequest(), "Cannot handle non-PATCH request!");
-		Assert.notNull(target, "Target must not be null!");
+		Assert.notNull(request, "Request must not be null");
+		Assert.isTrue(request.isPatchRequest(), "Cannot handle non-PATCH request");
+		Assert.notNull(target, "Target must not be null");
 
 		if (request.isJsonPatchRequest()) {
 			return applyPatch(request.getBody(), target);
@@ -113,7 +113,7 @@ class JsonPatchHandler {
 			return new JsonPatchPatchConverter(mapper).convert(mapper.readTree(source));
 		} catch (Exception o_O) {
 			throw new HttpMessageNotReadableException(
-					String.format("Could not read PATCH operations! Expected %s!", RestMediaTypes.JSON_PATCH_JSON), o_O,
+					String.format("Could not read PATCH operations; Expected %s", RestMediaTypes.JSON_PATCH_JSON), o_O,
 					InputStreamHttpInputMessage.of(source));
 		}
 	}

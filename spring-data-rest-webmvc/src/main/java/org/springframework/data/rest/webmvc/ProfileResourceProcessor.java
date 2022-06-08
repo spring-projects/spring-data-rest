@@ -41,7 +41,7 @@ public class ProfileResourceProcessor implements RepresentationModelProcessor<Re
 	 */
 	public ProfileResourceProcessor(RepositoryRestConfiguration configuration) {
 
-		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
+		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null");
 		this.configuration = configuration;
 	}
 

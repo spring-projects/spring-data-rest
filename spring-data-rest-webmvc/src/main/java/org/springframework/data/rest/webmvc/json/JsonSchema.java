@@ -70,9 +70,9 @@ public class JsonSchema {
 	public JsonSchema(String title, String description, Collection<AbstractJsonSchemaProperty<?>> properties,
 			Definitions definitions) {
 
-		Assert.hasText(title, "Title must not be null or empty!");
-		Assert.notNull(properties, "JsonSchemaProperties must not be null!");
-		Assert.notNull(definitions, "Definitions must not be null!");
+		Assert.hasText(title, "Title must not be null or empty");
+		Assert.notNull(properties, "JsonSchemaProperties must not be null");
+		Assert.notNull(definitions, "Definitions must not be null");
 
 		this.title = title;
 		this.description = description;
@@ -210,7 +210,7 @@ public class JsonSchema {
 		 */
 		public PropertiesContainer(Collection<AbstractJsonSchemaProperty<?>> properties) {
 
-			Assert.notNull(properties, "JsonSchemaPropertys must not be null!");
+			Assert.notNull(properties, "JsonSchemaPropertys must not be null");
 
 			this.properties = new HashMap<String, JsonSchema.AbstractJsonSchemaProperty<?>>();
 			this.requiredProperties = new ArrayList<String>();
@@ -350,7 +350,7 @@ public class JsonSchema {
 		 */
 		public JsonSchemaProperty withType(Class<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 			return with(ClassTypeInformation.from(type));
 		}
 
@@ -362,7 +362,7 @@ public class JsonSchema {
 		 */
 		public JsonSchemaProperty with(TypeInformation<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 			this.type = toJsonSchemaType(type);
 
 			if (isDate(type)) {
@@ -389,7 +389,7 @@ public class JsonSchema {
 		 */
 		public JsonSchemaProperty withFormat(JsonSchemaFormat format) {
 
-			Assert.notNull(format, "Format must not be null!");
+			Assert.notNull(format, "Format must not be null");
 
 			this.format = format;
 			return with(STRING_TYPE_INFORMATION);
@@ -403,7 +403,7 @@ public class JsonSchema {
 		 */
 		public JsonSchemaProperty withRegex(String regex) {
 
-			Assert.hasText(regex, "Regular expression must not be null or empty!");
+			Assert.hasText(regex, "Regular expression must not be null or empty");
 			return withPattern(Pattern.compile(regex));
 		}
 
@@ -415,7 +415,7 @@ public class JsonSchema {
 		 */
 		public JsonSchemaProperty withPattern(Pattern pattern) {
 
-			Assert.notNull(pattern, "Pattern must not be null!");
+			Assert.notNull(pattern, "Pattern must not be null");
 
 			this.pattern = pattern.toString();
 			return with(STRING_TYPE_INFORMATION);
@@ -490,7 +490,7 @@ public class JsonSchema {
 		 */
 		public EnumProperty withValues(List<String> values) {
 
-			Assert.notNull(values, "Values must not be null!");
+			Assert.notNull(values, "Values must not be null");
 
 			this.values = Collections.unmodifiableList(values);
 			return this;

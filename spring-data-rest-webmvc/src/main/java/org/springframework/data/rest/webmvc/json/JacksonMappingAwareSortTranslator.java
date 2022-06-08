@@ -65,9 +65,9 @@ public class JacksonMappingAwareSortTranslator {
 	public JacksonMappingAwareSortTranslator(ObjectMapper objectMapper, Repositories repositories,
 			DomainClassResolver domainClassResolver, PersistentEntities persistentEntities, Associations associations) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(domainClassResolver, "DomainClassResolver must not be null!");
-		Assert.notNull(associations, "Associations must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null");
+		Assert.notNull(domainClassResolver, "DomainClassResolver must not be null");
+		Assert.notNull(associations, "Associations must not be null");
 
 		this.repositories = repositories;
 		this.domainClassResolver = domainClassResolver;
@@ -85,9 +85,9 @@ public class JacksonMappingAwareSortTranslator {
 	 */
 	protected Sort translateSort(Sort input, MethodParameter parameter, NativeWebRequest webRequest) {
 
-		Assert.notNull(input, "Sort must not be null!");
-		Assert.notNull(parameter, "MethodParameter must not be null!");
-		Assert.notNull(webRequest, "NativeWebRequest must not be null!");
+		Assert.notNull(input, "Sort must not be null");
+		Assert.notNull(parameter, "MethodParameter must not be null");
+		Assert.notNull(webRequest, "NativeWebRequest must not be null");
 
 		Class<?> domainClass = domainClassResolver.resolve(parameter.getMethod(), webRequest);
 
@@ -120,9 +120,9 @@ public class JacksonMappingAwareSortTranslator {
 
 		public SortTranslator(PersistentEntities entities, ObjectMapper objectMapper, Associations associations) {
 
-			Assert.notNull(entities, "PersistentEntities must not be null!");
-			Assert.notNull(objectMapper, "ObjectMapper must not be null!");
-			Assert.notNull(associations, "Associations must not be null!");
+			Assert.notNull(entities, "PersistentEntities must not be null");
+			Assert.notNull(objectMapper, "ObjectMapper must not be null");
+			Assert.notNull(associations, "Associations must not be null");
 
 			this.entities = entities;
 			this.objectMapper = objectMapper;
@@ -139,8 +139,8 @@ public class JacksonMappingAwareSortTranslator {
 		 */
 		public Sort translateSort(Sort input, PersistentEntity<?, ?> rootEntity) {
 
-			Assert.notNull(input, "Sort must not be null!");
-			Assert.notNull(rootEntity, "PersistentEntity must not be null!");
+			Assert.notNull(input, "Sort must not be null");
+			Assert.notNull(rootEntity, "PersistentEntity must not be null");
 
 			List<Order> filteredOrders = new ArrayList<Order>();
 
@@ -252,9 +252,9 @@ public class JacksonMappingAwareSortTranslator {
 		public static TypedSegment create(PersistentEntities persistentEntities, ObjectMapper objectMapper,
 				PersistentEntity<?, ?> rootEntity) {
 
-			Assert.notNull(persistentEntities, "PersistentEntities must not be null!");
-			Assert.notNull(objectMapper, "ObjectMapper must not be null!");
-			Assert.notNull(rootEntity, "PersistentEntity must not be null!");
+			Assert.notNull(persistentEntities, "PersistentEntities must not be null");
+			Assert.notNull(objectMapper, "ObjectMapper must not be null");
+			Assert.notNull(rootEntity, "PersistentEntity must not be null");
 
 			return new TypedSegment(persistentEntities, objectMapper, Optional.of(rootEntity));
 		}
@@ -267,7 +267,7 @@ public class JacksonMappingAwareSortTranslator {
 		 */
 		public TypedSegment next(PersistentProperty<?> persistentProperty) {
 
-			Assert.notNull(persistentProperty, "PersistentProperty must not be null!");
+			Assert.notNull(persistentProperty, "PersistentProperty must not be null");
 
 			return new TypedSegment(this, persistentEntities.getPersistentEntity(persistentProperty.getType()));
 		}

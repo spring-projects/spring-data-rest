@@ -64,7 +64,7 @@ public class PersistentEntityResource extends EntityModel<Object> {
 
 		super(content, links);
 
-		Assert.notNull(entity, "PersistentEntity must not be null!");
+		Assert.notNull(entity, "PersistentEntity must not be null");
 
 		this.entity = entity;
 		this.embeddeds = embeddeds == null ? NO_EMBEDDEDS : embeddeds;
@@ -161,8 +161,8 @@ public class PersistentEntityResource extends EntityModel<Object> {
 		 */
 		private Builder(Object content, PersistentEntity<?, ?> entity) {
 
-			Assert.notNull(content, "Content must not be null!");
-			Assert.notNull(entity, "PersistentEntity must not be null!");
+			Assert.notNull(content, "Content must not be null");
+			Assert.notNull(entity, "PersistentEntity must not be null");
 
 			this.content = content;
 			this.entity = entity;
@@ -190,7 +190,7 @@ public class PersistentEntityResource extends EntityModel<Object> {
 		 */
 		public Builder withLink(Link link) {
 
-			Assert.notNull(link, "Link must not be null!");
+			Assert.notNull(link, "Link must not be null");
 
 			this.links.add(link);
 			return this;
@@ -198,7 +198,7 @@ public class PersistentEntityResource extends EntityModel<Object> {
 
 		public Builder withLinks(List<Link> links) {
 
-			Assert.notNull(links, "Links must not be null!");
+			Assert.notNull(links, "Links must not be null");
 
 			this.links.addAll(links);
 			return this;

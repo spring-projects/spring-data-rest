@@ -43,8 +43,8 @@ public abstract class PatchOperation {
 
 	protected PatchOperation(String op, UntypedSpelPath path, Object value) {
 
-		Assert.hasText(op, "Operation must not be null or empty!");
-		Assert.notNull(path, "UntypedSpelPath must not be null!");
+		Assert.hasText(op, "Operation must not be null or empty");
+		Assert.notNull(path, "UntypedSpelPath must not be null");
 
 		this.op = op;
 		this.path = path;

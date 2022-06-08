@@ -45,7 +45,7 @@ public final class EmailAddress {
 	 */
 	@JsonCreator
 	public EmailAddress(String emailAddress) {
-		Assert.isTrue(isValid(emailAddress), "Invalid email address!");
+		Assert.isTrue(isValid(emailAddress), "Invalid email address");
 		this.value = emailAddress;
 	}
 

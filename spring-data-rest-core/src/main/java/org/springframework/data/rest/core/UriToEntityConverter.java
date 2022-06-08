@@ -59,9 +59,9 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 	public UriToEntityConverter(PersistentEntities entities, RepositoryInvokerFactory invokerFactory,
 			Repositories repositories) {
 
-		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(invokerFactory, "RepositoryInvokerFactory must not be null!");
-		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null");
+		Assert.notNull(invokerFactory, "RepositoryInvokerFactory must not be null");
+		Assert.notNull(repositories, "Repositories must not be null");
 
 		Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
 
@@ -108,7 +108,7 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 
 		if (parts.length < 2) {
 			throw new ConversionFailedException(sourceType, targetType, source, new IllegalArgumentException(
-					"Cannot resolve URI " + uri + ". Is it local or remote? Only local URIs are resolvable."));
+					"Cannot resolve URI " + uri + "; Is it local or remote; Only local URIs are resolvable"));
 		}
 
 		return invokerFactory.getInvokerFor(targetType.getType()).invokeFindById(parts[parts.length - 1]).orElse(null);

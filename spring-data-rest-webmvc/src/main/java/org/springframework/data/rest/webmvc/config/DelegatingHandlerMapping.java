@@ -53,7 +53,7 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 	 */
 	public DelegatingHandlerMapping(List<HandlerMapping> delegates, @Nullable PathPatternParser parser) {
 
-		Assert.notNull(delegates, "Delegates must not be null!");
+		Assert.notNull(delegates, "Delegates must not be null");
 
 		this.delegates = delegates;
 		this.parser = parser;
@@ -164,7 +164,7 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 		public HandlerSelectionResult(HttpServletRequest request, HandlerMapping mapping, HandlerExecutionChain result,
 				Exception ignoredException) {
 
-			Assert.notNull(request, "HttpServletRequest must not be null!");
+			Assert.notNull(request, "HttpServletRequest must not be null");
 
 			this.request = request;
 			this.mapping = mapping;

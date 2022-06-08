@@ -35,7 +35,7 @@ public class AuthorsController {
 	@RequestMapping(value = "/authors/{author}", method = RequestMethod.DELETE)
 	HttpEntity<?> deleteAuthor(@PathVariable Author author) {
 
-		Assert.notNull(author, "Author must not be null!");
+		Assert.notNull(author, "Author must not be null");
 		return new ResponseEntity<Object>(HttpStatus.I_AM_A_TEAPOT);
 	}
 }

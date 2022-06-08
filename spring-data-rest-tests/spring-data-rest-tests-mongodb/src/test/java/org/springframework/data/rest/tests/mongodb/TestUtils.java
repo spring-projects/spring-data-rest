@@ -38,7 +38,7 @@ public class TestUtils {
 	 * @return
 	 */
 	public static InputStream asStream(String source) {
-		Assert.notNull(source, "Source string must not be null!");
+		Assert.notNull(source, "Source string must not be null");
 		return new ByteArrayInputStream(source.getBytes(UTF8));
 	}
 }

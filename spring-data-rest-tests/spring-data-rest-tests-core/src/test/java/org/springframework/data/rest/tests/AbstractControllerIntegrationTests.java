@@ -92,7 +92,7 @@ public abstract class AbstractControllerIntegrationTests {
 	 */
 	protected RootResourceInformation getResourceInformation(Class<?> domainType) {
 
-		Assert.notNull(domainType, "Domain type must not be null!");
+		Assert.notNull(domainType, "Domain type must not be null");
 
 		PersistentEntity<?, ?> entity = repositories.getPersistentEntity(domainType);
 

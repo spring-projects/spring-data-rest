@@ -35,9 +35,9 @@ public class Address {
 	 */
 	public Address(String street, String city, String country) {
 
-		Assert.hasText(street, "Street must not be null or empty!");
-		Assert.hasText(city, "City must not be null or empty!");
-		Assert.hasText(country, "Country must not be null or empty!");
+		Assert.hasText(street, "Street must not be null or empty");
+		Assert.hasText(city, "City must not be null or empty");
+		Assert.hasText(country, "Country must not be null or empty");
 
 		this.street = street;
 		this.city = city;

@@ -40,7 +40,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 
 	private ConfigurableHttpMethods(Collection<HttpMethod> methods) {
 
-		Assert.notNull(methods, "HttpMethods must not be null!");
+		Assert.notNull(methods, "HttpMethods must not be null");
 
 		this.methods = methods;
 	}
@@ -57,7 +57,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 	 */
 	static ConfigurableHttpMethods of(HttpMethod... methods) {
 
-		Assert.notNull(methods, "HttpMethods must not be null!");
+		Assert.notNull(methods, "HttpMethods must not be null");
 
 		return new ConfigurableHttpMethods(Arrays.stream(methods).collect(Collectors.toSet()));
 	}
@@ -70,7 +70,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 	 */
 	static ConfigurableHttpMethods of(HttpMethods methods) {
 
-		Assert.notNull(methods, "HttpMethods must not be null!");
+		Assert.notNull(methods, "HttpMethods must not be null");
 
 		if (ConfigurableHttpMethods.class.isInstance(methods)) {
 			return ConfigurableHttpMethods.class.cast(methods);
@@ -87,7 +87,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 	 */
 	public ConfigurableHttpMethods disable(HttpMethod... methods) {
 
-		Assert.notNull(methods, "HttpMethods must not be null!");
+		Assert.notNull(methods, "HttpMethods must not be null");
 
 		List<HttpMethod> toRemove = Arrays.asList(methods);
 
@@ -104,7 +104,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 	 */
 	public ConfigurableHttpMethods enable(HttpMethod... methods) {
 
-		Assert.notNull(methods, "HttpMethods must not be null!");
+		Assert.notNull(methods, "HttpMethods must not be null");
 
 		List<HttpMethod> toAdd = Arrays.asList(methods);
 
@@ -118,7 +118,7 @@ public class ConfigurableHttpMethods implements HttpMethods {
 	@Override
 	public boolean contains(HttpMethod method) {
 
-		Assert.notNull(method, "HTTP method must not be null!");
+		Assert.notNull(method, "HTTP method must not be null");
 
 		return methods.contains(method);
 	}

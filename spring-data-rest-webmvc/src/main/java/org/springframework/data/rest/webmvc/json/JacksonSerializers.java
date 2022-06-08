@@ -58,7 +58,7 @@ public class JacksonSerializers extends SimpleModule {
 	 */
 	public JacksonSerializers(EnumTranslator translator) {
 
-		Assert.notNull(translator, "EnumTranslator must not be null!");
+		Assert.notNull(translator, "EnumTranslator must not be null");
 
 		SimpleSerializers serializers = new SimpleSerializers();
 		serializers.addSerializer(Enum.class, new EnumTranslatingSerializer(translator));
@@ -90,7 +90,7 @@ public class JacksonSerializers extends SimpleModule {
 
 			super(Enum.class);
 
-			Assert.notNull(translator, "EnumTranslator must not be null!");
+			Assert.notNull(translator, "EnumTranslator must not be null");
 
 			this.translator = translator;
 		}
@@ -146,7 +146,7 @@ public class JacksonSerializers extends SimpleModule {
 
 			super(Enum.class);
 
-			Assert.notNull(translator, "EnumTranslator must not be null!");
+			Assert.notNull(translator, "EnumTranslator must not be null");
 
 			this.translator = translator;
 			this.property = property;
@@ -163,7 +163,7 @@ public class JacksonSerializers extends SimpleModule {
 		public Enum deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
 			if (property == null) {
-				throw new IllegalStateException("Can only translate enum with property information!");
+				throw new IllegalStateException("Can only translate enum with property information");
 			}
 
 			return translator.fromText((Class<? extends Enum<?>>) getActualType(property.getType()).getRawClass(),

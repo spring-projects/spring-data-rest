@@ -78,8 +78,8 @@ public class AggregateReferenceResolvingModule extends SimpleModule {
 		 */
 		public AggregateReferenceDeserializerModifier(UriToEntityConverter converter, ResourceMappings mappings) {
 
-			Assert.notNull(converter, "UriToEntityConverter must not be null!");
-			Assert.notNull(mappings, "ResourceMappings must not be null!");
+			Assert.notNull(converter, "UriToEntityConverter must not be null");
+			Assert.notNull(mappings, "ResourceMappings must not be null");
 
 			this.converter = converter;
 			this.mappings = mappings;

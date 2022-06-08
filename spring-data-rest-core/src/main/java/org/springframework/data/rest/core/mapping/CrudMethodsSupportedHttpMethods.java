@@ -50,7 +50,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	 */
 	public CrudMethodsSupportedHttpMethods(CrudMethods crudMethods, boolean methodsExposedByDefault) {
 
-		Assert.notNull(crudMethods, "CrudMethods must not be null!");
+		Assert.notNull(crudMethods, "CrudMethods must not be null");
 
 		this.exposedMethods = new DefaultExposureAwareCrudMethods(crudMethods, methodsExposedByDefault);
 	}
@@ -58,7 +58,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 	@Override
 	public HttpMethods getMethodsFor(ResourceType resourceType) {
 
-		Assert.notNull(resourceType, "EntityRepresentationModel type must not be null!");
+		Assert.notNull(resourceType, "EntityRepresentationModel type must not be null");
 
 		Set<HttpMethod> methods = new HashSet<HttpMethod>();
 		methods.add(OPTIONS);
@@ -97,7 +97,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 				break;
 
 			default:
-				throw new IllegalArgumentException(String.format("Unsupported resource type %s!", resourceType));
+				throw new IllegalArgumentException(String.format("Unsupported resource type %s", resourceType));
 		}
 
 		return HttpMethods.of(methods);
@@ -141,7 +141,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 
 		DefaultExposureAwareCrudMethods(CrudMethods crudMethods, boolean exportedDefault) {
 
-			Assert.notNull(crudMethods, "CrudMethods must not be null!");
+			Assert.notNull(crudMethods, "CrudMethods must not be null");
 
 			this.exposesSave = Lazy.of(() -> exposes(crudMethods.getSaveMethod()));
 			this.exposesDelete = Lazy.of(() -> exposes(crudMethods.getDeleteMethod()) && crudMethods.hasFindOneMethod());

@@ -58,7 +58,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 
 		super(components, affordances);
 
-		Assert.notNull(metadata, "ResourceMetadata must not be null!");
+		Assert.notNull(metadata, "ResourceMetadata must not be null");
 
 		this.metadata = metadata;
 	}

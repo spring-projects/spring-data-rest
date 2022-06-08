@@ -44,7 +44,7 @@ public class HttpHeadersPreparer {
 
 	public HttpHeadersPreparer(AuditableBeanWrapperFactory auditableBeanWrapperFactory) {
 
-		Assert.notNull(auditableBeanWrapperFactory, "AuditableBeanWrapperFactory must not be null!");
+		Assert.notNull(auditableBeanWrapperFactory, "AuditableBeanWrapperFactory must not be null");
 
 		Jsr310Converters.getConvertersToRegister().forEach(conversionService::addConverter);
 
@@ -75,10 +75,10 @@ public class HttpHeadersPreparer {
 	 */
 	public HttpHeaders prepareHeaders(PersistentEntity<?, ?> entity, Object value) {
 
-		Assert.notNull(entity, "PersistentEntity must not be null!");
-		Assert.notNull(value, "Entity value must not be null!");
+		Assert.notNull(entity, "PersistentEntity must not be null");
+		Assert.notNull(value, "Entity value must not be null");
 		Assert.isInstanceOf(entity.getType(), value, () ->
-			String.format("Target bean of type %s is not of type of the persistent entity (%s)!", value.getClass().getName(), entity.getType().getName()));
+			String.format("Target bean of type %s is not of type of the persistent entity (%s)", value.getClass().getName(), entity.getType().getName()));
 
 		// Add ETag
 		HttpHeaders headers = ETag.from(entity, value).addTo(new HttpHeaders());
@@ -98,8 +98,8 @@ public class HttpHeadersPreparer {
 	 */
 	public boolean isObjectStillValid(Object source, HttpHeaders headers) {
 
-		Assert.notNull(source, "Source object must not be null!");
-		Assert.notNull(headers, "HttpHeaders must not be null!");
+		Assert.notNull(source, "Source object must not be null");
+		Assert.notNull(headers, "HttpHeaders must not be null");
 
 		if (headers.getIfModifiedSince() == -1) {
 			return false;

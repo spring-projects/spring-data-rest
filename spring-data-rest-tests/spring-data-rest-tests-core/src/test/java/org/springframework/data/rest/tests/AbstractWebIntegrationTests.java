@@ -169,7 +169,7 @@ public abstract class AbstractWebIntegrationTests {
 
 			String href = JsonPath.<JSONArray> read(content, String.format(CONTENT_LINK_JSONPATH, rel)).get(0).toString();
 
-			String message = "Expected to%s find a link with rel %s in the content section of the response!";
+			String message = "Expected to%s find a link with rel %s in the content section of the response";
 
 			if (expected) {
 				assertThat(href).as(message, "", rel).isNotNull();
@@ -182,7 +182,7 @@ public abstract class AbstractWebIntegrationTests {
 		} catch (InvalidPathException o_O) {
 
 			if (expected) {
-				fail("Didn't find any content in the given response!", o_O);
+				fail("Didn't find any content in the given response", o_O);
 			}
 
 			return null;
@@ -194,7 +194,7 @@ public abstract class AbstractWebIntegrationTests {
 		String content = response.getContentAsString();
 		Optional<Link> link = client.getDiscoverer(response).findLinkWithRel(rel, content);
 
-		assertThat(link).as("Expected not to find link with rel %s but found %s!", rel, link).isEmpty();
+		assertThat(link).as("Expected not to find link with rel %s but found %s", rel, link).isEmpty();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -203,7 +203,7 @@ public abstract class AbstractWebIntegrationTests {
 		String content = response.getContentAsString();
 		Object jsonPathResult = JsonPath.read(content, path);
 
-		assertThat(jsonPathResult).as("JSONPath lookup for %s did return null in %s.", path, content).isNotNull();
+		assertThat(jsonPathResult).as("JSONPath lookup for %s did return null in %s", path, content).isNotNull();
 
 		if (jsonPathResult instanceof JSONArray) {
 			JSONArray array = (JSONArray) jsonPathResult;
@@ -251,7 +251,7 @@ public abstract class AbstractWebIntegrationTests {
 			String s = response.getContentAsString();
 
 			assertThat(client.getDiscoverer(response).findLinkWithRel(relation, s))//
-					.as("Expected not to find link with rel %s but found one in %s!", relation, s)//
+					.as("Expected not to find link with rel %s but found one in %s", relation, s)//
 					.isEmpty();
 		};
 	}

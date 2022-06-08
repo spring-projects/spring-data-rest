@@ -70,8 +70,8 @@ class MappedProperties {
 	 */
 	private MappedProperties(PersistentEntity<?, ? extends PersistentProperty<?>> entity, BeanDescription description) {
 
-		Assert.notNull(entity, "Entity must not be null!");
-		Assert.notNull(description, "BeanDescription must not be null!");
+		Assert.notNull(entity, "Entity must not be null");
+		Assert.notNull(description, "BeanDescription must not be null");
 
 		this.propertyToFieldName = new HashMap<>();
 		this.fieldNameToProperty = new HashMap<>();
@@ -152,7 +152,7 @@ class MappedProperties {
 	 */
 	public String getMappedName(PersistentProperty<?> property) {
 
-		Assert.notNull(property, "PersistentProperty must not be null!");
+		Assert.notNull(property, "PersistentProperty must not be null");
 
 		return propertyToFieldName.get(property).getName();
 	}
@@ -163,7 +163,7 @@ class MappedProperties {
 	 */
 	public boolean hasPersistentPropertyForField(String fieldName) {
 
-		Assert.hasText(fieldName, "Field name must not be null or empty!");
+		Assert.hasText(fieldName, "Field name must not be null or empty");
 
 		return fieldNameToProperty.containsKey(fieldName);
 	}
@@ -174,7 +174,7 @@ class MappedProperties {
 	 */
 	public PersistentProperty<?> getPersistentProperty(String fieldName) {
 
-		Assert.hasText(fieldName, "Field name must not be null or empty!");
+		Assert.hasText(fieldName, "Field name must not be null or empty");
 
 		return fieldNameToProperty.get(fieldName);
 	}
@@ -217,7 +217,7 @@ class MappedProperties {
 	 */
 	public boolean isMappedProperty(PersistentProperty<?> property) {
 
-		Assert.notNull(property, "PersistentProperty must not be null!");
+		Assert.notNull(property, "PersistentProperty must not be null");
 
 		return propertyToFieldName.containsKey(property);
 	}
@@ -231,7 +231,7 @@ class MappedProperties {
 	 */
 	public boolean isWritableProperty(String name) {
 
-		Assert.hasText(name, "Property name must not be null or empty!");
+		Assert.hasText(name, "Property name must not be null or empty");
 
 		if (ignoredPropertyNames.contains(name)) {
 			return false;

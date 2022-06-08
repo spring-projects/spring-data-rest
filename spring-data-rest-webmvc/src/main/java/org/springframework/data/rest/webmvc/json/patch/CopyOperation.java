@@ -67,7 +67,7 @@ class CopyOperation extends PatchOperation {
 
 		public CopyOperationBuilder(String from) {
 
-			Assert.hasText(from, "From must not be null!");
+			Assert.hasText(from, "From must not be null");
 
 			this.from = from;
 		}

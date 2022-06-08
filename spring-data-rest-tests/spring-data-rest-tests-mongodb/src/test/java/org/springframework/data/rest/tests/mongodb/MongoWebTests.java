@@ -297,7 +297,7 @@ class MongoWebTests extends CommonWebTests {
 
 		Link receiptLink = client.getDiscoverer(response) //
 				.findLinkWithRel(IanaLinkRelations.SELF, response.getContentAsString()) //
-				.orElseThrow(() -> new IllegalStateException("Did not find self link!"));
+				.orElseThrow(() -> new IllegalStateException("Did not find self link"));
 
 		mvc.perform(get(receiptLink.getHref()).header(IF_MODIFIED_SINCE, response.getHeader(LAST_MODIFIED))).//
 				andExpect(status().isNotModified()).//

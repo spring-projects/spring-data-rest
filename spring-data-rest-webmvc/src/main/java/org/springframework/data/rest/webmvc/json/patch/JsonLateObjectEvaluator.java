@@ -35,8 +35,8 @@ class JsonLateObjectEvaluator implements LateObjectEvaluator {
 
 	public JsonLateObjectEvaluator(ObjectMapper mapper, JsonNode node) {
 
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
-		Assert.notNull(node, "JsonNode must not be null!");
+		Assert.notNull(mapper, "ObjectMapper must not be null");
+		Assert.notNull(node, "JsonNode must not be null");
 
 		this.mapper = mapper;
 		this.node = node;
@@ -48,7 +48,7 @@ class JsonLateObjectEvaluator implements LateObjectEvaluator {
 		try {
 			return mapper.readValue(node.traverse(mapper.getFactory().getCodec()), type);
 		} catch (Exception o_O) {
-			throw new PatchException(String.format("Could not read %s into %s!", node, type), o_O);
+			throw new PatchException(String.format("Could not read %s into %s", node, type), o_O);
 		}
 	}
 }

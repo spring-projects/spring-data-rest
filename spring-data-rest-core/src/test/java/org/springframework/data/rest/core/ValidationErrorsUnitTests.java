@@ -79,7 +79,7 @@ class ValidationErrorsUnitTests {
 
 		try {
 			errors.getFieldValue("bars");
-			fail("Expected NotReadablePropertyException!");
+			fail("Expected NotReadablePropertyException");
 		} catch (NotReadablePropertyException e) {}
 
 		assertThat(errors.getFieldValue("field")).isEqualTo((Object) "Hello");

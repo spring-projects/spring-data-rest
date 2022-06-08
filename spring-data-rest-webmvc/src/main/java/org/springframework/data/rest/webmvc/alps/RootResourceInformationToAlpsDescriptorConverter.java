@@ -93,14 +93,14 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 			PersistentEntities persistentEntities, EntityLinks entityLinks, MessageResolver resolver,
 			RepositoryRestConfiguration configuration, ObjectMapper mapper, EnumTranslator translator) {
 
-		Assert.notNull(associations, "Associations must not be null!");
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(persistentEntities, "PersistentEntities must not be null!");
-		Assert.notNull(entityLinks, "EntityLinks must not be null!");
-		Assert.notNull(resolver, "MessageResolver must not be null!");
-		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
-		Assert.notNull(translator, "EnumTranslator must not be null!");
+		Assert.notNull(associations, "Associations must not be null");
+		Assert.notNull(repositories, "Repositories must not be null");
+		Assert.notNull(persistentEntities, "PersistentEntities must not be null");
+		Assert.notNull(entityLinks, "EntityLinks must not be null");
+		Assert.notNull(resolver, "MessageResolver must not be null");
+		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null");
+		Assert.notNull(mapper, "ObjectMapper must not be null");
+		Assert.notNull(translator, "EnumTranslator must not be null");
 
 		this.associations = associations;
 		this.repositories = repositories;

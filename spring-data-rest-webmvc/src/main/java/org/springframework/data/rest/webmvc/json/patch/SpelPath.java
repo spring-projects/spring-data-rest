@@ -57,7 +57,7 @@ class SpelPath {
 
 	private SpelPath(String path) {
 
-		Assert.notNull(path, "Path must not be null!");
+		Assert.notNull(path, "Path must not be null");
 
 		this.path = path;
 	}
@@ -135,7 +135,7 @@ class SpelPath {
 		 */
 		public TypedSpelPath bindTo(Class<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 
 			return TypedSpelPath.of(this, type);
 		}
@@ -148,8 +148,8 @@ class SpelPath {
 	 */
 	static class TypedSpelPath extends SpelPath {
 
-		private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s!";
-		private static final String INVALID_COLLECTION_INDEX = "Invalid collection index %s for collection of size %s. Use '…/-' or the collection's actual size as index to append to it!";
+		private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s";
+		private static final String INVALID_COLLECTION_INDEX = "Invalid collection index %s for collection of size %s; Use '…/-' or the collection's actual size as index to append to it";
 		private static final Map<CacheKey, TypedSpelPath> TYPED_PATHS = new ConcurrentReferenceHashMap<>(32);
 		private static final EvaluationContext CONTEXT = SimpleEvaluationContext.forReadWriteDataBinding().build();
 
@@ -163,8 +163,8 @@ class SpelPath {
 
 			private CacheKey(Class<?> type, UntypedSpelPath path) {
 
-				Assert.notNull(type, "Type must not be null!");
-				Assert.notNull(path, "UntypedSpelPath must not be null!");
+				Assert.notNull(type, "Type must not be null");
+				Assert.notNull(path, "UntypedSpelPath must not be null");
 
 				this.type = type;
 				this.path = path;
@@ -219,8 +219,8 @@ class SpelPath {
 		 */
 		public static TypedSpelPath of(UntypedSpelPath path, Class<?> type) {
 
-			Assert.notNull(path, "Path must not be null!");
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(path, "Path must not be null");
+			Assert.notNull(type, "Type must not be null");
 
 			return TYPED_PATHS.computeIfAbsent(CacheKey.of(type, path), key -> new TypedSpelPath(key.path, key.type));
 		}
@@ -234,7 +234,7 @@ class SpelPath {
 		@SuppressWarnings("unchecked")
 		public <T> T getValue(Object target) {
 
-			Assert.notNull(target, "Target must not be null!");
+			Assert.notNull(target, "Target must not be null");
 
 			try {
 				return (T) expression.getValue(CONTEXT, target);
@@ -251,7 +251,7 @@ class SpelPath {
 		 */
 		public void setValue(Object target, @Nullable Object value) {
 
-			Assert.notNull(target, "Target must not be null!");
+			Assert.notNull(target, "Target must not be null");
 
 			expression.setValue(CONTEXT, target, value);
 		}
@@ -281,7 +281,7 @@ class SpelPath {
 		 */
 		public Class<?> getType(Object root) {
 
-			Assert.notNull(root, "Root object must not be null!");
+			Assert.notNull(root, "Root object must not be null");
 
 			try {
 
@@ -300,7 +300,7 @@ class SpelPath {
 				}
 			}
 
-			throw new IllegalArgumentException(String.format("Cannot obtain type for path %s on %s!", path, root));
+			throw new IllegalArgumentException(String.format("Cannot obtain type for path %s on %s", path, root));
 		}
 
 		/**
@@ -312,8 +312,8 @@ class SpelPath {
 		 */
 		public void copyFrom(UntypedSpelPath path, Object source) {
 
-			Assert.notNull(path, "Source path must not be null!");
-			Assert.notNull(source, "Source value must not be null!");
+			Assert.notNull(path, "Source path must not be null");
+			Assert.notNull(source, "Source value must not be null");
 
 			addValue(source, path.bindTo(type).getValue(source));
 		}
@@ -328,8 +328,8 @@ class SpelPath {
 		 */
 		public void moveFrom(UntypedSpelPath path, Object source) {
 
-			Assert.notNull(path, "Source path must not be null!");
-			Assert.notNull(source, "Source value must not be null!");
+			Assert.notNull(path, "Source path must not be null");
+			Assert.notNull(source, "Source value must not be null");
 
 			addValue(source, path.bindTo(type).removeFrom(source));
 		}
@@ -342,7 +342,7 @@ class SpelPath {
 		 */
 		public Object removeFrom(Object target) {
 
-			Assert.notNull(target, "Target must not be null!");
+			Assert.notNull(target, "Target must not be null");
 
 			Integer listIndex = getTargetListIndex();
 			Object value = getValue(target);
@@ -353,7 +353,7 @@ class SpelPath {
 					setValue(target, null);
 					return value;
 				} catch (SpelEvaluationException o_O) {
-					throw new PatchException("Path '" + path + "' is not nullable.", o_O);
+					throw new PatchException("Path '" + path + "' is not nullable", o_O);
 				}
 
 			} else {
@@ -447,8 +447,8 @@ class SpelPath {
 		 */
 		private static Optional<PropertyPath> verifyPath(String path, Class<?> type) {
 
-			Assert.notNull(path, "Path must not be null!");
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(path, "Path must not be null");
+			Assert.notNull(type, "Type must not be null");
 
 			// Remove leading digits
 			String segmentSource = path.replaceAll("^/\\d+", "");
@@ -476,7 +476,7 @@ class SpelPath {
 
 			private SkippedPropertyPath(PropertyPath path, boolean skipped) {
 
-				Assert.notNull(path, "PropertyPath must not be null!");
+				Assert.notNull(path, "PropertyPath must not be null");
 
 				this.path = path;
 				this.skipped = skipped;
@@ -574,8 +574,8 @@ class SpelPath {
 			public SpelExpressionBuilder(@Nullable PropertyPath basePath, Class<?> type, String spelSegment,
 					boolean skipped) {
 
-				Assert.notNull(type, "Type must not be null!");
-				Assert.notNull(spelSegment, "SpEL segment must not be null!");
+				Assert.notNull(type, "Type must not be null");
+				Assert.notNull(spelSegment, "SpEL segment must not be null");
 
 				this.basePath = basePath;
 				this.type = type;

@@ -45,8 +45,8 @@ public class Order extends AbstractPersistentEntity {
 	 */
 	public Order(Long id, Long customerId, Address shippingAddress) {
 		super(id);
-		Assert.notNull(customerId, "CustomerId must not be null!");
-		Assert.notNull(shippingAddress, "ShippingAddress must not be null!");
+		Assert.notNull(customerId, "CustomerId must not be null");
+		Assert.notNull(shippingAddress, "ShippingAddress must not be null");
 
 		this.customerId = customerId;
 		this.shippingAddress = shippingAddress;

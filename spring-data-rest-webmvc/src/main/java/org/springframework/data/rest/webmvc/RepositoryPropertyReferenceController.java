@@ -225,7 +225,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				return new RepresentationModel<>(links.toList());
 
 			} else if (prop.property.isMap()) {
-				throw new UnsupportedMediaTypeStatusException("Cannot produce compact representation of map property!");
+				throw new UnsupportedMediaTypeStatusException("Cannot produce compact representation of map property");
 			}
 
 			return new RepresentationModel<>(assembler.getExpandedSelfLink(it));
@@ -466,8 +466,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 		private HttpRequestMethodNotSupportedException(HttpMethod rejectedMethod, HttpMethod[] allowedMethods,
 				@Nullable String message) {
 
-			Assert.notNull(rejectedMethod, "Rejected HttpMethod must not be null!");
-			Assert.notNull(allowedMethods, "Allowed HttpMethod must not be null!");
+			Assert.notNull(rejectedMethod, "Rejected HttpMethod must not be null");
+			Assert.notNull(allowedMethods, "Allowed HttpMethod must not be null");
 
 			this.rejectedMethod = rejectedMethod;
 			this.allowedMethods = allowedMethods;

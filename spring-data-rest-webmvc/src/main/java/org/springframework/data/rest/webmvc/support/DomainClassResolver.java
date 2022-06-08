@@ -44,9 +44,9 @@ public class DomainClassResolver {
 	private DomainClassResolver(Repositories repositories, ResourceMappings mappings,
 			BaseUri baseUri) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
-		Assert.notNull(baseUri, "BaseUri must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null");
+		Assert.notNull(mappings, "ResourceMappings must not be null");
+		Assert.notNull(baseUri, "BaseUri must not be null");
 
 		this.repositories = repositories;
 		this.mappings = mappings;
@@ -67,8 +67,8 @@ public class DomainClassResolver {
 	 */
 	public Class<?> resolve(Method method, NativeWebRequest webRequest) {
 
-		Assert.notNull(method, "Method must not be null!");
-		Assert.notNull(webRequest, "NativeWebRequest must not be null!");
+		Assert.notNull(method, "Method must not be null");
+		Assert.notNull(webRequest, "NativeWebRequest must not be null");
 
 		String lookupPath = baseUri.getRepositoryLookupPath(webRequest);
 		String repositoryKey = UriUtils.findMappingVariable("repository", method, lookupPath);

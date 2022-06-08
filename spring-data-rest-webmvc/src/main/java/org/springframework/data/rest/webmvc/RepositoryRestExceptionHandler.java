@@ -59,7 +59,7 @@ public class RepositoryRestExceptionHandler {
 	 */
 	public RepositoryRestExceptionHandler(MessageSource messageSource) {
 
-		Assert.notNull(messageSource, "MessageSource must not be null!");
+		Assert.notNull(messageSource, "MessageSource must not be null");
 		this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
 	}
 
@@ -182,8 +182,8 @@ public class RepositoryRestExceptionHandler {
 
 	private static <T> ResponseEntity<T> response(HttpStatus status, HttpHeaders headers, T body) {
 
-		Assert.notNull(headers, "Headers must not be null!");
-		Assert.notNull(status, "HttpStatus must not be null!");
+		Assert.notNull(headers, "Headers must not be null");
+		Assert.notNull(status, "HttpStatus must not be null");
 
 		return new ResponseEntity<T>(body, headers, status);
 	}

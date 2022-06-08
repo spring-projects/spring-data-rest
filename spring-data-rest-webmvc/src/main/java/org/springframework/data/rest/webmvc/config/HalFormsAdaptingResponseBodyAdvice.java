@@ -45,7 +45,7 @@ class HalFormsAdaptingResponseBodyAdvice<T extends RepresentationModel<T>>
 		implements ResponseBodyAdvice<RepresentationModel<T>> {
 
 	private static final Logger logger = LoggerFactory.getLogger(RequestResponseBodyMethodProcessor.class);
-	private static final String MESSAGE = "HalFormsRejectingResponseBodyAdvice - Changing content type to '%s' as no affordances were registered on the representation model to be rendered!";
+	private static final String MESSAGE = "HalFormsRejectingResponseBodyAdvice - Changing content type to '%s' as no affordances were registered on the representation model to be rendered";
 	private static final List<MediaType> SUPPORTED_MEDIA_TYPES = Arrays.asList(MediaTypes.HAL_JSON,
 			MediaType.APPLICATION_JSON);
 

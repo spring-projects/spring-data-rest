@@ -59,9 +59,9 @@ public class DefaultLinkCollector implements LinkCollector {
 	public DefaultLinkCollector(PersistentEntities entities, SelfLinkProvider linkProvider,
 			Associations associationLinks) {
 
-		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
-		Assert.notNull(associationLinks, "AssociationLinks must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null");
+		Assert.notNull(linkProvider, "SelfLinkProvider must not be null");
+		Assert.notNull(associationLinks, "AssociationLinks must not be null");
 
 		this.links = linkProvider;
 		this.entities = entities;
@@ -89,8 +89,8 @@ public class DefaultLinkCollector implements LinkCollector {
 	@Override
 	public Links getLinksFor(Object object, Links existingLinks) {
 
-		Assert.notNull(object, "Object must not be null!");
-		Assert.notNull(existingLinks, "Existing links must not be null!");
+		Assert.notNull(object, "Object must not be null");
+		Assert.notNull(existingLinks, "Existing links must not be null");
 
 		Link selfLink = createSelfLink(object, existingLinks);
 
@@ -137,7 +137,7 @@ public class DefaultLinkCollector implements LinkCollector {
 	 */
 	private static class LinkCollectingAssociationHandler implements SimpleAssociationHandler {
 
-		private static final String AMBIGUOUS_ASSOCIATIONS = "Detected multiple association links with same relation type! Disambiguate association %s using @RestResource!";
+		private static final String AMBIGUOUS_ASSOCIATIONS = "Detected multiple association links with same relation type; Disambiguate association %s using @RestResource";
 
 		private final Path basePath;
 		private final Associations associationLinks;
@@ -145,8 +145,8 @@ public class DefaultLinkCollector implements LinkCollector {
 
 		public LinkCollectingAssociationHandler(Path basePath, Associations associationLinks) {
 
-			Assert.notNull(basePath, "Base Path must not be null!");
-			Assert.notNull(associationLinks, "Associations must not be null!");
+			Assert.notNull(basePath, "Base Path must not be null");
+			Assert.notNull(associationLinks, "Associations must not be null");
 
 			this.basePath = basePath;
 			this.associationLinks = associationLinks;
@@ -190,9 +190,9 @@ public class DefaultLinkCollector implements LinkCollector {
 		public NestedLinkCollectingAssociationHandler(SelfLinkProvider selfLinks,
 				PersistentPropertyAccessor<?> accessor, Associations associations) {
 
-			Assert.notNull(selfLinks, "SelfLinkProvider must not be null!");
-			Assert.notNull(accessor, "PersistentPropertyAccessor must not be null!");
-			Assert.notNull(associations, "Associations must not be null!");
+			Assert.notNull(selfLinks, "SelfLinkProvider must not be null");
+			Assert.notNull(accessor, "PersistentPropertyAccessor must not be null");
+			Assert.notNull(associations, "Associations must not be null");
 
 			this.selfLinks = selfLinks;
 			this.accessor = accessor;

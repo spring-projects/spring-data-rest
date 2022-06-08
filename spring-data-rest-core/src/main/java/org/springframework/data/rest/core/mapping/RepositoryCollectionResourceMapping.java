@@ -68,9 +68,9 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 	RepositoryCollectionResourceMapping(RepositoryMetadata metadata, RepositoryDetectionStrategy strategy,
 			LinkRelationProvider relProvider) {
 
-		Assert.notNull(metadata, "Repository metadata must not be null!");
-		Assert.notNull(relProvider, "LinkRelationProvider must not be null!");
-		Assert.notNull(strategy, "RepositoryDetectionStrategy must not be null!");
+		Assert.notNull(metadata, "Repository metadata must not be null");
+		Assert.notNull(relProvider, "LinkRelationProvider must not be null");
+		Assert.notNull(strategy, "RepositoryDetectionStrategy must not be null");
 
 		Class<?> repositoryType = metadata.getRepositoryInterface();
 
@@ -105,7 +105,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 
 					if (it.contains("/")) {
 						throw new IllegalStateException(
-								String.format("Path %s configured for %s must only contain a single path segment!", it,
+								String.format("Path %s configured for %s must only contain a single path segment", it,
 										metadata.getRepositoryInterface().getName()));
 					}
 
@@ -140,7 +140,7 @@ class RepositoryCollectionResourceMapping implements CollectionResourceMapping {
 
 		if (annotation.isPresent()) {
 			LOGGER.warn(
-					"@RestResource detected to customize the repository resource for {}! Use @RepositoryRestResource instead!",
+					"@RestResource detected to customize the repository resource for {}; Use @RepositoryRestResource instead",
 					metadata.getRepositoryInterface().getName());
 		}
 	}

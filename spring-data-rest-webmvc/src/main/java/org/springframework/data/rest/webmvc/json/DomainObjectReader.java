@@ -70,8 +70,8 @@ public class DomainObjectReader {
 
 	public DomainObjectReader(PersistentEntities entities, Associations associationLinks) {
 
-		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(associationLinks, "Associations must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null");
+		Assert.notNull(associationLinks, "Associations must not be null");
 
 		this.entities = entities;
 		this.associationLinks = associationLinks;
@@ -87,14 +87,14 @@ public class DomainObjectReader {
 	 */
 	public <T> T read(InputStream source, T target, ObjectMapper mapper) {
 
-		Assert.notNull(target, "Target object must not be null!");
-		Assert.notNull(source, "InputStream must not be null!");
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
+		Assert.notNull(target, "Target object must not be null");
+		Assert.notNull(source, "InputStream must not be null");
+		Assert.notNull(mapper, "ObjectMapper must not be null");
 
 		try {
 			return doMerge((ObjectNode) mapper.readTree(source), target, mapper);
 		} catch (Exception o_O) {
-			throw new HttpMessageNotReadableException("Could not read payload!", o_O, InputStreamHttpInputMessage.of(source));
+			throw new HttpMessageNotReadableException("Could not read payload", o_O, InputStreamHttpInputMessage.of(source));
 		}
 	}
 
@@ -109,9 +109,9 @@ public class DomainObjectReader {
 	@SuppressWarnings("unchecked")
 	public <T> T readPut(final ObjectNode source, T target, final ObjectMapper mapper) throws Exception {
 
-		Assert.notNull(source, "ObjectNode must not be null!");
-		Assert.notNull(target, "Existing object instance must not be null!");
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
+		Assert.notNull(source, "ObjectNode must not be null");
+		Assert.notNull(target, "Existing object instance must not be null");
+		Assert.notNull(mapper, "ObjectMapper must not be null");
 
 		Object intermediate = mapper.readerFor(target.getClass()).readValue(source);
 		return (T) mergeForPut(intermediate, target, mapper);
@@ -128,7 +128,7 @@ public class DomainObjectReader {
 	@Nullable
 	<T> T mergeForPut(T source, T target, final ObjectMapper mapper) {
 
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
+		Assert.notNull(mapper, "ObjectMapper must not be null");
 
 		if (target == null || source == null) {
 			return source;
@@ -209,7 +209,7 @@ public class DomainObjectReader {
 		try {
 			return doMerge(source, target, mapper);
 		} catch (Exception o_O) {
-			throw new HttpMessageNotReadableException("Could not read payload!", o_O);
+			throw new HttpMessageNotReadableException("Could not read payload", o_O);
 		}
 	}
 
@@ -225,9 +225,9 @@ public class DomainObjectReader {
 	@SuppressWarnings("unchecked")
 	<T> T doMerge(ObjectNode root, T target, ObjectMapper mapper) throws Exception {
 
-		Assert.notNull(root, "Root ObjectNode must not be null!");
-		Assert.notNull(target, "Target object instance must not be null!");
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
+		Assert.notNull(root, "Root ObjectNode must not be null");
+		Assert.notNull(target, "Target object instance must not be null");
+		Assert.notNull(mapper, "ObjectMapper must not be null");
 
 		Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> candidate = entities
 				.getPersistentEntity(target.getClass());
@@ -338,9 +338,9 @@ public class DomainObjectReader {
 	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, ObjectMapper mapper,
 			TypeInformation<?> componentType) throws Exception {
 
-		Assert.notNull(array, "ArrayNode must not be null!");
-		Assert.notNull(collection, "Source collection must not be null!");
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
+		Assert.notNull(array, "ArrayNode must not be null");
+		Assert.notNull(collection, "Source collection must not be null");
+		Assert.notNull(mapper, "ObjectMapper must not be null");
 
 		// We need an iterator for the original collection.
 		// We might modify it but we want to keep iterating over the original collection.
@@ -522,7 +522,7 @@ public class DomainObjectReader {
 	@SuppressWarnings("unchecked")
 	private static Collection<Object> ifCollection(Object source) {
 
-		Assert.notNull(source, "Source instance must not be null!");
+		Assert.notNull(source, "Source instance must not be null");
 
 		if (source instanceof Collection) {
 			return (Collection<Object>) source;
@@ -595,8 +595,8 @@ public class DomainObjectReader {
 
 		public LinkedAssociationSkippingAssociationHandler(Associations associations, SimplePropertyHandler delegate) {
 
-			Assert.notNull(associations, "Associations must not be null!");
-			Assert.notNull(delegate, "Delegate SimplePropertyHandler must not be null!");
+			Assert.notNull(associations, "Associations must not be null");
+			Assert.notNull(delegate, "Delegate SimplePropertyHandler must not be null");
 
 			this.associations = associations;
 			this.delegate = delegate;
@@ -636,10 +636,10 @@ public class DomainObjectReader {
 		 */
 		public MergingPropertyHandler(Object source, Object target, PersistentEntity<?, ?> entity, ObjectMapper mapper) {
 
-			Assert.notNull(source, "Source instance must not be null!");
-			Assert.notNull(target, "Target instance must not be null!");
-			Assert.notNull(entity, "PersistentEntity must not be null!");
-			Assert.notNull(mapper, "ObjectMapper must not be null!");
+			Assert.notNull(source, "Source instance must not be null");
+			Assert.notNull(target, "Target instance must not be null");
+			Assert.notNull(entity, "PersistentEntity must not be null");
+			Assert.notNull(mapper, "ObjectMapper must not be null");
 
 			this.properties = MappedProperties.forDeserialization(entity, mapper);
 			this.targetAccessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(target),

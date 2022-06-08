@@ -47,7 +47,7 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 	 */
 	public RepositoryRestConfigurerDelegate(Iterable<RepositoryRestConfigurer> delegates) {
 
-		Assert.notNull(delegates, "RepositoryRestConfigurers must not be null!");
+		Assert.notNull(delegates, "RepositoryRestConfigurers must not be null");
 
 		this.delegates = delegates;
 	}

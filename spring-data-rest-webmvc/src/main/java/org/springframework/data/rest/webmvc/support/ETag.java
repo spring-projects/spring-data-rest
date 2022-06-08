@@ -71,7 +71,7 @@ public final class ETag {
 	 */
 	public static ETag from(PersistentEntityResource resource) {
 
-		Assert.notNull(resource, "PersistentEntityResource must not be null!");
+		Assert.notNull(resource, "PersistentEntityResource must not be null");
 
 		return from(resource.getPersistentEntity(), resource.getTarget());
 	}
@@ -133,7 +133,7 @@ public final class ETag {
 	 */
 	public HttpHeaders addTo(HttpHeaders headers) {
 
-		Assert.notNull(headers, "HttpHeaders must not be null!");
+		Assert.notNull(headers, "HttpHeaders must not be null");
 		String stringValue = toString();
 
 		if (stringValue == null) {
@@ -159,8 +159,8 @@ public final class ETag {
 	private static Optional<String> getVersionInformation(PersistentEntity<?, ? extends PersistentProperty<?>> entity,
 			Object bean) {
 
-		Assert.notNull(entity, "PersistentEntity must not be null!");
-		Assert.notNull(bean, "Target bean must not be null!");
+		Assert.notNull(entity, "PersistentEntity must not be null");
+		Assert.notNull(bean, "Target bean must not be null");
 
 		PersistentPropertyAccessor<?> accessor = entity.getPropertyAccessor(bean);
 

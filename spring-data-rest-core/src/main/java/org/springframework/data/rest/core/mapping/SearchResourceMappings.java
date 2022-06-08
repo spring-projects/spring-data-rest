@@ -34,8 +34,8 @@ import org.springframework.util.Assert;
  */
 public class SearchResourceMappings implements Iterable<MethodResourceMapping>, ResourceMapping {
 
-	private static final String AMBIGUOUS_MAPPING = "Ambiguous search mapping detected. Both %s and "
-			+ "%s are mapped to %s! Tweak configuration to get to unambiguous paths!";
+	private static final String AMBIGUOUS_MAPPING = "Ambiguous search mapping detected; Both %s and "
+			+ "%s are mapped to %s; Tweak configuration to get to unambiguous paths";
 
 	private static final Path PATH = new Path("/search");
 	private static final LinkRelation REL = IanaLinkRelations.SEARCH;
@@ -49,7 +49,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	 */
 	public SearchResourceMappings(List<MethodResourceMapping> mappings) {
 
-		Assert.notNull(mappings, "MethodResourceMappings must not be null!");
+		Assert.notNull(mappings, "MethodResourceMappings must not be null");
 
 		this.mappings = new HashMap<Path, MethodResourceMapping>(mappings.size());
 
@@ -74,7 +74,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	 */
 	public Method getMappedMethod(String path) {
 
-		Assert.hasText(path, "Path must not be null or empty!");
+		Assert.hasText(path, "Path must not be null or empty");
 
 		MethodResourceMapping mapping = mappings.get(new Path(path));
 		return mapping == null ? null : mapping.getMethod();
@@ -101,7 +101,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	 */
 	public MethodResourceMapping getExportedMethodMappingForRel(LinkRelation rel) {
 
-		Assert.notNull(rel, "Rel must not be null!");
+		Assert.notNull(rel, "Rel must not be null");
 
 		return mappings.values().stream() //
 				.filter(MethodResourceMapping::isExported) //
@@ -118,7 +118,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	 */
 	public MethodResourceMapping getExportedMethodMappingForPath(String path) {
 
-		Assert.hasText(path, "Path must not be null or empty!");
+		Assert.hasText(path, "Path must not be null or empty");
 
 		for (MethodResourceMapping mapping : this) {
 

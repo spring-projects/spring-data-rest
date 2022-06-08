@@ -93,8 +93,8 @@ public class RootResourceInformation {
 	public void verifySupportedMethod(HttpMethod httpMethod, ResourceType resourceType)
 			throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
 
-		Assert.notNull(httpMethod, "HTTP method must not be null!");
-		Assert.notNull(resourceType, "EntityRepresentationModel type must not be null!");
+		Assert.notNull(httpMethod, "HTTP method must not be null");
+		Assert.notNull(resourceType, "EntityRepresentationModel type must not be null");
 
 		if (!resourceMetadata.isExported()) {
 			throw new ResourceNotFoundException();
@@ -120,8 +120,8 @@ public class RootResourceInformation {
 	public void verifySupportedMethod(HttpMethod httpMethod, PersistentProperty<?> property)
 			throws HttpRequestMethodNotSupportedException {
 
-		Assert.notNull(httpMethod, "HTTP method must not be null!");
-		Assert.notNull(property, "EntityRepresentationModel type must not be null!");
+		Assert.notNull(httpMethod, "HTTP method must not be null");
+		Assert.notNull(property, "EntityRepresentationModel type must not be null");
 
 		if (!resourceMetadata.isExported()) {
 			throw new ResourceNotFoundException();

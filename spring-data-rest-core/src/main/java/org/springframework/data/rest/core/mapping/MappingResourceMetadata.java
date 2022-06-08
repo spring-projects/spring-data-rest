@@ -114,7 +114,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		 */
 		public PropertyMappings(ResourceMappings resourceMappings) {
 
-			Assert.notNull(resourceMappings, "ResourceMappings must not be null!");
+			Assert.notNull(resourceMappings, "ResourceMappings must not be null");
 
 			this.resourceMappings = resourceMappings;
 			this.propertyMappings = new HashMap<PersistentProperty<?>, PropertyAwareResourceMapping>();
@@ -128,7 +128,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		@Override
 		public void doWithPersistentProperty(PersistentProperty<?> property) {
 
-			Assert.notNull(property, "PersistentProperty must not be null!");
+			Assert.notNull(property, "PersistentProperty must not be null");
 
 			this.propertyMappings.put(property, new PersistentPropertyResourceMapping(property, resourceMappings));
 
@@ -142,7 +142,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		 */
 		public PropertyAwareResourceMapping getMappingFor(String mappedPath) {
 
-			Assert.hasText(mappedPath, "Mapped path must not be null or empty!");
+			Assert.hasText(mappedPath, "Mapped path must not be null or empty");
 
 			for (PropertyAwareResourceMapping mapping : propertyMappings.values()) {
 				if (mapping.getPath().matches(mappedPath)) {

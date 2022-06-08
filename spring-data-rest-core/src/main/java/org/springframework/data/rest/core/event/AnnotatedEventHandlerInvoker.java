@@ -48,7 +48,7 @@ import org.springframework.util.ReflectionUtils;
 public class AnnotatedEventHandlerInvoker implements ApplicationListener<RepositoryEvent>, BeanPostProcessor {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AnnotatedEventHandlerInvoker.class);
-	private static final String PARAMETER_MISSING = "Invalid event handler method %s! At least a single argument is required to determine the domain type for which you are interested in events.";
+	private static final String PARAMETER_MISSING = "Invalid event handler method %s; At least a single argument is required to determine the domain type for which you are interested in events";
 
 	private final MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = new LinkedMultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod>();
 
@@ -77,7 +77,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 			}
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("Invoking {} handler for {}.", event.getClass().getSimpleName(), event.getSource());
+				LOG.debug("Invoking {} handler for {}", event.getClass().getSimpleName(), event.getSource());
 			}
 
 			ReflectionUtils.invokeMethod(handlerMethod.method, handlerMethod.handler, parameters.toArray());
@@ -169,9 +169,9 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 
 		public EventHandlerMethod(Class<?> targetType, Method method, Object handler) {
 
-			Assert.notNull(targetType, "Target type must not be null!");
-			Assert.notNull(method, "Method must not be null!");
-			Assert.notNull(handler, "Handler must not be null!");
+			Assert.notNull(targetType, "Target type must not be null");
+			Assert.notNull(method, "Method must not be null");
+			Assert.notNull(handler, "Handler must not be null");
 
 			this.targetType = targetType;
 			this.method = method;

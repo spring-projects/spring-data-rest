@@ -57,8 +57,8 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 
 		super(source.getClass().getSimpleName());
 
-		Assert.notNull(source, "Entity must not be null!");
-		Assert.notNull(entities, "PersistentEntities must not be null!");
+		Assert.notNull(source, "Entity must not be null");
+		Assert.notNull(entities, "PersistentEntities must not be null");
 
 		this.entities = entities;
 		this.source = source;

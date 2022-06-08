@@ -53,9 +53,9 @@ public class ControllerUtils {
 	public static <R extends RepresentationModel<?>> ResponseEntity<RepresentationModel<?>> toResponseEntity(
 			HttpStatus status, HttpHeaders headers, R resource) {
 
-		Assert.notNull(status, "Http status must not be null!");
-		Assert.notNull(headers, "Http headers must not be null!");
-		Assert.notNull(resource, "Payload must not be null!");
+		Assert.notNull(status, "Http status must not be null");
+		Assert.notNull(headers, "Http headers must not be null");
+		Assert.notNull(resource, "Payload must not be null");
 
 		return toResponseEntity(status, headers, Optional.of(resource));
 	}

@@ -56,7 +56,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	@Override
 	public ResourceMetadata getMetadataFor(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		return cache.computeIfAbsent(ProxyUtils.getUserClass(type), it -> getMappingMetadataFor(it));
 	}
@@ -70,7 +70,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	 */
 	MappingResourceMetadata getMappingMetadataFor(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 		Class<?> userType = ProxyUtils.getUserClass(type);
 
 		return mappingCache.computeIfAbsent(ProxyUtils.getUserClass(type), it -> {
@@ -100,7 +100,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 	@Override
 	public boolean exportsTopLevelResourceFor(String path) {
 
-		Assert.hasText(path, "Path must not be null or empty!");
+		Assert.hasText(path, "Path must not be null or empty");
 
 		for (ResourceMetadata metadata : this) {
 			if (metadata.getPath().matches(path)) {

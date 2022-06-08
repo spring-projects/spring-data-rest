@@ -128,10 +128,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		super("persistent-entity-resource", new Version(2, 0, 0, null, "org.springframework.data.rest", "jackson-module"));
 
-		Assert.notNull(associations, "AssociationLinks must not be null!");
-		Assert.notNull(entities, "Repositories must not be null!");
-		Assert.notNull(converter, "UriToEntityConverter must not be null!");
-		Assert.notNull(collector, "LinkCollector must not be null!");
+		Assert.notNull(associations, "AssociationLinks must not be null");
+		Assert.notNull(entities, "Repositories must not be null");
+		Assert.notNull(converter, "UriToEntityConverter must not be null");
+		Assert.notNull(collector, "LinkCollector must not be null");
 
 		NestedEntitySerializer serializer = new NestedEntitySerializer(entities, assembler, invoker);
 		addSerializer(new PersistentEntityResourceSerializer(collector));
@@ -172,7 +172,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		public void serialize(final PersistentEntityResource resource, final JsonGenerator jgen,
 				final SerializerProvider provider) throws IOException, JsonGenerationException {
 
-			LOG.debug("Serializing PersistentEntity {}.", resource.getPersistentEntity());
+			LOG.debug("Serializing PersistentEntity {}", resource.getPersistentEntity());
 
 			Object content = resource.getContent();
 
@@ -236,10 +236,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		public AssociationOmittingSerializerModifier(PersistentEntities entities, Associations associations,
 				NestedEntitySerializer nestedEntitySerializer, LookupObjectSerializer lookupObjectSerializer) {
 
-			Assert.notNull(entities, "PersistentEntities must not be null!");
-			Assert.notNull(associations, "Associations must not be null!");
-			Assert.notNull(nestedEntitySerializer, "NestedEntitySerializer must not be null!");
-			Assert.notNull(lookupObjectSerializer, "LookupObjectSerializer must not be null!");
+			Assert.notNull(entities, "PersistentEntities must not be null");
+			Assert.notNull(associations, "Associations must not be null");
+			Assert.notNull(nestedEntitySerializer, "NestedEntitySerializer must not be null");
+			Assert.notNull(lookupObjectSerializer, "LookupObjectSerializer must not be null");
 
 			this.entities = entities;
 			this.associations = associations;
@@ -268,7 +268,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 						if (associations.isLookupType(it)) {
 
-							LOG.debug("Assigning lookup object serializer for {}.", it);
+							LOG.debug("Assigning lookup object serializer for {}", it);
 							writer.assignSerializer(lookupObjectSerializer);
 
 							return Optional.of(writer);
@@ -290,7 +290,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 						}
 
 						if (it.isEntity() && !writer.isUnwrapping()) {
-							LOG.debug("Assigning nested entity serializer for {}.", it);
+							LOG.debug("Assigning nested entity serializer for {}", it);
 							writer.assignSerializer(nestedEntitySerializer);
 						}
 
@@ -421,10 +421,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		public AssociationUriResolvingDeserializerModifier(PersistentEntities entities, Associations associations,
 				UriToEntityConverter converter, RepositoryInvokerFactory factory) {
 
-			Assert.notNull(entities, "PersistentEntities must not be null!");
-			Assert.notNull(associations, "Associations must not be null!");
-			Assert.notNull(converter, "UriToEntityConverter must not be null!");
-			Assert.notNull(factory, "RepositoryInvokerFactory must not be null!");
+			Assert.notNull(entities, "PersistentEntities must not be null");
+			Assert.notNull(associations, "Associations must not be null");
+			Assert.notNull(converter, "UriToEntityConverter must not be null");
+			Assert.notNull(factory, "RepositoryInvokerFactory must not be null");
 
 			this.entities = entities;
 			this.associationLinks = associations;
@@ -569,7 +569,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	public static class UriStringDeserializer extends StdDeserializer<Object> {
 
 		private static final long serialVersionUID = -2175900204153350125L;
-		private static final String UNEXPECTED_VALUE = "Expected URI cause property %s points to the managed domain type!";
+		private static final String UNEXPECTED_VALUE = "Expected URI cause property %s points to the managed domain type";
 
 		private final Class<?> type;
 		private final UriToEntityConverter converter;
@@ -782,8 +782,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 */
 		public CollectionValueInstantiator(TypeInformation<?> property) {
 
-			Assert.notNull(property, "Property must not be null!");
-			Assert.isTrue(property.isCollectionLike() || property.isMap(), "Property must be a collection or map property!");
+			Assert.notNull(property, "Property must not be null");
+			Assert.isTrue(property.isCollectionLike() || property.isMap(), "Property must be a collection or map property");
 
 			this.property = property;
 		}
@@ -831,7 +831,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		public LookupObjectSerializer(PluginRegistry<EntityLookup<?>, Class<?>> lookups) {
 
-			Assert.notNull(lookups, "EntityLookups must not be null!");
+			Assert.notNull(lookups, "EntityLookups must not be null");
 
 			this.lookups = lookups;
 		}

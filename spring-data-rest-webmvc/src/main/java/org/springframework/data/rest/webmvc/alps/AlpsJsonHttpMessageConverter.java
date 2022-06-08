@@ -54,7 +54,7 @@ public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConv
 	 */
 	public AlpsJsonHttpMessageConverter(RootResourceInformationToAlpsDescriptorConverter converter) {
 
-		Assert.notNull(converter, "Converter must not be null!");
+		Assert.notNull(converter, "Converter must not be null");
 
 		this.converter = converter;
 

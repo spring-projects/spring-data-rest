@@ -60,7 +60,7 @@ class MoveOperation extends PatchOperation {
 
 		private MoveOperationBuilder(String from) {
 
-			Assert.hasText(from, "From must not be null or empty!");
+			Assert.hasText(from, "From must not be null or empty");
 
 			this.from = from;
 		}

@@ -106,9 +106,9 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 
 		super(config);
 
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
-		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
-		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(mappings, "ResourceMappings must not be null");
+		Assert.notNull(config, "RepositoryRestConfiguration must not be null");
+		Assert.notNull(repositories, "Repositories must not be null");
 
 		this.mappings = mappings;
 		this.configuration = config;
@@ -296,9 +296,9 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		public RepositoryCorsConfigurationAccessor(ResourceMappings mappings, StringValueResolver embeddedValueResolver,
 				Optional<Repositories> repositories) {
 
-			Assert.notNull(mappings, "ResourceMappings must not be null!");
-			Assert.notNull(embeddedValueResolver, "StringValueResolver must not be null!");
-			Assert.notNull(repositories, "Repositories must not be null!");
+			Assert.notNull(mappings, "ResourceMappings must not be null");
+			Assert.notNull(embeddedValueResolver, "StringValueResolver must not be null");
+			Assert.notNull(repositories, "Repositories must not be null");
 
 			this.mappings = mappings;
 			this.embeddedValueResolver = embeddedValueResolver;

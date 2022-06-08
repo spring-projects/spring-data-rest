@@ -34,7 +34,7 @@ import org.springframework.util.StringUtils;
  */
 public class ProjectionDefinitionConfiguration implements ProjectionDefinitions {
 
-	private static final String PROJECTION_ANNOTATION_NOT_FOUND = "Projection annotation not found on %s! Either add the annotation or hand source type to the registration manually!";
+	private static final String PROJECTION_ANNOTATION_NOT_FOUND = "Projection annotation not found on %s; Either add the annotation or hand source type to the registration manually";
 	private static final String DEFAULT_PROJECTION_PARAMETER_NAME = "projection";
 
 	private final Set<ProjectionDefinition> projectionDefinitions;
@@ -71,7 +71,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	 */
 	public ProjectionDefinitionConfiguration addProjection(Class<?> projectionType) {
 
-		Assert.notNull(projectionType, "Projection type must not be null!");
+		Assert.notNull(projectionType, "Projection type must not be null");
 
 		Projection annotation = AnnotationUtils.findAnnotation(projectionType, Projection.class);
 
@@ -97,7 +97,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	 */
 	public ProjectionDefinitionConfiguration addProjection(Class<?> projectionType, Class<?>... sourceTypes) {
 
-		Assert.notNull(projectionType, "Projection type must not be null!");
+		Assert.notNull(projectionType, "Projection type must not be null");
 
 		return addProjection(projectionType, StringUtils.uncapitalize(projectionType.getSimpleName()), sourceTypes);
 	}
@@ -113,9 +113,9 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	public ProjectionDefinitionConfiguration addProjection(Class<?> projectionType, String name,
 			Class<?>... sourceTypes) {
 
-		Assert.notNull(projectionType, "Projection type must not be null!");
-		Assert.hasText(name, "Name must not be null or empty!");
-		Assert.notEmpty(sourceTypes, "Source types must not be null!");
+		Assert.notNull(projectionType, "Projection type must not be null");
+		Assert.hasText(name, "Name must not be null or empty");
+		Assert.notEmpty(sourceTypes, "Source types must not be null");
 
 		for (Class<?> sourceType : sourceTypes) {
 			this.projectionDefinitions.add(ProjectionDefinition.of(sourceType, projectionType, name));
@@ -150,7 +150,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	 */
 	public Map<String, Class<?>> getProjectionsFor(Class<?> sourceType) {
 
-		Assert.notNull(sourceType, "Source type must not be null!");
+		Assert.notNull(sourceType, "Source type must not be null");
 
 		Class<?> userType = ProxyUtils.getUserClass(sourceType);
 		Map<String, ProjectionDefinition> byName = new HashMap<String, ProjectionDefinition>();
@@ -189,9 +189,9 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 
 		private ProjectionDefinition(Class<?> sourceType, Class<?> targetType, String name) {
 
-			Assert.notNull(sourceType, "Source type must not be null!");
-			Assert.notNull(targetType, "Target type must not be null!");
-			Assert.notNull(name, "Name must not be null!");
+			Assert.notNull(sourceType, "Source type must not be null");
+			Assert.notNull(targetType, "Target type must not be null");
+			Assert.notNull(name, "Name must not be null");
 
 			this.sourceType = sourceType;
 			this.targetType = targetType;
@@ -207,7 +207,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		 */
 		static ProjectionDefinition of(Class<?> sourceType, Class<?> targetType, String name) {
 
-			Assert.hasText(name, "Name must not be null or empty!");
+			Assert.hasText(name, "Name must not be null or empty");
 
 			return new ProjectionDefinition(sourceType, targetType, name);
 		}

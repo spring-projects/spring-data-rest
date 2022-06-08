@@ -38,7 +38,7 @@ public class RepositorySearchesResource extends RepresentationModel<RepositorySe
 	 */
 	RepositorySearchesResource(Class<?> domainType) {
 
-		Assert.notNull(domainType, "Domain type must not be null!");
+		Assert.notNull(domainType, "Domain type must not be null");
 		this.domainType = domainType;
 	}
 

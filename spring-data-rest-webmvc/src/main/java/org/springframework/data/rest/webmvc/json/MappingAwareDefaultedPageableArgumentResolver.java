@@ -47,8 +47,8 @@ public class MappingAwareDefaultedPageableArgumentResolver implements HandlerMet
 	public MappingAwareDefaultedPageableArgumentResolver(JacksonMappingAwareSortTranslator translator,
 			PageableHandlerMethodArgumentResolver delegate) {
 
-		Assert.notNull(translator, "JacksonMappingAwareSortTranslator must not be null!");
-		Assert.notNull(delegate, "Delegate PageableHandlerMethodArgumentResolver must not be null!");
+		Assert.notNull(translator, "JacksonMappingAwareSortTranslator must not be null");
+		Assert.notNull(delegate, "Delegate PageableHandlerMethodArgumentResolver must not be null");
 
 		this.translator = translator;
 		this.delegate = delegate;

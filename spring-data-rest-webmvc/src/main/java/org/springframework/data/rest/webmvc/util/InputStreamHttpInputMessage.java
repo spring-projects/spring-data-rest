@@ -32,7 +32,7 @@ public class InputStreamHttpInputMessage implements HttpInputMessage {
 
 	private InputStreamHttpInputMessage(final InputStream body) {
 
-		Assert.notNull(body, "InputStream must not be null!");
+		Assert.notNull(body, "InputStream must not be null");
 
 		this.body = body;
 	}

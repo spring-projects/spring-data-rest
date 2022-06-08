@@ -54,9 +54,9 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 	public ResourceMetadataHandlerMethodArgumentResolver(Repositories repositories, ResourceMappings mappings,
 			BaseUri baseUri) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
-		Assert.notNull(baseUri, "BaseUri must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null");
+		Assert.notNull(mappings, "ResourceMappings must not be null");
+		Assert.notNull(baseUri, "BaseUri must not be null");
 
 		this.repositories = repositories;
 		this.mappings = mappings;

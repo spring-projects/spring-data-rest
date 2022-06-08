@@ -45,8 +45,8 @@ public class RepositoryConstraintViolationExceptionMessage {
 	public RepositoryConstraintViolationExceptionMessage(RepositoryConstraintViolationException exception,
 			MessageSourceAccessor accessor) {
 
-		Assert.notNull(exception, "RepositoryConstraintViolationException must not be null!");
-		Assert.notNull(accessor, "MessageSourceAccessor must not be null!");
+		Assert.notNull(exception, "RepositoryConstraintViolationException must not be null");
+		Assert.notNull(accessor, "MessageSourceAccessor must not be null");
 
 		for (FieldError fieldError : exception.getErrors().getFieldErrors()) {
 			this.errors.add(ValidationError.of(fieldError.getObjectName(), fieldError.getField(),
@@ -68,9 +68,9 @@ public class RepositoryConstraintViolationExceptionMessage {
 
 		private ValidationError(String entity, String property, Object invalidValue, String message) {
 
-			Assert.hasText(entity, "Entity must not be null or empty!");
-			Assert.hasText(property, "Property must not be null or empty!");
-			Assert.hasText(message, "Message must not be null or empty!");
+			Assert.hasText(entity, "Entity must not be null or empty");
+			Assert.hasText(property, "Property must not be null or empty");
+			Assert.hasText(message, "Message must not be null or empty");
 
 			this.entity = entity;
 			this.property = property;

@@ -51,7 +51,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
-	private static final String AT_REQUEST_MAPPING_ON_TYPE = "Spring Data REST controller %s must not use @RequestMapping on class level as this would cause double registration with Spring MVC!";
+	private static final String AT_REQUEST_MAPPING_ON_TYPE = "Spring Data REST controller %s must not use @RequestMapping on class level as this would cause double registration with Spring MVC";
 	private final RepositoryRestConfiguration configuration;
 
 	/**
@@ -61,7 +61,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 	 */
 	public BasePathAwareHandlerMapping(RepositoryRestConfiguration configuration) {
 
-		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
+		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null");
 
 		this.configuration = configuration;
 
@@ -190,7 +190,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 			super(request);
 
-			Assert.notEmpty(acceptMediaTypes, "MediaTypes must not be empty!");
+			Assert.notEmpty(acceptMediaTypes, "MediaTypes must not be empty");
 
 			this.acceptMediaTypes = acceptMediaTypes;
 

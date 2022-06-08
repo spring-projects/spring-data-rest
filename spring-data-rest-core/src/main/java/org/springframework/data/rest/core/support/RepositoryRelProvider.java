@@ -40,7 +40,7 @@ public class RepositoryRelProvider implements LinkRelationProvider {
 	 */
 	public RepositoryRelProvider(ObjectFactory<ResourceMappings> mappings) {
 
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(mappings, "ResourceMappings must not be null");
 		this.mappings = mappings;
 	}
 

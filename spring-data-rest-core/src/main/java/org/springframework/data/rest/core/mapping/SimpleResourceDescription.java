@@ -39,8 +39,8 @@ public class SimpleResourceDescription extends ResolvableResourceDescriptionSupp
 	 */
 	protected SimpleResourceDescription(String message, MediaType mediaType) {
 
-		Assert.hasText(message, "Message must not be null or empty!");
-		Assert.notNull(mediaType, "MediaType must not be null!");
+		Assert.hasText(message, "Message must not be null or empty");
+		Assert.notNull(mediaType, "MediaType must not be null");
 
 		this.message = message;
 		this.mediaType = mediaType;

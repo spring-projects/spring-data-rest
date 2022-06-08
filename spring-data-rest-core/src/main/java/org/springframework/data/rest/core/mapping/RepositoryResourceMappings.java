@@ -56,8 +56,8 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 
 		super(entities);
 
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null");
+		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null");
 
 		this.repositories = repositories;
 		this.configuration = configuration;
@@ -96,7 +96,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 	@Override
 	public SearchResourceMappings getSearchResourceMappings(Class<?> domainType) {
 
-		Assert.notNull(domainType, "Type must not be null!");
+		Assert.notNull(domainType, "Type must not be null");
 
 		if (searchCache.containsKey(domainType)) {
 			return searchCache.get(domainType);

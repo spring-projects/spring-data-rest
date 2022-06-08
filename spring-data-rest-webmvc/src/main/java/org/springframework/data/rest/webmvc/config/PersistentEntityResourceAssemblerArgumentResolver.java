@@ -46,11 +46,11 @@ public class PersistentEntityResourceAssemblerArgumentResolver implements Handle
 			ProjectionDefinitions projectionDefinitions, ProjectionFactory projectionFactory,
 			Associations associations) {
 
-		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
-		Assert.notNull(projectionDefinitions, "ProjectionDefinitions must not be null!");
-		Assert.notNull(projectionFactory, "ProjectionFactory must not be null!");
-		Assert.notNull(associations, "Associations must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null");
+		Assert.notNull(linkProvider, "SelfLinkProvider must not be null");
+		Assert.notNull(projectionDefinitions, "ProjectionDefinitions must not be null");
+		Assert.notNull(projectionFactory, "ProjectionFactory must not be null");
+		Assert.notNull(associations, "Associations must not be null");
 
 		this.entities = entities;
 		this.linkProvider = linkProvider;

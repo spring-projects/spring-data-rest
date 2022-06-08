@@ -37,7 +37,7 @@ public class ParametersMetadata implements Iterable<ParameterMetadata> {
 	 */
 	ParametersMetadata(List<ParameterMetadata> parameterMetadata) {
 
-		Assert.notNull(parameterMetadata, "Parameter metadata must not be null!");
+		Assert.notNull(parameterMetadata, "Parameter metadata must not be null");
 
 		this.parameterMetadata = parameterMetadata;
 	}

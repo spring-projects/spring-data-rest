@@ -47,8 +47,8 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 	public UnwrappingRepositoryInvokerFactory(RepositoryInvokerFactory delegate,
 			List<? extends EntityLookup<?>> lookups) {
 
-		Assert.notNull(delegate, "Delegate RepositoryInvokerFactory must not be null!");
-		Assert.notNull(lookups, "EntityLookups must not be null!");
+		Assert.notNull(delegate, "Delegate RepositoryInvokerFactory must not be null");
+		Assert.notNull(lookups, "EntityLookups must not be null");
 
 		this.delegate = delegate;
 		this.lookups = PluginRegistry.of(lookups);
@@ -75,8 +75,8 @@ public class UnwrappingRepositoryInvokerFactory implements RepositoryInvokerFact
 
 		public UnwrappingRepositoryInvoker(RepositoryInvoker delegate, Optional<EntityLookup<?>> lookup) {
 
-			Assert.notNull(delegate, "Delegate RepositoryInvoker must not be null!");
-			Assert.notNull(lookup, "EntityLookup must not be null!");
+			Assert.notNull(delegate, "Delegate RepositoryInvoker must not be null");
+			Assert.notNull(lookup, "EntityLookup must not be null");
 
 			this.delegate = delegate;
 			this.lookup = lookup;

@@ -39,7 +39,7 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 
 	public JsonPatchPatchConverter(ObjectMapper mapper) {
 
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
+		Assert.notNull(mapper, "ObjectMapper must not be null");
 
 		this.mapper = mapper;
 	}
@@ -109,6 +109,6 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 		}
 
 		throw new PatchException(
-				String.format("Unrecognized valueNode type at path %s and value node %s.", path, valueNode));
+				String.format("Unrecognized valueNode type at path %s and value node %s", path, valueNode));
 	}
 }

@@ -47,7 +47,7 @@ class RepositorySchemaController {
 	@Autowired
 	public RepositorySchemaController(PersistentEntityToJsonSchemaConverter jsonSchemaConverter) {
 
-		Assert.notNull(jsonSchemaConverter, "PersistentEntityToJsonSchemaConverter must not be null!");
+		Assert.notNull(jsonSchemaConverter, "PersistentEntityToJsonSchemaConverter must not be null");
 
 		this.jsonSchemaConverter = jsonSchemaConverter;
 	}

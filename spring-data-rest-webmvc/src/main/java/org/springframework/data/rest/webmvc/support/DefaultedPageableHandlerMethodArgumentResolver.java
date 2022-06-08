@@ -43,7 +43,7 @@ public class DefaultedPageableHandlerMethodArgumentResolver implements HandlerMe
 	 */
 	public DefaultedPageableHandlerMethodArgumentResolver(PageableHandlerMethodArgumentResolver resolver) {
 
-		Assert.notNull(resolver, "PageableHandlerMethodArgumentResolver must not be null!");
+		Assert.notNull(resolver, "PageableHandlerMethodArgumentResolver must not be null");
 		this.resolver = resolver;
 	}
 

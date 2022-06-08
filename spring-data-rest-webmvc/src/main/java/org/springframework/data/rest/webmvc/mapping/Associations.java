@@ -50,8 +50,8 @@ public class Associations {
 
 	public Associations(ResourceMappings mappings, RepositoryRestConfiguration config) {
 
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
-		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
+		Assert.notNull(mappings, "ResourceMappings must not be null");
+		Assert.notNull(config, "RepositoryRestConfiguration must not be null");
 
 		this.mappings = mappings;
 		this.config = config;
@@ -70,8 +70,8 @@ public class Associations {
 	 */
 	public List<Link> getLinksFor(Association<? extends PersistentProperty<?>> association, Path path) {
 
-		Assert.notNull(association, "Association must not be null!");
-		Assert.notNull(path, "Base path must not be null!");
+		Assert.notNull(association, "Association must not be null");
+		Assert.notNull(path, "Base path must not be null");
 
 		if (isLinkableAssociation(association)) {
 
@@ -96,7 +96,7 @@ public class Associations {
 	 */
 	public ResourceMetadata getMetadataFor(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		return mappings.getMetadataFor(type);
 	}
@@ -109,7 +109,7 @@ public class Associations {
 	 */
 	public boolean isLookupType(PersistentProperty<?> property) {
 
-		Assert.notNull(property, "Persistent property must not be null!");
+		Assert.notNull(property, "Persistent property must not be null");
 
 		return config.isLookupType(property.getActualType());
 	}
@@ -126,7 +126,7 @@ public class Associations {
 	 */
 	public boolean isLinkableAssociation(Association<? extends PersistentProperty<?>> association) {
 
-		Assert.notNull(association, "Association must not be null!");
+		Assert.notNull(association, "Association must not be null");
 
 		return isLinkableAssociation(association.getInverse());
 	}
@@ -139,7 +139,7 @@ public class Associations {
 	 */
 	public boolean isLinkableAssociation(PersistentProperty<?> property) {
 
-		Assert.notNull(property, "PersistentProperty must not be null!");
+		Assert.notNull(property, "PersistentProperty must not be null");
 
 		if (!property.isAssociation() || config.isLookupType(property.getActualType())) {
 			return false;

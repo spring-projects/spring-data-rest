@@ -76,11 +76,11 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 			Lazy<PagingAndSortingTemplateVariables> templateVariables,
 			PluginRegistry<BackendIdConverter, Class<?>> idConverters) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
-		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
-		Assert.notNull(templateVariables, "PagingAndSortingTemplateVariables must not be null!");
-		Assert.notNull(idConverters, "BackendIdConverters must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null");
+		Assert.notNull(mappings, "ResourceMappings must not be null");
+		Assert.notNull(config, "RepositoryRestConfiguration must not be null");
+		Assert.notNull(templateVariables, "PagingAndSortingTemplateVariables must not be null");
+		Assert.notNull(idConverters, "BackendIdConverters must not be null");
 
 		this.repositories = repositories;
 		this.mappings = mappings;
@@ -133,7 +133,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	@Override
 	public Link linkToItemResource(Class<?> type, Object id) {
 
-		Assert.isInstanceOf(Serializable.class, id, "Id must be assignable to Serializable!");
+		Assert.isInstanceOf(Serializable.class, id, "Id must be assignable to Serializable");
 
 		ResourceMetadata metadata = mappings.getMetadataFor(type);
 		Link link = linkForItemResource(type, id).withRel(metadata.getItemResourceRel());
@@ -145,7 +145,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	@Override
 	public LinkBuilder linkForItemResource(Class<?> type, Object id) {
 
-		Assert.isInstanceOf(Serializable.class, id, "Id must be assignable to Serializable!");
+		Assert.isInstanceOf(Serializable.class, id, "Id must be assignable to Serializable");
 
 		String mappedId = idConverters.getPluginFor(type)//
 				.orElse(DefaultIdConverter.INSTANCE)//
@@ -259,8 +259,8 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 */
 	private Link getSearchResourceLinkFor(Class<?> type, LinkRelation rel, Pageable pageable, Sort sort) {
 
-		Assert.notNull(type, "Domain type must not be null!");
-		Assert.notNull(rel, "Relation name must not be null!");
+		Assert.notNull(type, "Domain type must not be null");
+		Assert.notNull(rel, "Relation name must not be null");
 
 		SearchResourceMappings searchMappings = mappings.getSearchResourceMappings(type);
 		MethodResourceMapping mapping = searchMappings.getExportedMethodMappingForRel(rel);

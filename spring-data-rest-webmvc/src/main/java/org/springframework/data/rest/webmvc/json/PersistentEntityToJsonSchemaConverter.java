@@ -97,12 +97,12 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			MessageResolver resolver, ObjectMapper objectMapper, RepositoryRestConfiguration configuration,
 			ValueTypeSchemaPropertyCustomizerFactory customizerFactory) {
 
-		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(associations, "AssociationLinks must not be null!");
-		Assert.notNull(resolver, "MessageResolver must not be null!");
-		Assert.notNull(objectMapper, "ObjectMapper must not be null!");
-		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
-		Assert.notNull(customizerFactory, "ValueTypeSchemaPropertyCustomizerFactory must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null");
+		Assert.notNull(associations, "AssociationLinks must not be null");
+		Assert.notNull(resolver, "MessageResolver must not be null");
+		Assert.notNull(objectMapper, "ObjectMapper must not be null");
+		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null");
+		Assert.notNull(customizerFactory, "ValueTypeSchemaPropertyCustomizerFactory must not be null");
 
 		this.entities = entities;
 		this.associations = associations;
@@ -284,7 +284,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		 * @param metadata must not be {@literal null}.
 		 */
 		public JsonSchemaPropertyRegistrar(JacksonMetadata metadata) {
-			Assert.notNull(metadata, "Metadata must not be null!");
+			Assert.notNull(metadata, "Metadata must not be null");
 			this.metadata = metadata;
 			this.properties = new ArrayList<AbstractJsonSchemaProperty<?>>();
 		}
@@ -317,7 +317,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		public ValueTypeSchemaPropertyCustomizerFactory(RepositoryInvokerFactory factory) {
 
-			Assert.notNull(factory, "RepositoryInvokerFactory must not be null!");
+			Assert.notNull(factory, "RepositoryInvokerFactory must not be null");
 
 			this.factory = factory;
 		}
@@ -364,7 +364,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		private static String[] getCodes(BeanPropertyDefinition property) {
 
-			Assert.notNull(property, "BeanPropertyDefinition must not be null!");
+			Assert.notNull(property, "BeanPropertyDefinition must not be null");
 
 			Class<?> owner = property.getPrimaryMember().getDeclaringClass();
 
@@ -397,7 +397,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		private static String[] getTitleCodes(Class<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 
 			return new String[] { type.getName().concat("._title"), type.getSimpleName().concat("._title") };
 		}
@@ -412,9 +412,9 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		public JacksonProperty(JacksonMetadata metadata, Optional<? extends PersistentProperty<?>> property,
 				BeanPropertyDefinition definition) {
 
-			Assert.notNull(metadata, "JacksonMetadata must not be null!");
-			Assert.notNull(property, "PersistentProperty must not be null!");
-			Assert.notNull(definition, "BeanPropertyDefinition must not be null!");
+			Assert.notNull(metadata, "JacksonMetadata must not be null");
+			Assert.notNull(property, "PersistentProperty must not be null");
+			Assert.notNull(definition, "BeanPropertyDefinition must not be null");
 
 			this.metadata = metadata;
 			this.property = property;
@@ -478,8 +478,8 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		public DefaultMessageResolver(MessageResolver resolver, RepositoryRestConfiguration configuration) {
 
-			Assert.notNull(resolver, "MessageResolver must not be null!");
-			Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
+			Assert.notNull(resolver, "MessageResolver must not be null");
+			Assert.notNull(configuration, "RepositoryRestConfiguration must not be null");
 
 			this.resolver = resolver;
 			this.configuration = configuration;

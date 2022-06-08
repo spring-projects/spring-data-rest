@@ -75,7 +75,7 @@ public class MetadataConfiguration {
 
 	public void registerJsonSchemaFormat(JsonSchemaFormat format, Class<?>... types) {
 
-		Assert.notNull(format, "JsonSchemaFormat must not be null!");
+		Assert.notNull(format, "JsonSchemaFormat must not be null");
 
 		for (Class<?> type : types) {
 			schemaFormats.put(type, format);
@@ -100,8 +100,8 @@ public class MetadataConfiguration {
 	 */
 	public void registerFormattingPatternFor(String pattern, Class<?> type) {
 
-		Assert.hasText(pattern, "Pattern must not be null or empty!");
-		Assert.notNull(type, "Type must not be null!");
+		Assert.hasText(pattern, "Pattern must not be null or empty");
+		Assert.notNull(type, "Type must not be null");
 
 		this.patterns.put(type, Pattern.compile(pattern));
 	}
@@ -114,7 +114,7 @@ public class MetadataConfiguration {
 	 */
 	public Pattern getPatternFor(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		for (Entry<Class<?>, Pattern> entry : this.patterns.entrySet()) {
 			if (entry.getKey().isAssignableFrom(type)) {

@@ -54,7 +54,7 @@ class AbstractRepositoryRestController {
 	 */
 	public AbstractRepositoryRestController(PagedResourcesAssembler<Object> pagedResourcesAssembler) {
 
-		Assert.notNull(pagedResourcesAssembler, "PagedResourcesAssembler must not be null!");
+		Assert.notNull(pagedResourcesAssembler, "PagedResourcesAssembler must not be null");
 
 		this.pagedResourcesAssembler = pagedResourcesAssembler;
 	}

@@ -50,7 +50,7 @@ public interface RepositoryRestConfigurer {
 	 */
 	static RepositoryRestConfigurer withConfig(Consumer<RepositoryRestConfiguration> consumer) {
 
-		Assert.notNull(consumer, "Consumer must not be null!");
+		Assert.notNull(consumer, "Consumer must not be null");
 
 		return new RepositoryRestConfigurer() {
 
@@ -71,7 +71,7 @@ public interface RepositoryRestConfigurer {
 	 */
 	static RepositoryRestConfigurer withConfig(BiConsumer<RepositoryRestConfiguration, CorsRegistry> consumer) {
 
-		Assert.notNull(consumer, "Consumer must not be null!");
+		Assert.notNull(consumer, "Consumer must not be null");
 
 		return new RepositoryRestConfigurer() {
 

@@ -37,7 +37,7 @@ public enum StringToLdapNameConverter implements Converter<String, Name> {
 		try {
 			return new LdapName(source);
 		} catch (InvalidNameException e) {
-			throw new IllegalArgumentException(String.format("Cannot create LdapName for '%s'!", source), e);
+			throw new IllegalArgumentException(String.format("Cannot create LdapName for '%s'", source), e);
 		}
 	}
 }

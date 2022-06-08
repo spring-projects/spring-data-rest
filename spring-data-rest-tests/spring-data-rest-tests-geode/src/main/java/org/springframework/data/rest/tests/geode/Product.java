@@ -60,8 +60,8 @@ public class Product extends AbstractPersistentEntity {
 	@PersistenceConstructor
 	public Product(Long id, String name, BigDecimal price, String description) {
 		super(id);
-		Assert.hasText(name, "Name must not be null or empty!");
-		Assert.isTrue(BigDecimal.ZERO.compareTo(price) < 0, "Price must be greater than zero!");
+		Assert.hasText(name, "Name must not be null or empty");
+		Assert.isTrue(BigDecimal.ZERO.compareTo(price) < 0, "Price must be greater than zero");
 
 		this.name = name;
 		this.price = price;
@@ -78,7 +78,7 @@ public class Product extends AbstractPersistentEntity {
 	 */
 	public void setAttribute(String name, String value) {
 
-		Assert.hasText(name, "Name must not be null or empty!");
+		Assert.hasText(name, "Name must not be null or empty");
 
 		if (value == null) {
 			this.attributes.remove(value);

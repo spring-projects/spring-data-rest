@@ -39,7 +39,7 @@ public interface MapUtils {
 	 */
 	public static <K, V> Map<K, Collection<V>> toMap(MultiValueMap<K, V> map) {
 
-		Assert.notNull(map, "Given map must not be null!");
+		Assert.notNull(map, "Given map must not be null");
 		Map<K, Collection<V>> result = new LinkedHashMap<K, Collection<V>>(map.size());
 
 		for (Entry<K, List<V>> entry : map.entrySet()) {

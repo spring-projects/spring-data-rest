@@ -62,8 +62,8 @@ public class TestMvcClient {
 	 */
 	public TestMvcClient(MockMvc mvc, LinkDiscoverers discoverers) {
 
-		Assert.notNull(mvc, "MockMvc must not be null!");
-		Assert.notNull(discoverers, "LinkDiscoverers must not be null!");
+		Assert.notNull(mvc, "MockMvc must not be null");
+		Assert.notNull(discoverers, "LinkDiscoverers must not be null");
 
 		this.mvc = mvc;
 		this.discoverers = discoverers;
@@ -334,7 +334,7 @@ public class TestMvcClient {
 		Optional<Link> link = getDiscoverer(response).findLinkWithRel(relation, content);
 
 		return link.orElseThrow(() -> new IllegalStateException(
-				"Expected to find link with rel " + relation + " but found none in " + content + "!"));
+				"Expected to find link with rel " + relation + " but found none in " + content));
 	}
 
 	public ResultMatcher hasLinkWithRel(String rel) {

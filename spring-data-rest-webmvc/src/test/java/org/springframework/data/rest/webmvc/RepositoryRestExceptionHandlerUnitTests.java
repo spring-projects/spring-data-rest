@@ -61,7 +61,7 @@ class RepositoryRestExceptionHandlerUnitTests {
 	void handlesHttpMessageNotReadableException() {
 
 		ResponseEntity<ExceptionMessage> result = HANDLER
-				.handleNotReadable(new HttpMessageNotReadableException("Message!", new MockHttpInputMessage(new byte[0])));
+				.handleNotReadable(new HttpMessageNotReadableException("Message", new MockHttpInputMessage(new byte[0])));
 
 		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 	}
@@ -69,7 +69,7 @@ class RepositoryRestExceptionHandlerUnitTests {
 	@Test // DATAREST-507
 	void handlesConflictCorrectly() {
 
-		ResponseEntity<ExceptionMessage> result = HANDLER.handleConflict(new DataIntegrityViolationException("Message!"));
+		ResponseEntity<ExceptionMessage> result = HANDLER.handleConflict(new DataIntegrityViolationException("Message"));
 
 		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
 	}
@@ -77,7 +77,7 @@ class RepositoryRestExceptionHandlerUnitTests {
 	@Test // DATAREST-706
 	void forwardsExceptionForMiscellaneousFailure() {
 
-		String message = "My Message!";
+		String message = "My Message";
 
 		ResponseEntity<ExceptionMessage> result = HANDLER.handleMiscFailures(new Exception(message));
 

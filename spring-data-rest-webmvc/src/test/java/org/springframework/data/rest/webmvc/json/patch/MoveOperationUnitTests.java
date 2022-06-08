@@ -36,7 +36,7 @@ class MoveOperationUnitTests {
 
 		assertThatExceptionOfType(PatchException.class)
 				.isThrownBy(() -> move.perform(todos, Todo.class))
-				.withMessage("Path '/0/complete' is not nullable.");
+				.withMessage("Path '/0/complete' is not nullable");
 
 		assertThat(todos.get(1).isComplete()).isFalse();
 	}
@@ -67,7 +67,7 @@ class MoveOperationUnitTests {
 
 		assertThatExceptionOfType(PatchException.class)
 				.isThrownBy(() -> move.perform(todos, Todo.class))
-				.withMessage("Path '/0/complete' is not nullable.");
+				.withMessage("Path '/0/complete' is not nullable");
 
 		assertThat(todos.get(1).getDescription()).isEqualTo("B");
 	}

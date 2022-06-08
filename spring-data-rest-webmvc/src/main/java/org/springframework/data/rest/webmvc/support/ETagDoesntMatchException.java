@@ -39,8 +39,8 @@ public class ETagDoesntMatchException extends RuntimeException {
 	 */
 	public ETagDoesntMatchException(Object bean, ETag expected) {
 
-		Assert.notNull(bean, "Target bean must not be null!");
-		Assert.notNull(expected, "Expected ETag must not be null!");
+		Assert.notNull(bean, "Target bean must not be null");
+		Assert.notNull(expected, "Expected ETag must not be null");
 
 		this.expected = expected;
 		this.bean = bean;

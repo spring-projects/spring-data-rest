@@ -50,7 +50,7 @@ public class ProjectionDefinitionRegistar implements SmartInstantiationAwareBean
 	 */
 	public ProjectionDefinitionRegistar(ObjectFactory<RepositoryRestConfiguration> config) {
 
-		Assert.notNull(config, "RepositoryRestConfiguration must not be null!");
+		Assert.notNull(config, "RepositoryRestConfiguration must not be null");
 
 		this.config = config;
 	}

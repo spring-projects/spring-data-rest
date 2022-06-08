@@ -45,8 +45,8 @@ public abstract class UriUtils {
 	 */
 	public static String findMappingVariable(String variable, Method method, String lookupPath) {
 
-		Assert.hasText(variable, "Variable name must not be null or empty!");
-		Assert.notNull(method, "Method must not be null!");
+		Assert.hasText(variable, "Variable name must not be null or empty");
+		Assert.notNull(method, "Method must not be null");
 
 		String mapping = DISCOVERER.getMapping(method);
 
@@ -63,7 +63,7 @@ public abstract class UriUtils {
 	 */
 	public static List<String> getPathSegments(Method method) {
 
-		Assert.notNull(method, "Method must not be null!");
+		Assert.notNull(method, "Method must not be null");
 
 		String mapping = DISCOVERER.getMapping(method.getDeclaringClass(), method);
 

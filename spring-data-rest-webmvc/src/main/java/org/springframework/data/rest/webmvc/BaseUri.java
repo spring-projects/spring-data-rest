@@ -51,7 +51,7 @@ public class BaseUri {
 	 */
 	public BaseUri(URI uri) {
 
-		Assert.notNull(uri, "Base URI must not be null!");
+		Assert.notNull(uri, "Base URI must not be null");
 
 		String uriString = uri.toString();
 		this.baseUri = URI.create(trimTrailingCharacter(trimTrailingCharacter(uriString, '/'), '/'));
@@ -111,7 +111,7 @@ public class BaseUri {
 	 */
 	public String getRepositoryLookupPath(String lookupPath) {
 
-		Assert.notNull(lookupPath, "Lookup path must not be null!");
+		Assert.notNull(lookupPath, "Lookup path must not be null");
 
 		// Temporary fix for SPR-13455
 		lookupPath = lookupPath.replaceAll("//", "/");
@@ -167,7 +167,7 @@ public class BaseUri {
 	 */
 	public UriComponents appendPath(Path path) {
 
-		Assert.notNull(path, "Path must not be null!");
+		Assert.notNull(path, "Path must not be null");
 
 		return getUriComponentsBuilder().path(path.toString()).build();
 	}

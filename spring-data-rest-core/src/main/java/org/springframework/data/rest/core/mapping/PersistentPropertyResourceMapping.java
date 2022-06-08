@@ -46,7 +46,7 @@ class PersistentPropertyResourceMapping implements PropertyAwareResourceMapping 
 	 */
 	public PersistentPropertyResourceMapping(PersistentProperty<?> property, ResourceMappings mappings) {
 
-		Assert.notNull(property, "PersistentProperty must not be null!");
+		Assert.notNull(property, "PersistentProperty must not be null");
 
 		this.property = property;
 		this.mappings = mappings;

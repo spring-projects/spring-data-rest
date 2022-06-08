@@ -87,9 +87,9 @@ public class RepositoryRestConfiguration {
 	public RepositoryRestConfiguration(ProjectionDefinitionConfiguration projectionConfiguration,
 			MetadataConfiguration metadataConfiguration, EnumTranslationConfiguration enumTranslationConfiguration) {
 
-		Assert.notNull(projectionConfiguration, "ProjectionDefinitionConfiguration must not be null!");
-		Assert.notNull(metadataConfiguration, "MetadataConfiguration must not be null!");
-		Assert.notNull(enumTranslationConfiguration, "EnumTranslationConfiguration must not be null!");
+		Assert.notNull(projectionConfiguration, "ProjectionDefinitionConfiguration must not be null");
+		Assert.notNull(metadataConfiguration, "MetadataConfiguration must not be null");
+		Assert.notNull(enumTranslationConfiguration, "EnumTranslationConfiguration must not be null");
 
 		this.projectionConfiguration = projectionConfiguration;
 		this.metadataConfiguration = metadataConfiguration;
@@ -133,7 +133,7 @@ public class RepositoryRestConfiguration {
 		basePath = StringUtils.trimTrailingCharacter(basePath, '/');
 		this.basePath = URI.create(basePath.startsWith("/") ? basePath : "/".concat(basePath));
 
-		Assert.isTrue(!this.basePath.isAbsolute(), "Absolute URIs are not supported as base path!");
+		Assert.isTrue(!this.basePath.isAbsolute(), "Absolute URIs are not supported as base path");
 
 		return this;
 	}
@@ -154,7 +154,7 @@ public class RepositoryRestConfiguration {
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setDefaultPageSize(int defaultPageSize) {
-		Assert.isTrue(defaultPageSize > 0, "Page size must be greater than 0.");
+		Assert.isTrue(defaultPageSize > 0, "Page size must be greater than 0");
 		this.defaultPageSize = defaultPageSize;
 		return this;
 	}
@@ -175,7 +175,7 @@ public class RepositoryRestConfiguration {
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setMaxPageSize(int maxPageSize) {
-		Assert.isTrue(defaultPageSize > 0, "Maximum page size must be greater than 0.");
+		Assert.isTrue(defaultPageSize > 0, "Maximum page size must be greater than 0");
 		this.maxPageSize = maxPageSize;
 		return this;
 	}
@@ -196,7 +196,7 @@ public class RepositoryRestConfiguration {
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setPageParamName(String pageParamName) {
-		Assert.notNull(pageParamName, "Page param name cannot be null.");
+		Assert.notNull(pageParamName, "Page param name cannot be null");
 		this.pageParamName = pageParamName;
 		return this;
 	}
@@ -219,7 +219,7 @@ public class RepositoryRestConfiguration {
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setLimitParamName(String limitParamName) {
-		Assert.notNull(limitParamName, "Limit param name cannot be null.");
+		Assert.notNull(limitParamName, "Limit param name cannot be null");
 		this.limitParamName = limitParamName;
 		return this;
 	}
@@ -240,7 +240,7 @@ public class RepositoryRestConfiguration {
 	 * @return {@literal this}
 	 */
 	public RepositoryRestConfiguration setSortParamName(String sortParamName) {
-		Assert.notNull(sortParamName, "Sort param name cannot be null.");
+		Assert.notNull(sortParamName, "Sort param name cannot be null");
 		this.sortParamName = sortParamName;
 		return this;
 	}
@@ -654,7 +654,7 @@ public class RepositoryRestConfiguration {
 	 */
 	public List<EntityLookup<?>> getEntityLookups(Repositories repositories) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null");
 
 		return entityLookupConfiguration.getEntityLookups(repositories);
 	}
@@ -709,7 +709,7 @@ public class RepositoryRestConfiguration {
 	 */
 	public RepositoryRestConfiguration setLinkRelationProvider(LinkRelationProvider provider) {
 
-		Assert.notNull(provider, "LinkRelationProvider must not be null!");
+		Assert.notNull(provider, "LinkRelationProvider must not be null");
 
 		this.linkRelationProvider = provider;
 

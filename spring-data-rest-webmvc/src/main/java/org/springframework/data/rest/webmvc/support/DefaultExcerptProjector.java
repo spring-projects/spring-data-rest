@@ -36,8 +36,8 @@ public class DefaultExcerptProjector implements ExcerptProjector {
 
 	public DefaultExcerptProjector(ProjectionFactory factory, ResourceMappings mappings) {
 
-		Assert.notNull(factory, "ProjectionFactory must not be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(factory, "ProjectionFactory must not be null");
+		Assert.notNull(mappings, "ResourceMappings must not be null");
 
 		this.factory = factory;
 		this.mappings = mappings;
@@ -46,7 +46,7 @@ public class DefaultExcerptProjector implements ExcerptProjector {
 	@Override
 	public Object projectExcerpt(Object source) {
 
-		Assert.notNull(source, "Projection source must not be null!");
+		Assert.notNull(source, "Projection source must not be null");
 
 		ResourceMetadata metadata = mappings.getMetadataFor(source.getClass());
 

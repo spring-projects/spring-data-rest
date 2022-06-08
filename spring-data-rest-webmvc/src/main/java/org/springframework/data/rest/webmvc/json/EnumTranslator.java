@@ -46,7 +46,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	 */
 	public EnumTranslator(MessageResolver resolver) {
 
-		Assert.notNull(resolver, "MessageResolver must not be null!");
+		Assert.notNull(resolver, "MessageResolver must not be null");
 
 		this.resolver = resolver;
 		this.enableDefaultTranslation = true;
@@ -73,7 +73,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	 */
 	public String asText(Enum<?> value) {
 
-		Assert.notNull(value, "Enum value must not be null!");
+		Assert.notNull(value, "Enum value must not be null");
 
 		return resolver.resolve(TranslatedEnum.of(value, enableDefaultTranslation));
 	}
@@ -86,7 +86,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	 */
 	public List<String> getValues(Class<? extends Enum<?>> type) {
 
-		Assert.notNull(type, "Enum type must not be null!");
+		Assert.notNull(type, "Enum type must not be null");
 
 		return Arrays.stream(type.getEnumConstants()) //
 				.map(this::asText) //
@@ -107,7 +107,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 			return null;
 		}
 
-		Assert.notNull(type, "Enum type must not be null!");
+		Assert.notNull(type, "Enum type must not be null");
 
 		T value = resolveEnum(type, text, true);
 

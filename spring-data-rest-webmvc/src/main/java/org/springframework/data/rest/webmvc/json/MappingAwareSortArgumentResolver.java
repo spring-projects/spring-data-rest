@@ -43,8 +43,8 @@ public class MappingAwareSortArgumentResolver implements HandlerMethodArgumentRe
 
 	public MappingAwareSortArgumentResolver(JacksonMappingAwareSortTranslator translator, SortArgumentResolver delegate) {
 
-		Assert.notNull(translator, "JacksonMappingAwareSortTranslator must not be null!");
-		Assert.notNull(delegate, "Delegate SortArgumentResolver must not be null!");
+		Assert.notNull(translator, "JacksonMappingAwareSortTranslator must not be null");
+		Assert.notNull(delegate, "Delegate SortArgumentResolver must not be null");
 
 		this.translator = translator;
 		this.delegate = delegate;

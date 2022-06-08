@@ -56,7 +56,7 @@ class TestOperation extends PatchOperation {
 
 		private TestOperationBuilder(String path) {
 
-			Assert.hasText(path, "Path must not be null or empty!");
+			Assert.hasText(path, "Path must not be null or empty");
 
 			this.path = path;
 		}
@@ -73,7 +73,7 @@ class TestOperation extends PatchOperation {
 		Object actual = normalizeIfNumber(path.bindTo(type).getValue(target));
 
 		if (!ObjectUtils.nullSafeEquals(expected, actual)) {
-			throw new PatchException("Test against path '" + path + "' failed.");
+			throw new PatchException("Test against path '" + path + "' failed");
 		}
 	}
 

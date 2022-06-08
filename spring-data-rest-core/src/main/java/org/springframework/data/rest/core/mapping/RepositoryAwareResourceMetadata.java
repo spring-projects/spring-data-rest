@@ -52,10 +52,10 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 	public RepositoryAwareResourceMetadata(PersistentEntity<?, ?> entity, CollectionResourceMapping mapping,
 			RepositoryResourceMappings provider, RepositoryMetadata repositoryMetadata) {
 
-		Assert.notNull(entity, "PersistentEntity must not be null!");
-		Assert.notNull(mapping, "CollectionResourceMapping must not be null!");
-		Assert.notNull(provider, "ResourceMetadataProvider must not be null!");
-		Assert.notNull(repositoryMetadata, "RepositoryMetadata must not be null!");
+		Assert.notNull(entity, "PersistentEntity must not be null");
+		Assert.notNull(mapping, "CollectionResourceMapping must not be null");
+		Assert.notNull(provider, "ResourceMetadataProvider must not be null");
+		Assert.notNull(repositoryMetadata, "RepositoryMetadata must not be null");
 
 		this.mapping = mapping;
 		this.provider = provider;

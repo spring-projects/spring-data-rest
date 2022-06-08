@@ -59,8 +59,8 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 */
 	public JacksonMetadata(ObjectMapper mapper, Class<?> type) {
 
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(mapper, "ObjectMapper must not be null");
+		Assert.notNull(type, "Type must not be null");
 
 		this.mapper = mapper;
 
@@ -86,7 +86,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 */
 	public BeanPropertyDefinition getDefinitionFor(PersistentProperty<?> property) {
 
-		Assert.notNull(property, "PersistentProperty must not be null!");
+		Assert.notNull(property, "PersistentProperty must not be null");
 
 		return getDefinitionFor(property, definitions);
 	}
@@ -100,8 +100,8 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 */
 	public ResourceDescription getFallbackDescription(ResourceMetadata ownerMetadata, BeanPropertyDefinition definition) {
 
-		Assert.notNull(ownerMetadata, "Owner's resource metadata must not be null!");
-		Assert.notNull(definition, "BeanPropertyDefinition must not be null!");
+		Assert.notNull(ownerMetadata, "Owner's resource metadata must not be null");
+		Assert.notNull(definition, "BeanPropertyDefinition must not be null");
 
 		AnnotatedMember member = definition.getPrimaryMember();
 		Description description = member.getAnnotation(Description.class);
@@ -119,7 +119,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 */
 	public boolean isExported(PersistentProperty<?> property) {
 
-		Assert.notNull(property, "PersistentProperty must not be null!");
+		Assert.notNull(property, "PersistentProperty must not be null");
 
 		return getDefinitionFor(property) != null;
 	}
@@ -153,7 +153,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 */
 	public JsonSerializer<?> getTypeSerializer(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 
 		try {
 

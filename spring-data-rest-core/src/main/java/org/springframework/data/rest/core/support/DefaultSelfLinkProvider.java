@@ -53,9 +53,9 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 	public DefaultSelfLinkProvider(PersistentEntities entities, EntityLinks entityLinks,
 			List<? extends EntityLookup<?>> lookups, ConversionService conversionService) {
 
-		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(entityLinks, "EntityLinks must not be null!");
-		Assert.notNull(lookups, "EntityLookups must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null");
+		Assert.notNull(entityLinks, "EntityLinks must not be null");
+		Assert.notNull(lookups, "EntityLookups must not be null");
 
 		this.entities = entities;
 		this.entityLinks = entityLinks;
@@ -65,7 +65,7 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 
 	public Link createSelfLinkFor(Object instance) {
 
-		Assert.notNull(instance, "Domain object must not be null!");
+		Assert.notNull(instance, "Domain object must not be null");
 
 		return createSelfLinkFor(instance.getClass(), instance);
 	}

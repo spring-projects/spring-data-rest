@@ -57,7 +57,7 @@ public class AlpsController {
 	@Autowired
 	public AlpsController(RepositoryRestConfiguration configuration) {
 
-		Assert.notNull(configuration, "MetadataConfiguration must not be null!");
+		Assert.notNull(configuration, "MetadataConfiguration must not be null");
 
 		this.configuration = configuration;
 	}

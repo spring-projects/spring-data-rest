@@ -57,8 +57,8 @@ class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSort
 	public ArgumentResolverPagingAndSortingTemplateVariables(HateoasPageableHandlerMethodArgumentResolver pagingResolver,
 			HateoasSortHandlerMethodArgumentResolver sortResolver) {
 
-		Assert.notNull(pagingResolver, "HateoasPageableHandlerMethodArgumentResolver must not be null!");
-		Assert.notNull(sortResolver, "HateoasSortHandlerMethodArgumentResolver must not be null!");
+		Assert.notNull(pagingResolver, "HateoasPageableHandlerMethodArgumentResolver must not be null");
+		Assert.notNull(sortResolver, "HateoasSortHandlerMethodArgumentResolver must not be null");
 
 		this.pagingResolver = pagingResolver;
 		this.sortResolver = sortResolver;

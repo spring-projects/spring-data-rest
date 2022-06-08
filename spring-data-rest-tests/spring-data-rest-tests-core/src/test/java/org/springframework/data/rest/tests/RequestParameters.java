@@ -36,8 +36,8 @@ public class RequestParameters {
 
 	private RequestParameters(Map<String, String[]> parameters, String key, String... values) {
 
-		Assert.notNull(parameters, "Parameters must not be null!");
-		Assert.hasText(key, "Key must not be null or empty!");
+		Assert.notNull(parameters, "Parameters must not be null");
+		Assert.hasText(key, "Key must not be null or empty");
 
 		this.parameters = new HashMap<String, String[]>(parameters);
 		this.parameters.put(key, values);

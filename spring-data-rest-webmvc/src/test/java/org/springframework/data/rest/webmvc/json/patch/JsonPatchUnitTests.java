@@ -77,7 +77,7 @@ class JsonPatchUnitTests {
 
 		assertThatExceptionOfType(PatchException.class)
 				.isThrownBy(() -> patch.apply(todos, Todo.class))
-				.withMessage("Test against path '/5/description' failed.");
+				.withMessage("Test against path '/5/description' failed");
 
 		assertThat(todos.size()).isEqualTo(6);
 		assertThat(todos.get(1).isComplete()).isFalse();
@@ -101,7 +101,7 @@ class JsonPatchUnitTests {
 
 		assertThatExceptionOfType(PatchException.class)
 				.isThrownBy(() -> patch.apply(todos, Todo.class))
-				.withMessage("Test against path '/5/description' failed.");
+				.withMessage("Test against path '/5/description' failed");
 
 		assertThat(todos.size()).isEqualTo(6);
 		assertThat(todos.get(1).isComplete()).isFalse();

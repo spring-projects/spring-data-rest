@@ -47,8 +47,8 @@ public class PersistentEntityProjector extends DefaultExcerptProjector implement
 
 		super(factory, mappings);
 
-		Assert.notNull(projectionDefinitions, "ProjectionDefinitions must not be null!");
-		Assert.notNull(factory, "ProjectionFactory must not be null!");
+		Assert.notNull(projectionDefinitions, "ProjectionDefinitions must not be null");
+		Assert.notNull(factory, "ProjectionFactory must not be null");
 
 		this.factory = factory;
 		this.definitions = projectionDefinitions;
@@ -74,8 +74,8 @@ public class PersistentEntityProjector extends DefaultExcerptProjector implement
 	 */
 	private Object projectWithDefault(Object source, Function<Object, Object> converter) {
 
-		Assert.notNull(source, "Projection source must not be null!");
-		Assert.notNull(converter, "Converter must not be null!");
+		Assert.notNull(source, "Projection source must not be null");
+		Assert.notNull(converter, "Converter must not be null");
 
 		if (!StringUtils.hasText(projection)) {
 			return converter.apply(source);

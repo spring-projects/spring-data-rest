@@ -46,7 +46,7 @@ public interface HttpMethods extends Streamable<HttpMethod> {
 	 */
 	public static HttpMethods of(Collection<HttpMethod> methods) {
 
-		Assert.notNull(methods, "HTTP methods must not be null!");
+		Assert.notNull(methods, "HTTP methods must not be null");
 
 		return ConfigurableHttpMethods.of(methods);
 	}

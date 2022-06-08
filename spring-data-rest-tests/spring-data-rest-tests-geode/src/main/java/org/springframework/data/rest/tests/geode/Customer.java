@@ -45,9 +45,9 @@ public class Customer extends AbstractPersistentEntity {
 	 */
 	public Customer(Long id, EmailAddress emailAddress, String firstname, String lastname) {
 		super(id);
-		Assert.hasText(firstname, "Firstname must not be null or empty!");
-		Assert.hasText(lastname, "Lastname must not be null or empty!");
-		Assert.notNull(emailAddress, "EmailAddress must not be null!");
+		Assert.hasText(firstname, "Firstname must not be null or empty");
+		Assert.hasText(lastname, "Lastname must not be null or empty");
+		Assert.notNull(emailAddress, "EmailAddress must not be null");
 
 		this.firstname = firstname;
 		this.lastname = lastname;
@@ -63,7 +63,7 @@ public class Customer extends AbstractPersistentEntity {
 	 */
 	public void add(Address address) {
 
-		Assert.notNull(address, "Address must not be null!");
+		Assert.notNull(address, "Address must not be null");
 		this.addresses.add(address);
 	}
 

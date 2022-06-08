@@ -47,7 +47,7 @@ public class ResourceTester {
 	 * @param resource must not be {@literal null}.
 	 */
 	private ResourceTester(RepresentationModel resource) {
-		Assert.notNull(resource, "EntityRepresentationModel must not be null!");
+		Assert.notNull(resource, "EntityRepresentationModel must not be null");
 		this.resource = resource;
 	}
 
@@ -148,7 +148,7 @@ public class ResourceTester {
 			String href = content.assertHasLink("self", null).getHref();
 
 			UriTemplate uriTemplate = new UriTemplate(template.toString());
-			assertThat(uriTemplate.matches(href)).as(String.format("Expected %s to match %s!", href, uriTemplate.toString()))
+			assertThat(uriTemplate.matches(href)).as(String.format("Expected %s to match %s", href, uriTemplate.toString()))
 					.isTrue();
 		}
 	}

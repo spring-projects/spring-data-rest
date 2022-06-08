@@ -38,12 +38,12 @@ public final class ParameterMetadata {
 	 */
 	public ParameterMetadata(MethodParameter parameter, String baseRel) {
 
-		Assert.notNull(parameter, "MethodParameter must not be null!");
+		Assert.notNull(parameter, "MethodParameter must not be null");
 
 		this.name = parameter.getParameterName();
 
-		Assert.hasText(name, "Parameter name must not be null or empty!");
-		Assert.hasText(baseRel, "Method rel must not be null!");
+		Assert.hasText(name, "Parameter name must not be null or empty");
+		Assert.hasText(baseRel, "Method rel must not be null");
 
 		ResourceDescription fallback = TypedResourceDescription
 				.defaultFor(LinkRelation.of(baseRel.concat(".").concat(name)), parameter.getParameterType());

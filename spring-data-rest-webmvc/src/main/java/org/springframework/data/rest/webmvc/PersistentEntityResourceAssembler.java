@@ -51,10 +51,10 @@ public class PersistentEntityResourceAssembler
 	public PersistentEntityResourceAssembler(PersistentEntities entities, Projector projector, Associations associations,
 			SelfLinkProvider linkProvider) {
 
-		Assert.notNull(entities, "PersistentEntities must not be null!");
-		Assert.notNull(projector, "Projector must not be null!");
-		Assert.notNull(associations, "Associations must not be null!");
-		Assert.notNull(linkProvider, "SelfLinkProvider must not be null!");
+		Assert.notNull(entities, "PersistentEntities must not be null");
+		Assert.notNull(projector, "Projector must not be null");
+		Assert.notNull(associations, "Associations must not be null");
+		Assert.notNull(linkProvider, "SelfLinkProvider must not be null");
 
 		this.entities = entities;
 		this.projector = projector;
@@ -65,7 +65,7 @@ public class PersistentEntityResourceAssembler
 	@Override
 	public PersistentEntityResource toModel(Object instance) {
 
-		Assert.notNull(instance, "Entity instance must not be null!");
+		Assert.notNull(instance, "Entity instance must not be null");
 		return wrap(projector.projectExcerpt(instance), instance).build();
 	}
 
@@ -77,7 +77,7 @@ public class PersistentEntityResourceAssembler
 	 */
 	public PersistentEntityResource toFullResource(Object instance) {
 
-		Assert.notNull(instance, "Entity instance must not be null!");
+		Assert.notNull(instance, "Entity instance must not be null");
 		return wrap(projector.project(instance), instance).build();
 	}
 

@@ -36,13 +36,13 @@ import org.springframework.util.Assert;
  */
 class ResourceStatus {
 
-	private static final String INVALID_DOMAIN_OBJECT = "Domain object %s is not an instance of the given PersistentEntity of type %s!";
+	private static final String INVALID_DOMAIN_OBJECT = "Domain object %s is not an instance of the given PersistentEntity of type %s";
 
 	private final HttpHeadersPreparer preparer;
 
 	private ResourceStatus(HttpHeadersPreparer preparer) {
 
-		Assert.notNull(preparer, "HttpHeadersPreparer must not be null!");
+		Assert.notNull(preparer, "HttpHeadersPreparer must not be null");
 
 		this.preparer = preparer;
 	}
@@ -63,9 +63,9 @@ class ResourceStatus {
 	public StatusAndHeaders getStatusAndHeaders(HttpHeaders requestHeaders, Object domainObject,
 			PersistentEntity<?, ?> entity) {
 
-		Assert.notNull(requestHeaders, "Request headers must not be null!");
-		Assert.notNull(domainObject, "Domain object must not be null!");
-		Assert.notNull(entity, "PersistentEntity must not be null!");
+		Assert.notNull(requestHeaders, "Request headers must not be null");
+		Assert.notNull(domainObject, "Domain object must not be null");
+		Assert.notNull(entity, "PersistentEntity must not be null");
 		Assert.isTrue(entity.getType().isInstance(domainObject),
 				() -> String.format(INVALID_DOMAIN_OBJECT, domainObject, entity.getType()));
 
@@ -89,7 +89,7 @@ class ResourceStatus {
 
 		private StatusAndHeaders(HttpHeaders headers, boolean modified) {
 
-			Assert.notNull(headers, "HttpHeaders must not be null!");
+			Assert.notNull(headers, "HttpHeaders must not be null");
 
 			this.headers = headers;
 			this.modified = modified;

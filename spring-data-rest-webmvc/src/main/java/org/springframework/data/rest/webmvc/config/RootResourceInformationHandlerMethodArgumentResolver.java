@@ -54,9 +54,9 @@ public class RootResourceInformationHandlerMethodArgumentResolver implements Han
 	public RootResourceInformationHandlerMethodArgumentResolver(Repositories repositories,
 			RepositoryInvokerFactory invokerFactory, ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver) {
 
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(invokerFactory, "invokerFactory must not be null!");
-		Assert.notNull(resourceMetadataResolver, "ResourceMetadataHandlerMethodArgumentResolver must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null");
+		Assert.notNull(invokerFactory, "invokerFactory must not be null");
+		Assert.notNull(resourceMetadataResolver, "ResourceMetadataHandlerMethodArgumentResolver must not be null");
 
 		this.repositories = repositories;
 		this.invokerFactory = invokerFactory;

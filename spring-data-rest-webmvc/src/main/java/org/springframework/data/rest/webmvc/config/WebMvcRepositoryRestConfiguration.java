@@ -50,7 +50,7 @@ class WebMvcRepositoryRestConfiguration extends RepositoryRestConfiguration impl
 
 		super(projectionConfiguration, metadataConfiguration, enumTranslationConfiguration);
 
-		Assert.notNull(registry, "CorsRegistry must not be null!");
+		Assert.notNull(registry, "CorsRegistry must not be null");
 
 		this.registry = registry;
 	}

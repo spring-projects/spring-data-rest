@@ -80,7 +80,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 	 */
 	public ExposureConfigurer forDomainType(Class<?> type) {
 
-		Assert.notNull(type, "Type  must not be null!");
+		Assert.notNull(type, "Type  must not be null");
 		return new TypeBasedExposureConfigurer(type);
 	}
 
@@ -115,7 +115,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 	 */
 	public boolean allowsPutForCreation(ResourceMetadata metadata) {
 
-		Assert.notNull(metadata, "ResourceMetadata must not be null!");
+		Assert.notNull(metadata, "ResourceMetadata must not be null");
 
 		return allowsPutForCreation(metadata.getDomainType());
 	}
@@ -128,7 +128,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 	 */
 	public boolean allowsPutForCreation(Class<?> domainType) {
 
-		Assert.notNull(domainType, "Domain type must not be null!");
+		Assert.notNull(domainType, "Domain type must not be null");
 
 		return creationViaPut.apply(domainType);
 	}
@@ -170,7 +170,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 
 		public TypeBasedExposureConfigurer(Class<?> type) {
 
-			Assert.notNull(type, " must not be null!");
+			Assert.notNull(type, " must not be null");
 
 			this.type = type;
 		}

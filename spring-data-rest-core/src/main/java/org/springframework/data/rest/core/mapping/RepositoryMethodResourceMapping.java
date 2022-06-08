@@ -67,8 +67,8 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	public RepositoryMethodResourceMapping(Method method, ResourceMapping resourceMapping, RepositoryMetadata metadata,
 			boolean exposeMethodsByDefault) {
 
-		Assert.notNull(method, "Method must not be null!");
-		Assert.notNull(resourceMapping, "ResourceMapping must not be null!");
+		Assert.notNull(method, "Method must not be null");
+		Assert.notNull(resourceMapping, "ResourceMapping must not be null");
 
 		RestResource annotation = AnnotationUtils.findAnnotation(method, RestResource.class);
 		LinkRelation resourceRel = resourceMapping.getRel();

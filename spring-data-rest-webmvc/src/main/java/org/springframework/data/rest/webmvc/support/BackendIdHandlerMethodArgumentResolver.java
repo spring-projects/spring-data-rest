@@ -55,9 +55,9 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 	public BackendIdHandlerMethodArgumentResolver(PluginRegistry<BackendIdConverter, Class<?>> idConverters,
 			ResourceMetadataHandlerMethodArgumentResolver resourceMetadataResolver, BaseUri baseUri) {
 
-		Assert.notNull(idConverters, "Id converters must not be null!");
-		Assert.notNull(resourceMetadataResolver, "ResourceMetadata resolver must not be null!");
-		Assert.notNull(baseUri, "BaseUri must not be null!");
+		Assert.notNull(idConverters, "Id converters must not be null");
+		Assert.notNull(resourceMetadataResolver, "ResourceMetadata resolver must not be null");
+		Assert.notNull(baseUri, "BaseUri must not be null");
 
 		this.idConverters = idConverters;
 		this.resourceMetadataResolver = resourceMetadataResolver;
@@ -77,7 +77,7 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 
 		if (parameter.getMethodAnnotation(BackendId.class) != null && !parameterType.equals(Serializable.class)) {
 			throw new IllegalArgumentException(String.format(
-					"Method parameter for @%s must be of type %s! Got %s for method %s.", BackendId.class.getSimpleName(),
+					"Method parameter for @%s must be of type %s; Got %s for method %s", BackendId.class.getSimpleName(),
 					Serializable.class.getSimpleName(), parameterType.getSimpleName(), parameter.getMethod()));
 		}
 

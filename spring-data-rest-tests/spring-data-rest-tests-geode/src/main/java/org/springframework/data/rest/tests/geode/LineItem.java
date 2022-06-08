@@ -44,8 +44,8 @@ public class LineItem {
 	 * @param amount
 	 */
 	public LineItem(Product product, int amount) {
-		Assert.notNull(product, "The given Product must not be null!");
-		Assert.isTrue(amount > 0, "The amount of Products to be bought must be greater than 0!");
+		Assert.notNull(product, "The given Product must not be null");
+		Assert.isTrue(amount > 0, "The amount of Products to be bought must be greater than 0");
 
 		this.productId = product.getId();
 		this.amount = amount;

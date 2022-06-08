@@ -40,8 +40,8 @@ public class AnnotationBasedResourceDescription extends ResolvableResourceDescri
 	 */
 	public AnnotationBasedResourceDescription(Description description, ResourceDescription fallback) {
 
-		Assert.notNull(description, "Description must not be null!");
-		Assert.notNull(fallback, "Fallback resource description must not be null!");
+		Assert.notNull(description, "Description must not be null");
+		Assert.notNull(fallback, "Fallback resource description must not be null");
 
 		this.message = description.value();
 		this.fallback = fallback;

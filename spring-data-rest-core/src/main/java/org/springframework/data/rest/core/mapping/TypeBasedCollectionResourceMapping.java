@@ -63,8 +63,8 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 	 */
 	public TypeBasedCollectionResourceMapping(Class<?> type, LinkRelationProvider relProvider) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(relProvider, "LinkRelationProvider must not be null!");
+		Assert.notNull(type, "Type must not be null");
+		Assert.notNull(relProvider, "LinkRelationProvider must not be null");
 
 		this.type = type;
 		this.relProvider = relProvider;

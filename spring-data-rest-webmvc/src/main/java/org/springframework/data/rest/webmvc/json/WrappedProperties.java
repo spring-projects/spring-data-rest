@@ -75,7 +75,7 @@ class WrappedProperties {
 	public static WrappedProperties fromJacksonProperties(PersistentEntities persistentEntities,
 			PersistentEntity<?, ?> entity, ObjectMapper mapper) {
 
-		Assert.notNull(entity, "PersistentEntity must not be null!");
+		Assert.notNull(entity, "PersistentEntity must not be null");
 
 		JacksonUnwrappedPropertiesResolver resolver = new JacksonUnwrappedPropertiesResolver(persistentEntities, mapper);
 		return new WrappedProperties(resolver.findUnwrappedPropertyPaths(entity.getType()));
@@ -91,7 +91,7 @@ class WrappedProperties {
 	 */
 	public boolean hasPersistentPropertiesForField(String fieldName) {
 
-		Assert.hasText(fieldName, "Field name must not be null or empty!");
+		Assert.hasText(fieldName, "Field name must not be null or empty");
 
 		return fieldNameToProperties.containsKey(fieldName);
 	}
@@ -102,7 +102,7 @@ class WrappedProperties {
 	 */
 	public List<PersistentProperty<?>> getPersistentProperties(String fieldName) {
 
-		Assert.hasText(fieldName, "Field name must not be null or empty!");
+		Assert.hasText(fieldName, "Field name must not be null or empty");
 
 		return hasPersistentPropertiesForField(fieldName)
 				? Collections.unmodifiableList(fieldNameToProperties.get(fieldName))
@@ -121,8 +121,8 @@ class WrappedProperties {
 
 		public JacksonUnwrappedPropertiesResolver(PersistentEntities entities, ObjectMapper mapper) {
 
-			Assert.notNull(entities, "PersistentEntities must not be null!");
-			Assert.notNull(mapper, "ObjectMapper must not be null!");
+			Assert.notNull(entities, "PersistentEntities must not be null");
+			Assert.notNull(mapper, "ObjectMapper must not be null");
 
 			this.entities = entities;
 			this.mapper = mapper;
@@ -136,7 +136,7 @@ class WrappedProperties {
 		 */
 		public Map<String, List<PersistentProperty<?>>> findUnwrappedPropertyPaths(Class<?> type) {
 
-			Assert.notNull(type, "Type must not be null!");
+			Assert.notNull(type, "Type must not be null");
 
 			return findUnwrappedPropertyPaths(type, NameTransformer.NOP, false);
 		}

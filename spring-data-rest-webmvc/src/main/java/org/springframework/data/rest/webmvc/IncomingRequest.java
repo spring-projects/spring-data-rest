@@ -41,7 +41,7 @@ public class IncomingRequest {
 	 */
 	public IncomingRequest(ServerHttpRequest request) {
 
-		Assert.notNull(request, "ServerHttpRequest must not be null!");
+		Assert.notNull(request, "ServerHttpRequest must not be null");
 
 		this.request = request;
 		this.contentType = request.getHeaders().getContentType();

@@ -60,9 +60,9 @@ public class RepositoryController extends AbstractRepositoryRestController {
 
 		super(assembler);
 
-		Assert.notNull(repositories, "Repositories must not be null!");
-		Assert.notNull(entityLinks, "EntityLinks must not be null!");
-		Assert.notNull(mappings, "ResourceMappings must not be null!");
+		Assert.notNull(repositories, "Repositories must not be null");
+		Assert.notNull(entityLinks, "EntityLinks must not be null");
+		Assert.notNull(mappings, "ResourceMappings must not be null");
 
 		this.repositories = repositories;
 		this.entityLinks = entityLinks;

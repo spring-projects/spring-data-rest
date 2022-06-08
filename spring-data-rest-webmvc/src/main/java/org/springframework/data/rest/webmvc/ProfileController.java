@@ -63,9 +63,9 @@ public class ProfileController {
 	public ProfileController(RepositoryRestConfiguration configuration, RepositoryResourceMappings mappings,
 			Repositories repositories) {
 
-		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null!");
-		Assert.notNull(mappings, "RepositoryResourceMappings must not be null!");
-		Assert.notNull(repositories, "Repositories must not be null!");
+		Assert.notNull(configuration, "RepositoryRestConfiguration must not be null");
+		Assert.notNull(mappings, "RepositoryResourceMappings must not be null");
+		Assert.notNull(repositories, "Repositories must not be null");
 
 		this.configuration = configuration;
 		this.mappings = mappings;

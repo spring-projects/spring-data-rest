@@ -32,7 +32,7 @@ public final class DefaultedPageable {
 
 	public DefaultedPageable(Pageable pageable, boolean isDefault) {
 
-		Assert.notNull(pageable, "Pageable must not be null!");
+		Assert.notNull(pageable, "Pageable must not be null");
 
 		this.pageable = pageable;
 		this.isDefault = isDefault;

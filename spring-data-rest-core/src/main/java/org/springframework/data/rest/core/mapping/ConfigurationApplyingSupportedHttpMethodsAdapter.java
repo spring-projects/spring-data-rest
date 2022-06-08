@@ -36,9 +36,9 @@ class ConfigurationApplyingSupportedHttpMethodsAdapter implements SupportedHttpM
 	ConfigurationApplyingSupportedHttpMethodsAdapter(ExposureConfiguration configuration,
 			ResourceMetadata resourceMetadata, SupportedHttpMethods delegate) {
 
-		Assert.notNull(configuration, "Configuration must not be null!");
-		Assert.notNull(resourceMetadata, "ResourceMetadata must not be null!");
-		Assert.notNull(delegate, "SupportedHttpMethods must not be null!");
+		Assert.notNull(configuration, "Configuration must not be null");
+		Assert.notNull(resourceMetadata, "ResourceMetadata must not be null");
+		Assert.notNull(delegate, "SupportedHttpMethods must not be null");
 
 		this.configuration = configuration;
 		this.resourceMetadata = resourceMetadata;

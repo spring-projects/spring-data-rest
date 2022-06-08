@@ -63,8 +63,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class PersistentEntityResourceHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-	private static final String ERROR_MESSAGE = "Could not read an object of type %s from the request!";
-	private static final String NO_CONVERTER_FOUND = "No suitable HttpMessageConverter found to read request body into object of type %s from request with content type of %s!";
+	private static final String ERROR_MESSAGE = "Could not read an object of type %s from the request";
+	private static final String NO_CONVERTER_FOUND = "No suitable HttpMessageConverter found to read request body into object of type %s from request with content type of %s";
 
 	private final List<HttpMessageConverter<?>> messageConverters;
 	private final RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver;
@@ -79,11 +79,11 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 			BackendIdHandlerMethodArgumentResolver idResolver, DomainObjectReader reader,
 			PluginRegistry<EntityLookup<?>, Class<?>> lookups) {
 
-		Assert.notNull(messageConverters, "HttpMessageConverters must not be null!");
-		Assert.notNull(resourceInformationResolver, "RootResourceInformation resolver must not be null!");
-		Assert.notNull(idResolver, "IdResolver must not be null!");
-		Assert.notNull(reader, "DomainObjectReader must not be null!");
-		Assert.notNull(lookups, "EntityLookups must not be null!");
+		Assert.notNull(messageConverters, "HttpMessageConverters must not be null");
+		Assert.notNull(resourceInformationResolver, "RootResourceInformation resolver must not be null");
+		Assert.notNull(idResolver, "IdResolver must not be null");
+		Assert.notNull(reader, "DomainObjectReader must not be null");
+		Assert.notNull(lookups, "EntityLookups must not be null");
 
 		this.messageConverters = messageConverters;
 		this.resourceInformationResolver = resourceInformationResolver;
