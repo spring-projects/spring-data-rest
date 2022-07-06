@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Method;
 import java.net.URI;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,10 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 
 /**
  * Unit tests for {@link BasePathAwareHandlerMapping}.
@@ -36,11 +40,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 class BasePathAwareHandlerMappingUnitTests {
 
 	HandlerMappingStub mapping;
+	RepositoryRestConfiguration configuration = mock(RepositoryRestConfiguration.class);
 
 	@BeforeEach
 	void setUp() {
 
-		RepositoryRestConfiguration configuration = mock(RepositoryRestConfiguration.class);
 		doReturn(URI.create("")).when(configuration).getBasePath();
 
 		mapping = new HandlerMappingStub(configuration);
@@ -79,6 +83,20 @@ class BasePathAwareHandlerMappingUnitTests {
 				.isThrownBy(() -> mapping.isHandler(ValidController.class));
 	}
 
+	@Test // #2087
+	void combinesBasePathAndControllerPrefixesCorrectly() throws Exception {
+
+		doReturn(URI.create("/base")).when(configuration).getBasePath();
+		mapping = new HandlerMappingStub(configuration);
+
+		Method method = ReflectionUtils.findMethod(PrefixedController.class, "someMethod");
+		RequestMappingInfo info = mapping.getMappingForMethod(method, PrefixedController.class);
+
+		String next = info.getPatternValues().iterator().next();
+
+		assertThat(next).isEqualTo("/base/controllerBase/method");
+	}
+
 	private static Class<?> createProxy(Object source) {
 
 		ProxyFactory factory = new ProxyFactory(source);
@@ -114,4 +132,11 @@ class BasePathAwareHandlerMappingUnitTests {
 	@Controller
 	@RequestMapping("/sample")
 	static class ValidController {}
+
+	@BasePathAwareController("/controllerBase")
+	static class PrefixedController {
+
+		@GetMapping("/method")
+		void someMethod() {}
+	}
 }

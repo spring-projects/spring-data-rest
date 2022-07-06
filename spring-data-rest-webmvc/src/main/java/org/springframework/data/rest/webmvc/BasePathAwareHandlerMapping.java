@@ -15,8 +15,11 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.springframework.core.annotation.AnnotatedElementUtils.*;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -36,9 +39,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.condition.ProducesRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo.Builder;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import static org.springframework.core.annotation.AnnotatedElementUtils.*;
 
 /**
  * A {@link RequestMappingHandlerMapping} that augments the request mappings
@@ -109,6 +111,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 	 * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping#getMappingForMethod(java.lang.reflect.Method, java.lang.Class)
 	 */
 	@Override
+	@SuppressWarnings("null")
 	protected RequestMappingInfo getMappingForMethod(Method method, Class<?> handlerType) {
 
 		RequestMappingInfo info = super.getMappingForMethod(method, handlerType);
@@ -119,23 +122,17 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 		ProducesRequestCondition producesCondition = customize(info.getProducesCondition());
 		Set<MediaType> mediaTypes = producesCondition.getProducibleMediaTypes();
+		String[] customPrefixes = getBasePathedPrefixes(handlerType);
+		Builder builder = info.mutate();
 
-		BasePathAwareController mergedAnnotation = findMergedAnnotation(handlerType, BasePathAwareController.class);
-		if (mergedAnnotation != null) {
-			info = appendPathPrefix(info, mergedAnnotation.value());
+		if ((customPrefixes.length != 0) || StringUtils.hasText(baseUri)) {
+			builder = builder.paths(resolveEmbeddedValuesInPatterns(customPrefixes));
 		}
-		info = appendPathPrefix(info, new String[]{this.baseUri});
-		return info.mutate()
-				.produces(mediaTypes.stream().map(MediaType::toString).toArray(String[]::new))
-				.build();
-	}
 
-	private RequestMappingInfo appendPathPrefix(RequestMappingInfo info, String[] pathPrefix) {
-		if (pathPrefix.length > 0) {
-			String[] paths = this.resolveEmbeddedValuesInPatterns(pathPrefix);
-			return info.mutate().paths(paths).build().combine(info);
-		}
-		return info;
+		return builder //
+				.produces(mediaTypes.stream().map(MediaType::toString).toArray(String[]::new)) //
+				.build() //
+				.combine(info);
 	}
 
 	/**
@@ -183,6 +180,18 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		return type.isAnnotationPresent(BasePathAwareController.class);
 	}
 
+	private String[] getBasePathedPrefixes(Class<?> handlerType) {
+
+		Assert.notNull(handlerType, "Handler type must not be null");
+
+		BasePathAwareController mergedAnnotation = findMergedAnnotation(handlerType, BasePathAwareController.class);
+		String[] customPrefixes = mergedAnnotation == null ? new String[0] : mergedAnnotation.value();
+
+		return customPrefixes.length == 0 //
+				? new String[] { baseUri } //
+				: Arrays.stream(customPrefixes).map(baseUri::concat).toArray(String[]::new);
+	}
+
 	/**
 	 * {@link HttpServletRequest} that exposes the given media types for the {@code Accept} header.
 	 *
@@ -224,7 +233,8 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		@Override
 		public String getHeader(String name) {
 
-			return HttpHeaders.ACCEPT.equalsIgnoreCase(name) && acceptMediaTypes != null //
+			return HttpHeaders.ACCEPT.equalsIgnoreCase(name) && (acceptMediaTypes != null //
+			)
 					? StringUtils.collectionToCommaDelimitedString(acceptMediaTypes) //
 					: super.getHeader(name);
 		}
@@ -236,7 +246,8 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		@Override
 		public Enumeration<String> getHeaders(String name) {
 
-			return HttpHeaders.ACCEPT.equalsIgnoreCase(name) && acceptMediaTypes != null //
+			return HttpHeaders.ACCEPT.equalsIgnoreCase(name) && (acceptMediaTypes != null //
+			)
 					? Collections.enumeration(acceptMediaTypeStrings) //
 					: super.getHeaders(name);
 		}

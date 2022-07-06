@@ -40,6 +40,7 @@ import org.springframework.web.servlet.HandlerMapping;
  * </ul>
  *
  * @author Oliver Gierke
+ * @author Yves Galante
  */
 @Documented
 @Component
@@ -47,9 +48,24 @@ import org.springframework.web.servlet.HandlerMapping;
 @Target({ ElementType.TYPE, ElementType.ANNOTATION_TYPE })
 @BasePathAwareController
 public @interface RepositoryRestController {
-    @AliasFor("path")
-    String[] value() default {};
 
-    @AliasFor("value")
-    String[] path() default {};
+	/**
+	 * The root path to be prepended to all request mappings configured on handler methods.
+	 *
+	 * @return
+	 * @since 3.7.2
+	 * @see #path()
+	 */
+	@AliasFor("path")
+	String[] value() default {};
+
+	/**
+	 * The root path to be prepended to all request mappings configured on handler methods.
+	 *
+	 * @return
+	 * @since 3.7.2
+	 * @see #value()
+	 */
+	@AliasFor("value")
+	String[] path() default {};
 }
