@@ -58,10 +58,12 @@ public class JpaRepositoryConfig extends JpaInfrastructureConfig {
 		void someMethod(@PathVariable String id) {}
 	}
 
-	@RepositoryRestController(path = {"orders", "orders/v2"})
+	@RepositoryRestController({ "orders", "orders/v2" })
 	static class OrdersJsonController {
 
-		@RequestMapping(value = {"/search/sort","/search/sorted"}, method = RequestMethod.POST, produces = "application/hal+json")
+		@RequestMapping(path = { "/search/sort", "/search/sorted" }, //
+				method = RequestMethod.POST, //
+				produces = "application/hal+json")
 		void someMethodWithArgs(Sort sort, Pageable pageable, DefaultedPageable defaultedPageable) {}
 	}
 }

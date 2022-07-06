@@ -682,9 +682,13 @@ public class JpaWebTests extends CommonWebTests {
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 	}
 
-	@Test // DATAREST-910 DATAREST-2088
+	@Test // DATAREST-910, #2087
 	void callUnmappedCustomRepositoryController() throws Exception {
+
+		// Invalid prefix
 		mvc.perform(post("/orders/v3/search/sort")).andExpect(status().isNotFound());
+
+		// With mapped prefixes
 		mvc.perform(post("/orders/search/sort")).andExpect(status().isOk());
 		mvc.perform(post("/orders/search/sorted")).andExpect(status().isOk());
 		mvc.perform(post("/orders/v2/search/sort")).andExpect(status().isOk());
