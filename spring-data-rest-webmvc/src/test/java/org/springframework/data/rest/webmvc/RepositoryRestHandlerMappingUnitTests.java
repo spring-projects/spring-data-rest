@@ -158,20 +158,6 @@ class RepositoryRestHandlerMappingUnitTests {
 	}
 
 	@Test // DATAREST-276
-	void returnsRepositoryHandlerMethodForAbsoluteBaseUri() throws Exception {
-
-		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
-		mockRequest = new MockHttpServletRequest("GET", "/base/people/");
-
-		configuration.setBasePath("/base");
-
-		HandlerMethod method = handlerMapping.get().getHandlerInternal(mockRequest);
-
-		assertThat(method).isNotNull();
-		assertThat(method.getMethod()).isEqualTo(listEntitiesMethod);
-	}
-
-	@Test // DATAREST-276
 	void returnsRepositoryHandlerMethodForAbsoluteBaseUriWithServletMapping() throws Exception {
 
 		when(mappings.exportsTopLevelResourceFor("/people")).thenReturn(true);
