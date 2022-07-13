@@ -26,6 +26,7 @@ import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 public class Jackson2DatatypeHelper {
 
@@ -37,7 +38,8 @@ public class Jackson2DatatypeHelper {
 
 	public static void configureObjectMapper(ObjectMapper mapper) {
 
-		if (IS_HIBERNATE_AVAILABLE && HibernateVersions.isHibernate5() && IS_HIBERNATE5_MODULE_AVAILABLE) {
+		if (IS_HIBERNATE_AVAILABLE && (HibernateVersions.isHibernate5() || HibernateVersions.isHibernate6())
+				&& IS_HIBERNATE5_MODULE_AVAILABLE) {
 			new Hibernate5ModuleRegistrar().registerModule(mapper);
 		}
 	}
@@ -46,6 +48,10 @@ public class Jackson2DatatypeHelper {
 
 		public static boolean isHibernate5() {
 			return Version.getVersionString().startsWith("5");
+		}
+
+		public static boolean isHibernate6() {
+			return Version.getVersionString().startsWith("6");
 		}
 	}
 
