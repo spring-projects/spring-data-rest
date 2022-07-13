@@ -61,6 +61,8 @@ import org.springframework.http.converter.json.AbstractJackson2HttpMessageConver
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -230,6 +232,24 @@ class RepositoryRestMvConfigurationIntegrationTests {
 		LinkCollector factory = context.getBean(LinkCollector.class);
 
 		assertThat(factory).isEqualTo(ExtendingConfiguration.collector);
+	}
+
+	@Test // #2157
+	void registersEmbeddedValueResolverForHandlerMappings() {
+
+		DelegatingHandlerMapping mapping = context.getBean(DelegatingHandlerMapping.class);
+
+		List<HandlerMapping> delegates = mapping.getDelegates();
+
+		assertThat(delegates).hasSize(2);
+		assertThat(delegates).allMatch(it -> {
+
+			if (!(it instanceof RequestMappingHandlerMapping)) {
+				return false;
+			}
+
+			return ReflectionTestUtils.getField(it, "embeddedValueResolver") != null;
+		});
 	}
 
 	private static ObjectMapper getObjectMapper() {

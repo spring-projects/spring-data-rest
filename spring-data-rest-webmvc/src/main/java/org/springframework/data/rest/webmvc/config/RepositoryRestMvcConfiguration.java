@@ -33,6 +33,7 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -119,6 +120,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringValueResolver;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -155,7 +157,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 		SpringDataJacksonConfiguration.class, //
 		EnableSpringDataWebSupport.QuerydslActivator.class })
 public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebConfiguration
-		implements BeanClassLoaderAware {
+		implements BeanClassLoaderAware, EmbeddedValueResolverAware {
 
 	private static final boolean IS_JPA_AVAILABLE = ClassUtils.isPresent("jakarta.persistence.EntityManager",
 			RepositoryRestMvcConfiguration.class.getClassLoader());
@@ -196,6 +198,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private final Lazy<HateoasSortHandlerMethodArgumentResolver> sortResolver;
 
 	private ClassLoader beanClassLoader;
+	private StringValueResolver stringValueResolver;
 
 	public RepositoryRestMvcConfiguration( //
 			ApplicationContext context, //
@@ -280,6 +283,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.context.EmbeddedValueResolverAware#setEmbeddedValueResolver(org.springframework.util.StringValueResolver)
+	 */
+	@Override
+	public void setEmbeddedValueResolver(StringValueResolver resolver) {
+		this.stringValueResolver = resolver;
 	}
 
 	@Bean
@@ -684,12 +696,14 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		repositoryMapping.setApplicationContext(applicationContext);
 		repositoryMapping.setCorsConfigurations(corsConfigurations);
 		repositoryMapping.setPatternParser(parser);
+		repositoryMapping.setEmbeddedValueResolver(stringValueResolver);
 		repositoryMapping.afterPropertiesSet();
 
 		BasePathAwareHandlerMapping basePathMapping = new BasePathAwareHandlerMapping(repositoryRestConfiguration);
 		basePathMapping.setApplicationContext(applicationContext);
 		basePathMapping.setCorsConfigurations(corsConfigurations);
 		basePathMapping.setPatternParser(parser);
+		basePathMapping.setEmbeddedValueResolver(stringValueResolver);
 		basePathMapping.afterPropertiesSet();
 
 		List<HandlerMapping> mappings = new ArrayList<>();
