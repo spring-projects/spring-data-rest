@@ -56,7 +56,7 @@ public @interface RepositoryRestController {
 	 * @since 3.7.2
 	 * @see #path()
 	 */
-	@AliasFor("path")
+	@AliasFor(attribute = "value", annotation = BasePathAwareController.class)
 	String[] value() default {};
 
 	/**
@@ -66,6 +66,6 @@ public @interface RepositoryRestController {
 	 * @since 3.7.2
 	 * @see #value()
 	 */
-	@AliasFor("value")
+	@AliasFor(attribute = "path", annotation = BasePathAwareController.class)
 	String[] path() default {};
 }
