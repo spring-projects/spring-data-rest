@@ -422,7 +422,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public RootResourceInformationHandlerMethodArgumentResolver repoRequestArgumentResolver(Repositories repositories,
 			ResourceMetadataHandlerMethodArgumentResolver resourceMetadataHandlerMethodArgumentResolver,
-			@Qualifier RepositoryInvokerFactory repositoryInvokerFactory) {
+			@Qualifier("repositoryInvokerFactory") RepositoryInvokerFactory repositoryInvokerFactory) {
 
 		if (QuerydslUtils.QUERY_DSL_PRESENT) {
 
@@ -507,7 +507,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public PersistentEntityToJsonSchemaConverter jsonSchemaConverter(PersistentEntities persistentEntities,
-			Associations associationLinks, @Qualifier RepositoryInvokerFactory repositoryInvokerFactory,
+			Associations associationLinks,
+			@Qualifier("repositoryInvokerFactory") RepositoryInvokerFactory repositoryInvokerFactory,
 			RepositoryRestConfiguration repositoryRestConfiguration) {
 
 		return new PersistentEntityToJsonSchemaConverter(persistentEntities, associationLinks, resolver.getObject(),
