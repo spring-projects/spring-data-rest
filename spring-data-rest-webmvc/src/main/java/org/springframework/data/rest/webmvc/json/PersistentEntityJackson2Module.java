@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -82,6 +83,8 @@ import com.fasterxml.jackson.databind.deser.std.CollectionDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
+import com.fasterxml.jackson.databind.introspect.AnnotatedField;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -410,6 +413,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * non-optional associations can be populated on resource creation.
 	 *
 	 * @author Oliver Gierke
+	 * @author Lars Vierbergen
 	 */
 	public static class AssociationUriResolvingDeserializerModifier extends BeanDeserializerModifier {
 
@@ -444,7 +448,18 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				while (properties.hasNext()) {
 
 					SettableBeanProperty property = properties.next();
-					PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getName());
+					// To find the PersistentProperty name in case there is a @JsonProperty annotation
+					// on the field. Both BeanPropertyDefinition#getName() and BeanPropertyDefinition#getInternalName()
+					// don't return the actual name of the field, so we look up the AnnotatedField itself to retrieve
+					// the real name from, so it can be used for PersistentProperty lookup
+					String persistentPropertyName = beanDesc.findProperties().stream()
+							.filter(propertyDefinition -> property.getName().equals(propertyDefinition.getName()))
+							.map(BeanPropertyDefinition::getField).filter(Objects::nonNull).map(AnnotatedField::getName).findFirst()
+							// Fall back to the JSON name in case we can't find a BeanPropertyDefinition,
+							// so things can be mapped by convention in case they are immutable objects and are
+							// using constructor injection
+							.orElse(property.getName());
+					PersistentProperty<?> persistentProperty = entity.getPersistentProperty(persistentPropertyName);
 
 					if (persistentProperty == null) {
 						continue;

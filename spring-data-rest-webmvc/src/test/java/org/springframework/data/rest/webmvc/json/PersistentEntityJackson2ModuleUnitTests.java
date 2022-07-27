@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 
@@ -96,6 +97,7 @@ class PersistentEntityJackson2ModuleUnitTests {
 
 		KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
 		mappingContext.getPersistentEntity(Sample.class);
+		mappingContext.getPersistentEntity(Package.class);
 		mappingContext.getPersistentEntity(SampleWithAdditionalGetters.class);
 		mappingContext.getPersistentEntity(PersistentEntityJackson2ModuleUnitTests.PetOwner.class);
 		mappingContext.getPersistentEntity(Immutable.class);
@@ -156,6 +158,41 @@ class PersistentEntityJackson2ModuleUnitTests {
 		assertThat(petOwner).isNotNull();
 		assertThat(petOwner.getPet()).isNotNull();
 	}
+
+	@Test
+	void allowsUrlsForLinkableAssociation() throws Exception {
+
+		when(converter.convert(UriTemplate.of("/homes/1").expand(), TypeDescriptor.valueOf(URI.class),
+				TypeDescriptor.valueOf(Home.class))).thenReturn(new Home());
+
+		PersistentProperty<?> property = persistentEntities.getRequiredPersistentEntity(PetOwner.class)
+				.getRequiredPersistentProperty("home");
+
+		when(associations.isLinkableAssociation(property)).thenReturn(true);
+
+		PetOwner petOwner = mapper.readValue("{\"home\": \"/homes/1\" }", PetOwner.class);
+
+		assertThat(petOwner).isNotNull();
+		assertThat(petOwner.getHome()).isInstanceOf(Home.class);
+	}
+
+	@Test
+	void allowsUrlsForRenamedLinkableAssociation() throws IOException {
+
+		when(converter.convert(UriTemplate.of("/packages/1").expand(), TypeDescriptor.valueOf(URI.class),
+				TypeDescriptor.valueOf(Package.class))).thenReturn(new Package());
+
+		PersistentProperty<?> property = persistentEntities.getRequiredPersistentEntity(PetOwner.class)
+				.getRequiredPersistentProperty("_package");
+
+		when(associations.isLinkableAssociation(property)).thenReturn(true);
+
+		PetOwner petOwner = mapper.readValue("{\"package\":\"/packages/1\"}", PetOwner.class);
+
+		assertThat(petOwner).isNotNull();
+		assertThat(petOwner.getPackage()).isNotNull();
+	}
+
 
 	@Test // DATAREST-1321
 	void allowsNumericIdsForLookupTypes() throws Exception {
@@ -260,7 +297,16 @@ class PersistentEntityJackson2ModuleUnitTests {
 
 		Pet pet;
 		Home home;
+
+		@Getter(value = AccessLevel.NONE)
+		@JsonProperty("package") Package _package;
+
+		public Package getPackage() {
+			return _package;
+		}
 	}
+
+	static class Package {}
 
 	@JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.MINIMAL_CLASS)
 	static class Pet {}
