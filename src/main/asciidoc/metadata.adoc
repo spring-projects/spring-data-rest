@@ -123,6 +123,7 @@ of the attributes.
 <2> The supported operations. This one indicates how to create a new `Person`.
 <3> The `name` is `persons`, which indicates (because it is plural) that a POST should be applied to the whole collection, not a single `person`.
 <4> The `type` is `UNSAFE`, because this operation can alter the state of the system.
+<5> The `rt` is `#person-representation`, which indicates that returned resource type will be `Person` resource.
 ====
 
 NOTE: This JSON document has a media type of `application/alps+json`. This is different from the previous JSON document, which had
