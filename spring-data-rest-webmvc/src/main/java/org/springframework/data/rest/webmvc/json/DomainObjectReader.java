@@ -61,6 +61,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Craig Andrews
  * @author Mathias Düsterhöft
  * @author Thomas Mrozinski
+ * @author Lars Vierbergen
  * @since 2.2
  */
 public class DomainObjectReader {
@@ -678,7 +679,7 @@ public class DomainObjectReader {
 			} else if (property.isCollectionLike()) {
 				result = mergeCollections(property, sourceValue, targetValue, mapper);
 			} else if (property.isEntity()) {
-				result = mergeForPut(sourceValue, targetValue, mapper);
+				result = Optional.ofNullable(mergeForPut(sourceValue.orElse(null), targetValue.orElse(null), mapper));
 			} else {
 				result = sourceValue;
 			}

@@ -77,6 +77,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Mathias Düsterhöft
  * @author Ken Dombeck
  * @author Thomas Mrozinski
+ * @author Lars Vierbergen
  */
 @ExtendWith(MockitoExtension.class)
 class DomainObjectReaderUnitTests {
@@ -311,6 +312,32 @@ class DomainObjectReaderUnitTests {
 		assertThat(result.prop).isEqualTo("else");
 		assertThat(result.inner.prop).isEqualTo("something");
 		assertThat(result.inner.name).isEqualTo("new inner name");
+		assertThat(result.inner).isSameAs(inner);
+	}
+
+	@Test
+	void nestedEntitiesWithReadonlyFieldAreKeptForPut() throws Exception {
+		Inner inner = new Inner();
+		inner.name = "inner name";
+		inner.prop = "something";
+		inner.readOnly = "readonly value";
+		inner.hidden = "hidden value";
+
+		Outer outer = new Outer();
+		outer.prop = "else";
+		outer.name = "outer name";
+		outer.inner = inner;
+
+		JsonNode node = new ObjectMapper().readTree("{ \"inner\" : { \"name\" : \"new inner name\" } }");
+
+		Outer result = reader.readPut((ObjectNode) node, outer, new ObjectMapper());
+
+		assertThat(result).isSameAs(outer);
+		assertThat(result.prop).isNull();
+		assertThat(result.inner.prop).isNull();
+		assertThat(result.inner.name).isEqualTo("new inner name");
+		assertThat(result.inner.readOnly).isEqualTo("readonly value");
+		assertThat(result.inner.hidden).isEqualTo("hidden value");
 		assertThat(result.inner).isSameAs(inner);
 	}
 
@@ -715,6 +742,8 @@ class DomainObjectReaderUnitTests {
 
 		String name;
 		String prop;
+		@JsonProperty(access = READ_ONLY) String readOnly;
+		@JsonIgnore String hidden;
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
