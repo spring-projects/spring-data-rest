@@ -39,7 +39,6 @@ class ReplaceOperation extends PatchOperation {
 		return new ReplaceOperationBuilder(path);
 	}
 
-
 	static class ReplaceOperationBuilder {
 		private final String path;
 
@@ -54,7 +53,7 @@ class ReplaceOperation extends PatchOperation {
 	}
 
 	@Override
-	void perform(Object target, Class<?> type) {
-		path.bindTo(type).setValue(target, evaluateValueFromTarget(target, type));
+	void perform(Object target, Class<?> type, BindContext context) {
+		path.bindForWrite(type, context).setValue(target, evaluateValueFromTarget(target, type, context));
 	}
 }

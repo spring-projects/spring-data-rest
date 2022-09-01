@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.tests.mongodb.TestUtils.*;
 
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,21 +38,28 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.tests.mongodb.Address;
 import org.springframework.data.rest.tests.mongodb.User;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
+import org.springframework.data.rest.webmvc.json.BindContextFactory;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
+import org.springframework.data.rest.webmvc.json.PersistentEntitiesBindContextFactory;
+import org.springframework.data.rest.webmvc.json.patch.PatchException;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Unit tests for {@link JsonPatchHandler}.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @ExtendWith(MockitoExtension.class)
 class JsonPatchHandlerUnitTests {
 
 	JsonPatchHandler handler;
+	ObjectMapper mapper = new ObjectMapper();
 	User user;
 
 	@Mock ResourceMappings mappings;
@@ -63,12 +72,13 @@ class JsonPatchHandlerUnitTests {
 		MongoMappingContext context = new MongoMappingContext();
 		context.setSimpleTypeHolder(conversions.getSimpleTypeHolder());
 		context.getPersistentEntity(User.class);
+		context.getPersistentEntity(WithIgnoredProperties.class);
 
 		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
-
 		Associations associations = new Associations(mappings, mock(RepositoryRestConfiguration.class));
+		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities);
 
-		this.handler = new JsonPatchHandler(new ObjectMapper(), new DomainObjectReader(entities, associations));
+		this.handler = new JsonPatchHandler(factory, new DomainObjectReader(entities, associations));
 
 		Address address = new Address();
 		address.street = "Foo";
@@ -86,7 +96,7 @@ class JsonPatchHandlerUnitTests {
 		String input = "[{ \"op\": \"replace\", \"path\": \"/address/zipCode\", \"value\": \"ZIP\" },"
 				+ "{ \"op\": \"remove\", \"path\": \"/lastname\" }]";
 
-		User result = handler.applyPatch(asStream(input), user);
+		User result = handler.applyPatch(asStream(input), user, mapper);
 
 		assertThat(result.lastname).isNull();
 		assertThat(result.address.zipCode).isEqualTo("ZIP");
@@ -97,7 +107,7 @@ class JsonPatchHandlerUnitTests {
 
 		String input = "{ \"address\" : { \"zipCode\" : \"ZIP\"}, \"lastname\" : null }";
 
-		User result = handler.applyMergePatch(asStream(input), user);
+		User result = handler.applyMergePatch(asStream(input), user, mapper);
 
 		assertThat(result.lastname).isNull();
 		assertThat(result.address.zipCode).isEqualTo("ZIP");
@@ -119,7 +129,7 @@ class JsonPatchHandlerUnitTests {
 
 		String input = "[{ \"op\": \"remove\", \"path\": \"/colleagues/0\" }]";
 
-		handler.applyPatch(asStream(input), user);
+		handler.applyPatch(asStream(input), user, mapper);
 
 		assertThat(user.colleagues).hasSize(1);
 		assertThat(user.colleagues.get(0).firstname).isEqualTo(christoph.firstname);
@@ -129,7 +139,49 @@ class JsonPatchHandlerUnitTests {
 	void hintsToMediaTypeIfBodyCantBeRead() throws Exception {
 
 		assertThatExceptionOfType(HttpMessageNotReadableException.class)
-				.isThrownBy(() -> handler.applyPatch(asStream("{ \"foo\" : \"bar\" }"), new User()))
+				.isThrownBy(() -> handler.applyPatch(asStream("{ \"foo\" : \"bar\" }"), new User(), mapper))
 				.withMessageContaining(RestMediaTypes.JSON_PATCH_JSON.toString());
+	}
+
+	@Test
+	void skipsReplaceConditionally() throws Exception {
+
+		WithIgnoredProperties object = new WithIgnoredProperties();
+		assertThatExceptionOfType(PatchException.class).isThrownBy(() -> {
+			handler.applyPatch(asStream("[{ \"op\": \"replace\", \"path\": \"/password\", \"value\": \"hello\" }]"), object,
+					mapper);
+		});
+
+		WithIgnoredProperties result = handler
+				.applyPatch(asStream("[{ \"op\": \"replace\", \"path\": \"/name\", \"value\": \"hello\" }]"), object, mapper);
+
+		assertThat(result.name).isEqualTo("hello");
+	}
+
+	@Test
+	void skipsCopyConditionally() throws Exception {
+
+		WithIgnoredProperties object = new WithIgnoredProperties();
+		object.setName("hello");
+
+		assertThatExceptionOfType(PatchException.class).isThrownBy(() -> {
+			handler.applyPatch(asStream("[{ \"op\": \"copy\", \"path\": \"/password\", \"from\": \"/name\" }]"), object,
+					mapper);
+		});
+
+		WithIgnoredProperties result = handler
+				.applyPatch(asStream("[{ \"op\": \"copy\", \"path\": \"/lastname\", \"from\": \"/name\" }]"), object, mapper);
+
+		assertThat(result.lastname).isEqualTo("hello");
+	}
+
+	@JsonIgnoreProperties("password")
+	@Data
+	static class WithIgnoredProperties {
+
+		String name, lastname, password;
+
+		@JsonIgnore String ssn;
+
 	}
 }

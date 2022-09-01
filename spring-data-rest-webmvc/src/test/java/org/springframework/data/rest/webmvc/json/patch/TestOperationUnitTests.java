@@ -33,10 +33,10 @@ class TestOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		TestOperation test = TestOperation.whetherValueAt("/0/complete").hasValue(false);
-		test.perform(todos, Todo.class);
+		test.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		TestOperation test2 = TestOperation.whetherValueAt("/1/complete").hasValue(true);
-		test2.perform(todos, Todo.class);
+		test2.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 	}
 
@@ -51,7 +51,7 @@ class TestOperationUnitTests {
 		TestOperation test = TestOperation.whetherValueAt("/0/complete").hasValue(true);
 
 		assertThatExceptionOfType(PatchException.class) //
-				.isThrownBy(() -> test.perform(todos, Todo.class));
+				.isThrownBy(() -> test.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE));
 	}
 
 	@Test
@@ -63,6 +63,6 @@ class TestOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		TestOperation test = TestOperation.whetherValueAt("/1").hasValue(new Todo(2L, "B", true));
-		test.perform(todos, Todo.class);
+		test.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 	}
 }

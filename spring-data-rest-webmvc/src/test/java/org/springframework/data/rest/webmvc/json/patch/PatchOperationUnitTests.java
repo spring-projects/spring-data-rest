@@ -53,7 +53,7 @@ class PatchOperationUnitTests {
 			Todo todo = new Todo(1L, "A", false);
 
 			assertThatExceptionOfType(PatchException.class) //
-					.isThrownBy(() -> it.perform(todo, Todo.class));
+					.isThrownBy(() -> it.perform(todo, Todo.class, TestPropertyPathContext.INSTANCE));
 		});
 	}
 }

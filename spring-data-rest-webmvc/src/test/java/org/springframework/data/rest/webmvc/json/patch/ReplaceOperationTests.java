@@ -38,7 +38,7 @@ class ReplaceOperationTests {
 		todos.add(new Todo(3L, "C", false));
 
 		ReplaceOperation replace = ReplaceOperation.valueAt("/1/complete").with(true);
-		replace.perform(todos, Todo.class);
+		replace.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.get(1).isComplete()).isTrue();
 	}
@@ -52,7 +52,7 @@ class ReplaceOperationTests {
 		todos.add(new Todo(3L, "C", false));
 
 		ReplaceOperation replace = ReplaceOperation.valueAt("/1/description").with("BBB");
-		replace.perform(todos, Todo.class);
+		replace.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.get(1).getDescription()).isEqualTo("BBB");
 	}
@@ -66,7 +66,7 @@ class ReplaceOperationTests {
 		todos.add(new Todo(3L, "C", false));
 
 		ReplaceOperation replace = ReplaceOperation.valueAt("/1/description").with(22);
-		replace.perform(todos, Todo.class);
+		replace.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.get(1).getDescription()).isEqualTo("22");
 	}
@@ -79,7 +79,7 @@ class ReplaceOperationTests {
 		ObjectMapper mapper = new ObjectMapper();
 		ReplaceOperation replace = ReplaceOperation.valueAt("/type")
 				.with(new JsonLateObjectEvaluator(mapper, mapper.readTree("{ \"value\" : \"new\" }")));
-		replace.perform(todo, Todo.class);
+		replace.perform(todo, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todo.getType()).isNotNull();
 		assertThat(todo.getType().getValue()).isNotNull();
@@ -95,7 +95,7 @@ class ReplaceOperationTests {
 
 		ReplaceOperation.valueAt("/characters/protagonist") //
 				.with(prepareValue("\"Pallo\"")) //
-				.perform(book, Book.class);
+				.perform(book, Book.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(book.characters.get("protagonist")).isEqualTo("Pallo");
 	}

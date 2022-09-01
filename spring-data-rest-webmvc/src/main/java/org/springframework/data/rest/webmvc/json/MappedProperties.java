@@ -26,9 +26,11 @@ import java.util.Set;
 
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,7 +85,15 @@ class MappedProperties {
 		// collection of ignored properties in the first place. See
 		// https://github.com/FasterXML/jackson-databind/issues/2531
 
-		this.ignoredPropertyNames = description.getIgnoredPropertyNames();
+		this.ignoredPropertyNames = new HashSet<>(description.getIgnoredPropertyNames());
+
+		JsonIgnoreProperties annotation = entity.findAnnotation(JsonIgnoreProperties.class);
+
+		if (annotation != null) {
+			for (String property : annotation.value()) {
+				ignoredPropertyNames.add(property);
+			}
+		}
 
 		for (BeanPropertyDefinition property : description.findProperties()) {
 
@@ -172,6 +182,7 @@ class MappedProperties {
 	 * @param fieldName must not be empty or {@literal null}.
 	 * @return the {@link PersistentProperty} backing the field with the field name.
 	 */
+	@Nullable
 	public PersistentProperty<?> getPersistentProperty(String fieldName) {
 
 		Assert.hasText(fieldName, "Field name must not be null or empty");
@@ -229,7 +240,31 @@ class MappedProperties {
 	 * @param name must not be {@literal null} or empty.
 	 * @return
 	 */
-	public boolean isWritableProperty(String name) {
+	public boolean isWritableField(String name) {
+
+		Assert.hasText(name, "Property name must not be null or empty");
+
+		if (ignoredPropertyNames.contains(name)) {
+			return false;
+		}
+
+		PersistentProperty<?> property = fieldNameToProperty.get(name);
+
+		return property != null ? property.isWritable() : anySetterFound;
+	}
+
+	public boolean isReadableField(String name) {
+
+		Assert.hasText(name, "Property name must not be null or empty");
+
+		if (ignoredPropertyNames.contains(name)) {
+			return false;
+		}
+
+		return fieldNameToProperty.get(name) != null;
+	}
+
+	public boolean isExposedProperty(String name) {
 
 		Assert.hasText(name, "Property name must not be null or empty");
 

@@ -15,10 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +35,7 @@ class CopyOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		CopyOperation copy = CopyOperation.from("/0/complete").to("/1/complete");
-		copy.perform(todos, Todo.class);
+		copy.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.get(1).isComplete()).isTrue();
 	}
@@ -47,7 +49,7 @@ class CopyOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		CopyOperation copy = CopyOperation.from("/0/description").to("/1/description");
-		copy.perform(todos, Todo.class);
+		copy.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.get(1).getDescription()).isEqualTo("A");
 	}
@@ -61,7 +63,7 @@ class CopyOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		CopyOperation copy = CopyOperation.from("/0/complete").to("/1/description");
-		copy.perform(todos, Todo.class);
+		copy.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.get(1).getDescription()).isEqualTo("true");
 	}
@@ -75,7 +77,7 @@ class CopyOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		CopyOperation copy = CopyOperation.from("/1").to("/0");
-		copy.perform(todos, Todo.class);
+		copy.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.size()).isEqualTo(4);
 		assertThat(todos.get(0).getId().longValue()).isEqualTo(2L); // NOTE: This could be problematic if you try to save it
@@ -94,7 +96,7 @@ class CopyOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		CopyOperation copy = CopyOperation.from("/0").to("/2");
-		copy.perform(todos, Todo.class);
+		copy.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.size()).isEqualTo(4);
 		assertThat(todos.get(2).getId().longValue()).isEqualTo(1L); // NOTE: This could be problematic if you try to save it
@@ -113,7 +115,7 @@ class CopyOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		CopyOperation copy = CopyOperation.from("/0").to("/3");
-		copy.perform(todos, Todo.class);
+		copy.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.size()).isEqualTo(4);
 		assertThat(todos.get(3).getId().longValue()).isEqualTo(1L); // NOTE: This could be problematic if you try to save it
@@ -132,7 +134,7 @@ class CopyOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		CopyOperation copy = CopyOperation.from("/0").to("/-");
-		copy.perform(todos, Todo.class);
+		copy.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.size()).isEqualTo(4);
 		assertThat(todos.get(3)).isEqualTo(new Todo(1L, "A", true)); // NOTE: This could be problematic if you try to save
@@ -148,10 +150,48 @@ class CopyOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		CopyOperation copy = CopyOperation.from("/-").to("/0");
-		copy.perform(todos, Todo.class);
+		copy.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.size()).isEqualTo(4);
 		assertThat(todos.get(0)).isEqualTo(new Todo(3L, "C", false)); // NOTE: This could be problematic if you try to save
 																																	// it to a DB because there'll be duplicate IDs
+	}
+
+	@Test
+	void rejectsCopyingFromHiddenProperty() {
+
+		BindContext context = new TestPropertyPathContext() {
+
+			@Override
+			public Optional<String> getReadableProperty(String segment, Class<?> type) {
+				return Optional.of(segment).filter(not("description"::equals));
+			}
+		};
+
+		CopyOperation operation = CopyOperation.from("/description").to("/description");
+		Todo target = new Todo(1L, "Description", false);
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> operation.perform(target, Todo.class, context))
+				.withMessageContaining("readable property");
+	}
+
+	@Test
+	void rejectsCopyingToHiddenProperty() {
+
+		BindContext context = new TestPropertyPathContext() {
+
+			@Override
+			public Optional<String> getWritableProperty(String segment, Class<?> type) {
+				return Optional.of(segment).filter(not("description"::equals));
+			}
+		};
+
+		CopyOperation operation = CopyOperation.from("/description").to("/description");
+		Todo target = new Todo(1L, "Description", false);
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> operation.perform(target, Todo.class, context))
+				.withMessageContaining("writable property");
 	}
 }

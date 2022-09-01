@@ -25,6 +25,7 @@ import org.springframework.data.mapping.PersistentEntity;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -91,7 +92,7 @@ class MappedPropertiesUnitTests {
 
 		MappedProperties properties = MappedProperties.forDeserialization(entity, mapper);
 
-		assertThat(properties.isWritableProperty("anotherReadOnlyProperty")).isFalse();
+		assertThat(properties.isWritableField("anotherReadOnlyProperty")).isFalse();
 		assertThat(properties.getPersistentProperty("readOnlyProperty")).isNull();
 
 		properties = MappedProperties.forSerialization(entity, mapper);
@@ -107,12 +108,12 @@ class MappedPropertiesUnitTests {
 
 		MappedProperties properties = MappedProperties.forDeserialization(entity, mapper);
 
-		assertThat(properties.isWritableProperty("someProperty")).isTrue();
-		assertThat(properties.isWritableProperty("readOnlyProperty")).isFalse();
-		assertThat(properties.isWritableProperty("anotherReadOnlyProperty")).isFalse();
+		assertThat(properties.isWritableField("someProperty")).isTrue();
+		assertThat(properties.isWritableField("readOnlyProperty")).isFalse();
+		assertThat(properties.isWritableField("anotherReadOnlyProperty")).isFalse();
 
 		// Due to @JsonAnySetter
-		assertThat(properties.isWritableProperty("someRandomProperty")).isTrue();
+		assertThat(properties.isWritableField("someRandomProperty")).isTrue();
 	}
 
 	@Test // #2130
@@ -120,6 +121,13 @@ class MappedPropertiesUnitTests {
 		assertThat(properties.getIgnoredProperties()).contains("notExposedByJackson");
 	}
 
+	@Test
+	void ignoresTypeLevelProperties() {
+
+		assertThat(properties.getIgnoredProperties()).contains("typeLevelIgnored");
+	}
+
+	@JsonIgnoreProperties("typeLevelIgnored")
 	static class Sample {
 
 		public @Transient String notExposedBySpringData;
@@ -128,6 +136,7 @@ class MappedPropertiesUnitTests {
 		public @JsonProperty("email") String emailAddress;
 		public @JsonProperty(access = Access.READ_ONLY) String readOnlyProperty;
 		public @ReadOnlyProperty String anotherReadOnlyProperty;
+		public String typeLevelIgnored;
 	}
 
 	static class SampleWithJsonAnySetter {

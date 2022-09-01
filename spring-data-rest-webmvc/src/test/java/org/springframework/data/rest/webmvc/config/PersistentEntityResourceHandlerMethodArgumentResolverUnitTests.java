@@ -36,6 +36,8 @@ import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
+import org.springframework.data.rest.webmvc.json.BindContextFactory;
+import org.springframework.data.rest.webmvc.json.patch.TestPropertyPathContext;
 import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
@@ -54,6 +56,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Oliver Gierke
  */
 class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
+
+	private static final BindContextFactory FACTORY = mapper -> TestPropertyPathContext.INSTANCE;
 
 	HttpMessageConverter<?> converter;
 	RootResourceInformationHandlerMethodArgumentResolver rootResourceResolver;
@@ -79,7 +83,7 @@ class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
 
 		PersistentEntityResourceHandlerMethodArgumentResolver argumentResolver = new PersistentEntityResourceHandlerMethodArgumentResolver(
 				Arrays.<HttpMessageConverter<?>> asList(converter), rootResourceResolver, backendIdResolver, reader,
-				PluginRegistry.empty());
+				PluginRegistry.empty(), FACTORY);
 
 		HttpServletRequest request = new MockHttpServletRequest("PUT", "/foo/4711");
 
@@ -103,7 +107,7 @@ class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
 
 		PersistentEntityResourceHandlerMethodArgumentResolver argumentResolver = new PersistentEntityResourceHandlerMethodArgumentResolver(
 				Arrays.<HttpMessageConverter<?>> asList(converter), rootResourceResolver, backendIdResolver, reader,
-				PluginRegistry.of(Arrays.asList(lookup)));
+				PluginRegistry.of(Arrays.asList(lookup)), FACTORY);
 
 		HttpServletRequest request = new MockHttpServletRequest("PUT", "/foo/someName");
 

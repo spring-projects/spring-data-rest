@@ -78,7 +78,9 @@ class CopyOperation extends PatchOperation {
 	}
 
 	@Override
-	void perform(Object target, Class<?> type) {
-		path.bindTo(type).copyFrom(from, target);
+	void perform(Object target, Class<?> type, BindContext context) {
+
+		path.bindForWrite(type, context) //
+				.copyFrom(from, target, context);
 	}
 }

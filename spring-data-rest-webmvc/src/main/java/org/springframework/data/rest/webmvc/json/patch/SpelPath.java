@@ -42,16 +42,22 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Value object to represent a SpEL-backed patch path.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
+ * @author Greg Turnquist
  */
 class SpelPath {
 
 	private static final SpelExpressionParser SPEL_EXPRESSION_PARSER = new SpelExpressionParser();
 	private static final String APPEND_CHARACTER = "-";
 	private static final Map<String, UntypedSpelPath> UNTYPED_PATHS = new ConcurrentReferenceHashMap<>(32);
+
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	protected final String path;
 
@@ -62,10 +68,6 @@ class SpelPath {
 		this.path = path;
 	}
 
-	public String getPath() {
-		return this.path;
-	}
-
 	/**
 	 * Returns a {@link UntypedSpelPath} for the given source.
 	 *
@@ -74,16 +76,6 @@ class SpelPath {
 	 */
 	public static UntypedSpelPath untyped(String source) {
 		return UNTYPED_PATHS.computeIfAbsent(source, UntypedSpelPath::new);
-	}
-
-	/**
-	 * Returns a {@link TypedSpelPath} for the given source and type.
-	 *
-	 * @param source must not be {@literal null}.
-	 * @return
-	 */
-	public static TypedSpelPath typed(String source, Class<?> type) {
-		return untyped(source).bindTo(type);
 	}
 
 	/**
@@ -123,8 +115,23 @@ class SpelPath {
 
 	static class UntypedSpelPath extends SpelPath {
 
+		private static final Map<CacheKey, TypedSpelPath> READ_PATHS = new ConcurrentReferenceHashMap<>(256);
+		private static final Map<CacheKey, TypedSpelPath> WRITE_PATHS = new ConcurrentReferenceHashMap<>(256);
+
 		private UntypedSpelPath(String path) {
 			super(path);
+		}
+
+		public ReadingOperations bindForRead(Class<?> type, BindContext context) {
+
+			Assert.notNull(path, "Path must not be null");
+			Assert.notNull(type, "Type must not be null");
+
+			return READ_PATHS.computeIfAbsent(CacheKey.of(type, this, context),
+					key -> {
+						String mapped = new JsonPointerMapping(context).forRead(key.path.path, type);
+						return new TypedSpelPath(mapped, key.type);
+					});
 		}
 
 		/**
@@ -133,45 +140,36 @@ class SpelPath {
 		 * @param type must not be {@literal null}.
 		 * @return
 		 */
-		public TypedSpelPath bindTo(Class<?> type) {
+		public WritingOperations bindForWrite(Class<?> type, BindContext context) {
 
+			Assert.notNull(path, "Path must not be null");
 			Assert.notNull(type, "Type must not be null");
 
-			return TypedSpelPath.of(this, type);
+			return WRITE_PATHS.computeIfAbsent(CacheKey.of(type, this, context),
+					key -> {
+						String mapped = new JsonPointerMapping(context).forWrite(key.path.path, type);
+						return new TypedSpelPath(mapped, key.type);
+					});
 		}
-	}
-
-	/**
-	 * A {@link SpelPath} that has typing information tied to it.
-	 *
-	 * @author Oliver Gierke
-	 */
-	static class TypedSpelPath extends SpelPath {
-
-		private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s";
-		private static final String INVALID_COLLECTION_INDEX = "Invalid collection index %s for collection of size %s; Use '…/-' or the collection's actual size as index to append to it";
-		private static final Map<CacheKey, TypedSpelPath> TYPED_PATHS = new ConcurrentReferenceHashMap<>(32);
-		private static final EvaluationContext CONTEXT = SimpleEvaluationContext.forReadWriteDataBinding().build();
-
-		private final Expression expression;
-		private final Class<?> type;
 
 		private static final class CacheKey {
 
 			private final Class<?> type;
 			private final UntypedSpelPath path;
+			private final BindContext context;
 
-			private CacheKey(Class<?> type, UntypedSpelPath path) {
+			private CacheKey(Class<?> type, UntypedSpelPath path, BindContext context) {
 
 				Assert.notNull(type, "Type must not be null");
 				Assert.notNull(path, "UntypedSpelPath must not be null");
 
 				this.type = type;
 				this.path = path;
+				this.context = context;
 			}
 
-			public static CacheKey of(final Class<?> type, final UntypedSpelPath path) {
-				return new CacheKey(type, path);
+			public static CacheKey of(Class<?> type, UntypedSpelPath path, BindContext context) {
+				return new CacheKey(type, path, context);
 			}
 
 			@Override
@@ -188,41 +186,64 @@ class SpelPath {
 				CacheKey that = (CacheKey) o;
 
 				return Objects.equals(type, that.type) //
-						&& Objects.equals(path, that.path);
+						&& Objects.equals(path, that.path) //
+						&& Objects.equals(context, that.context);
 			}
 
 			@Override
 			public int hashCode() {
-				return Objects.hash(type, path);
-			}
-
-			@Override
-			public java.lang.String toString() {
-				return "SpelPath.TypedSpelPath.CacheKey(type=" + type + ", path=" + path + ")";
+				return Objects.hash(type, path, context);
 			}
 		}
+	}
 
-		private TypedSpelPath(UntypedSpelPath path, Class<?> type) {
+	interface CommonOperations {
 
-			super(path.path);
+		String getExpressionString();
+	}
+
+	interface ReadingOperations extends CommonOperations {
+
+		<T> T getValue(Object target);
+
+		Class<?> getType(Object root);
+	}
+
+	interface WritingOperations extends CommonOperations {
+
+		Class<?> getLeafType();
+
+		Object removeFrom(Object target);
+
+		void addValue(Object target, Object value);
+
+		void setValue(Object target, @Nullable Object value);
+
+		void copyFrom(UntypedSpelPath path, Object source, BindContext context);
+
+		void moveFrom(UntypedSpelPath path, Object source, BindContext context);
+	}
+
+	/**
+	 * A {@link SpelPath} that has typing information tied to it.
+	 *
+	 * @author Oliver Gierke
+	 */
+	static class TypedSpelPath extends SpelPath implements ReadingOperations, WritingOperations {
+
+		private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s";
+		private static final String INVALID_COLLECTION_INDEX = "Invalid collection index %s for collection of size %s; Use '…/-' or the collection's actual size as index to append to it";
+		private static final EvaluationContext CONTEXT = SimpleEvaluationContext.forReadWriteDataBinding().build();
+
+		private final Expression expression;
+		private final Class<?> type;
+
+		private TypedSpelPath(String path, Class<?> type) {
+
+			super(path);
 
 			this.type = type;
-			this.expression = toSpel(path.path, type);
-		}
-
-		/**
-		 * Returns the {@link TypedSpelPath} for the given {@link SpelPath} and type.
-		 *
-		 * @param path must not be {@literal null}.
-		 * @param type must not be {@literal null}.
-		 * @return
-		 */
-		public static TypedSpelPath of(UntypedSpelPath path, Class<?> type) {
-
-			Assert.notNull(path, "Path must not be null");
-			Assert.notNull(type, "Type must not be null");
-
-			return TYPED_PATHS.computeIfAbsent(CacheKey.of(type, path), key -> new TypedSpelPath(key.path, key.type));
+			this.expression = toSpel(path, type);
 		}
 
 		/**
@@ -310,12 +331,12 @@ class SpelPath {
 		 * @param source the source object to look the value up from, must not be {@literal null}.
 		 * @return
 		 */
-		public void copyFrom(UntypedSpelPath path, Object source) {
+		public void copyFrom(UntypedSpelPath path, Object source, BindContext context) {
 
 			Assert.notNull(path, "Source path must not be null");
 			Assert.notNull(source, "Source value must not be null");
 
-			addValue(source, path.bindTo(type).getValue(source));
+			addValue(source, path.bindForRead(type, context).getValue(source));
 		}
 
 		/**
@@ -326,12 +347,15 @@ class SpelPath {
 		 * @param source the source object to look the value up from, must not be {@literal null}.
 		 * @return
 		 */
-		public void moveFrom(UntypedSpelPath path, Object source) {
+		public void moveFrom(UntypedSpelPath path, Object source, BindContext context) {
 
 			Assert.notNull(path, "Source path must not be null");
 			Assert.notNull(source, "Source value must not be null");
 
-			addValue(source, path.bindTo(type).removeFrom(source));
+			// Verify we are allowed to read the source
+			path.bindForRead(type, context);
+
+			addValue(source, path.bindForWrite(type, context).removeFrom(source));
 		}
 
 		/**
@@ -412,10 +436,7 @@ class SpelPath {
 		}
 
 		private TypedSpelPath getParent() {
-
-			return SpelPath //
-					.untyped(path.substring(0, path.lastIndexOf('/'))) //
-					.bindTo(type);
+			return new TypedSpelPath(path.substring(0, path.lastIndexOf('/')), type);
 		}
 
 		private TypeDescriptor getTypeDescriptor(Object target) {
@@ -617,6 +638,8 @@ class SpelPath {
 				String segmentBase = StringUtils.hasText(spelSegment) //
 						? spelSegment.concat(".") //
 						: spelSegment;
+
+				Class<?> currentType = basePath == null ? type : basePath.getLeafType();
 
 				try {
 

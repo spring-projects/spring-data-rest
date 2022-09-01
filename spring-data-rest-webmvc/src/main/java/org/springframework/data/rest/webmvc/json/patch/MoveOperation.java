@@ -71,7 +71,7 @@ class MoveOperation extends PatchOperation {
 	}
 
 	@Override
-	void perform(Object target, Class<?> type) {
-		path.bindTo(type).moveFrom(from, target);
+	void perform(Object target, Class<?> type, BindContext context) {
+		path.bindForWrite(type, context).moveFrom(from, target, context);
 	}
 }

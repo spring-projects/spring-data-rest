@@ -40,7 +40,7 @@ class AddOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		AddOperation add = AddOperation.of("/1/complete", true);
-		add.perform(todos, Todo.class);
+		add.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.get(1).isComplete()).isTrue();
 	}
@@ -54,7 +54,7 @@ class AddOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		AddOperation add = AddOperation.of("/1/description", "BBB");
-		add.perform(todos, Todo.class);
+		add.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.get(1).getDescription()).isEqualTo("BBB");
 	}
@@ -68,7 +68,7 @@ class AddOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		AddOperation add = AddOperation.of("/1", new Todo(null, "D", true));
-		add.perform(todos, Todo.class);
+		add.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.size()).isEqualTo(4);
 		assertThat(todos.get(0).getDescription()).isEqualTo("A");
@@ -86,7 +86,7 @@ class AddOperationUnitTests {
 
 		Todo todo = new Todo(1L, "description", false);
 
-		AddOperation.of("/items/-", "Some text.").perform(todo, Todo.class);
+		AddOperation.of("/items/-", "Some text.").perform(todo, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todo.getItems().get(0)).isEqualTo("Some text.");
 	}
@@ -100,7 +100,7 @@ class AddOperationUnitTests {
 		JsonNode node = mapper.readTree("\"Some text.\"");
 		JsonLateObjectEvaluator evaluator = new JsonLateObjectEvaluator(mapper, node);
 
-		AddOperation.of("/items/-", evaluator).perform(todo, Todo.class);
+		AddOperation.of("/items/-", evaluator).perform(todo, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todo.getItems().get(0)).isEqualTo("Some text.");
 	}
@@ -110,7 +110,7 @@ class AddOperationUnitTests {
 
 		Todo todo = new Todo(1L, "description", false);
 
-		AddOperation.of("/uninitialized/-", "Text").perform(todo, Todo.class);
+		AddOperation.of("/uninitialized/-", "Text").perform(todo, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todo.getUninitialized()).containsExactly("Text");
 	}
@@ -122,7 +122,7 @@ class AddOperationUnitTests {
 		todos.add(new Todo(1L, "A", false));
 
 		Todo todo = new Todo(2L, "B", true);
-		AddOperation.of("/1", todo).perform(todos, Todo.class);
+		AddOperation.of("/1", todo).perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos).element(1).isEqualTo(todo);
 	}
@@ -134,7 +134,8 @@ class AddOperationUnitTests {
 		todos.add(new Todo(1L, "A", false));
 
 		assertThatExceptionOfType(PatchException.class) //
-				.isThrownBy(() -> AddOperation.of("/2", new Todo(2L, "B", true)).perform(todos, Todo.class)) //
+				.isThrownBy(() -> AddOperation.of("/2", new Todo(2L, "B", true)).perform(todos, Todo.class,
+						TestPropertyPathContext.INSTANCE)) //
 				.withMessageContaining("index") //
 				.withMessageContaining("2") //
 				.withMessageContaining("1");
@@ -152,7 +153,8 @@ class AddOperationUnitTests {
 		TodoListWrapper outer = new TodoListWrapper(todoList);
 
 		Todo newTodo = new Todo(3L, "C", false);
-		AddOperation.of("/todoList/todos/-", newTodo).perform(outer, TodoListWrapper.class);
+		AddOperation.of("/todoList/todos/-", newTodo).perform(outer, TodoListWrapper.class,
+				TestPropertyPathContext.INSTANCE);
 
 		assertThat(outer.todoList.getTodos()).containsExactly(todos.get(0), todos.get(1), newTodo);
 	}
