@@ -35,9 +35,12 @@ import org.springframework.data.util.Streamable;
 public class Patch implements Streamable<PatchOperation> {
 
 	private final List<PatchOperation> operations;
+	private final BindContext context;
 
-	public Patch(List<PatchOperation> operations) {
+	public Patch(List<PatchOperation> operations, BindContext context) {
+
 		this.operations = operations;
+		this.context = context;
 	}
 
 	/**
@@ -60,7 +63,7 @@ public class Patch implements Streamable<PatchOperation> {
 	public <T> T apply(T in, Class<T> type) throws PatchException {
 
 		for (PatchOperation operation : operations) {
-			operation.perform(in, type);
+			operation.perform(in, type, context);
 		}
 
 		return in;
@@ -79,7 +82,7 @@ public class Patch implements Streamable<PatchOperation> {
 	public <T> List<T> apply(List<T> in, Class<T> type) throws PatchException {
 
 		for (PatchOperation operation : operations) {
-			operation.perform(in, type);
+			operation.perform(in, type, context);
 		}
 
 		return in;

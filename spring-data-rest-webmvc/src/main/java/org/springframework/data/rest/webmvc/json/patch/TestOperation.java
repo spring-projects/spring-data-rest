@@ -71,10 +71,10 @@ class TestOperation extends PatchOperation {
 	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	void perform(Object target, Class<?> type) {
+	void perform(Object target, Class<?> type, BindContext context) {
 
-		Object expected = normalizeIfNumber(evaluateValueFromTarget(target, type));
-		Object actual = normalizeIfNumber(path.bindTo(type).getValue(target));
+		Object expected = normalizeIfNumber(evaluateValueFromTarget(target, type, context));
+		Object actual = normalizeIfNumber(path.bindForRead(type, context).getValue(target));
 
 		if (!ObjectUtils.nullSafeEquals(expected, actual)) {
 			throw new PatchException("Test against path '" + path + "' failed.");

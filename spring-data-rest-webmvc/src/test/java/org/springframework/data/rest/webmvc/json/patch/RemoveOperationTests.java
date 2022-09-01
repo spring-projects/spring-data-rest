@@ -32,7 +32,7 @@ class RemoveOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		RemoveOperation.valueAt("/1/description").perform(todos, Todo.class);
+		RemoveOperation.valueAt("/1/description").perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.get(1).getDescription()).isNull();
 	}
@@ -45,7 +45,7 @@ class RemoveOperationTests {
 		todos.add(new Todo(2L, "B", false));
 		todos.add(new Todo(3L, "C", false));
 
-		RemoveOperation.valueAt("/1").perform(todos, Todo.class);
+		RemoveOperation.valueAt("/1").perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.size()).isEqualTo(2);
 		assertThat(todos.get(0).getDescription()).isEqualTo("A");

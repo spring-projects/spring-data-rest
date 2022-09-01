@@ -495,13 +495,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			@Qualifier("defaultMessageConverters") List<HttpMessageConverter<?>> defaultMessageConverters,
 			RootResourceInformationHandlerMethodArgumentResolver repoRequestArgumentResolver, Associations associationLinks,
 			BackendIdHandlerMethodArgumentResolver backendIdHandlerMethodArgumentResolver,
-			PersistentEntities persistentEntities) {
+			PersistentEntities entities) {
 
 		PluginRegistry<EntityLookup<?>, Class<?>> lookups = PluginRegistry.of(getEntityLookups());
+		DomainObjectReader reader = new DomainObjectReader(entities, associationLinks);
+		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities);
 
 		return new PersistentEntityResourceHandlerMethodArgumentResolver(defaultMessageConverters,
 				repoRequestArgumentResolver, backendIdHandlerMethodArgumentResolver,
-				new DomainObjectReader(persistentEntities, associationLinks), lookups);
+				reader, lookups, factory);
 	}
 
 	/**

@@ -19,14 +19,15 @@ import java.io.InputStream;
 
 import org.springframework.data.rest.webmvc.IncomingRequest;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
+import org.springframework.data.rest.webmvc.json.BindContextFactory;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
+import org.springframework.data.rest.webmvc.json.patch.BindContext;
 import org.springframework.data.rest.webmvc.json.patch.JsonPatchPatchConverter;
 import org.springframework.data.rest.webmvc.json.patch.Patch;
 import org.springframework.data.rest.webmvc.util.InputStreamHttpInputMessage;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -44,26 +45,23 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 class JsonPatchHandler {
 
-	private final ObjectMapper mapper;
-	private final ObjectMapper sourceMapper;
+	private final BindContextFactory factory;
 	private final DomainObjectReader reader;
 
 	/**
-	 * Creates a new {@link JsonPatchHandler} with the given {@link ObjectMapper} and {@link DomainObjectReader}.
+	 * Creates a new {@link JsonPatchHandler} with the given {@link JacksonBindContextFactory} and
+	 * {@link DomainObjectReader}.
 	 *
-	 * @param mapper must not be {@literal null}.
+	 * @param factory must not be {@literal null}.
 	 * @param reader must not be {@literal null}.
 	 */
-	public JsonPatchHandler(ObjectMapper mapper, DomainObjectReader reader) {
+	public JsonPatchHandler(BindContextFactory factory, DomainObjectReader reader) {
 
-		Assert.notNull(mapper, "ObjectMapper must not be null!");
-		Assert.notNull(reader, "DomainObjectReader must not be null!");
+		Assert.notNull(factory, "BindContextFactory must not be null");
+		Assert.notNull(reader, "DomainObjectReader must not be null");
 
-		this.mapper = mapper;
+		this.factory = factory;
 		this.reader = reader;
-
-		this.sourceMapper = mapper.copy();
-		this.sourceMapper.setSerializationInclusion(Include.NON_NULL);
 	}
 
 	/**
@@ -74,29 +72,33 @@ class JsonPatchHandler {
 	 * @return
 	 * @throws Exception
 	 */
-	public <T> T apply(IncomingRequest request, T target) throws Exception {
+	public <T> T apply(IncomingRequest request, T target, ObjectMapper mapper) throws Exception {
 
 		Assert.notNull(request, "Request must not be null!");
 		Assert.isTrue(request.isPatchRequest(), "Cannot handle non-PATCH request!");
 		Assert.notNull(target, "Target must not be null!");
 
 		if (request.isJsonPatchRequest()) {
-			return applyPatch(request.getBody(), target);
+			return applyPatch(request.getBody(), target, mapper);
 		} else {
-			return applyMergePatch(request.getBody(), target);
+			return applyMergePatch(request.getBody(), target, mapper);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	<T> T applyPatch(InputStream source, T target) throws Exception {
-		return getPatchOperations(source).apply(target, (Class<T>) target.getClass());
+	<T> T applyPatch(InputStream source, T target, ObjectMapper mapper) throws Exception {
+
+		Class<?> type = target.getClass();
+		BindContext context = factory.getBindContextFor(mapper);
+
+		return getPatchOperations(source, mapper, context).apply(target, (Class<T>) target.getClass());
 	}
 
-	<T> T applyMergePatch(InputStream source, T existingObject) throws Exception {
+	<T> T applyMergePatch(InputStream source, T existingObject, ObjectMapper mapper) throws Exception {
 		return reader.read(source, existingObject, mapper);
 	}
 
-	<T> T applyPut(ObjectNode source, T existingObject) throws Exception {
+	<T> T applyPut(ObjectNode source, T existingObject, ObjectMapper mapper) throws Exception {
 		return reader.readPut(source, existingObject, mapper);
 	}
 
@@ -104,13 +106,14 @@ class JsonPatchHandler {
 	 * Returns all {@link JsonPatchOperation}s to be applied.
 	 *
 	 * @param source must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
 	 * @return
 	 * @throws HttpMessageNotReadableException in case the payload can't be read.
 	 */
-	private Patch getPatchOperations(InputStream source) {
+	private Patch getPatchOperations(InputStream source, ObjectMapper mapper, BindContext context) {
 
 		try {
-			return new JsonPatchPatchConverter(mapper).convert(mapper.readTree(source));
+			return new JsonPatchPatchConverter(mapper, context).convert(mapper.readTree(source));
 		} catch (Exception o_O) {
 			throw new HttpMessageNotReadableException(
 					String.format("Could not read PATCH operations! Expected %s!", RestMediaTypes.JSON_PATCH_JSON), o_O,

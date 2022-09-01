@@ -36,12 +36,14 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 
 	private final ObjectMapper mapper;
+	private final BindContext context;
 
-	public JsonPatchPatchConverter(ObjectMapper mapper) {
+	public JsonPatchPatchConverter(ObjectMapper mapper, BindContext context) {
 
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
 		this.mapper = mapper;
+		this.context = context;
 	}
 
 	/**
@@ -87,7 +89,7 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 			}
 		}
 
-		return new Patch(ops);
+		return new Patch(ops, context);
 	}
 
 	private Object valueFromJsonNode(String path, JsonNode valueNode) {
