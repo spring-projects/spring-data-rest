@@ -42,11 +42,12 @@ class AddOperation extends PatchOperation {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
+	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class, org.springframework.data.rest.webmvc.json.PropertyFilter)
 	 */
 	@Override
-	void perform(Object targetObject, Class<?> type) {
-		path.bindTo(type).addValue(targetObject, evaluateValueFromTarget(targetObject, type));
+	void perform(Object target, Class<?> type, BindContext context) {
+
+		path.bindForWrite(type, context).addValue(target, evaluateValueFromTarget(target, type, context));
 	}
 
 	/*
@@ -54,12 +55,12 @@ class AddOperation extends PatchOperation {
 	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#evaluateValueFromTarget(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	protected Object evaluateValueFromTarget(Object targetObject, Class<?> entityType) {
+	protected Object evaluateValueFromTarget(Object targetObject, Class<?> entityType, BindContext context) {
 
 		if (!path.isAppend()) {
-			return super.evaluateValueFromTarget(targetObject, entityType);
+			return super.evaluateValueFromTarget(targetObject, entityType, context);
 		}
 
-		return evaluate(path.bindTo(entityType).getLeafType());
+		return evaluate(path.bindForWrite(entityType, context).getLeafType());
 	}
 }

@@ -36,6 +36,7 @@ import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
+import org.springframework.data.rest.webmvc.json.BindContextFactory;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
 import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
@@ -69,15 +70,15 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	private final List<HttpMessageConverter<?>> messageConverters;
 	private final RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver;
 	private final BackendIdHandlerMethodArgumentResolver idResolver;
-	private final DomainObjectReader reader;
 	private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
 	private final ConversionService conversionService = new DefaultConversionService();
+	private final JsonPatchHandler jsonPatchHandler;
 
 	public PersistentEntityResourceHandlerMethodArgumentResolver(
 			List<HttpMessageConverter<?>> messageConverters,
 			RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver,
 			BackendIdHandlerMethodArgumentResolver idResolver, DomainObjectReader reader,
-			PluginRegistry<EntityLookup<?>, Class<?>> lookups) {
+			PluginRegistry<EntityLookup<?>, Class<?>> lookups, BindContextFactory factory) {
 
 		Assert.notNull(messageConverters, "HttpMessageConverters must not be null!");
 		Assert.notNull(resourceInformationResolver, "RootResourceInformation resolver must not be null!");
@@ -88,8 +89,8 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 		this.messageConverters = messageConverters;
 		this.resourceInformationResolver = resourceInformationResolver;
 		this.idResolver = idResolver;
-		this.reader = reader;
 		this.lookups = lookups;
+		this.jsonPatchHandler = new JsonPatchHandler(mapper -> factory.getBindContextFor(mapper), reader);
 	}
 
 	/*
@@ -210,8 +211,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 		try {
 
-			JsonPatchHandler handler = new JsonPatchHandler(mapper, reader);
-			return handler.apply(request, existingObject);
+			return jsonPatchHandler.apply(request, existingObject, mapper);
 
 		} catch (Exception o_O) {
 
@@ -228,10 +228,9 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 		try {
 
-			JsonPatchHandler handler = new JsonPatchHandler(mapper, reader);
 			JsonNode jsonNode = mapper.readTree(request.getBody());
 
-			return handler.applyPut((ObjectNode) jsonNode, existingObject);
+			return jsonPatchHandler.applyPut((ObjectNode) jsonNode, existingObject, mapper);
 
 		} catch (Exception o_O) {
 			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, existingObject.getClass()), o_O,

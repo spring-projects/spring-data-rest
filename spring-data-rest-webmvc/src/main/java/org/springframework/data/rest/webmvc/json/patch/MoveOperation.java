@@ -75,7 +75,7 @@ class MoveOperation extends PatchOperation {
 	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	void perform(Object target, Class<?> type) {
-		path.bindTo(type).moveFrom(from, target);
+	void perform(Object target, Class<?> type, BindContext context) {
+		path.bindForWrite(type, context).moveFrom(from, target, context);
 	}
 }

@@ -44,7 +44,7 @@ class RemoveOperation extends PatchOperation {
 	 * @see org.springframework.data.rest.webmvc.json.patch.PatchOperation#perform(java.lang.Object, java.lang.Class)
 	 */
 	@Override
-	void perform(Object target, Class<?> type) {
-		path.bindTo(type).removeFrom(target);
+	void perform(Object target, Class<?> type, BindContext context) {
+		path.bindForWrite(type, context).removeFrom(target);
 	}
 }

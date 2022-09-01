@@ -59,8 +59,8 @@ public abstract class PatchOperation {
 	 * @return the result of late-value evaluation if the value is a {@link LateObjectEvaluator}; the value itself
 	 *         otherwise.
 	 */
-	protected Object evaluateValueFromTarget(Object targetObject, Class<?> entityType) {
-		return evaluate(path.bindTo(entityType).getType(targetObject));
+	protected Object evaluateValueFromTarget(Object targetObject, Class<?> entityType, BindContext context) {
+		return evaluate(path.bindForRead(entityType, context).getType(targetObject));
 	}
 
 	protected final Object evaluate(Class<?> type) {
@@ -73,5 +73,5 @@ public abstract class PatchOperation {
 	 * @param target the target of the operation, must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 */
-	abstract void perform(Object target, Class<?> type);
+	abstract void perform(Object target, Class<?> type, BindContext context);
 }

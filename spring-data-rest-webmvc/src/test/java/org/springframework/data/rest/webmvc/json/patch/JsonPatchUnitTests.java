@@ -161,7 +161,7 @@ class JsonPatchUnitTests {
 
 		ClassPathResource resource = new ClassPathResource(jsonPatchFile, getClass());
 		JsonNode node = new ObjectMapper().readValue(resource.getInputStream(), JsonNode.class);
-		Patch patch = new JsonPatchPatchConverter(new ObjectMapper()).convert(node);
+		Patch patch = new JsonPatchPatchConverter(new ObjectMapper(), TestPropertyPathContext.INSTANCE).convert(node);
 
 		return patch;
 	}

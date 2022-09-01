@@ -35,8 +35,8 @@ class MoveOperationUnitTests {
 		MoveOperation move = MoveOperation.from("/0/complete").to("/1/complete");
 
 		assertThatExceptionOfType(PatchException.class)
-				.isThrownBy(() -> move.perform(todos, Todo.class))
-				.withMessage("Path '/0/complete' is not nullable.");
+				.isThrownBy(() -> move.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE))
+				.withMessage("Path '/0/complete' is not nullable");
 
 		assertThat(todos.get(1).isComplete()).isFalse();
 	}
@@ -50,7 +50,7 @@ class MoveOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		MoveOperation move = MoveOperation.from("/0/description").to("/1/description");
-		move.perform(todos, Todo.class);
+		move.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.get(1).getDescription()).isEqualTo("A");
 	}
@@ -66,8 +66,8 @@ class MoveOperationUnitTests {
 		MoveOperation move = MoveOperation.from("/0/complete").to("/1/description");
 
 		assertThatExceptionOfType(PatchException.class)
-				.isThrownBy(() -> move.perform(todos, Todo.class))
-				.withMessage("Path '/0/complete' is not nullable.");
+				.isThrownBy(() -> move.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE))
+				.withMessage("Path '/0/complete' is not nullable");
 
 		assertThat(todos.get(1).getDescription()).isEqualTo("B");
 	}
@@ -89,7 +89,7 @@ class MoveOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		MoveOperation move = MoveOperation.from("/1").to("/0");
-		move.perform(todos, Todo.class);
+		move.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.size()).isEqualTo(3);
 		assertThat(todos.get(0).getId().longValue()).isEqualTo(2L);
@@ -106,7 +106,7 @@ class MoveOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		MoveOperation move = MoveOperation.from("/0").to("/2");
-		move.perform(todos, Todo.class);
+		move.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.size()).isEqualTo(3);
 		assertThat(todos.get(2).getId().longValue()).isEqualTo(1L);
@@ -123,7 +123,7 @@ class MoveOperationUnitTests {
 		todos.add(new Todo(3L, "C", false));
 
 		MoveOperation move = MoveOperation.from("/0").to("/2");
-		move.perform(todos, Todo.class);
+		move.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos.size()).isEqualTo(3);
 		assertThat(todos.get(2).getId().longValue()).isEqualTo(1L);
@@ -147,7 +147,7 @@ class MoveOperationUnitTests {
 		expected.add(new Todo(4L, "E", false));
 
 		MoveOperation move = MoveOperation.from("/-").to("/1");
-		move.perform(todos, Todo.class);
+		move.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos).isEqualTo(expected);
 	}
@@ -168,7 +168,7 @@ class MoveOperationUnitTests {
 		expected.add(new Todo(2L, "G", false));
 
 		MoveOperation move = MoveOperation.from("/1").to("/-");
-		move.perform(todos, Todo.class);
+		move.perform(todos, Todo.class, TestPropertyPathContext.INSTANCE);
 
 		assertThat(todos).isEqualTo(expected);
 	}
