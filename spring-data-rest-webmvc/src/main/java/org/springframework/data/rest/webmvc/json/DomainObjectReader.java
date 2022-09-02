@@ -61,6 +61,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Craig Andrews
  * @author Mathias Düsterhöft
  * @author Thomas Mrozinski
+ * @author Bas Schoenmaeckers
  * @since 2.2
  */
 public class DomainObjectReader {
@@ -247,8 +248,12 @@ public class DomainObjectReader {
 			String fieldName = entry.getKey();
 
 			if (!mappedProperties.isWritableProperty(fieldName)) {
+				PropertyAccessor targetPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(target);
 
-				i.remove();
+				if (!targetPropertyAccessor.isWritableProperty(fieldName)) {
+					i.remove();
+				}
+
 				continue;
 			}
 
