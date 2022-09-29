@@ -5,10 +5,11 @@ NOTE: The following steps are unnecessary if you use Spring Boot. For Boot appli
 
 You can integrate Spring Data REST with an existing Spring MVC application. In your Spring MVC configuration (most likely where you configure your MVC resources), add a bean reference to the Java configuration class that is responsible for configuring the `RepositoryRestController`. The class name is `org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration`. The following example shows how to use an `@Import` annotation to add the proper reference:
 
-In Java, this would look like:
+The configuration would look like:
 
 ====
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import org.springframework.context.annotation.Import;
 import org.springframework.data.rest.webmvc.RepositoryRestMvcConfiguration;
@@ -20,12 +21,9 @@ public class MyApplicationConfiguration {
   …
 }
 ----
-====
 
-The following example shows the corresponding XML configuration:
-
-====
-[source,xml]
+.XML
+[source,xml,role="secondary"]
 ----
 <bean class="org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration"/>
 ----

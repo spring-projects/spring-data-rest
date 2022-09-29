@@ -1,7 +1,7 @@
 [[customizing-sdr.customizing-json-output]]
 = Customizing the JSON Output
 
-Sometimes in your application, you need to provide links to other resources from a particular entity. For example, a `Customer` response might be enriched with links to a current shopping cart or links to manage resources related to that entity. Spring Data REST provides integration with https://github.com/SpringSource/spring-hateoas[Spring HATEOAS] and provides an extension hook that lets you alter the representation of resources that go out to the client.
+Sometimes in your application, you need to provide links to other resources from a particular entity. For example, a `Customer` response might be enriched with links to a current shopping cart or links to manage resources related to that entity. Spring Data REST provides integration with https://github.com/spring-projects/spring-hateoas[Spring HATEOAS] and provides an extension hook that lets you alter the representation of resources that go out to the client.
 
 [[customizing-sdr.customizing-json-output.representation-model-processor]]
 == The `RepresentationModelProcessor` Interface
