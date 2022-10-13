@@ -31,7 +31,6 @@
 		<springdata.commons>3.0.0-SNAPSHOT</springdata.commons>
 		<springdata.jpa>3.0.0-SNAPSHOT</springdata.jpa>
 		<springdata.mongodb>4.0.0-SNAPSHOT</springdata.mongodb>
-		<springdata.geode>3.0.0-SNAPSHOT</springdata.geode>
 		<springdata.keyvalue>3.0.0-SNAPSHOT</springdata.keyvalue>
 		<servlet.version>5.0.0</servlet.version>
 
