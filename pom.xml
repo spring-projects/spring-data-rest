@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>3.0.0-RC2</version>
+		<version>3.0.0-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 
@@ -28,10 +28,10 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-rest</dist.id>
 
-		<springdata.commons>3.0.0-RC2</springdata.commons>
-		<springdata.jpa>3.0.0-RC2</springdata.jpa>
-		<springdata.mongodb>4.0.0-RC2</springdata.mongodb>
-		<springdata.keyvalue>3.0.0-RC2</springdata.keyvalue>
+		<springdata.commons>3.0.0-SNAPSHOT</springdata.commons>
+		<springdata.jpa>3.0.0-SNAPSHOT</springdata.jpa>
+		<springdata.mongodb>4.0.0-SNAPSHOT</springdata.mongodb>
+		<springdata.keyvalue>3.0.0-SNAPSHOT</springdata.keyvalue>
 		<servlet.version>5.0.0</servlet.version>
 
 		<hibernate.version>6.1.1.Final</hibernate.version>
@@ -139,8 +139,8 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-milestone</id>
-			<url>https://repo.spring.io/libs-milestone</url>
+			<id>spring-libs-snapshot</id>
+			<url>https://repo.spring.io/libs-snapshot</url>
 		</repository>
 	</repositories>
 
