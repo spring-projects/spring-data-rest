@@ -32,7 +32,6 @@
 		<springdata.jpa>3.0.0-SNAPSHOT</springdata.jpa>
 		<springdata.mongodb>4.0.0-SNAPSHOT</springdata.mongodb>
 		<springdata.keyvalue>3.0.0-SNAPSHOT</springdata.keyvalue>
-		<servlet.version>5.0.0</servlet.version>
 
 		<hibernate.version>6.1.1.Final</hibernate.version>
 	</properties>
