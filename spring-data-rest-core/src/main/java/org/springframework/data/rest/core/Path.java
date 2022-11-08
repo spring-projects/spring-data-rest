@@ -17,6 +17,7 @@ package org.springframework.data.rest.core;
 
 import java.util.regex.Pattern;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
@@ -103,7 +104,7 @@ public class Path {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

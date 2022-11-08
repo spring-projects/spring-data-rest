@@ -173,7 +173,7 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 		}
 
 		@Override
-		public boolean equals(final java.lang.Object o) {
+		public boolean equals(@Nullable final java.lang.Object o) {
 
 			if (o == this) {
 				return true;

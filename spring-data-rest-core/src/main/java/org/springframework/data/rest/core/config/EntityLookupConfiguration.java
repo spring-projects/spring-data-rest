@@ -29,6 +29,7 @@ import org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupReg
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.util.MethodInvocationRecorder;
 import org.springframework.data.util.StreamUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -238,7 +239,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		}
 
 		@Override
-		public boolean equals(final java.lang.Object o) {
+		public boolean equals(@Nullable final java.lang.Object o) {
 
 			if (o == this) {
 				return true;

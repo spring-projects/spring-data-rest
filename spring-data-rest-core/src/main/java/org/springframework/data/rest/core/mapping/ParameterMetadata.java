@@ -18,6 +18,7 @@ package org.springframework.data.rest.core.mapping;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.hateoas.LinkRelation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -71,7 +72,7 @@ public final class ParameterMetadata {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;
