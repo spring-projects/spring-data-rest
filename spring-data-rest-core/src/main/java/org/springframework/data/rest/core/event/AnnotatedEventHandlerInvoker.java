@@ -33,6 +33,7 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.annotation.*;
 import org.springframework.data.util.ProxyUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.LinkedMultiValueMap;
@@ -191,7 +192,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		}
 
 		@Override
-		public boolean equals(final java.lang.Object o) {
+		public boolean equals(@Nullable final java.lang.Object o) {
 
 			if (o == this) {
 				return true;

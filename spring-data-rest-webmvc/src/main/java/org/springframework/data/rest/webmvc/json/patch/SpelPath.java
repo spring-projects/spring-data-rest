@@ -93,7 +93,7 @@ class SpelPath {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;
@@ -173,7 +173,7 @@ class SpelPath {
 			}
 
 			@Override
-			public boolean equals(Object o) {
+			public boolean equals(@Nullable Object o) {
 
 				if (o == this) {
 					return true;
@@ -529,7 +529,7 @@ class SpelPath {
 			}
 
 			@Override
-			public boolean equals(Object o) {
+			public boolean equals(@Nullable Object o) {
 
 				if (o == this) {
 					return true;
@@ -691,7 +691,7 @@ class SpelPath {
 			}
 
 			@Override
-			public boolean equals(Object o) {
+			public boolean equals(@Nullable Object o) {
 
 				if (o == this) {
 					return true;
@@ -721,7 +721,7 @@ class SpelPath {
 		}
 
 		@Override
-		public boolean equals(final java.lang.Object o) {
+		public boolean equals(@Nullable final java.lang.Object o) {
 
 			if (o == this) {
 				return true;

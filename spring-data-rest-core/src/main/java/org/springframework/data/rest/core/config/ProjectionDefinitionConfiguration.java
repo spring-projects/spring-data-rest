@@ -24,6 +24,7 @@ import java.util.Set;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
 import org.springframework.data.util.ProxyUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -225,7 +226,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 		}
 
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (o == this) {
 				return true;
