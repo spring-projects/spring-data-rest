@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -50,19 +49,20 @@ class LocalConfigCorsIntegrationTests extends AbstractWebIntegrationTests {
 	/**
 	 * @see ItemRepository
 	 */
-	@Test // DATAREST-1397
+	@Test // DATAREST-1397, #2208
 	void appliesRepositoryCorsConfiguration() throws Exception {
 
-		Link findItems = client.discoverUnique(LinkRelation.of("items"));
+		var findItems = client.discoverUnique(LinkRelation.of("items"));
 
 		// Preflight request
-		String header = mvc
-				.perform(options(findItems.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.example")
-						.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
-				.andExpect(status().isOk()) //
-				.andReturn().getResponse().getHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS);
+		var request = options(findItems.expand().getHref()) //
+				.header(HttpHeaders.ORIGIN, "https://far.far.example") //
+				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST");
 
-		assertThat(header.split(","))
+		var response = mvc.perform(request).andExpect(status().isOk()).andReturn().getResponse();
+
+		assertThat(response.getHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN)).isEqualTo("*");
+		assertThat(response.getHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).split(","))
 				.containsExactlyInAnyOrderElementsOf(
 						RepositoryRestHandlerMapping.DEFAULT_ALLOWED_METHODS.map(HttpMethod::name));
 	}
