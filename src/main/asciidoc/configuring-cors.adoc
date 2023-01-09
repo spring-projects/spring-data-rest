@@ -3,7 +3,7 @@
 
 For security reasons, browsers prohibit AJAX calls to resources residing outside the current origin. When working with client-side HTTP requests issued by a browser, you want to enable specific HTTP resources to be accessible.
 
-Spring Data REST, as of 2.6, supports https://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-Origin Resource Sharing] (CORS) through https://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/web.html#mvc-cors[Spring's CORS] support.
+Spring Data REST, as of 2.6, supports https://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-Origin Resource Sharing] (CORS) through https://docs.spring.io/spring-framework/docs/{springVersion}/reference/html/web.html#mvc-cors[Spring's CORS] support.
 
 [[customizing-sdr.configuring-cors.config]]
 == Repository Interface CORS Configuration
@@ -35,7 +35,7 @@ The preceding example enables CORS support for the whole `PersonRepository` by p
 [[customizing-sdr.configuring-cors.controller-config]]
 == Repository REST Controller Method CORS Configuration
 
-Spring Data REST fully supports https://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/web.html#controller-method-cors-configuration[Spring Web MVC's controller method configuration] on custom REST controllers that share repository base paths, as the following example shows:
+Spring Data REST fully supports https://docs.spring.io/spring-framework/docs/{springVersion}/reference/html/web.html#mvc-cors-controller[Spring Web MVC's controller method configuration] on custom REST controllers that share repository base paths, as the following example shows:
 
 ====
 [source, java]
