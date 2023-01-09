@@ -59,7 +59,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-hibernate5-jakarta</artifactId>
-			<version>2.13.4</version>
 		</dependency>
 
 	</dependencies>

@@ -23,7 +23,6 @@
 
 	<properties>
 		<groovy.version>2.4.4</groovy.version>
-		<source.level>1.8</source.level>
 	</properties>
 
 	<dependencies>
