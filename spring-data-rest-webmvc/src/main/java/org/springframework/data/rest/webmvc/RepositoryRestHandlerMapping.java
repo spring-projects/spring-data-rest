@@ -42,6 +42,7 @@ import org.springframework.util.StringValueResolver;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.filter.ServerHttpObservationFilter;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.condition.PathPatternsRequestCondition;
 import org.springframework.web.servlet.mvc.condition.ProducesRequestCondition;
@@ -242,8 +243,12 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		PathPatternParser parser = getPatternParser();
 		parser = parser != null ? parser : PARSER;
 
-		request.setAttribute(EFFECTIVE_LOOKUP_PATH_ATTRIBUTE,
-				parser.parse(pattern.replace("/{repository}", repositoryBasePath)));
+		var repositorySpecificPattern = pattern.replace("/{repository}", repositoryBasePath);
+
+		ServerHttpObservationFilter.findObservationContext(request)
+				.ifPresent(context -> context.setPathPattern(repositorySpecificPattern));
+
+		request.setAttribute(EFFECTIVE_LOOKUP_PATH_ATTRIBUTE, parser.parse(repositorySpecificPattern));
 	}
 
 	private static String getPattern(RequestMappingInfo info, HttpServletRequest request) {
