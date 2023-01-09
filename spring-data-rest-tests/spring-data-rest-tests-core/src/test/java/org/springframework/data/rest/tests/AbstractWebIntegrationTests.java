@@ -20,8 +20,17 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import io.micrometer.observation.ObservationRegistry;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import net.minidev.json.JSONArray;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -35,6 +44,7 @@ import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.server.observation.ServerRequestObservationContext;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -47,6 +57,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.ServerHttpObservationFilter;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
 import com.jayway.jsonpath.InvalidPathException;
@@ -74,6 +85,7 @@ public abstract class AbstractWebIntegrationTests {
 
 	protected TestMvcClient client;
 	protected MockMvc mvc;
+	protected ServerRequestObservationContext observationContext;
 
 	@BeforeEach
 	public void setUp() {
@@ -82,8 +94,10 @@ public abstract class AbstractWebIntegrationTests {
 	}
 
 	protected void setupMockMvc() {
-		this.mvc = MockMvcBuilders.webAppContextSetup(context)//
-				.defaultRequest(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)).build();
+		this.mvc = MockMvcBuilders.webAppContextSetup(context) //
+				.defaultRequest(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)) //
+				.addFilters(new FilterImplementation()) //
+				.build();
 	}
 
 	protected MockHttpServletResponse postAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
@@ -262,5 +276,25 @@ public abstract class AbstractWebIntegrationTests {
 
 	protected MultiValueMap<LinkRelation, String> getRootAndLinkedResources() {
 		return new LinkedMultiValueMap<LinkRelation, String>(0);
+	}
+
+	/**
+	 * Unconditionally registers a {@link ServerRequestObservationContext}. Required to be done explicitly as
+	 * {@link ServerHttpObservationFilter} avoids the context registration in case of a NoOp-{@link ObservationRegistry}.
+	 *
+	 * @author Oliver Drotbohm
+	 */
+	private class FilterImplementation implements Filter {
+
+		@Override
+		public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+				throws IOException, ServletException {
+
+			observationContext = new ServerRequestObservationContext((HttpServletRequest) request,
+					(HttpServletResponse) response);
+			request.setAttribute(ServerHttpObservationFilter.CURRENT_OBSERVATION_CONTEXT_ATTRIBUTE, observationContext);
+
+			chain.doFilter(request, response);
+		}
 	}
 }

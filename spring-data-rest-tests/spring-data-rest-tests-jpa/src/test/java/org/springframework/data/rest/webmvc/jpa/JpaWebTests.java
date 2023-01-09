@@ -753,6 +753,14 @@ public class JpaWebTests extends CommonWebTests {
 				.andExpect(status().isOk());
 	}
 
+	@Test // #2212
+	void exposesRepositoryPatternForObservation() throws Exception {
+
+		mvc.perform(get("/authors/42"));
+
+		assertThat(observationContext.getPathPattern()).isEqualTo("/authors/{id}");
+	}
+
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
 
 		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
