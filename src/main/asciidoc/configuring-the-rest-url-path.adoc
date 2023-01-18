@@ -107,7 +107,7 @@ The preceding example results in the following link value:
 ----
 ====
 
-NOTE: These snippets of JSON assume you use Spring Data REST's default format of http://stateless.co/hal_specification.html[HAL]. You can turn off HAL, which would cause the output to look different. However, your ability to override `rel` names is totally independent of the rendering format.
+NOTE: These snippets of JSON assume you use Spring Data REST's default format of https://stateless.co/hal_specification.html[HAL]. You can turn off HAL, which would cause the output to look different. However, your ability to override `rel` names is totally independent of the rendering format.
 
 You can change the `rel` of a repository, as the following example shows:
 
