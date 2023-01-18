@@ -85,4 +85,4 @@ public class RepositoryConfiguration {
 ----
 ====
 
-NOTE: Spring Data REST events are customized https://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/core.html#context-functionality-events[Spring application events]. By default, Spring events are synchronous, unless they get republished across a boundary (such as issuing a WebSocket event or crossing into a thread).
+NOTE: Spring Data REST events are customized link:{springDocsUrl}/core.html#context-functionality-events[Spring application events]. By default, Spring events are synchronous, unless they get republished across a boundary (such as issuing a WebSocket event or crossing into a thread).
