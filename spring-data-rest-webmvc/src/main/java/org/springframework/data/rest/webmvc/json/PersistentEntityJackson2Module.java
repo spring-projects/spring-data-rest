@@ -487,10 +487,18 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @author Oliver Drotbohm
 		 * @see https://github.com/FasterXML/jackson-databind/issues/2367
 		 */
-		static class ValueInstantiatorCustomizer {
+		public static class ValueInstantiatorCustomizer {
+
+			public static final Field CONSTRUCTOR_ARGS_FIELD;
 
 			private final SettableBeanProperty[] properties;
 			private final StdValueInstantiator instantiator;
+
+			static {
+
+				CONSTRUCTOR_ARGS_FIELD = ReflectionUtils.findField(StdValueInstantiator.class, "_constructorArguments");
+				ReflectionUtils.makeAccessible(CONSTRUCTOR_ARGS_FIELD);
+			}
 
 			ValueInstantiatorCustomizer(ValueInstantiator instantiator, DeserializationConfig config) {
 
@@ -535,9 +543,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					return builder;
 				}
 
-				Field field = ReflectionUtils.findField(StdValueInstantiator.class, "_constructorArguments");
-				ReflectionUtils.makeAccessible(field);
-				ReflectionUtils.setField(field, instantiator, properties);
+				ReflectionUtils.setField(CONSTRUCTOR_ARGS_FIELD, instantiator, properties);
 
 				builder.setValueInstantiator(instantiator);
 
