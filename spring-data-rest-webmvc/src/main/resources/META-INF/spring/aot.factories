@@ -1,3 +1,5 @@
 org.springframework.beans.factory.aot.BeanRegistrationAotProcessor=\
     org.springframework.data.rest.webmvc.aot.BasePathAwareControllerAotProcessor,\
     org.springframework.data.rest.webmvc.aot.ProjectionProxyAotProcessor
+org.springframework.aot.hint.RuntimeHintsRegistrar=\
+    org.springframework.data.rest.webmvc.aot.ValueInstantiatorCustomizerRuntimeHints
