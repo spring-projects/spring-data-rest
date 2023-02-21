@@ -390,7 +390,7 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Set whether to return a response body after deleting an entity.
 	 *
-	 * @param returnBodyOnUpdate can be {@literal null}, expressing the decision shall be derived from the presence of an
+	 * @param returnBodyOnDelete can be {@literal null}, expressing the decision shall be derived from the presence of an
 	 *          {@code Accept} header in the request.
 	 * @return {@literal this}
 	 * @since 4.1
