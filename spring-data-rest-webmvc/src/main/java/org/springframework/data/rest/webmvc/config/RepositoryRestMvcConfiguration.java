@@ -121,6 +121,7 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringValueResolver;
+import org.springframework.validation.Validator;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -653,6 +654,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 */
 	@Bean
 	public RequestMappingHandlerAdapter repositoryExporterHandlerAdapter(
+			@Qualifier("mvcValidator") ObjectProvider<Validator> validator,
 			@Qualifier("defaultMessageConverters") List<HttpMessageConverter<?>> defaultMessageConverters,
 			AlpsJsonHttpMessageConverter alpsJsonHttpMessageConverter, SelfLinkProvider selfLinkProvider,
 			PersistentEntityResourceHandlerMethodArgumentResolver persistentEntityArgumentResolver,
@@ -662,6 +664,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		// Forward conversion service to handler adapter
 		ConfigurableWebBindingInitializer initializer = new ConfigurableWebBindingInitializer();
 		initializer.setConversionService(defaultConversionService);
+		initializer.setValidator(validator.getIfUnique());
 
 		RepositoryRestHandlerAdapter handlerAdapter = new RepositoryRestHandlerAdapter(defaultMethodArgumentResolvers(
 				selfLinkProvider, persistentEntityArgumentResolver, repoRequestArgumentResolver));
