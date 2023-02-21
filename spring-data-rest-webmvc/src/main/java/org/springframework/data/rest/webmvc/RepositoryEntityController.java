@@ -198,10 +198,7 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			throw new ResourceNotFoundException();
 		}
 
-		Iterable<?> results = pageable.getPageable() != null //
-				? invoker.invokeFindAll(pageable.getPageable()) //
-				: invoker.invokeFindAll(sort);
-
+		Iterable<?> results = invoker.invokeFindAll(pageable.getPageable());
 		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
 		Optional<Link> baseLink = Optional.of(getDefaultSelfLink());
 
