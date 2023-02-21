@@ -287,6 +287,10 @@ The `PATCH` method supports the following media types:
 ==== `DELETE`
 
 The `DELETE` method deletes the resource exposed.
+By default, whether the response contains a body is controlled by the `Accept` header sent with the request.
+If the request header is present, a response body and a status code of `200 OK` is returned.
+If no header is present, the response body is empty and a successful request returns a status of `204 No Content`.
+This behavior can be overridden by configuring `RepositoryRestConfiguration.setReturnBodyOnDelete(…)` accordingly.
 
 ===== Methods used for invocation
 
