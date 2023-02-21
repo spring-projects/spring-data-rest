@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import lombok.Data;
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.springframework.data.rest.webmvc.json.BindContextFactory;
 import org.springframework.data.rest.webmvc.json.PersistentEntitiesBindContextFactory;
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.WritingOperations;
+import org.springframework.format.support.DefaultFormattingConversionService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -57,7 +59,8 @@ class SpelPathUnitTests {
 		context.getPersistentEntity(Person.class);
 
 		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
-		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities);
+		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities,
+				new DefaultFormattingConversionService());
 
 		this.context = factory.getBindContextFor(new ObjectMapper());
 	}
@@ -167,6 +170,18 @@ class SpelPathUnitTests {
 		assertThat(path.getExpressionString()).isEqualTo("renamed");
 	}
 
+	@Test // #2233
+	void bindsDatesProperly() {
+
+		Person person = new Person();
+
+		SpelPath.untyped("/birthday")
+				.bindForWrite(Person.class, context)
+				.setValue(person, "2000-01-01");
+
+		assertThat(person.birthday).isEqualTo(LocalDate.of(2000, 1, 1));
+	}
+
 	// DATAREST-1338
 
 	@Data
@@ -175,6 +190,7 @@ class SpelPathUnitTests {
 		@JsonIgnore String hiddenProperty;
 		@Getter(onMethod = @__(@JsonIgnore)) String hiddenGetter;
 		@JsonProperty("demaner") String renamed;
+		LocalDate birthday;
 	}
 
 	@Data

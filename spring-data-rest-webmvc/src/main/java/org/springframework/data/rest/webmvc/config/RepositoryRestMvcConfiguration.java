@@ -496,7 +496,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		PluginRegistry<EntityLookup<?>, Class<?>> lookups = PluginRegistry.of(getEntityLookups());
 		DomainObjectReader reader = new DomainObjectReader(entities, associationLinks);
-		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities);
+		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities, defaultConversionService);
 
 		return new PersistentEntityResourceHandlerMethodArgumentResolver(defaultMessageConverters,
 				repoRequestArgumentResolver, backendIdHandlerMethodArgumentResolver,

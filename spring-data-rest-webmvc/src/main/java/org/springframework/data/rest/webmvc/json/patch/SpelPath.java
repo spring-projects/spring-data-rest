@@ -35,7 +35,6 @@ import org.springframework.expression.ExpressionException;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.SpelMessage;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -130,7 +129,7 @@ class SpelPath {
 			return READ_PATHS.computeIfAbsent(CacheKey.of(type, this, context),
 					key -> {
 						String mapped = new JsonPointerMapping(context).forRead(key.path.path, type);
-						return new TypedSpelPath(mapped, key.type);
+						return new TypedSpelPath(mapped, key.type, context.getEvaluationContext());
 					});
 		}
 
@@ -148,7 +147,7 @@ class SpelPath {
 			return WRITE_PATHS.computeIfAbsent(CacheKey.of(type, this, context),
 					key -> {
 						String mapped = new JsonPointerMapping(context).forWrite(key.path.path, type);
-						return new TypedSpelPath(mapped, key.type);
+						return new TypedSpelPath(mapped, key.type, context.getEvaluationContext());
 					});
 		}
 
@@ -233,17 +232,18 @@ class SpelPath {
 
 		private static final String INVALID_PATH_REFERENCE = "Invalid path reference %s on type %s";
 		private static final String INVALID_COLLECTION_INDEX = "Invalid collection index %s for collection of size %s; Use '…/-' or the collection's actual size as index to append to it";
-		private static final EvaluationContext CONTEXT = SimpleEvaluationContext.forReadWriteDataBinding().build();
 
 		private final Expression expression;
 		private final Class<?> type;
+		private final EvaluationContext context;
 
-		private TypedSpelPath(String path, Class<?> type) {
+		private TypedSpelPath(String path, Class<?> type, EvaluationContext context) {
 
 			super(path);
 
 			this.type = type;
 			this.expression = toSpel(path, type);
+			this.context = context;
 		}
 
 		/**
@@ -258,7 +258,7 @@ class SpelPath {
 			Assert.notNull(target, "Target must not be null");
 
 			try {
-				return (T) expression.getValue(CONTEXT, target);
+				return (T) expression.getValue(context, target);
 			} catch (ExpressionException o_O) {
 				throw new PatchException("Unable to get value from target", o_O);
 			}
@@ -274,7 +274,7 @@ class SpelPath {
 
 			Assert.notNull(target, "Target must not be null");
 
-			expression.setValue(CONTEXT, target, value);
+			expression.setValue(context, target, value);
 		}
 
 		/**
@@ -306,7 +306,7 @@ class SpelPath {
 
 			try {
 
-				return expression.getValueType(CONTEXT, root);
+				return expression.getValueType(context, root);
 
 			} catch (SpelEvaluationException o_O) {
 
@@ -436,11 +436,11 @@ class SpelPath {
 		}
 
 		private TypedSpelPath getParent() {
-			return new TypedSpelPath(path.substring(0, path.lastIndexOf('/')), type);
+			return new TypedSpelPath(path.substring(0, path.lastIndexOf('/')), type, context);
 		}
 
 		private TypeDescriptor getTypeDescriptor(Object target) {
-			return expression.getValueTypeDescriptor(CONTEXT, target);
+			return expression.getValueTypeDescriptor(context, target);
 		}
 
 		private Integer getTargetListIndex() {
