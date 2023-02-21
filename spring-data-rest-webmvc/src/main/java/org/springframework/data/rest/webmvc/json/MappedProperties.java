@@ -151,6 +151,10 @@ class MappedProperties {
 		return new MappedProperties(entity, description);
 	}
 
+	public static MappedProperties forDescription(PersistentEntity<?, ?> entity, BeanDescription description) {
+		return new MappedProperties(entity, description);
+	}
+
 	public static MappedProperties none() {
 		return new MappedProperties(Collections.emptyMap(), Collections.emptyMap(), Collections.emptySet(),
 				Collections.emptySet(), false);
