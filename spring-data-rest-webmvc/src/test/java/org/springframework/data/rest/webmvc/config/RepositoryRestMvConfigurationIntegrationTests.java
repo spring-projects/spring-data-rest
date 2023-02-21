@@ -44,6 +44,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
+import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
@@ -61,6 +62,9 @@ import org.springframework.http.converter.json.AbstractJackson2HttpMessageConver
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
+import org.springframework.validation.Validator;
+import org.springframework.validation.beanvalidation.OptionalValidatorFactoryBean;
+import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -193,6 +197,18 @@ class RepositoryRestMvConfigurationIntegrationTests {
 		assertThat(service.canConvert(Distance.class, String.class)).isTrue();
 	}
 
+	@Test // DATAREST-593 / #967
+	void assertValidatorSupportWorkingCorrectly() {
+
+		RepositoryRestHandlerAdapter repositoryRestHandlerAdapter = context.getBean("repositoryExporterHandlerAdapter",
+				RepositoryRestHandlerAdapter.class);
+
+		ConfigurableWebBindingInitializer configurableWebBindingInitializer = (ConfigurableWebBindingInitializer) repositoryRestHandlerAdapter
+				.getWebBindingInitializer();
+
+		assertThat(configurableWebBindingInitializer.getValidator()).isNotNull();
+	}
+
 	@Test // DATAREST-1198
 	void hasConvertersForNamAndLdapName() {
 
@@ -312,6 +328,11 @@ class RepositoryRestMvConfigurationIntegrationTests {
 					return ExtendingConfiguration.collector;
 				}
 			};
+		}
+
+		@Bean
+		Validator mvcValidator() {
+			return new OptionalValidatorFactoryBean();
 		}
 	}
 
