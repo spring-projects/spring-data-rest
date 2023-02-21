@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.webmvc.json.patch.BindContext;
 import org.springframework.util.Assert;
@@ -29,21 +30,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class PersistentEntitiesBindContextFactory implements BindContextFactory {
 
 	private final PersistentEntities entities;
+	private final ConversionService conversionService;
 
 	/**
 	 * Creates a new {@link PersistentEntitiesBindContextFactory} for the given {@link PersistentEntities}.
 	 *
 	 * @param entities must not be {@literal null}.
 	 */
-	public PersistentEntitiesBindContextFactory(PersistentEntities entities) {
+	public PersistentEntitiesBindContextFactory(PersistentEntities entities, ConversionService conversionService) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null!");
 
 		this.entities = entities;
+		this.conversionService = conversionService;
 	}
 
 	@Override
 	public BindContext getBindContextFor(ObjectMapper mapper) {
-		return new JacksonBindContext(entities, mapper);
+		return new JacksonBindContext(entities, conversionService, mapper);
 	}
 }

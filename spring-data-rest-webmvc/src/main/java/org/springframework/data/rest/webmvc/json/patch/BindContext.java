@@ -17,6 +17,8 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import java.util.Optional;
 
+import org.springframework.expression.EvaluationContext;
+
 /**
  * Contextual mapping for he translation of JSON Pointer segments into property references on persistent types.
  *
@@ -41,4 +43,12 @@ public interface BindContext {
 	 * @return will never be {@literal null}.
 	 */
 	Optional<String> getReadableProperty(String segment, Class<?> type);
+
+	/**
+	 * Returns the {@link EvaluationContext} to be used for evaluating the underlying SpEL expression.
+	 *
+	 * @return will never be {@literal null}.
+	 * @since 3.7.9
+	 */
+	EvaluationContext getEvaluationContext();
 }

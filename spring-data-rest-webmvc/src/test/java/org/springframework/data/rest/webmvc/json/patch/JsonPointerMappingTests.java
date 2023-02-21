@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.webmvc.json.BindContextFactory;
@@ -45,7 +46,8 @@ public class JsonPointerMappingTests {
 		context.getPersistentEntity(Sample.class);
 
 		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
-		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities);
+		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities,
+				DefaultConversionService.getSharedInstance());
 
 		ObjectMapper mapper = new ObjectMapper();
 		this.verifier = new JsonPointerMapping(factory.getBindContextFor(mapper));

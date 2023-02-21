@@ -17,6 +17,9 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import java.util.Optional;
 
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.spel.support.SimpleEvaluationContext;
+
 public class TestPropertyPathContext implements BindContext {
 
 	public static final BindContext INSTANCE = new TestPropertyPathContext();
@@ -37,5 +40,14 @@ public class TestPropertyPathContext implements BindContext {
 	@Override
 	public Optional<String> getWritableProperty(String segment, Class<?> type) {
 		return Optional.of(segment);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.rest.webmvc.json.patch.BindContext#getEvaluationContext()
+	 */
+	@Override
+	public EvaluationContext getEvaluationContext() {
+		return SimpleEvaluationContext.forReadWriteDataBinding().build();
 	}
 }
