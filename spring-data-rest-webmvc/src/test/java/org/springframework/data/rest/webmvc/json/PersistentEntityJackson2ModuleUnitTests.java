@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 
@@ -190,9 +189,8 @@ class PersistentEntityJackson2ModuleUnitTests {
 		PetOwner petOwner = mapper.readValue("{\"package\":\"/packages/1\"}", PetOwner.class);
 
 		assertThat(petOwner).isNotNull();
-		assertThat(petOwner.getPackage()).isNotNull();
+		assertThat(petOwner._package).isNotNull();
 	}
-
 
 	@Test // DATAREST-1321
 	void allowsNumericIdsForLookupTypes() throws Exception {
@@ -298,12 +296,7 @@ class PersistentEntityJackson2ModuleUnitTests {
 		Pet pet;
 		Home home;
 
-		@Getter(value = AccessLevel.NONE)
 		@JsonProperty("package") Package _package;
-
-		public Package getPackage() {
-			return _package;
-		}
 	}
 
 	static class Package {}
