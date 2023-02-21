@@ -157,6 +157,40 @@ class PersistentEntityJackson2ModuleUnitTests {
 		assertThat(petOwner.getPet()).isNotNull();
 	}
 
+	@Test
+	void allowsUrlsForLinkableAssociation() throws Exception {
+
+		when(converter.convert(UriTemplate.of("/homes/1").expand(), TypeDescriptor.valueOf(URI.class),
+				TypeDescriptor.valueOf(Home.class))).thenReturn(new Home());
+
+		PersistentProperty<?> property = persistentEntities.getRequiredPersistentEntity(PetOwner.class)
+				.getRequiredPersistentProperty("home");
+
+		when(associations.isLinkableAssociation(property)).thenReturn(true);
+
+		PetOwner petOwner = mapper.readValue("{\"home\": \"/homes/1\" }", PetOwner.class);
+
+		assertThat(petOwner).isNotNull();
+		assertThat(petOwner.getHome()).isInstanceOf(Home.class);
+	}
+
+	@Test
+	void allowsUrlsForRenamedLinkableAssociation() throws IOException {
+
+		when(converter.convert(UriTemplate.of("/packages/1").expand(), TypeDescriptor.valueOf(URI.class),
+				TypeDescriptor.valueOf(Package.class))).thenReturn(new Package());
+
+		PersistentProperty<?> property = persistentEntities.getRequiredPersistentEntity(PetOwner.class)
+				.getRequiredPersistentProperty("_package");
+
+		when(associations.isLinkableAssociation(property)).thenReturn(true);
+
+		PetOwner petOwner = mapper.readValue("{\"package\":\"/packages/1\"}", PetOwner.class);
+
+		assertThat(petOwner).isNotNull();
+		assertThat(petOwner._package).isNotNull();
+	}
+
 	@Test // DATAREST-1321
 	void allowsNumericIdsForLookupTypes() throws Exception {
 
@@ -260,7 +294,11 @@ class PersistentEntityJackson2ModuleUnitTests {
 
 		Pet pet;
 		Home home;
+
+		@JsonProperty("package") Package _package;
 	}
+
+	static class Package {}
 
 	@JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.MINIMAL_CLASS)
 	static class Pet {}

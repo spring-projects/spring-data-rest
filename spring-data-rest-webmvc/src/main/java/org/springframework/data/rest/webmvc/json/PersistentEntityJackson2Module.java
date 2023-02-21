@@ -441,10 +441,12 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			entities.getPersistentEntity(beanDesc.getBeanClass()).ifPresent(entity -> {
 
+				MappedProperties mapped = MappedProperties.forDescription(entity, beanDesc);
+
 				while (properties.hasNext()) {
 
 					SettableBeanProperty property = properties.next();
-					PersistentProperty<?> persistentProperty = entity.getPersistentProperty(property.getName());
+					PersistentProperty<?> persistentProperty = mapped.getPersistentProperty(property.getName());
 
 					if (persistentProperty == null) {
 						continue;
