@@ -29,7 +29,6 @@ import org.springframework.data.map.repository.config.EnableMapRepositories;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.tests.TestMvcClient;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
-import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,7 +36,6 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -140,7 +138,7 @@ class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 		SecurityContextHolder.clearContext();
 
 		mvc.perform(delete(href).with(user("user").roles("USER", "ADMIN")))
-				.andExpect(status().is(HttpStatus.NO_CONTENT.value()));
+				.andExpect(status().is2xxSuccessful());
 	}
 
 	@Test // DATAREST-327
@@ -205,7 +203,7 @@ class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 		SecurityContextHolder.clearContext();
 
 		mvc.perform(delete(href).with(user("user").roles("USER", "ADMIN")))
-				.andExpect(status().is(HttpStatus.NO_CONTENT.value()));
+				.andExpect(status().is2xxSuccessful());
 	}
 
 	@Test // DATAREST-327
@@ -240,7 +238,6 @@ class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 		String href = assertHasJsonPathValue("$._embedded.orders[0]._links.self.href", response);
 
 		mvc.perform(get(href).with(user("user").roles("USER")))
-				.andDo(MockMvcResultHandlers.print())
 				.andExpect(status().isForbidden());
 	}
 }

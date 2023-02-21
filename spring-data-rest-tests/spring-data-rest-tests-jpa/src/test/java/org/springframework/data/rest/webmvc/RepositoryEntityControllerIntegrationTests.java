@@ -22,8 +22,11 @@ import static org.springframework.http.HttpMethod.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -266,7 +269,7 @@ class RepositoryEntityControllerIntegrationTests extends AbstractControllerInteg
 		RootResourceInformation informationSpy = Mockito.spy(resourceInformation);
 		doReturn(invoker).when(informationSpy).getInvoker();
 
-		controller.deleteItemResource(informationSpy, "foo", ETag.from("0"));
+		controller.deleteItemResource(informationSpy, "foo", ETag.from("0"), assembler, MediaType.ALL_VALUE);
 
 		assertThat(repository.findById(address.id)).isEmpty();
 	}
@@ -281,6 +284,45 @@ class RepositoryEntityControllerIntegrationTests extends AbstractControllerInteg
 		assertThatExceptionOfType(HttpRequestMethodNotSupportedException.class) //
 				.isThrownBy(() -> controller.putItemResource(request, persistentEntityResource, 1L, assembler, ETag.NO_ETAG,
 						MediaType.APPLICATION_JSON_VALUE));
+	}
+
+	@TestFactory // #2225
+	Stream<DynamicTest> returnsResponseBodyForDeleteForAcceptHeaderOrConfig() throws Exception {
+
+		record Fixture(String description, Boolean activateReturnBodyOnDelete, String acceptHeader,
+				HttpStatus expectedStatusCode) {
+			public String description() {
+				return description.formatted(expectedStatusCode);
+			}
+		}
+
+		var fixtures = Stream.of(
+				new Fixture("No config, no header -> %s", null, null, HttpStatus.NO_CONTENT),
+				new Fixture("No config, but header -> %s", null, MediaType.ALL_VALUE, HttpStatus.OK),
+				new Fixture("Enabled, no header -> %s", true, null, HttpStatus.OK),
+				new Fixture("Enabled, and header -> %s", true, MediaType.ALL_VALUE, HttpStatus.OK),
+				new Fixture("Disabled, no header -> %s", false, null, HttpStatus.NO_CONTENT),
+				new Fixture("Disabled, and header -> %s", false, MediaType.ALL_VALUE, HttpStatus.NO_CONTENT));
+
+		return DynamicTest.stream(fixtures, Fixture::description, it -> {
+
+			try {
+
+				// Apply configuration
+				configuration.setReturnBodyOnDelete(it.activateReturnBodyOnDelete());
+
+				var address = repository.save(new Address());
+				var response = controller.deleteItemResource(getResourceInformation(Address.class), address.id,
+						ETag.NO_ETAG, assembler, it.acceptHeader());
+
+				assertThat(response.getStatusCode()).isEqualTo(it.expectedStatusCode());
+
+			} finally {
+
+				// Reset configuration
+				configuration.setReturnBodyOnDelete(null);
+			}
+		});
 	}
 
 	interface AddressProjection {}

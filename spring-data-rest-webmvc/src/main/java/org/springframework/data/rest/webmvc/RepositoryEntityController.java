@@ -402,7 +402,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 	 */
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<?> deleteItemResource(RootResourceInformation resourceInformation, @BackendId Serializable id,
-			ETag eTag) throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
+			ETag eTag, PersistentEntityResourceAssembler assembler,
+			@RequestHeader(value = ACCEPT_HEADER, required = false) String acceptHeader)
+			throws ResourceNotFoundException, HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.DELETE, ResourceType.ITEM);
 
@@ -419,7 +421,9 @@ class RepositoryEntityController extends AbstractRepositoryRestController implem
 			invoker.invokeDeleteById(entity.getIdentifierAccessor(it).getIdentifier());
 			publisher.publishEvent(new AfterDeleteEvent(it));
 
-			return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
+			return config.returnBodyOnDelete(acceptHeader)
+					? ResponseEntity.ok(assembler.toFullResource(it))
+					: new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
 
 		}).orElseThrow(() -> new ResourceNotFoundException());
 	}

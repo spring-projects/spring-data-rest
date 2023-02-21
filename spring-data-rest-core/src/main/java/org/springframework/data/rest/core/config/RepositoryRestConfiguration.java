@@ -61,6 +61,7 @@ public class RepositoryRestConfiguration {
 	private boolean useHalAsDefaultJsonMediaType = true;
 	private Boolean returnBodyOnCreate = null;
 	private Boolean returnBodyOnUpdate = null;
+	private Boolean returnBodyOnDelete = null;
 	private List<Class<?>> exposeIdsFor = new ArrayList<Class<?>>();
 	private ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
 	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
@@ -372,6 +373,30 @@ public class RepositoryRestConfiguration {
 	 */
 	public RepositoryRestConfiguration setReturnBodyOnUpdate(Boolean returnBodyOnUpdate) {
 		this.returnBodyOnUpdate = returnBodyOnUpdate;
+		return this;
+	}
+
+	/**
+	 * Whether to return a response body after deleting an entity considering the given accept header.
+	 *
+	 * @param acceptHeader can be {@literal null} or empty.
+	 * @return
+	 * @since 4.1
+	 */
+	public boolean returnBodyOnDelete(String acceptHeader) {
+		return returnBodyOnDelete == null ? StringUtils.hasText(acceptHeader) : returnBodyOnDelete;
+	}
+
+	/**
+	 * Set whether to return a response body after deleting an entity.
+	 *
+	 * @param returnBodyOnUpdate can be {@literal null}, expressing the decision shall be derived from the presence of an
+	 *          {@code Accept} header in the request.
+	 * @return {@literal this}
+	 * @since 4.1
+	 */
+	public RepositoryRestConfiguration setReturnBodyOnDelete(Boolean returnBodyOnDelete) {
+		this.returnBodyOnDelete = returnBodyOnDelete;
 		return this;
 	}
 
