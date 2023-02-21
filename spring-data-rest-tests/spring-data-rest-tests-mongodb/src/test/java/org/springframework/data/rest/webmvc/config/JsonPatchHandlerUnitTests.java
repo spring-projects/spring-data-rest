@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
@@ -76,7 +77,8 @@ class JsonPatchHandlerUnitTests {
 
 		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
 		Associations associations = new Associations(mappings, mock(RepositoryRestConfiguration.class));
-		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities);
+		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities,
+				DefaultConversionService.getSharedInstance());
 
 		this.handler = new JsonPatchHandler(factory, new DomainObjectReader(entities, associations));
 
