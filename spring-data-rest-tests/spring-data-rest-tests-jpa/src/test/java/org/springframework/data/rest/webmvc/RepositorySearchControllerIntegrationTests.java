@@ -16,11 +16,17 @@
 package org.springframework.data.rest.webmvc;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.tests.TestMvcClient.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -35,6 +41,7 @@ import org.springframework.data.rest.webmvc.jpa.JpaRepositoryConfig;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.TestDataPopulator;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.RepresentationModel;
@@ -61,11 +68,16 @@ class RepositorySearchControllerIntegrationTests extends AbstractControllerInteg
 
 	@Autowired TestDataPopulator loader;
 	@Autowired RepositorySearchController controller;
-	@Autowired PersistentEntityResourceAssembler assembler;
+	@Autowired PagedResourcesAssembler<Object> pagedResourcesAssembler;
+	@Autowired PersistentEntityResourceAssembler entityResourceAssembler;
+
+	RepresentationModelAssemblers assembler;
 
 	@BeforeEach
 	void setUp() {
 		loader.populateRepositories();
+
+		this.assembler = mock(RepresentationModelAssemblers.class, Answers.RETURNS_SMART_NULLS);
 	}
 
 	@Test
@@ -76,7 +88,8 @@ class RepositorySearchControllerIntegrationTests extends AbstractControllerInteg
 
 		ResourceTester tester = ResourceTester.of(resource);
 		tester.assertNumberOfLinks(7); // Self link included
-		tester.assertHasLinkEndingWith("findFirstPersonByFirstName", "findFirstPersonByFirstName{?firstname,projection}");
+		tester.assertHasLinkEndingWith("findFirstPersonByFirstName",
+				"findFirstPersonByFirstName{?firstname,projection}");
 		tester.assertHasLinkEndingWith("firstname", "firstname{?firstname,page,size,sort,projection}");
 		tester.assertHasLinkEndingWith("lastname", "lastname{?lastname,sort,projection}");
 		tester.assertHasLinkEndingWith("findByCreatedUsingISO8601Date",
@@ -107,8 +120,19 @@ class RepositorySearchControllerIntegrationTests extends AbstractControllerInteg
 		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>(1);
 		parameters.add("firstname", "John");
 
+		doAnswer(new Answer<CollectionModel<?>>() {
+
+			@Override
+			public CollectionModel<?> answer(InvocationOnMock invocation) throws Throwable {
+
+				var page = (Page<Object>) invocation.getArgument(0);
+
+				return pagedResourcesAssembler.toModel(page, entityResourceAssembler);
+			}
+		}).when(assembler).toCollectionModel(any(), any());
+
 		ResponseEntity<?> response = controller.executeSearch(resourceInformation, parameters, "firstname", PAGEABLE,
-				Sort.unsorted(), assembler, new HttpHeaders());
+				Sort.unsorted(), new HttpHeaders(), assembler);
 
 		ResourceTester tester = ResourceTester.of(response.getBody());
 		PagedModel<Object> pagedResources = tester.assertIsPage();
@@ -173,13 +197,22 @@ class RepositorySearchControllerIntegrationTests extends AbstractControllerInteg
 	@Test // DATAREST-502
 	void interpretsUriAsReferenceToRelatedEntity() {
 
-		MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>(1);
+		var parameters = new LinkedMultiValueMap<String, Object>(1);
 		parameters.add("author", "/author/1");
 
-		RootResourceInformation resourceInformation = getResourceInformation(Book.class);
+		var resourceInformation = getResourceInformation(Book.class);
 
-		ResponseEntity<?> result = controller.executeSearch(resourceInformation, parameters, "findByAuthorsContains",
-				PAGEABLE, Sort.unsorted(), assembler, new HttpHeaders());
+		when(assembler.toCollectionModel(any(), any()))
+				.thenAnswer(new Answer<CollectionModel<?>>() {
+
+					@Override
+					public CollectionModel<?> answer(InvocationOnMock invocation) throws Throwable {
+						return CollectionModel.of(invocation.getArgument(0));
+					}
+				});
+
+		var result = controller.executeSearch(resourceInformation, parameters, "findByAuthorsContains", PAGEABLE,
+				Sort.unsorted(), new HttpHeaders(), assembler);
 
 		assertThat(result.getBody()).isInstanceOf(CollectionModel.class);
 	}
@@ -199,7 +232,7 @@ class RepositorySearchControllerIntegrationTests extends AbstractControllerInteg
 		parameters.add("lastname", "Thornton");
 
 		ResponseEntity<?> entity = controller.executeSearch(getResourceInformation(Person.class), parameters,
-				"findCreatedDateByLastName", PAGEABLE, Sort.unsorted(), assembler, new HttpHeaders());
+				"findCreatedDateByLastName", PAGEABLE, Sort.unsorted(), new HttpHeaders(), assembler);
 
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(entity.getHeaders()).isEmpty();

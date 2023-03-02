@@ -25,8 +25,6 @@ import org.springframework.data.rest.webmvc.alps.AlpsController;
 import org.springframework.data.rest.webmvc.json.JsonSchema;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.server.EntityLinks;
 
 /**
  * Configuration class registering required {@link org.springframework.stereotype.Component components} that declare
@@ -40,17 +38,16 @@ public class RestControllerConfiguration {
 
 	private final RepositoryRestConfiguration restConfiguration;
 	private final RepositoryResourceMappings resourceMappings;
-	private final PagedResourcesAssembler<Object> resourcesAssembler;
 	private final Repositories repositories;
+	private final RepositoryEntityLinks entityLinks;
 
 	RestControllerConfiguration(RepositoryRestConfiguration restConfiguration,
-			RepositoryResourceMappings resourceMappings, PagedResourcesAssembler<Object> resourcesAssembler,
-			Repositories repositories) {
+			RepositoryResourceMappings resourceMappings, Repositories repositories, RepositoryEntityLinks entityLinks) {
 
 		this.restConfiguration = restConfiguration;
 		this.resourceMappings = resourceMappings;
-		this.resourcesAssembler = resourcesAssembler;
 		this.repositories = repositories;
+		this.entityLinks = entityLinks;
 	}
 
 	/**
@@ -61,8 +58,8 @@ public class RestControllerConfiguration {
 	 * @return never {@literal null}.
 	 */
 	@Bean
-	RepositoryController repositoryController(EntityLinks entityLinks) {
-		return new RepositoryController(resourcesAssembler, repositories, entityLinks, resourceMappings);
+	RepositoryController repositoryController() {
+		return new RepositoryController(repositories, entityLinks, resourceMappings);
 	}
 
 	/**
@@ -74,10 +71,8 @@ public class RestControllerConfiguration {
 	 * @return never {@literal null}.
 	 */
 	@Bean
-	RepositoryEntityController repositoryEntityController(RepositoryEntityLinks entityLinks,
-			HttpHeadersPreparer headersPreparer) {
-		return new RepositoryEntityController(repositories, restConfiguration, entityLinks, resourcesAssembler,
-				headersPreparer);
+	RepositoryEntityController repositoryEntityController(HttpHeadersPreparer headersPreparer) {
+		return new RepositoryEntityController(restConfiguration, entityLinks, headersPreparer);
 	}
 
 	/**
@@ -89,7 +84,7 @@ public class RestControllerConfiguration {
 	@Bean
 	RepositoryPropertyReferenceController repositoryPropertyReferenceController(
 			RepositoryInvokerFactory repositoryInvokerFactory) {
-		return new RepositoryPropertyReferenceController(repositories, repositoryInvokerFactory, resourcesAssembler);
+		return new RepositoryPropertyReferenceController(repositories, repositoryInvokerFactory);
 	}
 
 	/**
@@ -101,9 +96,8 @@ public class RestControllerConfiguration {
 	 * @return never {@literal null}.
 	 */
 	@Bean
-	RepositorySearchController repositorySearchController(RepositoryEntityLinks entityLinks,
-			HttpHeadersPreparer headersPreparer) {
-		return new RepositorySearchController(resourcesAssembler, entityLinks, resourceMappings, headersPreparer);
+	RepositorySearchController repositorySearchController(HttpHeadersPreparer headersPreparer) {
+		return new RepositorySearchController(entityLinks, resourceMappings, headersPreparer);
 	}
 
 	/**

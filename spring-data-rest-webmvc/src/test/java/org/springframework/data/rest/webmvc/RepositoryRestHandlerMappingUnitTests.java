@@ -95,7 +95,7 @@ class RepositoryRestHandlerMappingUnitTests {
 		mockRequest = new MockHttpServletRequest();
 
 		listEntitiesMethod = RepositoryEntityController.class.getMethod("getCollectionResource",
-				RootResourceInformation.class, DefaultedPageable.class, Sort.class, PersistentEntityResourceAssembler.class);
+				RootResourceInformation.class, DefaultedPageable.class, Sort.class, RepresentationModelAssemblers.class);
 		rootHandlerMethod = RepositoryController.class.getMethod("listRepositories");
 	}
 

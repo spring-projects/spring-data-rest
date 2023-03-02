@@ -17,11 +17,9 @@ package org.springframework.data.rest.webmvc;
 
 import java.util.Collections;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.core.mapping.ResourceMetadata;
-import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
 import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -39,29 +37,24 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @author Oliver Gierke
  */
 @RepositoryRestController
-public class RepositoryController extends AbstractRepositoryRestController {
+public class RepositoryController { // extends AbstractRepositoryRestController {
 
 	private final Repositories repositories;
-	private final EntityLinks entityLinks;
+	private final RepositoryEntityLinks entityLinks;
 	private final ResourceMappings mappings;
 
 	/**
-	 * Creates a new {@link RepositoryController} for the given {@link PagedResourcesAssembler}, {@link Repositories},
-	 * {@link EntityLinks} and {@link ResourceMappings}.
+	 * Creates a new {@link RepositoryController} for the given {@link Repositories}, {@link EntityLinks} and
+	 * {@link ResourceMappings}.
 	 *
-	 * @param assembler must not be {@literal null}.
 	 * @param repositories must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
 	 */
-	@Autowired
-	public RepositoryController(PagedResourcesAssembler<Object> assembler, Repositories repositories,
-			EntityLinks entityLinks, ResourceMappings mappings) {
-
-		super(assembler);
+	public RepositoryController(Repositories repositories, RepositoryEntityLinks entityLinks, ResourceMappings mappings) {
 
 		Assert.notNull(repositories, "Repositories must not be null");
-		Assert.notNull(entityLinks, "EntityLinks must not be null");
+		Assert.notNull(entityLinks, "RepositoryEntityLinks must not be null");
 		Assert.notNull(mappings, "ResourceMappings must not be null");
 
 		this.repositories = repositories;
@@ -78,7 +71,7 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	@RequestMapping(value = { "/", "" }, method = RequestMethod.OPTIONS)
 	public HttpEntity<?> optionsForRepositories() {
 
-		HttpHeaders headers = new HttpHeaders();
+		var headers = new HttpHeaders();
 		headers.setAllow(Collections.singleton(HttpMethod.GET));
 
 		return new ResponseEntity<Object>(headers, HttpStatus.OK);
@@ -103,11 +96,12 @@ public class RepositoryController extends AbstractRepositoryRestController {
 	@RequestMapping(value = { "/", "" }, method = RequestMethod.GET)
 	public HttpEntity<RepositoryLinksResource> listRepositories() {
 
-		RepositoryLinksResource resource = new RepositoryLinksResource();
+		var resource = new RepositoryLinksResource();
 
 		for (Class<?> domainType : repositories) {
 
-			ResourceMetadata metadata = mappings.getMetadataFor(domainType);
+			var metadata = mappings.getMetadataFor(domainType);
+
 			if (metadata.isExported()) {
 				resource.add(entityLinks.linkToCollectionResource(domainType));
 			}

@@ -28,7 +28,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.CollectionFactory;
@@ -37,16 +36,12 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.event.AfterLinkDeleteEvent;
 import org.springframework.data.rest.core.event.AfterLinkSaveEvent;
 import org.springframework.data.rest.core.event.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.core.event.BeforeLinkSaveEvent;
-import org.springframework.data.rest.core.mapping.PropertyAwareResourceMapping;
-import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.BackendId;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -78,7 +73,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
  */
 @RepositoryRestController
 @SuppressWarnings({ "unchecked" })
-class RepositoryPropertyReferenceController extends AbstractRepositoryRestController
+class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestController*/
 		implements ApplicationEventPublisherAware {
 
 	private static final String BASE_MAPPING = "/{repository}/{id}/{property}";
@@ -89,11 +84,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 	private ApplicationEventPublisher publisher;
 
-	@Autowired
 	public RepositoryPropertyReferenceController(Repositories repositories,
-			RepositoryInvokerFactory repositoryInvokerFactory, PagedResourcesAssembler<Object> assembler) {
-
-		super(assembler);
+			RepositoryInvokerFactory repositoryInvokerFactory) {
 
 		this.repositories = repositories;
 		this.repositoryInvokerFactory = repositoryInvokerFactory;
@@ -107,26 +99,27 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@RequestMapping(value = BASE_MAPPING, method = GET)
 	public ResponseEntity<RepresentationModel<?>> followPropertyReference(final RootResourceInformation repoRequest,
 			@BackendId Serializable id, final @PathVariable String property,
-			final PersistentEntityResourceAssembler assembler) throws Exception {
+			RepresentationModelAssemblers assemblers) throws Exception {
 
-		HttpHeaders headers = new HttpHeaders();
+		var headers = new HttpHeaders();
 
 		Function<ReferencedProperty, RepresentationModel<?>> handler = prop -> prop.mapValue(it -> {
 
 			if (prop.property.isCollectionLike()) {
 
-				return toCollectionModel((Iterable<?>) it, assembler, prop.propertyType, Optional.empty());
+				return assemblers.toCollectionModel((Iterable<Object>) it, prop.propertyType);
 
 			} else if (prop.property.isMap()) {
 
 				return ((Map<Object, Object>) it).entrySet().stream() //
-						.collect(collectingAndThen(toMap(Map.Entry::getKey, entry -> assembler.toModel(entry.getValue())),
+						.collect(collectingAndThen(
+								toMap(Map.Entry::getKey, entry -> assemblers.toModel(entry.getValue())),
 								MapModel::new));
 
 			} else {
 
-				PersistentEntityResource resource = assembler.toModel(it);
-				headers.set("Content-Location", resource.getRequiredLink(IanaLinkRelations.SELF).getHref());
+				var resource = assemblers.toModel(it);
+				headers.set(HttpHeaders.CONTENT_LOCATION, resource.getRequiredLink(IanaLinkRelations.SELF).getHref());
 				return resource;
 			}
 
@@ -150,7 +143,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			}
 
 			publisher.publishEvent(new BeforeLinkDeleteEvent(prop.accessor.getBean(), prop.propertyValue));
-			Object result = repoRequest.getInvoker().invokeSave(prop.accessor.getBean());
+			var result = repoRequest.getInvoker().invokeSave(prop.accessor.getBean());
 			publisher.publishEvent(new AfterLinkDeleteEvent(result, prop.propertyValue));
 
 			return (RepresentationModel<?>) null;
@@ -165,9 +158,9 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@RequestMapping(value = BASE_MAPPING + "/{propertyId}", method = GET)
 	public ResponseEntity<RepresentationModel<?>> followPropertyReference(RootResourceInformation repoRequest,
 			@BackendId Serializable id, @PathVariable String property, @PathVariable String propertyId,
-			PersistentEntityResourceAssembler assembler) throws Exception {
+			RepresentationModelAssemblers assemblers) throws Exception {
 
-		HttpHeaders headers = new HttpHeaders();
+		var headers = new HttpHeaders();
 
 		Function<ReferencedProperty, RepresentationModel<?>> handler = prop -> prop.mapValue(it -> {
 
@@ -178,7 +171,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					IdentifierAccessor accessor1 = prop.entity.getIdentifierAccessor(obj);
 					if (propertyId.equals(accessor1.getIdentifier().toString())) {
 
-						PersistentEntityResource resource1 = assembler.toModel(obj);
+						var resource1 = assemblers.toModel(obj);
 						headers.set("Content-Location", resource1.getRequiredLink(IanaLinkRelations.SELF).getHref());
 						return resource1;
 					}
@@ -191,7 +184,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 					IdentifierAccessor accessor2 = prop.entity.getIdentifierAccessor(entry.getValue());
 					if (propertyId.equals(accessor2.getIdentifier().toString())) {
 
-						PersistentEntityResource resource2 = assembler.toModel(entry.getValue());
+						var resource2 = assemblers.toModel(entry.getValue());
 						headers.set("Content-Location", resource2.getRequiredLink(IanaLinkRelations.SELF).getHref());
 						return resource2;
 					}
@@ -212,14 +205,15 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	@RequestMapping(value = BASE_MAPPING, method = GET, produces = TEXT_URI_LIST_VALUE)
 	public ResponseEntity<RepresentationModel<?>> followPropertyReferenceCompact(RootResourceInformation repoRequest,
 			@BackendId Serializable id, @PathVariable String property, @RequestHeader HttpHeaders requestHeaders,
-			PersistentEntityResourceAssembler assembler) throws Exception {
+			RepresentationModelAssemblers assemblers)
+			throws Exception {
 
 		Function<ReferencedProperty, RepresentationModel<?>> handler = prop -> prop.mapValue(it -> {
 
 			if (prop.property.isCollectionLike()) {
 
 				Links links = ((Collection<?>) it).stream() //
-						.map(assembler::getExpandedSelfLink) //
+						.map(assemblers::getExpandedSelfLink) //
 						.collect(Links.collector());
 
 				return new RepresentationModel<>(links.toList());
@@ -228,7 +222,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 				throw new UnsupportedMediaTypeStatusException("Cannot produce compact representation of map property");
 			}
 
-			return new RepresentationModel<>(assembler.getExpandedSelfLink(it));
+			return new RepresentationModel<>(assemblers.getExpandedSelfLink(it));
 
 		}).orElse(new RepresentationModel<>());
 
@@ -246,8 +240,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			@RequestBody(required = false) CollectionModel<Object> incoming, @BackendId Serializable id,
 			@PathVariable String property) throws Exception {
 
-		CollectionModel<Object> source = incoming == null ? CollectionModel.empty() : incoming;
-		RepositoryInvoker invoker = resourceInformation.getInvoker();
+		var source = incoming == null ? CollectionModel.empty() : incoming;
+		var invoker = resourceInformation.getInvoker();
 
 		Function<ReferencedProperty, RepresentationModel<?>> handler = prop -> {
 
@@ -298,7 +292,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			}
 
 			publisher.publishEvent(new BeforeLinkSaveEvent(prop.accessor.getBean(), prop.propertyValue));
-			Object result = invoker.invokeSave(prop.accessor.getBean());
+			var result = invoker.invokeSave(prop.accessor.getBean());
 			publisher.publishEvent(new AfterLinkSaveEvent(result, prop.propertyValue));
 
 			return null;
@@ -351,7 +345,7 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			}
 
 			publisher.publishEvent(new BeforeLinkDeleteEvent(prop.accessor.getBean(), it));
-			Object result = repoRequest.getInvoker().invokeSave(prop.accessor.getBean());
+			var result = repoRequest.getInvoker().invokeSave(prop.accessor.getBean());
 			publisher.publishEvent(new AfterLinkDeleteEvent(result, it));
 
 			return (RepresentationModel<?>) null;
@@ -365,10 +359,9 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 
 	private Object loadPropertyValue(Class<?> type, Link link) {
 
-		String href = link.expand().getHref();
-		String id = href.substring(href.lastIndexOf('/') + 1);
-
-		RepositoryInvoker invoker = repositoryInvokerFactory.getInvokerFor(type);
+		var href = link.expand().getHref();
+		var id = href.substring(href.lastIndexOf('/') + 1);
+		var invoker = repositoryInvokerFactory.getInvokerFor(type);
 
 		return invoker.invokeFindById(id).orElse(null);
 	}
@@ -377,24 +370,24 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 			Serializable id, String propertyPath, Function<ReferencedProperty, RepresentationModel<?>> handler,
 			HttpMethod method) throws Exception {
 
-		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
-		PropertyAwareResourceMapping mapping = metadata.getProperty(propertyPath);
+		var metadata = resourceInformation.getResourceMetadata();
+		var mapping = metadata.getProperty(propertyPath);
 
 		if (mapping == null || !mapping.isExported()) {
 			throw new ResourceNotFoundException();
 		}
 
-		PersistentProperty<?> property = mapping.getProperty();
+		var property = mapping.getProperty();
 		resourceInformation.verifySupportedMethod(method, property);
 
-		RepositoryInvoker invoker = resourceInformation.getInvoker();
-		Optional<Object> domainObj = invoker.invokeFindById(id);
+		var invoker = resourceInformation.getInvoker();
+		var domainObj = invoker.invokeFindById(id);
 
 		domainObj.orElseThrow(() -> new ResourceNotFoundException());
 
 		return domainObj.map(it -> {
 
-			PersistentPropertyAccessor<?> accessor = property.getOwner().getPropertyAccessor(it);
+			var accessor = property.getOwner().getPropertyAccessor(it);
 			return handler.apply(new ReferencedProperty(property, accessor.getProperty(property), accessor));
 		});
 	}
@@ -432,8 +425,8 @@ class RepositoryPropertyReferenceController extends AbstractRepositoryRestContro
 	}
 
 	/**
-	 * Custom {@link RepresentationModel} to be used with maps as {@link EntityModel} doesn't properly unwrap {@link Map}s
-	 * due to some limitation in Jackson.
+	 * Custom {@link RepresentationModel} to be used with maps as {@link EntityModel} doesn't properly unwrap
+	 * {@link Map}s due to some limitation in Jackson.
 	 *
 	 * @author Oliver Drotbohm
 	 * @see https://github.com/FasterXML/jackson-databind/issues/171

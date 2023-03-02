@@ -16,10 +16,13 @@
 package org.springframework.data.rest.webmvc;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.AbstractControllerIntegrationTests;
 import org.springframework.data.rest.webmvc.jpa.Book;
@@ -33,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * @author Oliver Gierke
  */
+@ExtendWith(MockitoExtension.class)
 @ContextConfiguration(classes = JpaRepositoryConfig.class)
 @Transactional
 class RepositoryPropertyReferenceControllerIntegrationTests extends AbstractControllerIntegrationTests {
@@ -41,13 +45,11 @@ class RepositoryPropertyReferenceControllerIntegrationTests extends AbstractCont
 	@Autowired TestDataPopulator populator;
 	@Autowired BookRepository books;
 
-	PersistentEntityResourceAssembler assembler;
+	@Mock(answer = Answers.RETURNS_MOCKS) RepresentationModelAssemblers assembler;
 	RootResourceInformation information;
 
 	@BeforeEach
 	void setUp() {
-
-		this.assembler = mock(PersistentEntityResourceAssembler.class);
 		this.information = getResourceInformation(Book.class);
 		this.populator.populateRepositories();
 	}

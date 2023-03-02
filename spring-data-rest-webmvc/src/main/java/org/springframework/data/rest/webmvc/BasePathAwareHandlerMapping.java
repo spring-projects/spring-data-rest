@@ -16,6 +16,7 @@
 package org.springframework.data.rest.webmvc;
 
 import static org.springframework.core.annotation.AnnotatedElementUtils.*;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 
@@ -26,9 +27,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -115,7 +113,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		String[] customPrefixes = getBasePathedPrefixes(handlerType);
 		Builder builder = info.mutate();
 
-		if ((customPrefixes.length != 0) || StringUtils.hasText(baseUri)) {
+		if (customPrefixes.length != 0 || StringUtils.hasText(baseUri)) {
 			builder = builder.paths(resolveEmbeddedValuesInPatterns(customPrefixes));
 		}
 
@@ -219,8 +217,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		@Override
 		public String getHeader(String name) {
 
-			return HttpHeaders.ACCEPT.equalsIgnoreCase(name) && (acceptMediaTypes != null //
-			)
+			return HttpHeaders.ACCEPT.equalsIgnoreCase(name) && acceptMediaTypes != null
 					? StringUtils.collectionToCommaDelimitedString(acceptMediaTypes) //
 					: super.getHeader(name);
 		}
@@ -228,8 +225,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 		@Override
 		public Enumeration<String> getHeaders(String name) {
 
-			return HttpHeaders.ACCEPT.equalsIgnoreCase(name) && (acceptMediaTypes != null //
-			)
+			return HttpHeaders.ACCEPT.equalsIgnoreCase(name) && acceptMediaTypes != null
 					? Collections.enumeration(acceptMediaTypeStrings) //
 					: super.getHeaders(name);
 		}

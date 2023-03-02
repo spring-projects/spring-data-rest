@@ -26,6 +26,9 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -42,7 +45,8 @@ public class RootResourceInformation {
 	private final RepositoryInvoker invoker;
 	private final PersistentEntity<?, ?> persistentEntity;
 
-	public RootResourceInformation(ResourceMetadata metadata, PersistentEntity<?, ?> entity, RepositoryInvoker invoker) {
+	public RootResourceInformation(ResourceMetadata metadata, PersistentEntity<?, ?> entity,
+			RepositoryInvoker invoker) {
 
 		this.resourceMetadata = metadata;
 
@@ -88,7 +92,7 @@ public class RootResourceInformation {
 	 * @param resourceType must not be {@literal null}.
 	 * @throws ResourceNotFoundException if the repository is not exported at all.
 	 * @throws HttpRequestMethodNotSupportedException if the {@link ResourceType} does not support the given
-	 *           {@link HttpMethod}. Will contain all supported methods as indicators for clients.
+	 *             {@link HttpMethod}. Will contain all supported methods as indicators for clients.
 	 */
 	public void verifySupportedMethod(HttpMethod httpMethod, ResourceType resourceType)
 			throws HttpRequestMethodNotSupportedException, ResourceNotFoundException {
@@ -115,7 +119,7 @@ public class RootResourceInformation {
 	 * @param property must not be {@literal null}.
 	 * @throws ResourceNotFoundException if the repository is not exported at all.
 	 * @throws HttpRequestMethodNotSupportedException if the {@link PersistentProperty} does not support the given
-	 *           {@link HttpMethod}. Will contain all supported methods as indicators for clients.
+	 *             {@link HttpMethod}. Will contain all supported methods as indicators for clients.
 	 */
 	public void verifySupportedMethod(HttpMethod httpMethod, PersistentProperty<?> property)
 			throws HttpRequestMethodNotSupportedException {
@@ -142,6 +146,14 @@ public class RootResourceInformation {
 		if (!supportedHttpMethods.allowsPutForCreation()) {
 			reject(HttpMethod.PUT, supportedHttpMethods.getMethodsFor(ResourceType.ITEM));
 		}
+	}
+
+	public Link resourceLink(EntityModel<?> resource) {
+
+		var repoMapping = getResourceMetadata();
+		var selfLink = resource.getRequiredLink(IanaLinkRelations.SELF);
+
+		return Link.of(selfLink.getHref(), repoMapping.getItemResourceRel());
 	}
 
 	private static void reject(HttpMethod method, HttpMethods supported) throws HttpRequestMethodNotSupportedException {

@@ -90,6 +90,7 @@ class RepositoryRestMvConfigurationIntegrationTests {
 
 	@AfterAll
 	public static void tearDown() {
+
 		if (context != null) {
 			context.close();
 		}

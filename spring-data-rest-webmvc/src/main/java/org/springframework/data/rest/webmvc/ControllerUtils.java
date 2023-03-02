@@ -17,11 +17,13 @@ package org.springframework.data.rest.webmvc;
 
 import java.util.Optional;
 
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * @author Oliver Gierke
@@ -79,5 +81,9 @@ public class ControllerUtils {
 	 */
 	public static ResponseEntity<RepresentationModel<?>> toEmptyResponse(HttpStatus status, HttpHeaders headers) {
 		return toResponseEntity(status, headers, Optional.empty());
+	}
+
+	static Link getDefaultSelfLink() {
+		return Link.of(ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString());
 	}
 }

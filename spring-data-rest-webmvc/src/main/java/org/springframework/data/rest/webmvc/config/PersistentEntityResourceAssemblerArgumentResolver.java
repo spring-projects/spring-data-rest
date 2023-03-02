@@ -65,7 +65,8 @@ public class PersistentEntityResourceAssemblerArgumentResolver implements Handle
 	}
 
 	@Override
-	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+	public PersistentEntityResourceAssembler resolveArgument(MethodParameter parameter,
+			ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
 		String projectionParameter = webRequest.getParameter(projectionDefinitions.getParameterName());

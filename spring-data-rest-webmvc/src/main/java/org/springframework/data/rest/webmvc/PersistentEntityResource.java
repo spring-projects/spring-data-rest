@@ -58,7 +58,6 @@ public class PersistentEntityResource extends EntityModel<Object> {
 	 * @param links must not be {@literal null}.
 	 * @param embeddeds can be {@literal null}.
 	 */
-	@SuppressWarnings("deprecation")
 	private PersistentEntityResource(PersistentEntity<?, ?> entity, Object content, Iterable<Link> links,
 			Iterable<EmbeddedWrapper> embeddeds, boolean isNew, boolean nested) {
 

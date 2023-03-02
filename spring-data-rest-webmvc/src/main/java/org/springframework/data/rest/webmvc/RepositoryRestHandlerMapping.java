@@ -407,7 +407,7 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 					? DEFAULT_ALLOWED_METHODS
 					: HttpMethods.of(Streamable.of(methods)
 							.map(RequestMethod::name)
-							.map(HttpMethod::resolve)
+							.map(HttpMethod::valueOf)
 							.toList());
 		}
 	}

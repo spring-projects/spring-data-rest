@@ -18,7 +18,7 @@ http://localhost:8080/people/?size=5
 
 The preceding example sets the page size to 5.
 
-To use paging in your own query methods, you need to change the method signature to accept an additional `Pageable` parameter and return a `Page` rather than a `List`. For example, the following query method is exported to `/people/search/nameStartsWith` and supports paging:
+To use paging in your own query methods, you need to change the method signature to accept an additional `Pageable` parameter and return a `Page` or `Slice` rather than a `List`. For example, the following query method is exported to `/people/search/nameStartsWith` and supports paging:
 
 ====
 [source,java]
@@ -28,7 +28,7 @@ public Page findByNameStartsWith(@Param("name") String name, Pageable p);
 ----
 ====
 
-The Spring Data REST exporter recognizes the returned `Page` and gives you the results in the body of the response, just as it would with a non-paged response, but additional links are added to the resource to represent the previous and next pages of data.
+The Spring Data REST exporter recognizes the returned `Page`/`Slice` and gives you the results in the body of the response, just as it would with a non-paged response, but additional links are added to the resource to represent the previous and next pages of data.
 
 [[paging-and-sorting.paging.prev-and-next-links]]
 === Previous and Next Links
@@ -68,7 +68,6 @@ curl localhost:8080/people?size=5
   }
 }
 ----
-
 At the top, we see `_links`:
 
 <1> The `self` link serves up the whole collection with some options.

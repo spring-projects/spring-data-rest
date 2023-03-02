@@ -43,7 +43,6 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpMethod;
@@ -57,7 +56,6 @@ import org.springframework.http.HttpMethod;
 class RepositoryPropertyReferenceControllerUnitTests {
 
 	@Mock Repositories repositories;
-	@Mock PagedResourcesAssembler<Object> assembler;
 	@Mock RepositoryInvokerFactory invokerFactory;
 	@Mock RepositoryInvoker invoker;
 	@Mock ApplicationEventPublisher publisher;
@@ -75,7 +73,7 @@ class RepositoryPropertyReferenceControllerUnitTests {
 		when(metadata.getSupportedHttpMethods()).thenReturn(AllSupportedHttpMethods.INSTANCE);
 
 		RepositoryPropertyReferenceController controller = new RepositoryPropertyReferenceController(repositories,
-				invokerFactory, assembler);
+				invokerFactory);
 		controller.setApplicationEventPublisher(publisher);
 
 		doReturn(invoker).when(invokerFactory).getInvokerFor(Reference.class);

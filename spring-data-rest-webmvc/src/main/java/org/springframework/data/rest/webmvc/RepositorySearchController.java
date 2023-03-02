@@ -23,25 +23,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.support.RepositoryInvoker;
-import org.springframework.data.rest.core.mapping.MethodResourceMapping;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.SearchResourceMappings;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Links;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.core.AnnotationAttribute;
@@ -69,28 +62,26 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Oliver Gierke
  */
 @RepositoryRestController
-class RepositorySearchController extends AbstractRepositoryRestController {
+class RepositorySearchController {
 
 	private static final String SEARCH = "/search";
 	private static final String BASE_MAPPING = "/{repository}" + SEARCH;
 
 	private final RepositoryEntityLinks entityLinks;
 	private final ResourceMappings mappings;
+
 	private ResourceStatus resourceStatus;
 
 	/**
 	 * Creates a new {@link RepositorySearchController} using the given {@link PagedResourcesAssembler},
 	 * {@link EntityLinks} and {@link ResourceMappings}.
 	 *
-	 * @param assembler must not be {@literal null}.
 	 * @param entityLinks must not be {@literal null}.
 	 * @param mappings must not be {@literal null}.
+	 * @param headersPreparer must not be {@literal null}.
 	 */
-	@Autowired
-	public RepositorySearchController(PagedResourcesAssembler<Object> assembler, RepositoryEntityLinks entityLinks,
-			ResourceMappings mappings, HttpHeadersPreparer headersPreparer) {
-
-		super(assembler);
+	public RepositorySearchController(RepositoryEntityLinks entityLinks, ResourceMappings mappings,
+			HttpHeadersPreparer headersPreparer) {
 
 		Assert.notNull(entityLinks, "EntityLinks must not be null");
 		Assert.notNull(mappings, "ResourceMappings must not be null");
@@ -112,7 +103,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		verifySearchesExposed(resourceInformation);
 
-		HttpHeaders headers = new HttpHeaders();
+		var headers = new HttpHeaders();
 		headers.setAllow(Collections.singleton(HttpMethod.GET));
 
 		return ResponseEntity.ok().headers(headers).build();
@@ -145,7 +136,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		verifySearchesExposed(resourceInformation);
 
-		Links queryMethodLinks = entityLinks.linksToSearchResources(resourceInformation.getDomainType());
+		var queryMethodLinks = entityLinks.linksToSearchResources(resourceInformation.getDomainType());
 
 		if (queryMethodLinks.isEmpty()) {
 			throw new ResourceNotFoundException();
@@ -153,7 +144,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		return new RepositorySearchesResource(resourceInformation.getDomainType()) //
 				.add(queryMethodLinks) //
-				.add(getDefaultSelfLink());
+				.add(ControllerUtils.getDefaultSelfLink());
 	}
 
 	/**
@@ -171,18 +162,18 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	@ResponseBody
 	@RequestMapping(value = BASE_MAPPING + "/{search}", method = RequestMethod.GET)
 	public ResponseEntity<?> executeSearch(RootResourceInformation resourceInformation,
-			@RequestParam MultiValueMap<String, Object> parameters, @PathVariable String search, DefaultedPageable pageable,
-			Sort sort, PersistentEntityResourceAssembler assembler, @RequestHeader HttpHeaders headers) {
+			@RequestParam MultiValueMap<String, Object> parameters, @PathVariable String search,
+			DefaultedPageable pageable,
+			Sort sort, @RequestHeader HttpHeaders headers, RepresentationModelAssemblers assemblers) {
 
-		Method method = checkExecutability(resourceInformation, search);
-		Optional<Object> result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort,
-				assembler);
+		var method = checkExecutability(resourceInformation, search);
+		var result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort);
 
-		SearchResourceMappings searchMappings = resourceInformation.getSearchMappings();
-		MethodResourceMapping methodMapping = searchMappings.getExportedMethodMappingForPath(search);
-		Class<?> domainType = methodMapping.getReturnedDomainType();
+		var searchMappings = resourceInformation.getSearchMappings();
+		var methodMapping = searchMappings.getExportedMethodMappingForPath(search);
+		var domainType = methodMapping.getReturnedDomainType();
 
-		return toModel(result, assembler, domainType, Optional.empty(), headers, resourceInformation);
+		return toModel(result, domainType, headers, resourceInformation, assemblers);
 	}
 
 	/**
@@ -195,18 +186,18 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @param baseLink can be {@literal null}.
 	 * @return
 	 */
-	protected ResponseEntity<?> toModel(Optional<Object> source, final PersistentEntityResourceAssembler assembler,
-			Class<?> domainType, Optional<Link> baseLink, HttpHeaders headers, RootResourceInformation information) {
+	protected ResponseEntity<?> toModel(Optional<Object> source, Class<?> domainType,
+			HttpHeaders headers, RootResourceInformation information, RepresentationModelAssemblers assemblers) {
 
 		return source.map(it -> {
 
-			if (it instanceof Iterable) {
-				return ResponseEntity.ok(toCollectionModel((Iterable<?>) it, assembler, domainType, baseLink));
+			if (it instanceof Iterable<?> iterable) {
+				return ResponseEntity.ok(assemblers.toCollectionModel(iterable, domainType));
 			} else if (ClassUtils.isPrimitiveOrWrapper(it.getClass())) {
 				return ResponseEntity.ok(it);
 			}
 
-			PersistentEntity<?, ?> entity = information.getPersistentEntity();
+			var entity = information.getPersistentEntity();
 
 			// Returned value is not of the aggregates type - probably some projection
 			if (!entity.getType().isInstance(it)) {
@@ -214,7 +205,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			}
 
 			return resourceStatus.getStatusAndHeaders(headers, it, entity).toResponseEntity(//
-					() -> assembler.toFullResource(it));
+					() -> assemblers.toFullResource(it));
 
 		}).orElseThrow(() -> new ResourceNotFoundException());
 	}
@@ -223,12 +214,12 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * Executes a query method and exposes the results in compact form.
 	 *
 	 * @param resourceInformation
+	 * @param headers
 	 * @param parameters
 	 * @param repository
 	 * @param search
 	 * @param pageable
 	 * @param sort
-	 * @param assembler
 	 * @return
 	 */
 	@ResponseBody
@@ -237,31 +228,26 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	public RepresentationModel<?> executeSearchCompact(RootResourceInformation resourceInformation,
 			@RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, Object> parameters,
 			@PathVariable String repository, @PathVariable String search, DefaultedPageable pageable, Sort sort,
-			PersistentEntityResourceAssembler assembler) {
+			RepresentationModelAssemblers assemblers) {
 
-		Method method = checkExecutability(resourceInformation, search);
-		Optional<Object> result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort,
-				assembler);
-		ResourceMetadata metadata = resourceInformation.getResourceMetadata();
-		ResponseEntity<?> entity = toModel(result, assembler, metadata.getDomainType(), Optional.empty(), headers,
-				resourceInformation);
-		Object resource = entity.getBody();
+		var method = checkExecutability(resourceInformation, search);
+		var result = executeQueryMethod(resourceInformation.getInvoker(), parameters, method, pageable, sort);
+		var metadata = resourceInformation.getResourceMetadata();
+		var entity = toModel(result, metadata.getDomainType(), headers, resourceInformation, assemblers);
+		var resource = entity.getBody();
 
-		List<Link> links = new ArrayList<Link>();
+		var links = new ArrayList<Link>();
 
-		if (resource instanceof CollectionModel && ((CollectionModel<?>) resource).getContent() != null) {
+		if (resource instanceof CollectionModel<?> model && model.getContent() != null) {
 
-			for (Object obj : ((CollectionModel<?>) resource).getContent()) {
-				if (null != obj && obj instanceof EntityModel) {
-					EntityModel<?> res = (EntityModel<?>) obj;
-					links.add(resourceLink(resourceInformation, res));
+			for (Object obj : model.getContent()) {
+				if (null != obj && obj instanceof EntityModel<?> res) {
+					links.add(resourceInformation.resourceLink(res));
 				}
 			}
 
-		} else if (resource instanceof EntityModel) {
-
-			EntityModel<?> res = (EntityModel<?>) resource;
-			links.add(resourceLink(resourceInformation, res));
+		} else if (resource instanceof EntityModel<?> res) {
+			links.add(resourceInformation.resourceLink(res));
 		}
 
 		return CollectionModel.empty(links);
@@ -280,7 +266,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 
 		checkExecutability(information, search);
 
-		HttpHeaders headers = new HttpHeaders();
+		var headers = new HttpHeaders();
 		headers.setAllow(Collections.singleton(HttpMethod.GET));
 
 		return new ResponseEntity<Object>(headers, HttpStatus.OK);
@@ -311,9 +297,8 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 */
 	private Method checkExecutability(RootResourceInformation resourceInformation, String searchName) {
 
-		SearchResourceMappings searchMapping = verifySearchesExposed(resourceInformation);
-
-		Method method = searchMapping.getMappedMethod(searchName);
+		var searchMapping = verifySearchesExposed(resourceInformation);
+		var method = searchMapping.getMappedMethod(searchName);
 
 		if (method == null) {
 			throw new ResourceNotFoundException();
@@ -330,23 +315,21 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 * @return
 	 */
 	private Optional<Object> executeQueryMethod(final RepositoryInvoker invoker,
-			@RequestParam MultiValueMap<String, Object> parameters, Method method, DefaultedPageable pageable, Sort sort,
-			PersistentEntityResourceAssembler assembler) {
+			@RequestParam MultiValueMap<String, Object> parameters, Method method, DefaultedPageable pageable,
+			Sort sort) {
 
-		MultiValueMap<String, Object> result = new LinkedMultiValueMap<String, Object>(parameters);
-		MethodParameters methodParameters = new MethodParameters(method, new AnnotationAttribute(Param.class));
-		List<MethodParameter> parameterList = methodParameters.getParameters();
-		List<TypeInformation<?>> parameterTypeInformations = ClassTypeInformation.from(method.getDeclaringClass())
-				.getParameterTypes(method);
+		var result = new LinkedMultiValueMap<String, Object>(parameters);
+		var methodParameters = new MethodParameters(method, new AnnotationAttribute(Param.class));
+		var parameterList = methodParameters.getParameters();
+		var parameterTypeInformations = TypeInformation.of(method.getDeclaringClass()).getParameterTypes(method);
 
 		parameters.entrySet().forEach(entry ->
 
 		methodParameters.getParameter(entry.getKey()).ifPresent(parameter -> {
 
-			int parameterIndex = parameterList.indexOf(parameter);
-			TypeInformation<?> domainType = parameterTypeInformations.get(parameterIndex).getActualType();
-
-			ResourceMetadata metadata = mappings.getMetadataFor(domainType.getType());
+			var parameterIndex = parameterList.indexOf(parameter);
+			var domainType = parameterTypeInformations.get(parameterIndex).getActualType();
+			var metadata = mappings.getMetadataFor(domainType.getType());
 
 			if (metadata != null && metadata.isExported()) {
 				result.put(parameter.getParameterName(), prepareUris(entry.getValue()));
@@ -363,7 +346,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 	 */
 	private static SearchResourceMappings verifySearchesExposed(RootResourceInformation resourceInformation) {
 
-		SearchResourceMappings resourceMappings = resourceInformation.getSearchMappings();
+		var resourceMappings = resourceInformation.getSearchMappings();
 
 		if (!resourceMappings.isExported()) {
 			throw new ResourceNotFoundException();
@@ -385,7 +368,7 @@ class RepositorySearchController extends AbstractRepositoryRestController {
 			return Collections.emptyList();
 		}
 
-		List<Object> result = new ArrayList<Object>(source.size());
+		var result = new ArrayList<Object>(source.size());
 
 		for (Object element : source) {
 

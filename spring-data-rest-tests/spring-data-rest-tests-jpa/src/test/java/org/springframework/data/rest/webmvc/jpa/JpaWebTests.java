@@ -53,7 +53,6 @@ import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -556,7 +555,6 @@ public class JpaWebTests extends CommonWebTests {
 
 		// Assert results returned as specified
 		client.follow(findBySortedLink.expand(Arrays.asList("title", "desc"))).//
-				andDo(MockMvcResultHandlers.print()).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));

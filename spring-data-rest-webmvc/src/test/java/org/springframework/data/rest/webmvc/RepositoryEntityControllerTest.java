@@ -27,14 +27,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.data.web.PagedResourcesAssembler;
 
 /**
  * Unit tests for {@link RepositoryEntityController}
@@ -44,12 +42,10 @@ import org.springframework.data.web.PagedResourcesAssembler;
 @ExtendWith(MockitoExtension.class)
 class RepositoryEntityControllerTest {
 
-	@Mock Repositories repositories;
 	@Mock RepositoryRestConfiguration restConfiguration;
 	@Mock RepositoryEntityLinks repositoryEntityLinks;
 	@Mock HttpHeadersPreparer httpHeadersPreparer;
 	@Mock RepositoryInvoker invoker;
-	@Mock PagedResourcesAssembler<Object> assembler;
 
 	KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
 
@@ -69,8 +65,8 @@ class RepositoryEntityControllerTest {
 				.thenReturn(RepositoryPropertyReferenceControllerUnitTests.AllSupportedHttpMethods.INSTANCE);
 
 		RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
-		RepositoryEntityController repositoryEntityController = new RepositoryEntityController(repositories,
-				restConfiguration, repositoryEntityLinks, assembler, httpHeadersPreparer);
+		RepositoryEntityController repositoryEntityController = new RepositoryEntityController(
+				restConfiguration, repositoryEntityLinks, httpHeadersPreparer);
 
 		assertThatExceptionOfType(ResourceNotFoundException.class) //
 				.isThrownBy(() -> repositoryEntityController.getItemResource(information, "1", null, null));
