@@ -116,16 +116,18 @@ class RepositoryTestsConfig {
 	@Bean
 	public Module persistentEntityModule() {
 
+		var conversionService = new DefaultConversionService();
+
 		RepositoryResourceMappings mappings = new RepositoryResourceMappings(repositories(), persistentEntities(),
 				config());
 		EntityLinks entityLinks = new RepositoryEntityLinks(repositories(), mappings, config(),
 				mock(PagingAndSortingTemplateVariables.class), PluginRegistry.of(DefaultIdConverter.INSTANCE));
 		SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks,
-				Collections.emptyList(), new DefaultConversionService());
+				Collections.emptyList(), conversionService);
 
 		DefaultRepositoryInvokerFactory invokerFactory = new DefaultRepositoryInvokerFactory(repositories());
 		UriToEntityConverter uriToEntityConverter = new UriToEntityConverter(persistentEntities(), invokerFactory,
-				repositories());
+				() -> conversionService);
 
 		Associations associations = new Associations(mappings, config());
 		LinkCollector collector = new DefaultLinkCollector(persistentEntities(), selfLinkProvider, associations);

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -320,13 +321,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	@Qualifier
 	public DefaultFormattingConversionService defaultConversionService(PersistentEntities persistentEntities,
-			RepositoryInvokerFactory repositoryInvokerFactory, Repositories repositories) {
+			RepositoryInvokerFactory repositoryInvokerFactory) {
 
-		DefaultFormattingConversionService conversionService = (DefaultFormattingConversionService) defaultConversionService;
+		var conversionService = (DefaultFormattingConversionService) defaultConversionService;
+		Supplier<ConversionService> supplier = () -> conversionService;
 
 		// Add Spring Data Commons formatters
 		conversionService
-				.addConverter(new UriToEntityConverter(persistentEntities, repositoryInvokerFactory, repositories));
+				.addConverter(new UriToEntityConverter(persistentEntities, repositoryInvokerFactory, supplier));
+		conversionService.addConverter(new StringToAggregateReferenceConverter(supplier));
 		conversionService.addConverter(StringToLdapNameConverter.INSTANCE);
 		addFormatters(conversionService);
 
@@ -638,8 +641,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	/**
-	 * Special {@link org.springframework.web.servlet.HandlerAdapter} that only recognizes handler methods defined in
-	 * the provided controller classes.
+	 * Special {@link org.springframework.web.servlet.HandlerAdapter} that only recognizes handler methods defined in the
+	 * provided controller classes.
 	 *
 	 * @return
 	 */
@@ -734,7 +737,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				PluginRegistry.of(getEntityLookups()));
 
 		return new PersistentEntityJackson2Module(associationLinks.get(), persistentEntities.get(),
-				new UriToEntityConverter(persistentEntities.get(), repositoryInvokerFactory.get(), repositories.get()),
+				new UriToEntityConverter(persistentEntities.get(), repositoryInvokerFactory.get(),
+						() -> defaultConversionService),
 				linkCollector, repositoryInvokerFactory.get(), lookupObjectSerializer, invoker.getObject(), assembler);
 	}
 
@@ -954,7 +958,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		objectMapper.registerModule(geoModule.getObject());
 		objectMapper.registerModule(new AggregateReferenceResolvingModule(
-				new UriToEntityConverter(persistentEntities.get(), repositoryInvokerFactory.get(), repositories.get()),
+				new UriToEntityConverter(persistentEntities.get(), repositoryInvokerFactory.get(),
+						() -> defaultConversionService),
 				resourceMappings.get()));
 
 		if (repositoryRestConfiguration.get().isEnableEnumTranslation()) {

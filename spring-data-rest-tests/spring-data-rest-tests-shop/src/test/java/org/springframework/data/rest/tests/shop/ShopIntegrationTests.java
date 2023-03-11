@@ -16,19 +16,21 @@
 package org.springframework.data.rest.tests.shop;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.hateoas.Link;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -41,6 +43,8 @@ import com.jayway.jsonpath.JsonPath;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = ShopConfiguration.class)
 class ShopIntegrationTests extends AbstractWebIntegrationTests {
+
+	@Autowired OrderRepository orders;
 
 	@Test
 	void rendersRepresentationCorrectly() throws Exception {
@@ -70,7 +74,6 @@ class ShopIntegrationTests extends AbstractWebIntegrationTests {
 
 		client.follow(client.discoverUnique("products").expand(arguments))//
 				.andExpect(status().isOk())//
-				.andDo(MockMvcResultHandlers.print()) //
 				.andExpect(jsonPath("$._embedded.products[0].name", notNullValue()))//
 				.andExpect(jsonPath("$._embedded.products[0].price").doesNotExist());
 	}
@@ -94,6 +97,36 @@ class ShopIntegrationTests extends AbstractWebIntegrationTests {
 				.andExpect(status().isOk())//
 				.andExpect(jsonPath("$._embedded.orders[0].items[0].products[0].name").exists())//
 				.andExpect(jsonPath("$._embedded.orders[0].items[0].products[0]._links.beta").exists());
+	}
+
+	@Test // GH-2239
+	void triggersCustomControllerWithAggregateReferenceToId() throws Exception {
+
+		var uuid = UUID.randomUUID();
+
+		mvc.perform(get("/order-custom-id?order=/order/foo/bar/{id}", uuid))
+				.andExpect(status().is2xxSuccessful())
+				.andExpect(content().string("\"%s\"".formatted(uuid.toString())));
+	}
+
+	@Test // GH-2239
+	void triggersCustomControllerWithAggregateReferenceToAggregate() throws Exception {
+
+		var uuid = orders.findAll().iterator().next().getId().getId();
+
+		mvc.perform(get("/order-custom?order=/order/foo/bar/{id}", uuid))
+				.andExpect(status().is2xxSuccessful())
+				.andExpect(content().string("\"%s\"".formatted(uuid.toString())));
+	}
+
+	@Test // GH-2239
+	void triggersCustomControllerWithAggregateReferenceToAssociation() throws Exception {
+
+		var uuid = UUID.randomUUID();
+
+		mvc.perform(get("/order-custom-association?order=/order/foo/bar/{id}", uuid))
+				.andExpect(status().is2xxSuccessful())
+				.andExpect(content().string("\"%s\"".formatted(uuid.toString())));
 	}
 
 	private static void expectRelatedResource(String name, ResultActions actions) throws Exception {

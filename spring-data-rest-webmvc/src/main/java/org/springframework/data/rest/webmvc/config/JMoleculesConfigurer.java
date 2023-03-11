@@ -20,7 +20,9 @@ import java.util.function.Supplier;
 
 import org.jmolecules.ddd.types.Entity;
 import org.jmolecules.ddd.types.Identifier;
+import org.jmolecules.spring.AssociationToPrimitivesConverter;
 import org.jmolecules.spring.IdentifierToPrimitivesConverter;
+import org.jmolecules.spring.PrimitivesToAssociationConverter;
 import org.jmolecules.spring.PrimitivesToIdentifierConverter;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -73,8 +75,13 @@ class JMoleculesConfigurer implements WebMvcConfigurer, RepositoryRestConfigurer
 
 		Supplier<ConversionService> supplier = () -> conversionService;
 
-		conversionService.addConverter(new PrimitivesToIdentifierConverter(supplier));
-		conversionService.addConverter(new IdentifierToPrimitivesConverter(supplier));
+		var primitivesToIdentifierConverter = new PrimitivesToIdentifierConverter(supplier);
+		var identifierToPrimitivesConverter = new IdentifierToPrimitivesConverter(supplier);
+
+		conversionService.addConverter(primitivesToIdentifierConverter);
+		conversionService.addConverter(identifierToPrimitivesConverter);
+		conversionService.addConverter(new AssociationToPrimitivesConverter<>(identifierToPrimitivesConverter));
+		conversionService.addConverter(new PrimitivesToAssociationConverter<>(primitivesToIdentifierConverter));
 	}
 
 	@Lazy

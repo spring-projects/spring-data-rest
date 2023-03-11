@@ -16,21 +16,21 @@
 package org.springframework.data.rest.core;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.core.convert.converter.ConditionalGenericConverter;
 import org.springframework.core.convert.converter.GenericConverter;
-import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -39,14 +39,17 @@ import org.springframework.util.Assert;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-public class UriToEntityConverter implements ConditionalGenericConverter {
+public class UriToEntityConverter implements GenericConverter {
 
-	private static final TypeDescriptor URI_TYPE = TypeDescriptor.valueOf(URI.class);
+	private static final Class<?> ASSOCIATION_TYPE = ReflectionUtils
+			.loadIfPresent("org.jmolecules.ddd.types.Association", UriToEntityConverter.class.getClassLoader());
 
 	private final PersistentEntities entities;
 	private final RepositoryInvokerFactory invokerFactory;
-	private final Repositories repositories;
+	private final Supplier<ConversionService> conversionService;
+
 	private final Set<ConvertiblePair> convertiblePairs;
+	private final Set<Class<?>> identifierTypes;
 
 	/**
 	 * Creates a new {@link UriToEntityConverter} using the given {@link PersistentEntities},
@@ -57,51 +60,78 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 	 * @param repositories must not be {@literal null}.
 	 */
 	public UriToEntityConverter(PersistentEntities entities, RepositoryInvokerFactory invokerFactory,
-			Repositories repositories) {
+			Supplier<ConversionService> conversionService) {
 
 		Assert.notNull(entities, "PersistentEntities must not be null");
 		Assert.notNull(invokerFactory, "RepositoryInvokerFactory must not be null");
-		Assert.notNull(repositories, "Repositories must not be null");
+		Assert.notNull(conversionService, "ConversionService must not be null!");
 
-		Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
+		this.convertiblePairs = new HashSet<ConvertiblePair>();
+		this.identifierTypes = new HashSet<>();
 
 		for (TypeInformation<?> domainType : entities.getManagedTypes()) {
 
-			Class<?> rawType = domainType.getType();
-			Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> entity = entities.getPersistentEntity(rawType);
+			var rawType = domainType.getType();
+			var entity = entities.getPersistentEntity(rawType);
 
-			if (entity.map(it -> it.hasIdProperty()).orElse(false)) {
+			entity.filter(it -> it.hasIdProperty()).ifPresent(it -> {
 				convertiblePairs.add(new ConvertiblePair(URI.class, domainType.getType()));
-			}
+				registerIdentifierType(it.getRequiredIdProperty().getType());
+			});
 		}
 
-		this.convertiblePairs = Collections.unmodifiableSet(convertiblePairs);
 		this.entities = entities;
 		this.invokerFactory = invokerFactory;
-		this.repositories = repositories;
+		this.conversionService = conversionService;
+
+		if (ASSOCIATION_TYPE != null) {
+			registerIdentifierType(ASSOCIATION_TYPE);
+		}
 	}
 
-	@Override
-	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
-		return !sourceType.equals(URI_TYPE) ? false
-				: repositories.getRepositoryInformationFor(targetType.getType()).isPresent();
+	private void registerIdentifierType(Class<?> type) {
+
+		convertiblePairs.add(new ConvertiblePair(URI.class, type));
+		identifierTypes.add(type);
 	}
 
+	@NonNull
 	@Override
 	public Set<ConvertiblePair> getConvertibleTypes() {
 		return convertiblePairs;
 	}
 
 	@Override
-	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+	@Nullable
+	public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> entity = entities
-				.getPersistentEntity(targetType.getType());
+		if (source == null) {
+			return null;
+		}
+
+		if (identifierTypes.contains(targetType.getType())) {
+
+			var segment = getIdentifierSegment(source, sourceType, targetType);
+
+			return conversionService.get().convert(segment, TypeDescriptor.valueOf(String.class), targetType);
+		}
+
+		var entity = entities.getPersistentEntity(targetType.getType());
 
 		if (!entity.isPresent()) {
 			throw new ConversionFailedException(sourceType, targetType, source,
-					new IllegalArgumentException("No PersistentEntity information available for " + targetType.getType()));
+					new IllegalArgumentException(
+							"No PersistentEntity information available for " + targetType.getType()));
 		}
+
+		var segment = getIdentifierSegment(source, sourceType, targetType);
+
+		return invokerFactory.getInvokerFor(targetType.getType())
+				.invokeFindById(segment)
+				.orElse(null);
+	}
+
+	private static String getIdentifierSegment(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 		URI uri = (URI) source;
 		String[] parts = uri.getPath().split("/");
@@ -111,6 +141,6 @@ public class UriToEntityConverter implements ConditionalGenericConverter {
 					"Cannot resolve URI " + uri + "; Is it local or remote; Only local URIs are resolvable"));
 		}
 
-		return invokerFactory.getInvokerFor(targetType.getType()).invokeFindById(parts[parts.length - 1]).orElse(null);
+		return parts[parts.length - 1];
 	}
 }

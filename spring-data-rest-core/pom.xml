@@ -63,6 +63,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.jmolecules</groupId>
+			<artifactId>jmolecules-ddd</artifactId>
+			<version>${jmolecules}</version>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>${guava}</version>
@@ -73,6 +80,13 @@
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-keyvalue</artifactId>
 			<version>${springdata.keyvalue}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jmolecules.integrations</groupId>
+			<artifactId>jmolecules-spring</artifactId>
+			<version>${jmolecules-integration}</version>
 			<scope>test</scope>
 		</dependency>
 

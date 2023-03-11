@@ -1,43 +1,44 @@
 [[customizing-sdr.overriding-sdr-response-handlers]]
 = Overriding Spring Data REST Response Handlers
 
-Sometimes, you may want to write a custom handler for a specific resource. To take advantage of Spring Data REST's settings, message converters, exception handling, and more, use the `@RepositoryRestController` annotation instead of a standard Spring MVC `@Controller` or `@RestController`. Controllers annotated with `@RepositoryRestController` are served from the API base path defined in `RepositoryRestConfiguration.setBasePath`, which is used by all other RESTful endpoints (for example, `/api`). The following example shows how to use the `@RepositoryRestController` annotation:
+Sometimes, you may want to write a custom handler for a specific resource.
+To take advantage of Spring Data REST's settings, message converters, exception handling, and more, use the `@RepositoryRestController` annotation instead of a standard Spring MVC `@Controller` or `@RestController`.
+Controllers annotated with `@RepositoryRestController` are served from the API base path defined in `RepositoryRestConfiguration.setBasePath`, which is used by all other RESTful endpoints (for example, `/api`).
+The following example shows how to use the `@RepositoryRestController` annotation:
 
 ====
 [source,java]
 ----
-@RepositoryRestController
-public class ScannerController {
+@BasePathAwareController
+class ScannerController {
 
-    private final ScannerRepository repository;
+  private final ScannerRepository repository;
 
-    @Autowired
-    public ScannerController(ScannerRepository repo) { // <1>
-        repository = repo;
-    }
+  ScannerController(ScannerRepository repository) { // <1>
+    repository = repository;
+  }
 
-    @RequestMapping(method = GET, value = "/scanners/search/listProducers") // <2>
-    public @ResponseBody ResponseEntity<?> getProducers() {
-        List<String> producers = repository.listProducers(); // <3>
+  @GetMapping(path = "/scanners/search/producers") // <2>
+  ResponseEntity<?> getProducers() {
 
-        //
-        // do some intermediate processing, logging, etc. with the producers
-        //
+    List<String> producers = repository.listProducers(); // <3>
 
-        CollectionModel<String> resources = CollectionModel.of(producers); // <4>
+    //
+    // do some intermediate processing, logging, etc. with the producers
+    //
 
-        resources.add(linkTo(methodOn(ScannerController.class).getProducers()).withSelfRel()); // <5>
+    CollectionModel<String> resources = CollectionModel.of(producers); // <4>
 
-        // add other links as needed
+    resources.add(linkTo(methodOn(ScannerController.class).getProducers()).withSelfRel()); // <5>
 
-        return ResponseEntity.ok(resources); // <6>
-    }
+    // add other links as needed
 
+    return ResponseEntity.ok(resources); // <6>
+  }
 }
 ----
-
 <1> This example uses constructor injection.
-<2> This handler plugs in a custom handler for a Spring Data finder method.
+<2> This handler plugs in a custom handler method as query method resource
 <3> This handler uses the underlying repository to fetch data, but then does some form of post processing before returning the final data set to the client.
 <4> The results of type T need to be wrapped up in a Spring HATEOAS `CollectionModel<T>` object to return a collection. `EntityModel<T>` or `RepresentationModel<T>` are suitable wrappers for a single item, respectively.
 <5> Add a link back to this exact method as a `self` link.
@@ -48,8 +49,51 @@ public class ScannerController {
 
 IMPORTANT: In this example, the combined path is `RepositoryRestConfiguration.getBasePath()` + `/scanners/search/listProducers`.
 
+[[customizing-sdr.aggregate-references]
+== Obtaining Aggregate References
+
+For custom controllers receiving `PUT` and `POST` requests, the request body usually contains a JSON document that will use URIs to express references to other resources.
+For `GET` requests, those references are handed in via a request parameter.
+
+As of Spring Data REST 4.1, we provide `AggregateReference<T, ID>` to be used as handler method parameter type to capture such references and resolve them into either the referenced aggregate's identifier, the aggregate itself or a jMolecules `Association`.
+All you need to do is declare an `@RequestParam` of that type and then consume either the identifier or the fully resolved aggregate.
+
+[source,java]
+----
+@BasePathAwareController
+class ScannerController {
+
+  private final ScannerRepository repository;
+
+  ScannerController(ScannerRepository repository) {
+    repository = repository;
+  }
+
+  @GetMapping(path = "/scanners")
+  ResponseEntity<?> getProducers(
+    @RequestParam AggregateReference<Producer, ProducerIdentifier> producer) {
+
+    var identifier = producer.resolveRequiredId();
+    // Alternatively
+    var aggregate = producer.resolveRequiredAggregate();
+  }
+
+  // Alternatively
+
+  @GetMapping(path = "/scanners")
+  ResponseEntity<?> getProducers(
+    @RequestParam AssociationAggregateReference<Producer, ProducerIdentifier> producer) {
+
+    var association = producer.resolveRequiredAssociation();
+  }
+}
+----
+
+In case you are using jMolecules, `AssociationAggregateReference` also allows you to obtain an `Association`.
+While both of the abstraction assume the value for the parameter to be a URI matching the scheme that Spring Data REST uses to expose item resources, that source value resolution can be customized by calling `….withIdSource(…)` on the reference instance to provide a function to extract the identifier value to be used for aggregate resolution eventually from the `UriComponents` obtained from the URI received.
+
 [[customizing-sdr.overriding-sdr-response-handlers.annotations]]
-== @RepositoryRestResource VS. @BasePathAwareController
+== `@RepositoryRestResource` VS. `@BasePathAwareController`
 
 If you are not interested in entity-specific operations but still want to build custom operations underneath `basePath`, such as Spring MVC views, resources, and others, use `@BasePathAwareController`.
 If you're using `@RepositoryRestController` on your custom controller, it will only handle the request if your request mappings blend into the URI space used by the repository.

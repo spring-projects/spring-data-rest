@@ -19,17 +19,22 @@ import jakarta.annotation.PostConstruct;
 
 import java.math.BigDecimal;
 
+import org.jmolecules.jackson.JMoleculesModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.map.repository.config.EnableMapRepositories;
 import org.springframework.data.rest.core.config.EntityLookupRegistrar;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.tests.shop.Customer.Gender;
 import org.springframework.data.rest.tests.shop.Product.ProductNameOnlyProjection;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Oliver Gierke
@@ -68,6 +73,33 @@ class ShopConfiguration {
 		};
 	}
 
+	@Bean
+	CustomController customController() {
+		return new CustomController();
+	}
+
+	@Bean
+	RepositoryRestConfigurer repositoryRestConfigurer() {
+
+		return new RepositoryRestConfigurer() {
+
+			@Override
+			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
+
+				EntityLookupRegistrar lookup = config.withEntityLookup();
+
+				lookup.forRepository(ProductRepository.class, Product::getName, ProductRepository::findByName);
+				lookup.forValueRepository(LineItemTypeRepository.class, LineItemType::getName,
+						LineItemTypeRepository::findByName);
+			}
+
+			@Override
+			public void configureJacksonObjectMapper(ObjectMapper objectMapper) {
+				objectMapper.registerModule(new JMoleculesModule());
+			}
+		};
+	}
+
 	@PostConstruct
 	void init() {
 
@@ -85,22 +117,5 @@ class ShopConfiguration {
 		order.add(new LineItem(drums, lineItemType));
 
 		orders.save(order);
-	}
-
-	@Configuration
-	static class SpringDataRestConfiguration implements RepositoryRestConfigurer {
-
-		@Bean
-		RepositoryRestConfigurer configurer() {
-
-			return RepositoryRestConfigurer.withConfig(config -> {
-
-				EntityLookupRegistrar lookup = config.withEntityLookup();
-
-				lookup.forRepository(ProductRepository.class, Product::getName, ProductRepository::findByName);
-				lookup.forValueRepository(LineItemTypeRepository.class, LineItemType::getName,
-						LineItemTypeRepository::findByName);
-			});
-		}
 	}
 }

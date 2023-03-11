@@ -15,13 +15,12 @@
  */
 package org.springframework.data.rest.tests.shop;
 
-import java.util.UUID;
-
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.rest.tests.shop.Order.OrderIdentifier;
 
 /**
  * @author Oliver Gierke
  */
-public interface OrderRepository extends CrudRepository<Order, UUID> {
+public interface OrderRepository extends CrudRepository<Order, OrderIdentifier> {
 
 }
