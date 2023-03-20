@@ -44,7 +44,8 @@ public class ResolvingAggregateReference<T, ID> implements AggregateReference<T,
 	 * against the given resolver function.
 	 *
 	 * @param source must not be {@literal null}.
-	 * @param resolver must not be {@literal null}.
+	 * @param aggregateResolver must not be {@literal null}.
+	 * @param identifierResolver must not be {@literal null}.
 	 */
 	public ResolvingAggregateReference(URI source, Function<Object, ? extends T> aggregateResolver,
 			Function<Object, ? extends ID> identifierResolver) {
@@ -71,42 +72,27 @@ public class ResolvingAggregateReference<T, ID> implements AggregateReference<T,
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param value can be {@literal null}.
+	 * @param identifier must not be {@literal null}.
 	 */
 	public ResolvingAggregateReference(URI source, @Nullable T value, ID identifier) {
 		this(source, __ -> value, __ -> identifier, it -> it);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.Foo#getURI()
-	 */
 	@Override
 	public URI getUri() {
 		return source;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.AggregateReference#resolveId()
-	 */
 	@Override
 	public ID resolveId() {
 		return extractor.andThen(identifierResolver).apply(source);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.AggregateReference#resolveAggregate()
-	 */
 	@Override
 	public T resolveAggregate() {
 		return extractor.andThen(aggregateResolver).apply(source);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.rest.core.AggregateReference#withExtractor(java.util.function.Function)
-	 */
 	@Override
 	public AggregateReference<T, ID> withIdSource(Function<UriComponents, Object> extractor) {
 		return new ResolvingAggregateReference<>(source, aggregateResolver, identifierResolver, STARTER.andThen(extractor));

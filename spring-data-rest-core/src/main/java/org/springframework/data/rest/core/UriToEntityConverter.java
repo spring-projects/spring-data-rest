@@ -57,7 +57,7 @@ public class UriToEntityConverter implements GenericConverter {
 	 *
 	 * @param entities must not be {@literal null}.
 	 * @param invokerFactory must not be {@literal null}.
-	 * @param repositories must not be {@literal null}.
+	 * @param conversionService must not be {@literal null}.
 	 */
 	public UriToEntityConverter(PersistentEntities entities, RepositoryInvokerFactory invokerFactory,
 			Supplier<ConversionService> conversionService) {
@@ -118,7 +118,7 @@ public class UriToEntityConverter implements GenericConverter {
 
 		var entity = entities.getPersistentEntity(targetType.getType());
 
-		if (!entity.isPresent()) {
+		if (entity.isEmpty()) {
 			throw new ConversionFailedException(sourceType, targetType, source,
 					new IllegalArgumentException(
 							"No PersistentEntity information available for " + targetType.getType()));
