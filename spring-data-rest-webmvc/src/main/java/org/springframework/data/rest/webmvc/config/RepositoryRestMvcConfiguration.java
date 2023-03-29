@@ -764,6 +764,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public void extendHandlerExceptionResolvers(List<HandlerExceptionResolver> exceptionResolvers) {
 
 		ExceptionHandlerExceptionResolver er = new ExceptionHandlerExceptionResolver();
+		er.setApplicationContext(applicationContext);
 		er.setCustomArgumentResolvers(defaultMethodArgumentResolvers(selfLinkProvider.get(),
 				persistentEntityArgumentResolver.get(), persistentEntityResourceAssemblerArgumentResolver.get(),
 				repoRequestArgumentResolver.get()));
