@@ -159,6 +159,21 @@ class AddOperationUnitTests {
 		assertThat(outer.todoList.getTodos()).containsExactly(todos.get(0), todos.get(1), newTodo);
 	}
 
+	@Test
+	void failPrimitiveInNestedObjectCollection() {
+		List<Todo> todos = new ArrayList<>();
+		todos.add(new Todo(1L, "A", false));
+		todos.add(new Todo(2L, "B", false));
+
+		TodoList todoList = new TodoList();
+		todoList.setTodos(todos);
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> AddOperation.of("/todos/-", "Primitive").perform(todoList, TodoList.class, TestPropertyPathContext.INSTANCE))
+				.withMessageContaining("Could not read")
+				.withMessageContaining("into class");
+	}
+
 	@Data
 	@AllArgsConstructor
 	@NoArgsConstructor
