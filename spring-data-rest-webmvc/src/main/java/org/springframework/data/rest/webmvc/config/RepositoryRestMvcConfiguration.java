@@ -151,6 +151,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
  * @author Greg Turnquist
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Will Fleury
  */
 @Configuration(proxyBeanMethods = false)
 @EnableHypermediaSupport(type = { HypermediaType.HAL, HypermediaType.HAL_FORMS })
