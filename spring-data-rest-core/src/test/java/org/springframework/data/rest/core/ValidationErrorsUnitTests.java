@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022 original author or authors.
+ * Copyright 2016-2023 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,18 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.NotReadablePropertyException;
+import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
+import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentProperty;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.validation.Errors;
 
 /**
  * Unit tests for {@link ValidationErrors}.
  *
  * @author Oliver Gierke
+ * @author Florian Cramer
  */
 class ValidationErrorsUnitTests {
 
@@ -40,7 +44,7 @@ class ValidationErrorsUnitTests {
 	@BeforeEach
 	void setUp() {
 
-		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
+		KeyValueMappingContext<?, ?> context = new TestKeyValueMappingContext<>();
 		context.getPersistentEntity(Foo.class);
 
 		this.entities = new PersistentEntities(Arrays.asList(context));
@@ -71,6 +75,14 @@ class ValidationErrorsUnitTests {
 		assertThat(errors.getFieldValue("bar")).isNull();
 	}
 
+	@Test // GH-2252
+	void getsTheNestedFieldsValueForNonPersistentEntity() {
+
+		ValidationErrors errors = new ValidationErrors(new Foo(), entities);
+
+		assertThat(errors.getFieldValue("qux.field")).isEqualTo("World");
+	}
+
 	private static void expectedErrorBehavior(Errors errors) {
 
 		assertThat(errors.getFieldValue("bars")).isNotNull();
@@ -88,9 +100,22 @@ class ValidationErrorsUnitTests {
 	static class Foo {
 		List<Bar> bars = Collections.singletonList(new Bar());
 		Bar bar = null;
+		Qux qux = new Qux();
 	}
 
 	static class Bar {
 		String field = "Hello";
+	}
+
+	static class Qux {
+		String field = "World";
+	}
+
+	static class TestKeyValueMappingContext<E extends KeyValuePersistentEntity<?, P>, P extends KeyValuePersistentProperty<P>> extends KeyValueMappingContext<E, P> {
+
+		@Override
+		protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> type) {
+			return Qux.class != type.getType() && super.shouldCreatePersistentEntityFor(type);
+		}
 	}
 }
