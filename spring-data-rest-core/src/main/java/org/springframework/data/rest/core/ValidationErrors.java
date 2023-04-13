@@ -18,6 +18,7 @@ package org.springframework.data.rest.core;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.ConfigurablePropertyAccessor;
@@ -39,6 +40,7 @@ import org.springframework.validation.Errors;
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Florian Cramer
  */
 public class ValidationErrors extends AbstractPropertyBindingResult {
 
@@ -92,7 +94,12 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 			 */
 			private Object lookupValueOn(Object value, String segment) {
 
-				PersistentProperty<?> property = entities.getPersistentEntity(value.getClass()) //
+				Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> entity = entities.getPersistentEntity(value.getClass());
+				if (!entity.isPresent()) {
+					return new DirectFieldAccessor(value).getPropertyValue(segment);
+				}
+
+				PersistentProperty<?> property = entity //
 						.map(it -> it.getPersistentProperty(PropertyAccessorUtils.getPropertyName(segment))) //
 						.orElseThrow(() -> new NotReadablePropertyException(value.getClass(), segment));
 
