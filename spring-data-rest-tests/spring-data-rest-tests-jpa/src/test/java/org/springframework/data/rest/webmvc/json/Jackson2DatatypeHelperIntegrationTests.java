@@ -75,7 +75,7 @@ class Jackson2DatatypeHelperIntegrationTests {
 	}
 
 	@Test // DATAREST-500
-	void configuresHibernate4ModuleToLoadLazyLoadingProxies() throws Exception {
+	void configuresHibernateModuleToLoadLazyLoadingProxies() throws Exception {
 
 		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(Order.class);
 		PersistentProperty<?> property = entity.getRequiredPersistentProperty("creator");

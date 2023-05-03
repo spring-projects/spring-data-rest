@@ -15,11 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import org.hibernate.Version;
 import org.springframework.util.ClassUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
+import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 
 /**
  * Helper class to register datatype modules based on their presence in the classpath.
@@ -32,35 +31,23 @@ public class Jackson2DatatypeHelper {
 
 	private static final boolean IS_HIBERNATE_AVAILABLE = ClassUtils.isPresent("org.hibernate.Version",
 			Jackson2DatatypeHelper.class.getClassLoader());
-	private static final boolean IS_HIBERNATE5_MODULE_AVAILABLE = ClassUtils.isPresent(
-			"com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule",
+	private static final boolean IS_HIBERNATE6_MODULE_AVAILABLE = ClassUtils.isPresent(
+			"com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module",
 			Jackson2DatatypeHelper.class.getClassLoader());
 
 	public static void configureObjectMapper(ObjectMapper mapper) {
 
-		if (IS_HIBERNATE_AVAILABLE && (HibernateVersions.isHibernate5() || HibernateVersions.isHibernate6())
-				&& IS_HIBERNATE5_MODULE_AVAILABLE) {
-			new Hibernate5ModuleRegistrar().registerModule(mapper);
+		if (IS_HIBERNATE_AVAILABLE && IS_HIBERNATE6_MODULE_AVAILABLE) {
+			new Hibernate6ModuleRegistrar().registerModule(mapper);
 		}
 	}
 
-	private static class HibernateVersions {
-
-		public static boolean isHibernate5() {
-			return Version.getVersionString().startsWith("5");
-		}
-
-		public static boolean isHibernate6() {
-			return Version.getVersionString().startsWith("6");
-		}
-	}
-
-	private static class Hibernate5ModuleRegistrar {
+	private static class Hibernate6ModuleRegistrar {
 
 		public void registerModule(ObjectMapper mapper) {
 
-			Hibernate5JakartaModule module = new Hibernate5JakartaModule();
-			module.enable(Hibernate5JakartaModule.Feature.FORCE_LAZY_LOADING);
+			var module = new Hibernate6Module();
+			module.enable(Hibernate6Module.Feature.FORCE_LAZY_LOADING);
 
 			mapper.registerModule(module);
 		}

@@ -72,7 +72,7 @@
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-hibernate5-jakarta</artifactId>
+			<artifactId>jackson-datatype-hibernate6</artifactId>
 			<optional>true</optional>
 		</dependency>
 
