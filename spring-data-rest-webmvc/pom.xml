@@ -88,6 +88,12 @@
 			<artifactId>hibernate-core</artifactId>
 			<version>${hibernate.version}</version>
 			<optional>true</optional>
+			<exclusions>
+				<exclusion>
+					<groupId>net.bytebuddy</groupId>
+					<artifactId>byte-buddy</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Jackson JodaTime -->
