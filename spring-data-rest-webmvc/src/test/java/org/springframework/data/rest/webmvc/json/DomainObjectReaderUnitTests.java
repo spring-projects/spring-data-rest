@@ -58,6 +58,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -66,6 +67,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -109,6 +112,7 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(ArrayHolder.class);
 		mappingContext.getPersistentEntity(Apple.class);
 		mappingContext.getPersistentEntity(Pear.class);
+		mappingContext.getPersistentEntity(WithCustomMappedPrimitiveCollection.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -645,6 +649,19 @@ class DomainObjectReaderUnitTests {
 		assertThat(result.inner).isSameAs(inner);
 	}
 
+	@Test // GH-2261
+	void deserializesCustomCollectionOfPrimitives() throws Exception {
+
+		JsonNode node = new ObjectMapper().readTree("{ \"longs\" : [ \"foo:1\", \"bar:2\" ] }");
+
+		WithCustomMappedPrimitiveCollection collection = new WithCustomMappedPrimitiveCollection();
+		collection.longs = Arrays.asList(3L);
+
+		WithCustomMappedPrimitiveCollection result = reader.doMerge((ObjectNode) node, collection, new ObjectMapper());
+
+		assertThat(result.longs).isEqualTo(Arrays.asList(1L, 2L));
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -903,5 +920,32 @@ class DomainObjectReaderUnitTests {
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Pear extends Fruit {
 		String pear;
+	}
+
+	// GH-2261
+	static class WithCustomMappedPrimitiveCollection {
+
+		@JsonDeserialize(contentUsing = CustomDeserializer.class) //
+		List<Long> longs;
+
+		@SuppressWarnings("serial")
+		static class CustomDeserializer extends StdDeserializer<Long> {
+
+			protected CustomDeserializer() {
+				super(Long.class);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
+			 */
+			@Override
+			public Long deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+
+				String[] elements = p.getText().split(":");
+
+				return Long.valueOf(elements[elements.length - 1]);
+			}
+		}
 	}
 }
