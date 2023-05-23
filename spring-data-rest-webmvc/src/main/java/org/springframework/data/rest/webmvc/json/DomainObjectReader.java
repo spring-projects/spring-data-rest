@@ -352,10 +352,7 @@ public class DomainObjectReader {
 		for (JsonNode jsonNode : array) {
 
 			if (!value.hasNext()) {
-
-				collection.add(mapper.treeToValue(jsonNode, getTypeToMap(null, componentType).getType()));
-
-				continue;
+				break;
 			}
 
 			Object next = value.next();
