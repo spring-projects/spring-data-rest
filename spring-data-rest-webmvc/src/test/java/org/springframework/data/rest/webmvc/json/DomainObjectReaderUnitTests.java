@@ -664,6 +664,26 @@ class DomainObjectReaderUnitTests {
 		assertThat(result.longs).isEqualTo(List.of(1L, 2L));
 	}
 
+	@Test // GH-2264
+	void nestedEntitiesAreCreatedWhenMissingForPut() throws Exception {
+
+		var outer = new Outer();
+		outer.name = "outer name";
+		outer.prop = "something";
+
+		var node = new ObjectMapper().readTree(
+				"{ \"inner\" : { \"name\" : \"new inner name\", \"readOnly\" : \"readonly value\", \"hidden\" : \"hidden value\" } }");
+
+		var result = reader.readPut((ObjectNode) node, outer, new ObjectMapper());
+
+		assertThat(result).isSameAs(outer);
+		assertThat(result.inner).isNotNull();
+		assertThat(result.inner.prop).isNull();
+		assertThat(result.inner.name).isEqualTo("new inner name");
+		assertThat(result.inner.readOnly).isNull();
+		assertThat(result.inner.hidden).isNull();
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 

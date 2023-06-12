@@ -40,7 +40,6 @@ import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.util.InputStreamHttpInputMessage;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
@@ -677,7 +676,10 @@ public class DomainObjectReader {
 			} else if (property.isCollectionLike()) {
 				result = mergeCollections(property, sourceValue, targetValue, mapper);
 			} else if (property.isEntity()) {
-				result = Optionals.mapIfAllPresent(sourceValue, targetValue, (l, r) -> mergeForPut(l, r, mapper));
+
+				result = targetValue.isEmpty()
+						? sourceValue
+						: targetValue.flatMap(t -> sourceValue.map(s -> mergeForPut(s, t, mapper)));
 			} else {
 				result = sourceValue;
 			}
