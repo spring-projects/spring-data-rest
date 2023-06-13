@@ -16,38 +16,37 @@
 package org.springframework.data.rest.tests.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.SecurityFilterChain;
 
 // tag::code[]
 @Configuration // <1>
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true) // <2>
-class SecurityConfiguration extends WebSecurityConfigurerAdapter { // <3>
-// end::code[]
+@EnableMethodSecurity(securedEnabled = true, prePostEnabled = true) // <2>
+class SecurityConfiguration { // <3>
+	// end::code[]
 	@Autowired
 	void configureAuth(AuthenticationManagerBuilder auth) throws Exception {
 
 		auth.inMemoryAuthentication()
-			.withUser("user").password("user").roles("USER").and()
-			.withUser("admin").password("admin").roles("USER", "ADMIN");
+				.withUser("user").password("user").roles("USER").and()
+				.withUser("admin").password("admin").roles("USER", "ADMIN");
 	}
 
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
+	@Bean
+	SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
 
-		http.
-			authorizeRequests()
-				.antMatchers(HttpMethod.GET, "/").permitAll() // Ignore security at the root URI.
-				.anyRequest().authenticated()
-				.and()
-			.httpBasic()
-				.and()
-			.csrf().disable(); // Disable CSRF since it's not critical for the scope of testing.
+		return security
+				.authorizeHttpRequests(it -> it.requestMatchers(HttpMethod.GET, "/")
+						.permitAll().anyRequest().authenticated())
+				.csrf(it -> it.disable())
+				.httpBasic().and()
+				.build();
 	}
 }
