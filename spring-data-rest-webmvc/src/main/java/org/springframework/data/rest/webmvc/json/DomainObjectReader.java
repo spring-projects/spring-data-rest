@@ -685,9 +685,8 @@ public class DomainObjectReader {
 				result = mergeCollections(property, sourceValue, targetValue, mapper);
 			} else if (property.isEntity()) {
 
-				result = targetValue.isEmpty()
-						? sourceValue
-						: targetValue.flatMap(t -> sourceValue.map(s -> mergeForPut(s, t, mapper)));
+                result = targetValue.isPresent() ? targetValue.flatMap(t -> sourceValue.map(s -> mergeForPut(s, t, mapper)))
+                        : sourceValue;
 			} else {
 				result = sourceValue;
 			}
