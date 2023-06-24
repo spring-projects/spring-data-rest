@@ -324,14 +324,13 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	@Qualifier
-	public DefaultFormattingConversionService defaultConversionService(PersistentEntities persistentEntities,
-			RepositoryInvokerFactory repositoryInvokerFactory, Repositories repositories) {
+	public DefaultFormattingConversionService defaultConversionService() {
 
 		DefaultFormattingConversionService conversionService = (DefaultFormattingConversionService) defaultConversionService;
 
 		// Add Spring Data Commons formatters
 		conversionService
-				.addConverter(new UriToEntityConverter(persistentEntities, repositoryInvokerFactory, repositories));
+				.addConverter(uriToEntityConverter());
 		conversionService.addConverter(StringToLdapNameConverter.INSTANCE);
 		addFormatters(conversionService);
 
@@ -740,7 +739,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		LookupObjectSerializer lookupObjectSerializer = new LookupObjectSerializer(PluginRegistry.of(getEntityLookups()));
 
 		return new PersistentEntityJackson2Module(associationLinks.get(), persistentEntities.get(),
-				new UriToEntityConverter(persistentEntities.get(), repositoryInvokerFactory.get(), repositories.get()),
+				uriToEntityConverter(),
 				linkCollector, repositoryInvokerFactory.get(), lookupObjectSerializer, invoker.getObject(), assembler);
 	}
 
@@ -951,8 +950,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		configurerDelegate.get().configureJacksonObjectMapper(objectMapper);
 
 		objectMapper.registerModule(geoModule.getObject());
-		objectMapper.registerModule(new AggregateReferenceResolvingModule(
-				new UriToEntityConverter(persistentEntities.get(), repositoryInvokerFactory.get(), repositories.get()),
+		objectMapper.registerModule(new AggregateReferenceResolvingModule(uriToEntityConverter(),
 				resourceMappings.get()));
 
 		if (repositoryRestConfiguration.get().isEnableEnumTranslation()) {
@@ -962,6 +960,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		Jackson2DatatypeHelper.configureObjectMapper(objectMapper);
 
 		return objectMapper;
+	}
+
+	protected UriToEntityConverter uriToEntityConverter() {
+		return new UriToEntityConverter(persistentEntities.get(), repositoryInvokerFactory.get(), repositories.get());
 	}
 
 	@Bean
