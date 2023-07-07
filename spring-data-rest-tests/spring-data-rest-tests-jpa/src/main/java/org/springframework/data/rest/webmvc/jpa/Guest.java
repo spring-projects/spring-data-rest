@@ -21,7 +21,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +28,6 @@ import java.util.List;
 /**
  * @author Alex Leigh
  */
-@Data
 @Entity
 public class Guest {
 
@@ -44,5 +42,29 @@ public class Guest {
 
 	public void addMeal(Meal meal) {
 		this.meals.add(meal);
+	}
+
+	public Long getId() {
+		return this.id;
+	}
+
+	public Room getRoom() {
+		return this.room;
+	}
+
+	public List<Meal> getMeals() {
+		return this.meals;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public void setRoom(Room room) {
+		this.room = room;
+	}
+
+	public void setMeals(List<Meal> meals) {
+		this.meals = meals;
 	}
 }

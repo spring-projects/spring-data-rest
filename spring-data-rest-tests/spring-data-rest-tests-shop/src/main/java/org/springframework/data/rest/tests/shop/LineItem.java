@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.tests.shop;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -27,19 +24,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.rest.core.config.Projection;
 import org.springframework.data.rest.tests.shop.Product.ProductNameOnlyProjection;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Oliver Gierke
  * @author Craig Andrews
  */
-@Data
-@EqualsAndHashCode(of = "id")
 public class LineItem {
-
-	@Projection(name = "productsOnly", types = LineItem.class)
-	public interface LineItemProductsOnlyProjection {
-		List<ProductNameOnlyProjection> getProducts();
-	}
 
 	private final @Id UUID id = UUID.randomUUID();
 	private final String description;
@@ -61,5 +52,55 @@ public class LineItem {
 
 		this.product = product;
 		this.products = Arrays.asList(product, product);
+	}
+
+	public UUID getId() {
+		return this.id;
+	}
+
+	public String getDescription() {
+		return this.description;
+	}
+
+	public BigDecimal getPrice() {
+		return this.price;
+	}
+
+	public Product getProduct() {
+		return this.product;
+	}
+
+	public List<Product> getProducts() {
+		return this.products;
+	}
+
+	public LineItemType getType() {
+		return this.type;
+	}
+
+	public List<LineItemType> getTypes() {
+		return this.types;
+	}
+
+	@Projection(name = "productsOnly", types = LineItem.class)
+	public interface LineItemProductsOnlyProjection {
+		List<ProductNameOnlyProjection> getProducts();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		LineItem lineItem = (LineItem) o;
+
+		return ObjectUtils.nullSafeEquals(id, lineItem.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(id);
 	}
 }

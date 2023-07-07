@@ -19,9 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import lombok.Data;
-import lombok.Getter;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
@@ -289,7 +286,6 @@ class PersistentEntityJackson2ModuleUnitTests {
 		}
 	}
 
-	@Getter
 	@JsonInclude(Include.NON_NULL)
 	static class PetOwner {
 
@@ -297,6 +293,18 @@ class PersistentEntityJackson2ModuleUnitTests {
 		Home home;
 
 		@JsonProperty("package") Package _package;
+
+		public Pet getPet() {
+			return this.pet;
+		}
+
+		public Home getHome() {
+			return this.home;
+		}
+
+		public Package get_package() {
+			return this._package;
+		}
 	}
 
 	static class Package {}
@@ -330,9 +338,16 @@ class PersistentEntityJackson2ModuleUnitTests {
 
 	// GH-1926
 
-	@Data
 	static class Wrapper {
 		ValueType value;
+
+		public ValueType getValue() {
+			return this.value;
+		}
+
+		public void setValue(ValueType value) {
+			this.value = value;
+		}
 	}
 
 	static class ValueType {
@@ -341,9 +356,16 @@ class PersistentEntityJackson2ModuleUnitTests {
 
 	// GH-2056
 
-	@Data
 	static class Surrounding {
 		CustomType custom = new CustomType();
+
+		public CustomType getCustom() {
+			return this.custom;
+		}
+
+		public void setCustom(CustomType custom) {
+			this.custom = custom;
+		}
 	}
 
 	static class CustomType {}

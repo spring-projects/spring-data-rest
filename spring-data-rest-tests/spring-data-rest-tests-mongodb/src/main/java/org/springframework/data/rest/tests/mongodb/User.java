@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.tests.mongodb;
 
-import lombok.Value;
-
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -74,9 +72,21 @@ public class User {
 
 	public static class TypeWithPattern {}
 
-	@Value
-	public static class Nested {
-		public @DBRef(lazy = true) User user;
-		public String foo = "foo";
+	public static final class Nested {
+		public final @DBRef(lazy = true) User user;
+		public final String foo = "foo";
+
+		public Nested(User user) {
+			this.user = user;
+		}
+
+		public User getUser() {
+			return this.user;
+		}
+
+		public String getFoo() {
+			return this.foo;
+		}
+
 	}
 }

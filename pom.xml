@@ -133,7 +133,6 @@
 			<version>${hamcrest}</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
 	<repositories>

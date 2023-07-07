@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.tests.shop;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
@@ -25,14 +22,39 @@ import org.springframework.data.annotation.Id;
 /**
  * @author Oliver Gierke
  */
-@Data
-@RequiredArgsConstructor
 public class Customer {
 
 	private final @Id UUID id = UUID.randomUUID();
 	private final String firstname, lastname;
 	private final Gender gender;
 	private final Address address;
+
+	public Customer(String firstname, String lastname, Gender gender, Address address) {
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.gender = gender;
+		this.address = address;
+	}
+
+	public UUID getId() {
+		return this.id;
+	}
+
+	public String getFirstname() {
+		return this.firstname;
+	}
+
+	public String getLastname() {
+		return this.lastname;
+	}
+
+	public Gender getGender() {
+		return this.gender;
+	}
+
+	public Address getAddress() {
+		return this.address;
+	}
 
 	static enum Gender {
 		MALE, FEMALE;

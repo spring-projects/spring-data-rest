@@ -17,9 +17,6 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Data;
-import lombok.Getter;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -184,18 +181,75 @@ class SpelPathUnitTests {
 
 	// DATAREST-1338
 
-	@Data
 	static class Person {
 		String name;
 		@JsonIgnore String hiddenProperty;
-		@Getter(onMethod = @__(@JsonIgnore)) String hiddenGetter;
+		String hiddenGetter;
 		@JsonProperty("demaner") String renamed;
 		LocalDate birthday;
+
+		public String getName() {
+			return this.name;
+		}
+
+		public String getHiddenProperty() {
+			return this.hiddenProperty;
+		}
+
+		public String getRenamed() {
+			return this.renamed;
+		}
+
+		public LocalDate getBirthday() {
+			return this.birthday;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		@JsonIgnore
+		public void setHiddenProperty(String hiddenProperty) {
+			this.hiddenProperty = hiddenProperty;
+		}
+
+		public void setHiddenGetter(String hiddenGetter) {
+			this.hiddenGetter = hiddenGetter;
+		}
+
+		@JsonProperty("demaner")
+		public void setRenamed(String renamed) {
+			this.renamed = renamed;
+		}
+
+		public void setBirthday(LocalDate birthday) {
+			this.birthday = birthday;
+		}
+
+		@JsonIgnore
+		public String getHiddenGetter() {
+			return this.hiddenGetter;
+		}
 	}
 
-	@Data
 	static class MapWrapper {
 		Map<String, Person> people;
 		Map<Integer, Person> peopleByInt;
+
+		public Map<String, Person> getPeople() {
+			return this.people;
+		}
+
+		public Map<Integer, Person> getPeopleByInt() {
+			return this.peopleByInt;
+		}
+
+		public void setPeople(Map<String, Person> people) {
+			this.people = people;
+		}
+
+		public void setPeopleByInt(Map<Integer, Person> peopleByInt) {
+			this.peopleByInt = peopleByInt;
+		}
 	}
 }

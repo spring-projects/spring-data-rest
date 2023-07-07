@@ -19,13 +19,6 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -50,6 +43,7 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.mapping.Associations;
+import org.springframework.util.ObjectUtils;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -797,10 +791,14 @@ class DomainObjectReaderUnitTests {
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
-	@NoArgsConstructor
-	@AllArgsConstructor
 	static class Item {
 		String some;
+
+		public Item(String some) {
+			this.some = some;
+		}
+
+		public Item() {}
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
@@ -809,11 +807,41 @@ class DomainObjectReaderUnitTests {
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
-	@NoArgsConstructor
-	@AllArgsConstructor
-	@EqualsAndHashCode
 	static class LocalizedValue {
 		String value;
+
+		public LocalizedValue(String value) {
+			this.value = value;
+		}
+
+		public LocalizedValue() {}
+
+		public boolean equals(final Object o) {
+			if (o == this)
+				return true;
+			if (!(o instanceof LocalizedValue))
+				return false;
+			final LocalizedValue other = (LocalizedValue) o;
+			if (!other.canEqual((Object) this))
+				return false;
+			final Object this$value = this.value;
+			final Object other$value = other.value;
+			if (this$value == null ? other$value != null : !this$value.equals(other$value))
+				return false;
+			return true;
+		}
+
+		protected boolean canEqual(final Object other) {
+			return other instanceof LocalizedValue;
+		}
+
+		public int hashCode() {
+			final int PRIME = 59;
+			int result = 1;
+			final Object $value = this.value;
+			result = result * PRIME + ($value == null ? 43 : $value.hashCode());
+			return result;
+		}
 	}
 
 	@JsonAutoDetect(getterVisibility = Visibility.ANY)
@@ -833,7 +861,7 @@ class DomainObjectReaderUnitTests {
 		String getFoo();
 	}
 
-	static enum SampleEnum implements EnumInterface {
+	enum SampleEnum implements EnumInterface {
 
 		FIRST {
 
@@ -856,16 +884,51 @@ class DomainObjectReaderUnitTests {
 		List<SampleEnum> enums = new ArrayList<SampleEnum>();
 	}
 
-	@EqualsAndHashCode
-	@AllArgsConstructor
 	static class SampleWithReference {
-		private @Getter @Reference List<Nested> nested;
+		private @Reference List<Nested> nested;
+
+		public SampleWithReference(List<Nested> nested) {
+			this.nested = nested;
+		}
+
+		public List<Nested> getNested() {
+			return this.nested;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			SampleWithReference that = (SampleWithReference) o;
+
+			return ObjectUtils.nullSafeEquals(nested, that.nested);
+		}
+
+		@Override
+		public int hashCode() {
+			return ObjectUtils.nullSafeHashCode(nested);
+		}
 	}
 
 	@Immutable
-	@Value
-	static class Nested {
-		int x, y;
+	static final class Nested {
+		private final int x, y;
+
+		public Nested(int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
+
+		public int getX() {
+			return this.x;
+		}
+
+		public int getY() {
+			return this.y;
+		}
 	}
 
 	// DATAREST-1030
@@ -882,10 +945,13 @@ class DomainObjectReaderUnitTests {
 		String name;
 	}
 
-	@RequiredArgsConstructor
 	static class SelectValueByIdSerializer<T> extends JsonDeserializer<T> {
 
 		private final Map<? extends Object, T> values;
+
+		public SelectValueByIdSerializer(Map<? extends Object, T> values) {
+			this.values = values;
+		}
 
 		@Override
 		public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
@@ -907,9 +973,17 @@ class DomainObjectReaderUnitTests {
 	}
 
 	// DATAREST-1068
-	@Value
-	static class ArrayHolder {
-		String[] array;
+	static final class ArrayHolder {
+
+		private final String[] array;
+
+		ArrayHolder(String[] array) {
+			this.array = array;
+		}
+
+		public String[] getArray() {
+			return array;
+		}
 	}
 
 	// DATAREST-1026

@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.tests.security;
 
-import lombok.Value;
-
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
@@ -24,9 +22,26 @@ import org.springframework.data.annotation.Id;
 /**
  * @author Oliver Gierke
  */
-@Value
-public class Person {
+public final class Person {
 
-	@Id UUID id = UUID.randomUUID();
-	String firstname, lastname;
+	@Id private final UUID id = UUID.randomUUID();
+	private final String firstname, lastname;
+
+	public Person(String firstname, String lastname) {
+		this.firstname = firstname;
+		this.lastname = lastname;
+	}
+
+	public UUID getId() {
+		return this.id;
+	}
+
+	public String getFirstname() {
+		return this.firstname;
+	}
+
+	public String getLastname() {
+		return this.lastname;
+	}
+
 }

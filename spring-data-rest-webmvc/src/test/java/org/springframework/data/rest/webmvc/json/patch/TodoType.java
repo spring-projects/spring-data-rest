@@ -15,17 +15,43 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Mathias Düsterhöft
  * @author Oliver Gierke
  */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 class TodoType {
 	private String value = "none";
+
+	public TodoType(String value) {
+		this.value = value;
+	}
+
+	public TodoType() {}
+
+	public String getValue() {
+		return this.value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		TodoType todoType = (TodoType) o;
+
+		return ObjectUtils.nullSafeEquals(value, todoType.value);
+	}
+
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(value);
+	}
 }

@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.tests.shop;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
@@ -25,14 +22,43 @@ import org.springframework.data.annotation.Id;
 /**
  * @author Oliver Gierke
  */
-@Data
-@RequiredArgsConstructor
 public class Address {
 
 	private @Id UUID id = UUID.randomUUID();
 	private final String street, zipCode, city, state;
 
+	public Address(String street, String zipCode, String city, String state) {
+		this.street = street;
+		this.zipCode = zipCode;
+		this.city = city;
+		this.state = state;
+	}
+
 	public String toString() {
 		return String.format("%s, %s %s, %s", street, zipCode, city, state);
+	}
+
+	public UUID getId() {
+		return this.id;
+	}
+
+	public String getStreet() {
+		return this.street;
+	}
+
+	public String getZipCode() {
+		return this.zipCode;
+	}
+
+	public String getCity() {
+		return this.city;
+	}
+
+	public String getState() {
+		return this.state;
+	}
+
+	public void setId(UUID id) {
+		this.id = id;
 	}
 }

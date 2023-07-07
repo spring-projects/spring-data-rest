@@ -21,9 +21,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -68,13 +65,33 @@ public class Book {
 		this.offer = offer;
 	}
 
-	@Getter
 	@Embeddable
-	@AllArgsConstructor
-	@NoArgsConstructor
 	static class Offer {
 
 		double price;
 		String currency;
+
+		public Offer(double price, String currency) {
+			this.price = price;
+			this.currency = currency;
+		}
+
+		public Offer() {}
+
+		public double getPrice() {
+			return price;
+		}
+
+		public void setPrice(double price) {
+			this.price = price;
+		}
+
+		public String getCurrency() {
+			return currency;
+		}
+
+		public void setCurrency(String currency) {
+			this.currency = currency;
+		}
 	}
 }

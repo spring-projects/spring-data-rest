@@ -20,7 +20,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
-import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -28,7 +27,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 /**
  * @author Alex Leigh
  */
-@Data
 @Entity
 @Inheritance
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
@@ -39,4 +37,12 @@ public abstract class Room {
 	private Long id;
 
 	public abstract String getType();
+
+	public Long getId() {
+		return this.id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 }

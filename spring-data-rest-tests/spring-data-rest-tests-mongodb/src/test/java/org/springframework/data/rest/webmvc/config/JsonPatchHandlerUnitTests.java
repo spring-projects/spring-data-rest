@@ -19,8 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.rest.tests.mongodb.TestUtils.*;
 
-import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -178,12 +176,43 @@ class JsonPatchHandlerUnitTests {
 	}
 
 	@JsonIgnoreProperties("password")
-	@Data
 	static class WithIgnoredProperties {
 
 		String name, lastname, password;
 
 		@JsonIgnore String ssn;
 
+		public String getName() {
+			return this.name;
+		}
+
+		public String getLastname() {
+			return this.lastname;
+		}
+
+		public String getPassword() {
+			return this.password;
+		}
+
+		public String getSsn() {
+			return this.ssn;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
+
+		@JsonIgnore
+		public void setSsn(String ssn) {
+			this.ssn = ssn;
+		}
 	}
 }

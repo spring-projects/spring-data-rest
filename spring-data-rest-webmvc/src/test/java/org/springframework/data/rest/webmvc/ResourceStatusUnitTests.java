@@ -19,8 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import lombok.Value;
-
 import java.util.Date;
 import java.util.function.Supplier;
 
@@ -114,8 +112,16 @@ class ResourceStatusUnitTests {
 		assertThat(statusAndHeaders.toResponseEntity(supplier).getStatusCode()).isEqualTo(HttpStatus.NOT_MODIFIED);
 	}
 
-	@Value
-	static class Sample {
-		@Version int version;
+	static final class Sample {
+		@Version private final int version;
+
+		public Sample(int version) {
+			this.version = version;
+		}
+
+		public int getVersion() {
+			return this.version;
+		}
+
 	}
 }
