@@ -1,0 +1,27 @@
+[[spring-data-rest-reference-documentation]]
+= Spring Data REST
+:feature-scroll: true
+
+_Spring Data REST exports Spring Data repositories as REST resources through WebMVC.
+It eases development of applications with a consistent programming model backed by Spring Data modules sources._
+
+[horizontal]
+xref:intro.adoc[Introduction] :: Introduction to Spring Data REST and Examples
+xref:repository-resources.adoc[Repository Resources] :: Exporting Repositories as REST Resources
+xref:representations.adoc[Representations] :: Domain Object Representations (Object Mapping)
+xref:etags-and-other-conditionals.adoc[Conditionals] :: Conditional Operations with ETag and other Headers
+xref:validation.adoc[Validation] :: Validator Integration
+xref:events.adoc[Events] :: Listening to REST Events
+xref:integration.adoc[Integration] :: Integration with Spring Data REST components
+xref:metadata.adoc[Metadata] :: ALPS and JSON Schema
+xref:security.adoc[Security] :: Spring Security Integration
+xref:tools.adoc[Tools] :: HAL Explorer
+xref:customizing-sdr.adoc[Customizing] :: Tutorials and Recipes to customize Spring Data REST
+https://github.com/spring-projects/spring-data-commons/wiki[Wiki] :: What's New,
+Upgrade Notes, Supported Versions, additional cross-version information.
+
+Jon Brisbin, Oliver Drotbohm, Greg Turnquist, Jay Bryant
+
+(C) 2008-2023 VMware, Inc.
+
+Copies of this document may be made for your own use and for distribution to others, provided that you do not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed in print or electronically.

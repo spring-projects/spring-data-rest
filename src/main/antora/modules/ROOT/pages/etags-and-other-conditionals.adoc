@@ -1,6 +1,5 @@
 [[conditional]]
 = Conditional Operations with Headers
-:spring-data-rest-root: ../../..
 
 This section shows how Spring Data REST uses standard HTTP headers to enhance performance, conditionalize operations, and contribute to a more sophisticated frontend.
 
@@ -15,7 +14,7 @@ Consider the following example:
 ====
 [source,java,indent=0]
 ----
-include::{spring-data-rest-root}/spring-data-rest-webmvc/src/test/java/org/springframework/data/rest/webmvc/support/ETagUnitTests.java[tag=versioned-sample]
+include::example$support/ETagUnitTests.java[tag=versioned-sample]
 ----
 
 <1> The `@Version` annotation (the JPA one in case you're using Spring Data JPA, the Spring Data `org.springframework.data.annotation.Version` one for all other modules) flags this field as a version marker.
@@ -56,7 +55,7 @@ The https://tools.ietf.org/html/rfc7232#section-3.3[`If-Modified-Since` header] 
 ====
 [source,java]
 ----
-include::{spring-data-rest-root}/spring-data-rest-tests/spring-data-rest-tests-mongodb/src/main/java/org/springframework/data/rest/tests/mongodb/Receipt.java[tag=code]
+include::example$mongodb/Receipt.java[tag=code]
 ----
 
 <1> Spring Data Commons's `@LastModifiedDate` annotation allows capturing this information in multiple formats (JodaTime's `DateTime`, legacy Java `Date` and `Calendar`, JDK8 date/time types, and `long`/`Long`).

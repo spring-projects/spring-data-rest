@@ -142,7 +142,7 @@ NOTE: The value supplied to the `projection` query parameter is the same as that
 
 You can have multiple projections.
 
-NOTE: See <<spring-data-examples.projections>> to see an example project. We encourage you to experiment with it.
+NOTE: See xref:introduction/spring-data-rest-examples.adoc#spring-data-examples.projections[Projections] to see an example project. We encourage you to experiment with it.
 
 Spring Data REST finds projection definitions as follows:
 
@@ -154,7 +154,7 @@ In either case, the projection interface must have the `@Projection` annotation.
 [[projections-excerpts.finding-projections]]
 === Finding Existing Projections
 
-Spring Data REST exposes <<metadata.alps>> documents, a micro metadata format. To view the ALPS metadata, follow the `profile` link exposed by the root resource. If you navigate down to the ALPS document for `Person` resources (which would be `/alps/persons`), you can find many details about `Person` resources. Projections are listed, along with the details about the `GET` REST transition, in blocks similar to the following example:
+Spring Data REST exposes xref:metadata.adoc#metadata.alps[Application-Level Profile Semantics (ALPS)] documents, a micro metadata format. To view the ALPS metadata, follow the `profile` link exposed by the root resource. If you navigate down to the ALPS document for `Person` resources (which would be `/alps/persons`), you can find many details about `Person` resources. Projections are listed, along with the details about the `GET` REST transition, in blocks similar to the following example:
 
 ====
 [source,javascript]

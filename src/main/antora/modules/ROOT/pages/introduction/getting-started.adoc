@@ -89,9 +89,9 @@ Make sure you also configure Spring Data repositories for the store you use. For
 
 This section covers the basic settings that you can manipulate when you configure a Spring Data REST application, including:
 
-* <<getting-started.setting-repository-detection-strategy>>
-* <<getting-started.changing-base-uri>>
-* <<getting-started.changing-other-properties>>
+* xref:introduction/getting-started.adoc#getting-started.setting-repository-detection-strategy[Setting the Repository Detection Strategy]
+* xref:introduction/getting-started.adoc#getting-started.changing-base-uri[Changing the Base URI]
+* xref:introduction/getting-started.adoc#getting-started.changing-other-properties[Changing Other Spring Data REST Properties]
 
 [[getting-started.setting-repository-detection-strategy]]
 === Setting the Repository Detection Strategy
@@ -209,4 +209,4 @@ You can run your application as either a Spring Boot app (with the links shown e
 
 NOTE: In general, Spring Data REST does not add functionality to a given data store. This means that, by definition, it should work with any Spring Data project that supports the repository programming model. The data stores listed above are the ones for which we have written integration tests to verify that Spring Data REST works with them.
 
-From this point, you can  <<customizing-sdr,customize Spring Data REST>> with various options.
+From this point, you can  xref:customizing-sdr.adoc[customize Spring Data REST] with various options.

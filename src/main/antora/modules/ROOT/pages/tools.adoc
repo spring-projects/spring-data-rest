@@ -1,6 +1,5 @@
 [[tools]]
 = Tools
-:spring-data-rest-root: ../../../..
 
 [[tools.hal-explorer]]
 == The HAL Explorer
@@ -48,7 +47,7 @@ The HAL Explorer understands *URI Templates*. Whenever a link contains a URI tem
 
 image::hal-explorer-3.png[]
 
-If you click *Go!* without entering anything, the variables are essentially ignored. For situations like <<projections-excerpts>> or <<paging-and-sorting>>, this can be useful.
+If you click *Go!* without entering anything, the variables are essentially ignored. For situations like xref:projections-excerpts.adoc[Projections and Excerpts] or xref:paging-and-sorting.adoc[Paging and Sorting], this can be useful.
 
 When you click on a *NON-GET* button with a `+` or a `>` sign on it, a modal dialog appears. It shows the HTTP method belonging to the clicked button. You can fill the body and submit the new JSON document.
 

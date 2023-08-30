@@ -1,5 +1,6 @@
 [[spring-data-examples]]
 [appendix]
+[[spring-data-rest-example-projects]]
 = Spring Data REST example projects
 
 This appendix contains a list of Spring Data REST sample applications. The exact version of each example is not guaranteed to match the version of this reference manual.
@@ -14,7 +15,7 @@ https://github.com/spring-projects/spring-data-examples/tree/master/rest/multi-s
 [[spring-data-examples.projections]]
 == Projections
 
-https://github.com/spring-projects/spring-data-examples/tree/master/rest/projections[This example] contains more detailed code you can use to explore <<projections-excerpts,projections>>.
+https://github.com/spring-projects/spring-data-examples/tree/master/rest/projections[This example] contains more detailed code you can use to explore xref:projections-excerpts.adoc[projections].
 
 [[spring-data-examples.spring-security]]
 == Spring Data REST with Spring Security

@@ -13,9 +13,9 @@ public interface OrderRepository extends CrudRepository<Order, Long> { }
 ----
 ====
 
-For this repository, Spring Data REST exposes a collection resource at `/orders`. The path is derived from the uncapitalized, pluralized, simple class name of the domain class being managed. It also exposes an item resource for each of the items managed by the repository under the URI template `/orders/{id}`.
+For this repository, Spring Data REST exposes a collection resource at `/orders`. The path is derived from the uncapitalized, pluralized, simple class name of the domain class being managed. It also exposes an item resource for each of the items managed by the repository under the URI template `/orders/\{id}`.
 
-By default the HTTP methods to interact with these resources map to the according methods of `CrudRepository`. Read more on that in the sections on <<repository-resources.collection-resource, collection resources>> and <<repository-resources.item-resource, item resources>>.
+By default, the HTTP methods to interact with these resources map to the according methods of `CrudRepository`. Read more on that in the sections on xref:repository-resources.adoc#repository-resources.collection-resource[collection resources] and xref:repository-resources.adoc#repository-resources.item-resource[item resources].
 
 [[repository-resources.methods]]
 === Repository methods exposure
@@ -26,7 +26,7 @@ If you extend `CrudRepository` you usually expose all methods required to expose
 Each of the resources listed below will define which of the methods need to be present so that a particular HTTP method can be exposed for each of the resources.
 That means, that repositories that are not exposing those methods -- either by not declaring them at all or explicitly using `@RestResource(exported = false)` -- won't expose those HTTP methods on those resources.
 
-For details on how to tweak the default method exposure or dedicated HTTP methods individually see <<customizing-sdr.http-methods>>.
+For details on how to tweak the default method exposure or dedicated HTTP methods individually see xref:customizing-sdr.adoc#customizing-sdr.http-methods[Customizing supported HTTP methods].
 
 [[repository-resources.default-status-codes]]
 === Default Status Codes
@@ -39,7 +39,7 @@ For the resources exposed, we use a set of default status codes:
 If the configuration value is set to include responses for `PUT`, `200 OK` is returned for updates, and `201 Created` is returned for resource created through `PUT`.
 
 If the configuration values (`RepositoryRestConfiguration.returnBodyOnUpdate(…)` and `RepositoryRestConfiguration.returnBodyCreate(…)`) are explicitly set to `null` -- which they are by default --, the presence of the HTTP Accept header is used to determine the response code.
-Read more on this in the detailed description of <<repository-resources.collection-resource.supported-methods.post, collection>> and <<repository-resources.item-resource.supported-methods.put, item resources>>.
+Read more on this in the detailed description of xref:repository-resources.adoc#repository-resources.collection-resource.supported-methods.post[collection] and xref:repository-resources.adoc#repository-resources.item-resource.supported-methods.put[item resources].
 
 [[repository-resources.resource-discoverability]]
 === Resource Discoverability
@@ -72,7 +72,7 @@ curl -v http://localhost:8080/
 
 The property of the result document is an object that consists of keys representing the relation type, with nested link objects as specified in HAL.
 
-NOTE: For more details about the `profile` link, see <<metadata.alps>>.
+NOTE: For more details about the `profile` link, see xref:metadata.adoc#metadata.alps[Application-Level Profile Semantics (ALPS)].
 
 [[repository-resources.collection-resource]]
 == The Collection Resource
@@ -90,6 +90,7 @@ Collections resources support both `GET` and `POST`. All other HTTP methods caus
 Returns all entities the repository servers through its `findAll(…)` method.
 If the repository is a paging repository we include the pagination links if necessary and additional page metadata.
 
+
 ===== Methods used for invocation
 
 The following methods are used if present (descending order):
@@ -98,8 +99,9 @@ The following methods are used if present (descending order):
 - `findAll(Sort)`
 - `findAll()`
 
-For more information on the default exposure of methods, see <<repository-resources.methods>>.
+For more information on the default exposure of methods, see xref:repository-resources.adoc#repository-resources.methods[Repository methods exposure].
 
+[[parameters]]
 ===== Parameters
 
 If the repository has pagination capabilities, the resource takes the following parameters:
@@ -114,6 +116,7 @@ The `GET` method has only one custom status code:
 
 * `405 Method Not Allowed`: If the `findAll(…)` methods were not exported (through `@RestResource(exported = false)`) or are not present in the repository.
 
+[[supported-media-types]]
 ===== Supported Media Types
 
 The `GET` method supports the following media types:
@@ -121,11 +124,12 @@ The `GET` method supports the following media types:
 * `application/hal+json`
 * `application/json`
 
+[[related-resources]]
 ===== Related Resources
 
 The `GET` method supports a single link for discovering related resources:
 
-* `search`: A <<repository-resources.search-resource,search resource>> is exposed if the backing repository exposes query methods.
+* `search`: A xref:repository-resources.adoc#repository-resources.search-resource[search resource] is exposed if the backing repository exposes query methods.
 
 [[repository-resources.collection-resource.supported-methods.head]]
 ==== `HEAD`
@@ -140,7 +144,7 @@ The following methods are used if present (descending order):
 - `findAll(Sort)`
 - `findAll()`
 
-For more information on the default exposure of methods, see <<repository-resources.methods>>.
+For more information on the default exposure of methods, see xref:repository-resources.adoc#repository-resources.methods[Repository methods exposure].
 
 [[repository-resources.collection-resource.supported-methods.post]]
 ==== `POST`
@@ -157,7 +161,7 @@ The following methods are used if present (descending order):
 
 - `save(…)`
 
-For more information on the default exposure of methods, see <<repository-resources.methods>>.
+For more information on the default exposure of methods, see xref:repository-resources.adoc#repository-resources.methods[Repository methods exposure].
 
 ===== Custom Status Codes
 
@@ -180,12 +184,13 @@ Spring Data REST exposes a resource for individual collection items as sub-resou
 [[repository-resources.item-resource.supported-methods]]
 === Supported HTTP Methods
 
-Item resources generally support `GET`, `PUT`, `PATCH`, and `DELETE`, unless explicit configuration prevents that (see "`<<repository-resources.association-resource>>`" for details).
+Item resources generally support `GET`, `PUT`, `PATCH`, and `DELETE`, unless explicit configuration prevents that (see "`xref:repository-resources.adoc#repository-resources.association-resource[The Association Resource]`" for details).
 
 [[repository-resources.item-resource.supported-methods.get]]
 ==== GET
 
 The `GET` method returns a single entity.
+
 
 ===== Methods used for invocation
 
@@ -193,7 +198,7 @@ The following methods are used if present (descending order):
 
 - `findById(…)`
 
-For more information on the default exposure of methods, see <<repository-resources.methods>>.
+For more information on the default exposure of methods, see xref:repository-resources.adoc#repository-resources.methods[Repository methods exposure].
 
 ===== Custom Status Codes
 
@@ -210,12 +215,13 @@ The `GET` method supports the following media types:
 
 ===== Related Resources
 
-For every association of the domain type, we expose links named after the association property. You can customize this behavior by using `@RestResource` on the property. The related resources are of the <<repository-resources.association-resource,association resource>> type.
+For every association of the domain type, we expose links named after the association property. You can customize this behavior by using `@RestResource` on the property. The related resources are of the xref:repository-resources.adoc#repository-resources.association-resource[association resource] type.
 
 [[repository-resources.item-resource.supported-methods.head]]
 ==== `HEAD`
 
 The `HEAD` method returns whether the item resource is available. It has no status codes, media types, or related resources.
+
 
 ===== Methods used for invocation
 
@@ -223,7 +229,7 @@ The following methods are used if present (descending order):
 
 - `findById(…)`
 
-For more information on the default exposure of methods, see <<repository-resources.methods>>.
+For more information on the default exposure of methods, see xref:repository-resources.adoc#repository-resources.methods[Repository methods exposure].
 
 [[repository-resources.item-resource.supported-methods.put]]
 ==== `PUT`
@@ -234,13 +240,14 @@ If the request header is present, a response body and a status code of `200 OK` 
 If no header is present, the response body is empty and a successful request returns a status of `204 No Content`.
 This behavior can be overridden by configuring `RepositoryRestConfiguration.setReturnBodyOnUpdate(…)` accordingly.
 
+
 ===== Methods used for invocation
 
 The following methods are used if present (descending order):
 
 - `save(…)`
 
-For more information on the default exposure of methods, see <<repository-resources.methods>>.
+For more information on the default exposure of methods, see xref:repository-resources.adoc#repository-resources.methods[Repository methods exposure].
 
 ===== Custom Status Codes
 
@@ -260,13 +267,14 @@ The `PUT` method supports the following media types:
 
 The `PATCH` method is similar to the `PUT` method but partially updates the resources state.
 
+
 ===== Methods used for invocation
 
 The following methods are used if present (descending order):
 
 - `save(…)`
 
-For more information on the default exposure of methods, see <<repository-resources.methods>>.
+For more information on the default exposure of methods, see xref:repository-resources.adoc#repository-resources.methods[Repository methods exposure].
 
 ===== Custom Status Codes
 
@@ -292,6 +300,7 @@ If the request header is present, a response body and a status code of `200 OK` 
 If no header is present, the response body is empty and a successful request returns a status of `204 No Content`.
 This behavior can be overridden by configuring `RepositoryRestConfiguration.setReturnBodyOnDelete(…)` accordingly.
 
+
 ===== Methods used for invocation
 
 The following methods are used if present (descending order):
@@ -300,7 +309,7 @@ The following methods are used if present (descending order):
 - `delete(ID)`
 - `delete(Iterable)`
 
-For more information on the default exposure of methods, see <<repository-resources.methods>>.
+For more information on the default exposure of methods, see xref:repository-resources.adoc#repository-resources.methods[Repository methods exposure].
 
 ===== Custom Status Codes
 
@@ -368,6 +377,7 @@ The `POST` method supports only one media type:
 
 The `DELETE` method unbinds the association.
 
+[[custom-status-codes]]
 ===== Custom Status Codes
 
 The `POST` method has only one custom status code:
@@ -398,7 +408,7 @@ The `GET` method supports the following media types:
 
 ===== Related Resources
 
-For every query method declared in the repository, we expose a <<repository-resources.query-method-resource,query method resource>>. If the resource supports pagination, the URI pointing to it is a URI template containing the pagination parameters.
+For every query method declared in the repository, we expose a xref:repository-resources.adoc#repository-resources.query-method-resource[query method resource]. If the resource supports pagination, the URI pointing to it is a URI template containing the pagination parameters.
 
 [[repository-resources.search-resource.supported-methods.head]]
 ==== `HEAD`
