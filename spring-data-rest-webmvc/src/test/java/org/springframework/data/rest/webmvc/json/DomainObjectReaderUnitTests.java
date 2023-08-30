@@ -107,6 +107,7 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Apple.class);
 		mappingContext.getPersistentEntity(Pear.class);
 		mappingContext.getPersistentEntity(WithCustomMappedPrimitiveCollection.class);
+		mappingContext.getPersistentEntity(BugModel.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -678,6 +679,26 @@ class DomainObjectReaderUnitTests {
 		assertThat(result.inner.hidden).isNull();
 	}
 
+	@Test
+	void deserializesNewNestedEntitiesCorrectly() throws Exception {
+
+		var mapper = new ObjectMapper();
+		var node = mapper.readTree("{ \"list\" : [ { \"value\" : \"Foo\" }, { \"value\" : \"Bar\" }] }");
+
+		var nested = new BugModel.NestedModel();
+		nested.value = "FooBar";
+
+		var model = new BugModel();
+		model.list = new ArrayList<>();
+		model.list.add(nested);
+
+		var result = reader.doMerge((ObjectNode) node, model, mapper);
+
+		assertThat(result.list)
+				.extracting(it -> it.value)
+				.containsExactly("Foo", "Bar");
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -1038,6 +1059,16 @@ class DomainObjectReaderUnitTests {
 
 				return Long.valueOf(elements[elements.length - 1]);
 			}
+		}
+	}
+
+	// GH-2287
+	static class BugModel {
+
+		public List<NestedModel> list;
+
+		static class NestedModel {
+			public String value;
 		}
 	}
 }
