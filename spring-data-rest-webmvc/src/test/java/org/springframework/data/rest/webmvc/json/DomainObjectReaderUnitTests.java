@@ -49,6 +49,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.BugModel.NestedModel;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -113,6 +114,7 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Apple.class);
 		mappingContext.getPersistentEntity(Pear.class);
 		mappingContext.getPersistentEntity(WithCustomMappedPrimitiveCollection.class);
+		mappingContext.getPersistentEntity(BugModel.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -682,6 +684,26 @@ class DomainObjectReaderUnitTests {
 		assertThat(result.inner.hidden).isNull();
 	}
 
+	@Test
+	void deserializesNewNestedEntitiesCorrectly() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode node = mapper.readTree("{ \"list\" : [ { \"value\" : \"Foo\" }, { \"value\" : \"Bar\" }] }");
+
+		NestedModel nested = new BugModel.NestedModel();
+		nested.value = "FooBar";
+
+		BugModel model = new BugModel();
+		model.list = new ArrayList<>();
+		model.list.add(nested);
+
+		BugModel result = reader.doMerge((ObjectNode) node, model, mapper);
+
+		assertThat(result.list)
+				.extracting(it -> it.value)
+				.containsExactly("Foo", "Bar");
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -966,6 +988,16 @@ class DomainObjectReaderUnitTests {
 
 				return Long.valueOf(elements[elements.length - 1]);
 			}
+		}
+	}
+
+	// GH-2287
+	static class BugModel {
+
+		public List<NestedModel> list;
+
+		static class NestedModel {
+			public String value;
 		}
 	}
 }

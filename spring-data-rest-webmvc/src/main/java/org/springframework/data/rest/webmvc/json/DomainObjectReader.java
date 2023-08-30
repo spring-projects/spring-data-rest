@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.IntFunction;
 
 import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorFactory;
@@ -44,6 +46,7 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -264,7 +267,10 @@ public class DomainObjectReader {
 
 				if (child.isArray()) {
 
-					if (handleArray(child, it, mapper, property.getTypeInformation())) {
+					IntFunction<Object> rawValues = index -> readRawCollectionElement(property.getComponentType(), fieldName,
+							index, root, mapper);
+
+					if (handleArray(child, it, mapper, property.getTypeInformation(), rawValues)) {
 						i.remove();
 					}
 
@@ -304,6 +310,16 @@ public class DomainObjectReader {
 		return mapper.readerForUpdating(target).readValue(root);
 	}
 
+	private static Object readRawCollectionElement(Class<?> elementType, String fieldName, int index, JsonNode root,
+			ObjectMapper mapper) {
+
+		try {
+			return mapper.readerFor(elementType).at("/" + fieldName + "/" + index).readValue(root);
+		} catch (IOException o_O) {
+			throw new RuntimeException(o_O);
+		}
+	}
+
 	/**
 	 * Handles the given {@link JsonNode} by treating it as {@link ArrayNode} and the given source value as
 	 * {@link Collection}-like value. Looks up the actual type to handle from the potentially available first element,
@@ -316,7 +332,8 @@ public class DomainObjectReader {
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean handleArray(JsonNode node, Object source, ObjectMapper mapper, TypeInformation<?> collectionType) {
+	private boolean handleArray(JsonNode node, Object source, ObjectMapper mapper, TypeInformation<?> collectionType,
+			IntFunction<Object> rawValues) {
 
 		Collection<Object> collection = ifCollection(source);
 
@@ -324,7 +341,8 @@ public class DomainObjectReader {
 			return false;
 		}
 
-		return execute(() -> handleArrayNode((ArrayNode) node, collection, mapper, collectionType.getComponentType()));
+		return execute(
+				() -> handleArrayNode((ArrayNode) node, collection, mapper, collectionType.getComponentType(), rawValues));
 	}
 
 	/**
@@ -337,27 +355,47 @@ public class DomainObjectReader {
 	 * @return whether an object merge has been applied to the {@link ArrayNode}.
 	 */
 	private boolean handleArrayNode(ArrayNode array, Collection<Object> collection, ObjectMapper mapper,
-			TypeInformation<?> componentType) throws Exception {
+			TypeInformation<?> componentType, IntFunction<Object> rawValues) throws Exception {
 
 		Assert.notNull(array, "ArrayNode must not be null!");
 		Assert.notNull(collection, "Source collection must not be null!");
 		Assert.notNull(mapper, "ObjectMapper must not be null!");
 
+		// Empty collection? Primitive? Enum? No need to merge.
+		if (array.isEmpty()
+				|| collection.isEmpty()
+				|| ClassUtils.isPrimitiveOrWrapper(componentType.getType())
+				|| componentType.getType().isEnum()) {
+			return false;
+		}
+
 		// We need an iterator for the original collection.
 		// We might modify it but we want to keep iterating over the original collection.
 		Iterator<Object> value = new ArrayList<Object>(collection).iterator();
 		boolean nestedObjectFound = false;
+		int i = 0;
 
 		for (JsonNode jsonNode : array) {
 
+			int current = i++;
+
+			// We need to append new elements
 			if (!value.hasNext()) {
+
+				nestedObjectFound = true;
+
+				// Use pre-read values if available. Deserialize node otherwise.
+				collection.add(rawValues != null
+						? rawValues.apply(current)
+						: mapper.treeToValue(jsonNode, componentType.getType()));
+
 				break;
 			}
 
 			Object next = value.next();
 
 			if (ArrayNode.class.isInstance(jsonNode)) {
-				return handleArray(jsonNode, next, mapper, getTypeToMap(value, componentType));
+				return handleArray(jsonNode, next, mapper, getTypeToMap(value, componentType), null);
 			}
 
 			if (ObjectNode.class.isInstance(jsonNode)) {
@@ -410,7 +448,7 @@ public class DomainObjectReader {
 
 			} else if (value instanceof ArrayNode && sourceValue != null) {
 
-				handleArray(value, sourceValue, mapper, getTypeToMap(sourceValue, typeToMap));
+				handleArray(value, sourceValue, mapper, getTypeToMap(sourceValue, typeToMap), null);
 
 			} else {
 
@@ -685,8 +723,8 @@ public class DomainObjectReader {
 				result = mergeCollections(property, sourceValue, targetValue, mapper);
 			} else if (property.isEntity()) {
 
-                result = targetValue.isPresent() ? targetValue.flatMap(t -> sourceValue.map(s -> mergeForPut(s, t, mapper)))
-                        : sourceValue;
+				result = targetValue.isPresent() ? targetValue.flatMap(t -> sourceValue.map(s -> mergeForPut(s, t, mapper)))
+						: sourceValue;
 			} else {
 				result = sourceValue;
 			}
