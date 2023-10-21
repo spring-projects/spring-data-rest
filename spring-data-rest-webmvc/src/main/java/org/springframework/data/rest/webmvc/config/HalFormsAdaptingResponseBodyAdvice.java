@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
-import lombok.SneakyThrows;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,7 +53,6 @@ class HalFormsAdaptingResponseBodyAdvice<T extends RepresentationModel<T>>
 	}
 
 	@Override
-	@SneakyThrows
 	public RepresentationModel<T> beforeBodyWrite(@Nullable RepresentationModel<T> body, MethodParameter returnType,
 			MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType,
 			ServerHttpRequest request, ServerHttpResponse response) {
@@ -67,8 +64,7 @@ class HalFormsAdaptingResponseBodyAdvice<T extends RepresentationModel<T>>
 
 		List<MediaType> accept = request.getHeaders().getAccept();
 
-		boolean hasAffordances = body != null && body.getLinks().stream()
-				.anyMatch(it -> !it.getAffordances().isEmpty());
+		boolean hasAffordances = body != null && body.getLinks().stream().anyMatch(it -> !it.getAffordances().isEmpty());
 
 		// Affordances registered -> we're fine as we will render templates
 		if (hasAffordances) {
@@ -90,6 +86,13 @@ class HalFormsAdaptingResponseBodyAdvice<T extends RepresentationModel<T>>
 		}
 
 		// Reject the request otherwise
-		throw new HttpMediaTypeNotAcceptableException(SUPPORTED_MEDIA_TYPES);
+		HalFormsAdaptingResponseBodyAdvice.throwException(new HttpMediaTypeNotAcceptableException(SUPPORTED_MEDIA_TYPES));
+
+		throw new UnsupportedOperationException();
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T extends Throwable> void throwException(Throwable exception) throws T {
+		throw (T) exception;
 	}
 }

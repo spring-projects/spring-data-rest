@@ -33,16 +33,61 @@ pipeline {
 			options { timeout(time: 30, unit: 'MINUTES') }
 			environment {
 				ARTIFACTORY = credentials("${p['artifactory.credentials']}")
+				DEVELOCITY_CACHE = credentials("${p['develocity.cache.credentials']}")
+				DEVELOCITY_ACCESS_KEY = credentials("${p['develocity.access-key']}")
 			}
 			steps {
 				script {
-					docker.image("springci/spring-data-with-mongodb-4.4:${p['java.main.tag']}").inside(p['docker.java.inside.basic']) {
+					docker.image("harbor-repo.vmware.com/dockerhub-proxy-cache/springci/spring-data-with-mongodb-4.4:${p['java.main.tag']}").inside(p['docker.java.inside.basic']) {
 						sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 						sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 						sh 'sleep 10'
 						sh 'mongo --eval "rs.initiate({_id: \'rs0\', members:[{_id: 0, host: \'127.0.0.1:27017\'}]});"'
 						sh 'sleep 15'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml clean dependency:list test -Dsort -U -B -Pit'
+						sh 'MAVEN_OPTS="-Duser.name=spring-builds+jenkins -Duser.home=/tmp/jenkins-home" ' +
+							'DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} ' +
+							'DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} ' +
+							'GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} ' +
+							'./mvnw -s settings.xml clean dependency:list test -Dsort -U -B -Pit'
+					}
+				}
+			}
+		}
+
+		stage("Test other configurations") {
+			when {
+				beforeAgent(true)
+				allOf {
+					branch(pattern: "main|(\\d\\.\\d\\.x)", comparator: "REGEXP")
+					not { triggeredBy 'UpstreamCause' }
+				}
+			}
+			parallel {
+				stage("test: baseline (next)") {
+					agent {
+						label 'data'
+					}
+					options { timeout(time: 30, unit: 'MINUTES') }
+					environment {
+						ARTIFACTORY = credentials("${p['artifactory.credentials']}")
+						DEVELOCITY_CACHE = credentials("${p['develocity.cache.credentials']}")
+						DEVELOCITY_ACCESS_KEY = credentials("${p['develocity.access-key']}")
+					}
+					steps {
+						script {
+							docker.image("harbor-repo.vmware.com/dockerhub-proxy-cache/springci/spring-data-with-mongodb-6.0:${p['java.next.tag']}").inside(p['docker.java.inside.basic']) {
+								sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
+								sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
+								sh 'sleep 10'
+								sh 'mongosh --eval "rs.initiate({_id: \'rs0\', members:[{_id: 0, host: \'127.0.0.1:27017\'}]});"'
+								sh 'sleep 15'
+								sh 'MAVEN_OPTS="-Duser.name=spring-builds+jenkins -Duser.home=/tmp/jenkins-home" ' +
+									'DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} ' +
+									'DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} ' +
+									'GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} ' +
+									'./mvnw -s settings.xml clean dependency:list test -Dsort -U -B -Pit'
+							}
+						}
 					}
 				}
 			}
@@ -63,12 +108,18 @@ pipeline {
 
 			environment {
 				ARTIFACTORY = credentials("${p['artifactory.credentials']}")
+				DEVELOCITY_CACHE = credentials("${p['develocity.cache.credentials']}")
+				DEVELOCITY_ACCESS_KEY = credentials("${p['develocity.access-key']}")
 			}
 
 			steps {
 				script {
 					docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,artifactory ' +
+						sh 'MAVEN_OPTS="-Duser.name=spring-builds+jenkins -Duser.home=/tmp/jenkins-home" ' +
+								'DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} ' +
+								'DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} ' +
+								'GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} ' +
+								'./mvnw -s settings.xml -Pci,artifactory ' +
 								'-Dartifactory.server=https://repo.spring.io ' +
 								"-Dartifactory.username=${ARTIFACTORY_USR} " +
 								"-Dartifactory.password=${ARTIFACTORY_PSW} " +

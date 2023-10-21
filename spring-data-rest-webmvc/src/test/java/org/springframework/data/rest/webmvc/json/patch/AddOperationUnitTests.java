@@ -17,10 +17,6 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -159,6 +155,7 @@ class AddOperationUnitTests {
 		assertThat(outer.todoList.getTodos()).containsExactly(todos.get(0), todos.get(1), newTodo);
 	}
 
+
 	@Test
 	void failPrimitiveInNestedObjectCollection() {
 		List<Todo> todos = new ArrayList<>();
@@ -179,5 +176,19 @@ class AddOperationUnitTests {
 	@NoArgsConstructor
 	public static class TodoListWrapper {
 		public TodoList todoList;
+
+		public TodoListWrapper(TodoList todoList) {
+			this.todoList = todoList;
+		}
+
+		public TodoListWrapper() {}
+
+		public TodoList getTodoList() {
+			return this.todoList;
+		}
+
+		public void setTodoList(TodoList todoList) {
+			this.todoList = todoList;
+		}
 	}
 }

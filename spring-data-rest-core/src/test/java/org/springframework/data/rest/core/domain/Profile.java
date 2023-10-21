@@ -15,9 +15,6 @@
  */
 package org.springframework.data.rest.core.domain;
 
-import lombok.Value;
-import lombok.experimental.NonFinal;
-
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
@@ -26,10 +23,25 @@ import org.springframework.data.annotation.Id;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
-@NonFinal
-@Value
 public class Profile {
 
-	@Id UUID id = UUID.randomUUID();
-	String name, type;
+	@Id private final UUID id = UUID.randomUUID();
+	private final String name, type;
+
+	public Profile(String name, String type) {
+		this.name = name;
+		this.type = type;
+	}
+
+	public UUID getId() {
+		return this.id;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public String getType() {
+		return this.type;
+	}
 }

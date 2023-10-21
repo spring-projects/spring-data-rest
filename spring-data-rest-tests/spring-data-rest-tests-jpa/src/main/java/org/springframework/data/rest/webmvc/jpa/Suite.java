@@ -17,12 +17,10 @@ package org.springframework.data.rest.webmvc.jpa;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import lombok.Data;
 
 /**
  * @author Alex Leigh
  */
-@Data
 @Entity
 @DiscriminatorValue("S")
 public class Suite extends Room {
@@ -34,5 +32,13 @@ public class Suite extends Room {
 	@Override
 	public String getType() {
 		return TYPE;
+	}
+
+	public String getSuiteCode() {
+		return this.suiteCode;
+	}
+
+	public void setSuiteCode(String suiteCode) {
+		this.suiteCode = suiteCode;
 	}
 }

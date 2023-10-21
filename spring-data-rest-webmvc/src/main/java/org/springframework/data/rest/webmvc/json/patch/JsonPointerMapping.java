@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.Optional;
 import java.util.function.BiFunction;
 
@@ -29,7 +27,6 @@ import org.springframework.util.StringUtils;
 /**
  * @author Oliver Drotbohm
  */
-@RequiredArgsConstructor
 class JsonPointerMapping {
 
 	private final BiFunction<String, Class<?>, Optional<String>> reader, writer;
@@ -38,6 +35,12 @@ class JsonPointerMapping {
 
 		this.reader = context::getReadableProperty;
 		this.writer = context::getWritableProperty;
+	}
+
+	public JsonPointerMapping(BiFunction<String, Class<?>, Optional<String>> reader,
+			BiFunction<String, Class<?>, Optional<String>> writer) {
+		this.reader = reader;
+		this.writer = writer;
 	}
 
 	/**

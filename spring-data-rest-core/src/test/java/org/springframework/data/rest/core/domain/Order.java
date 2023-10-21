@@ -15,8 +15,6 @@
  */
 package org.springframework.data.rest.core.domain;
 
-import lombok.Value;
-
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
@@ -25,9 +23,20 @@ import org.springframework.data.annotation.Reference;
 /**
  * @author Oliver Gierke
  */
-@Value
-class Order {
+final class Order {
 
-	@Id UUID id = UUID.randomUUID();
-	@Reference Person creator;
+	@Id private final UUID id = UUID.randomUUID();
+	@Reference private final Person creator;
+
+		public Order(Person creator) {
+			this.creator = creator;
+		}
+
+		public UUID getId() {
+			return this.id;
+		}
+
+		public Person getCreator() {
+			return this.creator;
+		}
 }

@@ -1,6 +1,5 @@
 [[security]]
 = Security
-:spring-data-rest-root: ../../..
 :spring-security-docs: https://docs.spring.io/spring-security/reference
 
 Spring Data REST works quite well with Spring Security. This section shows examples of how to secure your Spring Data REST services with method-level security.
@@ -15,7 +14,7 @@ The following example from Spring Data REST's test suite shows Spring Security's
 [source,java]
 ----
 
-include::{spring-data-rest-root}/spring-data-rest-tests/spring-data-rest-tests-security/src/test/java/org/springframework/data/rest/tests/security/PreAuthorizedOrderRepository.java[tag=code]
+include::example$security/PreAuthorizedOrderRepository.java[tag=code]
 ----
 
 <1> This Spring Security annotation secures the entire repository. The {spring-security-docs}/servlet/authorization/expression-based.html[Spring Security SpEL expression] indicates that the principal must have `ROLE_USER` in its collection of roles.
@@ -38,7 +37,7 @@ The following example shows Spring Security's older `@Secured` annotation, which
 ====
 [source,java]
 ----
-include::{spring-data-rest-root}/spring-data-rest-tests/spring-data-rest-tests-security/src/test/java/org/springframework/data/rest/tests/security/SecuredPersonRepository.java[tag=code]
+include::example$security/SecuredPersonRepository.java[tag=code]
 ----
 
 <1> This results in the same security check as the previous example but has less flexibility. It allows only roles as the means to restrict access.
@@ -56,7 +55,7 @@ To configure method-level security, here is a brief snippet from Spring Data RES
 ====
 [source,java]
 ----
-include::{spring-data-rest-root}/spring-data-rest-tests/spring-data-rest-tests-security/src/test/java/org/springframework/data/rest/tests/security/SecurityConfiguration.java[tag=code]
+include::example$security/SecurityConfiguration.java[tag=code]
 	...
 }
 ----

@@ -13,24 +13,44 @@
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-rest-parent</artifactId>
-		<version>4.1.0-SNAPSHOT</version>
+		<version>4.2.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<properties>
 		<project.root>${basedir}/..</project.root>
-		<dist.key>SDREST</dist.key>
+		<antora.playbook>${project.basedir}/../src/main/antora/antora-playbook.yml</antora.playbook>
 	</properties>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>${project.basedir}/../src/main/antora/resources/antora-resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 			</plugin>
+
 			<plugin>
-				<groupId>org.asciidoctor</groupId>
-				<artifactId>asciidoctor-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>resources</goal>
+						</goals>
+					</execution>
+				</executions>
+
+			</plugin>
+
+			<plugin>
+				<groupId>io.spring.maven.antora</groupId>
+				<artifactId>antora-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-rest-tests</artifactId>
-		<version>4.1.0-SNAPSHOT</version>
+		<version>4.2.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-rest-tests-core</artifactId>
-			<version>4.1.0-SNAPSHOT</version>
+			<version>4.2.0-SNAPSHOT</version>
 			<type>test-jar</type>
 		</dependency>
 
@@ -58,7 +58,7 @@
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-hibernate5-jakarta</artifactId>
+			<artifactId>jackson-datatype-hibernate6</artifactId>
 		</dependency>
 
 	</dependencies>

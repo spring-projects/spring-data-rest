@@ -178,7 +178,7 @@ shown in the preceding table.
 === ALPS with Projections
 
 If you define any projections, they are also listed in the ALPS metadata. Assuming we also defined `inlineAddress` and `noAddresses`, they
-would appear inside the relevant operations. (See "`<<projections-excerpts.projections>>`" for the definitions and discussion of these two projections.) That is *GET* would appear in the operations for the whole collection, and *GET* would appear in the operations for a single resource. The following example shows
+would appear inside the relevant operations. (See "`xref:projections-excerpts.adoc#projections-excerpts.projections[Projections]`" for the definitions and discussion of these two projections.) That is *GET* would appear in the operations for the whole collection, and *GET* would appear in the operations for a single resource. The following example shows
 the alternate version of the `get-persons` subsection:
 
 ====
@@ -319,7 +319,7 @@ https://json-schema.org/[JSON Schema] is another form of metadata supported by S
 * Clear, human- and machine-readable documentation
 * Complete structural validation, useful for automated testing and validating client-submitted data
 
-As shown in the <<metadata.alps,previous section>>, you can reach this data by navigating from the root URI to the `profile` link.
+As shown in the xref:metadata.adoc#metadata.alps[previous section], you can reach this data by navigating from the root URI to the `profile` link.
 
 ====
 [source,javascript]
@@ -417,7 +417,7 @@ You can also find a `profile` link in the collection of `_links` when you examin
 <2> It has a *profile* link to the same URI for metadata.
 ====
 
-Again, the `profile` link serves <<metadata.alps,ALPS>> by default. If you supply it with an https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[`Accept` header] of `application/schema+json`, it renders the JSON Schema representation.
+Again, the `profile` link serves xref:metadata.adoc#metadata.alps[ALPS] by default. If you supply it with an https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1[`Accept` header] of `application/schema+json`, it renders the JSON Schema representation.
 
 //= JSON Patch
 

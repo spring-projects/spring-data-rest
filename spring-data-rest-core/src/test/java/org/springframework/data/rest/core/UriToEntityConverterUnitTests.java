@@ -18,8 +18,6 @@ package org.springframework.data.rest.core;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import lombok.Value;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -49,6 +47,7 @@ import org.springframework.data.rest.core.UriToEntityConverterUnitTests.JMolecul
 import org.springframework.data.util.Streamable;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.format.support.DefaultFormattingConversionService;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Unit tests for {@link UriToEntityConverter}.
@@ -197,9 +196,37 @@ class UriToEntityConverterUnitTests {
 			return JMoleculesIdentifier.of(UUID.randomUUID());
 		}
 
-		@Value(staticConstructor = "of")
-		static class JMoleculesIdentifier implements Identifier {
-			UUID id;
+		static final class JMoleculesIdentifier implements Identifier {
+			private final UUID id;
+
+			private JMoleculesIdentifier(UUID id) {
+				this.id = id;
+			}
+
+			public static JMoleculesIdentifier of(UUID id) {
+				return new JMoleculesIdentifier(id);
+			}
+
+			public UUID getId() {
+				return this.id;
+			}
+
+			@Override
+			public boolean equals(Object o) {
+				if (this == o)
+					return true;
+				if (o == null || getClass() != o.getClass())
+					return false;
+
+				JMoleculesIdentifier that = (JMoleculesIdentifier) o;
+
+				return ObjectUtils.nullSafeEquals(id, that.id);
+			}
+
+			@Override
+			public int hashCode() {
+				return ObjectUtils.nullSafeHashCode(id);
+			}
 		}
 	}
 

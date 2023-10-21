@@ -17,8 +17,6 @@ package org.springframework.data.rest.core.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Value;
-
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DynamicTest;
@@ -34,36 +32,31 @@ class ResourceStringUtilsTests {
 	@TestFactory
 	Stream<DynamicTest> shouldDetectTextPresence() {
 
-		return DynamicTest.stream(fixtures(), Fixture::getName, it -> {
-			assertThat(ResourceStringUtils.hasTextExceptSlash(it.getActual())).isEqualTo(it.hasText);
+		return DynamicTest.stream(fixtures(), Fixture::name, it -> {
+			assertThat(ResourceStringUtils.hasTextExceptSlash(it.actual())).isEqualTo(it.hasText);
 		});
 	}
 
 	@TestFactory
 	Stream<DynamicTest> shouldRemoveLeadingSlashIfAny() {
 
-		return DynamicTest.stream(fixtures(), Fixture::getName, it -> {
-			assertThat(ResourceStringUtils.removeLeadingSlash(it.getActual())).isEqualTo(it.getExpected());
+		return DynamicTest.stream(fixtures(), Fixture::name, it -> {
+			assertThat(ResourceStringUtils.removeLeadingSlash(it.actual())).isEqualTo(it.expected());
 		});
 	}
 
 	static Stream<Fixture> fixtures() {
 
-		return Stream.of(
-				Fixture.of("empty string has no text and should remain empty", "", "", false),
-				Fixture.of("blank string has no text and should remain as is", "  ", "  ", false),
-				Fixture.of("string made of only a leading slash has no text and should be returned empty", "/", "", false),
-				Fixture.of("blank string with only slashes has no text and should be returned as is", "   /   ", "   /   ",
+		return Stream.of(new Fixture("empty string has no text and should remain empty", "", "", false),
+				new Fixture("blank string has no text and should remain as is", "  ", "  ", false),
+				new Fixture("string made of only a leading slash has no text and should be returned empty", "/", "", false),
+				new Fixture("blank string with only slashes has no text and should be returned as is", "   /   ", "   /   ",
 						false),
-				Fixture.of("normal string has text and should be returned as such", "hello", "hello", true),
-				Fixture.of("normal string with leading slash has text and should be returned without leading slash", "/hello",
+				new Fixture("normal string has text and should be returned as such", "hello", "hello", true),
+				new Fixture("normal string with leading slash has text and should be returned without leading slash", "/hello",
 						"hello", true));
 	}
 
-	@Value(staticConstructor = "of")
-	static class Fixture {
-
-		String name, actual, expected;
-		boolean hasText;
+	record Fixture(String name, String actual, String expected, boolean hasText) {
 	}
 }

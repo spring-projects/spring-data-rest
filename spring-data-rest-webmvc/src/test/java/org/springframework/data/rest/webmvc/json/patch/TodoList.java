@@ -15,12 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.Data;
-
 import java.io.Serializable;
 import java.util.List;
 
-@Data
 class TodoList implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -28,4 +25,28 @@ class TodoList implements Serializable {
 	private List<Todo> todos;
 	private Todo[] todoArray;
 	private String name;
+
+	public List<Todo> getTodos() {
+		return this.todos;
+	}
+
+	public Todo[] getTodoArray() {
+		return this.todoArray;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public void setTodos(List<Todo> todos) {
+		this.todos = todos;
+	}
+
+	public void setTodoArray(Todo[] todoArray) {
+		this.todoArray = todoArray;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 }

@@ -49,7 +49,7 @@ class ScannerController {
 
 IMPORTANT: In this example, the combined path is `RepositoryRestConfiguration.getBasePath()` + `/scanners/search/listProducers`.
 
-[[customizing-sdr.aggregate-references]
+[[customizing-sdr.aggregate-references]]
 == Obtaining Aggregate References
 
 For custom controllers receiving `PUT` and `POST` requests, the request body usually contains a JSON document that will use URIs to express references to other resources.

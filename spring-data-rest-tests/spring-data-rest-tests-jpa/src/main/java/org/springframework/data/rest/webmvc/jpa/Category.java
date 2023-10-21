@@ -19,12 +19,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Version;
-import lombok.Data;
 
 /**
  * @author Dario Seidl
  */
-@Data
 @Entity
 class Category {
 
@@ -36,6 +34,30 @@ class Category {
 	private Category() {}
 
 	public Category(String name) {
+		this.name = name;
+	}
+
+	public Long getId() {
+		return this.id;
+	}
+
+	public Long getVersion() {
+		return this.version;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public void setVersion(Long version) {
+		this.version = version;
+	}
+
+	public void setName(String name) {
 		this.name = name;
 	}
 }

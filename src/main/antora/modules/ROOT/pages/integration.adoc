@@ -1,6 +1,5 @@
 [[integration]]
 = Integration
-:spring-data-rest-root: ../../../..
 
 This section details various ways to integrate with Spring Data REST components, whether from a Spring application that is using Spring Data REST or from other means.
 

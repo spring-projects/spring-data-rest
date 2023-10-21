@@ -1,0 +1,12 @@
+name: data-rest
+version: true
+title: Spring Data REST
+nav:
+  - modules/ROOT/nav.adoc
+ext:
+  collector:
+    - run:
+        command: ./mvnw validate process-resources -pl :spring-data-rest-distribution -am -Pantora-process-resources
+        local: true
+      scan:
+        dir: spring-data-rest-distribution/target/classes/

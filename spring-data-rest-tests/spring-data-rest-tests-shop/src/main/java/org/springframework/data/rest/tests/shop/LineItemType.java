@@ -15,24 +15,45 @@
  */
 package org.springframework.data.rest.tests.shop;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Oliver Gierke
  */
-@Getter
-@EqualsAndHashCode(of = "id")
-@ToString
-@RequiredArgsConstructor
 public class LineItemType {
 
 	private final @Id UUID id = UUID.randomUUID();
 	private final String name;
+
+	public LineItemType(String name) {
+		this.name = name;
+	}
+
+	public UUID getId() {
+		return this.id;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		LineItemType that = (LineItemType) o;
+
+		return ObjectUtils.nullSafeEquals(id, that.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(id);
+	}
 }

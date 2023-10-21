@@ -1,11 +1,8 @@
-image:https://spring.io/badges/spring-data-rest/ga.svg[Spring Data REST, link="https://projects.spring.io/spring-data-rest/#quick-start"]
-image:https://spring.io/badges/spring-data-rest/snapshot.svg[Spring Data REST, link="https://projects.spring.io/spring-data-rest/#quick-start"]
-
-= Spring Data REST image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2Fmain&subject=Build[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/] https://gitter.im/spring-projects/spring-data[image:https://badges.gitter.im/spring-projects/spring-data.svg[Gitter]]
+= Spring Data REST image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2Fmain&subject=Build[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/] https://gitter.im/spring-projects/spring-data[image:https://badges.gitter.im/spring-projects/spring-data.svg[Gitter]] image:https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A["Revved up by Gradle Enterprise", link="https://ge.spring.io/scans?search.rootProjectNames=Spring Data REST"]
 
 The goal of the project is to provide a flexible and configurable mechanism for writing simple services that can be exposed over HTTP.
 
-The first exporter implemented is a JPA Repository exporter. This takes your JPA repositories and front-ends them with HTTP, allowing you full CRUD capability over your entities, to include managing associations.
+This takes your Spring Data repositories and front-ends them with HTTP, allowing you full CRUD capability over your entities, to include managing associations.
 
 == Features
 
@@ -18,7 +15,7 @@ The first exporter implemented is a JPA Repository exporter. This takes your JPA
 * https://docs.spring.io/spring-data/rest/docs/current/reference/html/#metadata[Exposes metadata] about the model discovered as ALPS and JSON Schema.
 * Allows to define client specific representations through https://docs.spring.io/spring-data/rest/docs/current/reference/html/#projections-excerpts[projections].
 * Ships the latest release of https://docs.spring.io/spring-data/rest/docs/current/reference/html/#tools.hal-explorer[HAL Explorer] to easily explore HAL and HAL-FORMS based HTTP responses.
-* Currently supports JPA, MongoDB, Neo4j, Solr, Cassandra, Gemfire.
+* Supports JPA, MongoDB, Neo4j, Solr, Cassandra, Gemfire.
 * Allows https://docs.spring.io/spring-data/rest/docs/current/reference/html/#customizing-sdr[advanced customizations] of the default resources exposed.
 
 == Code of Conduct
@@ -82,13 +79,13 @@ If you'd rather like the latest snapshots of the upcoming major version, use our
 <dependency>
   <groupId>org.springframework.data</groupId>
   <artifactId>spring-data-rest</artifactId>
-  <version>${version}.BUILD-SNAPSHOT</version>
+  <version>${version}-SNAPSHOT</version>
 </dependency>
 
 <repository>
-  <id>spring-libs-snapshot</id>
+  <id>spring-snapshot</id>
   <name>Spring Snapshot Repository</name>
-  <url>https://repo.spring.io/libs-snapshot</url>
+  <url>https://repo.spring.io/snapshot</url>
 </repository>
 ----
 
@@ -119,7 +116,7 @@ https://github.com/spring-projects/spring-data-rest/issues[issue tracker] to see
 == Building from Source
 
 You don’t need to build from source to use Spring Data (binaries in https://repo.spring.io[repo.spring.io]), but if you want to try out the latest and greatest, Spring Data can be easily built with the https://github.com/takari/maven-wrapper[maven wrapper].
-You also need JDK 1.8.
+You also need JDK 17.
 
 [source,bash]
 ----
@@ -136,7 +133,7 @@ Building the documentation builds also the project without running tests.
 
 [source,bash]
 ----
- $ ./mvnw clean install -Pdistribute
+ $ ./mvnw clean install -Pantora
 ----
 
 The generated documentation is available from `target/site/reference/html/index.html`.

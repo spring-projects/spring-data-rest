@@ -1,0 +1,30 @@
+* xref:index.adoc[]
+
+* xref:intro.adoc[]
+** xref:introduction/upgrade.adoc[]
+** xref:introduction/getting-started.adoc[]
+** xref:introduction/example-api-usage-with-curl.adoc[]
+** xref:introduction/spring-data-rest-examples.adoc[]
+
+* xref:repository-resources.adoc[]
+** xref:paging-and-sorting.adoc[]
+** xref:projections-excerpts.adoc[]
+
+* xref:representations.adoc[Representations]
+* xref:etags-and-other-conditionals.adoc[Conditional Operations]
+* xref:validation.adoc[]
+* xref:events.adoc[]
+* xref:integration.adoc[]
+* xref:metadata.adoc[]
+* xref:security.adoc[]
+* xref:tools.adoc[]
+
+* xref:customizing-sdr.adoc[]
+** xref:customizing/configuring-the-rest-url-path.adoc[]
+** xref:customizing/adding-sdr-to-spring-mvc-app.adoc[]
+** xref:customizing/overriding-sdr-response-handlers.adoc[]
+** xref:customizing/customizing-json-output.adoc[]
+** xref:customizing/custom-jackson-deserialization.adoc[]
+** xref:customizing/configuring-cors.adoc[]
+
+* https://github.com/spring-projects/spring-data-commons/wiki[Wiki]

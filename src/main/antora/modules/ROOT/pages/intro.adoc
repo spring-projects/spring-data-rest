@@ -1,5 +1,6 @@
 [[intro-chapter]]
 = Introduction
+:page-section-summary-toc: 1
 
 REST web services have become the number one means for application integration on the web. In its core, REST defines that a system that consists of resources with which clients interact. These resources are implemented in a hypermedia-driven way. link:{springDocsUrl}/web.html#spring-web[Spring MVC] and link:{springDocsUrl}/web-reactive.html#spring-webflux[Spring WebFlux] each offer a solid foundation to build theses kinds of services. However, implementing even the simplest tenet of REST web services for a multi-domain object system can be quite tedious and result in a lot of boilerplate code.
 

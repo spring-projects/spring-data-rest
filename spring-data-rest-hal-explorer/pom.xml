@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-rest-parent</artifactId>
-		<version>4.1.0-SNAPSHOT</version>
+		<version>4.2.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>spring-data-rest-hal-explorer</artifactId>
@@ -13,7 +13,7 @@
 	<name>Spring Data REST - HAL Explorer</name>
 
 	<properties>
-		<explorer.version>1.2.0</explorer.version>
+		<explorer.version>1.2.1</explorer.version>
 		<java-module-name>spring.data.rest.hal.explorer</java-module-name>
 		<!--
 			Skip Javadoc as there's no public code to document

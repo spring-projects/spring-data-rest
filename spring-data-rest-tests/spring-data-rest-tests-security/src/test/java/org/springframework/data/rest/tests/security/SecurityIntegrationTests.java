@@ -30,7 +30,6 @@ import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.tests.TestMvcClient;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -53,7 +52,6 @@ import org.springframework.web.context.WebApplicationContext;
 class SecurityIntegrationTests extends AbstractWebIntegrationTests {
 
 	@Autowired WebApplicationContext context;
-	@Autowired MethodSecurityInterceptor methodSecurityInterceptor;
 
 	@Autowired SecuredPersonRepository personRepository;
 	@Autowired PreAuthorizedOrderRepository orderRepository;

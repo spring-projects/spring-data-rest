@@ -16,12 +16,11 @@
 
 package org.springframework.data.rest.webmvc.json.patch;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Roy Clarkson
@@ -29,8 +28,6 @@ import java.util.List;
  * @author Mathias Düsterhöft
  * @author Oliver Gierke
  */
-@Data
-@NoArgsConstructor
 class Todo {
 
 	private Long id;
@@ -46,5 +43,104 @@ class Todo {
 		this.id = id;
 		this.description = description;
 		this.complete = complete;
+	}
+
+	public Todo() {}
+
+	public Long getId() {
+		return this.id;
+	}
+
+	public String getDescription() {
+		return this.description;
+	}
+
+	public boolean isComplete() {
+		return this.complete;
+	}
+
+	public TodoType getType() {
+		return this.type;
+	}
+
+	public List<String> getItems() {
+		return this.items;
+	}
+
+	public List<String> getUninitialized() {
+		return this.uninitialized;
+	}
+
+	public BigInteger getAmount() {
+		return this.amount;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void setComplete(boolean complete) {
+		this.complete = complete;
+	}
+
+	public void setType(TodoType type) {
+		this.type = type;
+	}
+
+	public void setItems(List<String> items) {
+		this.items = items;
+	}
+
+	public void setUninitialized(List<String> uninitialized) {
+		this.uninitialized = uninitialized;
+	}
+
+	public void setAmount(BigInteger amount) {
+		this.amount = amount;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		Todo todo = (Todo) o;
+
+		if (complete != todo.complete)
+			return false;
+		if (!ObjectUtils.nullSafeEquals(id, todo.id)) {
+			return false;
+		}
+		if (!ObjectUtils.nullSafeEquals(description, todo.description)) {
+			return false;
+		}
+		if (!ObjectUtils.nullSafeEquals(type, todo.type)) {
+			return false;
+		}
+		if (!ObjectUtils.nullSafeEquals(items, todo.items)) {
+			return false;
+		}
+		if (!ObjectUtils.nullSafeEquals(uninitialized, todo.uninitialized)) {
+			return false;
+		}
+		return ObjectUtils.nullSafeEquals(amount, todo.amount);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(id);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(description);
+		result = 31 * result + (complete ? 1 : 0);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(type);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(items);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(uninitialized);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(amount);
+		return result;
 	}
 }
