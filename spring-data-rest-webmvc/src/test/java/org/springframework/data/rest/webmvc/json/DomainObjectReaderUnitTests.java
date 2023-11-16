@@ -108,6 +108,7 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Pear.class);
 		mappingContext.getPersistentEntity(WithCustomMappedPrimitiveCollection.class);
 		mappingContext.getPersistentEntity(BugModel.class);
+		mappingContext.getPersistentEntity(ArrayListHolder.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -699,6 +700,42 @@ class DomainObjectReaderUnitTests {
 				.containsExactly("Foo", "Bar");
 	}
 
+	@Test // #2325
+	void arraysCanMutateAndAppendDuringMerge() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		ArrayHolder target = new ArrayHolder(new String[] { "ancient", "old", "older" });
+		JsonNode node = mapper.readTree("{ \"array\" : [ \"new\", \"old\", \"newer\", \"bleeding edge\" ] }");
+
+		ArrayHolder updated = reader.doMerge((ObjectNode) node, target, mapper);
+
+		assertThat(updated.array).containsExactly("new", "old", "newer", "bleeding edge");
+	}
+
+	@Test // #2325
+	void arraysCanAppendMoreThanOneElementDuringMerge() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		ArrayListHolder target = new ArrayListHolder("ancient", "old", "older");
+		JsonNode node = mapper.readTree("{ \"values\" : [ \"ancient\", \"old\", \"older\", \"new\", \"newer\" ] }");
+
+		ArrayListHolder updated = reader.doMerge((ObjectNode) node, target, mapper);
+
+		assertThat(updated.values).containsExactly("ancient", "old", "older", "new", "newer");
+	}
+
+	@Test // #2325
+	void arraysCanRemoveElementsDuringMerge() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		ArrayHolder target = new ArrayHolder(new String[] { "ancient", "old", "older" });
+		JsonNode node = mapper.readTree("{ \"array\" : [ \"ancient\" ] }");
+
+		ArrayHolder updated = reader.doMerge((ObjectNode) node, target, mapper);
+
+		assertThat(updated.array).containsExactly("ancient");
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -837,18 +874,23 @@ class DomainObjectReaderUnitTests {
 
 		public LocalizedValue() {}
 
+		@Override
 		public boolean equals(final Object o) {
-			if (o == this)
+			if (o == this) {
 				return true;
-			if (!(o instanceof LocalizedValue))
+			}
+			if (!(o instanceof LocalizedValue)) {
 				return false;
+			}
 			final LocalizedValue other = (LocalizedValue) o;
-			if (!other.canEqual((Object) this))
+			if (!other.canEqual(this)) {
 				return false;
+			}
 			final Object this$value = this.value;
 			final Object other$value = other.value;
-			if (this$value == null ? other$value != null : !this$value.equals(other$value))
+			if (this$value == null ? other$value != null : !this$value.equals(other$value)) {
 				return false;
+			}
 			return true;
 		}
 
@@ -856,6 +898,7 @@ class DomainObjectReaderUnitTests {
 			return other instanceof LocalizedValue;
 		}
 
+		@Override
 		public int hashCode() {
 			final int PRIME = 59;
 			int result = 1;
@@ -918,10 +961,12 @@ class DomainObjectReaderUnitTests {
 
 		@Override
 		public boolean equals(Object o) {
-			if (this == o)
+			if (this == o) {
 				return true;
-			if (o == null || getClass() != o.getClass())
+			}
+			if (o == null || getClass() != o.getClass()) {
 				return false;
+			}
 
 			SampleWithReference that = (SampleWithReference) o;
 
@@ -1069,6 +1114,18 @@ class DomainObjectReaderUnitTests {
 
 		static class NestedModel {
 			public String value;
+		}
+	}
+
+	static class ArrayListHolder {
+		Collection<String> values;
+
+		ArrayListHolder(String... values) {
+			this.values = new ArrayList<>(Arrays.asList(values));
+		}
+
+		public void setValues(Collection<String> values) {
+			this.values = values;
 		}
 	}
 }
