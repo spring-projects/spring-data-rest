@@ -365,7 +365,8 @@ public class DomainObjectReader {
 		if (array.isEmpty()
 				|| collection.isEmpty()
 				|| ClassUtils.isPrimitiveOrWrapper(componentType.getType())
-				|| componentType.getType().isEnum()) {
+				|| componentType.getType().isEnum()
+				|| !entities.getPersistentEntity(componentType.getType()).isPresent()) {
 			return false;
 		}
 

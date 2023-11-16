@@ -115,6 +115,7 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Pear.class);
 		mappingContext.getPersistentEntity(WithCustomMappedPrimitiveCollection.class);
 		mappingContext.getPersistentEntity(BugModel.class);
+		mappingContext.getPersistentEntity(ArrayListHolder.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -704,6 +705,42 @@ class DomainObjectReaderUnitTests {
 				.containsExactly("Foo", "Bar");
 	}
 
+	@Test // #2325
+	void arraysCanMutateAndAppendDuringMerge() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		ArrayHolder target = new ArrayHolder(new String[] { "ancient", "old", "older" });
+		JsonNode node = mapper.readTree("{ \"array\" : [ \"new\", \"old\", \"newer\", \"bleeding edge\" ] }");
+
+		ArrayHolder updated = reader.doMerge((ObjectNode) node, target, mapper);
+
+		assertThat(updated.array).containsExactly("new", "old", "newer", "bleeding edge");
+	}
+
+	@Test // #2325
+	void arraysCanAppendMoreThanOneElementDuringMerge() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		ArrayListHolder target = new ArrayListHolder("ancient", "old", "older");
+		JsonNode node = mapper.readTree("{ \"values\" : [ \"ancient\", \"old\", \"older\", \"new\", \"newer\" ] }");
+
+		ArrayListHolder updated = reader.doMerge((ObjectNode) node, target, mapper);
+
+		assertThat(updated.values).containsExactly("ancient", "old", "older", "new", "newer");
+	}
+
+	@Test // #2325
+	void arraysCanRemoveElementsDuringMerge() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		ArrayHolder target = new ArrayHolder(new String[] { "ancient", "old", "older" });
+		JsonNode node = mapper.readTree("{ \"array\" : [ \"ancient\" ] }");
+
+		ArrayHolder updated = reader.doMerge((ObjectNode) node, target, mapper);
+
+		assertThat(updated.array).containsExactly("ancient");
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -998,6 +1035,18 @@ class DomainObjectReaderUnitTests {
 
 		static class NestedModel {
 			public String value;
+		}
+	}
+
+	static class ArrayListHolder {
+		Collection<String> values;
+
+		ArrayListHolder(String... values) {
+			this.values = new ArrayList<>(Arrays.asList(values));
+		}
+
+		public void setValues(Collection<String> values) {
+			this.values = values;
 		}
 	}
 }
