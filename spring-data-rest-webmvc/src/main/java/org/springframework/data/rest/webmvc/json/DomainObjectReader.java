@@ -267,9 +267,8 @@ public class DomainObjectReader {
 
 				if (child.isArray()) {
 
-					IntFunction<Object> rawValues = index -> readRawCollectionElement(property.getComponentType(), fieldName, index,
-							root,
-							mapper);
+					IntFunction<Object> rawValues = index -> readRawCollectionElement(property.getComponentType(), fieldName,
+							index, root, mapper);
 
 					if (handleArray(child, it, mapper, property.getTypeInformation(), rawValues)) {
 						i.remove();
@@ -366,7 +365,8 @@ public class DomainObjectReader {
 		if (array.isEmpty()
 				|| collection.isEmpty()
 				|| ClassUtils.isPrimitiveOrWrapper(componentType.getType())
-				|| componentType.getType().isEnum()) {
+				|| componentType.getType().isEnum()
+				|| entities.getPersistentEntity(componentType.getType()).isEmpty()) {
 			return false;
 		}
 
