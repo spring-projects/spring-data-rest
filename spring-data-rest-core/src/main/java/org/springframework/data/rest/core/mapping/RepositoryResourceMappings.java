@@ -61,14 +61,12 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 
 		this.repositories = repositories;
 		this.configuration = configuration;
-		this.populateCache(entities, configuration);
+		this.populateCache(repositories, configuration);
 	}
 
-	private void populateCache(PersistentEntities entities, RepositoryRestConfiguration configuration) {
+	private void populateCache(Repositories repositories, RepositoryRestConfiguration configuration) {
 
-		for (PersistentEntity<?, ? extends PersistentProperty<?>> entity : entities) {
-
-			Class<?> type = entity.getType();
+		for (Class<?> type : repositories) {
 
 			if (!repositories.hasRepositoryFor(type)) {
 				continue;
@@ -76,6 +74,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 
 			RepositoryInformation repositoryInformation = repositories.getRequiredRepositoryInformation(type);
 			Class<?> repositoryInterface = repositoryInformation.getRepositoryInterface();
+			PersistentEntity<?, ?> entity = repositories.getPersistentEntity(type);
 
 			RepositoryDetectionStrategy strategy = configuration.getRepositoryDetectionStrategy();
 			LinkRelationProvider provider = configuration.getLinkRelationProvider();
