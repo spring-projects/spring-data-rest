@@ -554,12 +554,12 @@ public class JpaWebTests extends CommonWebTests {
 		assertThat(findBySortedLink.getVariableNames()).contains("sort", "projection");
 
 		// Assert results returned as specified
-		client.follow(findBySortedLink.expand(Arrays.asList("title", "desc"))).//
+		client.follow(findBySortedLink.expand("title,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 
-		client.follow(findBySortedLink.expand(Arrays.asList("title", "asc"))).//
+		client.follow(findBySortedLink.expand("title,asc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
@@ -649,12 +649,12 @@ public class JpaWebTests extends CommonWebTests {
 		assertThat(findBySortedLink.getVariableNames()).contains("sort", "projection");
 
 		// Assert results returned as specified
-		client.follow(findBySortedLink.expand(Arrays.asList("sales", "desc"))).//
+		client.follow(findBySortedLink.expand("sales,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 
-		client.follow(findBySortedLink.expand(Arrays.asList("sales", "asc"))).//
+		client.follow(findBySortedLink.expand("sales,asc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
@@ -669,12 +669,12 @@ public class JpaWebTests extends CommonWebTests {
 		assertThat(findByLink.isTemplated()).isTrue();
 
 		// Assert results returned as specified
-		client.follow(findByLink.expand("0", "10", Arrays.asList("sales", "desc"))).//
+		client.follow(findByLink.expand("0", "10", "sales,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
 
-		client.follow(findByLink.expand("0", "10", Arrays.asList("unknown", "asc", "sales", "asc"))).//
+		client.follow(findByLink.expand("0", "10", Arrays.asList("unknown,asc", "sales,asc"))).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data (Second Edition)")).//
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));
@@ -706,7 +706,7 @@ public class JpaWebTests extends CommonWebTests {
 		assertThat(findBySortedLink.getVariableNames()).contains("sort", "projection");
 
 		// Assert results returned as specified
-		client.follow(findBySortedLink.expand(Arrays.asList("offer.price", "desc"))).//
+		client.follow(findBySortedLink.expand("offer.price,desc")).//
 				andExpect(jsonPath("$._embedded.books[0].title").value("Spring Data (Second Edition)")).//
 				andExpect(jsonPath("$._embedded.books[1].title").value("Spring Data")).//
 				andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF));

@@ -90,12 +90,12 @@ class RepositorySearchControllerIntegrationTests extends AbstractControllerInteg
 		tester.assertNumberOfLinks(7); // Self link included
 		tester.assertHasLinkEndingWith("findFirstPersonByFirstName",
 				"findFirstPersonByFirstName{?firstname,projection}");
-		tester.assertHasLinkEndingWith("firstname", "firstname{?firstname,page,size,sort,projection}");
-		tester.assertHasLinkEndingWith("lastname", "lastname{?lastname,sort,projection}");
+		tester.assertHasLinkEndingWith("firstname", "firstname{?firstname,page,size,sort*,projection}");
+		tester.assertHasLinkEndingWith("lastname", "lastname{?lastname,sort*,projection}");
 		tester.assertHasLinkEndingWith("findByCreatedUsingISO8601Date",
-				"findByCreatedUsingISO8601Date{?date,page,size,sort,projection}");
+				"findByCreatedUsingISO8601Date{?date,page,size,sort*,projection}");
 		tester.assertHasLinkEndingWith("findByCreatedGreaterThan",
-				"findByCreatedGreaterThan{?date,page,size,sort,projection}");
+				"findByCreatedGreaterThan{?date,page,size,sort*,projection}");
 		tester.assertHasLinkEndingWith("findCreatedDateByLastName", "findCreatedDateByLastName{?lastname}");
 	}
 
