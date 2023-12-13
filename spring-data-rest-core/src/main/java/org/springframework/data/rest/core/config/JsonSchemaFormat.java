@@ -30,6 +30,7 @@ public enum JsonSchemaFormat {
 	EMAIL, DATE_TIME, HOSTNAME, IPV4, IPV6, URI;
 
 	@JsonValue
+	@Override
 	public String toString() {
 		return name().toLowerCase(Locale.US).replaceAll("_", "-");
 	}

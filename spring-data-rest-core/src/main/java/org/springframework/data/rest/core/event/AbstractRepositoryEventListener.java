@@ -48,14 +48,14 @@ public abstract class AbstractRepositoryEventListener<T> implements ApplicationL
 			onAfterCreate((T) event.getSource());
 		} else if (event instanceof AfterSaveEvent) {
 			onAfterSave((T) event.getSource());
-		} else if (event instanceof BeforeLinkSaveEvent) {
-			onBeforeLinkSave((T) event.getSource(), ((BeforeLinkSaveEvent) event).getLinked());
-		} else if (event instanceof AfterLinkSaveEvent) {
-			onAfterLinkSave((T) event.getSource(), ((AfterLinkSaveEvent) event).getLinked());
-		} else if (event instanceof BeforeLinkDeleteEvent) {
-			onBeforeLinkDelete((T) event.getSource(), ((BeforeLinkDeleteEvent) event).getLinked());
-		} else if (event instanceof AfterLinkDeleteEvent) {
-			onAfterLinkDelete((T) event.getSource(), ((AfterLinkDeleteEvent) event).getLinked());
+		} else if (event instanceof BeforeLinkSaveEvent beforeLinkSaveEvent) {
+			onBeforeLinkSave((T) event.getSource(), beforeLinkSaveEvent.getLinked());
+		} else if (event instanceof AfterLinkSaveEvent afterLinkSaveEvent) {
+			onAfterLinkSave((T) event.getSource(), afterLinkSaveEvent.getLinked());
+		} else if (event instanceof BeforeLinkDeleteEvent beforeLinkDeleteEvent) {
+			onBeforeLinkDelete((T) event.getSource(), beforeLinkDeleteEvent.getLinked());
+		} else if (event instanceof AfterLinkDeleteEvent afterLinkDeleteEvent) {
+			onAfterLinkDelete((T) event.getSource(), afterLinkDeleteEvent.getLinked());
 		} else if (event instanceof BeforeDeleteEvent) {
 			onBeforeDelete((T) event.getSource());
 		} else if (event instanceof AfterDeleteEvent) {

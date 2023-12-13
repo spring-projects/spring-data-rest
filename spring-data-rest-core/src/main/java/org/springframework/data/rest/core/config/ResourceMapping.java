@@ -29,7 +29,7 @@ public class ResourceMapping {
 	private String rel;
 	private String path;
 	private boolean exported = true;
-	private final Map<String, ResourceMapping> resourceMappings = new HashMap<String, ResourceMapping>();
+	private final Map<String, ResourceMapping> resourceMappings = new HashMap<>();
 
 	public ResourceMapping() {}
 

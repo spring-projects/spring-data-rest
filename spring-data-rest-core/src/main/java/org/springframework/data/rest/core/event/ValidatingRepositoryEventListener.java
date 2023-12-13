@@ -57,7 +57,7 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 		Assert.notNull(persistentEntitiesFactory, "PersistentEntities must not be null");
 
 		this.persistentEntitiesFactory = persistentEntitiesFactory;
-		this.validators = new LinkedMultiValueMap<String, Validator>();
+		this.validators = new LinkedMultiValueMap<>();
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 	public ValidatingRepositoryEventListener setValidators(Map<String, Collection<Validator>> validators) {
 
 		for (Map.Entry<String, Collection<Validator>> entry : validators.entrySet()) {
-			this.validators.put(entry.getKey(), new ArrayList<Validator>(entry.getValue()));
+			this.validators.put(entry.getKey(), new ArrayList<>(entry.getValue()));
 		}
 
 		return this;
@@ -153,6 +153,6 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 	private Collection<Validator> getValidatorsForEvent(String event) {
 
 		Collection<Validator> validators = this.validators.get(event);
-		return validators == null ? Collections.<Validator> emptySet() : validators;
+		return validators == null ? Collections.emptySet() : validators;
 	}
 }

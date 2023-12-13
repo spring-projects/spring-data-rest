@@ -44,10 +44,8 @@ public abstract class ResourceMappingUtils {
 	public static String findRel(Class<?> type) {
 
 		RestResource anno = findAnnotation(type, RestResource.class);
-		if (anno != null) {
-			if (hasText(anno.rel())) {
+		if (anno != null && hasText(anno.rel())) {
 				return anno.rel();
-			}
 		}
 
 		return uncapitalize(type.getSimpleName().replaceAll("Repository", ""));
@@ -57,10 +55,8 @@ public abstract class ResourceMappingUtils {
 
 		RestResource anno = findAnnotation(method, RestResource.class);
 
-		if (anno != null) {
-			if (hasText(anno.rel())) {
+		if (anno != null && hasText(anno.rel()) ) {
 				return anno.rel();
-			}
 		}
 
 		return method.getName();
@@ -85,10 +81,8 @@ public abstract class ResourceMappingUtils {
 
 		RestResource anno = findAnnotation(type, RestResource.class);
 
-		if (anno != null) {
-			if (hasTextExceptSlash(anno.path())) {
+		if (anno != null && hasTextExceptSlash(anno.path())) {
 				return removeLeadingSlash(anno.path());
-			}
 		}
 
 		return uncapitalize(type.getSimpleName().replaceAll("Repository", ""));
@@ -98,10 +92,8 @@ public abstract class ResourceMappingUtils {
 
 		RestResource anno = findAnnotation(method, RestResource.class);
 
-		if (anno != null) {
-			if (hasTextExceptSlash(anno.path())) {
+		if (anno != null && hasTextExceptSlash(anno.path())) {
 				return removeLeadingSlash(anno.path());
-			}
 		}
 
 		return method.getName();

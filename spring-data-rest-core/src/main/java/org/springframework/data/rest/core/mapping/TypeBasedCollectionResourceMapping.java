@@ -44,7 +44,8 @@ class TypeBasedCollectionResourceMapping implements CollectionResourceMapping {
 
 	private final Lazy<Path> path;
 	private final Lazy<LinkRelation> rel;
-	private final Lazy<ResourceDescription> description, itemResourceDescription;
+	private final Lazy<ResourceDescription> description;
+	private final Lazy<ResourceDescription> itemResourceDescription;
 
 	/**
 	 * Creates a new {@link TypeBasedCollectionResourceMapping} using the given type.
