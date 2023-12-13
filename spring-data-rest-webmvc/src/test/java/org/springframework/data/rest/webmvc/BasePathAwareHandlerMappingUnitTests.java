@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ReflectionUtils;
@@ -45,7 +46,7 @@ class BasePathAwareHandlerMappingUnitTests {
 
 		doReturn(URI.create("")).when(configuration).getBasePath();
 
-		mapping = new HandlerMappingStub(configuration);
+		mapping = getHandlerMappingStub(configuration);
 	}
 
 	@Test // DATAREST-1132
@@ -85,7 +86,7 @@ class BasePathAwareHandlerMappingUnitTests {
 	void combinesBasePathAndControllerPrefixesCorrectly() throws Exception {
 
 		doReturn(URI.create("/base")).when(configuration).getBasePath();
-		mapping = new HandlerMappingStub(configuration);
+		mapping = getHandlerMappingStub(configuration);
 
 		var method = ReflectionUtils.findMethod(PrefixedController.class, "someMethod");
 		var info = mapping.getMappingForMethod(method, PrefixedController.class);
@@ -103,6 +104,15 @@ class BasePathAwareHandlerMappingUnitTests {
 		assertThat(AopUtils.isCglibProxy(proxy)).isTrue();
 
 		return proxy.getClass();
+	}
+
+	private static HandlerMappingStub getHandlerMappingStub(RepositoryRestConfiguration configuration) {
+
+		HandlerMappingStub mapping = new HandlerMappingStub(configuration);
+		mapping.setApplicationContext(new StaticApplicationContext());
+		mapping.afterPropertiesSet();
+
+		return mapping;
 	}
 
 	@BasePathAwareController
