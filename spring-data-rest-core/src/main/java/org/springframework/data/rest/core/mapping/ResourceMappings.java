@@ -16,6 +16,7 @@
 package org.springframework.data.rest.core.mapping;
 
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.Nullable;
 
 /**
  * @author Oliver Gierke
@@ -28,6 +29,7 @@ public interface ResourceMappings extends Streamable<ResourceMetadata> {
 	 * @param type must not be {@literal null}.
 	 * @return the {@link ResourceMetadata} if available or {@literal null} otherwise.
 	 */
+	@Nullable
 	ResourceMetadata getMetadataFor(Class<?> type);
 
 	/**
