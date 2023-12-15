@@ -105,8 +105,9 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	private static final TypeDescriptor URI_DESCRIPTOR = TypeDescriptor.valueOf(URI.class);
 
 	/**
-	 * Creates a new {@link PersistentEntityJackson2Module} using the given {@link ResourceMappings}, {@link Repositories}
-	 * , {@link RepositoryRestConfiguration}, {@link UriToEntityConverter} and {@link SelfLinkProvider}.
+	 * Creates a new {@link PersistentEntityJackson2Module} using the given {@link Associations},
+	 * {@link PersistentEntities}, {@link UriToEntityConverter}, {@link LinkCollector}, {@link RepositoryInvokerFactory},
+	 * {@link LookupObjectSerializer}, {@link RepresentationModelProcessorInvoker} and {@link EmbeddedResourcesAssembler}.
 	 *
 	 * @param associations must not be {@literal null}.
 	 * @param entities must not be {@literal null}.
