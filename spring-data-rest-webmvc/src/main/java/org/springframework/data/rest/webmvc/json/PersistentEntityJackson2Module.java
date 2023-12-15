@@ -34,15 +34,11 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.TargetAware;
-import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.EntityLookup;
-import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.mapping.Associations;
@@ -649,7 +645,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @param invoker must not be {@literal null}.
 		 * @param unwrapping
 		 */
-		private ProjectionSerializer(LinkCollector collector, Associations mappings,
+		ProjectionSerializer(LinkCollector collector, Associations mappings,
 				RepresentationModelProcessorInvoker invoker, boolean unwrapping) {
 
 			super(TargetAware.class);
@@ -694,11 +690,11 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @param value must not be {@literal null}.
 		 * @return
 		 */
-		private ProjectionResource toModel(TargetAware value) {
+		ProjectionResource toModel(TargetAware value) {
 
 			Object target = value.getTarget();
 			ResourceMetadata metadata = associations.getMetadataFor(value.getTargetClass());
-			Links links = metadata.isExported() ? collector.getLinksFor(target) : Links.NONE;
+			Links links = metadata != null && metadata.isExported() ? collector.getLinksFor(target) : Links.NONE;
 
 			EntityModel<TargetAware> resource = invoker.invokeProcessorsFor(EntityModel.of(value, links));
 
@@ -708,7 +704,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 	static class ProjectionResource extends EntityModel<ProjectionResourceContent> {
 
-		@SuppressWarnings("deprecation")
 		ProjectionResource(TargetAware projection, Iterable<Link> links) {
 			super(new ProjectionResourceContent(projection, projection.getClass().getInterfaces()[0]), links);
 		}

@@ -39,6 +39,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
@@ -52,8 +53,10 @@ import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.NestedEntitySerializer;
 import org.springframework.data.rest.webmvc.mapping.Associations;
+import org.springframework.data.rest.webmvc.mapping.DefaultLinkCollector;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
@@ -263,6 +266,19 @@ class PersistentEntityJackson2ModuleUnitTests {
 		assertThatNoException().isThrownBy(() -> mapper.writeValueAsString(model));
 	}
 
+	@Test // GH-1947
+	void projectionsHandleMissingMetadata() {
+
+		var collector = new DefaultLinkCollector(persistentEntities, selfLinks, associations);
+		var invoker = mock(RepresentationModelProcessorInvoker.class);
+		when(invoker.invokeProcessorsFor(any(RepresentationModel.class)))
+				.then(invocation -> invocation.getArgument(0));
+
+		var serializer = new PersistentEntityJackson2Module.ProjectionSerializer(collector, associations, invoker, false);
+
+		assertThatNoException().isThrownBy(() -> serializer.toModel(mock(SampleProjection.class)));
+	}
+
 	/**
 	 * @author Oliver Gierke
 	 */
@@ -365,4 +381,6 @@ class PersistentEntityJackson2ModuleUnitTests {
 			gen.writeEndObject();
 		}
 	}
+
+	interface SampleProjection extends TargetAware {}
 }
