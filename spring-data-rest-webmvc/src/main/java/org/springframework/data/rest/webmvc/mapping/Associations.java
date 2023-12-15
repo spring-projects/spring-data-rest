@@ -33,6 +33,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.UriTemplate;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -94,6 +95,7 @@ public class Associations {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
+	@Nullable
 	public ResourceMetadata getMetadataFor(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null");
