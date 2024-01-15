@@ -444,15 +444,8 @@ public class DomainObjectReader {
 			TypeInformation<?> typeToMap = getTypeToMap(sourceValue, valueType);
 
 			if (value instanceof ObjectNode && sourceValue != null) {
-
 				doMerge((ObjectNode) value, sourceValue, mapper);
-
-			} else if (value instanceof ArrayNode && sourceValue != null) {
-
-				handleArray(value, sourceValue, mapper, getTypeToMap(sourceValue, typeToMap), null);
-
 			} else {
-
 				source.put(mappedKey, mapper.treeToValue(value, typeToMap.getType()));
 			}
 
