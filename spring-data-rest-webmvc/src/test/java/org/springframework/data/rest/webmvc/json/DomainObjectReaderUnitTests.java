@@ -115,6 +115,7 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(WithCustomMappedPrimitiveCollection.class);
 		mappingContext.getPersistentEntity(BugModel.class);
 		mappingContext.getPersistentEntity(ArrayListHolder.class);
+		mappingContext.getPersistentEntity(MapWrapper.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -742,6 +743,39 @@ class DomainObjectReaderUnitTests {
 		assertThat(updated.array).containsExactly("ancient");
 	}
 
+	@Test // GH-2350
+	void replacesArrays() throws Exception {
+
+		ArrayHolder holder = new ArrayHolder(new String[] { "original" });
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		JsonNode node = mapper.readTree("{ \"array\" : [ \"first\", \"update\" ] }");
+		ArrayHolder result = reader.doMerge((ObjectNode) node, holder, mapper);
+
+		node = mapper.readTree("{ \"array\" : [ \"second\", \"update\" ] }");
+		result = reader.doMerge((ObjectNode) node, holder, mapper);
+
+		assertThat(result.getArray()).isEqualTo(new String[] { "second", "update" });
+	}
+
+	@Test // GH-2350
+	void replacesNestedArrays() throws Exception {
+
+		MapWrapper wrapper = new MapWrapper();
+		wrapper.map.put("array", new String[] { "original" });
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		JsonNode node = mapper.readTree("{ \"map\" : { \"array\" : [ \"first\", \"update\" ] } }");
+		MapWrapper result = reader.doMerge((ObjectNode) node, wrapper, mapper);
+
+		node = mapper.readTree("{ \"map\" : { \"array\" : [ \"second\", \"update\" ] } }");
+		result = reader.doMerge((ObjectNode) node, wrapper, mapper);
+
+		assertThat(result.map.get("array")).isEqualTo(new String[] { "second", "update" });
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -1045,5 +1079,9 @@ class DomainObjectReaderUnitTests {
 		public void setValues(Collection<String> values) {
 			this.values = values;
 		}
+	}
+
+	static class MapWrapper {
+		public Map<String, Object> map = new HashMap<>();
 	}
 }
