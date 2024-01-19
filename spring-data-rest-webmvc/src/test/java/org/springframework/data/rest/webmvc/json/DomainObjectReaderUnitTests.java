@@ -237,8 +237,9 @@ class DomainObjectReaderUnitTests {
 		assertThat(reader.readPut(node, sample, mapper).createdDate).isEqualTo(reference);
 	}
 
-	@Test // DATAREST-931
-	void readsPatchForEntityNestedInCollection() throws Exception {
+	@Test // DATAREST-931, GH-2358
+	// https://datatracker.ietf.org/doc/html/rfc7386#section-2
+	void handlesEntityNestedInAnArrayLikePutForPatchRequest() throws Exception {
 
 		Phone phone = new Phone();
 		phone.creationDate = new GregorianCalendar();
@@ -251,7 +252,7 @@ class DomainObjectReaderUnitTests {
 
 		User result = reader.read(source, user, new ObjectMapper());
 
-		assertThat(result.phones.get(0).creationDate).isNotNull();
+		assertThat(result.phones.get(0).creationDate).isNull();
 	}
 
 	@Test // DATAREST-919

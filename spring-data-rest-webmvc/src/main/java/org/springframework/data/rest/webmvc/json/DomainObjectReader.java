@@ -402,7 +402,7 @@ public class DomainObjectReader {
 			if (ObjectNode.class.isInstance(jsonNode)) {
 
 				nestedObjectFound = true;
-				doMerge((ObjectNode) jsonNode, next, mapper);
+				readPut((ObjectNode) jsonNode, next, mapper);
 			}
 		}
 
