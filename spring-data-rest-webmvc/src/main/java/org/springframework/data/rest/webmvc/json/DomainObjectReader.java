@@ -390,7 +390,7 @@ public class DomainObjectReader {
 						? rawValues.apply(current)
 						: mapper.treeToValue(jsonNode, componentType.getType()));
 
-				break;
+				continue;
 			}
 
 			Object next = value.next();
