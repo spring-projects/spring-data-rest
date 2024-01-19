@@ -776,6 +776,40 @@ class DomainObjectReaderUnitTests {
 		assertThat(result.map.get("array")).isEqualTo(new String[] { "second", "update" });
 	}
 
+	@Test // GH-2357
+	void addsElementToPreviouslyEmptyCollectionForPatch() throws Exception {
+
+		Child child = new Child();
+		child.items = new ArrayList<>();
+
+		JsonNode node = new ObjectMapper()
+				.readTree("{ \"items\" : [ { \"some\" : \"value\" }, { \"some\" : \"otherValue\" } ] }");
+
+		Child result = reader.doMerge((ObjectNode) node, child, new ObjectMapper());
+
+		assertThat(result.items).hasSize(2);
+		assertThat(result.items.get(0).some).isEqualTo("value");
+		assertThat(result.items.get(1).some).isEqualTo("otherValue");
+	}
+
+	@Test // GH-2357
+	void augmentsCollectionForPatch() throws Exception {
+
+		Child child = new Child();
+		child.items = new ArrayList<>(Arrays.asList(new Item("old")));
+
+		JsonNode node = new ObjectMapper()
+				.readTree(
+						"{ \"items\" : [ { \"some\" : \"value\" }, { \"some\" : \"otherValue\" }, { \"some\" : \"yetAnotherValue\" } ] }");
+
+		Child result = reader.doMerge((ObjectNode) node, child, new ObjectMapper());
+
+		assertThat(result.items).hasSize(3);
+		assertThat(result.items.get(0).some).isEqualTo("value");
+		assertThat(result.items.get(1).some).isEqualTo("otherValue");
+		assertThat(result.items.get(2).some).isEqualTo("yetAnotherValue");
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
