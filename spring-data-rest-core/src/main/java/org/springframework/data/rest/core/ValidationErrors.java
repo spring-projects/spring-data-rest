@@ -55,9 +55,7 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 	 */
 	public ValidationErrors(Object source, PersistentEntities entities) {
 
-		super(source.getClass().getSimpleName());
-
-		Assert.notNull(source, "Entity must not be null");
+		super(requireNotNull(source, "Entity must not be null").getClass().getSimpleName());
 		Assert.notNull(entities, "PersistentEntities must not be null");
 
 		this.entities = entities;
@@ -103,6 +101,10 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 				return accessor.getPropertyValue(segment);
 			}
 		};
+	}
+	private static <T> T requireNotNull(T object, String message) {
+		Assert.notNull(object, message);
+		return object;
 	}
 
 	@Override
