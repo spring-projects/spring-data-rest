@@ -47,7 +47,7 @@ class ScannerController {
 
 `CollectionModel` is for a collection, while `EntityModel` -- or the more general class `RepresentationModel` -- is for a single item. These types can be combined. If you know the links for each item in a collection, use `CollectionModel<EntityModel<String>>` (or whatever the core domain type is rather than `String`). Doing so lets you assemble links for each item as well as for the whole collection.
 
-IMPORTANT: In this example, the combined path is `RepositoryRestConfiguration.getBasePath()` + `/scanners/search/listProducers`.
+IMPORTANT: In this example, the combined path is `RepositoryRestConfiguration.getBasePath()` + `/scanners/search/producers`.
 
 [[customizing-sdr.aggregate-references]]
 == Obtaining Aggregate References
