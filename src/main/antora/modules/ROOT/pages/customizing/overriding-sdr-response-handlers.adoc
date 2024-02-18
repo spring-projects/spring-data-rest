@@ -93,7 +93,7 @@ In case you are using jMolecules, `AssociationAggregateReference` also allows yo
 While both of the abstraction assume the value for the parameter to be a URI matching the scheme that Spring Data REST uses to expose item resources, that source value resolution can be customized by calling `….withIdSource(…)` on the reference instance to provide a function to extract the identifier value to be used for aggregate resolution eventually from the `UriComponents` obtained from the URI received.
 
 [[customizing-sdr.overriding-sdr-response-handlers.annotations]]
-== `@RepositoryRestResource` VS. `@BasePathAwareController`
+== `@RepositoryRestController` VS. `@BasePathAwareController`
 
 If you are not interested in entity-specific operations but still want to build custom operations underneath `basePath`, such as Spring MVC views, resources, and others, use `@BasePathAwareController`.
 If you're using `@RepositoryRestController` on your custom controller, it will only handle the request if your request mappings blend into the URI space used by the repository.
