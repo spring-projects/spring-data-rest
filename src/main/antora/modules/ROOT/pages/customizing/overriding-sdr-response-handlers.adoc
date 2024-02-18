@@ -9,7 +9,7 @@ The following example shows how to use the `@RepositoryRestController` annotatio
 ====
 [source,java]
 ----
-@BasePathAwareController
+@RepositoryRestController
 class ScannerController {
 
   private final ScannerRepository repository;
@@ -60,7 +60,7 @@ All you need to do is declare an `@RequestParam` of that type and then consume e
 
 [source,java]
 ----
-@BasePathAwareController
+@RepositoryRestController
 class ScannerController {
 
   private final ScannerRepository repository;
