@@ -15,7 +15,7 @@ class ScannerController {
   private final ScannerRepository repository;
 
   ScannerController(ScannerRepository repository) { // <1>
-    repository = repository;
+    this.repository = repository;
   }
 
   @GetMapping(path = "/scanners/search/producers") // <2>
@@ -23,9 +23,7 @@ class ScannerController {
 
     List<String> producers = repository.listProducers(); // <3>
 
-    //
     // do some intermediate processing, logging, etc. with the producers
-    //
 
     CollectionModel<String> resources = CollectionModel.of(producers); // <4>
 
@@ -66,7 +64,7 @@ class ScannerController {
   private final ScannerRepository repository;
 
   ScannerController(ScannerRepository repository) {
-    repository = repository;
+    this.repository = repository;
   }
 
   @GetMapping(path = "/scanners")
