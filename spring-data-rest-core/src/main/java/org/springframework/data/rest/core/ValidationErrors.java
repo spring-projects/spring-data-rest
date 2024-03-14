@@ -34,8 +34,9 @@ import org.springframework.util.Assert;
 import org.springframework.validation.AbstractPropertyBindingResult;
 
 /**
- * An {@link Errors} implementation for use in the events mechanism of Spring Data REST. Customizes actual field lookup
- * by using a {@link PersistentPropertyAccessor} for actual value lookups.
+ * An {@link org.springframework.validation.Errors} implementation for use in the events mechanism of Spring Data REST.
+ * Customizes actual field lookup by using a {@link org.springframework.data.mapping.PersistentPropertyAccessor} for
+ * actual value lookups.
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
