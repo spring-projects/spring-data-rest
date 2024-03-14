@@ -94,7 +94,7 @@ class ValidationErrorsUnitTests {
 			fail("Expected NotReadablePropertyException");
 		} catch (NotReadablePropertyException e) {}
 
-		assertThat(errors.getFieldValue("field")).isEqualTo((Object) "Hello");
+		assertThat(errors.getFieldValue("field")).isEqualTo("Hello");
 	}
 
 	static class Foo {
@@ -111,7 +111,8 @@ class ValidationErrorsUnitTests {
 		String field = "World";
 	}
 
-	static class TestKeyValueMappingContext<E extends KeyValuePersistentEntity<?, P>, P extends KeyValuePersistentProperty<P>> extends KeyValueMappingContext<E, P> {
+	static class TestKeyValueMappingContext<E extends KeyValuePersistentEntity<?, P>, P extends KeyValuePersistentProperty<P>>
+			extends KeyValueMappingContext<E, P> {
 
 		@Override
 		protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> type) {

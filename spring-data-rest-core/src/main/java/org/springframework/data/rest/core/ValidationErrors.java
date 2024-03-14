@@ -28,11 +28,10 @@ import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.beans.PropertyAccessorUtils;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.validation.AbstractPropertyBindingResult;
-import org.springframework.validation.Errors;
 
 /**
  * An {@link Errors} implementation for use in the events mechanism of Spring Data REST. Customizes actual field lookup
@@ -92,22 +91,29 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 			 * @param segment the property segment to look up, must not be {@literal null} or empty.
 			 * @return
 			 */
+			@Nullable
 			private Object lookupValueOn(Object value, String segment) {
 
-				Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> entity = entities.getPersistentEntity(value.getClass());
+				Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> entity = entities
+						.getPersistentEntity(value.getClass());
+
+				return getAccessor(entity, value, segment).getPropertyValue(segment);
+			}
+
+			private static ConfigurablePropertyAccessor getAccessor(
+					Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> entity, Object value, String segment) {
+
 				if (!entity.isPresent()) {
-					return new DirectFieldAccessor(value).getPropertyValue(segment);
+					return PropertyAccessorFactory.forDirectFieldAccess(value);
 				}
 
 				PersistentProperty<?> property = entity //
 						.map(it -> it.getPersistentProperty(PropertyAccessorUtils.getPropertyName(segment))) //
 						.orElseThrow(() -> new NotReadablePropertyException(value.getClass(), segment));
 
-				ConfigurablePropertyAccessor accessor = property.usePropertyAccess() //
+				return property.usePropertyAccess() //
 						? PropertyAccessorFactory.forBeanPropertyAccess(value) //
 						: PropertyAccessorFactory.forDirectFieldAccess(value);
-
-				return accessor.getPropertyValue(segment);
 			}
 		};
 	}
