@@ -90,7 +90,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 
 	private static final List<ParameterMetadata> discoverParameterMetadata(Method method, String baseRel) {
 
-		List<ParameterMetadata> result = new ArrayList<ParameterMetadata>();
+		List<ParameterMetadata> result = new ArrayList<>();
 
 		for (MethodParameter parameter : new MethodParameters(method, PARAM_VALUE).getParameters()) {
 			if (!IMPLICIT_PARAMETER_TYPES.contains(parameter.getParameterType())

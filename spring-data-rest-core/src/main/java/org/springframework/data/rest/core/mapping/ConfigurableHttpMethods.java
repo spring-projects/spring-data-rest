@@ -72,8 +72,8 @@ public class ConfigurableHttpMethods implements HttpMethods {
 
 		Assert.notNull(methods, "HttpMethods must not be null");
 
-		if (ConfigurableHttpMethods.class.isInstance(methods)) {
-			return ConfigurableHttpMethods.class.cast(methods);
+		if (methods instanceof ConfigurableHttpMethods configurableHttpMethods) {
+			return configurableHttpMethods;
 		}
 
 		return new ConfigurableHttpMethods(methods.stream().collect(Collectors.toSet()));
