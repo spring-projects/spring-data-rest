@@ -14,7 +14,7 @@
 
 	<properties>
 		<java-module-name>spring.data.rest.tests.security</java-module-name>
-		<spring-security.version>6.1.7</spring-security.version>
+		<spring-security.version>6.1.8</spring-security.version>
 	</properties>
 
 	<dependencies>
