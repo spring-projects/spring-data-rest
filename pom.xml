@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>3.2.5</version>
+		<version>3.2.6-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 
@@ -28,10 +28,10 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-rest</dist.id>
 
-		<springdata.commons>3.2.5</springdata.commons>
-		<springdata.jpa>3.2.5</springdata.jpa>
-		<springdata.mongodb>4.2.5</springdata.mongodb>
-		<springdata.keyvalue>3.2.5</springdata.keyvalue>
+		<springdata.commons>3.2.6-SNAPSHOT</springdata.commons>
+		<springdata.jpa>3.2.6-SNAPSHOT</springdata.jpa>
+		<springdata.mongodb>4.2.6-SNAPSHOT</springdata.mongodb>
+		<springdata.keyvalue>3.2.6-SNAPSHOT</springdata.keyvalue>
 
 		<hibernate.version>6.1.5.Final</hibernate.version>
 	</properties>
@@ -136,8 +136,20 @@
 	</dependencies>
 
 	<repositories>
-		
-		
+		<repository>
+			<id>spring-snapshot</id>
+			<url>https://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>spring-milestone</id>
+			<url>https://repo.spring.io/milestone</url>
+		</repository>
 	</repositories>
 
 </project>
