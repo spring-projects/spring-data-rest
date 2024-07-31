@@ -3,14 +3,14 @@
 
 The REST exporter emits eight different events throughout the process of working with an entity:
 
-* `BeforeCreateEvent`
-* `AfterCreateEvent`
-* `BeforeSaveEvent`
-* `AfterSaveEvent`
-* `BeforeLinkSaveEvent`
-* `AfterLinkSaveEvent`
-* `BeforeDeleteEvent`
-* `AfterDeleteEvent`
+* javadoc:org.springframework.data.rest.core.event.BeforeCreateEvent[]
+* javadoc:org.springframework.data.rest.core.event.AfterCreateEvent[]
+* javadoc:org.springframework.data.rest.core.event.BeforeSaveEvent[]
+* javadoc:org.springframework.data.rest.core.event.AfterSaveEvent[]
+* javadoc:org.springframework.data.rest.core.event.BeforeLinkSaveEvent[]
+* javadoc:org.springframework.data.rest.core.event.AfterLinkSaveEvent[]
+* javadoc:org.springframework.data.rest.core.event.BeforeDeleteEvent[]
+* javadoc:org.springframework.data.rest.core.event.AfterDeleteEvent[]
 
 [[events.application-listener]]
 == Writing an `ApplicationListener`
