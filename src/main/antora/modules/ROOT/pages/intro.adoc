@@ -2,6 +2,6 @@
 = Introduction
 :page-section-summary-toc: 1
 
-REST web services have become the number one means for application integration on the web. In its core, REST defines that a system that consists of resources with which clients interact. These resources are implemented in a hypermedia-driven way. link:{springDocsUrl}/web.html#spring-web[Spring MVC] and link:{springDocsUrl}/web-reactive.html#spring-webflux[Spring WebFlux] each offer a solid foundation to build theses kinds of services. However, implementing even the simplest tenet of REST web services for a multi-domain object system can be quite tedious and result in a lot of boilerplate code.
+REST web services have become the number one means for application integration on the web. In its core, REST defines that a system that consists of resources with which clients interact. These resources are implemented in a hypermedia-driven way. link:{springDocsUrl}/web.html#spring-web[Spring MVC] and link:{springDocsUrl}/web-reactive.html#spring-webflux[Spring WebFlux] each offer a solid foundation to build these kinds of services. However, implementing even the simplest tenet of REST web services for a multi-domain object system can be quite tedious and result in a lot of boilerplate code.
 
 Spring Data REST builds on top of the Spring Data repositories and automatically exports those as REST resources. It leverages hypermedia to let clients automatically find functionality exposed by the repositories and integrate these resources into related hypermedia-based functionality.
