@@ -71,7 +71,6 @@ class JsonPointerMapping {
 			return pointer;
 		}
 
-		PropertyPath base = null;
 		StringBuilder result = new StringBuilder();
 		TypeInformation<?> currentType = ClassTypeInformation.from(type);
 
@@ -105,12 +104,10 @@ class JsonPointerMapping {
 					.orElseThrow(() -> reject(segment, rejectType, pointer, qualifier));
 
 			try {
-				base = base == null ? PropertyPath.from(property, type) : base.nested(segment);
+				currentType = PropertyPath.from(property, currentType).getTypeInformation();
 			} catch (PropertyReferenceException o_O) {
 				throw reject(segment, rejectType, pointer, qualifier);
 			}
-
-			currentType = base.getTypeInformation();
 
 			result.append("/").append(property);
 		}
