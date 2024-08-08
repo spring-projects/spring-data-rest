@@ -15,4 +15,4 @@ _site
 node_modules
 package-lock.json
 node
-.mvn/.gradle-enterprise
+.mvn/.develocity
