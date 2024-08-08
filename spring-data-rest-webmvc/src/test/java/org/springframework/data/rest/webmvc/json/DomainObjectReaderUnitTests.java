@@ -45,6 +45,8 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.util.ObjectUtils;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -110,6 +112,7 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(BugModel.class);
 		mappingContext.getPersistentEntity(ArrayListHolder.class);
 		mappingContext.getPersistentEntity(MapWrapper.class);
+		mappingContext.getPersistentEntity(SlotsContainer.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -804,6 +807,36 @@ class DomainObjectReaderUnitTests {
 		assertThat(result.items.get(1).some).isEqualTo("otherValue");
 		assertThat(result.items.get(2).some).isEqualTo("yetAnotherValue");
 	}
+	
+	@Test // GH-2407
+	void deserializesAnySetterForPatch() throws Exception {
+
+		Slots slots = new Slots();
+		slots.slots.add(new Slot("slot-1", 1));
+		slots.slots.add(new Slot("slot-2", null));
+		slots.slots.add(new Slot("slot-3", 3));
+		slots.slots.add(new Slot("slot-4", 4));
+
+		SlotsContainer container = new SlotsContainer();
+		container.slots = slots;
+
+		// changing value of slot-1, setting one for slot-2, removing for slot-4, leaving slot-3 unchanged
+		JsonNode node = new ObjectMapper()
+				.readTree("{ \"slots\" : { \"slot-1\" : 12 , \"slot-2\" : 2, \"slot-4\" : null } }");
+
+		SlotsContainer result = reader.doMerge((ObjectNode) node, container, new ObjectMapper());
+
+		final List<Slot> list = new ArrayList<>(result.slots.slots);
+		assertThat(list).hasSize(4);
+		assertThat(list.get(0).name).isEqualTo("slot-1");
+		assertThat(list.get(0).value).isEqualTo(12);
+		assertThat(list.get(1).name).isEqualTo("slot-2");
+		assertThat(list.get(1).value).isEqualTo(2);
+		assertThat(list.get(2).name).isEqualTo("slot-3");
+		assertThat(list.get(2).value).isEqualTo(3);
+		assertThat(list.get(3).name).isEqualTo("slot-4");
+		assertThat(list.get(3).value).isNull();
+	}
 
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
@@ -1200,5 +1233,52 @@ class DomainObjectReaderUnitTests {
 
 	static class MapWrapper {
 		public Map<String, Object> map = new HashMap<>();
+	}
+	
+	// GH-2407
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class SlotsContainer {
+
+		Slots slots;
+
+	}
+
+	static class Slots {
+
+		// The internal, non-json representation is a Set
+		@JsonIgnore private SortedSet<Slot> slots = new TreeSet<>();
+
+		@JsonAnySetter
+		public void put(final String name, final Integer value) {
+			slots.removeIf(slot -> slot.name.equals(name));
+			slots.add(new Slot(name, value));
+		}
+
+		// We expose however a Map
+		@JsonAnyGetter
+		public Map<String, Integer> toMap() {
+			final Map<String, Integer> map = new HashMap<>();
+			slots.forEach(slot -> map.put(slot.name, slot.value));
+			return map;
+		}
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Slot implements Comparable<Slot> {
+
+		String name;
+		Integer value;
+
+		Slot(String name, Integer value) {
+			this.name = name;
+			this.value = value;
+		}
+
+		@Override
+		public int compareTo(Slot o) {
+			return name.compareTo(o.name);
+		}
+
 	}
 }
