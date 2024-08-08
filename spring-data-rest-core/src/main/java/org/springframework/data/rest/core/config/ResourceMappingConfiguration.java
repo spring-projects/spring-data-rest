@@ -27,15 +27,10 @@ import java.util.Map;
 @SuppressWarnings("deprecation")
 public class ResourceMappingConfiguration {
 
-	private final Map<Class<?>, ResourceMapping> resourceMappings = new HashMap<Class<?>, ResourceMapping>();
+	private final Map<Class<?>, ResourceMapping> resourceMappings = new HashMap<>();
 
 	public ResourceMapping setResourceMappingFor(Class<?> type) {
-		ResourceMapping rm = resourceMappings.get(type);
-		if (null == rm) {
-			rm = new ResourceMapping(type);
-			resourceMappings.put(type, rm);
-		}
-		return rm;
+		return resourceMappings.computeIfAbsent(type, value -> new ResourceMapping(type));
 	}
 
 	public ResourceMapping getResourceMappingFor(Class<?> type) {

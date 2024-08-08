@@ -49,7 +49,7 @@ public class ParametersMetadata implements Iterable<ParameterMetadata> {
 	 */
 	public List<String> getParameterNames() {
 
-		List<String> names = new ArrayList<String>(parameterMetadata.size());
+		List<String> names = new ArrayList<>(parameterMetadata.size());
 
 		for (ParameterMetadata metadata : parameterMetadata) {
 			names.add(metadata.getName());
