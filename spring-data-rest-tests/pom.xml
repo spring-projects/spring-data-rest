@@ -22,7 +22,7 @@
 	</modules>
 
 	<properties>
-		<groovy.version>2.4.4</groovy.version>
+		<groovy.version>2.4.21</groovy.version>
 	</properties>
 
 	<dependencies>
