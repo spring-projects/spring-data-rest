@@ -67,7 +67,15 @@ import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.RepositoryRelProvider;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.core.support.UnwrappingRepositoryInvokerFactory;
-import org.springframework.data.rest.webmvc.*;
+import org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping;
+import org.springframework.data.rest.webmvc.BaseUri;
+import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
+import org.springframework.data.rest.webmvc.HttpHeadersPreparer;
+import org.springframework.data.rest.webmvc.ProfileResourceProcessor;
+import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
+import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
+import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
+import org.springframework.data.rest.webmvc.RestMediaTypes;
 import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.alps.RootResourceInformationToAlpsDescriptorConverter;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
@@ -110,6 +118,7 @@ import org.springframework.hateoas.mediatype.hal.HalConfiguration;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule.HalHandlerInstantiator;
 import org.springframework.hateoas.mediatype.hal.forms.HalFormsConfiguration;
+import org.springframework.hateoas.mediatype.hal.forms.HalFormsHttpMessageConverter;
 import org.springframework.hateoas.mediatype.hal.forms.Jackson2HalFormsModule;
 import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
@@ -606,12 +615,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				defaultedRelProvider, curieProvider, resolver.getObject(), configuration.getHalConfiguration(),
 				applicationContext.getAutowireCapableBeanFactory()));
 
-		TypeConstrainedMappingJackson2HttpMessageConverter converter = new TypeConstrainedMappingJackson2HttpMessageConverter(
-				RepresentationModel.class);
-		converter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_FORMS_JSON));
-		converter.setObjectMapper(mapper);
-
-		return converter;
+		return new HalFormsHttpMessageConverter(applicationContext, mapper);
 	}
 
 	public ObjectMapper halObjectMapper(LinkCollector linkCollector) {
@@ -682,9 +686,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	/**
 	 * The {@link HandlerMapping} to delegate requests to Spring Data REST controllers. Sets up a
-	 * {@link DelegatingHandlerMapping} to make sure manually implemented {@link BasePathAwareController} instances that
-	 * register custom handlers for certain media types don't cause the {@link RepositoryRestHandlerMapping} to be
-	 * omitted. See DATAREST-490.
+	 * {@link DelegatingHandlerMapping} to make sure manually implemented
+	 * {@link org.springframework.data.rest.webmvc.BasePathAwareController} instances that register custom handlers for
+	 * certain media types don't cause the {@link RepositoryRestHandlerMapping} to be omitted. See DATAREST-490.
 	 *
 	 * @return
 	 */
