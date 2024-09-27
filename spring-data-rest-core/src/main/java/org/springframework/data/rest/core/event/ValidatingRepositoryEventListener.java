@@ -15,10 +15,7 @@
  */
 package org.springframework.data.rest.core.event;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +30,15 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
+import static java.util.Collections.emptySet;
+
 /**
  * {@link org.springframework.context.ApplicationListener} implementation that dispatches {@link RepositoryEvent}s to a
  * specific {@link Validator}.
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Eleftherios Laskaridis
  */
 public class ValidatingRepositoryEventListener extends AbstractRepositoryEventListener<Object> {
 
@@ -135,7 +135,7 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 
 		Errors errors = new ValidationErrors(entity, persistentEntitiesFactory.getObject());
 
-		for (Validator validator : getValidatorsForEvent(event)) {
+		for (Validator validator : getValidatorsForEvent(event, entity)) {
 
 			if (validator.supports(entity.getClass())) {
 				LOGGER.debug("{}: {} with {}", event, entity, validator);
@@ -150,9 +150,19 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 		return errors;
 	}
 
-	private Collection<Validator> getValidatorsForEvent(String event) {
+	private Collection<Validator> getValidatorsForEvent(String eventName, Object validationTarget) {
+		Collection<Validator> validators = this.validators.get(eventName);
+		// Allows registering validators by a composite key name consisting of the event name,
+		// post-fixed by the model name and the keyword "Validator". Useful when registering
+		// validators as "@Component"s or "@Bean"s (which both require a unique bean name).
+		if (validators == null || validators.isEmpty()) {
+			String compositeValidatorKeyName = createCompositeValidatorKeyNameFor(eventName, validationTarget);
+			validators = this.validators.get(compositeValidatorKeyName);
+		}
+		return Optional.ofNullable(validators).orElse(emptySet());
+	}
 
-		Collection<Validator> validators = this.validators.get(event);
-		return validators == null ? Collections.<Validator> emptySet() : validators;
+	private String createCompositeValidatorKeyNameFor(String eventName, Object validationTarget) {
+		return eventName + validationTarget.getClass().getSimpleName() + "Validator";
 	}
 }
