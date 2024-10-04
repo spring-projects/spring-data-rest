@@ -29,8 +29,8 @@ import org.springframework.util.Assert;
  */
 public class MetadataConfiguration {
 
-	private final Map<Class<?>, JsonSchemaFormat> schemaFormats = new HashMap<Class<?>, JsonSchemaFormat>();
-	private final Map<Class<?>, Pattern> patterns = new HashMap<Class<?>, Pattern>();
+	private final Map<Class<?>, JsonSchemaFormat> schemaFormats = new HashMap<>();
+	private final Map<Class<?>, Pattern> patterns = new HashMap<>();
 	private boolean omitUnresolvableDescriptionKeys = true;
 	private boolean alpsEnabled = true;
 

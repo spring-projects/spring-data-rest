@@ -63,7 +63,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 
 	@Override
 	public <T, ID, R extends Repository<T, ?>> IdMappingRegistrar<T, R> forRepository(Class<R> type) {
-		return new MappingBuilder<T, ID, R>(type);
+		return new MappingBuilder<>(type);
 	}
 
 	@Override
@@ -115,7 +115,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		public EntityLookupRegistrar withLookup(Lookup<R, ID> lookup) {
 
 			EntityLookupConfiguration.this.lookupInformation
-					.add((LookupInformation<Object, Object, Repository<? extends Object, ?>>) new LookupInformation<T, ID, R>(
+					.add((LookupInformation<Object, Object, Repository<? extends Object, ?>>) new LookupInformation<>(
 							repositoryType, idMapping, lookup));
 
 			return EntityLookupConfiguration.this;
@@ -123,7 +123,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 
 		@Override
 		public <ID2> LookupRegistrar<T, ID2, R> withIdMapping(Converter<T, ID2> idMapping) {
-			return new MappingBuilder<T, ID2, R>(repositoryType, idMapping);
+			return new MappingBuilder<>(repositoryType, idMapping);
 		}
 	}
 
@@ -195,7 +195,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 
 			Object result = lookupInfo.getLookup().lookup(repository, id);
 
-			return Optional.class.isInstance(result) ? (Optional<T>) result : Optional.ofNullable((T) result);
+			return result instanceof Optional optional  ? optional : Optional.ofNullable((T) result);
 		}
 
 		@Override
