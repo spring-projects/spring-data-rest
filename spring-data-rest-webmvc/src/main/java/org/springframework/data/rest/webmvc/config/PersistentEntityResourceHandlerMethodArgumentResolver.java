@@ -43,7 +43,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
@@ -115,7 +114,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 		for (HttpMessageConverter converter : messageConverters) {
 
-			if (!converter.canRead(PersistentEntityResource.class, contentType)) {
+			if (!converter.canRead(domainType, contentType)) {
 				continue;
 			}
 
