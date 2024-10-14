@@ -257,6 +257,12 @@ public class DomainObjectReader {
 			}
 
 			PersistentProperty<?> property = mappedProperties.getPersistentProperty(fieldName);
+			
+			// This means there's an @JsonAnySetter present for fieldName
+			if (property == null) {
+				continue;
+			}
+			
 			Optional<Object> rawValue = Optional.ofNullable(accessor.getProperty(property));
 
 			if (!rawValue.isPresent() || associationLinks.isLinkableAssociation(property)) {
