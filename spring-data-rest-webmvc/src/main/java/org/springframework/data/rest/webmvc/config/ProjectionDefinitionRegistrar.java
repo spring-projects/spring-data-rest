@@ -36,19 +36,20 @@ import org.springframework.util.Assert;
  * {@link RepositoryResourceMappings} as the latter need access to the former to discover mappings in the first place.
  *
  * @author Oliver Gierke
+ * @author Nam Jae Lee
  * @since 2.5
  * @soundtrack Katinka - Ausverkauf
  */
-public class ProjectionDefinitionRegistar implements SmartInstantiationAwareBeanPostProcessor {
+public class ProjectionDefinitionRegistrar implements SmartInstantiationAwareBeanPostProcessor {
 
 	private final ObjectFactory<RepositoryRestConfiguration> config;
 
 	/**
-	 * Creates a new {@link ProjectionDefinitionRegistar} for the given {@link RepositoryRestConfiguration}.
+	 * Creates a new {@link ProjectionDefinitionRegistrar} for the given {@link RepositoryRestConfiguration}.
 	 *
 	 * @param config must not be {@literal null}.
 	 */
-	public ProjectionDefinitionRegistar(ObjectFactory<RepositoryRestConfiguration> config) {
+	public ProjectionDefinitionRegistrar(ObjectFactory<RepositoryRestConfiguration> config) {
 
 		Assert.notNull(config, "RepositoryRestConfiguration must not be null");
 

@@ -161,6 +161,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Will Fleury
+ * @author Nam Jae Lee
  */
 @Configuration(proxyBeanMethods = false)
 @EnableHypermediaSupport(type = { HypermediaType.HAL, HypermediaType.HAL_FORMS })
@@ -397,9 +398,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public static ProjectionDefinitionRegistar projectionDefinitionRegistrar(
+	public static ProjectionDefinitionRegistrar projectionDefinitionRegistrar(
 			ObjectFactory<RepositoryRestConfiguration> config) {
-		return new ProjectionDefinitionRegistar(config);
+		return new ProjectionDefinitionRegistrar(config);
 	}
 
 	@Bean
