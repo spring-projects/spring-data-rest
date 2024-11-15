@@ -39,6 +39,7 @@ import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.BindContextFactory;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
 import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -114,7 +115,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 		for (HttpMessageConverter converter : messageConverters) {
 
-			if (!converter.canRead(domainType, contentType)) {
+			if (!converter.canRead(RepresentationModel.class, contentType)) {
 				continue;
 			}
 
