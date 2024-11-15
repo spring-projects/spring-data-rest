@@ -73,7 +73,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry(p['docker.proxy.registry'], p['docker.proxy.credentials']) {
-								docker.image("springci/spring-data-with-mongodb-6.0:${p['java.next.tag']}").inside(p['docker.java.inside.docker']) {
+								docker.image("springci/spring-data-with-mongodb-8.0:${p['java.next.tag']}").inside(p['docker.java.inside.docker']) {
 									sh 'mkdir -p /tmp/mongodb/db /tmp/mongodb/log'
 									sh 'mongod --dbpath /tmp/mongodb/db --replSet rs0 --fork --logpath /tmp/mongodb/log/mongod.log &'
 									sh 'sleep 10'
