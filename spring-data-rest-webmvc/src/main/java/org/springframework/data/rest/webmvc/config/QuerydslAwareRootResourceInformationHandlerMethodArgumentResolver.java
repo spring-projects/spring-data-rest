@@ -31,7 +31,7 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -91,7 +91,7 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 	private Optional<Pair<QuerydslPredicateExecutor<?>, Predicate>> getRepositoryAndPredicate(
 			QuerydslPredicateExecutor<?> repository, Class<?> domainType, Map<String, String[]> parameters) {
 
-		ClassTypeInformation<?> type = ClassTypeInformation.from(domainType);
+		TypeInformation<?> type = TypeInformation.of(domainType);
 
 		QuerydslBindings bindings = factory.createBindingsFor(type);
 		Predicate predicate = predicateBuilder.getPredicate(type, toMultiValueMap(parameters), bindings);

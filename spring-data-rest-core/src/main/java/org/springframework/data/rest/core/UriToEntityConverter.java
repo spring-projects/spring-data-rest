@@ -27,7 +27,7 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
-import org.springframework.data.util.ReflectionUtils;
+import org.springframework.data.util.ClassUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -41,8 +41,8 @@ import org.springframework.util.Assert;
  */
 public class UriToEntityConverter implements GenericConverter {
 
-	private static final Class<?> ASSOCIATION_TYPE = ReflectionUtils
-			.loadIfPresent("org.jmolecules.ddd.types.Association", UriToEntityConverter.class.getClassLoader());
+	private static final Class<?> ASSOCIATION_TYPE = ClassUtils.loadIfPresent("org.jmolecules.ddd.types.Association",
+			UriToEntityConverter.class.getClassLoader());
 
 	private final PersistentEntities entities;
 	private final RepositoryInvokerFactory invokerFactory;
@@ -120,15 +120,12 @@ public class UriToEntityConverter implements GenericConverter {
 
 		if (entity.isEmpty()) {
 			throw new ConversionFailedException(sourceType, targetType, source,
-					new IllegalArgumentException(
-							"No PersistentEntity information available for " + targetType.getType()));
+					new IllegalArgumentException("No PersistentEntity information available for " + targetType.getType()));
 		}
 
 		var segment = getIdentifierSegment(source, sourceType, targetType);
 
-		return invokerFactory.getInvokerFor(targetType.getType())
-				.invokeFindById(segment)
-				.orElse(null);
+		return invokerFactory.getInvokerFor(targetType.getType()).invokeFindById(segment).orElse(null);
 	}
 
 	private static String getIdentifierSegment(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {

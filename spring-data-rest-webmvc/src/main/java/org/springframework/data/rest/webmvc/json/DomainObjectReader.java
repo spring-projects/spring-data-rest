@@ -41,7 +41,6 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.util.InputStreamHttpInputMessage;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
@@ -140,8 +139,7 @@ public class DomainObjectReader {
 
 		boolean isTypeChange = !source.getClass().isInstance(target);
 
-		boolean immutableTarget = entities.getPersistentEntity(target.getClass())
-				.map(PersistentEntity::isImmutable)
+		boolean immutableTarget = entities.getPersistentEntity(target.getClass()).map(PersistentEntity::isImmutable)
 				.orElse(true); // Not a Spring Data managed type -> no detailed merging
 
 		return entities.getPersistentEntity(isTypeChange ? source.getClass() : target.getClass()) //
@@ -362,11 +360,8 @@ public class DomainObjectReader {
 		Assert.notNull(mapper, "ObjectMapper must not be null");
 
 		// Empty collection? Primitive? Enum? No need to merge.
-		if (array.isEmpty()
-				|| collection.isEmpty()
-				|| ClassUtils.isPrimitiveOrWrapper(componentType.getType())
-				|| componentType.getType().isEnum()
-				|| entities.getPersistentEntity(componentType.getType()).isEmpty()) {
+		if (array.isEmpty() || collection.isEmpty() || ClassUtils.isPrimitiveOrWrapper(componentType.getType())
+				|| componentType.getType().isEnum() || entities.getPersistentEntity(componentType.getType()).isEmpty()) {
 			return false;
 		}
 
@@ -386,9 +381,8 @@ public class DomainObjectReader {
 				nestedObjectFound = true;
 
 				// Use pre-read values if available. Deserialize node otherwise.
-				collection.add(rawValues != null
-						? rawValues.apply(current)
-						: mapper.treeToValue(jsonNode, componentType.getType()));
+				collection
+						.add(rawValues != null ? rawValues.apply(current) : mapper.treeToValue(jsonNode, componentType.getType()));
 
 				continue;
 			}
@@ -597,7 +591,7 @@ public class DomainObjectReader {
 	private static TypeInformation<?> getTypeToMap(Object value, TypeInformation<?> type) {
 
 		if (type == null) {
-			return ClassTypeInformation.OBJECT;
+			return TypeInformation.OBJECT;
 		}
 
 		if (value == null) {
@@ -605,11 +599,10 @@ public class DomainObjectReader {
 		}
 
 		if (Enum.class.isInstance(value)) {
-			return ClassTypeInformation.from(((Enum<?>) value).getDeclaringClass());
+			return TypeInformation.of(((Enum<?>) value).getDeclaringClass());
 		}
 
-		return value.getClass().equals(type.getType()) ? type : ClassTypeInformation.from(value.getClass());
-
+		return value.getClass().equals(type.getType()) ? type : TypeInformation.of(value.getClass());
 	}
 
 	/**
@@ -709,8 +702,7 @@ public class DomainObjectReader {
 				result = mergeCollections(property, sourceValue, targetValue, mapper);
 			} else if (property.isEntity()) {
 
-				result = targetValue.isEmpty()
-						? sourceValue
+				result = targetValue.isEmpty() ? sourceValue
 						: targetValue.flatMap(t -> sourceValue.map(s -> mergeForPut(s, t, mapper)));
 			} else {
 				result = sourceValue;

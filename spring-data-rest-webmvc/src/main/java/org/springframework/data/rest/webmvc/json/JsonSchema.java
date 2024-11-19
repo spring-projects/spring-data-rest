@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.data.rest.core.config.JsonSchemaFormat;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -325,7 +324,7 @@ public class JsonSchema {
 	 */
 	public static class JsonSchemaProperty extends AbstractJsonSchemaProperty<JsonSchemaProperty> {
 
-		private static final TypeInformation<?> STRING_TYPE_INFORMATION = ClassTypeInformation.from(String.class);
+		private static final TypeInformation<?> STRING_TYPE_INFORMATION = TypeInformation.of(String.class);
 
 		public String description;
 		public String type;
@@ -351,7 +350,7 @@ public class JsonSchema {
 		public JsonSchemaProperty withType(Class<?> type) {
 
 			Assert.notNull(type, "Type must not be null");
-			return with(ClassTypeInformation.from(type));
+			return with(TypeInformation.of(type));
 		}
 
 		/**

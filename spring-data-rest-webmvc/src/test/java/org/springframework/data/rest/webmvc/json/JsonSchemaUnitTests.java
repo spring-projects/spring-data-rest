@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -29,7 +28,7 @@ import org.springframework.data.util.TypeInformation;
  */
 class JsonSchemaUnitTests {
 
-	static final TypeInformation<?> type = ClassTypeInformation.from(Sample.class);
+	static final TypeInformation<?> type = TypeInformation.of(Sample.class);
 
 	@Test // DATAREST-492
 	void considersNumberPrimitivesJsonSchemaNumbers() {

@@ -8,7 +8,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
@@ -25,7 +24,7 @@ public class PersistentEntityResourceProcessor implements RepresentationModelPro
 			List<RepresentationModelProcessor<EntityModel<?>>> resourceProcessors) {
 		if (null != resourceProcessors) {
 			for (RepresentationModelProcessor<EntityModel<?>> rp : resourceProcessors) {
-				TypeInformation<?> typeInfo = ClassTypeInformation.from(rp.getClass());
+				TypeInformation<?> typeInfo = TypeInformation.of(rp.getClass());
 				TypeInformation<?> domainType = typeInfo.getTypeArguments().get(0);
 				if (null != repositories.getPersistentEntity(domainType.getType())) {
 					this.resourceProcessors.add(new DomainTypeResourceProcessor(domainType.getType(), rp));

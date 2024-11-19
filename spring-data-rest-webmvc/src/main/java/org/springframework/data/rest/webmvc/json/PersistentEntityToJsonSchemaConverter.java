@@ -49,7 +49,6 @@ import org.springframework.data.rest.webmvc.json.JsonSchema.EnumProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.Item;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
 import org.springframework.data.rest.webmvc.mapping.Associations;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.mediatype.MessageResolver;
@@ -72,7 +71,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 	private static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
 	private static final TypeDescriptor SCHEMA_TYPE = TypeDescriptor.valueOf(JsonSchema.class);
-	private static final TypeInformation<?> STRING_TYPE_INFORMATION = ClassTypeInformation.from(String.class);
+	private static final TypeInformation<?> STRING_TYPE_INFORMATION = TypeInformation.of(String.class);
 
 	private final Set<ConvertiblePair> convertiblePairs = new HashSet<ConvertiblePair>();
 	private final Associations associations;
@@ -424,7 +423,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		@SuppressWarnings("rawtypes")
 		public TypeInformation<?> getPropertyType() {
 			return property.map(it -> (TypeInformation) it.getTypeInformation())
-					.orElseGet(() -> ClassTypeInformation.from(definition.getPrimaryMember().getRawType()));
+					.orElseGet(() -> TypeInformation.of(definition.getPrimaryMember().getRawType()));
 		}
 
 		public JsonSchemaProperty getSchemaProperty(ResourceDescription description, InternalMessageResolver resolver) {
