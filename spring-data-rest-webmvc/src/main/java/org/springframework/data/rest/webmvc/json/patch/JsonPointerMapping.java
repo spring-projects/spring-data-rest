@@ -20,7 +20,6 @@ import java.util.function.BiFunction;
 
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
@@ -76,7 +75,7 @@ class JsonPointerMapping {
 
 		PropertyPath base = null;
 		StringBuilder result = new StringBuilder();
-		TypeInformation<?> currentType = ClassTypeInformation.from(type);
+		TypeInformation<?> currentType = TypeInformation.of(type);
 
 		for (int i = 0; i < strings.length; i++) {
 

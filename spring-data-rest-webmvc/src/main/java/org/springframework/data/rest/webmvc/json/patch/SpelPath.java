@@ -27,7 +27,6 @@ import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
@@ -126,11 +125,10 @@ class SpelPath {
 			Assert.notNull(path, "Path must not be null");
 			Assert.notNull(type, "Type must not be null");
 
-			return READ_PATHS.computeIfAbsent(CacheKey.of(type, this, context),
-					key -> {
-						String mapped = new JsonPointerMapping(context).forRead(key.path.path, type);
-						return new TypedSpelPath(mapped, key.type, context.getEvaluationContext());
-					});
+			return READ_PATHS.computeIfAbsent(CacheKey.of(type, this, context), key -> {
+				String mapped = new JsonPointerMapping(context).forRead(key.path.path, type);
+				return new TypedSpelPath(mapped, key.type, context.getEvaluationContext());
+			});
 		}
 
 		/**
@@ -144,11 +142,10 @@ class SpelPath {
 			Assert.notNull(path, "Path must not be null");
 			Assert.notNull(type, "Type must not be null");
 
-			return WRITE_PATHS.computeIfAbsent(CacheKey.of(type, this, context),
-					key -> {
-						String mapped = new JsonPointerMapping(context).forWrite(key.path.path, type);
-						return new TypedSpelPath(mapped, key.type, context.getEvaluationContext());
-					});
+			return WRITE_PATHS.computeIfAbsent(CacheKey.of(type, this, context), key -> {
+				String mapped = new JsonPointerMapping(context).forWrite(key.path.path, type);
+				return new TypedSpelPath(mapped, key.type, context.getEvaluationContext());
+			});
 		}
 
 		private static final class CacheKey {
@@ -585,7 +582,7 @@ class SpelPath {
 
 		private static final class SpelExpressionBuilder {
 
-			private static final TypeInformation<String> STRING_TYPE = ClassTypeInformation.from(String.class);
+			private static final TypeInformation<String> STRING_TYPE = TypeInformation.of(String.class);
 
 			private final @Nullable PropertyPath basePath;
 			private final Class<?> type;

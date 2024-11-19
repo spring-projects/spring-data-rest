@@ -22,7 +22,6 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.CollectionValueInstantiator;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.UriStringDeserializer;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
@@ -94,7 +93,7 @@ public class AggregateReferenceResolvingModule extends SimpleModule {
 				return builder;
 			}
 
-			TypeInformation<?> type = ClassTypeInformation.from(description.getBeanClass());
+			TypeInformation<?> type = TypeInformation.of(description.getBeanClass());
 			ValueInstantiatorCustomizer customizer = new ValueInstantiatorCustomizer(builder.getValueInstantiator(), config);
 			Iterator<SettableBeanProperty> properties = builder.getProperties();
 
