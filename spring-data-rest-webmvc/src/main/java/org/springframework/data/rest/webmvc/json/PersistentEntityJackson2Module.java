@@ -37,13 +37,13 @@ import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
+import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
-import org.springframework.data.util.CastUtils;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -859,10 +859,11 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 		}
 
+		@SuppressWarnings("unchecked")
 		private Object getLookupKey(Object value) {
 
 			return lookups.getPluginFor(value.getClass()) //
-					.<EntityLookup<Object>> map(CastUtils::cast)
+					.map(it -> (EntityLookup<Object>) it)
 					.orElseThrow(() -> new IllegalArgumentException("No EntityLookup found for " + value.getClass().getName()))
 					.getResourceIdentifier(value);
 		}
