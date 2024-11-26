@@ -20,7 +20,10 @@ package org.springframework.data.rest.core.support;
  *
  * @author Florent Biville
  */
-public class ResourceStringUtils {
+public final class ResourceStringUtils {
+
+	private ResourceStringUtils(){
+	}
 
 	/**
 	 * Checks whether the given input contains actual text (slash excluded). This is a specializing variant of

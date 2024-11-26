@@ -60,7 +60,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 
 		Assert.notNull(resourceType, "EntityRepresentationModel type must not be null");
 
-		Set<HttpMethod> methods = new HashSet<HttpMethod>();
+		Set<HttpMethod> methods = new HashSet<>();
 		methods.add(OPTIONS);
 
 		switch (resourceType) {
@@ -110,7 +110,7 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 			return HttpMethods.none();
 		}
 
-		Set<HttpMethod> methods = new HashSet<HttpMethod>();
+		Set<HttpMethod> methods = new HashSet<>();
 
 		methods.add(GET);
 

@@ -51,7 +51,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 
 		Assert.notNull(mappings, "MethodResourceMappings must not be null");
 
-		this.mappings = new HashMap<Path, MethodResourceMapping>(mappings.size());
+		this.mappings = new HashMap<>(mappings.size());
 
 		for (MethodResourceMapping mapping : mappings) {
 
