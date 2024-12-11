@@ -59,7 +59,7 @@ class ConfigurationApplyingSupportedHttpMethodsAdapter implements SupportedHttpM
 		HttpMethods methodsFor = delegate.getMethodsFor(property);
 		ResourceMapping mapping = resourceMetadata.getMappingFor(property);
 
-		if (!PropertyAwareResourceMapping.class.isInstance(mapping)) {
+		if (! (mapping instanceof PropertyAwareResourceMapping) ) {
 			return methodsFor;
 		}
 
