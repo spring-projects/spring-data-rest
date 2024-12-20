@@ -192,10 +192,6 @@ public class JacksonMappingAwareSortTranslator {
 
 				for (PersistentProperty<?> persistentProperty : persistentProperties) {
 
-					if (associations.isLinkableAssociation(persistentProperty)) {
-						return Collections.emptyList();
-					}
-
 					persistentPropertyPath.add(persistentProperty.getName());
 				}
 
