@@ -235,6 +235,6 @@ class RepositorySearchControllerIntegrationTests extends AbstractControllerInteg
 				"findCreatedDateByLastName", PAGEABLE, Sort.unsorted(), new HttpHeaders(), assembler);
 
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(entity.getHeaders()).isEmpty();
+		assertThat(entity.getHeaders().isEmpty()).isTrue();
 	}
 }
