@@ -135,7 +135,7 @@ class ETagUnitTests {
 
 		HttpHeaders headers = ETag.NO_ETAG.addTo(new HttpHeaders());
 
-		assertThat(headers.containsKey("ETag")).isFalse();
+		assertThat(headers.getFirst("ETag")).isNull();
 	}
 
 	// tag::versioned-sample[]
