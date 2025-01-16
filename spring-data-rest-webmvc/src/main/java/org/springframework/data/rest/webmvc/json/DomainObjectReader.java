@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -211,7 +212,8 @@ public class DomainObjectReader {
 		try {
 			return doMerge(source, target, mapper);
 		} catch (Exception o_O) {
-			throw new HttpMessageNotReadableException("Could not read payload", o_O);
+			throw new HttpMessageNotReadableException("Could not read payload", o_O,
+					InputStreamHttpInputMessage.of(() -> new ByteArrayInputStream(mapper.writeValueAsBytes(source))));
 		}
 	}
 
