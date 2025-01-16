@@ -16,33 +16,43 @@
 package org.springframework.data.rest.webmvc.util;
 
 import java.io.InputStream;
+import java.util.function.Supplier;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.util.Assert;
+import org.springframework.util.function.ThrowingSupplier;
 
 /**
  * {@link HttpInputMessage} based on a plain {@link InputStream}, i.e. exposing no headers.
  *
  * @author Oliver Drotbohm
+ * @author Mark Paluch
  */
 public class InputStreamHttpInputMessage implements HttpInputMessage {
 
-	private final InputStream body;
+	private final Supplier<InputStream> body;
 
-	private InputStreamHttpInputMessage(final InputStream body) {
+	private InputStreamHttpInputMessage(Supplier<InputStream> body) {
 
 		Assert.notNull(body, "InputStream must not be null");
 
 		this.body = body;
 	}
 
-	public static InputStreamHttpInputMessage of(final InputStream body) {
+	public static InputStreamHttpInputMessage of(InputStream body) {
+		return new InputStreamHttpInputMessage(() -> body);
+	}
+
+	/**
+	 * @since 5.0
+	 */
+	public static InputStreamHttpInputMessage of(ThrowingSupplier<InputStream> body) {
 		return new InputStreamHttpInputMessage(body);
 	}
 
 	public InputStream getBody() {
-		return this.body;
+		return this.body.get();
 	}
 
 	@Override
