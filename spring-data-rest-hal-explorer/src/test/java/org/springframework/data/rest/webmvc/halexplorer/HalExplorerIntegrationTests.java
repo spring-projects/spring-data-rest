@@ -80,7 +80,7 @@ class HalExplorerIntegrationTests {
 
 		mvc.perform(get(BASE_PATH).accept(MediaType.ALL)).//
 				andExpect(status().isOk()).//
-				andExpect(header().string(HttpHeaders.CONTENT_TYPE, startsWith(MediaTypes.HAL_JSON.toString())));
+				andExpect(header().string(HttpHeaders.CONTENT_TYPE, startsWith(MediaTypes.VND_HAL_JSON.toString())));
 	}
 
 	@Test // DATAREST-293
