@@ -574,8 +574,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			RepositoryRestConfiguration repositoryRestConfiguration) {
 
 		ArrayList<MediaType> mediaTypes = new ArrayList<>();
-		mediaTypes.add(MediaTypes.HAL_JSON);
 		mediaTypes.add(MediaTypes.VND_HAL_JSON);
+		mediaTypes.add(MediaTypes.HAL_JSON);
 
 		// Enable returning HAL if application/json is asked if it's configured to be the default type
 		if (repositoryRestConfiguration.useHalAsDefaultJsonMediaType()) {

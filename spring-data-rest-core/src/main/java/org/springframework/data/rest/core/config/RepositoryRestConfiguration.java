@@ -21,13 +21,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.repository.support.Repositories;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.mapping.ExposureConfiguration;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 import org.springframework.data.rest.core.support.EntityLookup;
-import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.hateoas.server.core.AnnotationLinkRelationProvider;
@@ -57,7 +54,7 @@ public class RepositoryRestConfiguration {
 	private String pageParamName = "page";
 	private String limitParamName = "size";
 	private String sortParamName = "sort";
-	private MediaType defaultMediaType = MediaTypes.HAL_JSON;
+	private MediaType defaultMediaType = MediaTypes.VND_HAL_JSON;
 	private boolean useHalAsDefaultJsonMediaType = true;
 	private Boolean returnBodyOnCreate = null;
 	private Boolean returnBodyOnUpdate = null;
