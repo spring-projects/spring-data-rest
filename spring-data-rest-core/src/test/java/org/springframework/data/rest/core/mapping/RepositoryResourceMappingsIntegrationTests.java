@@ -140,8 +140,7 @@ class RepositoryResourceMappingsIntegrationTests {
 			methodNames.add(method.getMethod().getName());
 		}
 
-		assertThat(methodNames).hasSize(2);
-		assertThat(methodNames).contains("findByFirstName", "findByCreatedGreaterThan");
+		assertThat(methodNames).hasSize(2).contains("findByFirstName", "findByCreatedGreaterThan");
 	}
 
 	@Test // DATAREST-325
