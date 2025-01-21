@@ -21,10 +21,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.mapping.ExposureConfiguration;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy.RepositoryDetectionStrategies;
 import org.springframework.data.rest.core.support.EntityLookup;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.hateoas.server.core.AnnotationLinkRelationProvider;
@@ -629,7 +632,7 @@ public class RepositoryRestConfiguration {
 	/**
 	 * Sets whether to expose repository methods by default. If this is disabled, CRUD methods must be annotated with
 	 * {@link RestResource} explicitly to expose the default set of resources (opt-in). If this is set to {@literal true}
-	 * (default), repository methods methods are exposed unless explictly annotated with {@link RestResource} and
+	 * (default), repository methods are exposed unless explictly annotated with {@link RestResource} and
 	 * {@link RestResource#exported()} set to {@literal false}.
 	 *
 	 * @since 3.1
