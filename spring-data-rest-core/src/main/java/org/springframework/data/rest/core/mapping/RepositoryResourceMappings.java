@@ -41,7 +41,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 
 	private final Repositories repositories;
 	private final RepositoryRestConfiguration configuration;
-	private final Map<Class<?>, SearchResourceMappings> searchCache = new HashMap<Class<?>, SearchResourceMappings>();
+	private final Map<Class<?>, SearchResourceMappings> searchCache = new HashMap<>();
 
 	/**
 	 * Creates a new {@link RepositoryResourceMappings} from the given {@link RepositoryRestConfiguration},
@@ -103,7 +103,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 		}
 
 		RepositoryInformation repositoryInformation = repositories.getRequiredRepositoryInformation(domainType);
-		List<MethodResourceMapping> mappings = new ArrayList<MethodResourceMapping>();
+		List<MethodResourceMapping> mappings = new ArrayList<>();
 		ResourceMetadata resourceMapping = getMetadataFor(domainType);
 
 		if (resourceMapping.isExported()) {
