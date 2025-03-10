@@ -14,7 +14,7 @@ The simplest way to get to started is to build a Spring Boot application because
 ----
 dependencies {
   ...
-  compile("org.springframework.boot:spring-boot-starter-data-rest")
+  implementation("org.springframework.boot:spring-boot-starter-data-rest")
   ...
 }
 ----
@@ -51,7 +51,7 @@ To add Spring Data REST to a Gradle-based project, add the `spring-data-rest-web
 ----
 dependencies {
   … other project dependencies
-  compile("org.springframework.data:spring-data-rest-webmvc:{version}")
+  implementation("org.springframework.data:spring-data-rest-webmvc:{version}")
 }
 ----
 ====
