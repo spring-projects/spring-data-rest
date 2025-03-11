@@ -1,4 +1,4 @@
-= Spring Data REST image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2Fmain&subject=Build[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/] https://gitter.im/spring-projects/spring-data[image:https://badges.gitter.im/spring-projects/spring-data.svg[Gitter]] image:https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A["Revved up by Develocity", link="https://ge.spring.io/scans?search.rootProjectNames=Spring Data REST"]
+= Spring Data REST image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-rest%2Fmain&subject=Build[link=https://jenkins.spring.io/view/SpringData/job/spring-data-rest/] image:https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A["Revved up by Develocity", link="https://ge.spring.io/scans?search.rootProjectNames=Spring Data REST"]
 
 The goal of the project is to provide a flexible and configurable mechanism for writing simple services that can be exposed over HTTP.
 
@@ -99,7 +99,6 @@ https://docs.spring.io/spring-data/rest/docs/current/reference/html/[reference d
 If you are just starting out with Spring, try one of the https://spring.io/guides[guides].
 * If you are upgrading, check out the https://docs.spring.io/spring-data/rest/docs/current/changelog.txt[changelog] for "`new and noteworthy`" features.
 * Ask a question - we monitor https://stackoverflow.com[stackoverflow.com] for questions tagged with https://stackoverflow.com/tags/spring-data[`spring-data-rest`].
-You can also chat with the community on https://gitter.im/spring-projects/spring-data[Gitter].
 * Report bugs with Spring Data REST at https://github.com/spring-projects/spring-data-rest/issues.
 
 == Reporting Issues
