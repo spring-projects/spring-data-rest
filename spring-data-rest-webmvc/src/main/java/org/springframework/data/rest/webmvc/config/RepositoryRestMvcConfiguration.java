@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -575,6 +575,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		ArrayList<MediaType> mediaTypes = new ArrayList<>();
 		mediaTypes.add(MediaTypes.HAL_JSON);
+		mediaTypes.add(MediaTypes.VND_HAL_JSON);
 
 		// Enable returning HAL if application/json is asked if it's configured to be the default type
 		if (repositoryRestConfiguration.useHalAsDefaultJsonMediaType()) {
@@ -809,7 +810,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			messageConverters.add(alpsJsonHttpMessageConverter);
 		}
 
-		if (repositoryRestConfiguration.getDefaultMediaType().equals(MediaTypes.HAL_JSON)) {
+		if (List.of(MediaTypes.HAL_JSON, MediaTypes.VND_HAL_JSON)
+				.contains(repositoryRestConfiguration.getDefaultMediaType())) {
 			messageConverters.add(halJacksonHttpMessageConverter);
 			messageConverters.add(jacksonHttpMessageConverter);
 		} else {
