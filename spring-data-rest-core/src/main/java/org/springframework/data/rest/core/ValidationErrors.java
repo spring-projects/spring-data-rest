@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.core;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -44,6 +45,7 @@ import org.springframework.validation.AbstractPropertyBindingResult;
  */
 public class ValidationErrors extends AbstractPropertyBindingResult {
 
+	@Serial
 	private static final long serialVersionUID = 8141826537389141361L;
 
 	private final Object source;

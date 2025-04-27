@@ -66,7 +66,7 @@ public class UriToEntityConverter implements GenericConverter {
 		Assert.notNull(invokerFactory, "RepositoryInvokerFactory must not be null");
 		Assert.notNull(conversionService, "ConversionService must not be null!");
 
-		this.convertiblePairs = new HashSet<ConvertiblePair>();
+		this.convertiblePairs = new HashSet<>();
 		this.identifierTypes = new HashSet<>();
 
 		for (TypeInformation<?> domainType : entities.getManagedTypes()) {

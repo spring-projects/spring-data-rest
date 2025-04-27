@@ -149,7 +149,7 @@ public class ExposureConfiguration implements ExposureConfigurer {
 		return property.filter(mapping, methods);
 	}
 
-	private static <T> ComposableFilter<ResourceMetadata, ConfigurableHttpMethods> withTypeFilter(Class<?> type,
+	private static ComposableFilter<ResourceMetadata, ConfigurableHttpMethods> withTypeFilter(Class<?> type,
 			ComposableFilter<ResourceMetadata, ConfigurableHttpMethods> function) {
 
 		return (metadata, httpMethods) -> //

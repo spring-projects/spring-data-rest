@@ -64,6 +64,7 @@ public interface HttpMethods extends Streamable<HttpMethod> {
 	 * 
 	 * @return
 	 */
+	@Override
 	default Set<HttpMethod> toSet() {
 		return stream().collect(StreamUtils.toUnmodifiableSet());
 	}
@@ -74,6 +75,7 @@ public interface HttpMethods extends Streamable<HttpMethod> {
 	 * @param method must not be {@literal null}.
 	 * @return
 	 */
+	@Override
 	default HttpMethods and(HttpMethod... method) {
 		return of(Stream.concat(stream(), Arrays.stream(method)).collect(Collectors.toSet()));
 	}

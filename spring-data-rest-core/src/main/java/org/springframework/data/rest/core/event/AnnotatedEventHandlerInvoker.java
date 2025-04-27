@@ -51,7 +51,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 	private static final Logger LOG = LoggerFactory.getLogger(AnnotatedEventHandlerInvoker.class);
 	private static final String PARAMETER_MISSING = "Invalid event handler method %s; At least a single argument is required to determine the domain type for which you are interested in events";
 
-	private final MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = new LinkedMultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod>();
+	private final MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = new LinkedMultiValueMap<>();
 
 	@Override
 	public void onApplicationEvent(RepositoryEvent event) {
@@ -70,11 +70,11 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 				continue;
 			}
 
-			List<Object> parameters = new ArrayList<Object>();
+			List<Object> parameters = new ArrayList<>();
 			parameters.add(src);
 
-			if (event instanceof LinkedEntityEvent) {
-				parameters.add(((LinkedEntityEvent) event).getLinked());
+			if (event instanceof LinkedEntityEvent linkedEntityEvent) {
+				parameters.add(linkedEntityEvent.getLinked());
 			}
 
 			if (LOG.isDebugEnabled()) {
@@ -149,7 +149,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		List<EventHandlerMethod> events = handlerMethods.get(eventType);
 
 		if (events == null) {
-			events = new ArrayList<EventHandlerMethod>();
+			events = new ArrayList<>();
 		}
 
 		if (events.isEmpty()) {
