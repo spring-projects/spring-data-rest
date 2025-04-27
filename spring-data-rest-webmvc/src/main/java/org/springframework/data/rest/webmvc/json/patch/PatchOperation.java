@@ -64,7 +64,13 @@ public abstract class PatchOperation {
 	}
 
 	protected final Object evaluate(Class<?> type) {
-		return value instanceof LateObjectEvaluator ? ((LateObjectEvaluator) value).evaluate(type) : value;
+		if (value instanceof LateObjectEvaluator) {
+			return ((LateObjectEvaluator) value).evaluate(type);
+		}
+		if (value.getClass() != type) {
+			throw new PatchException(String.format("Could not read %s into %s", value, type));
+		}
+		return value;
 	}
 
 	/**
