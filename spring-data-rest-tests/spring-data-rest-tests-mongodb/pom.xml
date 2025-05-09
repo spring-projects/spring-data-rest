@@ -16,6 +16,18 @@
 		<java-module-name>spring.data.rest.tests.mongodb</java-module-name>
 	</properties>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-mongodb-parent</artifactId>
+				<version>${springdata.mongodb}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 
 		<dependency>
@@ -33,10 +45,10 @@
 			<version>${springdata.mongodb}</version>
 		</dependency>
 
+		<!-- dependency-managed via spring-data-mongodb import -->
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
-			<version>5.4.0</version>
 		</dependency>
 
 		<dependency>
