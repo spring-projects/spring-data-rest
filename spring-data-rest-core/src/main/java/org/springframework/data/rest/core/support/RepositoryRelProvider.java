@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  */
-@Order(Ordered.LOWEST_PRECEDENCE + 10)
+@Order(Ordered.LOWEST_PRECEDENCE - 10)
 public class RepositoryRelProvider implements LinkRelationProvider {
 
 	private final ObjectFactory<ResourceMappings> mappings;
