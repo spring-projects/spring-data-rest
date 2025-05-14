@@ -47,7 +47,7 @@ class RepositoryRestExceptionHandlerUnitTests {
 	@BeforeAll
 	public static void silenceLog() {
 
-		logger = (Logger) LoggerFactory.getLogger(RepositoryRestExceptionHandler.class);
+		logger = (Logger) LoggerFactory.getLogger(RepositoryRestExceptionHandlerUnitTests.class);
 		logLevel = logger.getLevel();
 		logger.setLevel(Level.OFF);
 	}
