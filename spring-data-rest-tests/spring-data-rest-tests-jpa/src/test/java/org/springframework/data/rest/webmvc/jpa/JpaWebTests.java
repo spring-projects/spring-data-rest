@@ -50,6 +50,7 @@ import org.springframework.hateoas.Links;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -144,7 +145,7 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-99
 	void doesNotExposeCreditCardRepository() throws Exception {
 
-		mvc.perform(get("/")). //
+		mockMvc.perform(get("/")). //
 				andExpect(status().isOk()). //
 				andExpect(doesNotHaveLinkWithRel(mappings.getMetadataFor(CreditCard.class).getRel()));
 	}
@@ -191,10 +192,10 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // DATAREST-199
 	void createsOrderUsingPut() throws Exception {
 
-		mvc.perform(//
+		assertThat(mvc.perform(//
 				put("/orders/{id}", 4711).//
 						content(readFileFromClasspath("order.json")).contentType(MediaType.APPLICATION_JSON)//
-		).andExpect(status().isCreated());
+		)).hasStatus(HttpStatus.CREATED);
 	}
 
 	@Test // DATAREST-117
@@ -442,8 +443,7 @@ public class JpaWebTests extends CommonWebTests {
 
 		Link link = client.discoverUnique(LinkRelation.of("addresses"));
 
-		mvc.perform(get(link.getHref())).//
-				andExpect(status().isMethodNotAllowed());
+		assertThat(mvc.perform(get(link.getHref()))).hasStatus(HttpStatus.METHOD_NOT_ALLOWED);
 	}
 
 	@Test // DATAREST-217
@@ -451,8 +451,8 @@ public class JpaWebTests extends CommonWebTests {
 
 		Link link = client.discoverUnique(LinkRelation.of("addresses"));
 
-		mvc.perform(post(link.getHref()).content("{}").contentType(MediaType.APPLICATION_JSON)).//
-				andExpect(status().isMethodNotAllowed());
+		assertThat(mvc.perform(post(link.getHref()).content("{}").contentType(MediaType.APPLICATION_JSON)))
+				.hasStatus(HttpStatus.METHOD_NOT_ALLOWED);
 	}
 
 	/**
@@ -471,7 +471,7 @@ public class JpaWebTests extends CommonWebTests {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(orderLink.getHref());
 		String uri = builder.queryParam("projection", "summary").build().toUriString();
 
-		response = mvc.perform(get(uri))//
+		response = mockMvc.perform(get(uri))//
 				.andExpect(status().isOk())//
 				.andExpect(jsonPath("$.price", is(2.5)))//
 				.andReturn().getResponse();
@@ -538,8 +538,7 @@ public class JpaWebTests extends CommonWebTests {
 
 		Link receiptsLink = client.discoverUnique("receipts");
 
-		mvc.perform(delete(receiptsLink.getHref().concat("/{id}"), 4711)).//
-				andExpect(status().isNotFound());
+		assertThat(mvc.perform(delete(receiptsLink.getHref().concat("/{id}"), 4711))).hasStatus(HttpStatus.NOT_FOUND);
 	}
 
 	@Test // DATAREST-384
@@ -583,13 +582,12 @@ public class JpaWebTests extends CommonWebTests {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(tacosLink.getHref());
 		String concurrencyTag = createdReceipt.getHeader("ETag");
 
-		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
-				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag)) //
-				.andExpect(status().is2xxSuccessful());
+		assertThat(mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
+				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag))).hasStatusOk();
 
-		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
-				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, "\"falseETag\""))
-				.andExpect(status().isPreconditionFailed());
+		assertThat(mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
+				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, "\"falseETag\"")))
+				.hasStatus(HttpStatus.PRECONDITION_FAILED);
 	}
 
 	@Test // DATAREST-423
@@ -599,8 +597,7 @@ public class JpaWebTests extends CommonWebTests {
 
 		String authorUri = JsonPath.read(authorsResponse.getContentAsString(), "$._embedded.authors[0]._links.self.href");
 
-		mvc.perform(delete(authorUri)).//
-				andExpect(status().isIAmATeapot());
+		assertThat(mvc.perform(delete(authorUri))).hasStatus(HttpStatus.I_AM_A_TEAPOT);
 	}
 
 	@Test // DATAREST-523
@@ -614,13 +611,12 @@ public class JpaWebTests extends CommonWebTests {
 
 		for (int i = 1; i <= 2; i++) {
 
-			mvc.perform(post(frodosSiblingsLink.getHref()).//
+			assertThat(mvc.perform(post(frodosSiblingsLink.getHref()).//
 					content(bilboLink.getHref()).//
-					contentType(TEXT_URI_LIST)).//
-					andExpect(status().isNoContent());
+					contentType(TEXT_URI_LIST))).hasStatus(HttpStatus.NO_CONTENT);
 
-			mvc.perform(get(frodosSiblingsLink.getHref())).//
-					andExpect(jsonPath("$._embedded.people", hasSize(i)));
+			assertThat(mvc.perform(get(frodosSiblingsLink.getHref()))).bodyJson().extractingPath("$._embedded.people")
+					.asArray().hasSize(i);
 		}
 	}
 
@@ -630,7 +626,7 @@ public class JpaWebTests extends CommonWebTests {
 		MockHttpServletResponse response = client.request(client.discoverUnique(LinkRelation.of("people")));
 		String personHref = JsonPath.read(response.getContentAsString(), "$._embedded.people[0]._links.self.href");
 
-		response = mvc.perform(head(personHref))//
+		response = mockMvc.perform(head(personHref))//
 				.andExpect(status().isNoContent())//
 				.andReturn().getResponse();
 
@@ -684,14 +680,14 @@ public class JpaWebTests extends CommonWebTests {
 	void callUnmappedCustomRepositoryController() throws Exception {
 
 		// Invalid prefix
-		mvc.perform(post("/orders/v3/search/sort")).andExpect(status().isNotFound());
+		assertThat(mvc.perform(post("/orders/v3/search/sort"))).hasStatus(HttpStatus.NOT_FOUND);
 
 		// With mapped prefixes
-		mvc.perform(post("/orders/search/sort")).andExpect(status().isOk());
-		mvc.perform(post("/orders/search/sorted")).andExpect(status().isOk());
-		mvc.perform(post("/orders/v2/search/sort")).andExpect(status().isOk());
-		mvc.perform(post("/orders/v2/search/sorted")).andExpect(status().isOk());
-		mvc.perform(post("/orders/search/sort?sort=type&page=1&size=10")).andExpect(status().isOk());
+		assertThat(mvc.perform(post("/orders/search/sort"))).hasStatusOk();
+		assertThat(mvc.perform(post("/orders/search/sorted"))).hasStatusOk();
+		assertThat(mvc.perform(post("/orders/v2/search/sort"))).hasStatusOk();
+		assertThat(mvc.perform(post("/orders/v2/search/sorted"))).hasStatusOk();
+		assertThat(mvc.perform(post("/orders/search/sort?sort=type&page=1&size=10"))).hasStatusOk();
 	}
 
 	@Test // DATAREST-976
@@ -746,9 +742,7 @@ public class JpaWebTests extends CommonWebTests {
 	@Test // #1991
 	void answersToHalFormsRequests() throws Exception {
 
-		mvc.perform(get("/")
-				.accept(MediaTypes.HAL_FORMS_JSON))
-				.andExpect(status().isOk());
+		assertThat(mvc.perform(get("/").accept(MediaTypes.HAL_FORMS_JSON))).hasStatusOk();
 	}
 
 	@Test // #2212
@@ -848,8 +842,7 @@ public class JpaWebTests extends CommonWebTests {
 
 		Link categoriesLink = client.discoverUnique(LinkRelation.of("categories"));
 
-		MockHttpServletResponse test = postAndGet(categoriesLink, "{ \"name\" : \"test\" }",
-				MediaType.APPLICATION_JSON);
+		MockHttpServletResponse test = postAndGet(categoriesLink, "{ \"name\" : \"test\" }", MediaType.APPLICATION_JSON);
 
 		Link testLink = client.assertHasLinkWithRel(IanaLinkRelations.SELF, test);
 

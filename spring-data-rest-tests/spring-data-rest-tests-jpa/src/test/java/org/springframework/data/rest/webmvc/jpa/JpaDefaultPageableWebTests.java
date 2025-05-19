@@ -40,6 +40,7 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.json.AbstractJsonContentAssert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -114,18 +115,20 @@ class JpaDefaultPageableWebTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // DATAREST-906
-	void shouldApplyDefaultPageable() throws Exception {
+	void shouldApplyDefaultPageable() {
 
-		mvc.perform(get("/books/default-pageable"))//
-				.andExpect(jsonPath("$.content[0].sales").value(0)) //
-				.andExpect(jsonPath("$.size").value(1));
+		AbstractJsonContentAssert<?> json = assertThat(mvc.perform(get("/books/default-pageable")))//
+				.bodyJson();
+		json.extractingPath("$.content[0].sales").asNumber().isEqualTo(0);
+		json.extractingPath("$.size").asNumber().isEqualTo(1);
 	}
 
 	@Test // DATAREST-906
-	void shouldOverrideDefaultPageable() throws Exception {
+	void shouldOverrideDefaultPageable() {
 
-		mvc.perform(get("/books/default-pageable?size=10"))//
-				.andExpect(jsonPath("$.content[0].sales").value(0)) //
-				.andExpect(jsonPath("$.size").value(10));
+		AbstractJsonContentAssert<?> json = assertThat(mvc.perform(get("/books/default-pageable?size=10")))//
+				.bodyJson();
+		json.extractingPath("$.content[0].sales").asNumber().isEqualTo(0);
+		json.extractingPath("$.size").asNumber().isEqualTo(10);
 	}
 }

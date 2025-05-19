@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.rest.webmvc.RestMediaTypes;
+
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
@@ -60,7 +60,8 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test
 	void exposesRootResource() throws Exception {
 
-		ResultActions actions = mvc.perform(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE)).andExpect(status().isOk());
+		ResultActions actions = mockMvc.perform(get("/").accept(TestMvcClient.DEFAULT_MEDIA_TYPE))
+				.andExpect(status().isOk());
 
 		for (LinkRelation rel : expectedRootLinkRels()) {
 			actions.andExpect(client.hasLinkWithRel(rel));
@@ -85,7 +86,8 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 			client.follow(profileLink).andExpect(status().is2xxSuccessful());
 
 			// JSON Schema
-			client.follow(profileLink, RestMediaTypes.SCHEMA_JSON).andExpect(status().is2xxSuccessful());
+			client.follow(profileLink, org.springframework.data.rest.webmvc.RestMediaTypes.SCHEMA_JSON)
+					.andExpect(status().is2xxSuccessful());
 
 			// ALPS
 			client.follow(profileLink, MediaTypes.ALPS_JSON).andExpect(status().is2xxSuccessful());
@@ -95,7 +97,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-203
 	void servesHalWhenRequested() throws Exception {
 
-		mvc.perform(get("/")). //
+		mockMvc.perform(get("/")). //
 				andExpect(content().contentTypeCompatibleWith(MediaTypes.HAL_JSON)). //
 				andExpect(jsonPath("$._links", notNullValue()));
 	}
@@ -103,7 +105,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-203
 	void servesHalWhenJsonIsRequested() throws Exception {
 
-		mvc.perform(get("/").accept(MediaType.APPLICATION_JSON)). //
+		mockMvc.perform(get("/").accept(MediaType.APPLICATION_JSON)). //
 				andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)). //
 				andExpect(jsonPath("$._links", notNullValue()));
 	}
@@ -125,8 +127,8 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 						try {
 
 							client.follow(it).//
-							andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF)).//
-							andExpect(jsonPath("$.domainType").doesNotExist());
+									andExpect(client.hasLinkWithRel(IanaLinkRelations.SELF)).//
+									andExpect(jsonPath("$.domainType").doesNotExist());
 
 						} catch (Exception e) {
 							throw new RuntimeException(e);
@@ -156,7 +158,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 						content(payload).//
 						contentType(MediaType.APPLICATION_JSON);
 
-				mvc.perform(request). //
+				mockMvc.perform(request). //
 						andExpect(status().isCreated());
 			}
 		}
@@ -196,7 +198,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 		MockHttpServletResponse response = client.request("/");
 		Link profileLink = client.assertHasLinkWithRel(LinkRelation.of("profile"), response);
 
-		mvc.perform(//
+		mockMvc.perform(//
 				get(profileLink.expand().getHref()).//
 						accept(ALPS_MEDIA_TYPE))
 				.//
@@ -207,7 +209,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 	@Test // DATAREST-448
 	void returnsNotFoundForUriNotBackedByARepository() throws Exception {
 
-		mvc.perform(get("/index.html")).//
+		mockMvc.perform(get("/index.html")).//
 				andExpect(status().isNotFound());
 	}
 
@@ -218,7 +220,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 			Link link = client.discoverUnique(rel);
 
-			MockHttpServletResponse response = mvc.perform(head(link.expand().getHref()))//
+			MockHttpServletResponse response = mockMvc.perform(head(link.expand().getHref()))//
 					.andExpect(status().isNoContent())//
 					.andReturn().getResponse();
 
@@ -241,12 +243,12 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 			// Try to find non existing resource
 			uri = uri.concat(id);
-			status = mvc.perform(get(URI.create(uri))).andReturn().getResponse().getStatus();
+			status = mockMvc.perform(get(URI.create(uri))).andReturn().getResponse().getStatus();
 
 		} while (status != HttpStatus.NOT_FOUND.value());
 
 		// PATCH to non-existing resource
-		mvc.perform(patch(URI.create(uri))).andExpect(status().isNotFound());
+		mockMvc.perform(patch(URI.create(uri))).andExpect(status().isNotFound());
 	}
 
 	@Test // DATAREST-1003
@@ -256,7 +258,7 @@ public abstract class CommonWebTests extends AbstractWebIntegrationTests {
 
 			Link link = client.discoverUnique(string);
 
-			mvc.perform(get(link.expand().getHref())//
+			mockMvc.perform(get(link.expand().getHref())//
 					.accept(MediaType.valueOf("application/schema+json")))//
 					.andExpect(status().isNotAcceptable());
 		}

@@ -15,13 +15,13 @@
  */
 package org.springframework.data.rest.webmvc.halexplorer;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,12 +30,12 @@ import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
@@ -67,51 +67,45 @@ class HalExplorerIntegrationTests {
 
 	@Autowired WebApplicationContext context;
 
-	MockMvc mvc;
+	MockMvcTester mvc;
 
 	@BeforeEach
 	void setUp() {
-		this.mvc = MockMvcBuilders.webAppContextSetup(context).//
-				defaultRequest(get(BASE_PATH).accept(MediaType.TEXT_HTML)).build();
+		mvc = MockMvcTester.from(context);
 	}
 
 	@Test // DATAREST-293
-	void exposesJsonUnderApiRootByDefault() throws Exception {
+	void exposesJsonUnderApiRootByDefault() {
 
-		mvc.perform(get(BASE_PATH).accept(MediaType.ALL)).//
-				andExpect(status().isOk()).//
-				andExpect(header().string(HttpHeaders.CONTENT_TYPE, startsWith(MediaTypes.VND_HAL_JSON.toString())));
+		assertThat(mvc.perform(get(BASE_PATH).accept(MediaType.ALL))).hasStatusOk().hasHeader(HttpHeaders.CONTENT_TYPE,
+				MediaTypes.VND_HAL_JSON.toString());
 	}
 
 	@Test // DATAREST-293
-	void redirectsToBrowserForApiRootAndHtml() throws Exception {
+	void redirectsToBrowserForApiRootAndHtml() {
 
-		mvc.perform(get(BASE_PATH).accept(MediaType.TEXT_HTML)).//
-				andExpect(status().isFound()).//
-				andExpect(header().string(HttpHeaders.LOCATION, endsWith(TARGET)));
+		assertThat(mvc.perform(get(BASE_PATH).accept(MediaType.TEXT_HTML))).hasStatus(HttpStatus.FOUND)
+				.hasHeader(HttpHeaders.LOCATION, "http://localhost" + TARGET);
 	}
 
 	@Test // DATAREST-293
-	void forwardsBrowserToIndexHtml() throws Exception {
+	void forwardsBrowserToIndexHtml() {
 
-		mvc.perform(get(BASE_PATH.concat("/explorer"))).//
-				andExpect(status().isFound()).//
-				andExpect(header().string(HttpHeaders.LOCATION, endsWith(TARGET)));
+		assertThat(mvc.perform(get(BASE_PATH.concat("/explorer")))).hasStatus(HttpStatus.FOUND)
+				.hasHeader(HttpHeaders.LOCATION, "http://localhost" + TARGET);
 	}
 
 	@Test // DATAREST-293
-	void exposesHalBrowser() throws Exception {
+	void exposesHalBrowser() {
 
-		mvc.perform(get(BASE_PATH.concat("/explorer/index.html"))).//
-				andExpect(status().isOk()).//
-				andExpect(content().string(containsString("HAL Explorer")));
+		assertThat(mvc.perform(get(BASE_PATH.concat("/explorer/index.html")))).hasStatusOk().bodyText()
+				.contains("HAL Explorer");
 	}
 
 	@Test // DATAREST-293
-	void retrunsApiIfHtmlIsNotExplicitlyListed() throws Exception {
+	void retrunsApiIfHtmlIsNotExplicitlyListed() {
 
-		mvc.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON, MediaType.ALL)).//
-				andExpect(status().isOk()).//
-				andExpect(header().string(HttpHeaders.CONTENT_TYPE, startsWith(MediaType.APPLICATION_JSON_VALUE)));
+		assertThat(mvc.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON, MediaType.ALL))).hasStatusOk()
+				.hasHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
 	}
 }

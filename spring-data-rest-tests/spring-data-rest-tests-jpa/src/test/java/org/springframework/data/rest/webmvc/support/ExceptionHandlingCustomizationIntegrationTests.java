@@ -15,10 +15,11 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
@@ -67,7 +68,6 @@ class ExceptionHandlingCustomizationIntegrationTests extends AbstractWebIntegrat
 
 		Link link = client.discoverUnique("addresses");
 
-		mvc.perform(get(link.getHref())).//
-				andExpect(status().isInternalServerError());
+		assertThat(mvc.perform(get(link.getHref()))).hasStatus5xxServerError();
 	}
 }

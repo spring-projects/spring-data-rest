@@ -16,11 +16,10 @@
 package org.springframework.data.rest.webmvc.jpa;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
@@ -34,6 +33,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -86,15 +86,17 @@ class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		Link findItems = client.discoverUnique(LinkRelation.of("items"));
 
 		// Preflight request
-		String header = mvc
+		MvcTestResult result = mvc
 				.perform(options(findItems.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.example")
-						.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
-				.andExpect(status().isOk()) //
-				.andReturn().getResponse().getHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS);
+						.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"));
 
-		assertThat(header.split(","))
-				.containsExactlyInAnyOrderElementsOf(
-						RepositoryRestHandlerMapping.DEFAULT_ALLOWED_METHODS.map(HttpMethod::name));
+		assertThat(result).hasStatus2xxSuccessful();
+
+		String header = //
+				result.getResponse().getHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS);
+
+		assertThat(header.split(",")).containsExactlyInAnyOrderElementsOf(
+				RepositoryRestHandlerMapping.DEFAULT_ALLOWED_METHODS.map(HttpMethod::name));
 	}
 
 	@Test // DATAREST-573
@@ -103,16 +105,16 @@ class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		Link findBooks = client.discoverUnique(LinkRelation.of("books"));
 
 		// Preflight request
-		mvc.perform(options(findBooks.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.example")
-				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
-				.andExpect(status().isOk()) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.example")) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST"));
+		assertThat(mvc.perform(options(findBooks.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.example")
+				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))) //
+				.hasStatusOk() //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.example") //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST");
 
 		// CORS request
-		mvc.perform(get(findBooks.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.example")) //
-				.andExpect(status().isOk()) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.example"));
+		assertThat(mvc.perform(get(findBooks.expand().getHref()).header(HttpHeaders.ORIGIN, "http://far.far.example"))) //
+				.hasStatusOk() //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.example");
 	}
 
 	/**
@@ -122,21 +124,20 @@ class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	void appliesCorsConfigurationOnCustomControllers() throws Exception {
 
 		// Preflight request
-		mvc.perform(options("/books/xml/1234") //
+		assertThat(mvc.perform(options("/books/xml/1234") //
 				.header(HttpHeaders.ORIGIN, "http://far.far.example") //
-				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")) //
-				.andExpect(status().isOk()) //
-				.andExpect(header().longValue(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 77123)) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.example")) //
-				// See https://jira.spring.io/browse/SPR-14792
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET,PUT,POST")));
+				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET"))) //
+				.hasStatusOk() //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_MAX_AGE, "77123") //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.example") //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST");
 
 		// CORS request
-		mvc.perform(get("/books/xml/1234") //
+		assertThat(mvc.perform(get("/books/xml/1234") //
 				.header(HttpHeaders.ORIGIN, "http://far.far.example") //
-				.accept(MediaType.APPLICATION_XML)) //
-				.andExpect(status().isOk()) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.example"));
+				.accept(MediaType.APPLICATION_XML))) //
+				.hasStatusOk() //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.example");
 	}
 
 	/**
@@ -146,13 +147,12 @@ class CorsIntegrationTests extends AbstractWebIntegrationTests {
 	void appliesCorsConfigurationOnCustomControllerMethod() throws Exception {
 
 		// Preflight request
-		mvc.perform(options("/books/pdf/1234").header(HttpHeaders.ORIGIN, "http://far.far.example")
-				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")) //
-				.andExpect(status().isOk()) //
-				.andExpect(header().longValue(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 4711)) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.example")) //
-				// See https://jira.spring.io/browse/SPR-14792
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET,PUT,POST")));
+		assertThat(mvc.perform(options("/books/pdf/1234").header(HttpHeaders.ORIGIN, "http://far.far.example")
+				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET"))) //
+				.hasStatusOk() //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_MAX_AGE, "4711") //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://far.far.example") //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST");
 	}
 
 	@Test // DATAREST-573
@@ -161,25 +161,26 @@ class CorsIntegrationTests extends AbstractWebIntegrationTests {
 		Link authorsLink = client.discoverUnique(LinkRelation.of("authors"));
 
 		// Preflight request
-		mvc.perform(options(authorsLink.expand().getHref()).header(HttpHeaders.ORIGIN, "http://not.so.far.example")
-				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")) //
-				.andExpect(status().isOk()) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://not.so.far.example")) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH,POST"));
+		assertThat(
+				mvc.perform(options(authorsLink.expand().getHref()).header(HttpHeaders.ORIGIN, "http://not.so.far.example")
+						.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))) //
+				.hasStatusOk() //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://not.so.far.example") //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true") //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH,POST");
 	}
 
 	@Test // DATAREST-573
 	void appliesCorsConfigurationOnRepositoryToCustomControllers() throws Exception {
 
 		// Preflight request
-		mvc.perform(options("/authors/pdf/1234").header(HttpHeaders.ORIGIN, "http://not.so.far.example")
-				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")) //
-				.andExpect(status().isOk()) //
-				.andExpect(header().longValue(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 1234)) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://not.so.far.example")) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")) //
-				.andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH,POST"));
+		assertThat(mvc.perform(options("/authors/pdf/1234").header(HttpHeaders.ORIGIN, "http://not.so.far.example")
+				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET"))) //
+				.hasStatusOk() //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_MAX_AGE, "1234") //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://not.so.far.example") //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true") //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,PATCH,POST");
 	}
 
 	@RepositoryRestController

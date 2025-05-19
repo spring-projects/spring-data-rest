@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.tests.shop;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -100,33 +101,31 @@ class ShopIntegrationTests extends AbstractWebIntegrationTests {
 	}
 
 	@Test // GH-2239
-	void triggersCustomControllerWithAggregateReferenceToId() throws Exception {
+	void triggersCustomControllerWithAggregateReferenceToId() {
 
 		var uuid = UUID.randomUUID();
 
-		mvc.perform(get("/order-custom-id?order=/order/foo/bar/{id}", uuid))
-				.andExpect(status().is2xxSuccessful())
-				.andExpect(content().string("\"%s\"".formatted(uuid.toString())));
+		assertThat(mvc.perform(get("/order-custom-id?order=/order/foo/bar/{id}", uuid))).hasStatusOk()
+				.hasBodyTextEqualTo("\"%s\"".formatted(uuid.toString()));
+
 	}
 
 	@Test // GH-2239
-	void triggersCustomControllerWithAggregateReferenceToAggregate() throws Exception {
+	void triggersCustomControllerWithAggregateReferenceToAggregate() {
 
 		var uuid = orders.findAll().iterator().next().getId().getId();
 
-		mvc.perform(get("/order-custom?order=/order/foo/bar/{id}", uuid))
-				.andExpect(status().is2xxSuccessful())
-				.andExpect(content().string("\"%s\"".formatted(uuid.toString())));
+		assertThat(mvc.perform(get("/order-custom?order=/order/foo/bar/{id}", uuid))).hasStatusOk()
+				.hasBodyTextEqualTo("\"%s\"".formatted(uuid.toString()));
 	}
 
 	@Test // GH-2239
-	void triggersCustomControllerWithAggregateReferenceToAssociation() throws Exception {
+	void triggersCustomControllerWithAggregateReferenceToAssociation() {
 
 		var uuid = UUID.randomUUID();
 
-		mvc.perform(get("/order-custom-association?order=/order/foo/bar/{id}", uuid))
-				.andExpect(status().is2xxSuccessful())
-				.andExpect(content().string("\"%s\"".formatted(uuid.toString())));
+		assertThat(mvc.perform(get("/order-custom-association?order=/order/foo/bar/{id}", uuid))).hasStatusOk()
+				.hasBodyTextEqualTo("\"%s\"".formatted(uuid.toString()));
 	}
 
 	private static void expectRelatedResource(String name, ResultActions actions) throws Exception {

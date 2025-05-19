@@ -212,11 +212,11 @@ class MongoWebTests extends CommonWebTests {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(tacosLink.getHref());
 		String concurrencyTag = createdReceipt.getHeader("ETag");
 
-		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
+		mockMvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyBurritos\" }")
 				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag))
 				.andExpect(status().is2xxSuccessful());
 
-		mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
+		mockMvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
 				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, concurrencyTag))
 				.andExpect(status().isPreconditionFailed());
 	}
@@ -226,7 +226,7 @@ class MongoWebTests extends CommonWebTests {
 
 		Profile profile = repository.findAll().iterator().next();
 
-		String header = mvc.perform(get("/profiles/{id}", profile.getId())).//
+		String header = mockMvc.perform(get("/profiles/{id}", profile.getId())).//
 				andReturn().getResponse().getHeader("Last-Modified");
 
 		assertThat(header).isNot(new Condition<String>(it -> it == null || it.isEmpty(), "Foo"));
@@ -299,11 +299,11 @@ class MongoWebTests extends CommonWebTests {
 				.findLinkWithRel(IanaLinkRelations.SELF, response.getContentAsString()) //
 				.orElseThrow(() -> new IllegalStateException("Did not find self link"));
 
-		mvc.perform(get(receiptLink.getHref()).header(IF_MODIFIED_SINCE, response.getHeader(LAST_MODIFIED))).//
+		mockMvc.perform(get(receiptLink.getHref()).header(IF_MODIFIED_SINCE, response.getHeader(LAST_MODIFIED))).//
 				andExpect(status().isNotModified()).//
 				andExpect(header().string(ETAG, is(notNullValue())));
 
-		mvc.perform(get(receiptLink.getHref()).header(IF_NONE_MATCH, response.getHeader(ETAG))).//
+		mockMvc.perform(get(receiptLink.getHref()).header(IF_NONE_MATCH, response.getHeader(ETAG))).//
 				andExpect(status().isNotModified()).//
 				andExpect(header().string(ETAG, is(notNullValue())));
 	}
@@ -315,7 +315,7 @@ class MongoWebTests extends CommonWebTests {
 
 		Link link = client.discoverUnique("profiles", "search", "findProfileById");
 
-		mvc.perform(get(link.expand(profile.getId()).getHref())).//
+		mockMvc.perform(get(link.expand(profile.getId()).getHref())).//
 				andExpect(status().isOk());
 	}
 
@@ -324,7 +324,7 @@ class MongoWebTests extends CommonWebTests {
 
 		Link link = client.discoverUnique("profiles", "search", "findProfileById");
 
-		mvc.perform(get(link.expand("").getHref())).//
+		mockMvc.perform(get(link.expand("").getHref())).//
 				andExpect(status().isNotFound());
 	}
 
@@ -338,7 +338,7 @@ class MongoWebTests extends CommonWebTests {
 
 		String href = link.expand(thomasUri.getHref()).getHref();
 
-		mvc.perform(get(href)).andExpect(status().isOk());
+		mockMvc.perform(get(href)).andExpect(status().isOk());
 	}
 
 	@Test // DATAREST-835
@@ -348,7 +348,7 @@ class MongoWebTests extends CommonWebTests {
 
 		Profile profile = repository.findAll().iterator().next();
 
-		mvc.perform(get(link.expand(profile.getId()).getHref()))//
+		mockMvc.perform(get(link.expand(profile.getId()).getHref()))//
 				.andExpect(header().string(ETAG, is("\"0\"")))//
 				.andExpect(header().string(LAST_MODIFIED, is(notNullValue())));
 	}
@@ -360,7 +360,7 @@ class MongoWebTests extends CommonWebTests {
 
 		Profile profile = repository.findAll().iterator().next();
 
-		mvc.perform(get(link.expand(profile.getType()).getHref()))//
+		mockMvc.perform(get(link.expand(profile.getType()).getHref()))//
 				.andExpect(header().string(ETAG, is(nullValue())))//
 				.andExpect(header().string(LAST_MODIFIED, is(nullValue())));
 	}
@@ -372,7 +372,7 @@ class MongoWebTests extends CommonWebTests {
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
 		Link colleaguesLink = client.assertHasLinkWithRel("colleagues", client.request(userLink));
 
-		mvc.perform(get(colleaguesLink.expand().getHref()).accept(TEXT_URI_LIST)) //
+		mockMvc.perform(get(colleaguesLink.expand().getHref()).accept(TEXT_URI_LIST)) //
 				.andExpect(status().isOk()) //
 				.andExpect(header().string(CONTENT_TYPE, is(TEXT_URI_LIST.toString()))) //
 				.andExpect(content().string(TestMatchers.hasNumberOfLines(2)));
@@ -385,7 +385,7 @@ class MongoWebTests extends CommonWebTests {
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
 		Link managerLink = client.assertHasLinkWithRel("manager", client.request(userLink));
 
-		mvc.perform(get(managerLink.expand().getHref()).accept(TEXT_URI_LIST)) //
+		mockMvc.perform(get(managerLink.expand().getHref()).accept(TEXT_URI_LIST)) //
 				.andExpect(header().string(CONTENT_TYPE, is(TEXT_URI_LIST.toString()))) //
 				.andExpect(content().string(TestMatchers.hasNumberOfLines(1)));
 	}
@@ -397,10 +397,10 @@ class MongoWebTests extends CommonWebTests {
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
 		Link mapLink = client.assertHasLinkWithRel("map", client.request(userLink));
 
-		mvc.perform(get(mapLink.expand().getHref())) //
+		mockMvc.perform(get(mapLink.expand().getHref())) //
 				.andDo(MockMvcResultHandlers.print());
 
-		mvc.perform(get(mapLink.expand().getHref()).accept(TEXT_URI_LIST)) //
+		mockMvc.perform(get(mapLink.expand().getHref()).accept(TEXT_URI_LIST)) //
 				.andExpect(status().isUnsupportedMediaType());
 	}
 
@@ -417,7 +417,7 @@ class MongoWebTests extends CommonWebTests {
 				.with(new TemplateVariable("firstname", VariableType.REQUEST_PARAM)) //
 				.expand(parameters);
 
-		MockHttpServletResponse response = mvc//
+		MockHttpServletResponse response = mockMvc//
 				.perform(get(firstnameLikeA)) //
 				.andReturn() //
 				.getResponse();

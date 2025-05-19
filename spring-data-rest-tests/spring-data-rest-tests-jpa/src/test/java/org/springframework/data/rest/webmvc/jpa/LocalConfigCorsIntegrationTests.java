@@ -17,9 +17,9 @@ package org.springframework.data.rest.webmvc.jpa;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.rest.tests.AbstractWebIntegrationTests;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
@@ -59,11 +59,13 @@ class LocalConfigCorsIntegrationTests extends AbstractWebIntegrationTests {
 				.header(HttpHeaders.ORIGIN, "https://far.far.example") //
 				.header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST");
 
-		var response = mvc.perform(request).andExpect(status().isOk()).andReturn().getResponse();
+		assertThat(mvc.perform(request)) //
+				.hasStatusOk() //
+				.hasHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*") //
+				.headers().hasHeaderSatisfying(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, headers -> {
 
-		assertThat(response.getHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN)).isEqualTo("*");
-		assertThat(response.getHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).split(","))
-				.containsExactlyInAnyOrderElementsOf(
-						RepositoryRestHandlerMapping.DEFAULT_ALLOWED_METHODS.map(HttpMethod::name));
+					assertThat(headers.get(0).split(",")).containsExactlyInAnyOrderElementsOf(
+							RepositoryRestHandlerMapping.DEFAULT_ALLOWED_METHODS.map(HttpMethod::name));
+				});
 	}
 }
