@@ -19,12 +19,20 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.BaseUri;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
+import org.springframework.web.bind.support.DefaultDataBinderFactory;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
  * Unit tests for {@link ResourceMetadataHandlerMethodArgumentResolver}.
@@ -43,5 +51,30 @@ class ResourceMetadataHandlerMethodArgumentResolverUnitTests {
 		doReturn(ResourceMetadata.class).when(parameter).getParameterType();
 
 		assertThat(resolver.supportsParameter(parameter)).isTrue();
+	}
+
+	@Test // GH-2480
+	void failedMetadataLookupResultsInNotFound() throws Exception {
+
+		var repositories = new Repositories(new DefaultListableBeanFactory());
+
+		var resolver = new ResourceMetadataHandlerMethodArgumentResolver(repositories,
+				mock(ResourceMappings.class), BaseUri.NONE);
+
+		var method = SampleController.class.getDeclaredMethod("method", ResourceMappings.class);
+		var parameter = new MethodParameter(method, 0);
+
+		var request = new MockHttpServletRequest();
+		request.setRequestURI("/some/foo");
+
+		assertThatExceptionOfType(HttpClientErrorException.class).isThrownBy(
+				() -> resolver.resolveArgument(parameter, new ModelAndViewContainer(), new ServletWebRequest(request),
+						new DefaultDataBinderFactory(new ConfigurableWebBindingInitializer())));
+	}
+
+	static class SampleController {
+
+		@GetMapping("/some/{repository}")
+		void method(ResourceMappings mappings) {}
 	}
 }
