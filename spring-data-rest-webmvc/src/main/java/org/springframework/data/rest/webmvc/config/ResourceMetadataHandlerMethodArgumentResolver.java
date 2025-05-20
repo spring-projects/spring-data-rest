@@ -24,8 +24,10 @@ import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.util.UriUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
@@ -86,6 +88,6 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 			}
 		}
 
-		throw new IllegalArgumentException(String.format("Could not resolve repository metadata for %s.", repositoryKey));
+		throw new HttpClientErrorException(HttpStatus.NOT_FOUND);
 	}
 }
