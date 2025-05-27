@@ -36,7 +36,7 @@ To add your own Jackson configuration to the `ObjectMapper` used by Spring Data 
 [source,java]
 ----
 @Override
-protected void configureJacksonObjectMapper(ObjectMapper objectMapper) {
+public void configureJacksonObjectMapper(ObjectMapper objectMapper) {
 
   objectMapper.registerModule(new SimpleModule("MyCustomModule") {
 
