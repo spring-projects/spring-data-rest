@@ -23,7 +23,7 @@ On Java 8, we can register the mapping methods as method references to tweak the
 public class SpringDataRestCustomization implements RepositoryRestConfigurer {
 
   @Override
-  public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+  public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
     config.withEntityLookup()
       .forRepository(UserRepository.class)
       .withIdMapping(User::getUsername)
