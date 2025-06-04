@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import org.springframework.hateoas.server.core.AnnotationMappingDiscoverer;
+import org.springframework.hateoas.server.core.UriMapping;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -48,9 +49,9 @@ public abstract class UriUtils {
 		Assert.hasText(variable, "Variable name must not be null or empty");
 		Assert.notNull(method, "Method must not be null");
 
-		String mapping = DISCOVERER.getMapping(method);
+		UriMapping mapping = DISCOVERER.getUriMapping(method);
 
-		return new org.springframework.web.util.UriTemplate(mapping) //
+		return new org.springframework.web.util.UriTemplate(mapping.getMapping()) //
 				.match(lookupPath) //
 				.get(variable);
 	}
@@ -65,8 +66,8 @@ public abstract class UriUtils {
 
 		Assert.notNull(method, "Method must not be null");
 
-		String mapping = DISCOVERER.getMapping(method.getDeclaringClass(), method);
+		UriMapping mapping = DISCOVERER.getUriMapping(method.getDeclaringClass(), method);
 
-		return UriComponentsBuilder.fromPath(mapping).build().getPathSegments();
+		return UriComponentsBuilder.fromPath(mapping.getMapping()).build().getPathSegments();
 	}
 }
