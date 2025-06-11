@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -274,9 +275,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		this.configurerDelegate = Lazy.of(() -> {
 
-			return new RepositoryRestConfigurerDelegate(context.getBeanProvider(RepositoryRestConfigurer.class)
-					.orderedStream()
-					.collect(Collectors.toList()));
+			return new RepositoryRestConfigurerDelegate(
+					context.getBeanProvider(RepositoryRestConfigurer.class).orderedStream().collect(Collectors.toList()));
 		});
 
 		this.repositoryRestConfiguration = Lazy.of(() -> context.getBean(RepositoryRestConfiguration.class));
@@ -316,16 +316,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public PersistentEntities persistentEntities() {
 
-		List<MappingContext<?, ?>> arrayList = new ArrayList<>();
-
-		for (MappingContext<?, ?> context : BeanFactoryUtils
-				.beansOfTypeIncludingAncestors(applicationContext, MappingContext.class).values()) {
-			arrayList.add(context);
-		}
-
-		return new PersistentEntities(arrayList);
+		return new PersistentEntities(() -> (Iterator) BeanFactoryUtils
+				.beansOfTypeIncludingAncestors(applicationContext, MappingContext.class).values().iterator());
 	}
 
 	@Bean
@@ -337,8 +332,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		Supplier<ConversionService> supplier = () -> conversionService;
 
 		// Add Spring Data Commons formatters
-		conversionService
-				.addConverter(new UriToEntityConverter(persistentEntities, repositoryInvokerFactory, supplier));
+		conversionService.addConverter(new UriToEntityConverter(persistentEntities, repositoryInvokerFactory, supplier));
 		conversionService.addConverter(new StringToAggregateReferenceConverter(supplier));
 		conversionService.addConverter(StringToLdapNameConverter.INSTANCE);
 		addFormatters(conversionService);
@@ -450,8 +444,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public BackendIdHandlerMethodArgumentResolver backendIdHandlerMethodArgumentResolver(
 			PluginRegistry<BackendIdConverter, Class<?>> backendIdConverterRegistry,
-			ResourceMetadataHandlerMethodArgumentResolver resourceMetadataHandlerMethodArgumentResolver,
-			BaseUri baseUri) {
+			ResourceMetadataHandlerMethodArgumentResolver resourceMetadataHandlerMethodArgumentResolver, BaseUri baseUri) {
 
 		return new BackendIdHandlerMethodArgumentResolver(backendIdConverterRegistry,
 				resourceMetadataHandlerMethodArgumentResolver, baseUri);
@@ -469,8 +462,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @return
 	 */
 	@Bean
-	public RepositoryEntityLinks entityLinks(
-			ObjectFactory<HateoasPageableHandlerMethodArgumentResolver> pageableResolver, //
+	public RepositoryEntityLinks entityLinks(ObjectFactory<HateoasPageableHandlerMethodArgumentResolver> pageableResolver, //
 			Repositories repositories, //
 			RepositoryResourceMappings resourceMappings, //
 			PluginRegistry<BackendIdConverter, //
@@ -494,18 +486,15 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public PersistentEntityResourceHandlerMethodArgumentResolver persistentEntityArgumentResolver(
 			@Qualifier("defaultMessageConverters") List<HttpMessageConverter<?>> defaultMessageConverters,
-			RootResourceInformationHandlerMethodArgumentResolver repoRequestArgumentResolver,
-			Associations associationLinks,
-			BackendIdHandlerMethodArgumentResolver backendIdHandlerMethodArgumentResolver,
-			PersistentEntities entities) {
+			RootResourceInformationHandlerMethodArgumentResolver repoRequestArgumentResolver, Associations associationLinks,
+			BackendIdHandlerMethodArgumentResolver backendIdHandlerMethodArgumentResolver, PersistentEntities entities) {
 
 		PluginRegistry<EntityLookup<?>, Class<?>> lookups = PluginRegistry.of(getEntityLookups());
 		DomainObjectReader reader = new DomainObjectReader(entities, associationLinks);
 		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities, defaultConversionService);
 
 		return new PersistentEntityResourceHandlerMethodArgumentResolver(defaultMessageConverters,
-				repoRequestArgumentResolver, backendIdHandlerMethodArgumentResolver,
-				reader, lookups, factory);
+				repoRequestArgumentResolver, backendIdHandlerMethodArgumentResolver, reader, lookups, factory);
 	}
 
 	/**
@@ -520,8 +509,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			RepositoryRestConfiguration repositoryRestConfiguration) {
 
 		return new PersistentEntityToJsonSchemaConverter(persistentEntities, associationLinks, resolver.getObject(),
-				objectMapper(),
-				repositoryRestConfiguration, new ValueTypeSchemaPropertyCustomizerFactory(repositoryInvokerFactory));
+				objectMapper(), repositoryRestConfiguration,
+				new ValueTypeSchemaPropertyCustomizerFactory(repositoryInvokerFactory));
 	}
 
 	/**
@@ -569,8 +558,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	//
 
 	@Bean
-	public TypeConstrainedMappingJackson2HttpMessageConverter halJacksonHttpMessageConverter(
-			LinkCollector linkCollector,
+	public TypeConstrainedMappingJackson2HttpMessageConverter halJacksonHttpMessageConverter(LinkCollector linkCollector,
 			RepositoryRestConfiguration repositoryRestConfiguration) {
 
 		ArrayList<MediaType> mediaTypes = new ArrayList<>();
@@ -599,8 +587,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	 * @since 3.5
 	 */
 	@Bean
-	TypeConstrainedMappingJackson2HttpMessageConverter halFormsJacksonHttpMessageConverter(
-			LinkCollector linkCollector) {
+	TypeConstrainedMappingJackson2HttpMessageConverter halFormsJacksonHttpMessageConverter(LinkCollector linkCollector) {
 
 		LinkRelationProvider defaultedRelProvider = this.relProvider.getIfUnique(EvoInflectorLinkRelationProvider::new);
 		HalFormsConfiguration configuration = new HalFormsConfiguration(
@@ -611,9 +598,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		mapper.registerModule(persistentEntityJackson2Module(linkCollector));
 		mapper.registerModule(new Jackson2HalFormsModule());
-		mapper.setHandlerInstantiator(new Jackson2HalModule.HalHandlerInstantiator(
-				defaultedRelProvider, curieProvider, resolver.getObject(), configuration.getHalConfiguration(),
-				applicationContext.getAutowireCapableBeanFactory()));
+		mapper.setHandlerInstantiator(new Jackson2HalModule.HalHandlerInstantiator(defaultedRelProvider, curieProvider,
+				resolver.getObject(), configuration.getHalConfiguration(), applicationContext.getAutowireCapableBeanFactory()));
 
 		return new HalFormsHttpMessageConverter(applicationContext, mapper);
 	}
@@ -666,9 +652,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		initializer.setConversionService(defaultConversionService);
 		initializer.setValidator(validator.getIfUnique());
 
-		RepositoryRestHandlerAdapter handlerAdapter = new RepositoryRestHandlerAdapter(defaultMethodArgumentResolvers(
-				selfLinkProvider, persistentEntityArgumentResolver, persistentEntityResourceAssemblerArgumentResolver,
-				repoRequestArgumentResolver));
+		RepositoryRestHandlerAdapter handlerAdapter = new RepositoryRestHandlerAdapter(
+				defaultMethodArgumentResolvers(selfLinkProvider, persistentEntityArgumentResolver,
+						persistentEntityResourceAssemblerArgumentResolver, repoRequestArgumentResolver));
 		handlerAdapter.setWebBindingInitializer(initializer);
 		handlerAdapter.setMessageConverters(defaultMessageConverters);
 
@@ -738,8 +724,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		EmbeddedResourcesAssembler assembler = new EmbeddedResourcesAssembler(persistentEntities.get(),
 				associationLinks.get(), excerptProjector.get());
-		LookupObjectSerializer lookupObjectSerializer = new LookupObjectSerializer(
-				PluginRegistry.of(getEntityLookups()));
+		LookupObjectSerializer lookupObjectSerializer = new LookupObjectSerializer(PluginRegistry.of(getEntityLookups()));
 
 		return new PersistentEntityJackson2Module(associationLinks.get(), persistentEntities.get(),
 				new UriToEntityConverter(persistentEntities.get(), repositoryInvokerFactory.get(),
@@ -752,8 +737,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			Associations associationLinks) {
 
 		return configurerDelegate.get()
-				.customizeLinkCollector(
-						new DefaultLinkCollector(persistentEntities, selfLinkProvider, associationLinks));
+				.customizeLinkCollector(new DefaultLinkCollector(persistentEntities, selfLinkProvider, associationLinks));
 	}
 
 	@Bean
@@ -770,9 +754,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		ExceptionHandlerExceptionResolver er = new ExceptionHandlerExceptionResolver();
 		er.setApplicationContext(applicationContext);
-		er.setCustomArgumentResolvers(defaultMethodArgumentResolvers(selfLinkProvider.get(),
-				persistentEntityArgumentResolver.get(), persistentEntityResourceAssemblerArgumentResolver.get(),
-				repoRequestArgumentResolver.get()));
+		er.setCustomArgumentResolvers(
+				defaultMethodArgumentResolvers(selfLinkProvider.get(), persistentEntityArgumentResolver.get(),
+						persistentEntityResourceAssemblerArgumentResolver.get(), repoRequestArgumentResolver.get()));
 		er.setMessageConverters(defaultMessageConverters.get());
 
 		configurerDelegate.get().configureExceptionHandlerExceptionResolver(er);
@@ -946,8 +930,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		projectionFactory.setBeanClassLoader(beanClassLoader);
 
 		return new PersistentEntityResourceAssemblerArgumentResolver(persistentEntities.get(), selfLinkProvider.get(),
-				repositoryRestConfiguration.get().getProjectionConfiguration(), projectionFactory,
-				associationLinks.get());
+				repositoryRestConfiguration.get().getProjectionConfiguration(), projectionFactory, associationLinks.get());
 	}
 
 	protected ObjectMapper basicObjectMapper() {
@@ -963,10 +946,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		configurerDelegate.get().configureJacksonObjectMapper(objectMapper);
 
 		objectMapper.registerModule(geoModule.getObject());
-		objectMapper.registerModule(new AggregateReferenceResolvingModule(
-				new UriToEntityConverter(persistentEntities.get(), repositoryInvokerFactory.get(),
-						() -> defaultConversionService),
-				resourceMappings.get()));
+		objectMapper.registerModule(new AggregateReferenceResolvingModule(new UriToEntityConverter(persistentEntities.get(),
+				repositoryInvokerFactory.get(), () -> defaultConversionService), resourceMappings.get()));
 
 		if (repositoryRestConfiguration.get().isEnableEnumTranslation()) {
 			objectMapper.registerModule(new JacksonSerializers(enumTranslator.get()));
@@ -1038,9 +1019,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@SuppressWarnings("unchecked")
 	private static <S> Lazy<List<S>> beansOfType(ApplicationContext context, Class<?> type) {
 
-		return Lazy.of(() -> (List<S>) context.getBeanProvider(type)
-				.orderedStream()
-				.collect(StreamUtils.toUnmodifiableList()));
+		return Lazy
+				.of(() -> (List<S>) context.getBeanProvider(type).orderedStream().collect(StreamUtils.toUnmodifiableList()));
 	}
 
 	private static class ResourceSupportHttpMessageConverter extends TypeConstrainedMappingJackson2HttpMessageConverter
