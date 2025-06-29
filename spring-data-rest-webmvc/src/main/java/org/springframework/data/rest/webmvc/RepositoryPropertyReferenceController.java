@@ -19,15 +19,10 @@ import static java.util.stream.Collectors.*;
 import static org.springframework.data.rest.webmvc.RestMediaTypes.*;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -82,6 +77,7 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 
 	private static final String BASE_MAPPING = "/{repository}/{id}/{property}";
 	private static final Collection<HttpMethod> AUGMENTING_METHODS = Arrays.asList(HttpMethod.PATCH, HttpMethod.POST);
+    private static final List<MediaType> SUPPORTED_CONTENT_TYPE = Arrays.asList(MediaType.APPLICATION_JSON, TEXT_URI_LIST);
 
 	private final Repositories repositories;
 	private final RepositoryInvokerFactory repositoryInvokerFactory;
@@ -241,17 +237,31 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 			consumes = { MediaType.APPLICATION_JSON_VALUE, SPRING_DATA_COMPACT_JSON_VALUE, TEXT_URI_LIST_VALUE })
 	public ResponseEntity<? extends RepresentationModel<?>> createPropertyReference(
 			RootResourceInformation resourceInformation, HttpMethod requestMethod,
-			@RequestBody(required = false) CollectionModel<Object> incoming, @BackendId Serializable id,
+			@RequestBody(required = false) CollectionModel<Object> incoming,
+            @RequestHeader(required = false) HttpHeaders requestHeaders,
+            @BackendId Serializable id,
 			@PathVariable String property) throws Exception {
 
 		var source = incoming == null ? CollectionModel.empty() : incoming;
 		var invoker = resourceInformation.getInvoker();
+        MediaType contentType = requestHeaders == null ? null : requestHeaders.getContentType();
+
 
 		Function<ReferencedProperty, RepresentationModel<?>> handler = prop -> {
 
 			Class<?> propertyType = prop.property.getType();
 
 			if (prop.property.isCollectionLike()) {
+                /*if(HttpMethod.PATCH.equals(requestMethod)
+                        || HttpMethod.POST.equals(requestMethod)
+                        || HttpMethod.PUT.equals(requestMethod)) {
+                    if(contentType == null
+                            || (!TEXT_URI_LIST.isCompatibleWith(contentType)
+                            && !MediaType.APPLICATION_JSON.isCompatibleWith(contentType))
+                    ) {
+                        throw new UnsupportedMediaTypeStatusException("Unsuppoted Content Type", SUPPORTED_CONTENT_TYPE);
+                    }
+                }*/
                 if(source.getLinks().isEmpty()) {
                     throw new HttpMessageNotReadableException("No links provided",
                             InputStreamHttpInputMessage.of(InputStream.nullInputStream()));
@@ -269,6 +279,16 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 				prop.accessor.setProperty(prop.property, collection);
 
 			} else if (prop.property.isMap()) {
+                /*if(HttpMethod.PATCH.equals(requestMethod)
+                        || HttpMethod.POST.equals(requestMethod)
+                        || HttpMethod.PUT.equals(requestMethod)) {
+                    if(contentType == null
+                            || (!TEXT_URI_LIST.isCompatibleWith(contentType)
+                            && !MediaType.APPLICATION_JSON.isCompatibleWith(contentType))
+                    ) {
+                        throw new UnsupportedMediaTypeStatusException("Unsuppoted Content Type", SUPPORTED_CONTENT_TYPE);
+                    }
+                }*/
                 if(source.getLinks().isEmpty()) {
                     throw new HttpMessageNotReadableException("No links provided",
                             InputStreamHttpInputMessage.of(InputStream.nullInputStream()));
