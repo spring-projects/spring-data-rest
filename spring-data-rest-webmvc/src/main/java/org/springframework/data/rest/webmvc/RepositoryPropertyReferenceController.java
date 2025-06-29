@@ -19,6 +19,8 @@ import static java.util.stream.Collectors.*;
 import static org.springframework.data.rest.webmvc.RestMediaTypes.*;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,6 +44,7 @@ import org.springframework.data.rest.core.event.AfterLinkSaveEvent;
 import org.springframework.data.rest.core.event.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.core.event.BeforeLinkSaveEvent;
 import org.springframework.data.rest.webmvc.support.BackendId;
+import org.springframework.data.rest.webmvc.util.InputStreamHttpInputMessage;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -54,6 +57,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -248,6 +252,10 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 			Class<?> propertyType = prop.property.getType();
 
 			if (prop.property.isCollectionLike()) {
+                if(source.getLinks().isEmpty()) {
+                    throw new HttpMessageNotReadableException("No links provided",
+                            InputStreamHttpInputMessage.of(InputStream.nullInputStream()));
+                }
 
 				Collection<Object> collection = AUGMENTING_METHODS.contains(requestMethod) //
 						? (Collection<Object>) prop.propertyValue //

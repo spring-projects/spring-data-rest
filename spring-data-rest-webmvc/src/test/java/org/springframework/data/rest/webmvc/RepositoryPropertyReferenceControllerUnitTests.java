@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -45,7 +46,11 @@ import org.springframework.data.rest.core.mapping.ResourceType;
 import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Unit tests for {@link RepositoryPropertyReferenceController}.
@@ -90,7 +95,31 @@ class RepositoryPropertyReferenceControllerUnitTests {
 		verify(invoker).invokeFindById("some-id");
 	}
 
-	@RestResource
+    @Test // DATAREST-2495
+    void rejectsEmptyLinksForAssociationUpdate() throws Exception {
+
+        KeyValuePersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(Sample.class);
+
+        ResourceMappings mappings = new PersistentEntitiesResourceMappings(
+                new PersistentEntities(Collections.singleton(mappingContext)));
+        ResourceMetadata metadata = spy(mappings.getMetadataFor(Sample.class));
+        when(metadata.getSupportedHttpMethods()).thenReturn(AllSupportedHttpMethods.INSTANCE);
+
+        RepositoryPropertyReferenceController controller = new RepositoryPropertyReferenceController(repositories,
+                invokerFactory);
+        controller.setApplicationEventPublisher(publisher);
+
+        doReturn(Optional.of(new Sample())).when(invoker).invokeFindById(4711);
+
+        RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
+
+        assertThatExceptionOfType(HttpMessageNotReadableException.class)
+                .isThrownBy(() -> controller.createPropertyReference(information, HttpMethod.POST, null,  4711,
+                        "references"));
+    }
+
+
+    @RestResource
 	static class Sample {
 		@org.springframework.data.annotation.Reference List<Reference> references = new ArrayList<Reference>();
 	}
