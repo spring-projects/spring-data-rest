@@ -269,6 +269,10 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 				prop.accessor.setProperty(prop.property, collection);
 
 			} else if (prop.property.isMap()) {
+                if(source.getLinks().isEmpty()) {
+                    throw new HttpMessageNotReadableException("No links provided",
+                            InputStreamHttpInputMessage.of(InputStream.nullInputStream()));
+                }
 
 				Map<LinkRelation, Object> map = AUGMENTING_METHODS.contains(requestMethod) //
 						? (Map<LinkRelation, Object>) prop.propertyValue //

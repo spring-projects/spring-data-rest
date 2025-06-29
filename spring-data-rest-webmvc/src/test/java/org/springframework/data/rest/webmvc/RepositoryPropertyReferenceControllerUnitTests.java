@@ -141,6 +141,30 @@ class RepositoryPropertyReferenceControllerUnitTests {
                         "reference"));
     }
 
+    @Test // GH-2495
+    void rejectsMapLinksForSingleValuedAssociation() throws Exception {
+
+        KeyValuePersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(MapSample.class);
+
+        ResourceMappings mappings = new PersistentEntitiesResourceMappings(
+                new PersistentEntities(Collections.singleton(mappingContext)));
+        ResourceMetadata metadata = spy(mappings.getMetadataFor(MapSample.class));
+        when(metadata.getSupportedHttpMethods()).thenReturn(AllSupportedHttpMethods.INSTANCE);
+
+        RepositoryPropertyReferenceController controller = new RepositoryPropertyReferenceController(repositories,
+                invokerFactory);
+        controller.setApplicationEventPublisher(publisher);
+
+        doReturn(Optional.of(new MapSample())).when(invoker).invokeFindById(4711);
+
+        RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
+
+        //Do we need integration test to verify HTTP response code?
+        assertThatExceptionOfType(HttpMessageNotReadableException.class)
+                .isThrownBy(() -> controller.createPropertyReference(information, HttpMethod.POST, null, 4711,
+                        "reference"));
+    }
+
 
     @RestResource
 	static class Sample {
@@ -150,6 +174,11 @@ class RepositoryPropertyReferenceControllerUnitTests {
     @RestResource
     static class SingleSample {
         @org.springframework.data.annotation.Reference Reference reference;
+    }
+
+    @RestResource
+    static class MapSample {
+        @org.springframework.data.annotation.Reference Map<Reference, Reference> reference;
     }
 
 	@RestResource
