@@ -19,10 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -113,9 +110,35 @@ class RepositoryPropertyReferenceControllerUnitTests {
 
         RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
 
+        //Do we need integration test to verify HTTP response code?
         assertThatExceptionOfType(HttpMessageNotReadableException.class)
                 .isThrownBy(() -> controller.createPropertyReference(information, HttpMethod.POST, null,  4711,
                         "references"));
+    }
+
+    @Test // GH-2495
+    void rejectsMultipleLinksForSingleValuedAssociation() throws Exception {
+
+        KeyValuePersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(SingleSample.class);
+
+        ResourceMappings mappings = new PersistentEntitiesResourceMappings(
+                new PersistentEntities(Collections.singleton(mappingContext)));
+        ResourceMetadata metadata = spy(mappings.getMetadataFor(SingleSample.class));
+        when(metadata.getSupportedHttpMethods()).thenReturn(AllSupportedHttpMethods.INSTANCE);
+
+        RepositoryPropertyReferenceController controller = new RepositoryPropertyReferenceController(repositories,
+                invokerFactory);
+        controller.setApplicationEventPublisher(publisher);
+
+        doReturn(Optional.of(new SingleSample())).when(invoker).invokeFindById(4711);
+
+        RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
+        CollectionModel<Object> request = CollectionModel.empty(List.of(Link.of("/reference/1"), Link.of("/reference/2")));
+
+        //Do we need integration test to verify HTTP response code?
+        assertThatExceptionOfType(HttpMessageNotReadableException.class)
+                .isThrownBy(() -> controller.createPropertyReference(information, HttpMethod.POST, request, 4711,
+                        "reference"));
     }
 
 
@@ -123,6 +146,11 @@ class RepositoryPropertyReferenceControllerUnitTests {
 	static class Sample {
 		@org.springframework.data.annotation.Reference List<Reference> references = new ArrayList<Reference>();
 	}
+
+    @RestResource
+    static class SingleSample {
+        @org.springframework.data.annotation.Reference Reference reference;
+    }
 
 	@RestResource
 	static class Reference {}

@@ -291,8 +291,9 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 				}
 
 				if (!source.getLinks().hasSingleLink()) {
-					throw new IllegalArgumentException(
-							"Must send only 1 link to update a property reference that isn't a List or a Map.");
+                    throw new HttpMessageNotReadableException(
+                            "Must send only 1 link to update a property reference that isn't a List or a Map.",
+                            InputStreamHttpInputMessage.of(InputStream.nullInputStream()));
 				}
 
 				prop.accessor.setProperty(prop.property,
