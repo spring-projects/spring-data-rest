@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2025 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import tools.jackson.databind.ObjectMapper;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
@@ -37,8 +37,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.NativeWebRequest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * Translator for {@link Sort} arguments that is aware of Jackson-Mapping on domain classes. Jackson field names are
  * translated to {@link PersistentProperty} names. Domain class is looked up by resolving request URLs to mapped
@@ -46,18 +44,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Mark Paluch
  * @author Oliver Gierke
- * @since 2.6
- * @deprecated since 5.0, in favor of {@link Jackson3MappingAwareSortTranslator}
+ * @since 5.0
  */
-@Deprecated(since = "5.0", forRemoval = true)
-public class JacksonMappingAwareSortTranslator implements SortTranslator {
+public class Jackson3MappingAwareSortTranslator implements SortTranslator {
 
 	private final Repositories repositories;
 	private final DomainClassResolver domainClassResolver;
 	private final SortTranslator sortTranslator;
 
 	/**
-	 * Creates a new {@link JacksonMappingAwareSortTranslator} for the given {@link ObjectMapper}, {@link Repositories},
+	 * Creates a new {@link Jackson3MappingAwareSortTranslator} for the given {@link ObjectMapper}, {@link Repositories},
 	 * {@link DomainClassResolver} and {@link PersistentEntities}.
 	 *
 	 * @param objectMapper must not be {@literal null}.
@@ -66,7 +62,7 @@ public class JacksonMappingAwareSortTranslator implements SortTranslator {
 	 * @param persistentEntities must not be {@literal null}.
 	 * @param associations must not be {@literal null}.
 	 */
-	public JacksonMappingAwareSortTranslator(ObjectMapper objectMapper, Repositories repositories,
+	public Jackson3MappingAwareSortTranslator(ObjectMapper objectMapper, Repositories repositories,
 			DomainClassResolver domainClassResolver, PersistentEntities persistentEntities, Associations associations) {
 
 		Assert.notNull(repositories, "Repositories must not be null");
@@ -94,8 +90,7 @@ public class JacksonMappingAwareSortTranslator implements SortTranslator {
 		Assert.notNull(parameter, "MethodParameter must not be null");
 		Assert.notNull(webRequest, "NativeWebRequest must not be null");
 
-		Class<?> domainClass = parameter.getMethod() == null ? null
-				: domainClassResolver.resolve(parameter.getMethod(), webRequest);
+		Class<?> domainClass = domainClassResolver.resolve(parameter.getMethod(), webRequest);
 
 		if (domainClass == null) {
 			return input;
@@ -169,7 +164,7 @@ public class JacksonMappingAwareSortTranslator implements SortTranslator {
 			return filteredOrders.isEmpty() ? Sort.unsorted() : Sort.by(filteredOrders);
 		}
 
-		private @Nullable String getMappedPropertyPath(PersistentEntity<?, ?> rootEntity, List<String> iteratorSource) {
+		private String getMappedPropertyPath(PersistentEntity<?, ?> rootEntity, List<String> iteratorSource) {
 
 			List<String> persistentPropertyPath = mapPropertyPath(rootEntity, iteratorSource);
 
@@ -223,8 +218,8 @@ public class JacksonMappingAwareSortTranslator implements SortTranslator {
 		private final PersistentEntities persistentEntities;
 		private final ObjectMapper objectMapper;
 		private final Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> currentType;
-		private final MappedProperties currentProperties;
-		private final WrappedProperties currentWrappedProperties;
+		private final MappedJackson3Properties currentProperties;
+		private final WrappedJackson3Properties currentWrappedProperties;
 
 		private TypedSegment(TypedSegment previous,
 				Optional<PersistentEntity<?, ? extends PersistentProperty<?>>> persistentEntity) {
@@ -238,11 +233,11 @@ public class JacksonMappingAwareSortTranslator implements SortTranslator {
 			this.objectMapper = objectMapper;
 			this.currentType = persistentEntity;
 			this.currentProperties = persistentEntity//
-					.map(it -> MappedProperties.forSerialization(it, objectMapper))//
-					.orElseGet(() -> MappedProperties.none());
+					.map(it -> MappedJackson3Properties.forSerialization(it, objectMapper))//
+					.orElseGet(() -> MappedJackson3Properties.none());
 			this.currentWrappedProperties = persistentEntity//
-					.map(it -> WrappedProperties.fromJacksonProperties(persistentEntities, it, objectMapper))//
-					.orElseGet(() -> WrappedProperties.none());
+					.map(it -> WrappedJackson3Properties.fromJacksonProperties(persistentEntities, it, objectMapper))//
+					.orElseGet(() -> WrappedJackson3Properties.none());
 
 		}
 

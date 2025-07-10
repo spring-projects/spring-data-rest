@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import tools.jackson.databind.cfg.MapperBuilder;
+
 import java.util.List;
 
 import org.springframework.core.convert.support.ConfigurableConversionService;
@@ -26,8 +28,6 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Delegating implementation of {@link RepositoryRestConfigurer} that will forward all calls to configuration methods to
@@ -85,10 +85,11 @@ class RepositoryRestConfigurerDelegate implements RepositoryRestConfigurer {
 	}
 
 	@Override
-	public void configureJacksonObjectMapper(ObjectMapper objectMapper) {
+	public void configureJacksonObjectMapper(
+			MapperBuilder<? extends tools.jackson.databind.ObjectMapper, ? extends MapperBuilder<?, ?>> mapperBuilder) {
 
 		for (RepositoryRestConfigurer configurer : delegates) {
-			configurer.configureJacksonObjectMapper(objectMapper);
+			configurer.configureJacksonObjectMapper(mapperBuilder);
 		}
 	}
 

@@ -40,10 +40,10 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  */
 public class MappingAwareSortArgumentResolver implements HandlerMethodArgumentResolver, SortArgumentResolver {
 
-	private final JacksonMappingAwareSortTranslator translator;
+	private final SortTranslator translator;
 	private final SortArgumentResolver delegate;
 
-	public MappingAwareSortArgumentResolver(JacksonMappingAwareSortTranslator translator, SortArgumentResolver delegate) {
+	public MappingAwareSortArgumentResolver(SortTranslator translator, SortArgumentResolver delegate) {
 
 		Assert.notNull(translator, "JacksonMappingAwareSortTranslator must not be null");
 		Assert.notNull(delegate, "Delegate SortArgumentResolver must not be null");

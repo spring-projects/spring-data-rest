@@ -15,6 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -22,10 +26,6 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.util.Assert;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * Convert {@link JsonNode}s containing JSON Patch to/from {@link Patch} objects.
@@ -63,7 +63,7 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 		ArrayNode opNodes = (ArrayNode) jsonNode;
 		List<PatchOperation> ops = new ArrayList<PatchOperation>(opNodes.size());
 
-		for (Iterator<JsonNode> elements = opNodes.elements(); elements.hasNext();) {
+		for (Iterator<JsonNode> elements = opNodes.iterator(); elements.hasNext();) {
 
 			JsonNode opNode = elements.next();
 

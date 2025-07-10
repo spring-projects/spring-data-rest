@@ -15,8 +15,12 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
+
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,11 +53,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Component to apply an {@link ObjectNode} to an existing domain object. This is effectively a best-effort workaround
@@ -148,7 +147,7 @@ public class DomainObjectReader {
 		return entities.getPersistentEntity(isTypeChange ? source.getClass() : target.getClass()) //
 				.map(it -> {
 
-					MappedProperties properties = MappedProperties.forDeserialization(it, mapper);
+					MappedJackson3Properties properties = MappedJackson3Properties.forDeserialization(it, mapper);
 
 					if (isTypeChange || immutableTarget || it.isImmutable()) {
 
@@ -243,10 +242,10 @@ public class DomainObjectReader {
 		}
 
 		PersistentEntity<?, ?> entity = candidate.get();
-		MappedProperties mappedProperties = MappedProperties.forDeserialization(entity, mapper);
+		MappedJackson3Properties mappedProperties = MappedJackson3Properties.forDeserialization(entity, mapper);
 		PersistentPropertyAccessor<?> accessor = entity.getPropertyAccessor(target);
 
-		for (Iterator<Entry<String, JsonNode>> i = root.fields(); i.hasNext();) {
+		for (Iterator<Entry<String, JsonNode>> i = root.properties().iterator(); i.hasNext();) {
 
 			Entry<String, JsonNode> entry = i.next();
 			JsonNode child = entry.getValue();
@@ -286,7 +285,7 @@ public class DomainObjectReader {
 					if (property.isMap()) {
 
 						// Keep empty Map to wipe it as expected
-						if (!objectNode.fieldNames().hasNext()) {
+						if (objectNode.properties().isEmpty()) {
 							return;
 						}
 
@@ -294,7 +293,7 @@ public class DomainObjectReader {
 								() -> doMergeNestedMap((Map<Object, Object>) it, objectNode, mapper, property.getTypeInformation()));
 
 						// Remove potentially emptied Map as values have been handled recursively
-						if (!objectNode.fieldNames().hasNext()) {
+						if (!objectNode.properties().isEmpty()) {
 							i.remove();
 						}
 
@@ -314,12 +313,7 @@ public class DomainObjectReader {
 
 	private static Object readRawCollectionElement(Class<?> elementType, String fieldName, int index, JsonNode root,
 			ObjectMapper mapper) {
-
-		try {
 			return mapper.readerFor(elementType).at("/" + fieldName + "/" + index).readValue(root);
-		} catch (IOException o_O) {
-			throw new RuntimeException(o_O);
-		}
 	}
 
 	/**
@@ -427,7 +421,7 @@ public class DomainObjectReader {
 			return;
 		}
 
-		Iterator<Entry<String, JsonNode>> fields = node.fields();
+		Iterator<Entry<String, JsonNode>> fields = node.properties().iterator();
 		Class<?> keyType = typeOrObject(type.getComponentType());
 		TypeInformation<?> valueType = type.getMapValueType();
 
@@ -647,7 +641,7 @@ public class DomainObjectReader {
 	 */
 	private class MergingPropertyHandler implements SimplePropertyHandler {
 
-		private final MappedProperties properties;
+		private final MappedJackson3Properties properties;
 		private final PersistentPropertyAccessor<?> targetAccessor;
 		private final PersistentPropertyAccessor<?> sourceAccessor;
 		private final ObjectMapper mapper;
@@ -668,14 +662,14 @@ public class DomainObjectReader {
 			Assert.notNull(entity, "PersistentEntity must not be null");
 			Assert.notNull(mapper, "ObjectMapper must not be null");
 
-			this.properties = MappedProperties.forDeserialization(entity, mapper);
+			this.properties = MappedJackson3Properties.forDeserialization(entity, mapper);
 			this.targetAccessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(target),
 					new DefaultConversionService());
 			this.sourceAccessor = entity.getPropertyAccessor(source);
 			this.mapper = mapper;
 		}
 
-		public MappedProperties getProperties() {
+		public MappedJackson3Properties getProperties() {
 			return this.properties;
 		}
 

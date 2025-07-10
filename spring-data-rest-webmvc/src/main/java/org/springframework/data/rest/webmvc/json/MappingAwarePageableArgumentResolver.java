@@ -42,10 +42,10 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  */
 public class MappingAwarePageableArgumentResolver implements HandlerMethodArgumentResolver, PageableArgumentResolver {
 
-	private final JacksonMappingAwareSortTranslator translator;
+	private final SortTranslator translator;
 	private final PageableArgumentResolver delegate;
 
-	public MappingAwarePageableArgumentResolver(JacksonMappingAwareSortTranslator translator,
+	public MappingAwarePageableArgumentResolver(SortTranslator translator,
 			PageableArgumentResolver delegate) {
 
 		Assert.notNull(translator, "JacksonMappingAwareSortTranslator must not be null");

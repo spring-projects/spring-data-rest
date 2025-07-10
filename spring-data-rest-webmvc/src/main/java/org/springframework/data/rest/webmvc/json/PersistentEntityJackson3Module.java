@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,39 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.Version;
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.DeserializationConfig;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.deser.BeanDeserializerBuilder;
+import tools.jackson.databind.deser.CreatorProperty;
+import tools.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.databind.deser.ValueDeserializerModifier;
+import tools.jackson.databind.deser.ValueInstantiator;
+import tools.jackson.databind.deser.bean.PropertyValueBuffer;
+import tools.jackson.databind.deser.jdk.CollectionDeserializer;
+import tools.jackson.databind.deser.std.StdDeserializer;
+import tools.jackson.databind.deser.std.StdScalarDeserializer;
+import tools.jackson.databind.deser.std.StdValueInstantiator;
+import tools.jackson.databind.jsontype.TypeDeserializer;
+import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.ValueSerializerModifier;
+import tools.jackson.databind.ser.jackson.JsonValueSerializer;
+import tools.jackson.databind.ser.std.StdScalarSerializer;
+import tools.jackson.databind.ser.std.StdSerializer;
+import tools.jackson.databind.ser.std.ToStringSerializerBase;
+import tools.jackson.databind.type.CollectionLikeType;
+import tools.jackson.databind.util.NameTransformer;
+
 import java.io.Serial;
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -58,59 +90,29 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerBuilder;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
-import com.fasterxml.jackson.databind.deser.CreatorProperty;
-import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
-import com.fasterxml.jackson.databind.deser.ValueInstantiator;
-import com.fasterxml.jackson.databind.deser.std.CollectionDeserializer;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
-import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
-import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
-import com.fasterxml.jackson.databind.ser.std.JsonValueSerializer;
-import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.fasterxml.jackson.databind.type.CollectionLikeType;
-import com.fasterxml.jackson.databind.util.NameTransformer;
 
 /**
- * Jackson 2 module to serialize and deserialize {@link PersistentEntityResource}s.
+ * Jackson 3 module to serialize and deserialize {@link PersistentEntityResource}s.
  *
+ * @author Mark Paluch
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Alex Leigh
- * @deprecated since 5.0, in favor of {@link PersistentEntityJackson3Module}.
+ * @since 5.0
  */
-@Deprecated(since = "5.0", forRemoval = true)
-@SuppressWarnings("NullAway")
-public class PersistentEntityJackson2Module extends SimpleModule {
+public class PersistentEntityJackson3Module extends SimpleModule {
 
 	private static final @Serial long serialVersionUID = -7289265674870906323L;
-	private static final Logger LOG = LoggerFactory.getLogger(PersistentEntityJackson2Module.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PersistentEntityJackson3Module.class);
 	private static final TypeDescriptor URI_DESCRIPTOR = TypeDescriptor.valueOf(URI.class);
 
 	/**
-	 * Creates a new {@link PersistentEntityJackson2Module} using the given {@link Associations},
+	 * Creates a new {@link PersistentEntityJackson3Module} using the given {@link Associations},
 	 * {@link PersistentEntities}, {@link UriToEntityConverter}, {@link LinkCollector}, {@link RepositoryInvokerFactory},
 	 * {@link LookupObjectSerializer}, {@link RepresentationModelProcessorInvoker} and {@link EmbeddedResourcesAssembler}.
 	 *
@@ -123,7 +125,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * @param invoker must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
 	 */
-	public PersistentEntityJackson2Module(Associations associations, PersistentEntities entities,
+	public PersistentEntityJackson3Module(Associations associations, PersistentEntities entities,
 			UriToEntityConverter converter, LinkCollector collector, RepositoryInvokerFactory factory,
 			LookupObjectSerializer lookupObjectSerializer, RepresentationModelProcessorInvoker invoker,
 			EmbeddedResourcesAssembler assembler) {
@@ -152,7 +154,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 *
 	 * @author Oliver Gierke
 	 */
-	@SuppressWarnings("serial")
 	private static class PersistentEntityResourceSerializer extends StdSerializer<PersistentEntityResource> {
 
 		private final LinkCollector collector;
@@ -172,14 +173,14 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 		@Override
 		public void serialize(final PersistentEntityResource resource, final JsonGenerator jgen,
-				final SerializerProvider provider) throws IOException, JsonGenerationException {
+				final SerializationContext provider) {
 
 			LOG.debug("Serializing PersistentEntity {}", resource.getPersistentEntity());
 
 			Object content = resource.getContent();
 
 			if (hasScalarSerializer(content, provider)) {
-				provider.defaultSerializeValue(content, jgen);
+				provider.writeValue(jgen, content);
 				return;
 			}
 
@@ -188,11 +189,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			if (TargetAware.class.isInstance(content)) {
 
 				TargetAware targetAware = (TargetAware) content;
-				provider.defaultSerializeValue(new ProjectionResource(targetAware, links), jgen);
+				provider.writeValue(jgen, new ProjectionResource(targetAware, links));
 				return;
 			}
 
-			@SuppressWarnings("deprecation")
 			EntityModel<Object> resourceToRender = new EntityModel<Object>(resource.getContent(), links) {
 
 				@JsonUnwrapped
@@ -201,7 +201,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 				}
 			};
 
-			provider.defaultSerializeValue(resourceToRender, jgen);
+			provider.writeValue(jgen, resourceToRender);
 		}
 
 		private Links getLinks(PersistentEntityResource resource) {
@@ -216,10 +216,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			return TargetAware.class.isInstance(object) ? ((TargetAware) object).getTarget() : object;
 		}
 
-		private static boolean hasScalarSerializer(Object source, SerializerProvider provider) throws JsonMappingException {
+		private static boolean hasScalarSerializer(Object source, SerializationContext provider) {
 
-			JsonSerializer<Object> serializer = provider.findValueSerializer(source.getClass());
-			return serializer instanceof ToStringSerializer || serializer instanceof StdScalarSerializer;
+			ValueSerializer<Object> serializer = provider.findValueSerializer(source.getClass());
+			return serializer instanceof ToStringSerializerBase || serializer instanceof StdScalarSerializer;
 		}
 	}
 
@@ -228,7 +228,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 *
 	 * @author Oliver Gierke
 	 */
-	static class AssociationOmittingSerializerModifier extends BeanSerializerModifier {
+	static class AssociationOmittingSerializerModifier extends ValueSerializerModifier {
 
 		private final PersistentEntities entities;
 		private final Associations associations;
@@ -250,16 +250,18 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		@Override
-		public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc,
+		public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription.Supplier beanDesc,
 				List<BeanPropertyWriter> beanProperties) {
 
 			return entities.getPersistentEntity(beanDesc.getBeanClass()).map(entity -> {
 
-				List<BeanPropertyWriter> result = new ArrayList<BeanPropertyWriter>();
+				BeanDescription beanDescription = beanDesc.get();
+				List<BeanPropertyWriter> result = new ArrayList<>();
 
 				for (BeanPropertyWriter writer : beanProperties) {
 
-					Optional<? extends PersistentProperty<?>> findProperty = findProperty(writer.getName(), entity, beanDesc);
+					Optional<? extends PersistentProperty<?>> findProperty = findProperty(writer.getName(), entity,
+							beanDescription);
 
 					if (!findProperty.isPresent()) {
 						result.add(writer);
@@ -333,8 +335,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 */
 	static class NestedEntitySerializer extends StdSerializer<Object> {
 
-		private static final @Serial long serialVersionUID = -2327469118972125954L;
-
 		private final PersistentEntities entities;
 		private final EmbeddedResourcesAssembler assembler;
 		private final RepresentationModelProcessorInvoker invoker;
@@ -349,18 +349,18 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		@Override
-		public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+		public void serialize(Object value, JsonGenerator gen, SerializationContext provider) throws JacksonException {
 
 			if (value instanceof Collection) {
 
 				Collection<?> source = (Collection<?>) value;
-				List<Object> resources = new ArrayList<Object>();
+				List<Object> resources = new ArrayList<>();
 
 				for (Object element : source) {
 					resources.add(toModel(element, provider));
 				}
 
-				provider.defaultSerializeValue(resources, gen);
+				provider.writeValue(gen, resources);
 
 			} else if (value instanceof Map) {
 
@@ -371,28 +371,28 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 					resources.put(entry.getKey(), toModel(entry.getValue(), provider));
 				}
 
-				provider.defaultSerializeValue(resources, gen);
+				provider.writeValue(gen, resources);
 
 			} else {
-				provider.defaultSerializeValue(toModel(value, provider), gen);
+				provider.writeValue(gen, toModel(value, provider));
 			}
 		}
 
 		@Override
-		public void serializeWithType(Object value, JsonGenerator gen, SerializerProvider provider,
-				TypeSerializer typeSerializer) throws IOException {
+		public void serializeWithType(Object value, JsonGenerator gen, SerializationContext provider,
+				TypeSerializer typeSerializer) {
 			serialize(value, gen, provider);
 		}
 
-		private Object toModel(Object value, SerializerProvider provider) throws JsonMappingException {
+		private Object toModel(Object value, SerializationContext provider) {
 
-			JsonSerializer<Object> serializer = provider.findValueSerializer(value.getClass());
+			ValueSerializer<Object> serializer = provider.findValueSerializer(value.getClass());
 
 			if (JsonValueSerializer.class.isInstance(serializer)) {
 				return value;
 			}
 
-			JsonSerializer<Object> unwrappingSerializer = serializer.unwrappingSerializer(NameTransformer.NOP);
+			ValueSerializer<?> unwrappingSerializer = serializer.unwrappingSerializer(NameTransformer.NOP);
 
 			if (!unwrappingSerializer.isUnwrappingSerializer()) {
 				return value;
@@ -414,7 +414,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 * @author Oliver Gierke
 	 * @author Lars Vierbergen
 	 */
-	public static class AssociationUriResolvingDeserializerModifier extends BeanDeserializerModifier {
+	public static class AssociationUriResolvingDeserializerModifier extends ValueDeserializerModifier {
 
 		private final PersistentEntities entities;
 		private final Associations associationLinks;
@@ -436,7 +436,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		@Override
-		public BeanDeserializerBuilder updateBuilder(DeserializationConfig config, BeanDescription beanDesc,
+		public BeanDeserializerBuilder updateBuilder(DeserializationConfig config, BeanDescription.Supplier beanDesc,
 				BeanDeserializerBuilder builder) {
 
 			ValueInstantiatorCustomizer customizer = new ValueInstantiatorCustomizer(builder.getValueInstantiator(), config);
@@ -444,7 +444,9 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 			entities.getPersistentEntity(beanDesc.getBeanClass()).ifPresent(entity -> {
 
-				MappedProperties mapped = MappedProperties.forDescription(entity, beanDesc);
+				BeanDescription beanDescription = beanDesc.get();
+
+				MappedJackson3Properties mapped = MappedJackson3Properties.forDescription(entity, beanDescription);
 
 				while (properties.hasNext()) {
 
@@ -461,7 +463,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 						RepositoryInvokingDeserializer repositoryInvokingDeserializer = new RepositoryInvokingDeserializer(factory,
 								persistentProperty);
-						JsonDeserializer<?> deserializer = wrapIfCollection(propertyType, repositoryInvokingDeserializer, config);
+						ValueDeserializer<?> deserializer = wrapIfCollection(propertyType, repositoryInvokingDeserializer, config);
 
 						builder.addOrReplaceProperty(property.withValueDeserializer(deserializer), false);
 						continue;
@@ -473,7 +475,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 					Class<?> actualPropertyType = persistentProperty.getActualType();
 					UriStringDeserializer uriStringDeserializer = new UriStringDeserializer(actualPropertyType, converter);
-					JsonDeserializer<?> deserializer = wrapIfCollection(propertyType, uriStringDeserializer, config);
+					ValueDeserializer<?> deserializer = wrapIfCollection(propertyType, uriStringDeserializer, config);
 
 					customizer.replacePropertyIfNeeded(builder, property.withValueDeserializer(deserializer));
 				}
@@ -556,8 +558,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 			}
 		}
 
-		private static JsonDeserializer<?> wrapIfCollection(TypeInformation<?> property,
-				JsonDeserializer<Object> elementDeserializer, DeserializationConfig config) {
+		private static ValueDeserializer<?> wrapIfCollection(TypeInformation<?> property,
+				ValueDeserializer<Object> elementDeserializer, DeserializationConfig config) {
 
 			if (!property.isCollectionLike()) {
 				return elementDeserializer;
@@ -579,7 +581,6 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 */
 	public static class UriStringDeserializer extends StdDeserializer<Object> {
 
-		private static final @Serial long serialVersionUID = -2175900204153350125L;
 		private static final String UNEXPECTED_VALUE = "Expected URI cause property %s points to the managed domain type";
 
 		private final Class<?> type;
@@ -601,7 +602,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		@Override
-		public Object deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		public Object deserialize(JsonParser jp, DeserializationContext ctxt) {
 
 			String source = jp.getValueAsString();
 
@@ -623,13 +624,11 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * Deserialize by ignoring the {@link TypeDeserializer}, as URIs will either resolve to {@literal null} or a
 		 * concrete instance anyway.
 		 *
-		 * @see com.fasterxml.jackson.databind.deser.std.StdDeserializer#deserializeWithType(com.fasterxml.jackson.core.JsonParser,
-		 *      com.fasterxml.jackson.databind.DeserializationContext,
-		 *      com.fasterxml.jackson.databind.jsontype.TypeDeserializer)
+		 * @see tools.jackson.databind.deser.std.StdDeserializer#deserializeWithType(tools.jackson.core.JsonParser,
+		 *      tools.jackson.databind.DeserializationContext, tools.jackson.databind.jsontype.TypeDeserializer)
 		 */
 		@Override
-		public Object deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer typeDeserializer)
-				throws IOException {
+		public Object deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer typeDeserializer) {
 			return deserialize(jp, ctxt);
 		}
 	}
@@ -651,8 +650,8 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		 * @param invoker must not be {@literal null}.
 		 * @param unwrapping
 		 */
-		ProjectionSerializer(LinkCollector collector, Associations mappings,
-				RepresentationModelProcessorInvoker invoker, boolean unwrapping) {
+		ProjectionSerializer(LinkCollector collector, Associations mappings, RepresentationModelProcessorInvoker invoker,
+				boolean unwrapping) {
 
 			super(TargetAware.class);
 
@@ -663,15 +662,15 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		@Override
-		public void serialize(TargetAware value, JsonGenerator jgen, SerializerProvider provider)
-				throws IOException, JsonGenerationException {
+		public void serialize(TargetAware value, JsonGenerator jgen, SerializationContext provider)
+				throws JacksonException {
 
 			if (!unwrapping) {
 				jgen.writeStartObject();
 			}
 
 			provider.//
-					findValueSerializer(ProjectionResource.class, null).//
+					findValueSerializer(ProjectionResource.class).//
 					unwrappingSerializer(null).//
 					serialize(toModel(value), jgen, provider);
 
@@ -686,7 +685,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		@Override
-		public JsonSerializer<TargetAware> unwrappingSerializer(NameTransformer unwrapper) {
+		public ValueSerializer<TargetAware> unwrappingSerializer(NameTransformer unwrapper) {
 			return new ProjectionSerializer(collector, associations, invoker, true);
 		}
 
@@ -755,11 +754,10 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		@Override
-		public void serialize(ProjectionResourceContent value, JsonGenerator jgen, SerializerProvider provider)
-				throws IOException, JsonGenerationException {
+		public void serialize(ProjectionResourceContent value, JsonGenerator jgen, SerializationContext provider) {
 
 			provider.//
-					findValueSerializer(value.getProjectionInterface(), null).//
+					findValueSerializer(value.getProjectionInterface()).//
 					unwrappingSerializer(null).//
 					serialize(value.getProjection(), jgen, provider);
 		}
@@ -770,7 +768,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		@Override
-		public JsonSerializer<ProjectionResourceContent> unwrappingSerializer(NameTransformer unwrapper) {
+		public ValueSerializer<ProjectionResourceContent> unwrappingSerializer(NameTransformer unwrapper) {
 			return new ProjectionResourceContentSerializer(true);
 		}
 	}
@@ -804,18 +802,42 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		@Override
-		public Object createUsingDefault(DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		public ValueInstantiator createContextual(DeserializationContext ctxt, BeanDescription.Supplier beanDescRef) {
+			return this;
+		}
+
+		@Override
+		public Class<?> getValueClass() {
+			return property.getType();
+		}
+
+		private Object create() {
 
 			Class<?> collectionOrMapType = property.getType();
 
 			return property.isMap() ? CollectionFactory.createMap(collectionOrMapType, 0)
 					: CollectionFactory.createCollection(collectionOrMapType, 0);
 		}
+
+		@Override
+		public Object createFromObjectWith(DeserializationContext ctxt, SettableBeanProperty[] props,
+				PropertyValueBuffer buffer) throws JacksonException {
+			return create();
+		}
+
+		@Override
+		public Object createUsingDefaultOrWithoutArguments(DeserializationContext ctxt) throws JacksonException {
+			return create();
+		}
+
+		@Override
+		public Object createFromObjectWith(DeserializationContext ctxt, Object[] args) throws JacksonException {
+			return create();
+		}
 	}
 
 	private static class RepositoryInvokingDeserializer extends StdScalarDeserializer<Object> {
 
-		private static final @Serial long serialVersionUID = -3033458643050330913L;
 		private final RepositoryInvoker invoker;
 
 		private RepositoryInvokingDeserializer(RepositoryInvokerFactory factory, PersistentProperty<?> property) {
@@ -825,43 +847,49 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 		}
 
 		@Override
-		public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		public Object deserialize(JsonParser p, DeserializationContext ctxt) {
 
-			Object id = p.getCurrentToken().isNumeric() ? p.getValueAsLong() : p.getValueAsString();
+			Object id = p.currentToken().isNumeric() ? p.getValueAsLong() : p.getValueAsString();
 
 			return invoker.invokeFindById(id).orElse(null);
 		}
 	}
 
-	public static class LookupObjectSerializer extends ToStringSerializer {
+	public static class LookupObjectSerializer extends ToStringSerializerBase {
 
-		private static final @Serial long serialVersionUID = -3033458643050330913L;
+		private static final long serialVersionUID = -3033458643050330913L;
 
 		private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
 
 		public LookupObjectSerializer(PluginRegistry<EntityLookup<?>, Class<?>> lookups) {
 
+			super(Object.class);
 			Assert.notNull(lookups, "EntityLookups must not be null");
 
 			this.lookups = lookups;
 		}
 
 		@Override
-		public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+		public void serialize(Object value, JsonGenerator gen, SerializationContext provider) {
 
 			if (value instanceof Collection) {
 
 				gen.writeStartArray();
 
 				for (Object element : (Collection<?>) value) {
-					gen.writeObject(getLookupKey(element));
+					gen.writePOJO(getLookupKey(element));
 				}
 
 				gen.writeEndArray();
 
 			} else {
-				gen.writeObject(getLookupKey(value));
+				gen.writePOJO(getLookupKey(value));
 			}
+		}
+
+		@Override
+		public String valueToString(Object value) {
+			return value.toString();
 		}
 
 		@SuppressWarnings("unchecked")

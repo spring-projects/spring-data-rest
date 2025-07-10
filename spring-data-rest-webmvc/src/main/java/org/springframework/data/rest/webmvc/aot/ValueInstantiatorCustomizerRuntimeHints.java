@@ -19,22 +19,35 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module;
+import org.springframework.util.ClassUtils;
 
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 
 /**
  * Registers the {@link StdValueInstantiator}'s {@code _constructorArgs} field for reflection as needed by
- * {@link ValueInstantiatorCustomizer}.
+ * {@code ValueInstantiatorCustomizer}.
  *
  * @author Oliver Drotbohm
+ * @author Mark Paluch
  * @since 4.0.2
  * @soundtrack The Intersphere - Wanderer (https://www.youtube.com/watch?v=Sp_VyFBbDPA)
  */
+@SuppressWarnings("removal")
 class ValueInstantiatorCustomizerRuntimeHints implements RuntimeHintsRegistrar {
 
 	@Override
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
-		hints.reflection().registerField(ValueInstantiatorCustomizer.CONSTRUCTOR_ARGS_FIELD);
+
+		if (ClassUtils.isPresent("tools.jackson.databind.ObjectMapper", classLoader)) {
+			hints.reflection().registerField(
+					PersistentEntityJackson3Module.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer.CONSTRUCTOR_ARGS_FIELD);
+		}
+
+		if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", classLoader)) {
+			hints.reflection().registerField(
+					PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer.CONSTRUCTOR_ARGS_FIELD);
+		}
 	}
 }

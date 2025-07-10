@@ -17,6 +17,10 @@ package org.springframework.data.rest.webmvc.alps;
 
 import static org.springframework.hateoas.mediatype.alps.Alps.*;
 
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.introspect.AnnotatedMethod;
+import tools.jackson.databind.introspect.BeanPropertyDefinition;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,10 +69,6 @@ import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 
 /**
  * Converter to create Alps {@link Descriptor} instances for a {@link RootResourceInformation}.
