@@ -15,38 +15,37 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import java.io.Serial;
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.DeserializationConfig;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.deser.BeanDeserializerBuilder;
+import tools.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.databind.deser.ValueDeserializerModifier;
+import tools.jackson.databind.deser.jdk.CollectionDeserializer;
+import tools.jackson.databind.introspect.BeanPropertyDefinition;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.type.CollectionLikeType;
+
 import java.util.Iterator;
 
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.CollectionValueInstantiator;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.UriStringDeserializer;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module.CollectionValueInstantiator;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module.UriStringDeserializer;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerBuilder;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
-import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
-import com.fasterxml.jackson.databind.deser.std.CollectionDeserializer;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.type.CollectionLikeType;
 
 /**
  * Jackson module to enable aggregate reference resolution for non-aggregate root types. This is primarily useful for
  * any kind of payload mapping DTO that is supposed to be able to map URIs to aggregate roots.
  *
  * @author Oliver Drotbohm
+ * @author Mark Paluch
  * @since 3.5
  */
 public class AggregateReferenceResolvingModule extends SimpleModule {
-
-	private static final @Serial long serialVersionUID = 6002883434719869173L;
 
 	/**
 	 * Creates a new {@link AggregateReferenceResolvingModule} using the given {@link UriToEntityConverter} and
@@ -60,11 +59,11 @@ public class AggregateReferenceResolvingModule extends SimpleModule {
 	}
 
 	/**
-	 * {@link BeanDeserializerModifier} implementation to support URI deserialization into aggregate roots
+	 * {@link ValueDeserializerModifier} implementation to support URI deserialization into aggregate roots
 	 *
 	 * @author Oliver Drotbohm
 	 */
-	static class AggregateReferenceDeserializerModifier extends BeanDeserializerModifier {
+	static class AggregateReferenceDeserializerModifier extends ValueDeserializerModifier {
 
 		private final UriToEntityConverter converter;
 		private final ResourceMappings mappings;
@@ -86,22 +85,24 @@ public class AggregateReferenceResolvingModule extends SimpleModule {
 		}
 
 		@Override
-		public BeanDeserializerBuilder updateBuilder(DeserializationConfig config, BeanDescription description,
+		public BeanDeserializerBuilder updateBuilder(DeserializationConfig config, BeanDescription.Supplier supplier,
 				BeanDeserializerBuilder builder) {
 
 			// Type is aggregate itself, already handled by AssociationUriResolvingDeserializerModifier
-			if (mappings.hasMappingFor(description.getBeanClass())) {
+			if (mappings.hasMappingFor(supplier.getBeanClass())) {
 				return builder;
 			}
 
-			TypeInformation<?> type = TypeInformation.of(description.getBeanClass());
+			BeanDescription beanDescription = supplier.get();
+
+			TypeInformation<?> type = TypeInformation.of(supplier.getBeanClass());
 			ValueInstantiatorCustomizer customizer = new ValueInstantiatorCustomizer(builder.getValueInstantiator(), config);
 			Iterator<SettableBeanProperty> properties = builder.getProperties();
 
 			while (properties.hasNext()) {
 
 				SettableBeanProperty property = properties.next();
-				String originalPropertyName = coerceOriginalPropertyName(property, description);
+				String originalPropertyName = coerceOriginalPropertyName(property, beanDescription);
 				TypeInformation<?> propertyType = type.getProperty(originalPropertyName);
 
 				if (propertyType == null) {
@@ -115,7 +116,7 @@ public class AggregateReferenceResolvingModule extends SimpleModule {
 				}
 
 				UriStringDeserializer uriStringDeserializer = new UriStringDeserializer(actualType.getType(), converter);
-				JsonDeserializer<?> deserializer = wrapIfCollection(propertyType, uriStringDeserializer, config);
+				ValueDeserializer<?> deserializer = wrapIfCollection(propertyType, uriStringDeserializer, config);
 
 				customizer.replacePropertyIfNeeded(builder, property.withValueDeserializer(deserializer));
 			}
@@ -123,8 +124,8 @@ public class AggregateReferenceResolvingModule extends SimpleModule {
 			return builder;
 		}
 
-		private static JsonDeserializer<?> wrapIfCollection(TypeInformation<?> type,
-				JsonDeserializer<Object> elementDeserializer, DeserializationConfig config) {
+		private static ValueDeserializer<?> wrapIfCollection(TypeInformation<?> type,
+				ValueDeserializer<Object> elementDeserializer, DeserializationConfig config) {
 
 			if (!type.isCollectionLike()) {
 				return elementDeserializer;

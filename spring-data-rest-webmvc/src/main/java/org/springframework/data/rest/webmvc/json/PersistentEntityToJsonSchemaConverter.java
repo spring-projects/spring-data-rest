@@ -16,6 +16,12 @@
 package org.springframework.data.rest.webmvc.json;
 
 import java.io.Serial;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.introspect.AnnotatedMember;
+import tools.jackson.databind.introspect.BeanPropertyDefinition;
+
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -58,10 +64,6 @@ import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 
 /**
  * Converter to create {@link JsonSchema} instances for {@link PersistentEntity}s.
@@ -69,6 +71,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Mark Paluch
  */
 @SuppressWarnings("NullAway")
 public class PersistentEntityToJsonSchemaConverter implements ConditionalGenericConverter {
@@ -280,7 +283,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @since 2.4
 	 */
 	private class JsonSchemaPropertyRegistrar {
-		private final JacksonMetadata metadata;
+		private final Jackson3Metadata metadata;
 		private final List<AbstractJsonSchemaProperty<?>> properties;
 
 		/**
@@ -288,7 +291,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		 *
 		 * @param metadata must not be {@literal null}.
 		 */
-		public JsonSchemaPropertyRegistrar(JacksonMetadata metadata) {
+		public JsonSchemaPropertyRegistrar(Jackson3Metadata metadata) {
 			Assert.notNull(metadata, "Metadata must not be null");
 			this.metadata = metadata;
 			this.properties = new ArrayList<AbstractJsonSchemaProperty<?>>();
@@ -299,7 +302,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 				properties.add(property);
 				return;
 			}
-			JsonSerializer<?> serializer = metadata.getTypeSerializer(type.getType());
+			ValueSerializer<?> serializer = metadata.getTypeSerializer(type.getType());
 			if (serializer instanceof JsonSchemaPropertyCustomizer) {
 				properties.add(((JsonSchemaPropertyCustomizer) serializer).customize(property, type));
 				return;
@@ -517,6 +520,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @since 2.4
 	 */
 	private static class DefaultingMessageSourceResolvable implements MessageSourceResolvable {
+
 		private static Pattern SPLIT_CAMEL_CASE = Pattern.compile("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])");
 		private final MessageSourceResolvable delegate;
 

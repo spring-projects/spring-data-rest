@@ -15,7 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * <p>

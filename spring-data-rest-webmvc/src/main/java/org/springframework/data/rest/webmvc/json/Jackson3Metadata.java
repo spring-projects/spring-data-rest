@@ -27,8 +27,6 @@ import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jspecify.annotations.Nullable;
-
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.mapping.AnnotationBasedResourceDescription;
@@ -45,8 +43,10 @@ import com.fasterxml.jackson.databind.JsonSerializer;
  *
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Mark Paluch
+ * @since 5.0
  */
-public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
+public class Jackson3Metadata implements Iterable<BeanPropertyDefinition> {
 
 	private final ObjectMapper mapper;
 	private final List<BeanPropertyDefinition> definitions;
@@ -54,12 +54,12 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	private final boolean isValue;
 
 	/**
-	 * Creates a new {@link JacksonMetadata} instance for the given {@link ObjectMapper} and type.
+	 * Creates a new {@link Jackson3Metadata} instance for the given {@link ObjectMapper} and type.
 	 *
 	 * @param mapper must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 */
-	public JacksonMetadata(ObjectMapper mapper, Class<?> type) {
+	public Jackson3Metadata(ObjectMapper mapper, Class<?> type) {
 
 		Assert.notNull(mapper, "ObjectMapper must not be null");
 		Assert.notNull(type, "Type must not be null");
@@ -90,7 +90,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 * @return can be {@literal null} in case there's no Jackson property to be exposed for the given
 	 *         {@link PersistentProperty}.
 	 */
-	public @Nullable BeanPropertyDefinition getDefinitionFor(PersistentProperty<?> property) {
+	public BeanPropertyDefinition getDefinitionFor(PersistentProperty<?> property) {
 
 		Assert.notNull(property, "PersistentProperty must not be null");
 
@@ -157,7 +157,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	public @Nullable JsonSerializer<?> getTypeSerializer(Class<?> type) {
+	public JsonSerializer<?> getTypeSerializer(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null");
 
@@ -191,7 +191,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 * @param definitions must not be {@literal null}.
 	 * @return
 	 */
-	private static @Nullable BeanPropertyDefinition getDefinitionFor(PersistentProperty<?> property,
+	private static BeanPropertyDefinition getDefinitionFor(PersistentProperty<?> property,
 			Iterable<BeanPropertyDefinition> definitions) {
 
 		for (BeanPropertyDefinition definition : definitions) {
