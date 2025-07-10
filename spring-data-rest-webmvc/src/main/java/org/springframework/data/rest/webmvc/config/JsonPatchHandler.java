@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
+
 import java.io.InputStream;
 
 import org.springframework.data.rest.webmvc.IncomingRequest;
@@ -27,9 +30,6 @@ import org.springframework.data.rest.webmvc.json.patch.Patch;
 import org.springframework.data.rest.webmvc.util.InputStreamHttpInputMessage;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Component to apply JSON Patch and JSON Merge Patch payloads to existing domain objects. The implementation uses the

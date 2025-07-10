@@ -43,8 +43,10 @@ import com.fasterxml.jackson.databind.JsonSerializer;
  *
  * @author Oliver Gierke
  * @author Greg Turnquist
+ * @author Mark Paluch
+ * @since 5.0
  */
-public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
+public class Jackson3Metadata implements Iterable<BeanPropertyDefinition> {
 
 	private final ObjectMapper mapper;
 	private final List<BeanPropertyDefinition> definitions;
@@ -52,12 +54,12 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	private final boolean isValue;
 
 	/**
-	 * Creates a new {@link JacksonMetadata} instance for the given {@link ObjectMapper} and type.
+	 * Creates a new {@link Jackson3Metadata} instance for the given {@link ObjectMapper} and type.
 	 *
 	 * @param mapper must not be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 */
-	public JacksonMetadata(ObjectMapper mapper, Class<?> type) {
+	public Jackson3Metadata(ObjectMapper mapper, Class<?> type) {
 
 		Assert.notNull(mapper, "ObjectMapper must not be null");
 		Assert.notNull(type, "Type must not be null");

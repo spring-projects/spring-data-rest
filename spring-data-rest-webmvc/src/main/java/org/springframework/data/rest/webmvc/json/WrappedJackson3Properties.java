@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2025 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 package org.springframework.data.rest.webmvc.json;
+
+import tools.jackson.databind.AnnotationIntrospector;
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.introspect.AnnotatedMember;
+import tools.jackson.databind.introspect.BasicClassIntrospector;
+import tools.jackson.databind.introspect.BeanPropertyDefinition;
+import tools.jackson.databind.introspect.ClassIntrospector;
+import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import tools.jackson.databind.util.NameTransformer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,27 +42,15 @@ import org.springframework.data.util.Optionals;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-import com.fasterxml.jackson.databind.introspect.BasicClassIntrospector;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
-import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.util.NameTransformer;
 
 /**
- * Simple value object to capture a mapping of Jackson mapped field names using
- * {@link com.fasterxml.jackson.annotation.JsonUnwrapped} and {@link PersistentProperty} instances.
+ * Simple value object to capture a mapping of Jackson mapped field names using {@link JsonUnwrapped} and
+ * {@link PersistentProperty} instances.
  *
  * @author Mark Paluch
- * @since 2.6
- * @deprecated since 5.0, in favor of {@link WrappedJackson3Properties}.
+ * @since 5.0
  */
-@Deprecated(since = "5.0", forRemoval = true)
-class WrappedProperties {
+class WrappedJackson3Properties {
 
 	private static final ClassIntrospector INTROSPECTOR = new BasicClassIntrospector();
 	private static final AnnotationIntrospector ANNOTATION_INTROSPECTOR = new JacksonAnnotationIntrospector();
@@ -58,33 +58,33 @@ class WrappedProperties {
 	private final Map<String, List<PersistentProperty<?>>> fieldNameToProperties;
 
 	/**
-	 * Creates a new {@link WrappedProperties} instance for the given {@code fieldNameToProperties}.
+	 * Creates a new {@link WrappedJackson3Properties} instance for the given {@code fieldNameToProperties}.
 	 *
 	 * @param fieldNameToProperties must not be {@literal null}.
 	 */
-	private WrappedProperties(Map<String, List<PersistentProperty<?>>> fieldNameToProperties) {
+	private WrappedJackson3Properties(Map<String, List<PersistentProperty<?>>> fieldNameToProperties) {
 		this.fieldNameToProperties = new HashMap<String, List<PersistentProperty<?>>>(fieldNameToProperties);
 	}
 
 	/**
-	 * Creates {@link WrappedProperties} for the given {@link PersistentEntities} and {@link PersistentEntity}.
+	 * Creates {@link WrappedJackson3Properties} for the given {@link PersistentEntities} and {@link PersistentEntity}.
 	 *
 	 * @param persistentEntities must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
 	 * @return
 	 */
-	public static WrappedProperties fromJacksonProperties(PersistentEntities persistentEntities,
+	public static WrappedJackson3Properties fromJacksonProperties(PersistentEntities persistentEntities,
 			PersistentEntity<?, ?> entity, ObjectMapper mapper) {
 
 		Assert.notNull(entity, "PersistentEntity must not be null");
 
 		JacksonUnwrappedPropertiesResolver resolver = new JacksonUnwrappedPropertiesResolver(persistentEntities, mapper);
-		return new WrappedProperties(resolver.findUnwrappedPropertyPaths(entity.getType()));
+		return new WrappedJackson3Properties(resolver.findUnwrappedPropertyPaths(entity.getType()));
 	}
 
-	public static WrappedProperties none() {
-		return new WrappedProperties(Collections.emptyMap());
+	public static WrappedJackson3Properties none() {
+		return new WrappedJackson3Properties(Collections.emptyMap());
 	}
 
 	/**
@@ -176,7 +176,7 @@ class WrappedProperties {
 			Map<String, List<PersistentProperty<?>>> mapping = new HashMap<String, List<PersistentProperty<?>>>();
 
 			NameTransformer propertyNameTransformer = NameTransformer.chainedTransformer(nameTransformer,
-					ANNOTATION_INTROSPECTOR.findUnwrappingNameTransformer(annotatedMember));
+					ANNOTATION_INTROSPECTOR.findUnwrappingNameTransformer(mapper.serializationConfig(), annotatedMember));
 
 			Map<String, List<PersistentProperty<?>>> nestedProperties = findUnwrappedPropertyPaths(
 					annotatedMember.getRawType(), propertyNameTransformer, true);
@@ -211,9 +211,11 @@ class WrappedProperties {
 
 		private BeanDescription getBeanDescription(Class<?> type) {
 
-			SerializationConfig config = mapper.getSerializationConfig();
+			SerializationConfig config = mapper.serializationConfig();
 
-			return INTROSPECTOR.forSerialization(config, mapper.constructType(type), config);
+			JavaType javaType = mapper.constructType(type);
+			return INTROSPECTOR.introspectForSerialization(javaType,
+					config.classIntrospectorInstance().introspectClassAnnotations(javaType));
 		}
 
 		private static Optional<AnnotatedMember> findAnnotatedMember(BeanPropertyDefinition property) {

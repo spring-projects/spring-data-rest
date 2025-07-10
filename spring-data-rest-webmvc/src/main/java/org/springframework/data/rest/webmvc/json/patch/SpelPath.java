@@ -40,7 +40,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Value object to represent a SpEL-backed patch path.
@@ -54,8 +53,6 @@ class SpelPath {
 	private static final SpelExpressionParser SPEL_EXPRESSION_PARSER = new SpelExpressionParser();
 	private static final String APPEND_CHARACTER = "-";
 	private static final Map<String, UntypedSpelPath> UNTYPED_PATHS = new ConcurrentReferenceHashMap<>(32);
-
-	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	protected final String path;
 

@@ -15,10 +15,10 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
-import org.springframework.util.Assert;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.util.Assert;
 
 /**
  * {@link LateObjectEvaluator} implementation that assumes values represented as JSON objects.
@@ -46,7 +46,8 @@ class JsonLateObjectEvaluator implements LateObjectEvaluator {
 	public Object evaluate(Class<?> type) {
 
 		try {
-			return mapper.readValue(node.traverse(mapper.getFactory().getCodec()), type);
+			// TODO: better context
+			return mapper.readValue(node.traverse(mapper._deserializationContext()), type);
 		} catch (Exception o_O) {
 			throw new PatchException(String.format("Could not read %s into %s", node, type), o_O);
 		}

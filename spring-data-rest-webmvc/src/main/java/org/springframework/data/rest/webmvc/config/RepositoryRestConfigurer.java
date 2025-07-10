@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.MapperBuilder;
+
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -29,12 +32,11 @@ import org.springframework.util.Assert;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * Component to configure and customize the setup of Spring Data REST.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 2.4
  * @soundtrack Florian Reichelt & Max Ender - Abschlusskonzert (https://www.youtube.com/watch?v=5WP0P-ndinY)
  */
@@ -101,7 +103,7 @@ public interface RepositoryRestConfigurer {
 	/**
 	 * Override this method to add validators manually.
 	 *
-	 * @param validatingListener The {@link org.springframework.context.ApplicationListener} responsible for invoking
+	 * @param validatingListener the {@link org.springframework.context.ApplicationListener} responsible for invoking
 	 *          {@link org.springframework.validation.Validator} instances.
 	 */
 	default void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener validatingListener) {}
@@ -109,23 +111,24 @@ public interface RepositoryRestConfigurer {
 	/**
 	 * Configure the {@link ExceptionHandlerExceptionResolver}.
 	 *
-	 * @param exceptionResolver The default exception resolver on which you can add custom argument resolvers.
+	 * @param exceptionResolver the default exception resolver on which you can add custom argument resolvers.
 	 */
 	default void configureExceptionHandlerExceptionResolver(ExceptionHandlerExceptionResolver exceptionResolver) {}
 
 	/**
 	 * Configure the available {@link HttpMessageConverter}s by adding your own.
 	 *
-	 * @param messageConverters The converters to be used by the system.
+	 * @param messageConverters the converters to be used by the system.
 	 */
 	default void configureHttpMessageConverters(List<HttpMessageConverter<?>> messageConverters) {}
 
 	/**
-	 * Configure the Jackson {@link ObjectMapper} directly.
+	 * Configure the Jackson {@link MapperBuilder} directly.
 	 *
-	 * @param objectMapper The {@literal ObjectMapper} to be used by the system.
+	 * @param mapperBuilder the mapper builder to configure.
 	 */
-	default void configureJacksonObjectMapper(ObjectMapper objectMapper) {}
+	default void configureJacksonObjectMapper(
+			MapperBuilder<? extends ObjectMapper, ? extends MapperBuilder<?, ?>> mapperBuilder) {}
 
 	/**
 	 * Customize the {@link AuditableBeanWrapperFactory} to be used.
@@ -148,4 +151,5 @@ public interface RepositoryRestConfigurer {
 	default LinkCollector customizeLinkCollector(LinkCollector collector) {
 		return collector;
 	}
+
 }

@@ -15,6 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,14 +40,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 
 /**
  * Model class to render JSON schema documents.
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Mark Paluch
  */
 @JsonInclude(Include.NON_EMPTY)
 public class JsonSchema {
@@ -328,7 +331,8 @@ public class JsonSchema {
 
 		public String description;
 		public String type;
-		public @JsonSerialize(using = ToStringSerializer.class) JsonSchemaFormat format;
+		public @JsonSerialize(using = ToStringSerializer.class) @com.fasterxml.jackson.databind.annotation.JsonSerialize(
+				using = com.fasterxml.jackson.databind.ser.std.ToStringSerializer.class) JsonSchemaFormat format;
 		public String pattern;
 		public Boolean uniqueItems;
 		public @JsonProperty("$ref") String reference;

@@ -15,9 +15,9 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import org.springframework.data.rest.webmvc.json.patch.BindContext;
+import tools.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.data.rest.webmvc.json.patch.BindContext;
 
 /**
  * Factory to create {@link BindContext} instances.
