@@ -19,13 +19,10 @@ import static java.util.stream.Collectors.*;
 import static org.springframework.data.rest.webmvc.RestMediaTypes.*;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
+import java.io.InputStream;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -42,6 +39,7 @@ import org.springframework.data.rest.core.event.AfterLinkSaveEvent;
 import org.springframework.data.rest.core.event.BeforeLinkDeleteEvent;
 import org.springframework.data.rest.core.event.BeforeLinkSaveEvent;
 import org.springframework.data.rest.webmvc.support.BackendId;
+import org.springframework.data.rest.webmvc.util.InputStreamHttpInputMessage;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -54,6 +52,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -248,6 +247,10 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 			Class<?> propertyType = prop.property.getType();
 
 			if (prop.property.isCollectionLike()) {
+				if (source.getLinks().isEmpty()) {
+					throw new HttpMessageNotReadableException("No links provided",
+							InputStreamHttpInputMessage.of(InputStream.nullInputStream()));
+				}
 
 				Collection<Object> collection = AUGMENTING_METHODS.contains(requestMethod) //
 						? (Collection<Object>) prop.propertyValue //
@@ -261,6 +264,10 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 				prop.accessor.setProperty(prop.property, collection);
 
 			} else if (prop.property.isMap()) {
+				if (source.getLinks().isEmpty()) {
+					throw new HttpMessageNotReadableException("No links provided",
+							InputStreamHttpInputMessage.of(InputStream.nullInputStream()));
+				}
 
 				Map<LinkRelation, Object> map = AUGMENTING_METHODS.contains(requestMethod) //
 						? (Map<LinkRelation, Object>) prop.propertyValue //
@@ -283,8 +290,9 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 				}
 
 				if (!source.getLinks().hasSingleLink()) {
-					throw new IllegalArgumentException(
-							"Must send only 1 link to update a property reference that isn't a List or a Map.");
+					throw new HttpMessageNotReadableException(
+							"Must send only 1 link to update a property reference that isn't a List or a Map.",
+							InputStreamHttpInputMessage.of(InputStream.nullInputStream()));
 				}
 
 				prop.accessor.setProperty(prop.property,

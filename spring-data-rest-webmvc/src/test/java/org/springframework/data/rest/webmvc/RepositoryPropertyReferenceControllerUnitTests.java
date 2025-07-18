@@ -15,13 +15,12 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +45,7 @@ import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 /**
  * Unit tests for {@link RepositoryPropertyReferenceController}.
@@ -90,9 +90,103 @@ class RepositoryPropertyReferenceControllerUnitTests {
 		verify(invoker).invokeFindById("some-id");
 	}
 
-	@RestResource
+	@Test // DATAREST-2495
+	void rejectsEmptyLinksForAssociationUpdate() throws Exception {
+
+		KeyValuePersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(Sample.class);
+
+		ResourceMappings mappings = new PersistentEntitiesResourceMappings(
+				new PersistentEntities(Collections.singleton(mappingContext)));
+		ResourceMetadata metadata = spy(mappings.getMetadataFor(Sample.class));
+		when(metadata.getSupportedHttpMethods()).thenReturn(AllSupportedHttpMethods.INSTANCE);
+
+		RepositoryPropertyReferenceController controller = new RepositoryPropertyReferenceController(repositories,
+				invokerFactory);
+		controller.setApplicationEventPublisher(publisher);
+
+		doReturn(Optional.of(new Sample())).when(invoker).invokeFindById(4711);
+
+		RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
+
+		// Do we need integration test to verify HTTP response code?
+		Throwable thrown = catchThrowable(
+				() -> controller.createPropertyReference(information, HttpMethod.POST, null, 4711, "references"));
+		assertThat(thrown).isInstanceOf(HttpMessageNotReadableException.class);
+
+		verify(invoker, never()).invokeFindById("some-id");
+	}
+
+	@Test // GH-2495
+	void rejectsMultipleLinksForSingleValuedAssociation() throws Exception {
+
+		KeyValuePersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(SingleSample.class);
+
+		ResourceMappings mappings = new PersistentEntitiesResourceMappings(
+				new PersistentEntities(Collections.singleton(mappingContext)));
+		ResourceMetadata metadata = spy(mappings.getMetadataFor(SingleSample.class));
+		when(metadata.getSupportedHttpMethods()).thenReturn(AllSupportedHttpMethods.INSTANCE);
+
+		RepositoryPropertyReferenceController controller = new RepositoryPropertyReferenceController(repositories,
+				invokerFactory);
+		controller.setApplicationEventPublisher(publisher);
+
+		doReturn(Optional.of(new SingleSample())).when(invoker).invokeFindById(4711);
+
+		RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
+		CollectionModel<Object> request = CollectionModel
+				.empty(List.of(Link.of("/reference/some-id"), Link.of("/reference/some-another-id")));
+
+		// Do we need integration test to verify HTTP response code?
+		Throwable thrown = catchThrowable(
+				() -> controller.createPropertyReference(information, HttpMethod.POST, request, 4711, "reference"));
+		assertThat(thrown).isInstanceOf(HttpMessageNotReadableException.class);
+
+		verify(invokerFactory, never()).getInvokerFor(Reference.class);
+		verify(invoker, never()).invokeFindById("some-id");
+		verify(invoker, never()).invokeFindById("some-another-id");
+	}
+
+	@Test // GH-2495
+	void rejectsMapLinksForSingleValuedAssociation() throws Exception {
+
+		KeyValuePersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(MapSample.class);
+
+		ResourceMappings mappings = new PersistentEntitiesResourceMappings(
+				new PersistentEntities(Collections.singleton(mappingContext)));
+		ResourceMetadata metadata = spy(mappings.getMetadataFor(MapSample.class));
+		when(metadata.getSupportedHttpMethods()).thenReturn(AllSupportedHttpMethods.INSTANCE);
+
+		RepositoryPropertyReferenceController controller = new RepositoryPropertyReferenceController(repositories,
+				invokerFactory);
+		controller.setApplicationEventPublisher(publisher);
+
+		doReturn(Optional.of(new MapSample())).when(invoker).invokeFindById(4711);
+
+		RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
+
+		// Do we need integration test to verify HTTP response code?
+		Throwable thrown = catchThrowable(
+				() -> controller.createPropertyReference(information, HttpMethod.POST, null, 4711, "reference"));
+		assertThat(thrown).isInstanceOf(HttpMessageNotReadableException.class);
+
+		verify(invokerFactory, never()).getInvokerFor(Reference.class);
+		verify(invoker, never()).invokeFindById("some-id");
+	}
+
+
+    @RestResource
 	static class Sample {
 		@org.springframework.data.annotation.Reference List<Reference> references = new ArrayList<Reference>();
+	}
+
+	@RestResource
+	static class SingleSample {
+		@org.springframework.data.annotation.Reference Reference reference;
+	}
+
+	@RestResource
+	static class MapSample {
+		@org.springframework.data.annotation.Reference Map<Reference, Reference> reference;
 	}
 
 	@RestResource
