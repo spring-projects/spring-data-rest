@@ -104,7 +104,7 @@ public class RepositoryResourceMappings extends PersistentEntitiesResourceMappin
 
 		RepositoryInformation repositoryInformation = repositories.getRequiredRepositoryInformation(domainType);
 		List<MethodResourceMapping> mappings = new ArrayList<MethodResourceMapping>();
-		ResourceMetadata resourceMapping = getMetadataFor(domainType);
+		ResourceMetadata resourceMapping = getRequiredMetadataFor(domainType);
 
 		if (resourceMapping.isExported()) {
 			for (Method queryMethod : repositoryInformation.getQueryMethods()) {

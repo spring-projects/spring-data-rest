@@ -18,6 +18,8 @@ package org.springframework.data.rest.webmvc.config;
 import static org.springframework.util.ClassUtils.*;
 import static org.springframework.util.StringUtils.*;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
@@ -71,8 +73,9 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 	}
 
 	@Override
-	public ResourceMetadata resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+	public @Nullable ResourceMetadata resolveArgument(MethodParameter parameter,
+			@Nullable ModelAndViewContainer mavContainer, NativeWebRequest webRequest,
+			@Nullable WebDataBinderFactory binderFactory) throws Exception {
 
 		String lookupPath = baseUri.getRepositoryLookupPath(webRequest);
 		String repositoryKey = UriUtils.findMappingVariable("repository", parameter.getMethod(), lookupPath);
@@ -83,7 +86,7 @@ public class ResourceMetadataHandlerMethodArgumentResolver implements HandlerMet
 
 		for (Class<?> domainType : repositories) {
 			ResourceMetadata mapping = mappings.getMetadataFor(domainType);
-			if (mapping.getPath().matches(repositoryKey) && mapping.isExported()) {
+			if (mapping != null && mapping.getPath().matches(repositoryKey) && mapping.isExported()) {
 				return mapping;
 			}
 		}

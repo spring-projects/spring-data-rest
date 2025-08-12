@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.core.event;
 
+import java.io.Serial;
+
 /**
  * Base class for {@link RepositoryEvent}s that deal with saving/updating or deleting a linked object.
  *
@@ -23,7 +25,7 @@ package org.springframework.data.rest.core.event;
  */
 public abstract class LinkedEntityEvent extends RepositoryEvent {
 
-	private static final long serialVersionUID = -9071648572128698903L;
+	private static final @Serial long serialVersionUID = -9071648572128698903L;
 	private final Object linked;
 
 	/**

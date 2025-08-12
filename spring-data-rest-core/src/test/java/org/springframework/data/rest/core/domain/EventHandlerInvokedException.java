@@ -15,10 +15,12 @@
  */
 package org.springframework.data.rest.core.domain;
 
+import java.io.Serial;
+
 /**
  * @author Oliver Gierke
  */
 public class EventHandlerInvokedException extends RuntimeException {
 
-	private static final long serialVersionUID = -7879286986960261090L;
+	private static final @Serial long serialVersionUID = -7879286986960261090L;
 }

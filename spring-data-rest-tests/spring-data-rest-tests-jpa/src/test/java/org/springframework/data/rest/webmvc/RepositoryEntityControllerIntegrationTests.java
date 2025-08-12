@@ -263,11 +263,11 @@ class RepositoryEntityControllerIntegrationTests extends AbstractControllerInteg
 		assertThat(repository.findById(address.id)).isNotNull();
 
 		RootResourceInformation resourceInformation = getResourceInformation(Address.class);
-		RepositoryInvoker invoker = spy(resourceInformation.getInvoker());
+		RepositoryInvoker invoker = spy(resourceInformation.getRequiredInvoker());
 		doReturn(Optional.of(address)).when(invoker).invokeFindById("foo");
 
 		RootResourceInformation informationSpy = Mockito.spy(resourceInformation);
-		doReturn(invoker).when(informationSpy).getInvoker();
+		doReturn(invoker).when(informationSpy).getRequiredInvoker();
 
 		controller.deleteItemResource(informationSpy, "foo", ETag.from("0"), assembler, MediaType.ALL_VALUE);
 

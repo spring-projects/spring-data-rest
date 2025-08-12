@@ -24,9 +24,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -168,7 +169,13 @@ class MappedProperties {
 
 		Assert.notNull(property, "PersistentProperty must not be null");
 
-		return propertyToFieldName.get(property).getName();
+		BeanPropertyDefinition definition = propertyToFieldName.get(property);
+
+		if (definition == null) {
+			throw new IllegalArgumentException("No mapped name found for property '%s'".formatted(property.getName()));
+		}
+
+		return definition.getName();
 	}
 
 	/**

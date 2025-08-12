@@ -21,6 +21,8 @@ import static org.springframework.util.StringUtils.*;
 
 import java.lang.reflect.Method;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -66,15 +68,23 @@ public abstract class ResourceMappingUtils {
 		return method.getName();
 	}
 
-	public static String formatRel(RepositoryRestConfiguration config, RepositoryInformation repoInfo,
-			PersistentProperty<?> persistentProperty) {
+	public static @Nullable String formatRel(RepositoryRestConfiguration config, RepositoryInformation repoInfo,
+			@Nullable PersistentProperty<?> persistentProperty) {
 
 		if (persistentProperty == null) {
 			return null;
 		}
 
 		ResourceMapping repoMapping = getResourceMapping(config, repoInfo);
+		if (repoMapping == null) {
+			return null;
+		}
+
 		ResourceMapping entityMapping = getResourceMapping(config, persistentProperty.getOwner());
+		if (entityMapping == null) {
+			return null;
+		}
+
 		ResourceMapping propertyMapping = entityMapping.getResourceMappingFor(persistentProperty.getName());
 
 		return String.format("%s.%s.%s", repoMapping.getRel(), entityMapping.getRel(),
@@ -117,7 +127,8 @@ public abstract class ResourceMappingUtils {
 		return anno == null || anno.exported();
 	}
 
-	public static ResourceMapping getResourceMapping(RepositoryRestConfiguration config, RepositoryInformation repoInfo) {
+	public static @Nullable ResourceMapping getResourceMapping(@Nullable RepositoryRestConfiguration config,
+			@Nullable RepositoryInformation repoInfo) {
 		if (null == repoInfo) {
 			return null;
 		}
@@ -126,8 +137,8 @@ public abstract class ResourceMappingUtils {
 		return merge(repoType, mapping);
 	}
 
-	public static ResourceMapping getResourceMapping(RepositoryRestConfiguration config,
-			PersistentEntity<?, ?> persistentEntity) {
+	public static @Nullable ResourceMapping getResourceMapping(@Nullable RepositoryRestConfiguration config,
+			@Nullable PersistentEntity<?, ?> persistentEntity) {
 		if (null == persistentEntity) {
 			return null;
 		}
@@ -136,7 +147,7 @@ public abstract class ResourceMappingUtils {
 		return merge(domainType, mapping);
 	}
 
-	public static ResourceMapping merge(Method method, ResourceMapping mapping) {
+	public static ResourceMapping merge(Method method, @Nullable ResourceMapping mapping) {
 		ResourceMapping defaultMapping = new ResourceMapping(findRel(method), findPath(method), findExported(method));
 		if (null != mapping) {
 			return new ResourceMapping(null != mapping.getRel() ? mapping.getRel() : defaultMapping.getRel(),
@@ -146,13 +157,13 @@ public abstract class ResourceMappingUtils {
 		return defaultMapping;
 	}
 
-	public static ResourceMapping merge(Class<?> type, ResourceMapping mapping) {
+	public static ResourceMapping merge(Class<?> type, @Nullable ResourceMapping mapping) {
 		ResourceMapping defaultMapping = new ResourceMapping(findRel(type), findPath(type), findExported(type));
 		if (null != mapping) {
 			return new ResourceMapping(null != mapping.getRel() ? mapping.getRel() : defaultMapping.getRel(),
 					null != mapping.getPath() ? mapping.getPath() : defaultMapping.getPath(),
 					mapping.isExported() != defaultMapping.isExported() ? mapping.isExported() : defaultMapping.isExported())
-							.addResourceMappings(mapping.getResourceMappings());
+					.addResourceMappings(mapping.getResourceMappings());
 		}
 		return defaultMapping;
 	}

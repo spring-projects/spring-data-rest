@@ -180,6 +180,7 @@ public class DefaultLinkCollector implements LinkCollector {
 		}
 	}
 
+	@SuppressWarnings("NullAway")
 	private static class NestedLinkCollectingAssociationHandler implements SimpleAssociationHandler {
 
 		private final SelfLinkProvider selfLinks;
@@ -217,7 +218,7 @@ public class DefaultLinkCollector implements LinkCollector {
 				return;
 			}
 
-			ResourceMetadata metadata = associations.getMappings().getMetadataFor(property.getOwner().getType());
+			ResourceMetadata metadata = associations.getMappings().getRequiredMetadataFor(property.getOwner().getType());
 			ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 			for (Object element : asCollection(value)) {

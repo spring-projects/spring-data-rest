@@ -18,8 +18,10 @@ package org.springframework.data.rest.webmvc.config;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.RepresentationModel;
@@ -28,7 +30,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.lang.Nullable;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
@@ -52,7 +53,8 @@ class HalFormsAdaptingResponseBodyAdvice<T extends RepresentationModel<T>>
 	}
 
 	@Override
-	public RepresentationModel<T> beforeBodyWrite(@Nullable RepresentationModel<T> body, MethodParameter returnType,
+	public @Nullable RepresentationModel<T> beforeBodyWrite(@Nullable RepresentationModel<T> body,
+			MethodParameter returnType,
 			MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType,
 			ServerHttpRequest request, ServerHttpResponse response) {
 

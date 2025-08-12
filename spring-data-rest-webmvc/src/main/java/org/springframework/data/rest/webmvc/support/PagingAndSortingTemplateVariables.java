@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.server.mvc.UriComponentsContributor;
@@ -35,7 +37,7 @@ public interface PagingAndSortingTemplateVariables extends UriComponentsContribu
 	 * @param components must not be {@literal null}.
 	 * @return
 	 */
-	TemplateVariables getPaginationTemplateVariables(MethodParameter parameter, UriComponents components);
+	TemplateVariables getPaginationTemplateVariables(@Nullable MethodParameter parameter, UriComponents components);
 
 	/**
 	 * Returns the {@link TemplateVariables} for sorting.
@@ -44,5 +46,5 @@ public interface PagingAndSortingTemplateVariables extends UriComponentsContribu
 	 * @param components must not be {@literal null}.
 	 * @return
 	 */
-	TemplateVariables getSortTemplateVariables(MethodParameter parameter, UriComponents components);
+	TemplateVariables getSortTemplateVariables(@Nullable MethodParameter parameter, UriComponents components);
 }

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import java.io.Serial;
+
 import org.springframework.util.Assert;
 
 /**
@@ -25,7 +27,7 @@ import org.springframework.util.Assert;
  */
 public class ETagDoesntMatchException extends RuntimeException {
 
-	private static final long serialVersionUID = 415835592506644699L;
+	private static final @Serial long serialVersionUID = 415835592506644699L;
 
 	private final ETag expected;
 	private final Object bean;

@@ -20,12 +20,13 @@ import static org.springframework.util.StringUtils.*;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -38,15 +39,15 @@ public final class ETag {
 
 	public static final ETag NO_ETAG = new ETag(null);
 
-	private final String value;
+	private final @Nullable String value;
 
 	/**
 	 * Creates a new {@link ETag} from the given value.
 	 *
 	 * @param value can be {@literal null}.
 	 */
-	private ETag(String value) {
-		this.value = trimTrailingCharacter(trimLeadingCharacter(value, '"'), '"');
+	private ETag(@Nullable String value) {
+		this.value = value != null ? trimTrailingCharacter(trimLeadingCharacter(value, '"'), '"') : value;
 	}
 
 	/**
@@ -97,7 +98,7 @@ public final class ETag {
 	 * @throws ETagDoesntMatchException in case the calculated {@link ETag} for the given bean does not match the current
 	 *           one.
 	 */
-	public void verify(PersistentEntity<?, ?> entity, Object target) {
+	public void verify(PersistentEntity<?, ?> entity, @Nullable Object target) {
 
 		if (this == NO_ETAG || target == null) {
 			return;
@@ -116,7 +117,7 @@ public final class ETag {
 	 * @param target can be {@literal null}.
 	 * @return
 	 */
-	public boolean matches(PersistentEntity<?, ?> entity, Object target) {
+	public boolean matches(PersistentEntity<?, ?> entity, @Nullable Object target) {
 
 		if (this == NO_ETAG || target == null) {
 			return false;
@@ -146,7 +147,7 @@ public final class ETag {
 	}
 
 	@Override
-	public String toString() {
+	public @Nullable String toString() {
 		return value == null ? null : "\"".concat(value).concat("\"");
 	}
 

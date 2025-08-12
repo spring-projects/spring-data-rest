@@ -18,6 +18,8 @@ package org.springframework.data.rest.webmvc;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.repository.support.RepositoryInvoker;
@@ -41,11 +43,11 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
  */
 public class RootResourceInformation {
 
-	private final ResourceMetadata resourceMetadata;
-	private final RepositoryInvoker invoker;
-	private final PersistentEntity<?, ?> persistentEntity;
+	private final @Nullable ResourceMetadata resourceMetadata;
+	private final @Nullable RepositoryInvoker invoker;
+	private final @Nullable PersistentEntity<?, ?> persistentEntity;
 
-	public RootResourceInformation(ResourceMetadata metadata, PersistentEntity<?, ?> entity,
+	public RootResourceInformation(@Nullable ResourceMetadata metadata, PersistentEntity<?, ?> entity,
 			RepositoryInvoker invoker) {
 
 		this.resourceMetadata = metadata;
@@ -62,27 +64,40 @@ public class RootResourceInformation {
 	}
 
 	public Class<?> getDomainType() {
-		return resourceMetadata.getDomainType();
+		return getResourceMetadata().getDomainType();
 	}
 
 	public ResourceMetadata getResourceMetadata() {
+
+		Assert.state(resourceMetadata != null, "ResourceMetadata is null");
+
 		return resourceMetadata;
 	}
 
 	public SearchResourceMappings getSearchMappings() {
-		return resourceMetadata.getSearchResourceMappings();
+		return getResourceMetadata().getSearchResourceMappings();
 	}
 
-	public RepositoryInvoker getInvoker() {
+	public @Nullable RepositoryInvoker getInvoker() {
+		return invoker;
+	}
+
+	public RepositoryInvoker getRequiredInvoker() {
+
+		Assert.state(invoker != null, "RepositoryInvoker is null");
+
 		return invoker;
 	}
 
 	public PersistentEntity<?, ?> getPersistentEntity() {
+
+		Assert.state(persistentEntity != null, "PersistentEntity is null");
+
 		return persistentEntity;
 	}
 
 	public SupportedHttpMethods getSupportedMethods() {
-		return resourceMetadata.getSupportedHttpMethods();
+		return getResourceMetadata().getSupportedHttpMethods();
 	}
 
 	/**
@@ -100,11 +115,11 @@ public class RootResourceInformation {
 		Assert.notNull(httpMethod, "HTTP method must not be null");
 		Assert.notNull(resourceType, "EntityRepresentationModel type must not be null");
 
-		if (!resourceMetadata.isExported()) {
+		if (!getResourceMetadata().isExported()) {
 			throw new ResourceNotFoundException();
 		}
 
-		SupportedHttpMethods httpMethods = resourceMetadata.getSupportedHttpMethods();
+		SupportedHttpMethods httpMethods = getResourceMetadata().getSupportedHttpMethods();
 		HttpMethods supportedMethods = httpMethods.getMethodsFor(resourceType);
 
 		if (!supportedMethods.contains(httpMethod)) {
@@ -127,11 +142,11 @@ public class RootResourceInformation {
 		Assert.notNull(httpMethod, "HTTP method must not be null");
 		Assert.notNull(property, "EntityRepresentationModel type must not be null");
 
-		if (!resourceMetadata.isExported()) {
+		if (!getResourceMetadata().isExported()) {
 			throw new ResourceNotFoundException();
 		}
 
-		SupportedHttpMethods httpMethods = resourceMetadata.getSupportedHttpMethods();
+		SupportedHttpMethods httpMethods = getResourceMetadata().getSupportedHttpMethods();
 		HttpMethods supportedMethods = httpMethods.getMethodsFor(property);
 
 		if (!supportedMethods.contains(httpMethod)) {
@@ -141,7 +156,7 @@ public class RootResourceInformation {
 
 	public void verifyPutForCreation() throws HttpRequestMethodNotSupportedException {
 
-		SupportedHttpMethods supportedHttpMethods = resourceMetadata.getSupportedHttpMethods();
+		SupportedHttpMethods supportedHttpMethods = getResourceMetadata().getSupportedHttpMethods();
 
 		if (!supportedHttpMethods.allowsPutForCreation()) {
 			reject(HttpMethod.PUT, supportedHttpMethods.getMethodsFor(ResourceType.ITEM));

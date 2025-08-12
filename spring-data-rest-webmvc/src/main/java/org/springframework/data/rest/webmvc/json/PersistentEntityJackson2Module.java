@@ -16,6 +16,7 @@
 package org.springframework.data.rest.webmvc.json;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentEntity;
@@ -98,9 +100,10 @@ import com.fasterxml.jackson.databind.util.NameTransformer;
  * @author Greg Turnquist
  * @author Alex Leigh
  */
+@SuppressWarnings("NullAway")
 public class PersistentEntityJackson2Module extends SimpleModule {
 
-	private static final long serialVersionUID = -7289265674870906323L;
+	private static final @Serial long serialVersionUID = -7289265674870906323L;
 	private static final Logger LOG = LoggerFactory.getLogger(PersistentEntityJackson2Module.class);
 	private static final TypeDescriptor URI_DESCRIPTOR = TypeDescriptor.valueOf(URI.class);
 
@@ -328,7 +331,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 */
 	static class NestedEntitySerializer extends StdSerializer<Object> {
 
-		private static final long serialVersionUID = -2327469118972125954L;
+		private static final @Serial long serialVersionUID = -2327469118972125954L;
 
 		private final PersistentEntities entities;
 		private final EmbeddedResourcesAssembler assembler;
@@ -574,7 +577,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	 */
 	public static class UriStringDeserializer extends StdDeserializer<Object> {
 
-		private static final long serialVersionUID = -2175900204153350125L;
+		private static final @Serial long serialVersionUID = -2175900204153350125L;
 		private static final String UNEXPECTED_VALUE = "Expected URI cause property %s points to the managed domain type";
 
 		private final Class<?> type;
@@ -810,7 +813,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 	private static class RepositoryInvokingDeserializer extends StdScalarDeserializer<Object> {
 
-		private static final long serialVersionUID = -3033458643050330913L;
+		private static final @Serial long serialVersionUID = -3033458643050330913L;
 		private final RepositoryInvoker invoker;
 
 		private RepositoryInvokingDeserializer(RepositoryInvokerFactory factory, PersistentProperty<?> property) {
@@ -830,7 +833,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 
 	public static class LookupObjectSerializer extends ToStringSerializer {
 
-		private static final long serialVersionUID = -3033458643050330913L;
+		private static final @Serial long serialVersionUID = -3033458643050330913L;
 
 		private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
 

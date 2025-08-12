@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
 import org.springframework.util.Assert;
 
@@ -57,7 +59,7 @@ class CopyOperation extends PatchOperation {
 		this.from = from;
 	}
 
-	public static CopyOperationBuilder from(String from) {
+	public static CopyOperationBuilder from(@Nullable String from) {
 		return new CopyOperationBuilder(from);
 	}
 
@@ -65,7 +67,7 @@ class CopyOperation extends PatchOperation {
 
 		private final String from;
 
-		public CopyOperationBuilder(String from) {
+		public CopyOperationBuilder(@Nullable String from) {
 
 			Assert.hasText(from, "From must not be null");
 

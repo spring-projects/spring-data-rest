@@ -18,6 +18,8 @@ package org.springframework.data.rest.webmvc.json.patch;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -42,7 +44,7 @@ class TestOperation extends PatchOperation {
 	 * @param path The path to test. (e.g., '/foo/bar/4')
 	 * @param value The value to test the path against.
 	 */
-	private TestOperation(UntypedSpelPath path, Object value) {
+	private TestOperation(UntypedSpelPath path, @Nullable Object value) {
 		super("test", path, value);
 	}
 
@@ -61,7 +63,7 @@ class TestOperation extends PatchOperation {
 			this.path = path;
 		}
 
-		public TestOperation hasValue(Object value) {
+		public TestOperation hasValue(@Nullable Object value) {
 			return new TestOperation(SpelPath.untyped(path), value);
 		}
 	}
@@ -77,7 +79,7 @@ class TestOperation extends PatchOperation {
 		}
 	}
 
-	private static Object normalizeIfNumber(Object expected) {
+	private static @Nullable Object normalizeIfNumber(@Nullable Object expected) {
 
 		if (expected instanceof Double || expected instanceof Float) {
 			expected = BigDecimal.valueOf(((Number) expected).doubleValue());

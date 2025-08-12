@@ -28,6 +28,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.core.CollectionFactory;
@@ -44,7 +46,6 @@ import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.util.InputStreamHttpInputMessage;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -67,6 +68,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Lars Vierbergen
  * @since 2.2
  */
+@SuppressWarnings("NullAway")
 public class DomainObjectReader {
 
 	private final PersistentEntities entities;

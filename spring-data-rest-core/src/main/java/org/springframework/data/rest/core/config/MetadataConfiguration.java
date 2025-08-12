@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.util.Assert;
 
 /**
@@ -29,8 +31,8 @@ import org.springframework.util.Assert;
  */
 public class MetadataConfiguration {
 
-	private final Map<Class<?>, JsonSchemaFormat> schemaFormats = new HashMap<Class<?>, JsonSchemaFormat>();
-	private final Map<Class<?>, Pattern> patterns = new HashMap<Class<?>, Pattern>();
+	private final Map<Class<?>, JsonSchemaFormat> schemaFormats = new HashMap<>();
+	private final Map<Class<?>, Pattern> patterns = new HashMap<>();
 	private boolean omitUnresolvableDescriptionKeys = true;
 	private boolean alpsEnabled = true;
 
@@ -88,7 +90,7 @@ public class MetadataConfiguration {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	public JsonSchemaFormat getSchemaFormatFor(Class<?> type) {
+	public @Nullable JsonSchemaFormat getSchemaFormatFor(Class<?> type) {
 		return schemaFormats.get(type);
 	}
 
@@ -112,7 +114,7 @@ public class MetadataConfiguration {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	public Pattern getPatternFor(Class<?> type) {
+	public @Nullable Pattern getPatternFor(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null");
 

@@ -22,6 +22,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
@@ -89,7 +91,8 @@ public class JacksonMappingAwareSortTranslator {
 		Assert.notNull(parameter, "MethodParameter must not be null");
 		Assert.notNull(webRequest, "NativeWebRequest must not be null");
 
-		Class<?> domainClass = domainClassResolver.resolve(parameter.getMethod(), webRequest);
+		Class<?> domainClass = parameter.getMethod() == null ? null
+				: domainClassResolver.resolve(parameter.getMethod(), webRequest);
 
 		if (domainClass == null) {
 			return input;
@@ -163,7 +166,7 @@ public class JacksonMappingAwareSortTranslator {
 			return filteredOrders.isEmpty() ? Sort.unsorted() : Sort.by(filteredOrders);
 		}
 
-		private String getMappedPropertyPath(PersistentEntity<?, ?> rootEntity, List<String> iteratorSource) {
+		private @Nullable String getMappedPropertyPath(PersistentEntity<?, ?> rootEntity, List<String> iteratorSource) {
 
 			List<String> persistentPropertyPath = mapPropertyPath(rootEntity, iteratorSource);
 

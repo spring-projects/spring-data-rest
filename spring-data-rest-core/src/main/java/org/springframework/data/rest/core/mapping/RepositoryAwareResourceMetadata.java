@@ -17,6 +17,8 @@ package org.springframework.data.rest.core.mapping;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.PersistentEntity;
@@ -38,7 +40,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 	private final RepositoryMetadata repositoryMetadata;
 	private final SupportedHttpMethods crudMethodsSupportedHttpMethods;
 
-	private MappingResourceMetadata mappingMetadata;
+	private @Nullable MappingResourceMetadata mappingMetadata;
 
 	/**
 	 * Creates a new {@link RepositoryAwareResourceMetadata} for the given {@link CollectionResourceMapping},
@@ -83,7 +85,7 @@ class RepositoryAwareResourceMetadata implements ResourceMetadata {
 	}
 
 	@Override
-	public PropertyAwareResourceMapping getProperty(String mappedPath) {
+	public @Nullable PropertyAwareResourceMapping getProperty(String mappedPath) {
 
 		if (this.mappingMetadata == null) {
 			this.mappingMetadata = provider.getMappingMetadataFor(getDomainType());

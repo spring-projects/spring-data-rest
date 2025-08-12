@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -50,7 +52,7 @@ public class RepositoryRestConfiguration {
 
 	static final URI NO_URI = URI.create("");
 
-	private URI baseUri = NO_URI;
+	private final URI baseUri = NO_URI;
 	private URI basePath = NO_URI;
 	private int defaultPageSize = 20;
 	private int maxPageSize = 1000;
@@ -59,12 +61,12 @@ public class RepositoryRestConfiguration {
 	private String sortParamName = "sort";
 	private MediaType defaultMediaType = MediaTypes.VND_HAL_JSON;
 	private boolean useHalAsDefaultJsonMediaType = true;
-	private Boolean returnBodyOnCreate = null;
-	private Boolean returnBodyOnUpdate = null;
-	private Boolean returnBodyOnDelete = null;
-	private List<Class<?>> exposeIdsFor = new ArrayList<Class<?>>();
-	private ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
-	private ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
+	private @Nullable Boolean returnBodyOnCreate = null;
+	private @Nullable Boolean returnBodyOnUpdate = null;
+	private @Nullable Boolean returnBodyOnDelete = null;
+	private final List<Class<?>> exposeIdsFor = new ArrayList<Class<?>>();
+	private final ResourceMappingConfiguration domainMappings = new ResourceMappingConfiguration();
+	private final ResourceMappingConfiguration repoMappings = new ResourceMappingConfiguration();
 	private RepositoryDetectionStrategy repositoryDetectionStrategy = RepositoryDetectionStrategies.DEFAULT;
 	private boolean exposeRepositoryMethodsByDefault = true;
 
@@ -315,7 +317,7 @@ public class RepositoryRestConfiguration {
 	 * @deprecated use {@link #returnBodyOnCreate(String)}
 	 */
 	@Deprecated
-	public Boolean isReturnBodyOnCreate() {
+	public @Nullable Boolean isReturnBodyOnCreate() {
 		return returnBodyOnCreate;
 	}
 
@@ -350,7 +352,7 @@ public class RepositoryRestConfiguration {
 	 * @deprecated use {@link #returnBodyOnUpdate(String)}
 	 */
 	@Deprecated
-	public Boolean isReturnBodyOnUpdate() {
+	public @Nullable Boolean isReturnBodyOnUpdate() {
 		return returnBodyOnUpdate;
 	}
 
@@ -420,7 +422,7 @@ public class RepositoryRestConfiguration {
 	 * @deprecated for removal in 3.5
 	 */
 	@Deprecated
-	public ResourceMapping getResourceMappingForDomainType(Class<?> domainType) {
+	public @Nullable ResourceMapping getResourceMappingForDomainType(Class<?> domainType) {
 		return domainMappings.getResourceMappingFor(domainType);
 	}
 
@@ -467,7 +469,7 @@ public class RepositoryRestConfiguration {
 	 * @deprecated for removal in 3.5
 	 */
 	@Deprecated
-	public ResourceMapping getResourceMappingForRepository(Class<?> repositoryInterface) {
+	public @Nullable ResourceMapping getResourceMappingForRepository(Class<?> repositoryInterface) {
 		return repoMappings.getResourceMappingFor(repositoryInterface);
 	}
 
@@ -487,7 +489,7 @@ public class RepositoryRestConfiguration {
 	 * @deprecated for removal in 3.5
 	 */
 	@Deprecated
-	public ResourceMapping findRepositoryMappingForPath(String path) {
+	public @Nullable ResourceMapping findRepositoryMappingForPath(String path) {
 		Class<?> type = repoMappings.findTypeForPath(path);
 		if (null == type) {
 			return null;

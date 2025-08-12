@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -73,7 +75,14 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 
 	@Override
 	public ResourceMapping getMappingFor(PersistentProperty<?> property) {
-		return propertyMappings.getMappingFor(property);
+
+		ResourceMapping mapping = propertyMappings.getMappingFor(property);
+
+		if (mapping == null) {
+			throw new IllegalStateException("No ResourceMapping found for property: '%s'".formatted(property.getName()));
+		}
+
+		return mapping;
 	}
 
 	@Override
@@ -87,7 +96,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 	}
 
 	@Override
-	public PropertyAwareResourceMapping getProperty(String mappedPath) {
+	public @Nullable PropertyAwareResourceMapping getProperty(String mappedPath) {
 		return propertyMappings.getMappingFor(mappedPath);
 	}
 
@@ -140,7 +149,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		 * @param mappedPath must not be {@literal null} or empty.
 		 * @return the {@link PropertyAwareResourceMapping} if found, {@literal null} otherwise.
 		 */
-		public PropertyAwareResourceMapping getMappingFor(String mappedPath) {
+		public @Nullable PropertyAwareResourceMapping getMappingFor(String mappedPath) {
 
 			Assert.hasText(mappedPath, "Mapped path must not be null or empty");
 
@@ -159,7 +168,7 @@ class MappingResourceMetadata extends TypeBasedCollectionResourceMapping impleme
 		 * @param property must not be {@literal null}.
 		 * @return
 		 */
-		public ResourceMapping getMappingFor(PersistentProperty<?> property) {
+		public @Nullable ResourceMapping getMappingFor(PersistentProperty<?> property) {
 			return propertyMappings.get(property);
 		}
 	}

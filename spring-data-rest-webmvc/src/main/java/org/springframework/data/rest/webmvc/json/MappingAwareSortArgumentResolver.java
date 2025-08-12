@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortArgumentResolver;
@@ -56,8 +58,8 @@ public class MappingAwareSortArgumentResolver implements HandlerMethodArgumentRe
 	}
 
 	@Override
-	public Sort resolveArgument(MethodParameter methodParameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+	public Sort resolveArgument(MethodParameter methodParameter, @Nullable ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) {
 
 		Sort sort = delegate.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory);
 

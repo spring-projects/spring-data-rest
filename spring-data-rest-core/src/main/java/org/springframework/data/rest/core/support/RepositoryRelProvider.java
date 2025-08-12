@@ -19,6 +19,7 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
+import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.util.Assert;
@@ -46,16 +47,26 @@ public class RepositoryRelProvider implements LinkRelationProvider {
 
 	@Override
 	public LinkRelation getCollectionResourceRelFor(Class<?> type) {
-		return mappings.getObject().getMetadataFor(type).getRel();
+		return getMetadataFor(type).getRel();
 	}
 
 	@Override
 	public LinkRelation getItemResourceRelFor(Class<?> type) {
-		return mappings.getObject().getMetadataFor(type).getItemResourceRel();
+		return getMetadataFor(type).getItemResourceRel();
 	}
 
 	@Override
 	public boolean supports(LookupContext context) {
 		return mappings.getObject().hasMappingFor(context.getType());
+	}
+
+	private ResourceMetadata getMetadataFor(Class<?> type) {
+
+		ResourceMetadata metadata = mappings.getObject().getMetadataFor(type);
+
+		if (metadata == null) {
+			throw new IllegalStateException("No ResourceMetadata found for type: " + type.getName());
+		}
+		return metadata;
 	}
 }

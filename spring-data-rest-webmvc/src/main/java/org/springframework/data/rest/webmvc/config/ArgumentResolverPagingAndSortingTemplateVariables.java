@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -39,6 +41,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Oliver Gierke
  * @since 2.3
  */
+@SuppressWarnings("NullAway")
 class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSortingTemplateVariables {
 
 	private static final Set<Class<?>> SUPPORTED_TYPES = Collections.unmodifiableSet(new HashSet<Class<?>>(Arrays
@@ -65,17 +68,18 @@ class ArgumentResolverPagingAndSortingTemplateVariables implements PagingAndSort
 	}
 
 	@Override
-	public TemplateVariables getPaginationTemplateVariables(MethodParameter parameter, UriComponents components) {
+	public TemplateVariables getPaginationTemplateVariables(@Nullable MethodParameter parameter,
+			UriComponents components) {
 		return pagingResolver.getPaginationTemplateVariables(parameter, components);
 	}
 
 	@Override
-	public TemplateVariables getSortTemplateVariables(MethodParameter parameter, UriComponents template) {
+	public TemplateVariables getSortTemplateVariables(@Nullable MethodParameter parameter, UriComponents template) {
 		return sortResolver.getSortTemplateVariables(parameter, template);
 	}
 
 	@Override
-	public void enhance(UriComponentsBuilder builder, MethodParameter parameter, Object value) {
+	public void enhance(UriComponentsBuilder builder, @Nullable MethodParameter parameter, Object value) {
 
 		if (value instanceof Pageable) {
 			pagingResolver.enhance(builder, parameter, value);

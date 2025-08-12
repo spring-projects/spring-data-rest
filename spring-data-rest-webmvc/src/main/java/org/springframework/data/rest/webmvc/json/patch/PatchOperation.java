@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
 import org.springframework.util.Assert;
 
@@ -29,7 +31,7 @@ public abstract class PatchOperation {
 
 	protected final String op;
 	protected final UntypedSpelPath path;
-	protected final Object value;
+	protected final @Nullable Object value;
 
 	/**
 	 * Constructs the operation.
@@ -41,7 +43,7 @@ public abstract class PatchOperation {
 		this(op, path, null);
 	}
 
-	protected PatchOperation(String op, UntypedSpelPath path, Object value) {
+	protected PatchOperation(String op, UntypedSpelPath path, @Nullable Object value) {
 
 		Assert.hasText(op, "Operation must not be null or empty");
 		Assert.notNull(path, "UntypedSpelPath must not be null");
@@ -59,11 +61,11 @@ public abstract class PatchOperation {
 	 * @return the result of late-value evaluation if the value is a {@link LateObjectEvaluator}; the value itself
 	 *         otherwise.
 	 */
-	protected Object evaluateValueFromTarget(Object targetObject, Class<?> entityType, BindContext context) {
+	protected @Nullable Object evaluateValueFromTarget(Object targetObject, Class<?> entityType, BindContext context) {
 		return evaluate(path.bindForRead(entityType, context).getType(targetObject));
 	}
 
-	protected final Object evaluate(Class<?> type) {
+	protected final @Nullable Object evaluate(Class<?> type) {
 		return value instanceof LateObjectEvaluator ? ((LateObjectEvaluator) value).evaluate(type) : value;
 	}
 

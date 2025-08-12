@@ -20,6 +20,8 @@ import static org.springframework.hateoas.TemplateVariable.VariableType.*;
 import java.util.Collections;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -33,7 +35,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.TemplateVariable;
 import org.springframework.hateoas.TemplateVariables;
 import org.springframework.hateoas.UriTemplate;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -77,7 +78,7 @@ public class Associations {
 		if (isLinkableAssociation(association)) {
 
 			PersistentProperty<?> property = association.getInverse();
-			ResourceMetadata metadata = mappings.getMetadataFor(property.getOwner().getType());
+			ResourceMetadata metadata = mappings.getRequiredMetadataFor(property.getOwner().getType());
 			ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 			String href = path.slash(propertyMapping.getPath()).toString();

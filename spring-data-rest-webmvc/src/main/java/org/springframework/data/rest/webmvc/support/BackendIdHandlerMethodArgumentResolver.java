@@ -17,6 +17,8 @@ package org.springframework.data.rest.webmvc.support;
 
 import java.io.Serializable;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.BaseUri;
@@ -70,8 +72,8 @@ public class BackendIdHandlerMethodArgumentResolver implements HandlerMethodArgu
 	}
 
 	@Override
-	public Serializable resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest request, WebDataBinderFactory binderFactory) throws Exception {
+	public @Nullable Serializable resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
+			NativeWebRequest request, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
 		Class<?> parameterType = parameter.getParameterType();
 

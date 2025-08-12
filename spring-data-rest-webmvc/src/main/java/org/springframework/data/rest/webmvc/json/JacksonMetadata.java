@@ -18,6 +18,8 @@ package org.springframework.data.rest.webmvc.json;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.mapping.AnnotationBasedResourceDescription;
@@ -84,7 +86,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 * @return can be {@literal null} in case there's no Jackson property to be exposed for the given
 	 *         {@link PersistentProperty}.
 	 */
-	public BeanPropertyDefinition getDefinitionFor(PersistentProperty<?> property) {
+	public @Nullable BeanPropertyDefinition getDefinitionFor(PersistentProperty<?> property) {
 
 		Assert.notNull(property, "PersistentProperty must not be null");
 
@@ -151,7 +153,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	public JsonSerializer<?> getTypeSerializer(Class<?> type) {
+	public @Nullable JsonSerializer<?> getTypeSerializer(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null");
 
@@ -185,7 +187,7 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 	 * @param definitions must not be {@literal null}.
 	 * @return
 	 */
-	private static BeanPropertyDefinition getDefinitionFor(PersistentProperty<?> property,
+	private static @Nullable BeanPropertyDefinition getDefinitionFor(PersistentProperty<?> property,
 			Iterable<BeanPropertyDefinition> definitions) {
 
 		for (BeanPropertyDefinition definition : definitions) {

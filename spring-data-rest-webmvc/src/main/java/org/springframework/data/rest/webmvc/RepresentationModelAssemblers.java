@@ -17,6 +17,8 @@ package org.springframework.data.rest.webmvc;
 
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -24,7 +26,6 @@ import org.springframework.data.web.SlicedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.core.EmbeddedWrappers;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

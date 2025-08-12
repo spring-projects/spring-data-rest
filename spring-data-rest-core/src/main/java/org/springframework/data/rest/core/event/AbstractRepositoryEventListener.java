@@ -17,6 +17,8 @@ package org.springframework.data.rest.core.event;
 
 import static org.springframework.core.GenericTypeResolver.*;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.context.ApplicationListener;
 
 /**
@@ -28,7 +30,8 @@ import org.springframework.context.ApplicationListener;
  */
 public abstract class AbstractRepositoryEventListener<T> implements ApplicationListener<RepositoryEvent> {
 
-	private final Class<?> INTERESTED_TYPE = resolveTypeArgument(getClass(), AbstractRepositoryEventListener.class);
+	private final @Nullable Class<?> INTERESTED_TYPE = resolveTypeArgument(getClass(),
+			AbstractRepositoryEventListener.class);
 
 	@Override
 	@SuppressWarnings({ "unchecked" })

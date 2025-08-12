@@ -23,6 +23,8 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
@@ -52,7 +54,7 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Represe
 	}
 
 	@Override
-	public boolean canRead(Class<?> clazz, MediaType mediaType) {
+	public boolean canRead(Class<?> clazz, @Nullable MediaType mediaType) {
 
 		return null != mediaType //
 				&& RepresentationModel.class.isAssignableFrom(clazz) //
@@ -60,7 +62,7 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Represe
 	}
 
 	@Override
-	public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+	public boolean canWrite(Class<?> clazz, @Nullable MediaType mediaType) {
 		return canRead(clazz, mediaType);
 	}
 
@@ -84,7 +86,7 @@ public class UriListHttpMessageConverter implements HttpMessageConverter<Represe
 	}
 
 	@Override
-	public void write(RepresentationModel<?> resource, MediaType contentType, HttpOutputMessage outputMessage)
+	public void write(RepresentationModel<?> resource, @Nullable MediaType contentType, HttpOutputMessage outputMessage)
 			throws IOException, HttpMessageNotWritableException {
 
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputMessage.getBody()));

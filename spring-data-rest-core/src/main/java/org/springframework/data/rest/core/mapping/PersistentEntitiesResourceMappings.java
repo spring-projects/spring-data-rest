@@ -93,7 +93,7 @@ public class PersistentEntitiesResourceMappings implements ResourceMappings {
 			return false;
 		}
 
-		ResourceMetadata metadata = getMetadataFor(type);
+		ResourceMetadata metadata = getRequiredMetadataFor(type);
 		return metadata.isExported();
 	}
 

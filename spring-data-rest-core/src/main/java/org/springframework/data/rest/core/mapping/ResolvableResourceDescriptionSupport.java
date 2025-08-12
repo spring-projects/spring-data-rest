@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.context.MessageSourceResolvable;
 
 /**
@@ -30,7 +32,7 @@ public abstract class ResolvableResourceDescriptionSupport implements ResourceDe
 	}
 
 	@Override
-	public String getDefaultMessage() {
+	public @Nullable String getDefaultMessage() {
 		return null;
 	}
 }

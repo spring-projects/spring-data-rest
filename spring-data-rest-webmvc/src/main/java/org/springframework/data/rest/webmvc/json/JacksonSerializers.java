@@ -16,8 +16,11 @@
 package org.springframework.data.rest.webmvc.json;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.rest.webmvc.json.JsonSchema.EnumProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
@@ -49,7 +52,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
  */
 public class JacksonSerializers extends SimpleModule {
 
-	private static final long serialVersionUID = 4396776390917947147L;
+	private static final @Serial long serialVersionUID = 4396776390917947147L;
 
 	/**
 	 * Creates a new {@link JacksonSerializers} with the given {@link EnumTranslator}.
@@ -77,7 +80,7 @@ public class JacksonSerializers extends SimpleModule {
 	@SuppressWarnings("rawtypes")
 	public static class EnumTranslatingSerializer extends StdSerializer<Enum> implements JsonSchemaPropertyCustomizer {
 
-		private static final long serialVersionUID = -6706924011396258646L;
+		private static final @Serial long serialVersionUID = -6706924011396258646L;
 
 		private final EnumTranslator translator;
 
@@ -121,10 +124,10 @@ public class JacksonSerializers extends SimpleModule {
 	@SuppressWarnings("rawtypes")
 	public static class EnumTranslatingDeserializer extends StdDeserializer<Enum> implements ContextualDeserializer {
 
-		private static final long serialVersionUID = 5305284644923180079L;
+		private static final @Serial long serialVersionUID = 5305284644923180079L;
 
 		private final EnumTranslator translator;
-		private final BeanProperty property;
+		private final @Nullable BeanProperty property;
 
 		/**
 		 * Creates a new {@link EnumTranslatingDeserializer} using the given {@link EnumTranslator}.
@@ -142,7 +145,7 @@ public class JacksonSerializers extends SimpleModule {
 		 * @param translator must not be {@literal null}.
 		 * @param property can be {@literal null}.
 		 */
-		public EnumTranslatingDeserializer(EnumTranslator translator, BeanProperty property) {
+		public EnumTranslatingDeserializer(EnumTranslator translator, @Nullable BeanProperty property) {
 
 			super(Enum.class);
 
@@ -160,7 +163,8 @@ public class JacksonSerializers extends SimpleModule {
 
 		@Override
 		@SuppressWarnings("unchecked")
-		public Enum deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		public @Nullable Enum deserialize(JsonParser p, DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
 
 			if (property == null) {
 				throw new IllegalStateException("Can only translate enum with property information");

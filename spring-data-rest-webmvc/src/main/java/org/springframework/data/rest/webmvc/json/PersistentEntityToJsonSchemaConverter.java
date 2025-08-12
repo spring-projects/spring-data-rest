@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +26,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceResolvable;
@@ -67,6 +70,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
+@SuppressWarnings("NullAway")
 public class PersistentEntityToJsonSchemaConverter implements ConditionalGenericConverter {
 
 	private static final TypeDescriptor STRING_TYPE = TypeDescriptor.valueOf(String.class);
@@ -137,10 +141,12 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	}
 
 	@Override
-	public JsonSchema convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+	public JsonSchema convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+
+		Assert.notNull(source, "Source must not be null");
 
 		final PersistentEntity<?, ?> persistentEntity = entities.getRequiredPersistentEntity((Class<?>) source);
-		final ResourceMetadata metadata = associations.getMappings().getMetadataFor(persistentEntity.getType());
+		final ResourceMetadata metadata = associations.getMappings().getRequiredMetadataFor(persistentEntity.getType());
 
 		Definitions definitions = new Definitions();
 		List<AbstractJsonSchemaProperty<?>> propertiesFor = getPropertiesFor(persistentEntity.getType(), metadata,
@@ -259,7 +265,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		}
 
 		return getPropertiesFor(property.getActualType(),
-				associations.getMappings().getMetadataFor(property.getActualType()), descriptors);
+				associations.getMappings().getRequiredMetadataFor(property.getActualType()), descriptors);
 	}
 
 	private ResourceDescription getDescriptionFor(PersistentProperty<?> property, ResourceMetadata metadata) {
@@ -288,7 +294,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			this.properties = new ArrayList<AbstractJsonSchemaProperty<?>>();
 		}
 
-		public void register(JsonSchemaProperty property, TypeInformation<?> type) {
+		public void register(JsonSchemaProperty property, @Nullable TypeInformation<?> type) {
 			if (type == null) {
 				properties.add(property);
 				return;
@@ -350,7 +356,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 */
 	private static class ResolvableProperty extends DefaultMessageSourceResolvable {
 
-		private static final long serialVersionUID = -5603381674553244480L;
+		private static final @Serial long serialVersionUID = -5603381674553244480L;
 
 		/**
 		 * Creates a new {@link ResolvableProperty} for the given {@link BeanPropertyDefinition}.
@@ -383,7 +389,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 */
 	private static class ResolvableType extends DefaultMessageSourceResolvable {
 
-		private static final long serialVersionUID = -7199875272753949857L;
+		private static final @Serial long serialVersionUID = -7199875272753949857L;
 
 		/**
 		 * Creates a new {@link ResolvableType} for the given type.
@@ -430,7 +436,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 			JsonSchemaProperty result = getSchemaProperty(definition, getPropertyType(), description, resolver);
 
-			boolean isSyntheticProperty = !property.isPresent();
+			boolean isSyntheticProperty = property.isEmpty();
 			boolean isNotWritable = property.map(it -> !it.isWritable()).orElse(false);
 			boolean isJacksonReadOnly = property.map(it -> metadata.isReadOnly(it)).orElse(false);
 
@@ -484,7 +490,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 			this.configuration = configuration;
 		}
 
-		public String resolve(MessageSourceResolvable resolvable) {
+		public @Nullable String resolve(@Nullable MessageSourceResolvable resolvable) {
 
 			if (resolvable == null) {
 				return null;

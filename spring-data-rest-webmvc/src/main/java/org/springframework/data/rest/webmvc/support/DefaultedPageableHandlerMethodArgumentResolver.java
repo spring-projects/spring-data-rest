@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.support;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -48,8 +50,8 @@ public class DefaultedPageableHandlerMethodArgumentResolver implements HandlerMe
 	}
 
 	@Override
-	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+	public @Nullable Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
 		Pageable pageable = resolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 		return new DefaultedPageable(pageable, resolver.isFallbackPageable(pageable));

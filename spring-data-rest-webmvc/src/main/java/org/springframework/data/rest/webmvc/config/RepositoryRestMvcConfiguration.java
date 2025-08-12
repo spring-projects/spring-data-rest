@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ObjectFactory;
@@ -209,8 +211,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private final Lazy<HateoasSortHandlerMethodArgumentResolver> sortResolver;
 	private final Lazy<PersistentEntityResourceAssemblerArgumentResolver> persistentEntityResourceAssemblerArgumentResolver;
 
-	private ClassLoader beanClassLoader;
-	private StringValueResolver stringValueResolver;
+	private @Nullable ClassLoader beanClassLoader;
+	private @Nullable StringValueResolver stringValueResolver;
 
 	public RepositoryRestMvcConfiguration( //
 			ApplicationContext context, //
@@ -357,7 +359,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public JpaHelper jpaHelper() {
+	public @Nullable JpaHelper jpaHelper() {
 
 		if (IS_JPA_AVAILABLE) {
 			return new JpaHelper();
@@ -693,14 +695,18 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		repositoryMapping.setApplicationContext(applicationContext);
 		repositoryMapping.setCorsConfigurations(corsConfigurations);
 		repositoryMapping.setPatternParser(parser);
-		repositoryMapping.setEmbeddedValueResolver(stringValueResolver);
+		if (stringValueResolver != null) {
+			repositoryMapping.setEmbeddedValueResolver(stringValueResolver);
+		}
 		repositoryMapping.afterPropertiesSet();
 
 		BasePathAwareHandlerMapping basePathMapping = new BasePathAwareHandlerMapping(repositoryRestConfiguration);
 		basePathMapping.setApplicationContext(applicationContext);
 		basePathMapping.setCorsConfigurations(corsConfigurations);
 		basePathMapping.setPatternParser(parser);
-		basePathMapping.setEmbeddedValueResolver(stringValueResolver);
+		if (stringValueResolver != null) {
+			basePathMapping.setEmbeddedValueResolver(stringValueResolver);
+		}
 		basePathMapping.afterPropertiesSet();
 
 		List<HandlerMapping> mappings = new ArrayList<>();
@@ -929,7 +935,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 		projectionFactory.setBeanFactory(applicationContext);
-		projectionFactory.setBeanClassLoader(beanClassLoader);
+
+		if (beanClassLoader != null) {
+			projectionFactory.setBeanClassLoader(beanClassLoader);
+		}
 
 		return new PersistentEntityResourceAssemblerArgumentResolver(persistentEntities.get(), selfLinkProvider.get(),
 				repositoryRestConfiguration.get().getProjectionConfiguration(), projectionFactory, associationLinks.get());

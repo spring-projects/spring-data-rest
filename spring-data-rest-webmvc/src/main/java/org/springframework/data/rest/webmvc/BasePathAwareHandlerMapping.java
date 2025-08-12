@@ -28,6 +28,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.util.ProxyUtils;
@@ -68,7 +70,8 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 	}
 
 	@Override
-	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
+	protected @Nullable HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request)
+			throws Exception {
 
 		List<MediaType> mediaTypes = new ArrayList<MediaType>();
 		boolean defaultFound = false;
@@ -100,7 +103,7 @@ public class BasePathAwareHandlerMapping extends RequestMappingHandlerMapping {
 
 	@Override
 	@SuppressWarnings("null")
-	protected RequestMappingInfo getMappingForMethod(Method method, Class<?> handlerType) {
+	protected @Nullable RequestMappingInfo getMappingForMethod(Method method, Class<?> handlerType) {
 
 		RequestMappingInfo info = super.getMappingForMethod(method, handlerType);
 

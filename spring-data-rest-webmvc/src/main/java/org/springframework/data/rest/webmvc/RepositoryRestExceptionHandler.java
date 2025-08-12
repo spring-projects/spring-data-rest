@@ -16,7 +16,9 @@
 package org.springframework.data.rest.webmvc;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -30,6 +32,7 @@ import org.springframework.data.rest.webmvc.support.ETagDoesntMatchException;
 import org.springframework.data.rest.webmvc.support.ExceptionMessage;
 import org.springframework.data.rest.webmvc.support.RepositoryConstraintViolationExceptionMessage;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -134,7 +137,10 @@ public class RepositoryRestExceptionHandler {
 	ResponseEntity<Void> handle(HttpRequestMethodNotSupportedException o_O) {
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.setAllow(o_O.getSupportedHttpMethods());
+		Set<HttpMethod> supportedHttpMethods = o_O.getSupportedHttpMethods();
+		if (supportedHttpMethods != null) {
+			headers.setAllow(supportedHttpMethods);
+		}
 
 		return response(HttpStatus.METHOD_NOT_ALLOWED, headers);
 	}
@@ -161,7 +167,7 @@ public class RepositoryRestExceptionHandler {
 	}
 
 	private static ResponseEntity<ExceptionMessage> errorResponse(HttpStatus status, HttpHeaders headers,
-			Exception exception) {
+			@Nullable Exception exception) {
 
 		if (exception != null) {
 
@@ -180,7 +186,7 @@ public class RepositoryRestExceptionHandler {
 		return response(status, headers, null);
 	}
 
-	private static <T> ResponseEntity<T> response(HttpStatus status, HttpHeaders headers, T body) {
+	private static <T> ResponseEntity<T> response(HttpStatus status, HttpHeaders headers, @Nullable T body) {
 
 		Assert.notNull(headers, "Headers must not be null");
 		Assert.notNull(status, "HttpStatus must not be null");

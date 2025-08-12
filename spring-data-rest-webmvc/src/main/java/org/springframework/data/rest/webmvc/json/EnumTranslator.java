@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
@@ -71,7 +73,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	 * @param value must not be {@literal null}.
 	 * @return
 	 */
-	public String asText(Enum<?> value) {
+	public @Nullable String asText(Enum<?> value) {
 
 		Assert.notNull(value, "Enum value must not be null");
 
@@ -101,7 +103,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	 * @param text can be {@literal null}
 	 * @return the resolved enum or {@literal null} if the resolution failed.
 	 */
-	public <T extends Enum<?>> T fromText(Class<T> type, String text) {
+	public <T extends Enum<?>> @Nullable T fromText(Class<T> type, String text) {
 
 		if (!StringUtils.hasText(text)) {
 			return null;
@@ -118,7 +120,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 		value = fromDefault(type, text);
 
 		// Only parse default translation if no explicit translation is available
-		if (value != null && enableDefaultTranslation && asText(value).equals(text)) {
+		if (value != null && enableDefaultTranslation && text.equals(asText(value))) {
 			return value;
 		}
 
@@ -135,7 +137,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private <T extends Enum<?>> T resolveEnum(Class<T> type, String text, boolean resolve) {
+	private <T extends Enum<?>> @Nullable T resolveEnum(Class<T> type, String text, boolean resolve) {
 
 		for (Enum<?> value : type.getEnumConstants()) {
 
@@ -156,7 +158,7 @@ public class EnumTranslator implements EnumTranslationConfiguration {
 	 * @param text must not be {@literal null} or empty.
 	 * @return
 	 */
-	private <T extends Enum<?>> T fromDefault(Class<T> type, String text) {
+	private <T extends Enum<?>> @Nullable T fromDefault(Class<T> type, String text) {
 		return resolveEnum(type, text.toUpperCase(Locale.US).replaceAll(" ", "_"), true);
 	}
 

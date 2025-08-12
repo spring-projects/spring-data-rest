@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.http.HttpMethod;
 
@@ -46,6 +48,7 @@ public interface ResourceMetadata extends CollectionResourceMapping {
 	 * @param mappedPath must not be {@literal null} or empty.
 	 * @return the {@link PropertyAwareResourceMapping} for the given path or {@literal null} if none found.
 	 */
+	@Nullable
 	PropertyAwareResourceMapping getProperty(String mappedPath);
 
 	/**

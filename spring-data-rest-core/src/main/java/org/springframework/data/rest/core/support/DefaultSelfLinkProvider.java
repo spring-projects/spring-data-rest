@@ -17,13 +17,14 @@ package org.springframework.data.rest.core.support;
 
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.EntityLinks;
-import org.springframework.lang.Nullable;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
 
@@ -95,7 +96,9 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 	 * @return
 	 */
 	@Nullable
-	private Object getResourceId(Class<?> type, Object reference) {
+	private Object getResourceId(Class<?> type, @Nullable Object reference) {
+
+		Assert.notNull(reference, "Reference must not be null");
 
 		if (!lookups.hasPluginFor(type)) {
 			return entityIdentifierOrNull(reference);
@@ -107,7 +110,7 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 				.orElseGet(() -> entityIdentifierOrNull(reference));
 	}
 
-	private Object entityIdentifierOrNull(Object instance) {
+	private @Nullable Object entityIdentifierOrNull(Object instance) {
 
 		return entities.getRequiredPersistentEntity(instance.getClass()) //
 				.getIdentifierAccessor(instance) //

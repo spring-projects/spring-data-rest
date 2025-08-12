@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.rest.core.config.JsonSchemaFormat;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -114,13 +116,15 @@ public class JsonSchema {
 	 * @see <a href=
 	 *      "https://json-schema.org/latest/json-schema-core.html#anchor8">https://json-schema.org/latest/json-schema-core.html#anchor8</a>
 	 */
-	private static String toJsonSchemaType(TypeInformation<?> typeInformation) {
+	private static @Nullable String toJsonSchemaType(@Nullable TypeInformation<?> typeInformation) {
+
+		if (typeInformation == null) {
+			return null;
+		}
 
 		Class<?> type = typeInformation.getType();
 
-		if (type == null) {
-			return null;
-		} else if (typeInformation.isCollectionLike()) {
+		if (typeInformation.isCollectionLike()) {
 			return "array";
 		} else if (Boolean.class.equals(type) || boolean.class.equals(type)) {
 			return "boolean";
@@ -165,7 +169,7 @@ public class JsonSchema {
 	 */
 	static class Item {
 
-		private final String type;
+		private final @Nullable String type;
 		private final PropertiesContainer properties;
 
 		/**
@@ -180,7 +184,7 @@ public class JsonSchema {
 			this.properties = new PropertiesContainer(properties);
 		}
 
-		public String getType() {
+		public @Nullable String getType() {
 			return type;
 		}
 
@@ -261,7 +265,7 @@ public class JsonSchema {
 		}
 
 		static String typeKey(TypeInformation<?> type) {
-			return StringUtils.uncapitalize(type.getActualType().getType().getSimpleName());
+			return StringUtils.uncapitalize(type.getRequiredActualType().getType().getSimpleName());
 		}
 	}
 
@@ -275,7 +279,7 @@ public class JsonSchema {
 	abstract static class AbstractJsonSchemaProperty<T extends AbstractJsonSchemaProperty<T>> {
 
 		private final String name;
-		private final String title;
+		private final @Nullable String title;
 		private final boolean required;
 
 		private boolean readOnly;
@@ -284,7 +288,7 @@ public class JsonSchema {
 			this(name, null, required);
 		}
 
-		protected AbstractJsonSchemaProperty(String name, String title, boolean required) {
+		protected AbstractJsonSchemaProperty(String name, @Nullable String title, boolean required) {
 
 			this.name = name;
 			this.title = title;
@@ -297,7 +301,7 @@ public class JsonSchema {
 			return name;
 		}
 
-		public String getTitle() {
+		public @Nullable String getTitle() {
 			return title;
 		}
 
@@ -327,12 +331,12 @@ public class JsonSchema {
 		private static final TypeInformation<?> STRING_TYPE_INFORMATION = TypeInformation.of(String.class);
 
 		public String description;
-		public String type;
-		public @JsonSerialize(using = ToStringSerializer.class) JsonSchemaFormat format;
-		public String pattern;
-		public Boolean uniqueItems;
-		public @JsonProperty("$ref") String reference;
-		public Map<String, String> items;
+		public @Nullable String type;
+		public @Nullable @JsonSerialize(using = ToStringSerializer.class) JsonSchemaFormat format;
+		public @Nullable String pattern;
+		public @Nullable Boolean uniqueItems;
+		public @Nullable @JsonProperty("$ref") String reference;
+		public @Nullable Map<String, @Nullable String> items;
 
 		JsonSchemaProperty(String name, String title, String description, boolean required) {
 

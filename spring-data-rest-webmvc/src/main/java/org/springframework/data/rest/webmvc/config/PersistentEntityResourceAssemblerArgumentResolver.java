@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.config;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.projection.ProjectionFactory;
@@ -66,8 +68,8 @@ public class PersistentEntityResourceAssemblerArgumentResolver implements Handle
 
 	@Override
 	public PersistentEntityResourceAssembler resolveArgument(MethodParameter parameter,
-			ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+			@Nullable ModelAndViewContainer mavContainer, NativeWebRequest webRequest,
+			@Nullable WebDataBinderFactory binderFactory) throws Exception {
 
 		String projectionParameter = webRequest.getParameter(projectionDefinitions.getParameterName());
 		PersistentEntityProjector projector = new PersistentEntityProjector(projectionDefinitions, projectionFactory,

@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -90,7 +92,7 @@ class RepositoryEntityController
 	private final HttpHeadersPreparer headersPreparer;
 	private final ResourceStatus resourceStatus;
 
-	private ApplicationEventPublisher publisher;
+	private @Nullable ApplicationEventPublisher publisher;
 
 	/**
 	 * Creates a new {@link RepositoryEntityController} for the given {@link RepresentationModelAssemblers},
@@ -251,7 +253,7 @@ class RepositoryEntityController
 
 		resourceInformation.verifySupportedMethod(HttpMethod.POST, ResourceType.COLLECTION);
 
-		return createAndReturn(payload.getContent(), resourceInformation.getInvoker(), assembler,
+		return createAndReturn(payload.getContent(), resourceInformation.getRequiredInvoker(), assembler,
 				config.returnBodyOnCreate(acceptHeader));
 	}
 
@@ -348,9 +350,13 @@ class RepositoryEntityController
 			resourceInformation.verifyPutForCreation();
 		}
 
-		RepositoryInvoker invoker = resourceInformation.getInvoker();
+		RepositoryInvoker invoker = resourceInformation.getRequiredInvoker();
 		Object objectToSave = payload.getContent();
 		eTag.verify(resourceInformation.getPersistentEntity(), objectToSave);
+
+		if (objectToSave == null) {
+			throw new IllegalStateException("Payload content must not be null");
+		}
 
 		return payload.isNew()
 				? createAndReturn(objectToSave, invoker, assembler, config.returnBodyOnCreate(acceptHeader))
@@ -383,7 +389,7 @@ class RepositoryEntityController
 
 		eTag.verify(resourceInformation.getPersistentEntity(), domainObject);
 
-		return saveAndReturn(domainObject, resourceInformation.getInvoker(), PATCH, assembler,
+		return saveAndReturn(domainObject, resourceInformation.getRequiredInvoker(), PATCH, assembler,
 				config.returnBodyOnUpdate(acceptHeader));
 	}
 
@@ -406,7 +412,7 @@ class RepositoryEntityController
 
 		resourceInformation.verifySupportedMethod(HttpMethod.DELETE, ResourceType.ITEM);
 
-		RepositoryInvoker invoker = resourceInformation.getInvoker();
+		RepositoryInvoker invoker = resourceInformation.getRequiredInvoker();
 		Optional<Object> domainObj = invoker.invokeFindById(id);
 
 		return domainObj.map(it -> {
@@ -415,9 +421,10 @@ class RepositoryEntityController
 
 			eTag.verify(entity, it);
 
-			publisher.publishEvent(new BeforeDeleteEvent(it));
-			invoker.invokeDeleteById(entity.getIdentifierAccessor(it).getIdentifier());
-			publisher.publishEvent(new AfterDeleteEvent(it));
+			publishEvent(new BeforeDeleteEvent(it));
+			invoker.invokeDeleteById(entity.getIdentifierAccessor(it).getRequiredIdentifier());
+
+			publishEvent(new AfterDeleteEvent(it));
 
 			return config.returnBodyOnDelete(acceptHeader)
 					? ResponseEntity.ok(assembler.toFullResource(it))
@@ -437,9 +444,10 @@ class RepositoryEntityController
 	private ResponseEntity<RepresentationModel<?>> saveAndReturn(Object domainObject, RepositoryInvoker invoker,
 			HttpMethod httpMethod, PersistentEntityResourceAssembler assembler, boolean returnBody) {
 
-		publisher.publishEvent(new BeforeSaveEvent(domainObject));
+		publishEvent(new BeforeSaveEvent(domainObject));
+
 		Object obj = invoker.invokeSave(domainObject);
-		publisher.publishEvent(new AfterSaveEvent(obj));
+		publishEvent(new AfterSaveEvent(obj));
 
 		PersistentEntityResource resource = assembler.toFullResource(obj);
 		HttpHeaders headers = headersPreparer.prepareHeaders(Optional.of(resource));
@@ -465,9 +473,9 @@ class RepositoryEntityController
 	private ResponseEntity<RepresentationModel<?>> createAndReturn(Object domainObject, RepositoryInvoker invoker,
 			PersistentEntityResourceAssembler assembler, boolean returnBody) {
 
-		publisher.publishEvent(new BeforeCreateEvent(domainObject));
+		publishEvent(new BeforeCreateEvent(domainObject));
 		Object savedObject = invoker.invokeSave(domainObject);
-		publisher.publishEvent(new AfterCreateEvent(savedObject));
+		publishEvent(new AfterCreateEvent(savedObject));
 
 		Optional<PersistentEntityResource> resource = Optional
 				.ofNullable(returnBody ? assembler.toFullResource(savedObject) : null);
@@ -506,6 +514,12 @@ class RepositoryEntityController
 
 		resourceInformation.verifySupportedMethod(HttpMethod.GET, ResourceType.ITEM);
 
-		return resourceInformation.getInvoker().invokeFindById(id);
+		return resourceInformation.getRequiredInvoker().invokeFindById(id);
+	}
+
+	private void publishEvent(Object event) {
+		if (publisher != null) {
+			publisher.publishEvent(event);
+		}
 	}
 }

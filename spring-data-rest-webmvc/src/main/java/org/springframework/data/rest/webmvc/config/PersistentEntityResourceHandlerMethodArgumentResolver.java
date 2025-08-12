@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -100,13 +102,22 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+	public @Nullable Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
 		RootResourceInformation resourceInformation = resourceInformationResolver.resolveArgument(parameter, mavContainer,
 				webRequest, binderFactory);
 
 		HttpServletRequest nativeRequest = webRequest.getNativeRequest(HttpServletRequest.class);
+		if (nativeRequest == null) {
+			throw new IllegalStateException("No HttpServletRequest found in the current request context");
+		}
+
+		if (resourceInformation == null) {
+			throw new IllegalStateException(
+					"Could not resolve RootResourceInformation for parameter '%s'".formatted(parameter.getParameterName()));
+		}
+
 		ServletServerHttpRequest request = new ServletServerHttpRequest(nativeRequest);
 		IncomingRequest incoming = new IncomingRequest(request);
 
@@ -121,7 +132,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 
 			Optional<Serializable> id = Optional
 					.ofNullable(idResolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory));
-			Optional<Object> objectToUpdate = id.flatMap(it -> resourceInformation.getInvoker().invokeFindById(it));
+			Optional<Object> objectToUpdate = id.flatMap(it -> resourceInformation.getRequiredInvoker().invokeFindById(it));
 			Object newObject = read(resourceInformation, incoming, converter, objectToUpdate);
 
 			if (newObject == null) {

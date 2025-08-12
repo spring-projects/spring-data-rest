@@ -62,7 +62,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 	 * @param method must not be {@literal null}.
 	 * @param resourceMapping must not be {@literal null}.
 	 * @param metadata can be {@literal null}.
-	 * @param whether the methods are supposed to be exported by default.
+	 * @param exposeMethodsByDefault whether the methods are supposed to be exported by default.
 	 */
 	public RepositoryMethodResourceMapping(Method method, ResourceMapping resourceMapping, RepositoryMetadata metadata,
 			boolean exposeMethodsByDefault) {
@@ -139,7 +139,7 @@ class RepositoryMethodResourceMapping implements MethodResourceMapping {
 
 	@Override
 	public ResourceDescription getDescription() {
-		return null;
+		throw new UnsupportedOperationException("RepositoryMethodResourceMapping do not have a description");
 	}
 
 	@Override

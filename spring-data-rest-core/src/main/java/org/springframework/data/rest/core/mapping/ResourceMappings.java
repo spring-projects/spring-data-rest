@@ -15,8 +15,9 @@
  */
 package org.springframework.data.rest.core.mapping;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.util.Streamable;
-import org.springframework.lang.Nullable;
 
 /**
  * @author Oliver Gierke
@@ -31,6 +32,25 @@ public interface ResourceMappings extends Streamable<ResourceMetadata> {
 	 */
 	@Nullable
 	ResourceMetadata getMetadataFor(Class<?> type);
+
+	/**
+	 * Returns the required {@link ResourceMetadata} for the given type or throws {@link IllegalStateException}.
+	 *
+	 * @param type must not be {@literal null}.
+	 * @return the {@link ResourceMetadata} if available or {@literal null} otherwise.
+	 * @throws IllegalArgumentException if no {@link ResourceMetadata} is available for the given type.
+	 * @since 5.0
+	 */
+	default ResourceMetadata getRequiredMetadataFor(Class<?> type) {
+
+		ResourceMetadata metadata = getMetadataFor(type);
+
+		if (metadata == null) {
+			throw new IllegalStateException("No ResourceMetadata found for type '%s'".formatted(type.getName()));
+		}
+
+		return metadata;
+	}
 
 	/**
 	 * Returns the {@link ResourceMapping}s for the search resources of the given type.

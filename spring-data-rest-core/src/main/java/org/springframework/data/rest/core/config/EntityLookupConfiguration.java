@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -29,7 +31,6 @@ import org.springframework.data.rest.core.config.EntityLookupRegistrar.LookupReg
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.util.MethodInvocationRecorder;
 import org.springframework.data.util.StreamUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -41,7 +42,7 @@ import org.springframework.util.Assert;
  */
 class EntityLookupConfiguration implements EntityLookupRegistrar {
 
-	private final List<LookupInformation<Object, Object, Repository<? extends Object, ?>>> lookupInformation = new ArrayList<>();
+	private final List<LookupInformation<Object, Object, Repository<?, ?>>> lookupInformation = new ArrayList<>();
 	private final List<Class<?>> lookupTypes = new ArrayList<>();
 
 	@Override
@@ -84,7 +85,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 			implements LookupRegistrar<T, ID, R>, IdMappingRegistrar<T, R> {
 
 		private final Class<R> repositoryType;
-		private Converter<T, ID> idMapping;
+		private @Nullable Converter<T, ID> idMapping;
 
 		/**
 		 * Creates a new {@link MappingBuilder} for the given repository type.
@@ -114,8 +115,10 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		@SuppressWarnings("unchecked")
 		public EntityLookupRegistrar withLookup(Lookup<R, ID> lookup) {
 
+			Assert.notNull(idMapping, "IdMapping must not be null");
+
 			EntityLookupConfiguration.this.lookupInformation
-					.add((LookupInformation<Object, Object, Repository<? extends Object, ?>>) new LookupInformation<T, ID, R>(
+					.add((LookupInformation<Object, Object, Repository<?, ?>>) new LookupInformation<T, ID, R>(
 							repositoryType, idMapping, lookup));
 
 			return EntityLookupConfiguration.this;
@@ -186,7 +189,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 
 		@Override
 		public Object getResourceIdentifier(T entity) {
-			return lookupInfo.getIdentifierMapping().convert(entity);
+			return Objects.requireNonNull(lookupInfo.getIdentifierMapping().convert(entity));
 		}
 
 		@Override
@@ -239,7 +242,7 @@ class EntityLookupConfiguration implements EntityLookupRegistrar {
 		}
 
 		@Override
-		public boolean equals(@Nullable final java.lang.Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (o == this) {
 				return true;

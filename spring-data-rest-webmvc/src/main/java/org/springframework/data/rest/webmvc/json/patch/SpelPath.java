@@ -23,6 +23,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PropertyPath;
@@ -34,7 +36,6 @@ import org.springframework.expression.ExpressionException;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.SpelMessage;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
@@ -49,6 +50,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Mark Paluch
  * @author Greg Turnquist
  */
+@SuppressWarnings("NullAway")
 class SpelPath {
 
 	private static final SpelExpressionParser SPEL_EXPRESSION_PARSER = new SpelExpressionParser();
@@ -211,7 +213,7 @@ class SpelPath {
 
 		Object removeFrom(Object target);
 
-		void addValue(Object target, Object value);
+		void addValue(Object target, @Nullable Object value);
 
 		void setValue(Object target, @Nullable Object value);
 
@@ -436,11 +438,11 @@ class SpelPath {
 			return new TypedSpelPath(path.substring(0, path.lastIndexOf('/')), type, context);
 		}
 
-		private TypeDescriptor getTypeDescriptor(Object target) {
+		private @Nullable TypeDescriptor getTypeDescriptor(Object target) {
 			return expression.getValueTypeDescriptor(context, target);
 		}
 
-		private Integer getTargetListIndex() {
+		private @Nullable Integer getTargetListIndex() {
 
 			String lastNode = path.substring(path.lastIndexOf('/') + 1);
 
@@ -718,7 +720,7 @@ class SpelPath {
 		}
 
 		@Override
-		public boolean equals(@Nullable final java.lang.Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (o == this) {
 				return true;

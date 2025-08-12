@@ -22,8 +22,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEvent;
@@ -33,7 +35,6 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.annotation.*;
 import org.springframework.data.util.ProxyUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.LinkedMultiValueMap;
@@ -51,7 +52,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 	private static final Logger LOG = LoggerFactory.getLogger(AnnotatedEventHandlerInvoker.class);
 	private static final String PARAMETER_MISSING = "Invalid event handler method %s; At least a single argument is required to determine the domain type for which you are interested in events";
 
-	private final MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = new LinkedMultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod>();
+	private final MultiValueMap<Class<? extends RepositoryEvent>, EventHandlerMethod> handlerMethods = new LinkedMultiValueMap<>();
 
 	@Override
 	public void onApplicationEvent(RepositoryEvent event) {
@@ -70,7 +71,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 				continue;
 			}
 
-			List<Object> parameters = new ArrayList<Object>();
+			List<Object> parameters = new ArrayList<>();
 			parameters.add(src);
 
 			if (event instanceof LinkedEntityEvent) {
@@ -140,7 +141,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		}
 
 		ResolvableType parameter = ResolvableType.forMethodParameter(method, 0, handler.getClass());
-		EventHandlerMethod handlerMethod = EventHandlerMethod.of(parameter.resolve(), handler, method);
+		EventHandlerMethod handlerMethod = EventHandlerMethod.of(parameter.resolve(Object.class), handler, method);
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Annotated handler method found: {}", handlerMethod);
@@ -149,7 +150,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		List<EventHandlerMethod> events = handlerMethods.get(eventType);
 
 		if (events == null) {
-			events = new ArrayList<EventHandlerMethod>();
+			events = new ArrayList<>();
 		}
 
 		if (events.isEmpty()) {
@@ -192,7 +193,7 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 		}
 
 		@Override
-		public boolean equals(@Nullable final java.lang.Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (o == this) {
 				return true;

@@ -20,17 +20,18 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.GenericConverter;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.util.ClassUtils;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -41,7 +42,8 @@ import org.springframework.util.Assert;
  */
 public class UriToEntityConverter implements GenericConverter {
 
-	private static final Class<?> ASSOCIATION_TYPE = ClassUtils.loadIfPresent("org.jmolecules.ddd.types.Association",
+	private static final @Nullable Class<?> ASSOCIATION_TYPE = ClassUtils
+			.loadIfPresent("org.jmolecules.ddd.types.Association",
 			UriToEntityConverter.class.getClassLoader());
 
 	private final PersistentEntities entities;
@@ -74,7 +76,7 @@ public class UriToEntityConverter implements GenericConverter {
 			var rawType = domainType.getType();
 			var entity = entities.getPersistentEntity(rawType);
 
-			entity.filter(it -> it.hasIdProperty()).ifPresent(it -> {
+			entity.filter(PersistentEntity::hasIdProperty).ifPresent(it -> {
 				convertiblePairs.add(new ConvertiblePair(URI.class, domainType.getType()));
 				registerIdentifierType(it.getRequiredIdProperty().getType());
 			});
@@ -95,7 +97,6 @@ public class UriToEntityConverter implements GenericConverter {
 		identifierTypes.add(type);
 	}
 
-	@NonNull
 	@Override
 	public Set<ConvertiblePair> getConvertibleTypes() {
 		return convertiblePairs;

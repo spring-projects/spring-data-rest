@@ -18,6 +18,8 @@ package org.springframework.data.rest.core.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Manages the {@link ResourceMapping} configurations for any resources being exported. This includes domain entities
  * and repositories.
@@ -38,7 +40,7 @@ public class ResourceMappingConfiguration {
 		return rm;
 	}
 
-	public ResourceMapping getResourceMappingFor(Class<?> type) {
+	public @Nullable ResourceMapping getResourceMappingFor(Class<?> type) {
 		return resourceMappings.get(type);
 	}
 
@@ -46,7 +48,7 @@ public class ResourceMappingConfiguration {
 		return resourceMappings.containsKey(type);
 	}
 
-	public Class<?> findTypeForPath(String path) {
+	public @Nullable Class<?> findTypeForPath(@Nullable String path) {
 		if (null == path) {
 			return null;
 		}

@@ -21,6 +21,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.support.Repositories;
@@ -58,6 +60,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Jon Brisbin
  * @author Oliver Gierke
  */
+@SuppressWarnings("NullAway")
 public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 	private final Repositories repositories;
@@ -97,7 +100,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	@Override
 	public LinkBuilder linkFor(Class<?> type) {
 
-		ResourceMetadata metadata = mappings.getMetadataFor(type);
+		ResourceMetadata metadata = mappings.getRequiredMetadataFor(type);
 		return new RepositoryLinkBuilder(metadata, new BaseUri(config.getBasePath()));
 	}
 
@@ -113,9 +116,9 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 * @param pageable the pageable to can be {@literal null}.
 	 * @return
 	 */
-	public Link linkToPagedResource(Class<?> type, Pageable pageable) {
+	public Link linkToPagedResource(Class<?> type, @Nullable Pageable pageable) {
 
-		ResourceMetadata metadata = mappings.getMetadataFor(type);
+		ResourceMetadata metadata = mappings.getRequiredMetadataFor(type);
 		String href = linkFor(type).toString();
 		UriComponents components = prepareUri(href, metadata, pageable);
 
@@ -135,7 +138,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 
 		Assert.isInstanceOf(Serializable.class, id, "Id must be assignable to Serializable");
 
-		ResourceMetadata metadata = mappings.getMetadataFor(type);
+		ResourceMetadata metadata = mappings.getRequiredMetadataFor(type);
 		Link link = linkForItemResource(type, id).withRel(metadata.getItemResourceRel());
 
 		return Link.of(UriTemplate.of(link.getHref()).with(getProjectionVariable(type)).toString(),
@@ -198,7 +201,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 * @return
 	 * @since 2.3
 	 */
-	public Link linkToSearchResource(Class<?> domainType, LinkRelation relation) {
+	public @Nullable Link linkToSearchResource(Class<?> domainType, LinkRelation relation) {
 		return getSearchResourceLinkFor(domainType, relation, null, null);
 	}
 
@@ -212,7 +215,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 * @return
 	 * @since 2.3
 	 */
-	public Link linkToSearchResource(Class<?> domainType, LinkRelation relation, Pageable pageable) {
+	public @Nullable Link linkToSearchResource(Class<?> domainType, LinkRelation relation, Pageable pageable) {
 		return getSearchResourceLinkFor(domainType, relation, pageable, null);
 	}
 
@@ -239,7 +242,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 * @param sort can be {@literal null}.
 	 * @return
 	 */
-	private Links linksToSearchResources(Class<?> type, Pageable pageable, Sort sort) {
+	private Links linksToSearchResources(Class<?> type, @Nullable Pageable pageable, @Nullable Sort sort) {
 
 		return mappings.getSearchResourceMappings(type).getExportedMappings() //
 				.map(MethodResourceMapping::getRel) //
@@ -257,7 +260,8 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 * @param sort can be {@literal null}.
 	 * @return
 	 */
-	private Link getSearchResourceLinkFor(Class<?> type, LinkRelation rel, Pageable pageable, Sort sort) {
+	private @Nullable Link getSearchResourceLinkFor(Class<?> type, LinkRelation rel, @Nullable Pageable pageable,
+			@Nullable Sort sort) {
 
 		Assert.notNull(type, "Domain type must not be null");
 		Assert.notNull(rel, "Relation name must not be null");
@@ -291,7 +295,8 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 * @param pageable can be {@literal null}.
 	 * @return will never be {@literal null}.
 	 */
-	private TemplateVariables getTemplateVariables(UriComponents components, ResourceMapping mapping, Pageable pageable) {
+	private TemplateVariables getTemplateVariables(UriComponents components, ResourceMapping mapping,
+			@Nullable Pageable pageable) {
 
 		if (mapping.isPagingResource()) {
 			return templateVariables.get().getPaginationTemplateVariables(null, components);
@@ -311,7 +316,7 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 	 * @return will never be {@literal null}.
 	 */
 	private TemplateVariables getTemplateVariables(UriComponents components, MethodResourceMapping mapping,
-			Pageable pageable, Sort sort) {
+			@Nullable Pageable pageable, @Nullable Sort sort) {
 
 		if (mapping.isSortableResource()) {
 			return templateVariables.get().getSortTemplateVariables(null, components);
@@ -355,7 +360,8 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		return new TemplateVariables(variables);
 	}
 
-	private UriComponents prepareUri(String uri, MethodResourceMapping mapping, Pageable pageable, Sort sort) {
+	private UriComponents prepareUri(String uri, MethodResourceMapping mapping, @Nullable Pageable pageable,
+			@Nullable Sort sort) {
 
 		if (mapping.isSortableResource()) {
 			UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(uri);
@@ -366,11 +372,11 @@ public class RepositoryEntityLinks extends AbstractEntityLinks {
 		}
 	}
 
-	private UriComponents prepareUri(String uri, ResourceMapping mapping, Pageable pageable) {
+	private UriComponents prepareUri(String uri, @Nullable ResourceMapping mapping, @Nullable Pageable pageable) {
 
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(uri);
 
-		if (mapping.isPagingResource()) {
+		if (mapping != null && mapping.isPagingResource()) {
 			templateVariables.get().enhance(uriBuilder, null, pageable);
 		}
 

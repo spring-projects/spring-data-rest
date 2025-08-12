@@ -17,6 +17,8 @@ package org.springframework.data.rest.core.mapping;
 
 import java.util.Arrays;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.MediaType;
@@ -69,7 +71,7 @@ public class TypedResourceDescription extends SimpleResourceDescription {
 	}
 
 	@Override
-	public String getDefaultMessage() {
+	public @Nullable String getDefaultMessage() {
 		return type.isEnum() ? getEnumValues(type) : null;
 	}
 

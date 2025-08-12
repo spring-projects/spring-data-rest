@@ -100,7 +100,7 @@ public class ProfileController {
 
 		for (Class<?> domainType : this.repositories) {
 
-			ResourceMetadata mapping = this.mappings.getMetadataFor(domainType);
+			ResourceMetadata mapping = this.mappings.getRequiredMetadataFor(domainType);
 
 			if (mapping.isExported()) {
 				profile.add(Link.of(getPath(this.configuration, mapping), mapping.getRel()));

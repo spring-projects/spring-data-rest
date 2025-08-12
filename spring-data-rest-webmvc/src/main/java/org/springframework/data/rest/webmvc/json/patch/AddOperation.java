@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
 
 /**
@@ -32,11 +34,11 @@ class AddOperation extends PatchOperation {
 	 * @param path The path where the value will be added. (e.g., '/foo/bar/4')
 	 * @param value The value to add.
 	 */
-	private AddOperation(UntypedSpelPath path, Object value) {
+	private AddOperation(UntypedSpelPath path, @Nullable Object value) {
 		super("add", path, value);
 	}
 
-	public static AddOperation of(String path, Object value) {
+	public static AddOperation of(String path, @Nullable Object value) {
 		return new AddOperation(SpelPath.untyped(path), value);
 	}
 
@@ -51,7 +53,7 @@ class AddOperation extends PatchOperation {
 	}
 
 	@Override
-	protected Object evaluateValueFromTarget(Object targetObject, Class<?> entityType, BindContext context) {
+	protected @Nullable Object evaluateValueFromTarget(Object targetObject, Class<?> entityType, BindContext context) {
 
 		if (!path.isAppend()) {
 			return super.evaluateValueFromTarget(targetObject, entityType, context);

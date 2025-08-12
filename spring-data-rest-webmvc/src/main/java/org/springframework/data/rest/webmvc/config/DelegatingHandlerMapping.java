@@ -21,8 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.Ordered;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -86,12 +87,12 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 	}
 
 	@Override
-	public HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+	public @Nullable HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
 		return HandlerSelectionResult.from(request, delegates).resultOrException();
 	}
 
 	@Override
-	public RequestMatchResult match(HttpServletRequest request, String pattern) {
+	public @Nullable RequestMatchResult match(HttpServletRequest request, String pattern) {
 
 		try {
 			return HandlerSelectionResult.from(request, delegates).match(pattern);
@@ -103,9 +104,9 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 	private static class HandlerSelectionResult {
 
 		private final HttpServletRequest request;
-		private final HandlerMapping mapping;
-		private final HandlerExecutionChain result;
-		private final Exception ignoredException;
+		private final @Nullable HandlerMapping mapping;
+		private final @Nullable HandlerExecutionChain result;
+		private final @Nullable Exception ignoredException;
 
 		public static HandlerSelectionResult from(HttpServletRequest request, Iterable<HandlerMapping> delegates)
 				throws Exception {
@@ -141,11 +142,11 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 			return new HandlerSelectionResult(request, delegate, result, null);
 		}
 
-		private static HandlerSelectionResult withoutResult(HttpServletRequest request, Exception exception) {
+		private static HandlerSelectionResult withoutResult(HttpServletRequest request, @Nullable Exception exception) {
 			return new HandlerSelectionResult(request, null, null, exception);
 		}
 
-		public HandlerExecutionChain resultOrException() throws Exception {
+		public @Nullable HandlerExecutionChain resultOrException() throws Exception {
 
 			if (ignoredException != null) {
 				throw ignoredException;
@@ -154,15 +155,15 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 			return result;
 		}
 
-		public RequestMatchResult match(String pattern) {
+		public @Nullable RequestMatchResult match(String pattern) {
 
 			return MatchableHandlerMapping.class.isInstance(mapping) //
 					? ((MatchableHandlerMapping) mapping).match(request, pattern) //
 					: null;
 		}
 
-		public HandlerSelectionResult(HttpServletRequest request, HandlerMapping mapping, HandlerExecutionChain result,
-				Exception ignoredException) {
+		public HandlerSelectionResult(HttpServletRequest request, @Nullable HandlerMapping mapping,
+				@Nullable HandlerExecutionChain result, @Nullable Exception ignoredException) {
 
 			Assert.notNull(request, "HttpServletRequest must not be null");
 
@@ -173,7 +174,7 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 		}
 
 		@Override
-		public boolean equals(@Nullable final java.lang.Object o) {
+		public boolean equals(@Nullable Object o) {
 
 			if (o == this) {
 				return true;

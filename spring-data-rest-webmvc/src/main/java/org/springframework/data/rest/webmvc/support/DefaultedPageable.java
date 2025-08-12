@@ -17,8 +17,9 @@ package org.springframework.data.rest.webmvc.support;
 
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.domain.Pageable;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

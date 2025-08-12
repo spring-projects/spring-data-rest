@@ -17,6 +17,8 @@ package org.springframework.data.rest.webmvc.support;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
@@ -32,7 +34,7 @@ public class PersistentEntityProjector extends DefaultExcerptProjector implement
 
 	private final ProjectionDefinitions definitions;
 	private final ProjectionFactory factory;
-	private final String projection;
+	private final @Nullable String projection;
 
 	/**
 	 * Creates a new {@link PersistentEntityProjector} using the given {@link ProjectionDefinitions},
@@ -43,7 +45,7 @@ public class PersistentEntityProjector extends DefaultExcerptProjector implement
 	 * @param projection can be empty.
 	 */
 	public PersistentEntityProjector(ProjectionDefinitions projectionDefinitions, ProjectionFactory factory,
-			String projection, ResourceMappings mappings) {
+			@Nullable String projection, ResourceMappings mappings) {
 
 		super(factory, mappings);
 

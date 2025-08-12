@@ -76,6 +76,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
+@SuppressWarnings("NullAway")
 public class RootResourceInformationToAlpsDescriptorConverter {
 
 	private static final List<HttpMethod> UNDOCUMENTED_METHODS = Arrays.asList(HttpMethod.OPTIONS, HttpMethod.HEAD);
@@ -319,10 +320,10 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 			public void doWithPersistentProperty(PersistentProperty<?> property) {
 
 				BeanPropertyDefinition propertyDefinition = jackson.getDefinitionFor(property);
-				ResourceMapping propertyMapping = metadata.getMappingFor(property);
 
 				if (propertyDefinition != null) {
 
+					ResourceMapping propertyMapping = metadata.getMappingFor(property);
 					if (property.isIdProperty() && !configuration.isIdExposedFor(property.getOwner().getType())) {
 						return;
 					}

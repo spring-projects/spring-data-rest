@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.aot;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer;
@@ -32,7 +34,7 @@ import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 class ValueInstantiatorCustomizerRuntimeHints implements RuntimeHintsRegistrar {
 
 	@Override
-	public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
 		hints.reflection().registerField(ValueInstantiatorCustomizer.CONSTRUCTOR_ARGS_FIELD);
 	}
 }

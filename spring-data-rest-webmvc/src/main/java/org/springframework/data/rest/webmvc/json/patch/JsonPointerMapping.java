@@ -88,14 +88,14 @@ class JsonPointerMapping {
 			if (currentType != null && currentType.isMap()) {
 
 				result.append("/").append(segment);
-				currentType = currentType.getActualType();
+				currentType = currentType.getRequiredActualType();
 
 				continue;
 			}
 
-			if (segment.equals("-") || segment.matches("\\d+")) {
+			if (currentType != null && (segment.equals("-") || segment.matches("\\d+"))) {
 				result.append("/").append(segment);
-				currentType = currentType.getActualType();
+				currentType = currentType.getRequiredActualType();
 				continue;
 			}
 

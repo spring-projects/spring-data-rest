@@ -63,6 +63,6 @@ public class DefaultExcerptProjector implements ExcerptProjector {
 
 		ResourceMetadata metadata = mappings.getMetadataFor(type);
 
-		return metadata == null ? false : metadata.getExcerptProjection().isPresent();
+		return metadata != null && metadata.getExcerptProjection().isPresent();
 	}
 }

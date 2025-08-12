@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -388,7 +389,7 @@ class PersistentEntityJackson2ModuleUnitTests {
 
 	static class CustomTypeSerializer extends StdSerializer<CustomType> {
 
-		private static final long serialVersionUID = -3841651446883968079L;
+		private static final @Serial long serialVersionUID = -3841651446883968079L;
 
 		public CustomTypeSerializer() {
 			super(CustomType.class);

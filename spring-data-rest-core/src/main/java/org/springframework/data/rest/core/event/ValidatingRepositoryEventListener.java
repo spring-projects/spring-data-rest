@@ -127,11 +127,7 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 		validate("afterDelete", entity);
 	}
 
-	private Errors validate(String event, Object entity) {
-
-		if (entity == null) {
-			return null;
-		}
+	private void validate(String event, Object entity) {
 
 		Errors errors = new ValidationErrors(entity, persistentEntitiesFactory.getObject());
 
@@ -146,8 +142,6 @@ public class ValidatingRepositoryEventListener extends AbstractRepositoryEventLi
 		if (errors.hasErrors()) {
 			throw new RepositoryConstraintViolationException(errors);
 		}
-
-		return errors;
 	}
 
 	private Collection<Validator> getValidatorsForEvent(String event) {

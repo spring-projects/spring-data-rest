@@ -19,6 +19,8 @@ import static org.springframework.http.HttpHeaders.*;
 
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -39,8 +41,8 @@ public class ETagArgumentResolver implements HandlerMethodArgumentResolver {
 	}
 
 	@Override
-	public ETag resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+	public ETag resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
+			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 		return ETag.from(Optional.ofNullable(webRequest.getHeader(IF_MATCH)));
 	}
 }

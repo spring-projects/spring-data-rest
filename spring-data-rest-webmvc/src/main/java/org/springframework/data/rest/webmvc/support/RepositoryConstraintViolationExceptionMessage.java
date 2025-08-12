@@ -19,9 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.rest.core.RepositoryConstraintViolationException;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.validation.FieldError;
 
@@ -66,7 +67,7 @@ public class RepositoryConstraintViolationExceptionMessage {
 		private final @Nullable Object invalidValue;
 		private final String message;
 
-		private ValidationError(String entity, String property, Object invalidValue, String message) {
+		private ValidationError(String entity, String property, @Nullable Object invalidValue, String message) {
 
 			Assert.hasText(entity, "Entity must not be null or empty");
 			Assert.hasText(property, "Property must not be null or empty");
@@ -78,7 +79,7 @@ public class RepositoryConstraintViolationExceptionMessage {
 			this.message = message;
 		}
 
-		public static ValidationError of(String entity, String property, Object invalidValue, String message) {
+		public static ValidationError of(String entity, String property, @Nullable Object invalidValue, String message) {
 			return new ValidationError(entity, property, invalidValue, message);
 		}
 

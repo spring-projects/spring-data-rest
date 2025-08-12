@@ -23,6 +23,8 @@ import java.util.function.Supplier;
 
 import org.jmolecules.ddd.types.AggregateRoot;
 import org.jmolecules.ddd.types.Identifier;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
@@ -30,8 +32,6 @@ import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.data.rest.core.AggregateReference;
 import org.springframework.data.rest.core.AssociationAggregateReference;
 import org.springframework.data.rest.core.ResolvingAggregateReference;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.util.UriComponents;
@@ -43,12 +43,13 @@ import org.springframework.web.util.UriComponents;
  * @author Oliver Drotbohm
  * @since 4.1
  */
+@SuppressWarnings("NullAway")
 class StringToAggregateReferenceConverter implements GenericConverter {
 
 	private static final boolean JMOLECULES_PRESENT = ClassUtils.isPresent(
 			"org.jmolecules.spring.IdentifierToPrimitivesConverter",
 			StringToAggregateReferenceConverter.class.getClassLoader());
-	private static final Class<?> ASSOCIATION_AGGREGATE_REFERENCE_TYPE = tryToLoadAssociationReferenceClass();
+	private static final @Nullable Class<?> ASSOCIATION_AGGREGATE_REFERENCE_TYPE = tryToLoadAssociationReferenceClass();
 
 	private final Supplier<ConversionService> conversionService;
 
@@ -64,7 +65,7 @@ class StringToAggregateReferenceConverter implements GenericConverter {
 		this.conversionService = conversionService;
 	}
 
-	private static Class<?> tryToLoadAssociationReferenceClass() {
+	private static @Nullable Class<?> tryToLoadAssociationReferenceClass() {
 
 		var classLoader = StringToAggregateReferenceConverter.class.getClassLoader();
 
@@ -79,13 +80,11 @@ class StringToAggregateReferenceConverter implements GenericConverter {
 		}
 	}
 
-	@NonNull
 	@Override
 	public Set<ConvertiblePair> getConvertibleTypes() {
 		return Set.of(new ConvertiblePair(String.class, AggregateReference.class));
 	}
 
-	@NonNull
 	@Override
 	public AggregateReference<?, ?> convert(@Nullable Object source, TypeDescriptor sourceType,
 			TypeDescriptor targetType) {
@@ -133,7 +132,7 @@ class StringToAggregateReferenceConverter implements GenericConverter {
 	private static class ResolvingAssociationAggregateReference<T extends AggregateRoot<T, ID>, ID extends Identifier>
 			implements AssociationAggregateReference<T, ID> {
 
-		private AggregateReference<T, ID> delegate;
+		private final AggregateReference<T, ID> delegate;
 
 		ResolvingAssociationAggregateReference(AggregateReference<T, ID> delegate) {
 			this.delegate = delegate;
@@ -145,12 +144,12 @@ class StringToAggregateReferenceConverter implements GenericConverter {
 		}
 
 		@Override
-		public ID resolveId() {
+		public @Nullable ID resolveId() {
 			return delegate.resolveId();
 		}
 
 		@Override
-		public T resolveAggregate() {
+		public @Nullable T resolveAggregate() {
 			return delegate.resolveAggregate();
 		}
 

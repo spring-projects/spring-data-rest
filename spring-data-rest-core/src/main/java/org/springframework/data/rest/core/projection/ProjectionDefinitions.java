@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.core.projection;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Interface to allow the lookup of a projection interface by source type and name. This allows the definition of
  * projections with the same name for different source types.
@@ -30,6 +32,7 @@ public interface ProjectionDefinitions {
 	 * @param name must not be {@literal null} or empty.
 	 * @return
 	 */
+	@Nullable
 	Class<?> getProjectionType(Class<?> sourceType, String name);
 
 	/**

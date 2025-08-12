@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.aot;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.SpringProxy;
@@ -43,16 +44,16 @@ class ProjectionProxyAotProcessor implements BeanRegistrationAotProcessor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProjectionProxyAotProcessor.class);
 
-	private static Class<?>[] ADDITIONAL_INTERFACES = new Class<?>[] { //
+	private static final Class<?>[] ADDITIONAL_INTERFACES = new Class<?>[] { //
 			TargetAware.class, //
 			SpringProxy.class, //
 			DecoratingProxy.class
 	};
 
-	private Set<String> packagesSeen = new HashSet<>();
+	private final Set<String> packagesSeen = new HashSet<>();
 
 	@Override
-	public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
+	public @Nullable BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
 
 		if (!ClassUtils.isAssignable(RepositoryFactoryBeanSupport.class, registeredBean.getBeanClass())) {
 			return null;
@@ -62,6 +63,11 @@ class ProjectionProxyAotProcessor implements BeanRegistrationAotProcessor {
 				.getConstructorArgumentValues() //
 				.getIndexedArgumentValue(0, String.class);
 
+		if (holder == null || holder.getValue() == null) {
+			throw new IllegalStateException(
+					"Constructor argument 0 of '%s' must be a String representing the repository interface to scan for projections."
+							.formatted(registeredBean.getBeanClass().getName()));
+		}
 		var repositoryInterface = (String) holder.getValue();
 		var packageToScan = ClassUtils.getPackageName(repositoryInterface);
 

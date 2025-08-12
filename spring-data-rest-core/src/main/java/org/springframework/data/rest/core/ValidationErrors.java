@@ -15,10 +15,13 @@
  */
 package org.springframework.data.rest.core;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
+
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.ConfigurablePropertyAccessor;
@@ -29,7 +32,6 @@ import org.springframework.beans.PropertyAccessorUtils;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.validation.AbstractPropertyBindingResult;
 
@@ -44,7 +46,7 @@ import org.springframework.validation.AbstractPropertyBindingResult;
  */
 public class ValidationErrors extends AbstractPropertyBindingResult {
 
-	private static final long serialVersionUID = 8141826537389141361L;
+	private static final @Serial long serialVersionUID = 8141826537389141361L;
 
 	private final Object source;
 	private final PersistentEntities entities;
@@ -72,6 +74,7 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 		return new DirectFieldAccessor(getTarget()) {
 
 			@Override
+			@Nullable
 			public Object getPropertyValue(String propertyName) throws BeansException {
 
 				Collection<String> segments = Arrays.asList(propertyName.split("\\."));
@@ -82,7 +85,7 @@ public class ValidationErrors extends AbstractPropertyBindingResult {
 
 					value = lookupValueOn(value, iterator.next());
 
-				} while (iterator.hasNext());
+				} while (value != null && iterator.hasNext());
 
 				return value;
 			}

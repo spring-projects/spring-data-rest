@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @author Jon Brisbin
  */
+@SuppressWarnings("NullAway")
 public class ConstraintViolationExceptionMessage {
 
 	private final ConstraintViolationException cve;

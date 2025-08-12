@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -92,7 +94,7 @@ public class JsonPatchPatchConverter implements PatchConverter<JsonNode> {
 		return new Patch(ops, context);
 	}
 
-	private Object valueFromJsonNode(String path, JsonNode valueNode) {
+	private @Nullable Object valueFromJsonNode(String path, @Nullable JsonNode valueNode) {
 
 		if (valueNode == null || valueNode.isNull()) {
 			return null;

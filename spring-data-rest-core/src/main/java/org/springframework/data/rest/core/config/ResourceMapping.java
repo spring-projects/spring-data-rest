@@ -20,14 +20,18 @@ import static org.springframework.data.rest.core.support.ResourceMappingUtils.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
+import org.springframework.util.ObjectUtils;
+
 /**
  * @author Jon Brisbin
  */
 @Deprecated
 public class ResourceMapping {
 
-	private String rel;
-	private String path;
+	private @Nullable String rel;
+	private @Nullable String path;
 	private boolean exported = true;
 	private final Map<String, ResourceMapping> resourceMappings = new HashMap<String, ResourceMapping>();
 
@@ -39,18 +43,18 @@ public class ResourceMapping {
 		exported = findExported(type);
 	}
 
-	public ResourceMapping(String rel, String path) {
+	public ResourceMapping(@Nullable String rel, @Nullable String path) {
 		this.rel = rel;
 		this.path = path;
 	}
 
-	public ResourceMapping(String rel, String path, boolean exported) {
+	public ResourceMapping(@Nullable String rel, @Nullable String path, boolean exported) {
 		this.rel = rel;
 		this.path = path;
 		this.exported = exported;
 	}
 
-	public String getRel() {
+	public @Nullable String getRel() {
 		return rel;
 	}
 
@@ -59,7 +63,7 @@ public class ResourceMapping {
 		return this;
 	}
 
-	public String getPath() {
+	public @Nullable String getPath() {
 		return path;
 	}
 
@@ -77,7 +81,8 @@ public class ResourceMapping {
 		return this;
 	}
 
-	public ResourceMapping addResourceMappings(Map<String, ResourceMapping> mappings) {
+	public ResourceMapping addResourceMappings(@Nullable Map<String, ResourceMapping> mappings) {
+
 		if (null == mappings) {
 			return this;
 		}
@@ -92,7 +97,7 @@ public class ResourceMapping {
 		return rm;
 	}
 
-	public ResourceMapping getResourceMappingFor(String name) {
+	public @Nullable ResourceMapping getResourceMappingFor(String name) {
 		return resourceMappings.get(name);
 	}
 
@@ -106,7 +111,7 @@ public class ResourceMapping {
 
 	public String getNameForPath(String path) {
 		for (Map.Entry<String, ResourceMapping> mapping : resourceMappings.entrySet()) {
-			if (mapping.getValue().getPath().equals(path)) {
+			if (ObjectUtils.nullSafeEquals(mapping.getValue().getPath(), path)) {
 				return mapping.getKey();
 			}
 		}

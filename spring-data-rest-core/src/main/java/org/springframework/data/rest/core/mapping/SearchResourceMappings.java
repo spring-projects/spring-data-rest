@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.rest.core.Path;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.LinkRelation;
@@ -72,7 +74,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	 * @param path must not be {@literal null} or empty.
 	 * @return
 	 */
-	public Method getMappedMethod(String path) {
+	public @Nullable Method getMappedMethod(String path) {
 
 		Assert.hasText(path, "Path must not be null or empty");
 
@@ -99,7 +101,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	 * @return
 	 * @since 2.3
 	 */
-	public MethodResourceMapping getExportedMethodMappingForRel(LinkRelation rel) {
+	public @Nullable MethodResourceMapping getExportedMethodMappingForRel(LinkRelation rel) {
 
 		Assert.notNull(rel, "Rel must not be null");
 
@@ -116,7 +118,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 	 * @return
 	 * @since 2.4
 	 */
-	public MethodResourceMapping getExportedMethodMappingForPath(String path) {
+	public @Nullable MethodResourceMapping getExportedMethodMappingForPath(String path) {
 
 		Assert.hasText(path, "Path must not be null or empty");
 
@@ -152,7 +154,7 @@ public class SearchResourceMappings implements Iterable<MethodResourceMapping>, 
 
 	@Override
 	public ResourceDescription getDescription() {
-		return null;
+		throw new UnsupportedOperationException("SearchResourceMappings do not have a description");
 	}
 
 	@Override

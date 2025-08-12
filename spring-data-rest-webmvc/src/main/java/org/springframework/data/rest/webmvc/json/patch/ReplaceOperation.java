@@ -16,6 +16,8 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.rest.webmvc.json.patch.SpelPath.UntypedSpelPath;
 
 /**
@@ -31,7 +33,7 @@ class ReplaceOperation extends PatchOperation {
 	 * @param path The path whose value is to be replaced. (e.g., '/foo/bar/4')
 	 * @param value The value that will replace the current path value.
 	 */
-	private ReplaceOperation(UntypedSpelPath path, Object value) {
+	private ReplaceOperation(UntypedSpelPath path, @Nullable Object value) {
 		super("replace", path, value);
 	}
 
@@ -42,7 +44,7 @@ class ReplaceOperation extends PatchOperation {
 	static class ReplaceOperationBuilder {
 		private final String path;
 
-		public ReplaceOperation with(Object value) {
+		public ReplaceOperation with(@Nullable Object value) {
 			return new ReplaceOperation(SpelPath.untyped(path), value);
 		}
 

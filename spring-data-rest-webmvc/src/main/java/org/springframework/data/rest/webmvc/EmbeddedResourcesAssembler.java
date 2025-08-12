@@ -17,6 +17,7 @@ package org.springframework.data.rest.webmvc;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.mapping.PersistentEntity;
@@ -70,6 +71,10 @@ public class EmbeddedResourcesAssembler {
 		final List<EmbeddedWrapper> associationProjections = new ArrayList<EmbeddedWrapper>();
 		final PersistentPropertyAccessor<?> accessor = entity.getPropertyAccessor(instance);
 		final ResourceMetadata metadata = associations.getMetadataFor(entity.getType());
+
+		if (metadata == null) {
+			return Collections.emptyList();
+		}
 
 		entity.doWithAssociations((SimpleAssociationHandler) association -> {
 

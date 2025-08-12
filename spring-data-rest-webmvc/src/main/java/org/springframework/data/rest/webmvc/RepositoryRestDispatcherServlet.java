@@ -1,5 +1,7 @@
 package org.springframework.data.rest.webmvc;
 
+import java.io.Serial;
+
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -7,12 +9,12 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 /**
  * Special {@link DispatcherServlet} subclass that certain exporter components can recognize.
- * 
+ *
  * @author Jon Brisbin
  */
 public class RepositoryRestDispatcherServlet extends DispatcherServlet {
 
-	private static final long serialVersionUID = 5761346441984290240L;
+	private static final @Serial long serialVersionUID = 5761346441984290240L;
 
 	public RepositoryRestDispatcherServlet() {
 		configure();

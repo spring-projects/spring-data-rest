@@ -18,6 +18,8 @@ package org.springframework.data.rest.webmvc.support;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
@@ -65,7 +67,7 @@ public class DomainClassResolver {
 	 * @param webRequest must not be {@literal null}.
 	 * @return domain type that is associated with this request or {@literal null} if no domain class can be resolved.
 	 */
-	public Class<?> resolve(Method method, NativeWebRequest webRequest) {
+	public @Nullable Class<?> resolve(Method method, NativeWebRequest webRequest) {
 
 		Assert.notNull(method, "Method must not be null");
 		Assert.notNull(webRequest, "NativeWebRequest must not be null");
@@ -90,7 +92,7 @@ public class DomainClassResolver {
 
 			ResourceMetadata mapping = mappings.getMetadataFor(domainType);
 
-			if (mapping.getPath().matches(repositoryKey) && mapping.isExported()) {
+			if (mapping != null && mapping.getPath().matches(repositoryKey) && mapping.isExported()) {
 				return domainType;
 			}
 		}

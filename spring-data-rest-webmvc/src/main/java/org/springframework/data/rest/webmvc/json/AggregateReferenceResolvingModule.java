@@ -15,6 +15,7 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
+import java.io.Serial;
 import java.util.Iterator;
 
 import org.springframework.data.rest.core.UriToEntityConverter;
@@ -45,7 +46,7 @@ import com.fasterxml.jackson.databind.type.CollectionLikeType;
  */
 public class AggregateReferenceResolvingModule extends SimpleModule {
 
-	private static final long serialVersionUID = 6002883434719869173L;
+	private static final @Serial long serialVersionUID = 6002883434719869173L;
 
 	/**
 	 * Creates a new {@link AggregateReferenceResolvingModule} using the given {@link UriToEntityConverter} and
@@ -109,7 +110,7 @@ public class AggregateReferenceResolvingModule extends SimpleModule {
 
 				TypeInformation<?> actualType = propertyType.getActualType();
 
-				if (!mappings.exportsMappingFor(actualType.getType())) {
+				if (actualType == null || !mappings.exportsMappingFor(actualType.getType())) {
 					continue;
 				}
 
@@ -130,7 +131,7 @@ public class AggregateReferenceResolvingModule extends SimpleModule {
 			}
 
 			CollectionLikeType collectionType = config.getTypeFactory() //
-					.constructCollectionLikeType(type.getType(), type.getActualType().getType());
+					.constructCollectionLikeType(type.getType(), type.getRequiredActualType().getType());
 			CollectionValueInstantiator instantiator = new CollectionValueInstantiator(type);
 
 			return new CollectionDeserializer(collectionType, elementDeserializer, null, instantiator);

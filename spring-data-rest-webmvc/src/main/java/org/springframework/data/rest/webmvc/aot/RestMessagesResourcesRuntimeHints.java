@@ -15,6 +15,8 @@
  */
 package org.springframework.data.rest.webmvc.aot;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aot.hint.ResourceHints;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
@@ -29,7 +31,7 @@ class RestMessagesResourcesRuntimeHints implements RuntimeHintsRegistrar {
 	 * @see org.springframework.aot.hint.RuntimeHintsRegistrar#registerHints(org.springframework.aot.hint.RuntimeHints, java.lang.ClassLoader)
 	 */
 	@Override
-	public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
 
 		ResourceHints resources = hints.resources();
 

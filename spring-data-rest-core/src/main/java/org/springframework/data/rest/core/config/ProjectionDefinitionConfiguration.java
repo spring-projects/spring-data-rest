@@ -21,10 +21,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.projection.ProjectionDefinitions;
 import org.springframework.data.util.ProxyUtils;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -126,7 +127,7 @@ public class ProjectionDefinitionConfiguration implements ProjectionDefinitions 
 	}
 
 	@Override
-	public Class<?> getProjectionType(Class<?> sourceType, String name) {
+	public @Nullable Class<?> getProjectionType(Class<?> sourceType, String name) {
 		return getProjectionsFor(sourceType).get(name);
 	}
 
