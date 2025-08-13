@@ -18,7 +18,6 @@ package org.springframework.data.rest.core.support;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -74,7 +73,14 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 	public Link createSelfLinkFor(Class<?> type, Object reference) {
 
 		if (type.isInstance(reference)) {
-			return entityLinks.linkToItemResource(type, getResourceId(type, reference));
+
+			var identifier = getResourceId(type, reference);
+
+			if (identifier == null) {
+				throw new IllegalArgumentException("Cannot resolve identifier from reference %s".formatted(reference));
+			}
+
+			return entityLinks.linkToItemResource(type, identifier);
 		}
 
 		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(type);
@@ -86,19 +92,25 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 			identifier = getResourceId(type, conversionService.convert(identifier, type));
 		}
 
+		if (identifier == null) {
+			throw new IllegalArgumentException("Cannot resolve identifier from reference %s".formatted(reference));
+		}
+
 		return entityLinks.linkToItemResource(type, identifier);
 	}
 
 	/**
 	 * Returns the identifier to be used to create the self link URI.
 	 *
-	 * @param reference must not be {@literal null}.
-	 * @return
+	 * @param reference
+	 * @return can be {@literal null}.
 	 */
 	@Nullable
 	private Object getResourceId(Class<?> type, @Nullable Object reference) {
 
-		Assert.notNull(reference, "Reference must not be null");
+		if (reference == null) {
+			return null;
+		}
 
 		if (!lookups.hasPluginFor(type)) {
 			return entityIdentifierOrNull(reference);
