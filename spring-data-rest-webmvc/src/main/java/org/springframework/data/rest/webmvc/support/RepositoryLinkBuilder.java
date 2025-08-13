@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.webmvc.BaseUri;
@@ -29,7 +30,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.util.UriComponents;
 
 /**
- * {@link LinkBuilder} to be able to create links pointing to repositories.
+ * {@code LinkBuilder} to be able to create links pointing to repositories.
  *
  * @author Oliver Gierke
  */
@@ -38,10 +39,10 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 	private final ResourceMetadata metadata;
 
 	/**
-	 * Creates a new {@link RepositoryLinkBuilder} with the given {@link ResourceMetadata} and base {@link URI}.
+	 * Creates a new {@link RepositoryLinkBuilder} with the given {@link ResourceMetadata} and base {@link BaseUri}.
 	 *
 	 * @param metadata must not be {@literal null}.
-	 * @param baseUri
+	 * @param baseUri must not be {@literal null}.
 	 */
 	public RepositoryLinkBuilder(ResourceMetadata metadata, BaseUri baseUri) {
 		this(metadata, baseUri.appendPath(metadata.getPath()), Collections.emptyList());
@@ -52,6 +53,7 @@ public class RepositoryLinkBuilder extends LinkBuilderSupport<RepositoryLinkBuil
 	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param components must not be {@literal null}.
+	 * @param affordances must not be {@literal null}.
 	 */
 	private RepositoryLinkBuilder(ResourceMetadata metadata, UriComponents components, List<Affordance> affordances) {
 
