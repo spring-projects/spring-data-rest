@@ -33,7 +33,7 @@ public interface ExposureConfigurer {
 	 */
 	interface AggregateResourceHttpMethodsFilter extends ComposableFilter<ResourceMetadata, ConfigurableHttpMethods> {
 
-		ConfigurableHttpMethods filter(ResourceMetadata metdata, ConfigurableHttpMethods httpMethods);
+		ConfigurableHttpMethods filter(ResourceMetadata metadata, ConfigurableHttpMethods httpMethods);
 
 		/**
 		 * Returns a default filter that just returns all {@link HttpMethods} as is, i.e. does not apply any filtering.
@@ -53,7 +53,7 @@ public interface ExposureConfigurer {
 	interface AssociationResourceHttpMethodsFilter
 			extends ComposableFilter<PropertyAwareResourceMapping, ConfigurableHttpMethods> {
 
-		ConfigurableHttpMethods filter(PropertyAwareResourceMapping metdata, ConfigurableHttpMethods httpMethods);
+		ConfigurableHttpMethods filter(PropertyAwareResourceMapping metadata, ConfigurableHttpMethods httpMethods);
 
 		/**
 		 * Returns a default filter that just returns all {@link HttpMethods} as is, i.e. does not apply any filtering.
