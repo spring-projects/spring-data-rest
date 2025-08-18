@@ -21,7 +21,6 @@ import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.introspect.AnnotatedMember;
-import tools.jackson.databind.introspect.BasicClassIntrospector;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.introspect.ClassIntrospector;
 import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
@@ -52,7 +51,6 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
  */
 class WrappedJackson3Properties {
 
-	private static final ClassIntrospector INTROSPECTOR = new BasicClassIntrospector();
 	private static final AnnotationIntrospector ANNOTATION_INTROSPECTOR = new JacksonAnnotationIntrospector();
 
 	private final Map<String, List<PersistentProperty<?>>> fieldNameToProperties;
@@ -212,10 +210,10 @@ class WrappedJackson3Properties {
 		private BeanDescription getBeanDescription(Class<?> type) {
 
 			SerializationConfig config = mapper.serializationConfig();
-
 			JavaType javaType = mapper.constructType(type);
-			return INTROSPECTOR.introspectForSerialization(javaType,
-					config.classIntrospectorInstance().introspectClassAnnotations(javaType));
+			ClassIntrospector introspector = config.classIntrospectorInstance();
+
+			return introspector.introspectForSerialization(javaType, introspector.introspectClassAnnotations(javaType));
 		}
 
 		private static Optional<AnnotatedMember> findAnnotatedMember(BeanPropertyDefinition property) {

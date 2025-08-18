@@ -16,10 +16,12 @@
 package org.springframework.data.rest.tests.shop;
 
 import jakarta.annotation.PostConstruct;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.MapperBuilder;
 
 import java.math.BigDecimal;
 
-import org.jmolecules.jackson.JMoleculesModule;
+import org.jmolecules.jackson3.JMoleculesModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,8 +35,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Oliver Gierke
@@ -93,9 +93,14 @@ class ShopConfiguration {
 						LineItemTypeRepository::findByName);
 			}
 
+			/*
+			 * (non-Javadoc)
+			 * @see org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer#configureJacksonObjectMapper(tools.jackson.databind.cfg.MapperBuilder)
+			 */
 			@Override
-			public void configureJacksonObjectMapper(ObjectMapper objectMapper) {
-				objectMapper.registerModule(new JMoleculesModule());
+			public void configureJacksonObjectMapper(
+					MapperBuilder<? extends ObjectMapper, ? extends MapperBuilder<?, ?>> builder) {
+				builder.addModule(new JMoleculesModule());
 			}
 		};
 	}

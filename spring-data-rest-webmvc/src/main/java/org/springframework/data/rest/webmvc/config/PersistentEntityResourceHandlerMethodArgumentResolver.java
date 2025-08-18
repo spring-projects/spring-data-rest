@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -49,6 +48,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.AbstractJacksonHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.util.Assert;
@@ -188,11 +188,11 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 			HttpMessageConverter<Object> converter, Optional<Object> objectToUpdate) {
 
 		// JSON + PATCH request
-		if (request.isPatchRequest() && converter instanceof AbstractJacksonHttpMessageConverter c) {
+		if (request.isPatchRequest() && converter instanceof JacksonJsonHttpMessageConverter c) {
 
 			return objectToUpdate.map(it -> {
 
-				ObjectMapper mapper = c.getObjectMapper();
+				ObjectMapper mapper = c.getMapper();
 				return readPatch(request, mapper, it);
 
 			}).orElseThrow(() -> new ResourceNotFoundException());
@@ -200,7 +200,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 			// JSON + PUT request
 		} else if (converter instanceof AbstractJacksonHttpMessageConverter c) {
 
-			ObjectMapper mapper = c.getObjectMapper();
+			ObjectMapper mapper = c.getMapper();
 
 			return objectToUpdate.map(it -> readPutForUpdate(request, mapper, it))//
 					.orElseGet(() -> read(request, converter, information));

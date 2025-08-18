@@ -28,10 +28,14 @@
 		<project.type>multi</project.type>
 		<dist.id>spring-data-rest</dist.id>
 
+		<jmolecules-integration>0.29.0-SNAPSHOT</jmolecules-integration>
+
 		<springdata.commons>4.0.0-GH-3292-SNAPSHOT</springdata.commons>
 		<springdata.jpa>4.0.0-SNAPSHOT</springdata.jpa>
 		<springdata.mongodb>5.0.0-SNAPSHOT</springdata.mongodb>
 		<springdata.keyvalue>4.0.0-SNAPSHOT</springdata.keyvalue>
+		<spring>7.0.0-SNAPSHOT</spring>
+		<spring-hateoas>3.0.0-GH-2357-SNAPSHOT</spring-hateoas>
 
 		<hibernate.version>7.0.0.Beta1</hibernate.version>
 	</properties>
@@ -114,6 +118,12 @@
 	<dependencies>
 
 		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+			<version>${springdata.commons}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>jakarta.validation</groupId>
 			<artifactId>jakarta.validation-api</artifactId>
 			<version>${validation}</version>
@@ -139,6 +149,16 @@
 		<repository>
 			<id>spring-snapshot</id>
 			<url>https://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>central-snapshot</id>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>

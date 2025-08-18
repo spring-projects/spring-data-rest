@@ -30,7 +30,6 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.CollectionFactory;
@@ -63,6 +62,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -237,7 +237,7 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 
 	@RequestMapping(value = BASE_MAPPING, method = { PATCH, PUT, POST }, //
 			consumes = { MediaType.APPLICATION_JSON_VALUE, SPRING_DATA_COMPACT_JSON_VALUE, TEXT_URI_LIST_VALUE })
-	public ResponseEntity<? extends RepresentationModel<?>> createPropertyReference(
+	public ResponseEntity<?> createPropertyReference(
 			RootResourceInformation resourceInformation, HttpMethod requestMethod,
 			@Nullable @RequestBody(required = false) CollectionModel<Object> incoming, @BackendId Serializable id,
 			@PathVariable String property) throws Exception {
@@ -285,7 +285,8 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 				}
 
 				if (!source.getLinks().hasSingleLink()) {
-					throw new IllegalArgumentException(
+
+					throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 							"Must send only 1 link to update a property reference that isn't a List or a Map.");
 				}
 
@@ -433,8 +434,8 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 	}
 
 	/**
-	 * Custom {@link RepresentationModel} to be used with maps as {@link EntityModel} doesn't properly unwrap
-	 * {@link Map}s due to some limitation in Jackson.
+	 * Custom {@link RepresentationModel} to be used with maps as {@link EntityModel} doesn't properly unwrap {@link Map}s
+	 * due to some limitation in Jackson.
 	 *
 	 * @author Oliver Drotbohm
 	 * @see https://github.com/FasterXML/jackson-databind/issues/171

@@ -15,19 +15,16 @@
  */
 package org.springframework.data.rest.webmvc.alps;
 
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
-import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.json.JsonMapper.Builder;
 
 import java.util.Arrays;
 import java.util.Collections;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.mediatype.alps.Alps;
@@ -69,7 +66,7 @@ public class AlpsJackson3JsonHttpMessageConverter extends JacksonJsonHttpMessage
 	 *
 	 * @param converter must not be {@literal null}.
 	 */
-	public AlpsJackson3JsonHttpMessageConverter(ObjectMapper objectMapper,
+	public AlpsJackson3JsonHttpMessageConverter(JsonMapper objectMapper,
 			RootResourceInformationToAlpsDescriptorConverter converter) {
 		this(objectMapper.rebuild(), converter);
 	}
@@ -79,8 +76,7 @@ public class AlpsJackson3JsonHttpMessageConverter extends JacksonJsonHttpMessage
 	 *
 	 * @param converter must not be {@literal null}.
 	 */
-	AlpsJackson3JsonHttpMessageConverter(
-			MapperBuilder<? extends ObjectMapper, ? extends MapperBuilder<?, ?>> objectMapper,
+	AlpsJackson3JsonHttpMessageConverter(Builder objectMapper,
 			RootResourceInformationToAlpsDescriptorConverter converter) {
 
 		super(objectMapper.changeDefaultPropertyInclusion(it -> it.withValueInclusion(Include.NON_EMPTY))

@@ -21,11 +21,10 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.hateoas.server.mvc.TypeConstrainedJacksonJsonHttpMessageConverter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
@@ -49,7 +48,7 @@ class HalFormsAdaptingResponseBodyAdvice<T extends RepresentationModel<T>>
 
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-		return TypeConstrainedMappingJackson2HttpMessageConverter.class.isAssignableFrom(converterType);
+		return TypeConstrainedJacksonJsonHttpMessageConverter.class.isAssignableFrom(converterType);
 	}
 
 	@Override

@@ -17,7 +17,8 @@ package org.springframework.data.rest.webmvc.config;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.data.rest.webmvc.util.AssertionUtils.*;
+
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Collection;
 import java.util.Date;
@@ -46,8 +47,8 @@ import org.springframework.data.geo.Point;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
+import org.springframework.data.rest.webmvc.alps.AlpsJackson3JsonHttpMessageConverter;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
@@ -56,10 +57,9 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.hateoas.server.core.DefaultLinkRelationProvider;
-import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.hateoas.server.mvc.TypeConstrainedJacksonJsonHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.Validator;
@@ -69,7 +69,6 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -136,31 +135,29 @@ class RepositoryRestMvConfigurationIntegrationTests {
 		Sample sample = new Sample();
 		sample.date = new Date();
 
-		ObjectMapper mapper = getObjectMapper();
+		JsonMapper mapper = getObjectMapper();
 
 		String result = JsonPath.read(mapper.writeValueAsString(sample), "$.date");
 
-		assertThat(result).matches(suffix("+00") //
-				.or(suffix("+0000")) //
-				.or(suffix("+00:00")), "ISO-8601-TZ1, ISO-8601-TZ2, or ISO-8601-TZ3");
+		assertThat(result).endsWith("Z");
 	}
 
 	@Test // DATAREST-362
-	void doesNotExposePersistentEntityJackson2ModuleAsBean() {
+	void doesNotExposePersistentEntityJacksonModuleAsBean() {
 
 		assertThatExceptionOfType(NoSuchBeanDefinitionException.class) //
-				.isThrownBy(() -> context.getBean(PersistentEntityJackson2Module.class));
+				.isThrownBy(() -> context.getBean(PersistentEntityJackson3Module.class));
 	}
 
 	@Test // DATAREST-362
 	void registeredHttpMessageConvertersAreTypeConstrained() {
 
-		Collection<MappingJackson2HttpMessageConverter> converters = context
-				.getBeansOfType(MappingJackson2HttpMessageConverter.class).values();
+		Collection<JacksonJsonHttpMessageConverter> converters = context
+				.getBeansOfType(JacksonJsonHttpMessageConverter.class).values();
 
 		converters.forEach(converter -> {
-			assertThat(converter).isInstanceOfAny(TypeConstrainedMappingJackson2HttpMessageConverter.class,
-					AlpsJsonHttpMessageConverter.class);
+			assertThat(converter).isInstanceOfAny(TypeConstrainedJacksonJsonHttpMessageConverter.class,
+					AlpsJackson3JsonHttpMessageConverter.class);
 		});
 	}
 
@@ -269,11 +266,11 @@ class RepositoryRestMvConfigurationIntegrationTests {
 		});
 	}
 
-	private static ObjectMapper getObjectMapper() {
+	private static JsonMapper getObjectMapper() {
 
-		AbstractJackson2HttpMessageConverter converter = context.getBean("halJacksonHttpMessageConverter",
-				AbstractJackson2HttpMessageConverter.class);
-		return converter.getObjectMapper();
+		JacksonJsonHttpMessageConverter converter = context.getBean("halJacksonHttpMessageConverter",
+				JacksonJsonHttpMessageConverter.class);
+		return converter.getMapper();
 	}
 
 	@Configuration

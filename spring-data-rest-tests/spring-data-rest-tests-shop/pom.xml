@@ -43,7 +43,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jmolecules.integrations</groupId>
-			<artifactId>jmolecules-jackson</artifactId>
+			<artifactId>jmolecules-jackson3</artifactId>
 			<version>${jmolecules-integration}</version>
 			<scope>test</scope>
 		</dependency>

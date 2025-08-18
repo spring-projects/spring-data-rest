@@ -31,7 +31,6 @@ import tools.jackson.databind.deser.CreatorProperty;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.deser.ValueInstantiator;
-import tools.jackson.databind.deser.bean.PropertyValueBuffer;
 import tools.jackson.databind.deser.jdk.CollectionDeserializer;
 import tools.jackson.databind.deser.std.StdDeserializer;
 import tools.jackson.databind.deser.std.StdScalarDeserializer;
@@ -61,7 +60,6 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentEntity;
@@ -71,7 +69,6 @@ import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
-import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
@@ -90,10 +87,6 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
-import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 
 /**
  * Jackson 3 module to serialize and deserialize {@link PersistentEntityResource}s.
@@ -811,28 +804,17 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 			return property.getType();
 		}
 
-		private Object create() {
+		/*
+		 * (non-Javadoc)
+		 * @see tools.jackson.databind.deser.ValueInstantiator#createUsingDefault(tools.jackson.databind.DeserializationContext)
+		 */
+		@Override
+		public Object createUsingDefault(DeserializationContext ctxt) throws JacksonException {
 
 			Class<?> collectionOrMapType = property.getType();
 
 			return property.isMap() ? CollectionFactory.createMap(collectionOrMapType, 0)
 					: CollectionFactory.createCollection(collectionOrMapType, 0);
-		}
-
-		@Override
-		public Object createFromObjectWith(DeserializationContext ctxt, SettableBeanProperty[] props,
-				PropertyValueBuffer buffer) throws JacksonException {
-			return create();
-		}
-
-		@Override
-		public Object createUsingDefaultOrWithoutArguments(DeserializationContext ctxt) throws JacksonException {
-			return create();
-		}
-
-		@Override
-		public Object createFromObjectWith(DeserializationContext ctxt, Object[] args) throws JacksonException {
-			return create();
 		}
 	}
 
