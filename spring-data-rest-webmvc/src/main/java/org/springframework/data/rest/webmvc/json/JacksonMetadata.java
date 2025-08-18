@@ -15,15 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import tools.jackson.databind.BeanDescription;
-import tools.jackson.databind.DeserializationConfig;
-import tools.jackson.databind.JavaType;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SerializationConfig;
-import tools.jackson.databind.introspect.AnnotatedClass;
-import tools.jackson.databind.introspect.AnnotatedMember;
-import tools.jackson.databind.introspect.BeanPropertyDefinition;
-
 import java.util.Iterator;
 import java.util.List;
 
@@ -37,8 +28,17 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.TypedResourceDescription;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 
 /**
  * Value object to abstract Jackson based bean metadata of a given type.
@@ -66,21 +66,17 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 		this.mapper = mapper;
 
-		SerializationConfig serializationConfig = mapper.serializationConfig();
+		SerializationConfig serializationConfig = mapper.getSerializationConfig();
 		JavaType javaType = serializationConfig.constructType(type);
-		AnnotatedClass annotatedClass = serializationConfig.classIntrospectorInstance()
-				.introspectClassAnnotations(javaType);
-		BeanDescription description = serializationConfig.classIntrospectorInstance().introspectForSerialization(javaType,
-				annotatedClass);
+		BeanDescription description = serializationConfig.introspect(javaType);
 
 		this.definitions = description.findProperties();
 		this.isValue = description.findJsonValueAccessor() != null;
 
-		DeserializationConfig deserializationConfig = mapper.deserializationConfig();
+		DeserializationConfig deserializationConfig = mapper.getDeserializationConfig();
 		JavaType deserializationType = deserializationConfig.constructType(type);
 
-		this.deserializationDefinitions = deserializationConfig.classIntrospectorInstance()
-				.introspectForDeserialization(deserializationType, annotatedClass).findProperties();
+		this.deserializationDefinitions = deserializationConfig.introspect(deserializationType).findProperties();
 	}
 
 	/**
@@ -163,13 +159,13 @@ public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 		try {
 
-			SerializationConfig provider = mapper.serializationConfig();
+			SerializerProvider provider = mapper.getSerializerProvider();
 
-			if (!(provider instanceof DefaultSerializationContext)) {
+			if (!(provider instanceof DefaultSerializerProvider)) {
 				return null;
 			}
 
-			provider = ((DefaultSerializationContext) provider).createInstance(mapper.getSerializationConfig(),
+			provider = ((DefaultSerializerProvider) provider).createInstance(mapper.getSerializationConfig(),
 					mapper.getSerializerFactory());
 
 			return provider.findValueSerializer(type);

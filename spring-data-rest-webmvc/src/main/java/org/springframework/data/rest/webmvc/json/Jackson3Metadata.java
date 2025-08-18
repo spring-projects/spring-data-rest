@@ -20,6 +20,7 @@ import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.introspect.AnnotatedMember;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
@@ -35,7 +36,6 @@ import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.mapping.TypedResourceDescription;
 import org.springframework.util.Assert;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 
 /**
@@ -157,26 +157,11 @@ public class Jackson3Metadata implements Iterable<BeanPropertyDefinition> {
 	 * @param type must not be {@literal null}.
 	 * @return
 	 */
-	public JsonSerializer<?> getTypeSerializer(Class<?> type) {
+	public ValueSerializer<?> getTypeSerializer(Class<?> type) {
 
 		Assert.notNull(type, "Type must not be null");
 
-		try {
-
-			SerializationConfig provider = mapper.serializationConfig();
-
-			if (!(provider instanceof DefaultSerializationContext)) {
-				return null;
-			}
-
-			provider = ((DefaultSerializationContext) provider).createInstance(mapper.getSerializationConfig(),
-					mapper.getSerializerFactory());
-
-			return provider.findValueSerializer(type);
-
-		} catch (JsonMappingException o_O) {
-			return null;
-		}
+		return mapper._serializationContext().findValueSerializer(type);
 	}
 
 	@Override
