@@ -15,7 +15,6 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import java.io.Serial;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.introspect.AnnotatedMember;
@@ -165,7 +164,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		return entities.getPersistentEntity(type).map(entity -> {
 
-			final JacksonMetadata jackson = new JacksonMetadata(objectMapper, type);
+			final Jackson3Metadata jackson = new Jackson3Metadata(objectMapper, type);
 			JsonSchemaPropertyRegistrar registrar = new JsonSchemaPropertyRegistrar(jackson);
 
 			for (BeanPropertyDefinition definition : jackson) {
@@ -413,11 +412,11 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 	private static class JacksonProperty {
 
-		private final JacksonMetadata metadata;
+		private final Jackson3Metadata metadata;
 		private final Optional<? extends PersistentProperty<?>> property;
 		private final BeanPropertyDefinition definition;
 
-		public JacksonProperty(JacksonMetadata metadata, Optional<? extends PersistentProperty<?>> property,
+		public JacksonProperty(Jackson3Metadata metadata, Optional<? extends PersistentProperty<?>> property,
 				BeanPropertyDefinition definition) {
 
 			Assert.notNull(metadata, "JacksonMetadata must not be null");

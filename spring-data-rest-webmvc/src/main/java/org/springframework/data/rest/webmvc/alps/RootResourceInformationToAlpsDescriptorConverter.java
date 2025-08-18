@@ -53,7 +53,7 @@ import org.springframework.data.rest.core.mapping.SupportedHttpMethods;
 import org.springframework.data.rest.webmvc.ProfileController;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.EnumTranslator;
-import org.springframework.data.rest.webmvc.json.JacksonMetadata;
+import org.springframework.data.rest.webmvc.json.Jackson3Metadata;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
@@ -217,7 +217,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 		List<Descriptor> descriptors = new ArrayList<Descriptor>();
 
-		for (BeanPropertyDefinition definition : new JacksonMetadata(mapper, type)) {
+		for (BeanPropertyDefinition definition : new Jackson3Metadata(mapper, type)) {
 
 			AnnotatedMethod getter = definition.getGetter();
 			Description description = getter.getAnnotation(Description.class);
@@ -311,7 +311,7 @@ public class RootResourceInformationToAlpsDescriptorConverter {
 
 		final PersistentEntity<?, ?> entity = persistentEntities.getRequiredPersistentEntity(type);
 		final List<Descriptor> propertyDescriptors = new ArrayList<Descriptor>();
-		final JacksonMetadata jackson = new JacksonMetadata(mapper, type);
+		final Jackson3Metadata jackson = new Jackson3Metadata(mapper, type);
 		final ResourceMetadata metadata = associations.getMetadataFor(entity.getType());
 
 		entity.doWithProperties(new SimplePropertyHandler() {

@@ -17,6 +17,9 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.assertj.core.api.Assertions.*;
 
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -54,7 +57,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.util.UriTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -83,11 +85,11 @@ class PersistentEntitySerializationTests {
 
 		@Bean
 		@Override
-		public ObjectMapper objectMapper() {
+		public JsonMapper objectMapper() {
 
-			ObjectMapper objectMapper = super.objectMapper();
-			objectMapper.registerModule(new JacksonSerializers(new EnumTranslator(MessageResolver.DEFAULTS_ONLY)));
-			return objectMapper;
+			return super.objectMapper().rebuild()
+					.addModule(new Jackson3Serializers(new EnumTranslator(MessageResolver.DEFAULTS_ONLY)))
+					.build();
 		}
 	}
 

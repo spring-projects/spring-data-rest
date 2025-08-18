@@ -18,6 +18,7 @@ package org.springframework.data.rest.webmvc.json;
 import static org.assertj.core.api.Assertions.*;
 
 import jakarta.persistence.EntityManager;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,12 +35,10 @@ import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.OrderRepository;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
-import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Integration tests for {@link Jackson2DatatypeHelper}.
@@ -58,7 +57,7 @@ class Jackson2DatatypeHelperIntegrationTests {
 	@Autowired OrderRepository orders;
 	@Autowired EntityManager em;
 
-	ObjectMapper objectMapper;
+	JsonMapper objectMapper;
 
 	Order order;
 
@@ -66,8 +65,8 @@ class Jackson2DatatypeHelperIntegrationTests {
 	void setUp() {
 
 		this.order = orders.save(new Order(people.save(new Person("Dave", "Matthews"))));
-		this.objectMapper = context.getBean("halJacksonHttpMessageConverter", AbstractJackson2HttpMessageConverter.class)
-				.getObjectMapper();
+		this.objectMapper = context.getBean("halJacksonHttpMessageConverter", JacksonJsonHttpMessageConverter.class)
+				.getMapper();
 
 		// Reset JPA to make sure the query returns a result with proxy references
 		em.flush();

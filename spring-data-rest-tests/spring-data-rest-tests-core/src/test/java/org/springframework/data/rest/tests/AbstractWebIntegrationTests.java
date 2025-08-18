@@ -18,7 +18,6 @@ package org.springframework.data.rest.tests;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-import io.micrometer.observation.ObservationRegistry;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -35,7 +34,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.hateoas.Link;
@@ -132,17 +130,15 @@ public abstract class AbstractWebIntegrationTests {
 		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(link);
 	}
 
-	protected MockHttpServletResponse putOnlyExpect5XXStatus(Link link, Object payload, MediaType mediaType)
+	protected MockHttpServletResponse putOnlyExpect4XXStatus(Link link, Object payload, MediaType mediaType)
 			throws Exception {
 
 		String href = link.isTemplated() ? link.expand().getHref() : link.getHref();
 
 		MvcTestResult result = mvc.perform(put(href).content(payload.toString()).contentType(mediaType));
-		assertThat(result).hasStatus5xxServerError();
+		assertThat(result).hasStatus4xxClientError();
 
-		MockHttpServletResponse response = result.getResponse();
-
-		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(link);
+		return result.getResponse();
 	}
 
 	protected MockHttpServletResponse patchAndGet(Link link, Object payload, MediaType mediaType) throws Exception {
@@ -153,9 +149,7 @@ public abstract class AbstractWebIntegrationTests {
 				content(payload.toString()).contentType(mediaType));
 		assertThat(result).hasStatus2xxSuccessful();
 
-		MockHttpServletResponse response = result.getResponse();
-
-		return StringUtils.hasText(response.getContentAsString()) ? response : client.request(href);
+		return result.getResponse();
 	}
 
 	protected void deleteAndVerify(Link link) throws Exception {
@@ -164,8 +158,6 @@ public abstract class AbstractWebIntegrationTests {
 
 		MvcTestResult result = mvc.perform(delete(href));
 		assertThat(result).hasStatus(HttpStatus.NO_CONTENT);
-
-		MockHttpServletResponse response = result.getResponse();
 
 		// Check that the resource is unavailable after a DELETE
 		assertThat(mvc.perform(get(href))).hasStatus(HttpStatus.NOT_FOUND);//

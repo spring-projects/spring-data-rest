@@ -24,13 +24,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.mediatype.Affordances;
-import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.hateoas.server.mvc.TypeConstrainedJacksonJsonHttpMessageConverter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -58,7 +57,7 @@ class HalFormsAdaptingResponseBodyAdviceTests<T extends RepresentationModel<T>> 
 	@Test // #2060
 	void supportsTypeConstraintedHttpMessageConverterOnly() {
 
-		assertThat(advice.supports(parameter, TypeConstrainedMappingJackson2HttpMessageConverter.class)).isTrue();
+		assertThat(advice.supports(parameter, TypeConstrainedJacksonJsonHttpMessageConverter.class)).isTrue();
 		assertThat(advice.supports(parameter, MappingJackson2HttpMessageConverter.class)).isFalse();
 	}
 
@@ -112,7 +111,7 @@ class HalFormsAdaptingResponseBodyAdviceTests<T extends RepresentationModel<T>> 
 		ServletServerHttpResponse response = new ServletServerHttpResponse(this.response);
 
 		advice.beforeBodyWrite(model, parameter, MediaTypes.HAL_FORMS_JSON,
-				TypeConstrainedMappingJackson2HttpMessageConverter.class,
+				TypeConstrainedJacksonJsonHttpMessageConverter.class,
 				new ServletServerHttpRequest(request), response);
 
 		assertThat(response.getHeaders().getContentType()).isEqualTo(mediaType);

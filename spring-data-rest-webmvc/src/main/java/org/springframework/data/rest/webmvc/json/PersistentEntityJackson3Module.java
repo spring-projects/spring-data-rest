@@ -31,7 +31,6 @@ import tools.jackson.databind.deser.CreatorProperty;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.deser.ValueInstantiator;
-import tools.jackson.databind.deser.bean.PropertyValueBuffer;
 import tools.jackson.databind.deser.jdk.CollectionDeserializer;
 import tools.jackson.databind.deser.std.StdDeserializer;
 import tools.jackson.databind.deser.std.StdScalarDeserializer;
@@ -61,7 +60,6 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentEntity;
@@ -71,7 +69,6 @@ import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
-import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
@@ -90,10 +87,6 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
-import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 
 /**
  * Jackson 3 module to serialize and deserialize {@link PersistentEntityResource}s.
@@ -224,7 +217,7 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 	}
 
 	/**
-	 * {@link BeanSerializerModifier} to drop the property descriptors for associations.
+	 * {@link ValueSerializerModifier} to drop the property descriptors for associations.
 	 *
 	 * @author Oliver Gierke
 	 */
@@ -407,9 +400,9 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 	}
 
 	/**
-	 * A {@link BeanDeserializerModifier} that registers a custom {@link UriStringDeserializer} for association properties
-	 * of {@link PersistentEntity}s. This allows to submit URIs for those properties in request payloads, so that
-	 * non-optional associations can be populated on resource creation.
+	 * A {@link ValueDeserializerModifier} that registers a custom {@link UriStringDeserializer} for association
+	 * properties of {@link PersistentEntity}s. This allows to submit URIs for those properties in request payloads, so
+	 * that non-optional associations can be populated on resource creation.
 	 *
 	 * @author Oliver Gierke
 	 * @author Lars Vierbergen
@@ -486,7 +479,7 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 
 		/**
 		 * Advanced customization of the {@link CreatorProperty} instances customized to additionally register them with the
-		 * {@link ValueInstantiator} backing the {@link BeanDeserializerModifier}. This is necessary as the standard
+		 * {@link ValueInstantiator} backing the {@link ValueDeserializerModifier}. This is necessary as the standard
 		 * customization does not propagate into the initial object construction as the {@link CreatorProperty} instances
 		 * for that are looked up via the {@link ValueInstantiator} and the property model behind those is not undergoing
 		 * the customization currently (Jackson 2.9.9).
@@ -573,7 +566,7 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 	}
 
 	/**
-	 * Custom {@link JsonDeserializer} to interpret {@link String} values as URIs and resolve them using a
+	 * Custom {@link StdDeserializer} to interpret {@link String} values as URIs and resolve them using a
 	 * {@link UriToEntityConverter}.
 	 *
 	 * @author Oliver Gierke
@@ -811,28 +804,17 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 			return property.getType();
 		}
 
-		private Object create() {
+		/*
+		 * (non-Javadoc)
+		 * @see tools.jackson.databind.deser.ValueInstantiator#createUsingDefault(tools.jackson.databind.DeserializationContext)
+		 */
+		@Override
+		public Object createUsingDefault(DeserializationContext ctxt) throws JacksonException {
 
 			Class<?> collectionOrMapType = property.getType();
 
 			return property.isMap() ? CollectionFactory.createMap(collectionOrMapType, 0)
 					: CollectionFactory.createCollection(collectionOrMapType, 0);
-		}
-
-		@Override
-		public Object createFromObjectWith(DeserializationContext ctxt, SettableBeanProperty[] props,
-				PropertyValueBuffer buffer) throws JacksonException {
-			return create();
-		}
-
-		@Override
-		public Object createUsingDefaultOrWithoutArguments(DeserializationContext ctxt) throws JacksonException {
-			return create();
-		}
-
-		@Override
-		public Object createFromObjectWith(DeserializationContext ctxt, Object[] args) throws JacksonException {
-			return create();
 		}
 	}
 

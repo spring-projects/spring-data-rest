@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -92,6 +91,7 @@ public class PersistentEntityResource extends EntityModel<Object> {
 	 *
 	 * @return
 	 */
+	@JsonIgnore
 	public PersistentEntity<?, ? extends PersistentProperty<?>> getPersistentEntity() {
 		return entity;
 	}

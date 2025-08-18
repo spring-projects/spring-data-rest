@@ -374,9 +374,9 @@ public class JpaWebTests extends CommonWebTests {
 		Link secondCreatorLink = preparePersonResource(new Person("Pippin", "Baggins"));
 		Link orderLinkToItsCreator = prepareOrderResource(new Order());
 
-		MockHttpServletResponse response = putOnlyExpect5XXStatus(orderLinkToItsCreator,
+		MockHttpServletResponse response = putOnlyExpect4XXStatus(orderLinkToItsCreator,
 				toUriList(firstCreatorLink, secondCreatorLink), TEXT_URI_LIST);
-		assertThat(response.getContentAsString()).contains("send only 1 link");
+		assertThat(response.getErrorMessage()).contains("send only 1 link");
 	}
 
 	@Test // DATAREST-219
@@ -587,7 +587,7 @@ public class JpaWebTests extends CommonWebTests {
 
 		assertThat(mvc.perform(patch(builder.build().toUriString()).content("{ \"saleItem\" : \"SpringyTequila\" }")
 				.contentType(MediaType.APPLICATION_JSON).header(IF_MATCH, "\"falseETag\"")))
-				.hasStatus(HttpStatus.PRECONDITION_FAILED);
+						.hasStatus(HttpStatus.PRECONDITION_FAILED);
 	}
 
 	@Test // DATAREST-423

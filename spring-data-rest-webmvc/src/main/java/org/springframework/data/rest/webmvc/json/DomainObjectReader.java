@@ -33,7 +33,6 @@ import java.util.Optional;
 import java.util.function.IntFunction;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.core.CollectionFactory;
@@ -293,7 +292,7 @@ public class DomainObjectReader {
 								() -> doMergeNestedMap((Map<Object, Object>) it, objectNode, mapper, property.getTypeInformation()));
 
 						// Remove potentially emptied Map as values have been handled recursively
-						if (!objectNode.properties().isEmpty()) {
+						if (objectNode.properties().isEmpty()) {
 							i.remove();
 						}
 
@@ -313,7 +312,7 @@ public class DomainObjectReader {
 
 	private static Object readRawCollectionElement(Class<?> elementType, String fieldName, int index, JsonNode root,
 			ObjectMapper mapper) {
-			return mapper.readerFor(elementType).at("/" + fieldName + "/" + index).readValue(root);
+		return mapper.readerFor(elementType).at("/" + fieldName + "/" + index).readValue(root);
 	}
 
 	/**

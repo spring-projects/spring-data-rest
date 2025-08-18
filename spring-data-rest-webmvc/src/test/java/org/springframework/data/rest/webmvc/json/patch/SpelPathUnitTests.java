@@ -17,6 +17,8 @@ package org.springframework.data.rest.webmvc.json.patch;
 
 import static org.assertj.core.api.Assertions.*;
 
+import tools.jackson.databind.ObjectMapper;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +37,6 @@ import org.springframework.format.support.DefaultFormattingConversionService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Unit tests for {@link SpelPath}.

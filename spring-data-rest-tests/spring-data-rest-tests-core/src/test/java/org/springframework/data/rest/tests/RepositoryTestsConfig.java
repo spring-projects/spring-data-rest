@@ -17,6 +17,11 @@ package org.springframework.data.rest.tests;
 
 import static org.mockito.Mockito.*;
 
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -30,6 +35,7 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.support.DefaultRepositoryInvokerFactory;
 import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.config.EnumTranslationConfiguration;
 import org.springframework.data.rest.core.config.MetadataConfiguration;
@@ -40,8 +46,8 @@ import org.springframework.data.rest.core.support.DefaultSelfLinkProvider;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module.LookupObjectSerializer;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module.LookupObjectSerializer;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.DefaultLinkCollector;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
@@ -53,18 +59,14 @@ import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.hateoas.mediatype.hal.DefaultCurieProvider;
-import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
+import org.springframework.hateoas.mediatype.hal.HalJacksonModule;
+import org.springframework.hateoas.mediatype.hal.HalJacksonModule.HalHandlerInstantiator;
 import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import org.springframework.hateoas.server.mvc.RepresentationModelProcessorInvoker;
 import org.springframework.plugin.core.PluginRegistry;
-
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Jon Brisbin
@@ -107,7 +109,7 @@ public class RepositoryTestsConfig {
 	}
 
 	@Bean
-	public Module persistentEntityModule() {
+	public SimpleModule persistentEntityModule() {
 
 		var conversionService = new DefaultConversionService();
 
@@ -118,14 +120,14 @@ public class RepositoryTestsConfig {
 		SelfLinkProvider selfLinkProvider = new DefaultSelfLinkProvider(persistentEntities(), entityLinks,
 				Collections.<EntityLookup<?>> emptyList(), conversionService);
 
-		DefaultRepositoryInvokerFactory invokerFactory = new DefaultRepositoryInvokerFactory(repositories());
+		RepositoryInvokerFactory invokerFactory = new DefaultRepositoryInvokerFactory(repositories());
 		UriToEntityConverter uriToEntityConverter = new UriToEntityConverter(persistentEntities(), invokerFactory,
 				() -> conversionService);
 
 		Associations associations = new Associations(mappings, config());
 		LinkCollector collector = new DefaultLinkCollector(persistentEntities(), selfLinkProvider, associations);
 
-		return new PersistentEntityJackson2Module(associations, persistentEntities(), uriToEntityConverter, collector,
+		return new PersistentEntityJackson3Module(associations, persistentEntities(), uriToEntityConverter, collector,
 				invokerFactory, mock(LookupObjectSerializer.class),
 				new RepresentationModelProcessorInvoker(Collections.<RepresentationModelProcessor<?>> emptyList()),
 				new EmbeddedResourcesAssembler(persistentEntities(), associations, mock(ExcerptProjector.class)));
@@ -135,15 +137,13 @@ public class RepositoryTestsConfig {
 	public ObjectMapper objectMapper() {
 
 		LinkRelationProvider relProvider = new EvoInflectorLinkRelationProvider();
-		ObjectMapper mapper = new ObjectMapper();
 
-		mapper.registerModule(new Jackson2HalModule());
-		mapper.registerModule(persistentEntityModule());
-		mapper.setHandlerInstantiator(new Jackson2HalModule.HalHandlerInstantiator(relProvider,
-				new DefaultCurieProvider(Collections.emptyMap()), MessageResolver.DEFAULTS_ONLY));
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.setSerializationInclusion(Include.NON_EMPTY);
-
-		return mapper;
+		return JsonMapper.builder()
+				.addModule(new HalJacksonModule())
+				.addModule(persistentEntityModule())
+				.handlerInstantiator(new HalHandlerInstantiator(relProvider,
+						new DefaultCurieProvider(Collections.emptyMap()), MessageResolver.DEFAULTS_ONLY))
+				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+				.build();
 	}
 }

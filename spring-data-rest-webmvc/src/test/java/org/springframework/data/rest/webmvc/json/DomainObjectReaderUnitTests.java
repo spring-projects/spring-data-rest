@@ -19,8 +19,20 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.deser.std.StdDeserializer;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.node.ObjectNode;
+
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -30,7 +42,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Immutable;
@@ -53,19 +64,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Unit tests for {@link DomainObjectReader}.
@@ -132,8 +130,9 @@ class DomainObjectReaderUnitTests {
 	@Test // DATAREST-556
 	void considersMappedFieldNamesWhenApplyingNodeToDomainObject() throws Exception {
 
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
+		ObjectMapper mapper = JsonMapper.builder()
+				.propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE)
+				.build();
 
 		JsonNode node = new ObjectMapper().readTree("{\"FirstName\":\"Carter\",\"LastName\":\"Beauford\"}");
 
@@ -185,7 +184,7 @@ class DomainObjectReaderUnitTests {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode node = (ObjectNode) mapper.readTree("{}");
 
-		assertThatExceptionOfType(JsonMappingException.class) //
+		assertThatExceptionOfType(JacksonException.class) //
 				.isThrownBy(() -> reader.readPut(node, "", mapper));
 	}
 
@@ -544,11 +543,10 @@ class DomainObjectReaderUnitTests {
 		note.tags.add(first);
 		note.tags.add(second);
 
-		SimpleModule module = new SimpleModule();
-		module.addDeserializer(Tag.class, new SelectValueByIdSerializer<Tag>(Collections.singletonMap(second.id, second)));
+		SimpleModule module = new SimpleModule()
+				.addDeserializer(Tag.class, new SelectValueByIdSerializer<Tag>(Collections.singletonMap(second.id, second)));
 
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.registerModule(module);
+		ObjectMapper mapper = JsonMapper.builder().addModule(module).build();
 
 		ObjectNode readTree = (ObjectNode) mapper.readTree(String.format("{ \"tags\" : [ \"%s\"]}", second.id));
 
@@ -719,7 +717,7 @@ class DomainObjectReaderUnitTests {
 	void arraysCanAppendMoreThanOneElementDuringMerge() throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
-		ArrayListHolder target = new ArrayListHolder("ancient", "old", "older");
+		ArrayListHolder target = new ArrayListHolder(List.of("ancient", "old", "older"));
 		JsonNode node = mapper.readTree("{ \"values\" : [ \"ancient\", \"old\", \"older\", \"new\", \"newer\" ] }");
 
 		ArrayListHolder updated = reader.doMerge((ObjectNode) node, target, mapper);
@@ -1081,7 +1079,7 @@ class DomainObjectReaderUnitTests {
 		String name;
 	}
 
-	static class SelectValueByIdSerializer<T> extends JsonDeserializer<T> {
+	static class SelectValueByIdSerializer<T> extends ValueDeserializer<T> {
 
 		private final Map<? extends Object, T> values;
 
@@ -1089,10 +1087,14 @@ class DomainObjectReaderUnitTests {
 			this.values = values;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.SelectValueByIdSerializer#deserialize(tools.jackson.core.JsonParser, tools.jackson.databind.DeserializationContext)
+		 */
 		@Override
-		public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		public T deserialize(JsonParser p, DeserializationContext ctxt) {
 
-			String text = p.getText();
+			String text = p.getString();
 
 			return values.entrySet().stream()//
 					.filter(it -> it.getKey().toString().equals(text))//
@@ -1111,7 +1113,7 @@ class DomainObjectReaderUnitTests {
 	// DATAREST-1068
 	static final class ArrayHolder {
 
-		private final String[] array;
+		private String[] array;
 
 		ArrayHolder(String[] array) {
 			this.array = array;
@@ -1165,12 +1167,12 @@ class DomainObjectReaderUnitTests {
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.fasterxml.jackson.databind.JsonDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)
+			 * @see org.springframework.data.rest.webmvc.json.DomainObjectReaderUnitTests.WithCustomMappedPrimitiveCollection.CustomDeserializer#deserialize(tools.jackson.core.JsonParser, tools.jackson.databind.DeserializationContext)
 			 */
 			@Override
-			public Long deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+			public Long deserialize(JsonParser p, DeserializationContext ctxt) {
 
-				var elements = p.getText().split(":");
+				var elements = p.getString().split(":");
 
 				return Long.valueOf(elements[elements.length - 1]);
 			}
@@ -1190,8 +1192,8 @@ class DomainObjectReaderUnitTests {
 	static class ArrayListHolder {
 		Collection<String> values;
 
-		ArrayListHolder(String... values) {
-			this.values = new ArrayList<>(Arrays.asList(values));
+		ArrayListHolder(Collection<String> values) {
+			this.values = new ArrayList<>(values);
 		}
 
 		public void setValues(Collection<String> values) {

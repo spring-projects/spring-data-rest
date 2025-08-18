@@ -29,7 +29,6 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentEntity;
@@ -39,7 +38,6 @@ import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
-import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
@@ -571,7 +569,7 @@ public class PersistentEntityJackson2Module extends SimpleModule {
 	}
 
 	/**
-	 * Custom {@link JsonDeserializer} to interpret {@link String} values as URIs and resolve them using a
+	 * Custom {@link StdDeserializer} to interpret {@link String} values as URIs and resolve them using a
 	 * {@link UriToEntityConverter}.
 	 *
 	 * @author Oliver Gierke

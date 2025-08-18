@@ -24,6 +24,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -51,8 +52,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -67,25 +66,23 @@ class DataRest262Tests {
 	@Configuration
 	@Import({ RepositoryRestMvcConfiguration.class, JpaInfrastructureConfig.class })
 	@EnableJpaRepositories(considerNestedRepositories = true)
-	static class Config {
-
-	}
+	static class Config {}
 
 	@Autowired ApplicationContext beanFactory;
 	@Autowired JpaMetamodelMappingContext mappingContext;
 	@Autowired AirportRepository repository;
 
-	ObjectMapper mapper;
+	JsonMapper mapper;
 
 	@BeforeEach
 	void setUp() {
 
 		this.mapper = beanFactory //
-				.getBean("halJacksonHttpMessageConverter", AbstractJackson2HttpMessageConverter.class) //
-				.getObjectMapper() //
-				.copy();
-
-		this.mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
+				.getBean("halJacksonHttpMessageConverter", JacksonJsonHttpMessageConverter.class) //
+				.getMapper() //
+				.rebuild()
+				.changeDefaultVisibility(it -> it.withFieldVisibility(Visibility.ANY))
+				.build();
 	}
 
 	@Test // DATAREST-262

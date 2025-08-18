@@ -17,6 +17,8 @@ package org.springframework.data.rest.webmvc.json;
 
 import static org.assertj.core.api.Assertions.*;
 
+import tools.jackson.databind.json.JsonMapper;
+
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -27,12 +29,11 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.hateoas.mediatype.hal.DefaultCurieProvider;
-import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
-import org.springframework.hateoas.mediatype.hal.Jackson2HalModule.HalHandlerInstantiator;
+import org.springframework.hateoas.mediatype.hal.HalJacksonModule;
+import org.springframework.hateoas.mediatype.hal.HalJacksonModule.HalHandlerInstantiator;
 import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -42,16 +43,17 @@ import com.jayway.jsonpath.JsonPath;
  */
 class ProjectionJacksonIntegrationTests {
 
-	ObjectMapper mapper;
+	JsonMapper mapper;
 	ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
 
 	@BeforeEach
 	void setUp() {
 
-		this.mapper = new ObjectMapper();
-		this.mapper.registerModule(new Jackson2HalModule());
-		this.mapper.setHandlerInstantiator(new HalHandlerInstantiator(new EvoInflectorLinkRelationProvider(),
-				new DefaultCurieProvider(Collections.emptyMap()), MessageResolver.DEFAULTS_ONLY));
+		this.mapper = JsonMapper.builder()
+				.addModule(new HalJacksonModule())
+				.handlerInstantiator(new HalHandlerInstantiator(new EvoInflectorLinkRelationProvider(),
+						new DefaultCurieProvider(Collections.emptyMap()), MessageResolver.DEFAULTS_ONLY))
+				.build();
 	}
 
 	@Test // DATAREST-221

@@ -21,6 +21,8 @@ import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import tools.jackson.databind.ObjectMapper;
+
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Arrays;
@@ -47,12 +49,9 @@ import org.springframework.hateoas.client.LinkDiscoverer;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -75,7 +74,7 @@ class MongoWebTests extends CommonWebTests {
 	@BeforeEach
 	void populateProfiles() {
 
-		mapper.setSerializationInclusion(Include.NON_NULL);
+		// mapper.setSerializationInclusion(Include.NON_NULL);
 
 		Profile twitter = new Profile();
 		twitter.setPerson(1L);
@@ -397,8 +396,7 @@ class MongoWebTests extends CommonWebTests {
 		Link userLink = assertHasContentLinkWithRel(IanaLinkRelations.SELF, client.request(usersLink));
 		Link mapLink = client.assertHasLinkWithRel("map", client.request(userLink));
 
-		mockMvc.perform(get(mapLink.expand().getHref())) //
-				.andDo(MockMvcResultHandlers.print());
+		mockMvc.perform(get(mapLink.expand().getHref()));
 
 		mockMvc.perform(get(mapLink.expand().getHref()).accept(TEXT_URI_LIST)) //
 				.andExpect(status().isUnsupportedMediaType());
