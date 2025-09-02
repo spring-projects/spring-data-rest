@@ -153,16 +153,6 @@
 			</releases>
 		</repository>
 		<repository>
-			<id>central-snapshot</id>
-			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-		<repository>
 			<id>spring-milestone</id>
 			<url>https://repo.spring.io/milestone</url>
 		</repository>
