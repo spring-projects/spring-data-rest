@@ -31,12 +31,12 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
+import org.springframework.data.util.Pair;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
-import com.mysema.commons.lang.Pair;
 import com.querydsl.core.types.Predicate;
 
 /**
@@ -44,6 +44,7 @@ import com.querydsl.core.types.Predicate;
  * controller methods.
  *
  * @author Oliver Gierke
+ * @author Mark Paluch
  * @since 2.4
  */
 class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
