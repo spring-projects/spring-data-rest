@@ -286,7 +286,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 		private final List<AbstractJsonSchemaProperty<?>> properties;
 
 		/**
-		 * Creates a new {@link JsonSchemaPropertyRegistrar} using the given {@link JacksonMetadata}.
+		 * Creates a new {@link JsonSchemaPropertyRegistrar} using the given {@link Jackson3Metadata}.
 		 *
 		 * @param metadata must not be {@literal null}.
 		 */

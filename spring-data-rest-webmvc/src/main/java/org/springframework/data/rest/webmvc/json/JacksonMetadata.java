@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
  * @author Oliver Gierke
  * @author Greg Turnquist
  */
+@Deprecated(since = "5.0", forRemoval = true)
 public class JacksonMetadata implements Iterable<BeanPropertyDefinition> {
 
 	private final ObjectMapper mapper;
