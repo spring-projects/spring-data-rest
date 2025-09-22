@@ -362,7 +362,7 @@ public class RepositoryRestConfiguration {
 	 * @param acceptHeader can be {@literal null} or empty.
 	 * @return
 	 */
-	public boolean returnBodyOnUpdate(String acceptHeader) {
+	public boolean returnBodyOnUpdate(@Nullable String acceptHeader) {
 		return returnBodyOnUpdate == null ? StringUtils.hasText(acceptHeader) : returnBodyOnUpdate;
 	}
 
@@ -373,7 +373,7 @@ public class RepositoryRestConfiguration {
 	 *          {@code Accept} header in the request.
 	 * @return {@literal this}
 	 */
-	public RepositoryRestConfiguration setReturnBodyOnUpdate(Boolean returnBodyOnUpdate) {
+	public RepositoryRestConfiguration setReturnBodyOnUpdate(@Nullable Boolean returnBodyOnUpdate) {
 		this.returnBodyOnUpdate = returnBodyOnUpdate;
 		return this;
 	}
