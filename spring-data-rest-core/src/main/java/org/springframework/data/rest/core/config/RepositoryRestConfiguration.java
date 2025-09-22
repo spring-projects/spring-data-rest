@@ -300,7 +300,7 @@ public class RepositoryRestConfiguration {
 	 *          {@code Accept} header in the request.
 	 * @return
 	 */
-	public RepositoryRestConfiguration setReturnBodyForPutAndPost(Boolean returnBody) {
+	public RepositoryRestConfiguration setReturnBodyForPutAndPost(@Nullable Boolean returnBody) {
 
 		setReturnBodyOnCreate(returnBody);
 		setReturnBodyOnUpdate(returnBody);
@@ -385,7 +385,7 @@ public class RepositoryRestConfiguration {
 	 * @return
 	 * @since 4.1
 	 */
-	public boolean returnBodyOnDelete(String acceptHeader) {
+	public boolean returnBodyOnDelete(@Nullable String acceptHeader) {
 		return returnBodyOnDelete == null ? StringUtils.hasText(acceptHeader) : returnBodyOnDelete;
 	}
 
@@ -397,7 +397,7 @@ public class RepositoryRestConfiguration {
 	 * @return {@literal this}
 	 * @since 4.1
 	 */
-	public RepositoryRestConfiguration setReturnBodyOnDelete(Boolean returnBodyOnDelete) {
+	public RepositoryRestConfiguration setReturnBodyOnDelete(@Nullable Boolean returnBodyOnDelete) {
 		this.returnBodyOnDelete = returnBodyOnDelete;
 		return this;
 	}
@@ -613,7 +613,7 @@ public class RepositoryRestConfiguration {
 	 * @since 2.5
 	 */
 	public RepositoryRestConfiguration setRepositoryDetectionStrategy(
-			RepositoryDetectionStrategy repositoryDetectionStrategy) {
+			@Nullable RepositoryDetectionStrategy repositoryDetectionStrategy) {
 
 		this.repositoryDetectionStrategy = repositoryDetectionStrategy == null ? RepositoryDetectionStrategies.DEFAULT
 				: repositoryDetectionStrategy;
