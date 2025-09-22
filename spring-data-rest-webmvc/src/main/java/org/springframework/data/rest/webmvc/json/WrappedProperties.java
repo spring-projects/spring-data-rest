@@ -47,7 +47,7 @@ import com.fasterxml.jackson.databind.util.NameTransformer;
  *
  * @author Mark Paluch
  * @since 2.6
- * @deprecated since 5.0, in favor of {@link WrappedJackson3Properties}.
+ * @deprecated since 5.0, in favor of {@link WrappedJacksonProperties}.
  */
 @Deprecated(since = "5.0", forRemoval = true)
 class WrappedProperties {

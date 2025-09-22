@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJackson2Module;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJacksonModule;
 import org.springframework.util.ClassUtils;
 
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
@@ -41,13 +41,18 @@ class ValueInstantiatorCustomizerRuntimeHints implements RuntimeHintsRegistrar {
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
 
 		if (ClassUtils.isPresent("tools.jackson.databind.ObjectMapper", classLoader)) {
-			hints.reflection().registerField(
-					PersistentEntityJackson3Module.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer.CONSTRUCTOR_ARGS_FIELD);
+			if (PersistentEntityJacksonModule.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer.CONSTRUCTOR_ARGS_FIELD != null) {
+				hints.reflection().registerField(
+						PersistentEntityJacksonModule.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer.CONSTRUCTOR_ARGS_FIELD);
+			}
 		}
 
 		if (ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", classLoader)) {
-			hints.reflection().registerField(
-					PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer.CONSTRUCTOR_ARGS_FIELD);
+
+			if (PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer.CONSTRUCTOR_ARGS_FIELD != null) {
+				hints.reflection().registerField(
+						PersistentEntityJackson2Module.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer.CONSTRUCTOR_ARGS_FIELD);
+			}
 		}
 	}
 }

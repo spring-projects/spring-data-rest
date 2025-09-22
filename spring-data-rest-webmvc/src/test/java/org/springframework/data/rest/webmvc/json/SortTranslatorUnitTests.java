@@ -30,7 +30,7 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.PersistentEntitiesResourceMappings;
-import org.springframework.data.rest.webmvc.json.JacksonMappingAwareSortTranslator.SortTranslator;
+import org.springframework.data.rest.webmvc.json.Jackson2MappingAwareSortTranslator.SortTranslator;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,7 +39,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Unit tests for {@link JacksonMappingAwareSortTranslator.SortTranslator}.
+ * Unit tests for {@link Jackson2MappingAwareSortTranslator.SortTranslator}.
  *
  * @author Mark Paluch
  * @author Oliver Gierke

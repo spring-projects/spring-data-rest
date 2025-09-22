@@ -32,9 +32,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -49,7 +50,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Mathias Düsterhöft
  * @since 5.0
  */
-class MappedJackson3Properties {
+class MappedJacksonProperties {
 
 	private final Map<PersistentProperty<?>, BeanPropertyDefinition> propertyToFieldName;
 	private final Map<String, PersistentProperty<?>> fieldNameToProperty;
@@ -57,7 +58,7 @@ class MappedJackson3Properties {
 	private final Set<String> ignoredPropertyNames;
 	private final boolean anySetterFound;
 
-	private MappedJackson3Properties(Map<PersistentProperty<?>, BeanPropertyDefinition> propertyToFieldName,
+	private MappedJacksonProperties(Map<PersistentProperty<?>, BeanPropertyDefinition> propertyToFieldName,
 			Map<String, PersistentProperty<?>> fieldNameToProperty, Set<BeanPropertyDefinition> unmappedProperties,
 			Set<String> ignoredPropertyNames, boolean anySetterFound) {
 
@@ -69,13 +70,13 @@ class MappedJackson3Properties {
 	}
 
 	/**
-	 * Creates a new {@link MappedJackson3Properties} instance for the given {@link PersistentEntity} and
+	 * Creates a new {@link MappedJacksonProperties} instance for the given {@link PersistentEntity} and
 	 * {@link BeanDescription}.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param description must not be {@literal null}.
 	 */
-	private MappedJackson3Properties(PersistentEntity<?, ? extends PersistentProperty<?>> entity,
+	private MappedJacksonProperties(PersistentEntity<?, ? extends PersistentProperty<?>> entity,
 			BeanDescription description) {
 
 		Assert.notNull(entity, "Entity must not be null");
@@ -96,9 +97,7 @@ class MappedJackson3Properties {
 		JsonIgnoreProperties annotation = entity.findAnnotation(JsonIgnoreProperties.class);
 
 		if (annotation != null) {
-			for (String property : annotation.value()) {
-				ignoredPropertyNames.add(property);
-			}
+			Collections.addAll(ignoredPropertyNames, annotation.value());
 		}
 
 		for (BeanPropertyDefinition property : description.findProperties()) {
@@ -123,14 +122,14 @@ class MappedJackson3Properties {
 	}
 
 	/**
-	 * Creates {@link MappedJackson3Properties} for the given {@link PersistentEntity} for deserialization purposes. Will
+	 * Creates {@link MappedJacksonProperties} for the given {@link PersistentEntity} for deserialization purposes. Will
 	 * not include Jackson-read-only properties.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
 	 * @return
 	 */
-	public static MappedJackson3Properties forDeserialization(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
+	public static MappedJacksonProperties forDeserialization(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
 
 		DeserializationConfig config = mapper.deserializationConfig();
 		ClassIntrospector introspector = config.classIntrospectorInstance();
@@ -138,18 +137,18 @@ class MappedJackson3Properties {
 		BeanDescription description = introspector.forOperation(config).introspectForDeserialization(javaType,
 				introspector.introspectClassAnnotations(javaType));
 
-		return new MappedJackson3Properties(entity, description);
+		return new MappedJacksonProperties(entity, description);
 	}
 
 	/**
-	 * Creates {@link MappedJackson3Properties} for the given {@link PersistentEntity} for serialization purposes.
-	 * Includes Jackson-read-only properties.
+	 * Creates {@link MappedJacksonProperties} for the given {@link PersistentEntity} for serialization purposes. Includes
+	 * Jackson-read-only properties.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
 	 * @return
 	 */
-	public static MappedJackson3Properties forSerialization(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
+	public static MappedJacksonProperties forSerialization(PersistentEntity<?, ?> entity, ObjectMapper mapper) {
 
 		SerializationConfig config = mapper.serializationConfig();
 		ClassIntrospector introspector = config.classIntrospectorInstance();
@@ -157,15 +156,15 @@ class MappedJackson3Properties {
 		BeanDescription description = introspector.forOperation(config).introspectForSerialization(type,
 				introspector.introspectClassAnnotations(type));
 
-		return new MappedJackson3Properties(entity, description);
+		return new MappedJacksonProperties(entity, description);
 	}
 
-	public static MappedJackson3Properties forDescription(PersistentEntity<?, ?> entity, BeanDescription description) {
-		return new MappedJackson3Properties(entity, description);
+	public static MappedJacksonProperties forDescription(PersistentEntity<?, ?> entity, BeanDescription description) {
+		return new MappedJacksonProperties(entity, description);
 	}
 
-	public static MappedJackson3Properties none() {
-		return new MappedJackson3Properties(Collections.emptyMap(), Collections.emptyMap(), Collections.emptySet(),
+	public static MappedJacksonProperties none() {
+		return new MappedJacksonProperties(Collections.emptyMap(), Collections.emptyMap(), Collections.emptySet(),
 				Collections.emptySet(), false);
 	}
 
@@ -177,7 +176,13 @@ class MappedJackson3Properties {
 
 		Assert.notNull(property, "PersistentProperty must not be null");
 
-		return propertyToFieldName.get(property).getName();
+		BeanPropertyDefinition definition = propertyToFieldName.get(property);
+
+		if (definition == null) {
+			throw new IllegalStateException(String.format("Property '%s' not found", property));
+		}
+
+		return definition.getName();
 	}
 
 	/**
@@ -195,8 +200,7 @@ class MappedJackson3Properties {
 	 * @param fieldName must not be empty or {@literal null}.
 	 * @return the {@link PersistentProperty} backing the field with the field name.
 	 */
-	@Nullable
-	public PersistentProperty<?> getPersistentProperty(String fieldName) {
+	public @Nullable PersistentProperty<?> getPersistentProperty(String fieldName) {
 
 		Assert.hasText(fieldName, "Field name must not be null or empty");
 

@@ -84,11 +84,11 @@ import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerMapping;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.data.rest.webmvc.alps.AlpsJackson3JsonHttpMessageConverter;
+import org.springframework.data.rest.webmvc.alps.AlpsJacksonJsonHttpMessageConverter;
 import org.springframework.data.rest.webmvc.alps.RootResourceInformationToAlpsDescriptorConverter;
 import org.springframework.data.rest.webmvc.convert.UriListHttpMessageConverter;
 import org.springframework.data.rest.webmvc.json.*;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module.LookupObjectSerializer;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJacksonModule.LookupObjectSerializer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityToJsonSchemaConverter.ValueTypeSchemaPropertyCustomizerFactory;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.DefaultLinkCollector;
@@ -631,7 +631,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	public RequestMappingHandlerAdapter repositoryExporterHandlerAdapter(
 			@Qualifier("mvcValidator") ObjectProvider<Validator> validator,
 			@Qualifier("defaultMessageConverters") List<HttpMessageConverter<?>> defaultMessageConverters,
-			AlpsJackson3JsonHttpMessageConverter alpsJsonHttpMessageConverter, SelfLinkProvider selfLinkProvider,
+			AlpsJacksonJsonHttpMessageConverter alpsJsonHttpMessageConverter, SelfLinkProvider selfLinkProvider,
 			PersistentEntityResourceHandlerMethodArgumentResolver persistentEntityArgumentResolver,
 			PersistentEntityResourceAssemblerArgumentResolver persistentEntityResourceAssemblerArgumentResolver,
 			RootResourceInformationHandlerMethodArgumentResolver repoRequestArgumentResolver,
@@ -720,7 +720,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				associationLinks.get(), excerptProjector.get());
 		LookupObjectSerializer lookupObjectSerializer = new LookupObjectSerializer(PluginRegistry.of(getEntityLookups()));
 
-		return new PersistentEntityJackson3Module(associationLinks.get(), persistentEntities.get(),
+		return new PersistentEntityJacksonModule(associationLinks.get(), persistentEntities.get(),
 				new UriToEntityConverter(persistentEntities.get(), repositoryInvokerFactory.get(),
 						() -> defaultConversionService),
 				linkCollector, repositoryInvokerFactory.get(), lookupObjectSerializer, invoker.getObject(), assembler);
@@ -777,7 +777,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			@Qualifier("jacksonHttpMessageConverter") TypeConstrainedJacksonJsonHttpMessageConverter jacksonHttpMessageConverter,
 			@Qualifier("halJacksonHttpMessageConverter") TypeConstrainedJacksonJsonHttpMessageConverter halJacksonHttpMessageConverter,
 			@Qualifier("halFormsJacksonHttpMessageConverter") TypeConstrainedJacksonJsonHttpMessageConverter halFormsJacksonHttpMessageConverter,
-			AlpsJackson3JsonHttpMessageConverter alpsJsonHttpMessageConverter,
+			AlpsJacksonJsonHttpMessageConverter alpsJsonHttpMessageConverter,
 			UriListHttpMessageConverter uriListHttpMessageConverter,
 			RepositoryRestConfiguration repositoryRestConfiguration) {
 
@@ -810,9 +810,9 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	}
 
 	@Bean
-	public AlpsJackson3JsonHttpMessageConverter alpsJsonHttpMessageConverter(
+	public AlpsJacksonJsonHttpMessageConverter alpsJsonHttpMessageConverter(
 			RootResourceInformationToAlpsDescriptorConverter alpsConverter) {
-		return new AlpsJackson3JsonHttpMessageConverter(alpsConverter);
+		return new AlpsJacksonJsonHttpMessageConverter(alpsConverter);
 	}
 
 	@Bean
@@ -889,7 +889,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			PersistentEntityResourceAssemblerArgumentResolver persistentEntityResourceAssemblerArgumentResolver,
 			RootResourceInformationHandlerMethodArgumentResolver repoRequestArgumentResolver) {
 
-		Jackson3MappingAwareSortTranslator sortTranslator = new Jackson3MappingAwareSortTranslator(objectMapper(),
+		JacksonMappingAwareSortTranslator sortTranslator = new JacksonMappingAwareSortTranslator(objectMapper(),
 				repositories.get(), DomainClassResolver.of(repositories.get(), resourceMappings.get(), baseUri.get()),
 				persistentEntities.get(), associationLinks.get());
 
@@ -946,7 +946,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 				repositoryInvokerFactory.get(), () -> defaultConversionService), resourceMappings.get()));
 
 		if (repositoryRestConfiguration.get().isEnableEnumTranslation()) {
-			mapperBuilder.addModule(new Jackson3Serializers(enumTranslator.get()));
+			mapperBuilder.addModule(new JacksonSerializers(enumTranslator.get()));
 		}
 
 		return mapperBuilder;

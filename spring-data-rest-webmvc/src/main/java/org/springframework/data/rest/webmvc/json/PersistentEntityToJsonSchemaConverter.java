@@ -164,7 +164,7 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 		return entities.getPersistentEntity(type).map(entity -> {
 
-			final Jackson3Metadata jackson = new Jackson3Metadata(objectMapper, type);
+			final JacksonMetadata jackson = new JacksonMetadata(objectMapper, type);
 			JsonSchemaPropertyRegistrar registrar = new JsonSchemaPropertyRegistrar(jackson);
 
 			for (BeanPropertyDefinition definition : jackson) {
@@ -282,15 +282,15 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 	 * @since 2.4
 	 */
 	private class JsonSchemaPropertyRegistrar {
-		private final Jackson3Metadata metadata;
+		private final JacksonMetadata metadata;
 		private final List<AbstractJsonSchemaProperty<?>> properties;
 
 		/**
-		 * Creates a new {@link JsonSchemaPropertyRegistrar} using the given {@link Jackson3Metadata}.
+		 * Creates a new {@link JsonSchemaPropertyRegistrar} using the given {@link JacksonMetadata}.
 		 *
 		 * @param metadata must not be {@literal null}.
 		 */
-		public JsonSchemaPropertyRegistrar(Jackson3Metadata metadata) {
+		public JsonSchemaPropertyRegistrar(JacksonMetadata metadata) {
 			Assert.notNull(metadata, "Metadata must not be null");
 			this.metadata = metadata;
 			this.properties = new ArrayList<AbstractJsonSchemaProperty<?>>();
@@ -412,11 +412,11 @@ public class PersistentEntityToJsonSchemaConverter implements ConditionalGeneric
 
 	private static class JacksonProperty {
 
-		private final Jackson3Metadata metadata;
+		private final JacksonMetadata metadata;
 		private final Optional<? extends PersistentProperty<?>> property;
 		private final BeanPropertyDefinition definition;
 
-		public JacksonProperty(Jackson3Metadata metadata, Optional<? extends PersistentProperty<?>> property,
+		public JacksonProperty(JacksonMetadata metadata, Optional<? extends PersistentProperty<?>> property,
 				BeanPropertyDefinition definition) {
 
 			Assert.notNull(metadata, "JacksonMetadata must not be null");

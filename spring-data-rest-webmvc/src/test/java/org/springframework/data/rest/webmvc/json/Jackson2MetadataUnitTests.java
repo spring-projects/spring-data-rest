@@ -37,12 +37,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 /**
- * Unit tests for {@link JacksonMetadata}.
+ * Unit tests for {@link Jackson2Metadata}.
  *
  * @author Oliver Gierke
  * @soundtrack Four Sided Cube - Bad Day's Remembrance (Bunch of Sides)
  */
-class JacksonMetadataUnitTests {
+class Jackson2MetadataUnitTests {
 
 	MappingContext<?, ?> context;
 	ObjectMapper mapper;
@@ -59,7 +59,7 @@ class JacksonMetadataUnitTests {
 	@Test // DATAREST-644
 	void detectsReadOnlyProperty() {
 
-		JacksonMetadata metadata = new JacksonMetadata(mapper, User.class);
+		Jackson2Metadata metadata = new Jackson2Metadata(mapper, User.class);
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(User.class);
 		PersistentProperty<?> property = entity.getRequiredPersistentProperty("username");
@@ -71,7 +71,7 @@ class JacksonMetadataUnitTests {
 	@Test // DATAREST-644
 	void reportsConstructorArgumentAsJacksonWritable() {
 
-		JacksonMetadata metadata = new JacksonMetadata(mapper, Value.class);
+		Jackson2Metadata metadata = new Jackson2Metadata(mapper, Value.class);
 
 		PersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(Value.class);
 		PersistentProperty<?> property = entity.getRequiredPersistentProperty("value");
@@ -82,7 +82,7 @@ class JacksonMetadataUnitTests {
 	@Test // DATAREST-644
 	void detectsCustomSerializerFortType() {
 
-		JsonSerializer<?> serializer = new JacksonMetadata(new ObjectMapper(), SomeBean.class)
+		JsonSerializer<?> serializer = new Jackson2Metadata(new ObjectMapper(), SomeBean.class)
 				.getTypeSerializer(SomeBean.class);
 
 		assertThat(serializer).isInstanceOf(SomeBeanSerializer.class);

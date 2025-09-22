@@ -42,7 +42,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @ExtendWith(MockitoExtension.class)
 class MappingAwarePageableArgumentResolverUnitTests {
 
-	@Mock JacksonMappingAwareSortTranslator translator;
+	@Mock Jackson2MappingAwareSortTranslator translator;
 	@Mock PageableHandlerMethodArgumentResolver delegate;
 	@Mock MethodParameter parameter;
 	@Mock NativeWebRequest webRequest;

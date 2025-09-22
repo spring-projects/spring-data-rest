@@ -43,7 +43,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Oliver Gierke
  * @author Greg Turnquist
- * @deprecated since 5.0, in favor of {@link AlpsJackson3JsonHttpMessageConverter}.
+ * @deprecated since 5.0, in favor of {@link AlpsJacksonJsonHttpMessageConverter}.
  */
 @Deprecated(since = "5.0", forRemoval = true)
 public class AlpsJsonHttpMessageConverter extends MappingJackson2HttpMessageConverter

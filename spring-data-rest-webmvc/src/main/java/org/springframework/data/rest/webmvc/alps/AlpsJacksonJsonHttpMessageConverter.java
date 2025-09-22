@@ -47,39 +47,39 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  * @author Greg Turnquist
  * @since 5.0
  */
-public class AlpsJackson3JsonHttpMessageConverter extends JacksonJsonHttpMessageConverter
+public class AlpsJacksonJsonHttpMessageConverter extends JacksonJsonHttpMessageConverter
 		implements ResponseBodyAdvice<Object> {
 
 	private final RootResourceInformationToAlpsDescriptorConverter converter;
 
 	/**
-	 * Creates a new {@link AlpsJackson3JsonHttpMessageConverter} for the given
+	 * Creates a new {@link AlpsJacksonJsonHttpMessageConverter} for the given
 	 * {@link RootResourceInformationToAlpsDescriptorConverter}.
 	 *
 	 * @param converter must not be {@literal null}.
 	 */
-	public AlpsJackson3JsonHttpMessageConverter(RootResourceInformationToAlpsDescriptorConverter converter) {
+	public AlpsJacksonJsonHttpMessageConverter(RootResourceInformationToAlpsDescriptorConverter converter) {
 		this(JsonMapper.builder(), converter);
 	}
 
 	/**
-	 * Creates a new {@link AlpsJackson3JsonHttpMessageConverter} for the given {@link JsonMapper} and
+	 * Creates a new {@link AlpsJacksonJsonHttpMessageConverter} for the given {@link JsonMapper} and
 	 * {@link RootResourceInformationToAlpsDescriptorConverter}.
 	 *
 	 * @param objectMapper must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
 	 */
-	public AlpsJackson3JsonHttpMessageConverter(JsonMapper objectMapper,
+	public AlpsJacksonJsonHttpMessageConverter(JsonMapper objectMapper,
 			RootResourceInformationToAlpsDescriptorConverter converter) {
 		this(objectMapper.rebuild(), converter);
 	}
 
 	/**
-	 * Creates a new {@link AlpsJackson3JsonHttpMessageConverter} for the given {@link Converter}.
+	 * Creates a new {@link AlpsJacksonJsonHttpMessageConverter} for the given {@link Converter}.
 	 *
 	 * @param converter must not be {@literal null}.
 	 */
-	AlpsJackson3JsonHttpMessageConverter(Builder objectMapper,
+	AlpsJacksonJsonHttpMessageConverter(Builder objectMapper,
 			RootResourceInformationToAlpsDescriptorConverter converter) {
 
 		super(objectMapper.changeDefaultPropertyInclusion(it -> it.withValueInclusion(Include.NON_EMPTY))
@@ -92,7 +92,7 @@ public class AlpsJackson3JsonHttpMessageConverter extends JacksonJsonHttpMessage
 	}
 
 	@Override
-	public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+	public boolean canWrite(Class<?> clazz, @Nullable MediaType mediaType) {
 		return (clazz.isAssignableFrom(Alps.class) || clazz.isAssignableFrom(RootResourceInformation.class))
 				&& super.canWrite(clazz, mediaType);
 	}
@@ -103,7 +103,8 @@ public class AlpsJackson3JsonHttpMessageConverter extends JacksonJsonHttpMessage
 	}
 
 	@Override
-	public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
+	public @Nullable Object beforeBodyWrite(@Nullable Object body, MethodParameter returnType,
+			MediaType selectedContentType,
 			Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request,
 			ServerHttpResponse response) {
 
@@ -114,6 +115,6 @@ public class AlpsJackson3JsonHttpMessageConverter extends JacksonJsonHttpMessage
 
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-		return converterType.equals(AlpsJackson3JsonHttpMessageConverter.class);
+		return converterType.equals(AlpsJacksonJsonHttpMessageConverter.class);
 	}
 }

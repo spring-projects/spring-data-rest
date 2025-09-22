@@ -62,7 +62,7 @@ class JacksonBindContext implements BindContext {
 	public Optional<String> getReadableProperty(String segment, Class<?> type) {
 
 		return getProperty(entities.getPersistentEntity(type)
-				.map(it -> MappedJackson3Properties.forSerialization(it, mapper))
+				.map(it -> MappedJacksonProperties.forSerialization(it, mapper))
 				.filter(it -> it.isReadableField(segment)), segment);
 	}
 
@@ -70,7 +70,7 @@ class JacksonBindContext implements BindContext {
 	public Optional<String> getWritableProperty(String segment, Class<?> type) {
 
 		return getProperty(entities.getPersistentEntity(type)
-				.map(it -> MappedJackson3Properties.forDeserialization(it, mapper))
+				.map(it -> MappedJacksonProperties.forDeserialization(it, mapper))
 				.filter(it -> it.isWritableField(segment)), segment);
 	}
 
@@ -83,7 +83,7 @@ class JacksonBindContext implements BindContext {
 		return context;
 	}
 
-	private static Optional<String> getProperty(Optional<MappedJackson3Properties> properties, String segment) {
+	private static Optional<String> getProperty(Optional<MappedJacksonProperties> properties, String segment) {
 
 		return properties.map(it -> it.getPersistentProperty(segment))
 				.map(PersistentProperty::getName);

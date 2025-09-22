@@ -47,8 +47,8 @@ import org.springframework.data.geo.Point;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.data.rest.webmvc.RepositoryRestHandlerAdapter;
 import org.springframework.data.rest.webmvc.RestMediaTypes;
-import org.springframework.data.rest.webmvc.alps.AlpsJackson3JsonHttpMessageConverter;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module;
+import org.springframework.data.rest.webmvc.alps.AlpsJacksonJsonHttpMessageConverter;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJacksonModule;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Streamable;
@@ -146,7 +146,7 @@ class RepositoryRestMvConfigurationIntegrationTests {
 	void doesNotExposePersistentEntityJacksonModuleAsBean() {
 
 		assertThatExceptionOfType(NoSuchBeanDefinitionException.class) //
-				.isThrownBy(() -> context.getBean(PersistentEntityJackson3Module.class));
+				.isThrownBy(() -> context.getBean(PersistentEntityJacksonModule.class));
 	}
 
 	@Test // DATAREST-362
@@ -157,7 +157,7 @@ class RepositoryRestMvConfigurationIntegrationTests {
 
 		converters.forEach(converter -> {
 			assertThat(converter).isInstanceOfAny(TypeConstrainedJacksonJsonHttpMessageConverter.class,
-					AlpsJackson3JsonHttpMessageConverter.class);
+					AlpsJacksonJsonHttpMessageConverter.class);
 		});
 	}
 

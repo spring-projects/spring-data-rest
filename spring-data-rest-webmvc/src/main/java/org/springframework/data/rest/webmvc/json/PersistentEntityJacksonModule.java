@@ -56,10 +56,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.mapping.PersistentEntity;
@@ -69,6 +72,7 @@ import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.core.UriToEntityConverter;
+import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.core.mapping.ResourceMetadata;
 import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
@@ -87,6 +91,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.databind.JsonSerializer;
 
 /**
  * Jackson 3 module to serialize and deserialize {@link PersistentEntityResource}s.
@@ -98,14 +103,14 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
  * @author Alex Leigh
  * @since 5.0
  */
-public class PersistentEntityJackson3Module extends SimpleModule {
+public class PersistentEntityJacksonModule extends SimpleModule {
 
 	private static final @Serial long serialVersionUID = -7289265674870906323L;
-	private static final Logger LOG = LoggerFactory.getLogger(PersistentEntityJackson3Module.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PersistentEntityJacksonModule.class);
 	private static final TypeDescriptor URI_DESCRIPTOR = TypeDescriptor.valueOf(URI.class);
 
 	/**
-	 * Creates a new {@link PersistentEntityJackson3Module} using the given {@link Associations},
+	 * Creates a new {@link PersistentEntityJacksonModule} using the given {@link Associations},
 	 * {@link PersistentEntities}, {@link UriToEntityConverter}, {@link LinkCollector}, {@link RepositoryInvokerFactory},
 	 * {@link LookupObjectSerializer}, {@link RepresentationModelProcessorInvoker} and {@link EmbeddedResourcesAssembler}.
 	 *
@@ -118,7 +123,7 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 	 * @param invoker must not be {@literal null}.
 	 * @param assembler must not be {@literal null}.
 	 */
-	public PersistentEntityJackson3Module(Associations associations, PersistentEntities entities,
+	public PersistentEntityJacksonModule(Associations associations, PersistentEntities entities,
 			UriToEntityConverter converter, LinkCollector collector, RepositoryInvokerFactory factory,
 			LookupObjectSerializer lookupObjectSerializer, RepresentationModelProcessorInvoker invoker,
 			EmbeddedResourcesAssembler assembler) {
@@ -439,7 +444,7 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 
 				BeanDescription beanDescription = beanDesc.get();
 
-				MappedJackson3Properties mapped = MappedJackson3Properties.forDescription(entity, beanDescription);
+				MappedJacksonProperties mapped = MappedJacksonProperties.forDescription(entity, beanDescription);
 
 				while (properties.hasNext()) {
 
@@ -485,19 +490,22 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 		 * the customization currently (Jackson 2.9.9).
 		 *
 		 * @author Oliver Drotbohm
-		 * @see https://github.com/FasterXML/jackson-databind/issues/2367
+		 * @link <a href=
+		 *       "https://github.com/FasterXML/jackson-databind/issues/2367">https://github.com/FasterXML/jackson-databind/issues/2367</a>
 		 */
 		public static class ValueInstantiatorCustomizer {
 
-			public static final Field CONSTRUCTOR_ARGS_FIELD;
+			public static final @Nullable Field CONSTRUCTOR_ARGS_FIELD;
 
 			private final SettableBeanProperty[] properties;
-			private final StdValueInstantiator instantiator;
+			private final @Nullable StdValueInstantiator instantiator;
 
 			static {
 
 				CONSTRUCTOR_ARGS_FIELD = ReflectionUtils.findField(StdValueInstantiator.class, "_constructorArguments");
-				ReflectionUtils.makeAccessible(CONSTRUCTOR_ARGS_FIELD);
+				if (CONSTRUCTOR_ARGS_FIELD != null) {
+					ReflectionUtils.makeAccessible(CONSTRUCTOR_ARGS_FIELD);
+				}
 			}
 
 			ValueInstantiatorCustomizer(ValueInstantiator instantiator, DeserializationConfig config) {
@@ -527,7 +535,7 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 					return;
 				}
 
-				properties[((CreatorProperty) property).getCreatorIndex()] = property;
+				properties[property.getCreatorIndex()] = property;
 			}
 
 			/**
@@ -539,7 +547,7 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 			 */
 			BeanDeserializerBuilder conclude(BeanDeserializerBuilder builder) {
 
-				if (instantiator == null) {
+				if (instantiator == null || CONSTRUCTOR_ARGS_FIELD == null) {
 					return builder;
 				}
 
@@ -559,7 +567,7 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 			}
 
 			CollectionLikeType collectionType = config.getTypeFactory().constructCollectionLikeType(property.getType(),
-					property.getActualType().getType());
+					property.getRequiredActualType().getType());
 			CollectionValueInstantiator instantiator = new CollectionValueInstantiator(property);
 			return new CollectionDeserializer(collectionType, elementDeserializer, null, instantiator);
 		}
@@ -595,7 +603,7 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 		}
 
 		@Override
-		public Object deserialize(JsonParser jp, DeserializationContext ctxt) {
+		public @Nullable Object deserialize(JsonParser jp, DeserializationContext ctxt) {
 
 			String source = jp.getValueAsString();
 
@@ -621,7 +629,8 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 		 *      tools.jackson.databind.DeserializationContext, tools.jackson.databind.jsontype.TypeDeserializer)
 		 */
 		@Override
-		public Object deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer typeDeserializer) {
+		public @Nullable Object deserializeWithType(JsonParser jp, DeserializationContext ctxt,
+				TypeDeserializer typeDeserializer) {
 			return deserialize(jp, ctxt);
 		}
 	}
@@ -691,7 +700,7 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 		ProjectionResource toModel(TargetAware value) {
 
 			Object target = value.getTarget();
-			ResourceMetadata metadata = associations.getMetadataFor(value.getTargetClass());
+			ResourceMetadata metadata = associations.getMetadataFor(Objects.requireNonNull(value.getTargetClass()));
 			Links links = metadata != null && metadata.isExported() ? collector.getLinksFor(target) : Links.NONE;
 
 			EntityModel<TargetAware> resource = invoker.invokeProcessorsFor(EntityModel.of(value, links));
@@ -829,7 +838,7 @@ public class PersistentEntityJackson3Module extends SimpleModule {
 		}
 
 		@Override
-		public Object deserialize(JsonParser p, DeserializationContext ctxt) {
+		public @Nullable Object deserialize(JsonParser p, DeserializationContext ctxt) {
 
 			Object id = p.currentToken().isNumeric() ? p.getValueAsLong() : p.getValueAsString();
 

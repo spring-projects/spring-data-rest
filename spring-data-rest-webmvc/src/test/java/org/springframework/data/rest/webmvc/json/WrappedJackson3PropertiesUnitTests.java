@@ -37,7 +37,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
- * Unit tests for {@link WrappedJackson3Properties}.
+ * Unit tests for {@link WrappedJacksonProperties}.
  *
  * @author Mark Paluch
  */
@@ -62,7 +62,7 @@ class WrappedJackson3PropertiesUnitTests {
 	void wrappedPropertiesShouldConsiderSingleLevelUnwrapping() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(OneLevelNesting.class);
-		WrappedJackson3Properties wrappedProperties = WrappedJackson3Properties.fromJacksonProperties(persistentEntities,
+		WrappedJacksonProperties wrappedProperties = WrappedJacksonProperties.fromJacksonProperties(persistentEntities,
 				persistentEntity, MAPPER);
 
 		assertThat(wrappedProperties.hasPersistentPropertiesForField("street")).isTrue();
@@ -81,7 +81,7 @@ class WrappedJackson3PropertiesUnitTests {
 	void wrappedPropertiesShouldConsiderMultiLevelUnwrapping() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(MultiLevelNesting.class);
-		WrappedJackson3Properties wrappedProperties = WrappedJackson3Properties.fromJacksonProperties(persistentEntities,
+		WrappedJacksonProperties wrappedProperties = WrappedJacksonProperties.fromJacksonProperties(persistentEntities,
 				persistentEntity, new ObjectMapper());
 
 		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-one-post")).isTrue();
@@ -103,7 +103,7 @@ class WrappedJackson3PropertiesUnitTests {
 	void wrappedPropertiesShouldConsiderJacksonFieldNames() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(MultiLevelNesting.class);
-		WrappedJackson3Properties wrappedProperties = WrappedJackson3Properties.fromJacksonProperties(persistentEntities,
+		WrappedJacksonProperties wrappedProperties = WrappedJacksonProperties.fromJacksonProperties(persistentEntities,
 				persistentEntity, new ObjectMapper());
 
 		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-zip-post")).isTrue();
@@ -113,7 +113,7 @@ class WrappedJackson3PropertiesUnitTests {
 	void wrappedPropertiesShouldIgnoreIgnoredJacksonFields() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(MultiLevelNesting.class);
-		WrappedJackson3Properties wrappedProperties = WrappedJackson3Properties.fromJacksonProperties(persistentEntities,
+		WrappedJacksonProperties wrappedProperties = WrappedJacksonProperties.fromJacksonProperties(persistentEntities,
 				persistentEntity, new ObjectMapper());
 
 		assertThat(wrappedProperties.hasPersistentPropertiesForField("pre-street-ignored")).isFalse();
@@ -123,7 +123,7 @@ class WrappedJackson3PropertiesUnitTests {
 	void wrappedPropertiesShouldIgnoreSyntheticProperties() {
 
 		PersistentEntity<?, ?> persistentEntity = persistentEntities.getRequiredPersistentEntity(SyntheticProperties.class);
-		WrappedJackson3Properties wrappedProperties = WrappedJackson3Properties.fromJacksonProperties(persistentEntities,
+		WrappedJacksonProperties wrappedProperties = WrappedJacksonProperties.fromJacksonProperties(persistentEntities,
 				persistentEntity, new ObjectMapper());
 
 		assertThat(wrappedProperties.hasPersistentPropertiesForField("street")).isFalse();

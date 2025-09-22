@@ -49,40 +49,40 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
  * @author Mark Paluch
  * @since 5.0
  */
-class WrappedJackson3Properties {
+class WrappedJacksonProperties {
 
 	private static final AnnotationIntrospector ANNOTATION_INTROSPECTOR = new JacksonAnnotationIntrospector();
 
 	private final Map<String, List<PersistentProperty<?>>> fieldNameToProperties;
 
 	/**
-	 * Creates a new {@link WrappedJackson3Properties} instance for the given {@code fieldNameToProperties}.
+	 * Creates a new {@link WrappedJacksonProperties} instance for the given {@code fieldNameToProperties}.
 	 *
 	 * @param fieldNameToProperties must not be {@literal null}.
 	 */
-	private WrappedJackson3Properties(Map<String, List<PersistentProperty<?>>> fieldNameToProperties) {
+	private WrappedJacksonProperties(Map<String, List<PersistentProperty<?>>> fieldNameToProperties) {
 		this.fieldNameToProperties = new HashMap<String, List<PersistentProperty<?>>>(fieldNameToProperties);
 	}
 
 	/**
-	 * Creates {@link WrappedJackson3Properties} for the given {@link PersistentEntities} and {@link PersistentEntity}.
+	 * Creates {@link WrappedJacksonProperties} for the given {@link PersistentEntities} and {@link PersistentEntity}.
 	 *
 	 * @param persistentEntities must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
 	 * @return
 	 */
-	public static WrappedJackson3Properties fromJacksonProperties(PersistentEntities persistentEntities,
+	public static WrappedJacksonProperties fromJacksonProperties(PersistentEntities persistentEntities,
 			PersistentEntity<?, ?> entity, ObjectMapper mapper) {
 
 		Assert.notNull(entity, "PersistentEntity must not be null");
 
 		JacksonUnwrappedPropertiesResolver resolver = new JacksonUnwrappedPropertiesResolver(persistentEntities, mapper);
-		return new WrappedJackson3Properties(resolver.findUnwrappedPropertyPaths(entity.getType()));
+		return new WrappedJacksonProperties(resolver.findUnwrappedPropertyPaths(entity.getType()));
 	}
 
-	public static WrappedJackson3Properties none() {
-		return new WrappedJackson3Properties(Collections.emptyMap());
+	public static WrappedJacksonProperties none() {
+		return new WrappedJacksonProperties(Collections.emptyMap());
 	}
 
 	/**

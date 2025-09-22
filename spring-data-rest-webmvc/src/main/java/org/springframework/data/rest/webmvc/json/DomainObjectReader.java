@@ -146,7 +146,7 @@ public class DomainObjectReader {
 		return entities.getPersistentEntity(isTypeChange ? source.getClass() : target.getClass()) //
 				.map(it -> {
 
-					MappedJackson3Properties properties = MappedJackson3Properties.forDeserialization(it, mapper);
+					MappedJacksonProperties properties = MappedJacksonProperties.forDeserialization(it, mapper);
 
 					if (isTypeChange || immutableTarget || it.isImmutable()) {
 
@@ -241,7 +241,7 @@ public class DomainObjectReader {
 		}
 
 		PersistentEntity<?, ?> entity = candidate.get();
-		MappedJackson3Properties mappedProperties = MappedJackson3Properties.forDeserialization(entity, mapper);
+		MappedJacksonProperties mappedProperties = MappedJacksonProperties.forDeserialization(entity, mapper);
 		PersistentPropertyAccessor<?> accessor = entity.getPropertyAccessor(target);
 
 		for (Iterator<Entry<String, JsonNode>> i = root.properties().iterator(); i.hasNext();) {
@@ -640,7 +640,7 @@ public class DomainObjectReader {
 	 */
 	private class MergingPropertyHandler implements SimplePropertyHandler {
 
-		private final MappedJackson3Properties properties;
+		private final MappedJacksonProperties properties;
 		private final PersistentPropertyAccessor<?> targetAccessor;
 		private final PersistentPropertyAccessor<?> sourceAccessor;
 		private final ObjectMapper mapper;
@@ -661,14 +661,14 @@ public class DomainObjectReader {
 			Assert.notNull(entity, "PersistentEntity must not be null");
 			Assert.notNull(mapper, "ObjectMapper must not be null");
 
-			this.properties = MappedJackson3Properties.forDeserialization(entity, mapper);
+			this.properties = MappedJacksonProperties.forDeserialization(entity, mapper);
 			this.targetAccessor = new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(target),
 					new DefaultConversionService());
 			this.sourceAccessor = entity.getPropertyAccessor(source);
 			this.mapper = mapper;
 		}
 
-		public MappedJackson3Properties getProperties() {
+		public MappedJacksonProperties getProperties() {
 			return this.properties;
 		}
 

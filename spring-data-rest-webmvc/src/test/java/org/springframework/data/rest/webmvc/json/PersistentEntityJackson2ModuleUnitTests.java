@@ -78,6 +78,7 @@ import com.jayway.jsonpath.JsonPath;
  * @author Oliver Gierke
  * @author Valentin Rentschler
  */
+@SuppressWarnings("removal")
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PersistentEntityJackson2ModuleUnitTests {
@@ -273,8 +274,10 @@ class PersistentEntityJackson2ModuleUnitTests {
 				.then(invocation -> invocation.getArgument(0));
 
 		var serializer = new PersistentEntityJackson2Module.ProjectionSerializer(collector, associations, invoker, false);
+		var projection = mock(SampleProjection.class);
+		when(projection.getTargetClass()).thenReturn((Class) SampleProjection.class);
 
-		assertThatNoException().isThrownBy(() -> serializer.toModel(mock(SampleProjection.class)));
+		assertThatNoException().isThrownBy(() -> serializer.toModel(projection));
 	}
 
 	/**

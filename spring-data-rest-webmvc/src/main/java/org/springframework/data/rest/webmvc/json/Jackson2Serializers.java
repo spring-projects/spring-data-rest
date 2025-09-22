@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2015-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,46 +15,53 @@
  */
 package org.springframework.data.rest.webmvc.json;
 
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.core.JsonParser;
-import tools.jackson.databind.BeanProperty;
-import tools.jackson.databind.DeserializationContext;
-import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.ValueDeserializer;
-import tools.jackson.databind.deser.std.StdDeserializer;
-import tools.jackson.databind.module.SimpleDeserializers;
-import tools.jackson.databind.module.SimpleModule;
-import tools.jackson.databind.module.SimpleSerializers;
-import tools.jackson.databind.ser.std.StdSerializer;
-
+import java.io.IOException;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.rest.webmvc.json.JsonSchema.EnumProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleDeserializers;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.module.SimpleSerializers;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
 /**
  * Custom Spring Data REST Jackson serializers.
  *
  * @author Oliver Gierke
- * @author Mark Paluch
- * @since 5.0
+ * @since 2.4
  * @soundtrack Wallis Bird - I Could Be Your Man (Yeah! Wallis Bird Live 2007-2014)
+ * @deprecated since 5.0, in favor of {@link JacksonSerializers}.
  */
-public class Jackson3Serializers extends SimpleModule {
+@Deprecated(since = "5.0", forRemoval = true)
+public class Jackson2Serializers extends SimpleModule {
 
 	private static final @Serial long serialVersionUID = 4396776390917947147L;
 
 	/**
-	 * Creates a new {@link Jackson3Serializers} with the given {@link EnumTranslator}.
+	 * Creates a new {@link Jackson2Serializers} with the given {@link EnumTranslator}.
 	 *
 	 * @param translator must not be {@literal null}.
 	 */
-	public Jackson3Serializers(EnumTranslator translator) {
+	public Jackson2Serializers(EnumTranslator translator) {
 
 		Assert.notNull(translator, "EnumTranslator must not be null");
 
@@ -75,6 +82,8 @@ public class Jackson3Serializers extends SimpleModule {
 	@SuppressWarnings("rawtypes")
 	public static class EnumTranslatingSerializer extends StdSerializer<Enum> implements JsonSchemaPropertyCustomizer {
 
+		private static final @Serial long serialVersionUID = -6706924011396258646L;
+
 		private final EnumTranslator translator;
 
 		/**
@@ -92,7 +101,7 @@ public class Jackson3Serializers extends SimpleModule {
 		}
 
 		@Override
-		public void serialize(Enum value, JsonGenerator gen, SerializationContext provider) {
+		public void serialize(Enum value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 			gen.writeString(translator.asText(value));
 		}
 
@@ -115,10 +124,12 @@ public class Jackson3Serializers extends SimpleModule {
 	 * @author Oliver Gierke
 	 */
 	@SuppressWarnings("rawtypes")
-	public static class EnumTranslatingDeserializer extends StdDeserializer<Enum> {
+	public static class EnumTranslatingDeserializer extends StdDeserializer<Enum> implements ContextualDeserializer {
+
+		private static final @Serial long serialVersionUID = 5305284644923180079L;
 
 		private final EnumTranslator translator;
-		private final BeanProperty property;
+		private final @Nullable BeanProperty property;
 
 		/**
 		 * Creates a new {@link EnumTranslatingDeserializer} using the given {@link EnumTranslator}.
@@ -136,7 +147,7 @@ public class Jackson3Serializers extends SimpleModule {
 		 * @param translator must not be {@literal null}.
 		 * @param property can be {@literal null}.
 		 */
-		public EnumTranslatingDeserializer(EnumTranslator translator, BeanProperty property) {
+		public EnumTranslatingDeserializer(EnumTranslator translator, @Nullable BeanProperty property) {
 
 			super(Enum.class);
 
@@ -147,13 +158,15 @@ public class Jackson3Serializers extends SimpleModule {
 		}
 
 		@Override
-		public ValueDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
+		public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property)
+				throws JsonMappingException {
 			return new EnumTranslatingDeserializer(translator, property);
 		}
 
 		@Override
 		@SuppressWarnings("unchecked")
-		public Enum deserialize(JsonParser p, DeserializationContext ctxt) {
+		public @Nullable Enum deserialize(JsonParser p, DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
 
 			if (property == null) {
 				throw new IllegalStateException("Can only translate enum with property information");
@@ -172,7 +185,5 @@ public class Jackson3Serializers extends SimpleModule {
 		private static JavaType getActualType(JavaType type) {
 			return type.isContainerType() ? type.getContentType() : type;
 		}
-
 	}
-
 }

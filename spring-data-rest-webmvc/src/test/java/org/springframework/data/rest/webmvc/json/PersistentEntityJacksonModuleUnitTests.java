@@ -53,10 +53,10 @@ import org.springframework.data.rest.core.support.EntityLookup;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module.AssociationOmittingSerializerModifier;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module.AssociationUriResolvingDeserializerModifier;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module.LookupObjectSerializer;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module.NestedEntitySerializer;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJacksonModule.AssociationOmittingSerializerModifier;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJacksonModule.AssociationUriResolvingDeserializerModifier;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJacksonModule.LookupObjectSerializer;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJacksonModule.NestedEntitySerializer;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.DefaultLinkCollector;
 import org.springframework.data.rest.webmvc.support.ExcerptProjector;
@@ -75,7 +75,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.jayway.jsonpath.JsonPath;
 
 /**
- * Unit tests for {@link PersistentEntityJackson3Module}.
+ * Unit tests for {@link PersistentEntityJacksonModule}.
  *
  * @author Mark Paluch
  * @author Oliver Gierke
@@ -83,7 +83,7 @@ import com.jayway.jsonpath.JsonPath;
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class PersistentEntityJackson3ModuleUnitTests {
+class PersistentEntityJacksonModuleUnitTests {
 
 	@Mock Associations associations;
 	@Mock UriToEntityConverter converter;
@@ -102,7 +102,7 @@ class PersistentEntityJackson3ModuleUnitTests {
 		mappingContext.getPersistentEntity(Sample.class);
 		mappingContext.getPersistentEntity(Package.class);
 		mappingContext.getPersistentEntity(SampleWithAdditionalGetters.class);
-		mappingContext.getPersistentEntity(PersistentEntityJackson3ModuleUnitTests.PetOwner.class);
+		mappingContext.getPersistentEntity(PersistentEntityJacksonModuleUnitTests.PetOwner.class);
 		mappingContext.getPersistentEntity(Immutable.class);
 		mappingContext.getPersistentEntity(Wrapper.class);
 		mappingContext.getPersistentEntity(Surrounding.class);
@@ -273,9 +273,11 @@ class PersistentEntityJackson3ModuleUnitTests {
 		var invoker = mock(RepresentationModelProcessorInvoker.class);
 		when(invoker.invokeProcessorsFor(any(RepresentationModel.class))).then(invocation -> invocation.getArgument(0));
 
-		var serializer = new PersistentEntityJackson3Module.ProjectionSerializer(collector, associations, invoker, false);
+		var serializer = new PersistentEntityJacksonModule.ProjectionSerializer(collector, associations, invoker, false);
+		var projection = mock(SampleProjection.class);
+		when(projection.getTargetClass()).thenReturn((Class) SampleProjection.class);
 
-		assertThatNoException().isThrownBy(() -> serializer.toModel(mock(SampleProjection.class)));
+		assertThatNoException().isThrownBy(() -> serializer.toModel(projection));
 	}
 
 	/**

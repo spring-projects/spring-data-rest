@@ -88,7 +88,7 @@ class PersistentEntitySerializationTests {
 		public JsonMapper objectMapper() {
 
 			return super.objectMapper().rebuild()
-					.addModule(new Jackson3Serializers(new EnumTranslator(MessageResolver.DEFAULTS_ONLY)))
+					.addModule(new JacksonSerializers(new EnumTranslator(MessageResolver.DEFAULTS_ONLY)))
 					.build();
 		}
 	}

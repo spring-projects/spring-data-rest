@@ -44,7 +44,7 @@ import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.jpa.PersonRepository;
-import org.springframework.data.rest.webmvc.json.PersistentEntityJackson3Module.LookupObjectSerializer;
+import org.springframework.data.rest.webmvc.json.PersistentEntityJacksonModule.LookupObjectSerializer;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.mapping.DefaultLinkCollector;
 import org.springframework.data.rest.webmvc.mapping.LinkCollector;
@@ -130,7 +130,7 @@ class RepositoryTestsConfig {
 		Associations associations = new Associations(mappings, config());
 		LinkCollector collector = new DefaultLinkCollector(persistentEntities(), selfLinkProvider, associations);
 
-		return new PersistentEntityJackson3Module(associations, persistentEntities(), uriToEntityConverter, collector,
+		return new PersistentEntityJacksonModule(associations, persistentEntities(), uriToEntityConverter, collector,
 				invokerFactory, mock(LookupObjectSerializer.class),
 				new RepresentationModelProcessorInvoker(Collections.<RepresentationModelProcessor<?>> emptyList()),
 				new EmbeddedResourcesAssembler(persistentEntities(), associations, mock(ExcerptProjector.class)));

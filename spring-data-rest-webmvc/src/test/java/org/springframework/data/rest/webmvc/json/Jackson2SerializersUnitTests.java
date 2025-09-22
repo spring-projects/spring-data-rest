@@ -23,17 +23,17 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.rest.webmvc.json.JacksonSerializersUnitTests.Sample.SampleEnum;
+import org.springframework.data.rest.webmvc.json.Jackson2SerializersUnitTests.Sample.SampleEnum;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Unit tests for {@link JacksonSerializers}.
+ * Unit tests for {@link Jackson2Serializers}.
  *
  * @author Oliver Gierke
  * @soundtrack James Bay - Move Together (Chaos And The Calm)
  */
-class JacksonSerializersUnitTests {
+class Jackson2SerializersUnitTests {
 
 	ObjectMapper mapper;
 
@@ -44,7 +44,7 @@ class JacksonSerializersUnitTests {
 		doReturn(SampleEnum.VALUE).when(translator).fromText(SampleEnum.class, "value");
 
 		this.mapper = new ObjectMapper();
-		this.mapper.registerModule(new JacksonSerializers(translator));
+		this.mapper.registerModule(new Jackson2Serializers(translator));
 	}
 
 	@Test // DATAREST-929
