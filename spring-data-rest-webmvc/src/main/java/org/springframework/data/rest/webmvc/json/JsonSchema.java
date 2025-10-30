@@ -31,8 +31,8 @@ import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.rest.core.config.JsonSchemaFormat;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;

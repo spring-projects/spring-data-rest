@@ -18,8 +18,9 @@ package org.springframework.data.rest.webmvc.json;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link JsonSchema}.

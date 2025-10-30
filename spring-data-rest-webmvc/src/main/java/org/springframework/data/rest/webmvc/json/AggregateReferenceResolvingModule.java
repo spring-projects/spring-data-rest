@@ -28,12 +28,12 @@ import tools.jackson.databind.type.CollectionLikeType;
 
 import java.util.Iterator;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.rest.core.UriToEntityConverter;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJacksonModule.AssociationUriResolvingDeserializerModifier.ValueInstantiatorCustomizer;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJacksonModule.CollectionValueInstantiator;
 import org.springframework.data.rest.webmvc.json.PersistentEntityJacksonModule.UriStringDeserializer;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 

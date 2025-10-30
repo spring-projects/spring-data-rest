@@ -34,9 +34,9 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.rest.webmvc.json.JsonSchema.EnumProperty;
 import org.springframework.data.rest.webmvc.json.JsonSchema.JsonSchemaProperty;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 /**

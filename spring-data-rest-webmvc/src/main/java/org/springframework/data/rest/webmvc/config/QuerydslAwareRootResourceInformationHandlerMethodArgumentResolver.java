@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.QuerydslRepositoryInvokerAdapter;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
@@ -32,7 +33,6 @@ import org.springframework.data.repository.support.RepositoryInvoker;
 import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.util.Pair;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

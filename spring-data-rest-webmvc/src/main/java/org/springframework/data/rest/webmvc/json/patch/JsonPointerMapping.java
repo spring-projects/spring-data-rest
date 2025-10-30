@@ -18,9 +18,9 @@ package org.springframework.data.rest.webmvc.json.patch;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
-import org.springframework.data.mapping.PropertyPath;
-import org.springframework.data.mapping.PropertyReferenceException;
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.core.PropertyPath;
+import org.springframework.data.core.PropertyReferenceException;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.util.StringUtils;
 
 /**

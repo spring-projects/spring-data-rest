@@ -33,10 +33,12 @@ import java.util.Optional;
 import java.util.function.IntFunction;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -47,7 +49,6 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.rest.webmvc.mapping.Associations;
 import org.springframework.data.rest.webmvc.util.InputStreamHttpInputMessage;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
