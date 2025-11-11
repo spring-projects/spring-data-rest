@@ -21,11 +21,14 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.SpringProxy;
+import org.springframework.aot.hint.MemberCategory;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.core.DecoratingProxy;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.projection.TargetAware;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.rest.core.config.Projection;
@@ -34,14 +37,14 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
 /**
- * {@link BeanRegistrationAotProcessor} to register proxy hints for projection interfaces.
+ * {@link BeanRegistrationAotProcessor} to register proxy and resource hints for projection interfaces.
  *
  * @author Oliver Drotbohm
  * @since 4.0
  */
-class ProjectionProxyAotProcessor implements BeanRegistrationAotProcessor {
+class ProjectionAotProcessor implements BeanRegistrationAotProcessor {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ProjectionProxyAotProcessor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProjectionAotProcessor.class);
 
 	private static Class<?>[] ADDITIONAL_INTERFACES = new Class<?>[] { //
 			TargetAware.class, //
@@ -76,18 +79,30 @@ class ProjectionProxyAotProcessor implements BeanRegistrationAotProcessor {
 		return (context, code) -> {
 
 			var classLoader = registeredBean.getBeanFactory().getBeanClassLoader();
-			var proxies = context.getRuntimeHints().proxies();
+			var hints = context.getRuntimeHints();
+
+			var resourceLoader = new DefaultResourceLoader(classLoader);
 
 			var scanner = new AnnotatedTypeScanner(Projection.class);
-			scanner.setResourceLoader(new DefaultResourceLoader(classLoader));
+			scanner.setResourceLoader(resourceLoader);
 			scanner.findTypes(packageToScan)
 					.forEach(it -> {
 
-						LOGGER.debug("Registering proxy config for projection interface {}.", it.getName());
+						LOGGER.debug("Registering proxy config and resource for projection interface {}.", it.getName());
 
-						proxies.registerJdkProxy(ObjectUtils.addObjectToArray(ADDITIONAL_INTERFACES, it, 0));
+						hints.reflection().registerType(it, MemberCategory.INVOKE_PUBLIC_METHODS);
+						hints.resources().registerResource(getResource(it, resourceLoader));
+						hints.proxies().registerJdkProxy(ObjectUtils.addObjectToArray(ADDITIONAL_INTERFACES, it, 0));
 					});
 
 		};
+	}
+
+	private static Resource getResource(Class<?> type, ResourceLoader loader) {
+
+		var resourcePath = ResourceLoader.CLASSPATH_URL_PREFIX +
+				ClassUtils.convertClassNameToResourcePath(type.getName()) + ClassUtils.CLASS_FILE_SUFFIX;
+
+		return loader.getResource(resourcePath);
 	}
 }
