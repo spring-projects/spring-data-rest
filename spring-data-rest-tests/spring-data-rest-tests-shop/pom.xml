@@ -33,18 +33,15 @@
 		<dependency>
 			<groupId>org.jmolecules</groupId>
 			<artifactId>jmolecules-ddd</artifactId>
-			<version>${jmolecules}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jmolecules.integrations</groupId>
 			<artifactId>jmolecules-spring</artifactId>
-			<version>${jmolecules-integration}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jmolecules.integrations</groupId>
 			<artifactId>jmolecules-jackson3</artifactId>
-			<version>${jmolecules-integration}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
