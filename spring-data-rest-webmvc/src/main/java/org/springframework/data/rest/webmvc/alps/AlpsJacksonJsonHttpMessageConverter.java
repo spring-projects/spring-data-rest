@@ -98,6 +98,11 @@ public class AlpsJacksonJsonHttpMessageConverter extends JacksonJsonHttpMessageC
 	}
 
 	@Override
+	public boolean canRead(Class<?> type, @Nullable MediaType mediaType) {
+		return false;
+	}
+
+	@Override
 	public boolean canRead(ResolvableType type, @Nullable MediaType mediaType) {
 		return false;
 	}
