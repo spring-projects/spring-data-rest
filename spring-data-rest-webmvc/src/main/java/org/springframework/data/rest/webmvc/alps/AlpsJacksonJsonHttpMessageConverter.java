@@ -92,14 +92,10 @@ public class AlpsJacksonJsonHttpMessageConverter extends JacksonJsonHttpMessageC
 	}
 
 	@Override
-	public boolean canWrite(Class<?> clazz, @Nullable MediaType mediaType) {
-		return (clazz.isAssignableFrom(Alps.class) || clazz.isAssignableFrom(RootResourceInformation.class))
-				&& super.canWrite(clazz, mediaType);
-	}
+	public boolean canWrite(ResolvableType type, Class<?> clazz, @Nullable MediaType mediaType) {
 
-	@Override
-	public boolean canRead(Class<?> type, @Nullable MediaType mediaType) {
-		return false;
+		return (clazz.isAssignableFrom(Alps.class) || clazz.isAssignableFrom(RootResourceInformation.class))
+				&& super.canWrite(type, clazz, mediaType);
 	}
 
 	@Override
