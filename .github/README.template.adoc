@@ -1,0 +1,81 @@
+= Spring Data REST image:https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A["Revved up by Develocity", link="https://ge.spring.io/scans?search.rootProjectNames=Spring Data REST"]
+
+The goal of the project is to provide a flexible and configurable mechanism for writing simple services that can be exposed over HTTP.
+
+This takes your Spring Data repositories and front-ends them with HTTP, allowing you full CRUD capability over your entities, to include managing associations.
+
+== Features
+
+* Exposes a discoverable REST API for your domain model using HAL as media type.
+* Exposes https://docs.spring.io/spring-data/rest/docs/current/reference/html/#repository-resources[collection, item and association resources] representing your model.
+* Supports pagination via https://docs.spring.io/spring-data/rest/docs/current/reference/html/#paging-and-sorting[navigational links].
+* Allows to dynamically filter collection resources.
+* Exposes dedicated https://docs.spring.io/spring-data/rest/docs/current/reference/html/#repository-resources.query-method-resource[search resources for query methods] defined in your repositories.
+* Allows to https://docs.spring.io/spring-data/rest/docs/current/reference/html/#events[hook into the handling of REST requests] by handling Spring `ApplicationEvents`.
+* https://docs.spring.io/spring-data/rest/docs/current/reference/html/#metadata[Exposes metadata] about the model discovered as ALPS and JSON Schema.
+* Allows to define client specific representations through https://docs.spring.io/spring-data/rest/docs/current/reference/html/#projections-excerpts[projections].
+* Ships the latest release of https://docs.spring.io/spring-data/rest/docs/current/reference/html/#tools.hal-explorer[HAL Explorer] to easily explore HAL and HAL-FORMS based HTTP responses.
+* Supports JPA, MongoDB, Neo4j, Solr, Cassandra, Gemfire.
+* Allows https://docs.spring.io/spring-data/rest/docs/current/reference/html/#customizing-sdr[advanced customizations] of the default resources exposed.
+
+include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/code-of-conduct.adoc[]
+
+== Getting Started
+
+Here is a quick teaser of an application using Spring Data REST in Java:
+
+[source,java]
+----
+@CrossOrigin
+@RepositoryRestResource(path = "people")
+public interface PersonRepository extends CrudRepository<Person, Long> {
+
+  List<Person> findByLastname(String lastname);
+
+  @RestResource(path = "byFirstname")
+  List<Person> findByFirstnameLike(String firstname);
+}
+
+@Configuration
+@EnableMongoRepositories
+class ApplicationConfig extends AbstractMongoConfiguration {
+
+  @Override
+  public MongoClient mongoClient() {
+    return new MongoClient();
+  }
+
+  @Override
+  protected String getDatabaseName() {
+    return "springdata";
+  }
+}
+----
+
+[source,bash]
+----
+curl -v "http://localhost:8080/people/search/byFirstname?firstname=Oliver*&sort=name,desc"
+----
+
+include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/dependencies.adoc[]
+
+include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/upgrading-getting-help-reporting-issues.adoc[]
+
+== Guides
+
+The https://spring.io/[spring.io] site contains several guides that show how to use Spring Data step-by-step:
+
+* https://spring.io/guides/gs/accessing-data-rest/[Accessing JPA Data with REST] is a guide to creating a REST web service exposing data stored with JPA through repositories.
+* https://spring.io/guides/gs/accessing-mongodb-data-rest/[Accessing MongoDB Data with REST] is a guide to creating a REST web service exposing data stored in MongoDB through repositories.
+* https://spring.io/guides/gs/accessing-neo4j-data-rest/[Accessing Neo4j Data with REST] is a guide to creating a REST web service exposing data stored in Neo4j through repositories.
+* https://spring.io/guides/gs/accessing-gemfire-data-rest/[Accessing GemFire Data with REST] is a guide to creating a REST web service exposing data stored in Pivotal GemFire through repositories.
+
+== Examples
+
+* https://github.com/spring-projects/spring-data-examples/[Spring Data Examples] contains example projects that explain specific features in more detail.
+
+:antora-output: spring-data-rest-distribution/target/site/index.html
+
+include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/building.adoc[]
+
+include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/license.adoc[]
