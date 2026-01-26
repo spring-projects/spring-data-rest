@@ -1,10 +1,9 @@
-name: Snapshot Build
+name: Snapshots
 
 on:
   workflow_dispatch:
   push:
-    #    branches: [ main, 5.0.x, 4.5.x, 'issue/**' ]
-    branches: [ 'issue/actions' ]
+    branches: [ main, 5.0.x, 4.5.x, 'issue/**' ]
 
 permissions: read-all
 
