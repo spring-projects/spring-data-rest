@@ -22,11 +22,17 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
           develocity-access-key: '${{ secrets.DEVELOCITY_ACCESS_KEY }}'
-      - name: Initialize MongoDB Server
-        uses: spring-projects/spring-data-mongodb/.github/actions/mongodb@issue/actions
+      - name: Mongo Version
+        id: determine-mongo-version
+        uses: spring-projects/spring-data-mongodb/.github/actions/managed-version@issue/actions
         with:
           managed-versions: ${CONFIG_JSON}
-          mongodb-server-version: '8'
+          key: '.database.mongodb'
+          version: 'latest'
+      - name: Start MongoDB
+        uses: spring-projects/spring-data-mongodb/.github/actions/start-mongodb-server@issue/actions
+        with:
+          mongo-version: ${{ steps.determine-mongo-version.outputs.managed-version }}
       - name: Build
         uses: spring-projects/spring-data-release/actions/maven-build@main
         with:
