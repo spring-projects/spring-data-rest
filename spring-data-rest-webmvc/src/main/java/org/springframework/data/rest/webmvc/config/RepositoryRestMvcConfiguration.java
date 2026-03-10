@@ -210,6 +210,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	private final Lazy<HateoasPageableHandlerMethodArgumentResolver> pageableResolver;
 	private final Lazy<HateoasSortHandlerMethodArgumentResolver> sortResolver;
 	private final Lazy<PersistentEntityResourceAssemblerArgumentResolver> persistentEntityResourceAssemblerArgumentResolver;
+	private final Lazy<JacksonJsonHttpMessageConverter> fallbackJsonConverter;
 
 	private @Nullable ClassLoader beanClassLoader;
 	private @Nullable StringValueResolver stringValueResolver;
@@ -283,6 +284,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		this.sortResolver = Lazy.of(() -> context.getBean(HateoasSortHandlerMethodArgumentResolver.class));
 		this.persistentEntityResourceAssemblerArgumentResolver = Lazy
 				.of(() -> context.getBean(PersistentEntityResourceAssemblerArgumentResolver.class));
+		this.fallbackJsonConverter = Lazy.of(() -> new JacksonJsonHttpMessageConverter(
+				basicObjectMapperBuilder().build()));
 
 		// Resolution via ResolvableType needed to make the wildcard assignment work
 
@@ -751,7 +754,11 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		er.setCustomArgumentResolvers(
 				defaultMethodArgumentResolvers(selfLinkProvider.get(), persistentEntityArgumentResolver.get(),
 						persistentEntityResourceAssemblerArgumentResolver.get(), repoRequestArgumentResolver.get()));
-		er.setMessageConverters(defaultMessageConverters.get());
+
+		var converters = new ArrayList<>(defaultMessageConverters.get());
+		converters.add(fallbackJsonConverter.get());
+
+		er.setMessageConverters(converters);
 
 		configurerDelegate.get().configureExceptionHandlerExceptionResolver(er);
 
@@ -797,11 +804,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		}
 
 		messageConverters.add(halFormsJacksonHttpMessageConverter);
-
-		JacksonJsonHttpMessageConverter fallbackJsonConverter = new JacksonJsonHttpMessageConverter(
-				basicObjectMapperBuilder().build());
-
-		messageConverters.add(fallbackJsonConverter);
+		messageConverters.add(fallbackJsonConverter.get());
 		messageConverters.add(uriListHttpMessageConverter);
 
 		configurerDelegate.get().configureHttpMessageConverters(messageConverters);
