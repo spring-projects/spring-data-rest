@@ -83,7 +83,7 @@ class ETagUnitTests {
 
 		ETag one = ETag.from("1");
 		ETag two = ETag.from("2");
-		ETag nullETag = ETag.from((String) null);
+		ETag nullETag = ETag.NO_ETAG;
 
 		assertThat(one.equals(one)).isTrue();
 		assertThat(one.equals(two)).isFalse();
@@ -103,7 +103,7 @@ class ETagUnitTests {
 
 	@Test // DATAREST-160
 	void noETagReturnsNullForToString() {
-		assertThat(ETag.NO_ETAG.toString()).isNull();
+		assertThat(ETag.NO_ETAG.toString()).isEqualTo("NO_ETAG");
 	}
 
 	@Test // DATAREST-160

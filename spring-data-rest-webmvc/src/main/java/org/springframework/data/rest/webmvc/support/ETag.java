@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -58,7 +57,7 @@ public final class ETag {
 	 * @return
 	 */
 	public static ETag from(String value) {
-		return new ETag(value);
+		return value == null ? ETag.NO_ETAG : new ETag(value);
 	}
 
 	public static ETag from(Optional<String> value) {
@@ -136,19 +135,18 @@ public final class ETag {
 	public HttpHeaders addTo(HttpHeaders headers) {
 
 		Assert.notNull(headers, "HttpHeaders must not be null");
-		String stringValue = toString();
 
-		if (stringValue == null) {
+		if (this == NO_ETAG) {
 			return headers;
 		}
 
-		headers.setETag(stringValue);
+		headers.setETag(toString());
 		return headers;
 	}
 
 	@Override
 	public @Nullable String toString() {
-		return value == null ? null : "\"".concat(value).concat("\"");
+		return value == null ? "NO_ETAG" : "\"".concat(value).concat("\"");
 	}
 
 	/**
