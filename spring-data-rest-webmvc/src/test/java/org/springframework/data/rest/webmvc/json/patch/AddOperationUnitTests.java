@@ -77,6 +77,17 @@ class AddOperationUnitTests {
 		assertThat(todos.get(3).isComplete()).isFalse();
 	}
 
+	@Test
+	public void addItemToEndOfArray() {
+
+		List<Todo> todos = new ArrayList<Todo>();
+		todos.add(new Todo(1L, "A", false));
+
+		AddOperation add = AddOperation.of("/1", new Todo(2L, "B", true));
+		add.perform(todos, Todo.class);
+		assertEquals("B", todos.get(1).getDescription());
+	}
+
 	@Test // DATAREST-995
 	void addsItemsToNestedList() {
 
