@@ -33,7 +33,7 @@
 		<springdata.mongodb>5.0.6-SNAPSHOT</springdata.mongodb>
 		<springdata.keyvalue>4.0.6-SNAPSHOT</springdata.keyvalue>
 
-		<hibernate.version>7.0.0.Beta1</hibernate.version>
+		<hibernate.version>7.2.16.Final</hibernate.version>
 	</properties>
 
 	<developers>
