@@ -29,3 +29,4 @@ jobs:
         uses: spring-projects/spring-data-build/actions/maven-build@main
         with:
           additional-options: '-Pit'
+          settings-xml: '${{ vars.SETTINGS_XML }}'
