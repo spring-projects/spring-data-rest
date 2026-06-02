@@ -56,8 +56,8 @@
 		<!-- Jackson Hibernate -->
 
 		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-hibernate6</artifactId>
+			<groupId>tools.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-hibernate7</artifactId>
 		</dependency>
 
 	</dependencies>
