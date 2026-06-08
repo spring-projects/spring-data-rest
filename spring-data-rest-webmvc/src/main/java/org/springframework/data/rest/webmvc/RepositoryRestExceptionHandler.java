@@ -88,9 +88,17 @@ public class RepositoryRestExceptionHandler {
 		return badRequest(new HttpHeaders(), o_O);
 	}
 
+	@ExceptionHandler
+	ResponseEntity<ExceptionMessage> handle(InvalidStateTransitionRequest o_O) {
+		return badRequest(new HttpHeaders(), o_O);
+	}
+
 	/**
 	 * Handle failures commonly thrown from code tries to read incoming data and convert or cast it to the right type by
-	 * returning {@code 500 Internal Server Error} and the thrown exception marshalled into JSON.
+	 * returning {@code 500 Internal Server Error}.
+	 * <p>
+	 * The raw exception message is not forwarded to the client to prevent leaking internal type names and input values.
+	 * The full exception is logged at WARN level for server-side diagnostics.
 	 *
 	 * @param o_O the exception to handle.
 	 * @return
@@ -99,7 +107,10 @@ public class RepositoryRestExceptionHandler {
 			ConversionFailedException.class, NullPointerException.class })
 	ResponseEntity<ExceptionMessage> handleMiscFailures(Exception o_O) {
 
-		return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, new HttpHeaders(), o_O);
+		LOG.warn("Unexpected failure during request processing!", o_O);
+
+		return response(HttpStatus.INTERNAL_SERVER_ERROR, new HttpHeaders(),
+				new ExceptionMessage("Unexpected failure during request processing!"));
 	}
 
 	/**
@@ -123,7 +134,10 @@ public class RepositoryRestExceptionHandler {
 	 */
 	@ExceptionHandler({ OptimisticLockingFailureException.class, DataIntegrityViolationException.class })
 	ResponseEntity<ExceptionMessage> handleConflict(Exception o_O) {
-		return errorResponse(HttpStatus.CONFLICT, new HttpHeaders(), o_O);
+
+		LOG.warn("Could not commit changes!", o_O);
+
+		return response(HttpStatus.CONFLICT, new HttpHeaders(), new ExceptionMessage("Could not commit changes!"));
 	}
 
 	/**
