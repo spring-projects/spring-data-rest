@@ -15,12 +15,14 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.*;
 import static org.assertj.core.api.Assertions.*;
 
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +37,7 @@ import org.springframework.data.rest.webmvc.json.PersistentEntitiesBindContextFa
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Unit tests for {@link JsonPointerMapping}.
@@ -51,6 +54,9 @@ public class JsonPointerMappingTests {
 		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 		context.getPersistentEntity(Sample.class);
 		context.getPersistentEntity(MapSample.class);
+		context.getPersistentEntity(WithReadOnlyEmbedded.class);
+		context.getPersistentEntity(AuditInfo.class);
+		context.getPersistentEntity(WithReadOnlyCollection.class);
 
 		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
 		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities,
@@ -93,6 +99,29 @@ public class JsonPointerMappingTests {
 				.withMessageContaining("Invalid map key segment");
 	}
 
+	@Test // GH-2570
+	void forWriteRejectsPathThroughReadOnlyEmbedded() {
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> verifier.forWrite("/audit/createdBy", WithReadOnlyEmbedded.class));
+	}
+
+	@Test // GH-2570
+	void forWriteRejectsCollectionAppendOnReadOnlyCollection() {
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> verifier.forWrite("/roles/-", WithReadOnlyCollection.class));
+	}
+
+	@Test // GH-2570
+	void forWriteRejectsCollectionIndexOnReadOnlyCollection() {
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> verifier.forWrite("/roles/0", WithReadOnlyCollection.class));
+	}
+
+	@Test // GH-2570
+	void forReadStillAllowsPathThroughReadOnlyEmbedded() {
+		verifier.forRead("/audit/createdBy", WithReadOnlyEmbedded.class);
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Sample {
 		String firstname;
@@ -102,5 +131,22 @@ public class JsonPointerMappingTests {
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class MapSample {
 		Map<String, String> metadata;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class WithReadOnlyEmbedded {
+		String name;
+		@JsonProperty(access = READ_ONLY) AuditInfo audit;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class AuditInfo {
+		String createdBy;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class WithReadOnlyCollection {
+		String name;
+		@JsonProperty(access = READ_ONLY) List<String> roles;
 	}
 }
