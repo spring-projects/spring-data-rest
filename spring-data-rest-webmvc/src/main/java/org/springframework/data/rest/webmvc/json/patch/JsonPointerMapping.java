@@ -87,6 +87,11 @@ class JsonPointerMapping {
 
 			if (currentType != null && currentType.isMap()) {
 
+				if (!isValidMapKeySegment(segment)) {
+					throw new PatchException(String.format(
+							"Invalid map key segment '%s' in pointer '%s': contains disallowed characters", segment, pointer));
+				}
+
 				result.append("/").append(segment);
 				currentType = currentType.getRequiredActualType();
 
@@ -118,6 +123,14 @@ class JsonPointerMapping {
 		}
 
 		return result.toString();
+	}
+
+	/**
+	 * Returns whether the given segment is a safe map key. Rejects any segment containing characters that could alter the
+	 * syntactic structure of the SpEL expression generated from the segment (single quotes, brackets, SpEL operators).
+	 */
+	private static boolean isValidMapKeySegment(String segment) {
+		return segment.chars().noneMatch(c -> "[]'\"#()?,=+".indexOf(c) >= 0);
 	}
 
 	private static PatchException reject(String segment, TypeInformation<?> type, String pointer, String qualifier) {

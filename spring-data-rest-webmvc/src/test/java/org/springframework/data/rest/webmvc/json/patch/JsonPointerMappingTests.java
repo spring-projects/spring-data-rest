@@ -15,13 +15,18 @@
  */
 package org.springframework.data.rest.webmvc.json.patch;
 
+import static org.assertj.core.api.Assertions.*;
+
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
@@ -45,6 +50,7 @@ public class JsonPointerMappingTests {
 
 		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
 		context.getPersistentEntity(Sample.class);
+		context.getPersistentEntity(MapSample.class);
 
 		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
 		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities,
@@ -64,9 +70,37 @@ public class JsonPointerMappingTests {
 		verifier.forRead("/collection/27/firstname", Sample.class);
 	}
 
+	@Test // GH-2569
+	void verifiesLegitimateMapKeySegment() {
+		assertThatNoException().isThrownBy(() -> verifier.forWrite("/metadata/someKey", MapSample.class));
+	}
+
+	@ParameterizedTest // GH-2569
+	@ValueSource(strings = {
+			"/metadata/x']['y",
+			"/metadata/x'+(#this)+'",
+			"/metadata/key[0]",
+			"/metadata/k(expr)",
+			"/metadata/a=b",
+			"/metadata/a+b",
+			"/metadata/a?b:c",
+			"/metadata/a#b",
+	})
+	void rejectsMapKeySegmentsContainingDisallowedCharacters(String path) {
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> verifier.forWrite(path, MapSample.class))
+				.withMessageContaining("Invalid map key segment");
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Sample {
 		String firstname;
 		Collection<Sample> collection;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class MapSample {
+		Map<String, String> metadata;
 	}
 }
