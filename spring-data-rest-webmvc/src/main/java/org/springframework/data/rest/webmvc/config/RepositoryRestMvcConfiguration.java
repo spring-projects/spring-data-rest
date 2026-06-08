@@ -429,8 +429,13 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 			QuerydslPredicateBuilder predicateBuilder = new QuerydslPredicateBuilder(defaultConversionService,
 					factory.getEntityPathResolver());
 
+			JsonMapper mapper = objectMapper();
+			PersistentEntities entities = persistentEntities();
+
 			return new QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver(repositories,
-					repositoryInvokerFactory, resourceMetadataHandlerMethodArgumentResolver, predicateBuilder, factory);
+					repositoryInvokerFactory, resourceMetadataHandlerMethodArgumentResolver, predicateBuilder, factory,
+					type -> entities.getPersistentEntity(type)
+							.map(entity -> MappedJacksonProperties.forSerialization(entity, mapper)).orElse(null));
 		}
 
 		return new RootResourceInformationHandlerMethodArgumentResolver(repositories, repositoryInvokerFactory,
