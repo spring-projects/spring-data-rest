@@ -50,7 +50,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Mathias Düsterhöft
  * @since 5.0
  */
-class MappedJacksonProperties {
+public class MappedJacksonProperties {
 
 	private final Map<PersistentProperty<?>, BeanPropertyDefinition> propertyToFieldName;
 	private final Map<String, PersistentProperty<?>> fieldNameToProperty;
