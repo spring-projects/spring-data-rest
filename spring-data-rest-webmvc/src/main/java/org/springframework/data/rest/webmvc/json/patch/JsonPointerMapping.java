@@ -106,8 +106,7 @@ class JsonPointerMapping {
 
 			TypeInformation<?> rejectType = currentType;
 
-			// Use given filter for final segment, reader otherwise
-			String property = (i == strings.length - 1 ? filter : reader) //
+			String property = filter //
 					.apply(segment, currentType.getType()) //
 					.orElseThrow(() -> reject(segment, rejectType, pointer, qualifier));
 
