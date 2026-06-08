@@ -45,7 +45,7 @@ import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
  * @author Mark Paluch
  * @author Mathias Düsterhöft
  */
-class MappedProperties {
+public class MappedProperties {
 
 	private final Map<PersistentProperty<?>, BeanPropertyDefinition> propertyToFieldName;
 	private final Map<String, PersistentProperty<?>> fieldNameToProperty;
