@@ -678,7 +678,9 @@ class SpelPath {
 				if (typeInformation.isMap()) {
 
 					TypeInformation<?> componentType = typeInformation.getComponentType();
-					String keyExpression = STRING_TYPE.equals(componentType) ? String.format("'%s'", segment) : segment;
+					String keyExpression = STRING_TYPE.equals(componentType)
+							? String.format("'%s'", segment.replace("'", "''"))
+							: segment;
 
 					return skipWith(String.format("[%s]", keyExpression));
 				}
