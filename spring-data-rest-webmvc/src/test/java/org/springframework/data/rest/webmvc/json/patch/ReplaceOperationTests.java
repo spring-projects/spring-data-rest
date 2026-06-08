@@ -100,6 +100,57 @@ class ReplaceOperationTests {
 		assertThat(book.characters.get("protagonist")).isEqualTo("Pallo");
 	}
 
+	@Test // GH-2569
+	void rejectsStringMapKeyWithSingleQuoteBreakout() {
+
+		Account account = new Account();
+		account.settings = new HashMap<>();
+		account.settings.put("x", "original");
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> ReplaceOperation.valueAt("/settings/x']['label")
+						.with("changed")
+						.perform(account, Account.class, TestPropertyPathContext.INSTANCE));
+	}
+
+	@Test // GH-2569
+	void rejectsStringMapKeyWithSpecialCharacters() {
+
+		Account account = new Account();
+		account.settings = new HashMap<>();
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> ReplaceOperation.valueAt("/settings/' + (label = 'changed') + '")
+						.with((Object) null)
+						.perform(account, Account.class, TestPropertyPathContext.INSTANCE));
+	}
+
+	@Test // GH-2569
+	void rejectsStringMapKeyWithHashExpression() {
+
+		Account account = new Account();
+		account.settings = new HashMap<>();
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> ReplaceOperation.valueAt("/settings/x'+(#this.label)+'y")
+						.with("changed")
+						.perform(account, Account.class, TestPropertyPathContext.INSTANCE));
+	}
+
+	@Test // GH-2569
+	void replacesMapValueWithValidKey() throws Exception {
+
+		Account account = new Account();
+		account.settings = new HashMap<>();
+		account.settings.put("theme", "light");
+
+		ReplaceOperation.valueAt("/settings/theme")
+				.with(prepareValue("\"dark\""))
+				.perform(account, Account.class, TestPropertyPathContext.INSTANCE);
+
+		assertThat(account.settings.get("theme")).isEqualTo("dark");
+	}
+
 	private static Object prepareValue(String json) throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -110,5 +161,12 @@ class ReplaceOperationTests {
 	// DATAREST-1338
 	class Book {
 		public Map<String, String> characters;
+	}
+
+	// GH-2569
+	class Account {
+		public Map<String, String> settings;
+		public boolean active;
+		public String label;
 	}
 }

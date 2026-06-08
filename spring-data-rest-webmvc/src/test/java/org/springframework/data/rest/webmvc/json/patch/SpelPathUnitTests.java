@@ -136,6 +136,58 @@ class SpelPathUnitTests {
 		assertThat(path.getLeafType()).isEqualTo(String.class);
 	}
 
+	@Test // GH-2569
+	void rejectsStringMapKeyWithSingleQuoteBreakout() {
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> SpelPath.untyped("/people/x']['name").bindForWrite(MapWrapper.class, context));
+	}
+
+	@Test // GH-2569
+	void rejectsStringMapKeyWithHashExpression() {
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> SpelPath.untyped("/people/x'+(#this)+'y").bindForWrite(MapWrapper.class, context));
+	}
+
+	@Test // GH-2569
+	void rejectsStringMapKeyWithSpecialCharacters() {
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(
+						() -> SpelPath.untyped("/people/' + (name = 'changed') + '").bindForWrite(MapWrapper.class, context));
+	}
+
+	@Test // GH-2569
+	void rejectsIntegerMapKeyWithBracketCharacters() {
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> SpelPath.untyped("/peopleByInt/0].name").bindForWrite(MapWrapper.class, context));
+	}
+
+	@Test // GH-2569
+	void rejectsStringMapKeyContainingSingleQuote() {
+
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> SpelPath.untyped("/people/O'Brien/name").bindForWrite(MapWrapper.class, context));
+	}
+
+	@Test // GH-2569
+	void allowsPlainAlphanumericStringMapKey() {
+
+		WritingOperations path = SpelPath.untyped("/people/Dave/name").bindForWrite(MapWrapper.class, context);
+
+		assertThat(path.getExpressionString()).isEqualTo("people['Dave'].name");
+	}
+
+	@Test // GH-2569
+	void allowsPlainIntegerMapKey() {
+
+		WritingOperations path = SpelPath.untyped("/peopleByInt/0/name").bindForWrite(MapWrapper.class, context);
+
+		assertThat(path.getExpressionString()).isEqualTo("peopleByInt[0].name");
+	}
+
 	@Test
 	void failsAccessingPropertyIgnoredByJackson() {
 
