@@ -377,7 +377,7 @@ public class JpaWebTests extends CommonWebTests {
 
 		MockHttpServletResponse response = putOnlyExpect4XXStatus(orderLinkToItsCreator,
 				toUriList(firstCreatorLink, secondCreatorLink), TEXT_URI_LIST);
-		assertThat(response.getErrorMessage()).contains("send only 1 link");
+		assertThat(response.getContentAsString()).contains("send only 1 link");
 	}
 
 	@Test // DATAREST-219

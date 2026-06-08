@@ -285,8 +285,7 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 				}
 
 				if (!source.getLinks().hasSingleLink()) {
-
-					throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					throw new InvalidStateTransitionRequest(
 							"Must send only 1 link to update a property reference that isn't a List or a Map.");
 				}
 
