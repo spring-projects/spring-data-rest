@@ -283,7 +283,7 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 				}
 
 				if (!source.getLinks().hasSingleLink()) {
-					throw new IllegalArgumentException(
+					throw new InvalidStateTransitionRequest(
 							"Must send only 1 link to update a property reference that isn't a List or a Map.");
 				}
 
@@ -425,8 +425,8 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 	}
 
 	/**
-	 * Custom {@link RepresentationModel} to be used with maps as {@link EntityModel} doesn't properly unwrap
-	 * {@link Map}s due to some limitation in Jackson.
+	 * Custom {@link RepresentationModel} to be used with maps as {@link EntityModel} doesn't properly unwrap {@link Map}s
+	 * due to some limitation in Jackson.
 	 *
 	 * @author Oliver Drotbohm
 	 * @see https://github.com/FasterXML/jackson-databind/issues/171

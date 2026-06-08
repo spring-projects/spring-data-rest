@@ -20,12 +20,19 @@ import static org.assertj.core.api.Assertions.*;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.StaticMessageSource;
+import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.rest.webmvc.support.ExceptionMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -74,14 +81,41 @@ class RepositoryRestExceptionHandlerUnitTests {
 		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
 	}
 
-	@Test // DATAREST-706
-	void forwardsExceptionForMiscellaneousFailure() {
+	static java.util.stream.Stream<Exception> conflictExceptions() {
+		return java.util.stream.Stream.of(
+				new DataIntegrityViolationException("could not execute statement",
+						new RuntimeException("Some message.")),
+				new OptimisticLockingFailureException("Some message."));
+	}
 
-		String message = "My Message";
+	@ParameterizedTest // GH-2571
+	@MethodSource("conflictExceptions")
+	void conflictResponseHasExpectedStatusCode(Exception exception) {
 
-		ResponseEntity<ExceptionMessage> result = HANDLER.handleMiscFailures(new Exception(message));
+		ResponseEntity<ExceptionMessage> result = HANDLER.handleConflict(exception);
 
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
 		assertThat(result.getBody()).isNotNull();
-		assertThat(result.getBody().getMessage()).isEqualTo(message);
+		assertThat(result.getBody().getMessage()).doesNotContain("Some message.");
+	}
+
+	static Stream<Exception> miscExceptions() {
+		return Stream.of(
+				new IllegalArgumentException("Some message."),
+				new ClassCastException("Some message."),
+				new NullPointerException("Some message."),
+				new ConversionFailedException(TypeDescriptor.valueOf(String.class), TypeDescriptor.valueOf(Long.class),
+						"some-value", new RuntimeException("Some message.")));
+	}
+
+	@ParameterizedTest // GH-2571
+	@MethodSource("miscExceptions")
+	void miscFailureResponseHasExpectedStatusCode(Exception exception) {
+
+		ResponseEntity<ExceptionMessage> result = HANDLER.handleMiscFailures(exception);
+
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+		assertThat(result.getBody()).isNotNull();
+		assertThat(result.getBody().getMessage()).doesNotContain("Some message.");
 	}
 }
