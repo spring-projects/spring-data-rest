@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-rest-parent</artifactId>
-		<version>4.5.12-SNAPSHOT</version>
+		<version>4.5.12</version>
 	</parent>
 
 	<artifactId>spring-data-rest-hal-explorer</artifactId>
@@ -101,7 +101,7 @@
 						<configuration>
 							<target>
 								<copy todir="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-explorer">
-									<fileset dir="${project.build.directory}/hal-explorer/META-INF/resources/webjars/hal-explorer/${explorer.version}" />
+									<fileset dir="${project.build.directory}/hal-explorer/META-INF/resources/webjars/hal-explorer/${explorer.version}"/>
 								</copy>
 								<replace file="${project.build.outputDirectory}/META-INF/spring-data-rest/hal-explorer/index.html">
 									<replacefilter>
