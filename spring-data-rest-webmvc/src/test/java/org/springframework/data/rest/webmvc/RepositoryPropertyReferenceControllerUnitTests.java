@@ -15,19 +15,23 @@
  */
 package org.springframework.data.rest.webmvc;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.rest.core.event.BeforeLinkSaveEvent;
 import org.springframework.data.keyvalue.core.mapping.KeyValuePersistentEntity;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.PersistentProperty;
@@ -90,9 +94,88 @@ class RepositoryPropertyReferenceControllerUnitTests {
 		verify(invoker).invokeFindById("some-id");
 	}
 
+	@Test // Link-save events must carry the value actually being saved, not the pre-mutation one.
+	void publishesLinkSaveEventWithNewSingularReference() throws Exception {
+
+		KeyValuePersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(Sample.class);
+
+		ResourceMappings mappings = new PersistentEntitiesResourceMappings(
+				new PersistentEntities(Collections.singleton(mappingContext)));
+		ResourceMetadata metadata = spy(mappings.getMetadataFor(Sample.class));
+		when(metadata.getSupportedHttpMethods()).thenReturn(AllSupportedHttpMethods.INSTANCE);
+
+		RepositoryPropertyReferenceController controller = new RepositoryPropertyReferenceController(repositories,
+				invokerFactory);
+		controller.setApplicationEventPublisher(publisher);
+
+		Sample owner = new Sample();
+		owner.reference = new Reference(); // the previously linked reference
+		Reference newReference = new Reference(); // the one being linked now
+
+		doReturn(invoker).when(invokerFactory).getInvokerFor(Reference.class);
+		doReturn(Optional.of(owner)).when(invoker).invokeFindById(4711);
+		doReturn(Optional.of(newReference)).when(invoker).invokeFindById("new-id");
+		doReturn(owner).when(invoker).invokeSave(any(Object.class));
+
+		RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
+		CollectionModel<Object> request = CollectionModel.empty(Link.of("/reference/new-id"));
+
+		controller.createPropertyReference(information, HttpMethod.PUT, request, 4711, "reference");
+
+		assertThat(captureLinkSaveEvent().getLinked()).isSameAs(newReference);
+	}
+
+	@Test // Link-save events must carry the value actually being saved, not the pre-mutation one.
+	void publishesLinkSaveEventWithReplacedCollection() throws Exception {
+
+		KeyValuePersistentEntity<?, ?> entity = mappingContext.getRequiredPersistentEntity(Sample.class);
+
+		ResourceMappings mappings = new PersistentEntitiesResourceMappings(
+				new PersistentEntities(Collections.singleton(mappingContext)));
+		ResourceMetadata metadata = spy(mappings.getMetadataFor(Sample.class));
+		when(metadata.getSupportedHttpMethods()).thenReturn(AllSupportedHttpMethods.INSTANCE);
+
+		RepositoryPropertyReferenceController controller = new RepositoryPropertyReferenceController(repositories,
+				invokerFactory);
+		controller.setApplicationEventPublisher(publisher);
+
+		Sample owner = new Sample();
+		Reference oldReference = new Reference();
+		owner.references.add(oldReference); // the previously linked element
+		Reference newReference = new Reference(); // the one replacing it via PUT
+
+		doReturn(invoker).when(invokerFactory).getInvokerFor(Reference.class);
+		doReturn(Optional.of(owner)).when(invoker).invokeFindById(4711);
+		doReturn(Optional.of(newReference)).when(invoker).invokeFindById("new-id");
+		doReturn(owner).when(invoker).invokeSave(any(Object.class));
+
+		RootResourceInformation information = new RootResourceInformation(metadata, entity, invoker);
+		CollectionModel<Object> request = CollectionModel.empty(Link.of("/reference/new-id"));
+
+		controller.createPropertyReference(information, HttpMethod.PUT, request, 4711, "references");
+
+		@SuppressWarnings("unchecked")
+		Collection<Reference> linked = (Collection<Reference>) captureLinkSaveEvent().getLinked();
+
+		assertThat(linked).containsExactly(newReference).doesNotContain(oldReference);
+	}
+
+	private BeforeLinkSaveEvent captureLinkSaveEvent() {
+
+		ArgumentCaptor<Object> events = ArgumentCaptor.forClass(Object.class);
+		verify(publisher, atLeastOnce()).publishEvent(events.capture());
+
+		return events.getAllValues().stream() //
+				.filter(BeforeLinkSaveEvent.class::isInstance) //
+				.map(BeforeLinkSaveEvent.class::cast) //
+				.findFirst() //
+				.orElseThrow(() -> new AssertionError("No BeforeLinkSaveEvent published"));
+	}
+
 	@RestResource
 	static class Sample {
 		@org.springframework.data.annotation.Reference List<Reference> references = new ArrayList<Reference>();
+		@org.springframework.data.annotation.Reference Reference reference;
 	}
 
 	@RestResource
