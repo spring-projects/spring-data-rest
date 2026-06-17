@@ -293,9 +293,14 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 						loadPropertyValue(prop.propertyType, source.getLinks().toList().get(0)));
 			}
 
-			publishEvent(new BeforeLinkSaveEvent(prop.accessor.getBean(), prop.propertyValue));
+			// Re-read the property after the mutation above so that the events carry the value actually being
+			// saved rather than the one captured before the assignment. The latter would be stale for PUT
+			// (which replaces collections/maps with a new container) and for singular references.
+			var linked = prop.accessor.getProperty(prop.property);
+
+			publishEvent(new BeforeLinkSaveEvent(prop.accessor.getBean(), linked));
 			var result = invoker.invokeSave(prop.accessor.getBean());
-			publishEvent(new AfterLinkSaveEvent(result, prop.propertyValue));
+			publishEvent(new AfterLinkSaveEvent(result, linked));
 
 			return null;
 		};
