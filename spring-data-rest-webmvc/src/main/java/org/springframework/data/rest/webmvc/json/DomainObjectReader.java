@@ -118,8 +118,37 @@ public class DomainObjectReader {
 		Assert.notNull(target, "Existing object instance must not be null");
 		Assert.notNull(mapper, "ObjectMapper must not be null");
 
+		retainIdentifierAndVersion(source, target, mapper);
+
 		Object intermediate = mapper.readerFor(target.getClass()).readValue(source);
 		return (T) mergeForPut(intermediate, target, mapper);
+	}
+
+	/**
+	 * Overwrites the identifier and version fields in the given request {@link ObjectNode} with the values of the
+	 * persisted {@code target} before the body is deserialized. This makes sure clients cannot mutate identifier or
+	 * version properties through a {@code PUT}, regardless of whether the target type is mutable or immutable (e.g. a
+	 * record or other type instantiated through its constructor), and mirrors the skipping of those properties applied
+	 * when merging mutable instances (see {@link MergingPropertyHandler#doWithPersistentProperty(PersistentProperty)}).
+	 *
+	 * @param source the request body, must not be {@literal null}.
+	 * @param target the persisted instance, must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 */
+	private void retainIdentifierAndVersion(ObjectNode source, Object target, ObjectMapper mapper) {
+
+		entities.getPersistentEntity(target.getClass()).ifPresent(entity -> {
+
+			if (!entity.hasIdProperty() && !entity.hasVersionProperty()) {
+				return;
+			}
+
+			MappedJacksonProperties properties = MappedJacksonProperties.forDeserialization(entity, mapper);
+			PersistentPropertyAccessor<?> accessor = entity.getPropertyAccessor(target);
+
+			retainProperty(source, entity.getIdProperty(), properties, accessor, mapper);
+			retainProperty(source, entity.getVersionProperty(), properties, accessor, mapper);
+		});
 	}
 
 	/**
@@ -601,6 +630,16 @@ public class DomainObjectReader {
 		}
 
 		return value.getClass().equals(type.getType()) ? type : TypeInformation.of(value.getClass());
+	}
+
+	private static void retainProperty(ObjectNode source, @Nullable PersistentProperty<?> property,
+			MappedJacksonProperties properties, PersistentPropertyAccessor<?> accessor, ObjectMapper mapper) {
+
+		if (property == null || !properties.isMappedProperty(property)) {
+			return;
+		}
+
+		source.set(properties.getMappedName(property), mapper.valueToTree(accessor.getProperty(property)));
 	}
 
 	/**

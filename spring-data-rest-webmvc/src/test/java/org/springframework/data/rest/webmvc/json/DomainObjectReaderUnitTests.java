@@ -90,6 +90,7 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(Person.class);
 		mappingContext.getPersistentEntity(TypeWithGenericMap.class);
 		mappingContext.getPersistentEntity(VersionedType.class);
+		mappingContext.getPersistentEntity(ImmutableVersionedType.class);
 		mappingContext.getPersistentEntity(SampleWithCreatedDate.class);
 		mappingContext.getPersistentEntity(SampleWithTransient.class);
 		mappingContext.getPersistentEntity(User.class);
@@ -205,6 +206,40 @@ class DomainObjectReaderUnitTests {
 		assertThat(result.firstname).isNull();
 		assertThat(result.id).isEqualTo(1L);
 		assertThat(result.version).isEqualTo(1L);
+	}
+
+	@Test // GH-59
+	void doesNotAllowMutatingIdAndVersionViaPutBody() throws Exception {
+
+		VersionedType existing = new VersionedType();
+		existing.id = 1L;
+		existing.version = 1L;
+		existing.firstname = "Dave";
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = (ObjectNode) mapper.readTree("{ \"id\" : 9999, \"version\" : 9999, \"lastname\" : \"Matthews\" }");
+
+		VersionedType result = reader.readPut(node, existing, mapper);
+
+		assertThat(result.lastname).isEqualTo("Matthews");
+		assertThat(result.id).isEqualTo(1L);
+		assertThat(result.version).isEqualTo(1L);
+	}
+
+	@Test // GH-59
+	void doesNotAllowMutatingIdAndVersionOfImmutableTypeViaPut() throws Exception {
+
+		ImmutableVersionedType existing = new ImmutableVersionedType(1L, 1L, "Dave");
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = (ObjectNode) mapper
+				.readTree("{ \"id\" : 9999, \"version\" : 9999, \"firstname\" : \"Carter\" }");
+
+		ImmutableVersionedType result = reader.readPut(node, existing, mapper);
+
+		assertThat(result.firstname()).isEqualTo("Carter");
+		assertThat(result.id()).isEqualTo(1L);
+		assertThat(result.version()).isEqualTo(1L);
 	}
 
 	@Test // DATAREST-1006
@@ -861,6 +896,10 @@ class DomainObjectReaderUnitTests {
 
 		String firstname, lastname;
 	}
+
+	// GH-59
+	@Immutable
+	record ImmutableVersionedType(@Id Long id, @Version Long version, String firstname) {}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class SampleWithCreatedDate {
