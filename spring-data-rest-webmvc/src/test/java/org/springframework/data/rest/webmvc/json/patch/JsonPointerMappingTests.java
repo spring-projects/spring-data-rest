@@ -32,6 +32,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.rest.webmvc.json.BindContextFactory;
 import org.springframework.data.rest.webmvc.json.PersistentEntitiesBindContextFactory;
 
@@ -57,6 +59,7 @@ public class JsonPointerMappingTests {
 		context.getPersistentEntity(WithReadOnlyEmbedded.class);
 		context.getPersistentEntity(AuditInfo.class);
 		context.getPersistentEntity(WithReadOnlyCollection.class);
+		context.getPersistentEntity(WithIdAndVersion.class);
 
 		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
 		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities,
@@ -122,6 +125,29 @@ public class JsonPointerMappingTests {
 		verifier.forRead("/audit/createdBy", WithReadOnlyEmbedded.class);
 	}
 
+	@Test // GH-58
+	void forWriteRejectsIdProperty() {
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> verifier.forWrite("/id", WithIdAndVersion.class));
+	}
+
+	@Test // GH-58
+	void forWriteRejectsVersionProperty() {
+		assertThatExceptionOfType(PatchException.class)
+				.isThrownBy(() -> verifier.forWrite("/version", WithIdAndVersion.class));
+	}
+
+	@Test // GH-58
+	void forWriteStillAllowsRegularProperty() {
+		assertThatNoException().isThrownBy(() -> verifier.forWrite("/name", WithIdAndVersion.class));
+	}
+
+	@Test // GH-58
+	void forReadStillAllowsIdAndVersionProperties() {
+		assertThatNoException().isThrownBy(() -> verifier.forRead("/id", WithIdAndVersion.class));
+		assertThatNoException().isThrownBy(() -> verifier.forRead("/version", WithIdAndVersion.class));
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Sample {
 		String firstname;
@@ -148,5 +174,12 @@ public class JsonPointerMappingTests {
 	static class WithReadOnlyCollection {
 		String name;
 		@JsonProperty(access = READ_ONLY) List<String> roles;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class WithIdAndVersion {
+		@Id Long id;
+		@Version Long version;
+		String name;
 	}
 }

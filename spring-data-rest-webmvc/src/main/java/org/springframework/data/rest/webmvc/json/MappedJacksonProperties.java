@@ -267,6 +267,10 @@ public class MappedJacksonProperties {
 
 		PersistentProperty<?> property = fieldNameToProperty.get(name);
 
+		if (property != null && (property.isIdProperty() || property.isVersionProperty())) {
+			return false;
+		}
+
 		return property != null ? property.isWritable() : anySetterFound;
 	}
 
