@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
 
@@ -51,10 +52,13 @@ import com.querydsl.core.types.Predicate;
  *
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Lovro Vrlec
  * @since 2.4
  */
 class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 		extends RootResourceInformationHandlerMethodArgumentResolver {
+
+	private static final Pattern NESTED_PATH_SEPARATOR = Pattern.compile("\\.");
 
 	private final Repositories repositories;
 	private final QuerydslPredicateBuilder predicateBuilder;
@@ -123,9 +127,7 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 	 */
 	private Map<String, String[]> filterByJacksonVisibility(Class<?> domainType, Map<String, String[]> parameters) {
 
-		MappedJacksonProperties properties = jacksonPropertiesLookup.apply(domainType);
-
-		if (properties == null) {
+		if (jacksonPropertiesLookup.apply(domainType) == null) {
 			return parameters;
 		}
 
@@ -133,14 +135,51 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 
 		for (Entry<String, String[]> entry : parameters.entrySet()) {
 
-			PersistentProperty<?> property = properties.getPersistentProperty(entry.getKey());
+			String path = resolvePath(domainType, entry.getKey());
 
-			if (property != null) {
-				filtered.put(property.getName(), entry.getValue());
+			if (path != null) {
+				filtered.put(path, entry.getValue());
 			}
 		}
 
 		return filtered;
+	}
+
+	/**
+	 * Resolves the given request parameter name into the property path Querydsl operates on, applying the visibility
+	 * rules of {@link #filterByJacksonVisibility(Class, Map)} to every segment of a nested path, as Querydsl supports
+	 * filtering on nested properties (e.g. {@code address.street}). Returns {@literal null} if a segment does not refer
+	 * to a property Jackson exposes, so that a hidden property cannot be reached through an association either, or if
+	 * the type owning a segment is not backed by a {@link MappedJacksonProperties} instance, in which case visibility
+	 * cannot be established.
+	 *
+	 * @param domainType the type the leading segment is resolved against, must not be {@literal null}.
+	 * @param parameterName must not be {@literal null}.
+	 * @return the translated property path or {@literal null} if the parameter must not be forwarded to Querydsl.
+	 */
+	private @Nullable String resolvePath(Class<?> domainType, String parameterName) {
+
+		StringBuilder path = new StringBuilder(parameterName.length());
+		Class<?> owningType = domainType;
+
+		for (String segment : NESTED_PATH_SEPARATOR.split(parameterName)) {
+
+			MappedJacksonProperties properties = jacksonPropertiesLookup.apply(owningType);
+			PersistentProperty<?> property = properties == null ? null : properties.getPersistentProperty(segment);
+
+			if (property == null) {
+				return null;
+			}
+
+			if (!path.isEmpty()) {
+				path.append('.');
+			}
+
+			path.append(property.getName());
+			owningType = property.getActualType();
+		}
+
+		return path.toString();
 	}
 
 	@SuppressWarnings("unchecked")
