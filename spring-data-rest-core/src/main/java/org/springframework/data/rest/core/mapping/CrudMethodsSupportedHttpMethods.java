@@ -115,13 +115,14 @@ public class CrudMethodsSupportedHttpMethods implements SupportedHttpMethods {
 		methods.add(GET);
 
 		if (property.isWritable() && getMethodsFor(ITEM).contains(PUT)) {
+
 			methods.add(PUT);
 			methods.add(PATCH);
 			methods.add(DELETE);
-		}
 
-		if (property.isCollectionLike() && property.isWritable()) {
-			methods.add(POST);
+			if (property.isCollectionLike()) {
+				methods.add(POST);
+			}
 		}
 
 		return HttpMethods.of(methods);
