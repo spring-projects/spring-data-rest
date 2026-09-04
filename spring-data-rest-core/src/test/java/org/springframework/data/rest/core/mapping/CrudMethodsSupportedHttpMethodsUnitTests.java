@@ -140,6 +140,23 @@ class CrudMethodsSupportedHttpMethodsUnitTests {
 				PUT, PATCH);
 	}
 
+	@Test // GH-TBD
+	void doesNotExposeMutatingAssociationMethodsIfSaveIsNotExported() {
+
+		KeyValueMappingContext<?, ?> context = new KeyValueMappingContext<>();
+		KeyValuePersistentEntity<?, ?> entity = context.getRequiredPersistentEntity(Entity.class);
+
+		SupportedHttpMethods methods = getSupportedHttpMethodsFor(HidesSaveEntityRepository.class);
+
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("relatedCollection")))//
+				.contains(GET)//
+				.doesNotContain(POST, PUT, PATCH, DELETE);
+
+		assertThat(methods.getMethodsFor(entity.getRequiredPersistentProperty("related")))//
+				.contains(GET)//
+				.doesNotContain(POST, PUT, PATCH, DELETE);
+	}
+
 	private SupportedHttpMethods getSupportedHttpMethodsFor(Class<?> repositoryInterface) {
 
 		RepositoryMetadata metadata = new DefaultRepositoryMetadata(repositoryInterface);
@@ -182,6 +199,13 @@ class CrudMethodsSupportedHttpMethodsUnitTests {
 	}
 
 	interface EntityRepository extends CrudRepository<Entity, Long> {}
+
+	interface HidesSaveEntityRepository extends CrudRepository<Entity, Long> {
+
+		@Override
+		@RestResource(exported = false)
+		<S extends Entity> S save(S entity);
+	}
 
 	interface MethodsExplicitlyExportedRepository extends Repository<Object, Long> {
 
