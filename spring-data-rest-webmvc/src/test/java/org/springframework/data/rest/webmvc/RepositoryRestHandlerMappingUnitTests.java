@@ -56,6 +56,7 @@ import org.springframework.web.util.pattern.PathPattern;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Mark Paluch
+ * @author Steve Rutherford
  */
 @ExtendWith(MockitoExtension.class)
 class RepositoryRestHandlerMappingUnitTests {

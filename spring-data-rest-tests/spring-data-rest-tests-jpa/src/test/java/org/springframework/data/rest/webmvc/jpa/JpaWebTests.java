@@ -74,6 +74,7 @@ import com.jayway.jsonpath.ReadContext;
  * @author Mark Paluch
  * @author Ľubomír Varga
  * @author Dario Seidl
+ * @author Steve Rutherford
  */
 @Transactional
 @ContextConfiguration(classes = JpaRepositoryConfig.class, initializers = JpaWebTests.JpaContextInitializer.class)

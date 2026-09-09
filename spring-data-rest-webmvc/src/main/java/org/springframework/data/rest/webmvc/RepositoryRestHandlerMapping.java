@@ -62,6 +62,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Steve Rutherford
  */
 @SuppressWarnings("NullAway")
 public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
