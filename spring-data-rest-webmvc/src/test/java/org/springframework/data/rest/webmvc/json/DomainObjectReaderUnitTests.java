@@ -73,6 +73,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
  * @author Mathias Düsterhöft
  * @author Ken Dombeck
  * @author Thomas Mrozinski
+ * @author Takeshi Ogawa
  */
 @ExtendWith(MockitoExtension.class)
 class DomainObjectReaderUnitTests {
@@ -110,6 +111,8 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(BugModel.class);
 		mappingContext.getPersistentEntity(ArrayListHolder.class);
 		mappingContext.getPersistentEntity(MapWrapper.class);
+		mappingContext.getPersistentEntity(Playlist.class);
+		mappingContext.getPersistentEntity(Track.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -839,6 +842,39 @@ class DomainObjectReaderUnitTests {
 		assertThat(result.items.get(2).some).isEqualTo("yetAnotherValue");
 	}
 
+	@Test // GH-2596
+	void patchReplacesReferenceOfEntityNestedInArray() throws Exception {
+
+		Associations associations = mock(Associations.class);
+		when(associations.isLinkableAssociation(any(PersistentProperty.class)))
+				.thenAnswer(invocation -> invocation.<PersistentProperty<?>> getArgument(0).isAssociation());
+
+		DomainObjectReader reader = new DomainObjectReader(entities, associations);
+
+		Tag first = new Tag();
+		Tag second = new Tag();
+
+		Track track = new Track();
+		track.label = "old label";
+		track.tag = first;
+
+		Playlist playlist = new Playlist();
+		playlist.tracks.add(track);
+
+		SimpleModule module = new SimpleModule().addDeserializer(Tag.class,
+				new SelectValueByIdSerializer<Tag>(Map.of(first.id, first, second.id, second)));
+		ObjectMapper mapper = JsonMapper.builder().addModule(module).build();
+
+		ObjectNode node = (ObjectNode) mapper.readTree(
+				String.format("{ \"tracks\" : [ { \"label\" : \"new label\", \"tag\" : \"%s\" } ] }", second.id));
+
+		Playlist result = reader.doMerge(node, playlist, mapper);
+
+		assertThat(result.tracks).hasSize(1);
+		assertThat(result.tracks.get(0).label).isEqualTo("new label");
+		assertThat(result.tracks.get(0).tag).isSameAs(second);
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -1116,6 +1152,20 @@ class DomainObjectReaderUnitTests {
 	static class Tag {
 		@Id UUID id = UUID.randomUUID();
 		String name;
+	}
+
+	// GH-2596
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Playlist {
+		@Id UUID id = UUID.randomUUID();
+		List<Track> tracks = new ArrayList<Track>();
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Track {
+		String label;
+		@Reference Tag tag;
 	}
 
 	static class SelectValueByIdSerializer<T> extends ValueDeserializer<T> {
