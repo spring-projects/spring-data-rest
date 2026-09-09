@@ -56,6 +56,7 @@ import org.springframework.web.util.pattern.PathPattern;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Mark Paluch
+ * @author Steve Rutherford
  */
 @ExtendWith(MockitoExtension.class)
 class RepositoryRestHandlerMappingUnitTests {
@@ -292,6 +293,41 @@ class RepositoryRestHandlerMappingUnitTests {
 		request.addHeader(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET");
 
 		assertThatCode(() -> handlerMapping.get().getHandlerInternal(request)).doesNotThrowAnyException();
+	}
+
+	@Test // DATAREST-1495
+	void prefersSearchResourceOverItemResourceWhenRepositoryNameIsLongerThanSearchKeyword() throws Exception {
+
+		// "authors" (7 chars) > "search" (6 chars), which previously caused AntPatternComparator to
+		// rank /authors/{id} higher than /{repository}/search for GET /authors/search.
+		when(mappings.exportsTopLevelResourceFor("/authors")).thenReturn(true);
+
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/authors/search");
+
+		HandlerMethod method = handlerMapping.get().getHandlerInternal(request);
+
+		// Must resolve to the search listing handler, not the item-resource handler
+		Method searchListingMethod = RepositorySearchController.class.getMethod("listSearches",
+				RootResourceInformation.class);
+
+		assertThat(method).isNotNull();
+		assertThat(method.getMethod()).isEqualTo(searchListingMethod);
+	}
+
+	@Test // DATAREST-1495
+	void isLastSegmentLiteralReturnsTrueForLiteralSegments() {
+
+		assertThat(RepositoryRestHandlerMapping.isLastSegmentLiteral("/{repository}/search")).isTrue();
+		assertThat(RepositoryRestHandlerMapping.isLastSegmentLiteral("/people")).isTrue();
+		assertThat(RepositoryRestHandlerMapping.isLastSegmentLiteral("/people/search")).isTrue();
+	}
+
+	@Test // DATAREST-1495
+	void isLastSegmentLiteralReturnsFalseForVariableSegments() {
+
+		assertThat(RepositoryRestHandlerMapping.isLastSegmentLiteral("/{repository}/{id}")).isFalse();
+		assertThat(RepositoryRestHandlerMapping.isLastSegmentLiteral("/authors/{id}")).isFalse();
+		assertThat(RepositoryRestHandlerMapping.isLastSegmentLiteral("/{repository}")).isFalse();
 	}
 
 	private static Class<?> createProxy(Object source) {

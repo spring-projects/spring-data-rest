@@ -19,6 +19,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +62,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Steve Rutherford
  */
 @SuppressWarnings("NullAway")
 public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
@@ -182,6 +184,106 @@ public class RepositoryRestHandlerMapping extends BasePathAwareHandlerMapping {
 		jpaHelper.map(JpaHelper::getInterceptors) //
 				.orElseGet(() -> Collections.emptyList()) //
 				.forEach(interceptors::add);
+	}
+
+	/**
+	 * Returns a {@link Comparator} for {@link RequestMappingInfo} that first applies a SDR-specific tiebreaker before
+	 * delegating to the default Spring MVC comparator. The tiebreaker ensures that patterns with a literal last path
+	 * segment (e.g. {@code /{repository}/search}) are preferred over patterns whose last path segment is a variable
+	 * (e.g. {@code /{repository}/{id}} or {@code /authors/{id}}). This prevents the {@code AntPatternComparator}'s
+	 * length-based heuristic from incorrectly routing {@code GET /authors/search} to the item-resource handler when the
+	 * repository name happens to be longer than the keyword "search".
+	 *
+	 * @see <a href="https://github.com/spring-projects/spring-data-rest/issues/1853">DATAREST-1495</a>
+	 */
+	@Override
+	protected Comparator<RequestMappingInfo> getMappingComparator(HttpServletRequest request) {
+
+		Comparator<RequestMappingInfo> defaultComparator = super.getMappingComparator(request);
+
+		return (info1, info2) -> {
+
+			int result = compareByLastSegmentLiteralness(info1, info2, request);
+
+			if (result != 0) {
+				return result;
+			}
+
+			return defaultComparator.compare(info1, info2);
+		};
+	}
+
+	/**
+	 * Compares two {@link RequestMappingInfo} instances by whether their last matched path segment is a literal or a
+	 * variable. Patterns whose last segment is a literal (e.g. {@code /search}) are considered more specific and ranked
+	 * higher (return value {@code -1}) than patterns whose last segment is a path variable (e.g. {@code /{id}}).
+	 *
+	 * @param info1 must not be {@literal null}.
+	 * @param info2 must not be {@literal null}.
+	 * @param request must not be {@literal null}.
+	 * @return {@code -1} if info1's last segment is literal and info2's is a variable, {@code 1} for the inverse,
+	 *         {@code 0} if both are the same kind.
+	 */
+	private static int compareByLastSegmentLiteralness(RequestMappingInfo info1, RequestMappingInfo info2,
+			HttpServletRequest request) {
+
+		String pattern1 = getMatchedPattern(info1, request);
+		String pattern2 = getMatchedPattern(info2, request);
+
+		if (pattern1 == null || pattern2 == null) {
+			return 0;
+		}
+
+		boolean lastSegment1IsLiteral = isLastSegmentLiteral(pattern1);
+		boolean lastSegment2IsLiteral = isLastSegmentLiteral(pattern2);
+
+		if (lastSegment1IsLiteral && !lastSegment2IsLiteral) {
+			return -1;
+		}
+
+		if (!lastSegment1IsLiteral && lastSegment2IsLiteral) {
+			return 1;
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Returns the matched pattern string for the given {@link RequestMappingInfo} and request, or {@literal null} if
+	 * none can be determined.
+	 *
+	 * @param info must not be {@literal null}.
+	 * @param request must not be {@literal null}.
+	 * @return the matched pattern string, or {@literal null}.
+	 */
+	private static @Nullable String getMatchedPattern(RequestMappingInfo info, HttpServletRequest request) {
+
+		PathPatternsRequestCondition pathPatternsCondition = info.getPathPatternsCondition();
+
+		if (pathPatternsCondition != null) {
+			PathPatternsRequestCondition matchingCondition = pathPatternsCondition.getMatchingCondition(request);
+			if (matchingCondition != null) {
+				return matchingCondition.getFirstPattern().getPatternString();
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns whether the last path segment of the given pattern is a literal (i.e. not a path variable or wildcard).
+	 * For example, {@code /{repository}/search} returns {@code true}, while {@code /{repository}/{id}} returns
+	 * {@code false}.
+	 *
+	 * @param pattern must not be {@literal null}.
+	 * @return {@code true} if the last segment is a literal, {@code false} otherwise.
+	 */
+	static boolean isLastSegmentLiteral(String pattern) {
+
+		int lastSlash = pattern.lastIndexOf('/');
+		String lastSegment = lastSlash >= 0 ? pattern.substring(lastSlash + 1) : pattern;
+
+		return !lastSegment.startsWith("{") && !lastSegment.startsWith("*");
 	}
 
 	@Override
