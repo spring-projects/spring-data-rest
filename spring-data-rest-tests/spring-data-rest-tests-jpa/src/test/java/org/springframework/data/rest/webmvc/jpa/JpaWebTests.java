@@ -754,6 +754,19 @@ public class JpaWebTests extends CommonWebTests {
 		assertThat(observationContext.getPathPattern()).isEqualTo("/authors/{id}");
 	}
 
+	@Test // DATAREST-1495
+	void searchResourceIsAccessibleWhenRepositoryNameIsLongerThanSearchKeyword() throws Exception {
+
+		// "authors" has 7 characters, "search" has 6. Previously, AntPatternComparator ranked
+		// /authors/{id} (length 10) higher than /{repository}/search (length 9), causing
+		// GET /authors/search to be routed to the item-resource handler and return 400 BAD_REQUEST
+		// (because "search" could not be bound as an entity ID) instead of being correctly routed
+		// to the search-resource handler. AuthorRepository has no query methods, so the search
+		// resource handler correctly returns 404 NOT_FOUND (no searches exposed) — not 400.
+		mockMvc.perform(get("/authors/search").accept(MediaType.APPLICATION_JSON)) //
+				.andExpect(status().isNotFound());
+	}
+
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
 
 		Link peopleLink = client.discoverUnique(LinkRelation.of("people"));
