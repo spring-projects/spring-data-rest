@@ -124,8 +124,26 @@ public class DefaultSelfLinkProvider implements SelfLinkProvider {
 
 	private @Nullable Object entityIdentifierOrNull(Object instance) {
 
-		return entities.getRequiredPersistentEntity(instance.getClass()) //
-				.getIdentifierAccessor(instance) //
-				.getIdentifier();
+		PersistentEntity<?, ?> entity = entities.getRequiredPersistentEntity(instance.getClass());
+
+		// First try the standard IdentifierAccessor path (works for simple @Id)
+		Object identifier = entity.getIdentifierAccessor(instance).getIdentifier();
+
+		if (identifier != null) {
+			return identifier;
+		}
+
+		// Fall back to reading the ID property directly via PersistentPropertyAccessor.
+		// This handles composite keys (@EmbeddedId / @IdClass) where the IdentifierAccessor
+		// may return null because the mapping layer cannot resolve the composite key through
+		// its standard path (e.g. when the key type contains non-primitive fields such as
+		// Joda-Time DateTime that are not registered in the mapping context).
+		PersistentProperty<?> idProperty = entity.getIdProperty();
+
+		if (idProperty == null) {
+			return null;
+		}
+
+		return entity.getPropertyAccessor(instance).getProperty(idProperty);
 	}
 }
