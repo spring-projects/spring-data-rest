@@ -18,7 +18,10 @@ package org.springframework.data.rest.core.mapping;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -28,6 +31,7 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
+import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.core.support.RepositoryFactoryInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -151,10 +155,94 @@ class RepositoryResourceMappingsUnitTests {
 	}
 
 	/**
+	 * Verifies that {@link RepositoryResourceMappings#getSearchResourceMappings(Class)} uses the query methods from the
+	 * exported (annotated) repository, not from the non-exported one that {@link Repositories} happens to return for
+	 * the domain type.
+	 * <p>
+	 * This is the companion fix to the cache-population fix: even after the correct repository is selected for
+	 * exposure, {@code getSearchResourceMappings} must also use that same repository's query methods rather than
+	 * falling back to {@code repositories.getRequiredRepositoryInformation(domainType)}, which would return the
+	 * non-exported repository and expose none of the annotated repository's search methods.
+	 *
+	 * @see <a href="https://github.com/spring-projects/spring-data-rest/issues/465">DATAREST-80 / GH-465</a>
+	 */
+	@Test // GH-465
+	void getSearchResourceMappingsUsesExportedRepositoryQueryMethods() throws Exception {
+
+		KeyValueMappingContext<?, ?> mappingContext = new KeyValueMappingContext<>();
+		mappingContext.getPersistentEntity(MultiRepoEntity.class);
+
+		PersistentEntities entities = new PersistentEntities(Arrays.asList(mappingContext));
+
+		DefaultRepositoryMetadata plainMetadata = new DefaultRepositoryMetadata(PlainMultiRepoEntityRepository.class);
+		DefaultRepositoryMetadata annotatedMetadata = new DefaultRepositoryMetadata(
+				AnnotatedMultiRepoEntityRepositoryWithSearch.class);
+
+		// Plain repository has no query methods
+		RepositoryInformation plainRepoInfo = stubRepositoryInformation(plainMetadata, Collections.emptyList());
+
+		// The annotated repository exposes a findByName query method
+		Method findByNameMethod = AnnotatedMultiRepoEntityRepositoryWithSearch.class.getMethod("findByName",
+				String.class);
+		RepositoryInformation annotatedRepoInfo = stubRepositoryInformation(annotatedMetadata,
+				Collections.singletonList(findByNameMethod));
+
+		@SuppressWarnings("unchecked")
+		RepositoryFactoryInformation<MultiRepoEntity, UUID> plainFactoryInfo = mock(RepositoryFactoryInformation.class);
+		when(plainFactoryInfo.getRepositoryInformation()).thenReturn(plainRepoInfo);
+
+		@SuppressWarnings("unchecked")
+		RepositoryFactoryInformation<MultiRepoEntity, UUID> annotatedFactoryInfo = mock(
+				RepositoryFactoryInformation.class);
+		when(annotatedFactoryInfo.getRepositoryInformation()).thenReturn(annotatedRepoInfo);
+
+		// Plain (non-annotated) repository registered first — simulates the bug scenario where
+		// Repositories.getRequiredRepositoryInformation() returns the wrong (non-exported) repository.
+		StaticListableBeanFactory beanFactory = new StaticListableBeanFactory();
+		beanFactory.addBean("plainMultiRepoEntityRepository", plainFactoryInfo);
+		beanFactory.addBean("annotatedMultiRepoEntityRepositoryWithSearch", annotatedFactoryInfo);
+
+		// Repositories returns the plain (non-exported) repository for the domain type.
+		Repositories repositories = mock(Repositories.class);
+		when(repositories.hasRepositoryFor(MultiRepoEntity.class)).thenReturn(true);
+		when(repositories.getRequiredRepositoryInformation(MultiRepoEntity.class)).thenReturn(plainRepoInfo);
+
+		RepositoryRestConfiguration configuration = new RepositoryRestConfiguration(
+				new ProjectionDefinitionConfiguration(), new MetadataConfiguration(),
+				mock(EnumTranslationConfiguration.class));
+
+		RepositoryResourceMappings mappings = new RepositoryResourceMappings(repositories, entities, configuration,
+				beanFactory);
+
+		SearchResourceMappings searchMappings = mappings.getSearchResourceMappings(MultiRepoEntity.class);
+
+		assertThat(searchMappings).isNotNull();
+		assertThat(searchMappings.isExported()) //
+				.as("Search resource should be exported because the annotated repository has query methods") //
+				.isTrue();
+		assertThat(searchMappings.getMappedMethod("findByName")) //
+				.as("findByName query method from the annotated repository should be discoverable") //
+				.isNotNull();
+	}
+
+	// ---------------------------------------------------------------------------
+	// Helpers
+	// ---------------------------------------------------------------------------
+
+	/**
 	 * Creates a stub {@link RepositoryInformation} that delegates metadata methods to the given
-	 * {@link DefaultRepositoryMetadata} and returns empty collections for query methods.
+	 * {@link DefaultRepositoryMetadata} and returns an empty list of query methods.
 	 */
 	private static RepositoryInformation stubRepositoryInformation(DefaultRepositoryMetadata metadata) {
+		return stubRepositoryInformation(metadata, Collections.emptyList());
+	}
+
+	/**
+	 * Creates a stub {@link RepositoryInformation} that delegates metadata methods to the given
+	 * {@link DefaultRepositoryMetadata} and returns the provided list of query methods.
+	 */
+	private static RepositoryInformation stubRepositoryInformation(DefaultRepositoryMetadata metadata,
+			List<Method> queryMethods) {
 
 		RepositoryInformation info = mock(RepositoryInformation.class);
 		doReturn(metadata.getRepositoryInterface()).when(info).getRepositoryInterface();
@@ -162,23 +250,29 @@ class RepositoryResourceMappingsUnitTests {
 		doReturn(metadata.getIdType()).when(info).getIdType();
 		doReturn(metadata.getCrudMethods()).when(info).getCrudMethods();
 		when(info.isPagingRepository()).thenReturn(metadata.isPagingRepository());
-		when(info.getQueryMethods()).thenReturn(java.util.Collections.emptyList());
-		when(info.getAlternativeDomainTypes()).thenReturn(java.util.Collections.emptySet());
+		when(info.getQueryMethods()).thenReturn(queryMethods);
+		when(info.getAlternativeDomainTypes()).thenReturn(Collections.emptySet());
 		when(info.isReactiveRepository()).thenReturn(false);
-		when(info.getFragments())
-				.thenReturn(org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments.empty()
-						.toSet());
+		when(info.getFragments()).thenReturn(RepositoryFragments.empty().toSet());
 		return info;
 	}
 
-	// --- Test domain types ---
+	// ---------------------------------------------------------------------------
+	// Test domain types
+	// ---------------------------------------------------------------------------
 
 	static class MultiRepoEntity {}
 
-	// Package-protected, non-annotated repository - would NOT be exported by DEFAULT strategy
+	// Package-protected, non-annotated repository — would NOT be exported by DEFAULT strategy
 	interface PlainMultiRepoEntityRepository extends CrudRepository<MultiRepoEntity, UUID> {}
 
-	// Annotated public repository - SHOULD be exported
+	// Annotated public repository — SHOULD be exported
 	@RepositoryRestResource
 	public interface AnnotatedMultiRepoEntityRepository extends CrudRepository<MultiRepoEntity, UUID> {}
+
+	// Annotated public repository with a search method — used to verify getSearchResourceMappings (GH-465)
+	@RepositoryRestResource
+	public interface AnnotatedMultiRepoEntityRepositoryWithSearch extends CrudRepository<MultiRepoEntity, UUID> {
+		Iterable<MultiRepoEntity> findByName(String name);
+	}
 }
