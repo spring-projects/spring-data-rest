@@ -163,6 +163,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Will Fleury
+ * @author Steve Rutherford
  */
 @Configuration(proxyBeanMethods = false)
 @EnableHypermediaSupport(type = { HypermediaType.HAL, HypermediaType.HAL_FORMS })
@@ -714,7 +715,8 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public RepositoryResourceMappings resourceMappings(Repositories repositories, PersistentEntities persistentEntities,
 			RepositoryRestConfiguration repositoryRestConfiguration) {
-		return new RepositoryResourceMappings(repositories, persistentEntities, repositoryRestConfiguration);
+		return new RepositoryResourceMappings(repositories, persistentEntities, repositoryRestConfiguration,
+				applicationContext);
 	}
 
 	/**
