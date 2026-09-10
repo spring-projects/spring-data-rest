@@ -29,6 +29,7 @@ import jakarta.persistence.ManyToOne;
  * still be deserialized correctly via the {@code UriStringDeserializer}.
  *
  * @author Spring Data REST team
+ * @author Steve Rutherford
  * @see Profile
  * @see MemberRepository
  */

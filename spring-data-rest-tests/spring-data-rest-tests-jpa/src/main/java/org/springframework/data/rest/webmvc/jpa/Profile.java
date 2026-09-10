@@ -27,6 +27,7 @@ import jakarta.persistence.Id;
  * <a href="https://github.com/spring-projects/spring-data-rest/issues/1515">GH-1515</a>.
  *
  * @author Spring Data REST team
+ * @author Steve Rutherford
  * @see ProfileRepository
  * @see Member
  */

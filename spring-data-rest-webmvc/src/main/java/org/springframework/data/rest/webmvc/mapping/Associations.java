@@ -43,6 +43,7 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Haroun Pacquee
+ * @author Steve Rutherford
  * @since 2.1
  */
 public class Associations {

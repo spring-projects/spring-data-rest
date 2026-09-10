@@ -26,6 +26,7 @@ import org.springframework.data.repository.CrudRepository;
  * work.
  *
  * @author Spring Data REST team
+ * @author Steve Rutherford
  * @see Profile
  * @see Member
  */

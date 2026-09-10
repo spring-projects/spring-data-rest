@@ -101,6 +101,7 @@ import com.fasterxml.jackson.databind.util.NameTransformer;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Alex Leigh
+ * @author Steve Rutherford
  * @deprecated since 5.0, in favor of {@link PersistentEntityJacksonModule}.
  */
 @Deprecated(since = "5.0", forRemoval = true)

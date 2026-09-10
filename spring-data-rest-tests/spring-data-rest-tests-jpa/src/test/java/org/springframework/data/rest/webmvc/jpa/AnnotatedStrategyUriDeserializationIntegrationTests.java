@@ -65,6 +65,7 @@ import org.springframework.web.context.WebApplicationContext;
  * regardless of whether that repository is exported as an HTTP endpoint.
  *
  * @author Spring Data REST team
+ * @author Steve Rutherford
  * @see <a href="https://github.com/spring-projects/spring-data-rest/issues/1515">GH-1515</a>
  */
 @ExtendWith(SpringExtension.class)

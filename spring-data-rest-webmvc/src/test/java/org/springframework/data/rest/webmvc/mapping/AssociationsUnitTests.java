@@ -47,6 +47,7 @@ import org.springframework.hateoas.Link;
 
 /**
  * @author Oliver Gierke
+ * @author Steve Rutherford
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

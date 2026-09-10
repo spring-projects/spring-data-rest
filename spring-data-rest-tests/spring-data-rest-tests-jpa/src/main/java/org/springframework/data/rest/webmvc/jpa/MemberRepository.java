@@ -24,6 +24,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
  * {@link ProfileRepository}, which is intentionally <em>not</em> annotated and therefore not HTTP-exported.
  *
  * @author Spring Data REST team
+ * @author Steve Rutherford
  * @see Member
  * @see ProfileRepository
  */

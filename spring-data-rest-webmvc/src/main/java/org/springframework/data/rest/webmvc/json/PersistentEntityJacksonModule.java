@@ -101,6 +101,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Alex Leigh
+ * @author Steve Rutherford
  * @since 5.0
  */
 public class PersistentEntityJacksonModule extends SimpleModule {
