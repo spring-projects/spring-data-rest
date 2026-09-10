@@ -135,7 +135,8 @@ public class Associations {
 	}
 
 	/**
-	 * Returns whether the given property is an association that is linkable.
+	 * Returns whether the given property is an association that is linkable, i.e. the target type is exported as an HTTP
+	 * resource. This is used to determine whether to render the association as a link during serialization.
 	 *
 	 * @param property must not be {@literal null}.
 	 * @return
@@ -156,6 +157,50 @@ public class Associations {
 
 		metadata = mappings.getMetadataFor(property.getActualType());
 		return metadata == null ? false : metadata.isExported();
+	}
+
+	/**
+	 * Returns whether the given property is an association whose target type can be resolved from a URI during
+	 * deserialization. Unlike {@link #isLinkableAssociation(PersistentProperty)}, this does <em>not</em> require the
+	 * target type's repository to be exported as an HTTP endpoint — it only requires that a repository (and therefore a
+	 * {@link org.springframework.data.rest.core.mapping.ResourceMetadata}) exists for the target type. This separation
+	 * ensures that the {@code ANNOTATED} repository detection strategy (which suppresses HTTP endpoint exposure for
+	 * un-annotated repositories) does not inadvertently break URI-to-entity deserialization for association properties.
+	 *
+	 * <p>The owner-level check is intentionally relaxed compared to {@link #isLinkableAssociation(PersistentProperty)}:
+	 * rather than delegating to {@link ResourceMetadata#isExported(PersistentProperty)} (which internally checks
+	 * whether the target type is exported), this method only checks whether the property has been explicitly suppressed
+	 * via {@code @RestResource(exported = false)} on the property itself. This avoids the circular dependency where
+	 * the target type's export status would prevent URI deserialization from working.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return {@literal true} if the property is an association, is not explicitly suppressed, and a repository exists
+	 *         for its target type.
+	 * @since 4.4
+	 * @see <a href="https://github.com/spring-projects/spring-data-rest/issues/1515">DATAREST-1195</a>
+	 */
+	public boolean isUriResolvableAssociation(PersistentProperty<?> property) {
+
+		Assert.notNull(property, "PersistentProperty must not be null");
+
+		if (!property.isAssociation() || config.isLookupType(property.getActualType())) {
+			return false;
+		}
+
+		// Check if the property has been explicitly suppressed via @RestResource(exported = false).
+		// We do NOT delegate to ownerMetadata.isExported(property) here because that method internally
+		// checks whether the target type's repository is exported — which is exactly the check we want
+		// to bypass for URI deserialization purposes (GH-1515).
+		org.springframework.data.rest.core.annotation.RestResource annotation =
+				property.findAnnotation(org.springframework.data.rest.core.annotation.RestResource.class);
+		if (annotation != null && !annotation.exported()) {
+			return false;
+		}
+
+		// A repository must exist for the target type, but it does not need to be exported as an HTTP endpoint.
+		// This allows URI-based association resolution to work even when the ANNOTATED detection strategy is used
+		// and the target repository is not annotated with @RepositoryRestResource.
+		return mappings.getMetadataFor(property.getActualType()) != null;
 	}
 
 	private TemplateVariables getProjectionVariable(PersistentProperty<?> property) {
