@@ -47,6 +47,7 @@ import org.springframework.data.rest.webmvc.jpa.Order;
 import org.springframework.data.rest.webmvc.jpa.Person;
 import org.springframework.data.rest.webmvc.support.DefaultedPageable;
 import org.springframework.data.rest.webmvc.support.ETag;
+import org.springframework.data.rest.webmvc.support.ETagDoesntMatchException;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -62,6 +63,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
  *
  * @author Oliver Gierke
  * @author Jeremy Rickard
+ * @author Steve Rutherford
  */
 @ContextConfiguration(classes = { ConfigurationCustomizer.class, JpaRepositoryConfig.class })
 @Transactional
@@ -114,7 +116,7 @@ class RepositoryEntityControllerIntegrationTests extends AbstractControllerInteg
 				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		ResponseEntity<?> entity = controller.putItemResource(information, persistentEntityResource, 1L, assembler,
-				ETag.NO_ETAG, MediaType.APPLICATION_JSON_VALUE);
+				ETag.NO_ETAG, new HttpHeaders(), MediaType.APPLICATION_JSON_VALUE);
 
 		assertThat(entity.getHeaders().getLocation().toString()).doesNotEndWith("{?projection}");
 	}
@@ -198,7 +200,7 @@ class RepositoryEntityControllerIntegrationTests extends AbstractControllerInteg
 				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
 
 		assertThat(controller.putItemResource(request, persistentEntityResource, order.getId(), assembler, ETag.NO_ETAG,
-				MediaType.APPLICATION_JSON_VALUE).hasBody()).isTrue();
+				new HttpHeaders(), MediaType.APPLICATION_JSON_VALUE).hasBody()).isTrue();
 	}
 
 	@Test // DATAREST-34
@@ -209,7 +211,7 @@ class RepositoryEntityControllerIntegrationTests extends AbstractControllerInteg
 				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).forCreation();
 
 		assertThat(controller.putItemResource(request, persistentEntityResource, 1L, assembler, ETag.NO_ETAG,
-				MediaType.APPLICATION_JSON_VALUE).hasBody()).isTrue();
+				new HttpHeaders(), MediaType.APPLICATION_JSON_VALUE).hasBody()).isTrue();
 	}
 
 	@Test // DATAREST-34
@@ -283,7 +285,40 @@ class RepositoryEntityControllerIntegrationTests extends AbstractControllerInteg
 
 		assertThatExceptionOfType(HttpRequestMethodNotSupportedException.class) //
 				.isThrownBy(() -> controller.putItemResource(request, persistentEntityResource, 1L, assembler, ETag.NO_ETAG,
-						MediaType.APPLICATION_JSON_VALUE));
+						new HttpHeaders(), MediaType.APPLICATION_JSON_VALUE));
+	}
+
+	@Test // GH-xxxx
+	void putWithIfNoneMatchWildcardSucceedsWhenResourceDoesNotExist() throws HttpRequestMethodNotSupportedException {
+
+		RootResourceInformation request = getResourceInformation(Order.class);
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).forCreation();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setIfNoneMatch("*");
+
+		ResponseEntity<?> response = controller.putItemResource(request, persistentEntityResource, 999L, assembler,
+				ETag.NO_ETAG, headers, MediaType.APPLICATION_JSON_VALUE);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+	}
+
+	@Test // GH-xxxx
+	void putWithIfNoneMatchWildcardFailsWhenResourceAlreadyExists() throws Exception {
+
+		RootResourceInformation request = getResourceInformation(Order.class);
+		Order order = request.getInvoker().invokeSave(new Order(new Person()));
+
+		PersistentEntityResource persistentEntityResource = PersistentEntityResource
+				.build(new Order(new Person()), entities.getRequiredPersistentEntity(Order.class)).build();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setIfNoneMatch("*");
+
+		assertThatExceptionOfType(ETagDoesntMatchException.class) //
+				.isThrownBy(() -> controller.putItemResource(request, persistentEntityResource, order.getId(), assembler,
+						ETag.NO_ETAG, headers, MediaType.APPLICATION_JSON_VALUE));
 	}
 
 	@TestFactory // #2225

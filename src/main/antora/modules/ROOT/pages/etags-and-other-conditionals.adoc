@@ -44,6 +44,20 @@ curl -v -H 'If-None-Match: <value of previous etag>' ...
 
 The preceding command (by default) runs a `GET`. Spring Data REST checks for `If-None-Match` headers while doing a `GET`. If the header matches the ETag, it concludes that nothing has changed and, instead of sending a copy of the resource, sends back an HTTP `304 Not Modified` status code. Semantically, it reads "`If this supplied header value does not match the server-side version, send the whole resource. Otherwise, do not send anything.`"
 
+[[conditional.if-none-match-wildcard]]
+=== `If-None-Match: *` with `PUT`
+
+The special wildcard value `*` for `If-None-Match` can be used with a `PUT` request to ensure the operation only succeeds if the target resource does **not** already exist (as defined in https://tools.ietf.org/html/rfc7232#section-3.2[RFC 7232 §3.2]). This is useful for safe resource creation at a known URI without accidentally overwriting an existing resource.
+
+====
+----
+curl -v -X PUT -H 'If-None-Match: *' -H 'Content-Type: application/json' \
+     -d '{ ... }' http://localhost:8080/orders/42
+----
+====
+
+If the resource at the given URI does not yet exist, the `PUT` proceeds and creates it (returning `201 Created`). If the resource already exists, Spring Data REST returns `412 Precondition Failed`, preventing an unintended overwrite.
+
 NOTE: This POJO is from an `ETag`-based unit test, so it does not have `@Entity` (JPA) or `@Document` (MongoDB) annotations, as expected in application code. It focuses solely on how a field with `@Version` results in an `ETag` header.
 
 [[conditional.if-modified-since]]

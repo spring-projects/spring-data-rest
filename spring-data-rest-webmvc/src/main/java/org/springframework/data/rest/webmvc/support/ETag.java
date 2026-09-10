@@ -33,10 +33,12 @@ import org.springframework.util.Assert;
  *
  * @author Oliver Gierke
  * @author Dario Seidl
+ * @author Steve Rutherford
  */
 public final class ETag {
 
 	public static final ETag NO_ETAG = new ETag(null);
+	public static final ETag WILDCARD_ETAG = new ETag("*");
 
 	private final @Nullable String value;
 
@@ -104,6 +106,23 @@ public final class ETag {
 		}
 
 		if (!this.equals(from(entity, target))) {
+			throw new ETagDoesntMatchException(target, this);
+		}
+	}
+
+	/**
+	 * Verifies that the given target does not exist when this {@link ETag} is a wildcard ({@code *}), raising an
+	 * {@link ETagDoesntMatchException} if the resource already exists. This implements the {@code If-None-Match: *}
+	 * semantics for {@code PUT} requests as defined in RFC 7232 §3.2: the operation should only proceed if the target
+	 * resource does not currently exist.
+	 *
+	 * @param entity must not be {@literal null}.
+	 * @param target the existing domain object, or {@literal null} if the resource does not exist.
+	 * @throws ETagDoesntMatchException if this is a wildcard ETag and the target already exists.
+	 */
+	public void verifyNoneMatch(PersistentEntity<?, ?> entity, @Nullable Object target) {
+
+		if (this == WILDCARD_ETAG && target != null) {
 			throw new ETagDoesntMatchException(target, this);
 		}
 	}

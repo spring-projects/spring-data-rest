@@ -73,6 +73,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Greg Turnquist
  * @author Jeremy Rickard
  * @author Jeroen Reijn
+ * @author Steve Rutherford
  */
 @RepositoryRestController
 class RepositoryEntityController
@@ -334,6 +335,7 @@ class RepositoryEntityController
 	 * @param id
 	 * @param assembler
 	 * @param eTag
+	 * @param requestHeaders
 	 * @param acceptHeader
 	 * @return
 	 * @throws HttpRequestMethodNotSupportedException
@@ -341,7 +343,8 @@ class RepositoryEntityController
 	@RequestMapping(value = BASE_MAPPING + "/{id}", method = RequestMethod.PUT)
 	public ResponseEntity<? extends RepresentationModel<?>> putItemResource(RootResourceInformation resourceInformation,
 			PersistentEntityResource payload, @BackendId Serializable id, PersistentEntityResourceAssembler assembler,
-			ETag eTag, @RequestHeader(value = ACCEPT_HEADER, required = false) String acceptHeader)
+			ETag eTag, @RequestHeader HttpHeaders requestHeaders,
+			@RequestHeader(value = ACCEPT_HEADER, required = false) String acceptHeader)
 			throws HttpRequestMethodNotSupportedException {
 
 		resourceInformation.verifySupportedMethod(HttpMethod.PUT, ResourceType.ITEM);
@@ -356,6 +359,13 @@ class RepositoryEntityController
 
 		if (objectToSave == null) {
 			throw new IllegalStateException("Payload content must not be null");
+		}
+
+		// Enforce If-None-Match: * — only allow the operation if the resource does not already exist (RFC 7232 §3.2)
+		List<String> ifNoneMatch = requestHeaders.getIfNoneMatch();
+		if (!ifNoneMatch.isEmpty() && "*".equals(ifNoneMatch.get(0))) {
+			Object existingObject = invoker.invokeFindById(id).orElse(null);
+			ETag.WILDCARD_ETAG.verifyNoneMatch(resourceInformation.getPersistentEntity(), existingObject);
 		}
 
 		return payload.isNew()
