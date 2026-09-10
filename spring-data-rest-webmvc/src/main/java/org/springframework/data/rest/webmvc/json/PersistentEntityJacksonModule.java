@@ -467,7 +467,8 @@ public class PersistentEntityJacksonModule extends SimpleModule {
 						continue;
 					}
 
-					if (!associationLinks.isUriResolvableAssociation(persistentProperty)) {
+					if (!associationLinks.isUriResolvableAssociation(persistentProperty)
+							&& !associationLinks.isLinkableAssociation(persistentProperty)) {
 						continue;
 					}
 
