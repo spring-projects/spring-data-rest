@@ -31,8 +31,6 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.servlet.handler.MatchableHandlerMapping;
-import org.springframework.web.servlet.handler.RequestMatchResult;
 import org.springframework.web.util.pattern.PathPatternParser;
 
 /**
@@ -42,7 +40,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Oliver Gierke
  * @soundtrack Benny Greb - Stabila (Moving Parts)
  */
-class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<HandlerMapping>, Ordered {
+class DelegatingHandlerMapping implements HandlerMapping, Iterable<HandlerMapping>, Ordered {
 
 	private final List<HandlerMapping> delegates;
 	private final @Nullable PathPatternParser parser;
@@ -66,7 +64,6 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 	}
 
 	@Nullable
-	@Override
 	public PathPatternParser getPatternParser() {
 		return parser;
 	}
@@ -91,20 +88,9 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 		return HandlerSelectionResult.from(request, delegates).resultOrException();
 	}
 
-	@Override
-	public @Nullable RequestMatchResult match(HttpServletRequest request, String pattern) {
-
-		try {
-			return HandlerSelectionResult.from(request, delegates).match(pattern);
-		} catch (Exception o_O) {
-			return null;
-		}
-	}
-
 	private static class HandlerSelectionResult {
 
 		private final HttpServletRequest request;
-		private final @Nullable HandlerMapping mapping;
 		private final @Nullable HandlerExecutionChain result;
 		private final @Nullable Exception ignoredException;
 
@@ -120,7 +106,7 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 					HandlerExecutionChain result = delegate.getHandler(request);
 
 					if (result != null) {
-						return HandlerSelectionResult.forResult(request, delegate, result);
+						return HandlerSelectionResult.forResult(request, result);
 					}
 
 				} catch (HttpMediaTypeNotSupportedException o_O) {
@@ -137,13 +123,12 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 			return HandlerSelectionResult.withoutResult(request, ignoredException);
 		}
 
-		private static HandlerSelectionResult forResult(HttpServletRequest request, HandlerMapping delegate,
-				HandlerExecutionChain result) {
-			return new HandlerSelectionResult(request, delegate, result, null);
+		private static HandlerSelectionResult forResult(HttpServletRequest request, HandlerExecutionChain result) {
+			return new HandlerSelectionResult(request, result, null);
 		}
 
 		private static HandlerSelectionResult withoutResult(HttpServletRequest request, @Nullable Exception exception) {
-			return new HandlerSelectionResult(request, null, null, exception);
+			return new HandlerSelectionResult(request, null, exception);
 		}
 
 		public @Nullable HandlerExecutionChain resultOrException() throws Exception {
@@ -155,20 +140,12 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 			return result;
 		}
 
-		public @Nullable RequestMatchResult match(String pattern) {
-
-			return MatchableHandlerMapping.class.isInstance(mapping) //
-					? ((MatchableHandlerMapping) mapping).match(request, pattern) //
-					: null;
-		}
-
-		public HandlerSelectionResult(HttpServletRequest request, @Nullable HandlerMapping mapping,
-				@Nullable HandlerExecutionChain result, @Nullable Exception ignoredException) {
+		public HandlerSelectionResult(HttpServletRequest request, @Nullable HandlerExecutionChain result,
+				@Nullable Exception ignoredException) {
 
 			Assert.notNull(request, "HttpServletRequest must not be null");
 
 			this.request = request;
-			this.mapping = mapping;
 			this.result = result;
 			this.ignoredException = ignoredException;
 		}
@@ -187,20 +164,19 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 			HandlerSelectionResult other = (HandlerSelectionResult) o;
 
 			return Objects.equals(request, other.request) //
-					&& Objects.equals(mapping, other.mapping) //
 					&& Objects.equals(result, other.result) //
 					&& Objects.equals(ignoredException, other.ignoredException);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(request, mapping, result, ignoredException);
+			return Objects.hash(request, result, ignoredException);
 		}
 
 		@Override
 		public java.lang.String toString() {
-			return "DelegatingHandlerMapping.HandlerSelectionResult(request=" + request + ", mapping=" + mapping + ", result="
-					+ result + ", ignoredException=" + ignoredException + ")";
+			return "DelegatingHandlerMapping.HandlerSelectionResult(request=" + request + ", result=" + result
+					+ ", ignoredException=" + ignoredException + ")";
 		}
 	}
 }
