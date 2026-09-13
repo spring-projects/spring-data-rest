@@ -163,6 +163,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Will Fleury
+ * @author Steve Rutherford
  */
 @Configuration(proxyBeanMethods = false)
 @EnableHypermediaSupport(type = { HypermediaType.HAL, HypermediaType.HAL_FORMS })
@@ -657,6 +658,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		handlerAdapter.setMessageConverters(defaultMessageConverters);
 
 		List<ResponseBodyAdvice<?>> advices = new ArrayList<>();
+		advices.add(new MappingJacksonValueResponseBodyAdvice());
 		advices.add(new HalFormsAdaptingResponseBodyAdvice<>());
 
 		if (repositoryRestConfiguration.getMetadataConfiguration().alpsEnabled()) {
