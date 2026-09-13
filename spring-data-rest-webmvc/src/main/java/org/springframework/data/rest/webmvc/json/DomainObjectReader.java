@@ -12,6 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * 
+ * Modifications copyright (C) 2026 Steve Rutherford
  */
 package org.springframework.data.rest.webmvc.json;
 
@@ -65,6 +67,7 @@ import org.springframework.util.ObjectUtils;
  * @author Mathias Düsterhöft
  * @author Thomas Mrozinski
  * @author Lars Vierbergen
+ * @author Steve Rutherford
  * @since 2.2
  */
 @SuppressWarnings("NullAway")
@@ -120,8 +123,42 @@ public class DomainObjectReader {
 
 		retainIdentifierAndVersion(source, target, mapper);
 
-		Object intermediate = mapper.readerFor(target.getClass()).readValue(source);
+		// Strip fields that are not writable persistent properties (e.g. "_links" from RepresentationModel
+		// subclasses) before handing the node to Jackson for intermediate deserialization. Without this,
+		// Jackson would attempt to set the private, setter-less "links" field on RepresentationModel and
+		// throw an UnsupportedOperationException. See https://github.com/spring-projects/spring-data-rest/issues/1726
+		ObjectNode filteredSource = stripNonWritableFields(source, target.getClass(), mapper);
+
+		Object intermediate = mapper.readerFor(target.getClass()).readValue(filteredSource);
 		return (T) mergeForPut(intermediate, target, mapper);
+	}
+
+	/**
+	 * Returns a copy of the given {@link ObjectNode} with all fields removed that are not writable persistent properties
+	 * of the given type. This prevents Jackson from attempting to set read-only or inherited fields (such as the
+	 * {@code links} field from {@link org.springframework.hateoas.RepresentationModel}) during deserialization.
+	 *
+	 * @param source must not be {@literal null}.
+	 * @param type must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 * @return a filtered copy of the source node, never {@literal null}.
+	 */
+	private ObjectNode stripNonWritableFields(ObjectNode source, Class<?> type, ObjectMapper mapper) {
+
+		return entities.getPersistentEntity(type).map(entity -> {
+
+			MappedJacksonProperties mappedProperties = MappedJacksonProperties.forDeserialization(entity, mapper);
+			ObjectNode copy = source.deepCopy();
+
+			for (Iterator<Entry<String, JsonNode>> it = copy.properties().iterator(); it.hasNext();) {
+				if (!mappedProperties.isKnownJacksonProperty(it.next().getKey())) {
+					it.remove();
+				}
+			}
+
+			return copy;
+
+		}).orElse(source);
 	}
 
 	/**
