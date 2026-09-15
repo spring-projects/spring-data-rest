@@ -65,6 +65,7 @@ import org.springframework.util.ObjectUtils;
  * @author Mathias Düsterhöft
  * @author Thomas Mrozinski
  * @author Lars Vierbergen
+ * @author Takeshi Ogawa
  * @since 2.2
  */
 @SuppressWarnings("NullAway")
@@ -161,6 +162,38 @@ public class DomainObjectReader {
 	 */
 	@Nullable
 	<T> T mergeForPut(T source, T target, final ObjectMapper mapper) {
+		return mergeForPut(source, target, mapper, false);
+	}
+
+	/**
+	 * Reads the given {@link ObjectNode} into a new instance of the given existing array element's type and merges it
+	 * into the existing element applying {@literal PUT} semantics. In contrast to {@link #readPut(ObjectNode, Object,
+	 * ObjectMapper)}, linkable associations are replaced by the ones contained in the payload as nested elements are not
+	 * exposed as association resources and the payload is the only place to express them.
+	 *
+	 * @param source must not be {@literal null}.
+	 * @param target must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 * @throws Exception
+	 */
+	private void mergeArrayElement(ObjectNode source, Object target, ObjectMapper mapper) throws Exception {
+
+		Object intermediate = mapper.readerFor(target.getClass()).readValue(source);
+		mergeForPut(intermediate, target, mapper, true);
+	}
+
+	/**
+	 * Merges the state of the given source object onto the target one applying {@literal PUT} semantics.
+	 *
+	 * @param source can be {@literal null}.
+	 * @param target can be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 * @param replaceLinkableAssociations whether to replace linkable associations of the target with the ones of the
+	 *          source. If {@literal false}, linkable associations are left untouched.
+	 * @return
+	 */
+	@Nullable
+	private <T> T mergeForPut(T source, T target, final ObjectMapper mapper, boolean replaceLinkableAssociations) {
 
 		Assert.notNull(mapper, "ObjectMapper must not be null");
 
@@ -188,7 +221,13 @@ public class DomainObjectReader {
 					MergingPropertyHandler propertyHandler = new MergingPropertyHandler(source, target, it, mapper);
 
 					it.doWithProperties(propertyHandler);
-					it.doWithAssociations(new LinkedAssociationSkippingAssociationHandler(associationLinks, propertyHandler));
+
+					if (replaceLinkableAssociations) {
+						it.doWithAssociations((SimpleAssociationHandler) association -> propertyHandler
+								.doWithPersistentProperty(association.getInverse()));
+					} else {
+						it.doWithAssociations(new LinkedAssociationSkippingAssociationHandler(associationLinks, propertyHandler));
+					}
 
 					// Need to copy unmapped properties as the PersistentProperty model currently does not contain any transient
 					// properties
@@ -423,7 +462,7 @@ public class DomainObjectReader {
 			if (ObjectNode.class.isInstance(jsonNode)) {
 
 				nestedObjectFound = true;
-				readPut((ObjectNode) jsonNode, next, mapper);
+				mergeArrayElement((ObjectNode) jsonNode, next, mapper);
 			}
 		}
 
@@ -726,6 +765,13 @@ public class DomainObjectReader {
 			Optional<Object> sourceValue = Optional.ofNullable(sourceAccessor.getProperty(property));
 
 			if (property.isImmutable()) {
+				targetAccessor.setProperty(property, sourceValue.orElse(null));
+				return;
+			}
+
+			// A linkable association points to a different aggregate. Replace the reference rather than merging the
+			// source state into the referenced instance.
+			if (associationLinks.isLinkableAssociation(property)) {
 				targetAccessor.setProperty(property, sourceValue.orElse(null));
 				return;
 			}
