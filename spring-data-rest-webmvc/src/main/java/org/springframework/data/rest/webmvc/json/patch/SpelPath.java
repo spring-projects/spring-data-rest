@@ -517,7 +517,7 @@ class SpelPath {
 					return SkippedPropertyPath.of(path.nested(segment), false);
 				}
 
-				TypeInformation<?> typeInformation = path.getTypeInformation();
+				TypeInformation<?> typeInformation = path.getLeafProperty().getTypeInformation();
 
 				return typeInformation.isMap() || typeInformation.isCollectionLike() //
 						? SkippedPropertyPath.of(path, true) //
