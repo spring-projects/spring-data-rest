@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022 original author or authors.
+ * Copyright 2016-2023 original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,19 +117,19 @@ class SortTranslatorUnitTests {
 		assertThat(translatedSort.getOrderFor("embedded.someInterface")).isNotNull();
 	}
 
+	@Test // DATAREST-1280
+	void shouldKnownAssociationProperties() {
+
+		Sort translatedSort = sortTranslator.translateSort(Sort.by("association.name"),
+				mappingContext.getRequiredPersistentEntity(Plain.class));
+
+		assertTrue(translatedSort.isSorted());
+	}
+
 	@Test // DATAREST-910
 	void shouldSkipWrongNestedProperties() {
 
 		Sort translatedSort = sortTranslator.translateSort(Sort.by("embedded.unknown"),
-				mappingContext.getRequiredPersistentEntity(Plain.class));
-
-		assertThat(translatedSort).isEqualTo(Sort.unsorted());
-	}
-
-	@Test // DATAREST-910, DATAREST-976
-	void shouldSkipKnownAssociationProperties() {
-
-		Sort translatedSort = sortTranslator.translateSort(Sort.by("association.name"),
 				mappingContext.getRequiredPersistentEntity(Plain.class));
 
 		assertThat(translatedSort).isEqualTo(Sort.unsorted());
