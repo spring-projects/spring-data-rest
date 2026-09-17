@@ -40,6 +40,7 @@ import org.springframework.data.repository.support.RepositoryInvokerFactory;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
 import org.springframework.data.rest.webmvc.json.MappedJacksonProperties;
 import org.springframework.data.util.Pair;
+import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -127,7 +128,9 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 	 */
 	private Map<String, String[]> filterByJacksonVisibility(Class<?> domainType, Map<String, String[]> parameters) {
 
-		if (jacksonPropertiesLookup.apply(domainType) == null) {
+		MappedJacksonProperties properties = jacksonPropertiesLookup.apply(domainType);
+
+		if (properties == null) {
 			return parameters;
 		}
 
@@ -135,7 +138,7 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 
 		for (Entry<String, String[]> entry : parameters.entrySet()) {
 
-			String path = resolvePath(domainType, entry.getKey());
+			String path = resolvePath(properties, entry.getKey());
 
 			if (path != null) {
 				filtered.put(path, entry.getValue());
@@ -148,24 +151,38 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 	/**
 	 * Resolves the given request parameter name into the property path Querydsl operates on, applying the visibility
 	 * rules of {@link #filterByJacksonVisibility(Class, Map)} to every segment of a nested path, as Querydsl supports
-	 * filtering on nested properties (e.g. {@code address.street}). Returns {@literal null} if a segment does not refer
-	 * to a property Jackson exposes, so that a hidden property cannot be reached through an association either, or if
-	 * the type owning a segment is not backed by a {@link MappedJacksonProperties} instance, in which case visibility
-	 * cannot be established.
+	 * filtering on nested properties (e.g. {@code address.street}). Returns {@literal null} if a segment is blank or
+	 * does not refer to a property Jackson exposes, so that a hidden property cannot be reached through an association
+	 * either, or if the type owning a segment is not backed by a {@link MappedJacksonProperties} instance, in which
+	 * case visibility cannot be established.
 	 *
-	 * @param domainType the type the leading segment is resolved against, must not be {@literal null}.
+	 * @param properties the Jackson property mapping of the type the leading segment is resolved against, must not be
+	 *          {@literal null}.
 	 * @param parameterName must not be {@literal null}.
 	 * @return the translated property path or {@literal null} if the parameter must not be forwarded to Querydsl.
 	 */
-	private @Nullable String resolvePath(Class<?> domainType, String parameterName) {
+	private @Nullable String resolvePath(MappedJacksonProperties properties, String parameterName) {
+
+		Assert.notNull(properties, "MappedJacksonProperties must not be null");
+		Assert.notNull(parameterName, "Parameter name must not be null");
 
 		StringBuilder path = new StringBuilder(parameterName.length());
-		Class<?> owningType = domainType;
+		PersistentProperty<?> property = null;
 
-		for (String segment : NESTED_PATH_SEPARATOR.split(parameterName)) {
+		for (String segment : NESTED_PATH_SEPARATOR.split(parameterName, -1)) {
 
-			MappedJacksonProperties properties = jacksonPropertiesLookup.apply(owningType);
-			PersistentProperty<?> property = properties == null ? null : properties.getPersistentProperty(segment);
+			// The leading segment is resolved against the given properties, every further one against the type of the
+			// previously resolved segment, which is only backed by a MappedJacksonProperties instance if it is a
+			// persistent entity itself.
+			MappedJacksonProperties owner = property == null //
+					? properties //
+					: jacksonPropertiesLookup.apply(property.getActualType());
+
+			if (owner == null || segment.isBlank()) {
+				return null;
+			}
+
+			property = owner.getPersistentProperty(segment);
 
 			if (property == null) {
 				return null;
@@ -176,7 +193,6 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver
 			}
 
 			path.append(property.getName());
-			owningType = property.getActualType();
 		}
 
 		return path.toString();
