@@ -501,7 +501,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities, defaultConversionService);
 
 		return new PersistentEntityResourceHandlerMethodArgumentResolver(defaultMessageConverters,
-				repoRequestArgumentResolver, backendIdHandlerMethodArgumentResolver, reader, lookups, factory);
+				repoRequestArgumentResolver, backendIdHandlerMethodArgumentResolver, reader, lookups, factory, entities);
 	}
 
 	/**

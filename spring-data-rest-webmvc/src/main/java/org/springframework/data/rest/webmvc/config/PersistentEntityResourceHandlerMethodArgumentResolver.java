@@ -12,6 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications copyright (C) 2026 Steve Rutherford
  */
 package org.springframework.data.rest.webmvc.config;
 
@@ -22,7 +24,9 @@ import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
@@ -40,8 +44,10 @@ import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.PersistentEntityResource.Builder;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.data.rest.webmvc.RootResourceInformation;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.webmvc.json.BindContextFactory;
 import org.springframework.data.rest.webmvc.json.DomainObjectReader;
+import org.springframework.data.rest.webmvc.json.MappedJacksonProperties;
 import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.MediaType;
@@ -63,6 +69,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Steve Rutherford
  */
 public class PersistentEntityResourceHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -75,6 +82,7 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 	private final PluginRegistry<EntityLookup<?>, Class<?>> lookups;
 	private final ConversionService conversionService = new DefaultConversionService();
 	private final JsonPatchHandler jsonPatchHandler;
+	private final PersistentEntities persistentEntities;
 
 	public PersistentEntityResourceHandlerMethodArgumentResolver(
 			List<HttpMessageConverter<?>> messageConverters,
@@ -82,17 +90,30 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 			BackendIdHandlerMethodArgumentResolver idResolver, DomainObjectReader reader,
 			PluginRegistry<EntityLookup<?>, Class<?>> lookups, BindContextFactory factory) {
 
+		this(messageConverters, resourceInformationResolver, idResolver, reader, lookups, factory,
+				PersistentEntities.of());
+	}
+
+	public PersistentEntityResourceHandlerMethodArgumentResolver(
+			List<HttpMessageConverter<?>> messageConverters,
+			RootResourceInformationHandlerMethodArgumentResolver resourceInformationResolver,
+			BackendIdHandlerMethodArgumentResolver idResolver, DomainObjectReader reader,
+			PluginRegistry<EntityLookup<?>, Class<?>> lookups, BindContextFactory factory,
+			PersistentEntities persistentEntities) {
+
 		Assert.notNull(messageConverters, "HttpMessageConverters must not be null");
 		Assert.notNull(resourceInformationResolver, "RootResourceInformation resolver must not be null");
 		Assert.notNull(idResolver, "IdResolver must not be null");
 		Assert.notNull(reader, "DomainObjectReader must not be null");
 		Assert.notNull(lookups, "EntityLookups must not be null");
+		Assert.notNull(persistentEntities, "PersistentEntities must not be null");
 
 		this.messageConverters = messageConverters;
 		this.resourceInformationResolver = resourceInformationResolver;
 		this.idResolver = idResolver;
 		this.lookups = lookups;
 		this.jsonPatchHandler = new JsonPatchHandler(mapper -> factory.getBindContextFor(mapper), reader);
+		this.persistentEntities = persistentEntities;
 	}
 
 	@Override
@@ -241,13 +262,55 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 		}
 	}
 
+	/**
+	 * Reads a new (POST/create) domain object from the request body. For Jackson-based converters, the request body is
+	 * first parsed as an {@link ObjectNode} and any fields that are not writable persistent properties are stripped
+	 * before deserialization. This prevents Jackson from attempting to set read-only or inherited fields such as the
+	 * {@code links} field on {@link RepresentationModel} subclasses, which would cause an
+	 * {@link UnsupportedOperationException}.
+	 *
+	 * @see <a href="https://github.com/spring-projects/spring-data-rest/issues/1726">GH-1726</a>
+	 */
 	private Object read(IncomingRequest request, HttpMessageConverter<Object> converter,
 			RootResourceInformation information) {
 
+		Class<?> domainType = information.getDomainType();
+
+		// For Jackson converters, strip non-writable fields (e.g. "_links" from RepresentationModel)
+		// before handing the body to Jackson for deserialization. See GH-1726.
+		if (converter instanceof AbstractJacksonHttpMessageConverter jacksonConverter) {
+
+			try {
+
+				ObjectMapper mapper = jacksonConverter.getMapper();
+				ObjectNode root = (ObjectNode) mapper.readTree(request.getBody());
+
+				persistentEntities.getPersistentEntity(domainType).ifPresent(entity -> {
+
+					MappedJacksonProperties mappedProperties = MappedJacksonProperties.forDeserialization(entity, mapper);
+
+					// Collect field names to remove first to avoid ConcurrentModificationException
+					List<String> toRemove = new ArrayList<>();
+					for (Map.Entry<String, JsonNode> entry : root.properties()) {
+						if (!mappedProperties.isKnownJacksonProperty(entry.getKey())) {
+							toRemove.add(entry.getKey());
+						}
+					}
+					toRemove.forEach(root::remove);
+				});
+
+				return mapper.treeToValue(root, domainType);
+
+			} catch (IOException o_O) {
+				throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType), o_O,
+						request.getServerHttpRequest());
+			}
+		}
+
 		try {
-			return converter.read(information.getDomainType(), request.getServerHttpRequest());
+			return converter.read(domainType, request.getServerHttpRequest());
 		} catch (IOException o_O) {
-			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, information.getDomainType()), o_O,
+			throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType), o_O,
 					request.getServerHttpRequest());
 		}
 	}

@@ -297,4 +297,38 @@ public class MappedJacksonProperties {
 
 		return property != null ? property.isWritable() : anySetterFound;
 	}
+
+	/**
+	 * Returns whether the given field name is known to Jackson — either as a mapped persistent property, as an unmapped
+	 * Jackson property (e.g. a {@link org.springframework.data.annotation.Transient} field that Jackson can still
+	 * deserialize), or because there is a catch-all {@link com.fasterxml.jackson.annotation.JsonAnySetter} method.
+	 * <p>
+	 * This is used to strip fields from an incoming {@link tools.jackson.databind.node.ObjectNode} that Jackson has no
+	 * knowledge of and would therefore attempt to set via reflection on inherited private fields (e.g. {@code _links}
+	 * from {@link org.springframework.hateoas.RepresentationModel}), which causes an
+	 * {@link UnsupportedOperationException}.
+	 *
+	 * @param name must not be {@literal null} or empty.
+	 * @return {@literal true} if the field is known to Jackson and should be kept in the request body.
+	 * @since 5.2
+	 * @see <a href="https://github.com/spring-projects/spring-data-rest/issues/1726">GH-1726</a>
+	 */
+	public boolean isKnownJacksonProperty(String name) {
+
+		Assert.hasText(name, "Property name must not be null or empty");
+
+		if (ignoredPropertyNames.contains(name)) {
+			return false;
+		}
+
+		if (fieldNameToProperty.containsKey(name)) {
+			return true;
+		}
+
+		if (anySetterFound) {
+			return true;
+		}
+
+		return unmappedProperties.stream().anyMatch(p -> p.getName().equals(name));
+	}
 }

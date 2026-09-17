@@ -12,6 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Modifications copyright (C) 2026 Steve Rutherford
  */
 package org.springframework.data.rest.webmvc.json;
 
@@ -55,6 +57,7 @@ import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.mapping.Associations;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.util.ObjectUtils;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -73,6 +76,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
  * @author Mathias Düsterhöft
  * @author Ken Dombeck
  * @author Thomas Mrozinski
+ * @author Steve Rutherford
  */
 @ExtendWith(MockitoExtension.class)
 class DomainObjectReaderUnitTests {
@@ -110,6 +114,7 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(BugModel.class);
 		mappingContext.getPersistentEntity(ArrayListHolder.class);
 		mappingContext.getPersistentEntity(MapWrapper.class);
+		mappingContext.getPersistentEntity(RepresentationModelEntity.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -1242,5 +1247,35 @@ class DomainObjectReaderUnitTests {
 
 	static class MapWrapper {
 		public Map<String, Object> map = new HashMap<>();
+	}
+
+	// GH-1726 - entity that extends RepresentationModel, which has a private "links" field
+	// that Jackson would try to set when "_links" is present in the request body.
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class RepresentationModelEntity extends RepresentationModel<RepresentationModelEntity> {
+
+		@Id Long id;
+		String name;
+	}
+
+	@Test // GH-1726
+	void readPutWithLinksFieldDoesNotThrowForRepresentationModelSubclass() throws Exception {
+
+		RepresentationModelEntity existing = new RepresentationModelEntity();
+		existing.id = 1L;
+		existing.name = "original";
+
+		ObjectMapper mapper = new ObjectMapper();
+		// Simulate a client sending back a response body that includes "_links" (as HAL clients typically do)
+		ObjectNode node = (ObjectNode) mapper.readTree(
+				"{ \"name\" : \"updated\", \"_links\" : { \"self\" : { \"href\" : \"http://localhost/entities/1\" } } }");
+
+		// Before the fix this would throw UnsupportedOperationException because Jackson tried to set
+		// the private "links" field on RepresentationModel via its unmodifiable list setter.
+		assertThatCode(() -> reader.readPut(node, existing, mapper)).doesNotThrowAnyException();
+
+		RepresentationModelEntity result = reader.readPut(node, existing, mapper);
+		assertThat(result.name).isEqualTo("updated");
+		assertThat(result.id).isEqualTo(1L);
 	}
 }
