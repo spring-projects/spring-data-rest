@@ -167,14 +167,16 @@ public class DomainObjectReader {
 
 	/**
 	 * Reads the given {@link ObjectNode} into a new instance of the given existing array element's type and merges it
-	 * into the existing element applying {@literal PUT} semantics. In contrast to {@link #readPut(ObjectNode, Object,
-	 * ObjectMapper)}, linkable associations are replaced by the ones contained in the payload as nested elements are not
-	 * exposed as association resources and the payload is the only place to express them.
+	 * into the existing element applying {@literal PUT} semantics. The only difference to
+	 * {@link #readPut(ObjectNode, Object, ObjectMapper)} is the handling of linkable associations: instead of being
+	 * skipped, they are replaced with the references contained in the payload (including {@literal null}), as nested
+	 * elements are not exposed as association resources and the payload is the only place to express them. All other
+	 * properties are merged the same way.
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param target must not be {@literal null}.
 	 * @param mapper must not be {@literal null}.
-	 * @throws Exception
+	 * @throws Exception in case the given {@link ObjectNode} cannot be read into the type of the given target.
 	 */
 	private void mergeArrayElement(ObjectNode source, Object target, ObjectMapper mapper) throws Exception {
 
