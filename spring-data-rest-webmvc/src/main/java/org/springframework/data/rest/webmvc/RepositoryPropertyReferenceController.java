@@ -21,6 +21,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -57,12 +59,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -72,6 +75,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Ľubomír Varga
+ * @author Steve Rutherford
  */
 @RepositoryRestController
 @SuppressWarnings({ "NullAway", "unchecked" })
@@ -393,6 +397,18 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 		var property = mapping.getProperty();
 		resourceInformation.verifySupportedMethod(method, property);
 
+		// Reject write operations on the inverse (non-owning) side of a JPA association.
+		// JPA only persists association changes from the owning side; silently accepting writes
+		// on the inverse side (mappedBy) would return HTTP 204 but make no database changes.
+		if (isWriteMethod(method) && InverseSideAssociationDetector.isInverseSide(property)) {
+			throw HttpRequestMethodNotSupportedException.forRejectedMethod(method)
+					.withAllowedMethods(HttpMethod.GET)
+					.withMessage(
+							"Cannot modify association '%s' from the inverse (mappedBy) side. "
+									+ "Update the owning side of the relationship instead.",
+							propertyPath);
+		}
+
 		var invoker = resourceInformation.getRequiredInvoker();
 		var domainObj = invoker.invokeFindById(id);
 
@@ -403,6 +419,14 @@ class RepositoryPropertyReferenceController /*extends AbstractRepositoryRestCont
 			var accessor = property.getOwner().getPropertyAccessor(it);
 			return handler.apply(new ReferencedProperty(property, accessor.getProperty(property), accessor));
 		});
+	}
+
+	/**
+	 * Returns whether the given {@link HttpMethod} is a write (mutating) operation.
+	 */
+	private static boolean isWriteMethod(HttpMethod method) {
+		return HttpMethod.PUT.equals(method) || HttpMethod.POST.equals(method)
+				|| HttpMethod.PATCH.equals(method) || HttpMethod.DELETE.equals(method);
 	}
 
 	private class ReferencedProperty {
