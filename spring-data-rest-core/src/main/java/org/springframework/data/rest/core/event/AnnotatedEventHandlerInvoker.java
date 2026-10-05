@@ -46,6 +46,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Jon Brisbin
  * @author Oliver Gierke
+ * @author Steve Rutherford
  */
 public class AnnotatedEventHandlerInvoker implements ApplicationListener<RepositoryEvent>, BeanPostProcessor {
 
@@ -74,8 +75,18 @@ public class AnnotatedEventHandlerInvoker implements ApplicationListener<Reposit
 			List<Object> parameters = new ArrayList<>();
 			parameters.add(src);
 
-			if (event instanceof LinkedEntityEvent) {
-				parameters.add(((LinkedEntityEvent) event).getLinked());
+			if (event instanceof LinkedEntityEvent linkedEntityEvent) {
+
+				Object linked = linkedEntityEvent.getLinked();
+
+				if (handlerMethod.method.getParameterCount() > 1) {
+					Class<?> linkedParamType = handlerMethod.method.getParameterTypes()[1];
+					if (linked == null || !ClassUtils.isAssignable(linkedParamType, linked.getClass())) {
+						continue;
+					}
+				}
+
+				parameters.add(linked);
 			}
 
 			if (LOG.isDebugEnabled()) {
