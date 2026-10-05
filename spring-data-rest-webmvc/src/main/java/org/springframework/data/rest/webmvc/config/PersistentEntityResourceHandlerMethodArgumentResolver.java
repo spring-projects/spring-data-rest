@@ -63,6 +63,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Jon Brisbin
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Babalola Opeyemi Daniel
  */
 public class PersistentEntityResourceHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -136,6 +137,10 @@ public class PersistentEntityResourceHandlerMethodArgumentResolver implements Ha
 			Object newObject = read(resourceInformation, incoming, converter, objectToUpdate);
 
 			if (newObject == null) {
+				throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType), request);
+			}
+
+			if (!domainType.isInstance(newObject)) {
 				throw new HttpMessageNotReadableException(String.format(ERROR_MESSAGE, domainType), request);
 			}
 
