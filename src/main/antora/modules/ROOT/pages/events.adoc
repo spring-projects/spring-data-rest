@@ -12,6 +12,111 @@ The REST exporter emits eight different events throughout the process of working
 * javadoc:org.springframework.data.rest.core.event.BeforeDeleteEvent[]
 * javadoc:org.springframework.data.rest.core.event.AfterDeleteEvent[]
 
+[[events.lifecycle]]
+== Event Lifecycle and Object State
+
+Understanding _when_ each event fires and _what object_ is passed to the event handler is critical for writing correct event handlers and validators.
+
+[[events.lifecycle.create]]
+=== Create Events (`POST`)
+
+When a `POST` request is received to create a new entity:
+
+1. The request body is deserialized into a new domain object instance.
+2. `BeforeCreateEvent` is published with the **new, unsaved domain object**.
+3. The repository `save(…)` method is called.
+4. `AfterCreateEvent` is published with the **saved domain object** (as returned by the repository, which may include generated IDs, audit fields, etc.).
+
+[[events.lifecycle.save]]
+=== Save Events (`PUT` and `PATCH`)
+
+Save events are fired for both `PUT` and `PATCH` requests on item resources. The key distinction is **what object state** is passed to the event, which differs between `PUT` and `PATCH`.
+
+[[events.lifecycle.save.put]]
+==== `PUT` Requests
+
+When a `PUT` request is received to replace an existing entity:
+
+1. The existing entity is loaded from the repository.
+2. The request body is applied on top of the existing entity (non-null fields from the request body overwrite the existing entity's fields).
+3. `BeforeSaveEvent` is published with the **fully merged domain object** (the existing entity with all fields replaced by the request body).
+4. The repository `save(…)` method is called.
+5. `AfterSaveEvent` is published with the **saved domain object** (as returned by the repository).
+
+[[events.lifecycle.save.patch]]
+==== `PATCH` Requests
+
+When a `PATCH` request is received to partially update an existing entity:
+
+1. The existing entity is loaded from the repository.
+2. The patch (either JSON Patch per https://tools.ietf.org/html/rfc6902[RFC 6902] or JSON Merge Patch per https://tools.ietf.org/html/rfc7386[RFC 7386]) is applied directly to the existing entity object in memory.
+3. `BeforeSaveEvent` is published with the **merged domain object** — that is, the existing entity with only the patched fields updated.
+4. The repository `save(…)` method is called.
+5. `AfterSaveEvent` is published with the **saved domain object** (as returned by the repository).
+
+IMPORTANT: For `PATCH` requests, the `BeforeSaveEvent` receives the already-merged domain object (the existing entity with the patch applied), **not** the raw partial input from the request body. This means validators and event handlers can safely inspect the full state of the entity, including fields that were not part of the patch.
+
+[[events.lifecycle.link-save]]
+=== Link Save Events (Association Resources)
+
+When a `PUT` or `POST` request is received on an association resource (e.g., `PUT /orders/1/customer`):
+
+1. `BeforeLinkSaveEvent` is published with the **parent entity** and the **linked entity** being associated.
+2. The parent entity is saved via the repository.
+3. `AfterLinkSaveEvent` is published with the **saved parent entity** and the **linked entity**.
+
+[[events.lifecycle.delete]]
+=== Delete Events (`DELETE`)
+
+When a `DELETE` request is received to remove an entity:
+
+1. The entity is loaded from the repository.
+2. `BeforeDeleteEvent` is published with the **domain object to be deleted**.
+3. The repository `delete(…)` method is called.
+4. `AfterDeleteEvent` is published with the **deleted domain object**.
+
+[[events.lifecycle.summary]]
+=== Summary Table
+
+The following table summarizes the events, the HTTP operations that trigger them, and the object state passed to the event handler:
+
+[cols="3,2,4", options="header"]
+|===
+| Event | Triggered By | Object Passed to Handler
+
+| `BeforeCreateEvent`
+| `POST` on collection resource
+| New, unsaved domain object (deserialized from request body)
+
+| `AfterCreateEvent`
+| `POST` on collection resource
+| Saved domain object (as returned by repository `save(…)`)
+
+| `BeforeSaveEvent`
+| `PUT` or `PATCH` on item resource
+| Merged domain object (existing entity with request changes applied); for `PATCH`, only the patched fields are updated on the existing entity
+
+| `AfterSaveEvent`
+| `PUT` or `PATCH` on item resource
+| Saved domain object (as returned by repository `save(…)`)
+
+| `BeforeLinkSaveEvent`
+| `PUT` or `POST` on association resource
+| Parent entity (before save); linked entity is available via the event
+
+| `AfterLinkSaveEvent`
+| `PUT` or `POST` on association resource
+| Saved parent entity; linked entity is available via the event
+
+| `BeforeDeleteEvent`
+| `DELETE` on item resource
+| Domain object to be deleted (loaded from repository)
+
+| `AfterDeleteEvent`
+| `DELETE` on item resource
+| Domain object that was deleted
+|===
+
 [[events.application-listener]]
 == Writing an `ApplicationListener`
 
@@ -55,6 +160,9 @@ public class PersonEventHandler {
   @HandleBeforeSave
   public void handlePersonSave(Person p) {
     // … you can now deal with Person in a type-safe way
+    // For PATCH requests, `p` is the merged object: the existing Person
+    // with only the patched fields updated. All other fields retain
+    // their current persisted values.
   }
 
   @HandleBeforeSave
