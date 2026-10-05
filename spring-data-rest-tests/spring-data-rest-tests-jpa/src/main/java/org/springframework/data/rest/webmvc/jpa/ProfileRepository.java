@@ -1,0 +1,34 @@
+/*
+ * Copyright 2018-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.springframework.data.rest.webmvc.jpa;
+
+import org.springframework.data.repository.CrudRepository;
+
+/**
+ * Repository for {@link Profile} entities. Intentionally <em>not</em> annotated with
+ * {@code @RepositoryRestResource} so that it is <em>not</em> exported as an HTTP endpoint when the
+ * {@code ANNOTATED} repository detection strategy is active. This is the key precondition for reproducing the bug
+ * described in <a href="https://github.com/spring-projects/spring-data-rest/issues/1515">GH-1515</a>: even though
+ * this repository is not HTTP-exported, URI-based association resolution for {@link Member#getProfile()} must still
+ * work.
+ *
+ * @author Spring Data REST team
+ * @author Steve Rutherford
+ * @see Profile
+ * @see Member
+ */
+public interface ProfileRepository extends CrudRepository<Profile, Long> {
+}
