@@ -65,6 +65,7 @@ import org.springframework.util.ObjectUtils;
  * @author Mathias Düsterhöft
  * @author Thomas Mrozinski
  * @author Lars Vierbergen
+ * @author Steve Rutherford
  * @since 2.2
  */
 @SuppressWarnings("NullAway")
@@ -282,7 +283,13 @@ public class DomainObjectReader {
 
 			if (!mappedProperties.isWritableField(fieldName)) {
 
-				i.remove();
+				// Allow the version field to pass through so that the underlying store's optimistic locking
+				// mechanism can detect version mismatches (GH-1689). The id field is still stripped to
+				// prevent clients from changing the identity of the resource.
+				PersistentProperty<?> nonWritable = mappedProperties.getPersistentProperty(fieldName);
+				if (nonWritable == null || !nonWritable.isVersionProperty()) {
+					i.remove();
+				}
 				continue;
 			}
 
