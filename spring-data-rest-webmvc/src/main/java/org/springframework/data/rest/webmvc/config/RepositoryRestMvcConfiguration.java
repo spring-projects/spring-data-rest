@@ -44,6 +44,7 @@ import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.support.SpringFactoriesLoader;
@@ -76,6 +77,7 @@ import org.springframework.data.rest.core.support.RepositoryRelProvider;
 import org.springframework.data.rest.core.support.SelfLinkProvider;
 import org.springframework.data.rest.core.support.UnwrappingRepositoryInvokerFactory;
 import org.springframework.data.rest.webmvc.BasePathAwareHandlerMapping;
+import org.springframework.data.rest.webmvc.BasePathAwareWebMvcLinkBuilderFactory;
 import org.springframework.data.rest.webmvc.BaseUri;
 import org.springframework.data.rest.webmvc.EmbeddedResourcesAssembler;
 import org.springframework.data.rest.webmvc.HttpHeadersPreparer;
@@ -163,6 +165,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Will Fleury
+ * @author Steve Rutherford
  */
 @Configuration(proxyBeanMethods = false)
 @EnableHypermediaSupport(type = { HypermediaType.HAL, HypermediaType.HAL_FORMS })
@@ -460,6 +463,25 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 	@Bean
 	public ETagArgumentResolver eTagArgumentResolver() {
 		return new ETagArgumentResolver();
+	}
+
+	/**
+	 * A {@link org.springframework.hateoas.server.mvc.WebMvcLinkBuilderFactory} that is aware of the Spring Data REST
+	 * {@code basePath} configuration. When building links via
+	 * {@link org.springframework.hateoas.server.mvc.WebMvcLinkBuilder#linkTo(Object)} for controllers annotated with
+	 * {@link org.springframework.data.rest.webmvc.BasePathAwareController} or
+	 * {@link org.springframework.data.rest.webmvc.RepositoryRestController}, this factory automatically prepends the
+	 * configured {@code basePath} to the generated URI.
+	 *
+	 * @param repositoryRestConfiguration the SDR configuration, must not be {@literal null}.
+	 * @return never {@literal null}.
+	 * @since 5.0.8
+	 */
+	@Bean
+	@Primary
+	public BasePathAwareWebMvcLinkBuilderFactory basePathAwareWebMvcLinkBuilderFactory(
+			RepositoryRestConfiguration repositoryRestConfiguration) {
+		return new BasePathAwareWebMvcLinkBuilderFactory(repositoryRestConfiguration);
 	}
 
 	/**
