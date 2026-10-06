@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.core.Ordered;
 import org.springframework.util.Assert;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -42,7 +41,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Oliver Gierke
  * @soundtrack Benny Greb - Stabila (Moving Parts)
  */
-class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<HandlerMapping>, Ordered {
+class DelegatingHandlerMapping implements HandlerMapping, Iterable<HandlerMapping>, Ordered {
 
 	private final List<HandlerMapping> delegates;
 	private final @Nullable PathPatternParser parser;
@@ -58,17 +57,6 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 
 		this.delegates = delegates;
 		this.parser = parser;
-	}
-
-	@Override
-	public boolean usesPathPatterns() {
-		return parser != null;
-	}
-
-	@Nullable
-	@Override
-	public PathPatternParser getPatternParser() {
-		return parser;
 	}
 
 	@SuppressWarnings("all")
@@ -89,16 +77,6 @@ class DelegatingHandlerMapping implements MatchableHandlerMapping, Iterable<Hand
 	@Override
 	public @Nullable HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
 		return HandlerSelectionResult.from(request, delegates).resultOrException();
-	}
-
-	@Override
-	public @Nullable RequestMatchResult match(HttpServletRequest request, String pattern) {
-
-		try {
-			return HandlerSelectionResult.from(request, delegates).match(pattern);
-		} catch (Exception o_O) {
-			return null;
-		}
 	}
 
 	private static class HandlerSelectionResult {
