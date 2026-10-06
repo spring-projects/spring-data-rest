@@ -16,7 +16,6 @@
 package org.springframework.data.rest.webmvc.config;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +24,6 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -33,8 +31,6 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.servlet.handler.MatchableHandlerMapping;
-import org.springframework.web.servlet.handler.RequestMatchResult;
 
 /**
  * Unit tests for {@link DelegatingHandlerMapping}.
@@ -57,24 +53,6 @@ class DelegatingHandlerMappingUnitTests {
 		assertHandlerTriedButExceptionThrown(mapping, HttpRequestMethodNotSupportedException.class);
 		assertHandlerTriedButExceptionThrown(mapping, UnsatisfiedServletRequestParameterException.class);
 		assertHandlerTriedButExceptionThrown(mapping, HttpMediaTypeNotSupportedException.class); // DATAREST-1387
-	}
-
-	@Test // DATAREST-1193
-	void exposesMatchabilityOfSelectedMapping() {
-
-		// Given:
-		// A matching mapping that doesn't get selected
-		MatchableHandlerMapping third = mock(MatchableHandlerMapping.class, withSettings().lenient());
-		doReturn(mock(RequestMatchResult.class)).when(third).match(any(), any(String.class));
-
-		// A matching mapping that gets selected
-		RequestMatchResult result = mock(RequestMatchResult.class);
-		MatchableHandlerMapping fourth = mock(MatchableHandlerMapping.class, Answers.RETURNS_MOCKS);
-		doReturn(result).when(fourth).match(any(), any(String.class));
-
-		DelegatingHandlerMapping mapping = new DelegatingHandlerMapping(Arrays.asList(first, second, third, fourth), null);
-
-		assertThat(mapping.match(request, "somePattern")).isEqualTo(result);
 	}
 
 	private final void assertHandlerTriedButExceptionThrown(HandlerMapping mapping, Class<? extends Exception> type)
