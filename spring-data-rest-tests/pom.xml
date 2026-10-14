@@ -21,7 +21,7 @@
 	</modules>
 
 	<properties>
-		<groovy.version>4.0.30</groovy.version>
+		<groovy.version>5.1.3</groovy.version>
 	</properties>
 
 	<dependencies>
