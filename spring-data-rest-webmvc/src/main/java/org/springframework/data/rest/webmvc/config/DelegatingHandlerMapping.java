@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.Ordered;
 import org.springframework.util.Assert;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -30,8 +31,6 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.servlet.handler.MatchableHandlerMapping;
-import org.springframework.web.servlet.handler.RequestMatchResult;
 import org.springframework.web.util.pattern.PathPatternParser;
 
 /**
@@ -86,6 +85,17 @@ class DelegatingHandlerMapping implements HandlerMapping, Iterable<HandlerMappin
 		private final @Nullable HandlerExecutionChain result;
 		private final @Nullable Exception ignoredException;
 
+		public HandlerSelectionResult(HttpServletRequest request, @Nullable HandlerMapping mapping,
+				@Nullable HandlerExecutionChain result, @Nullable Exception ignoredException) {
+
+			Assert.notNull(request, "HttpServletRequest must not be null");
+
+			this.request = request;
+			this.mapping = mapping;
+			this.result = result;
+			this.ignoredException = ignoredException;
+		}
+
 		public static HandlerSelectionResult from(HttpServletRequest request, Iterable<HandlerMapping> delegates)
 				throws Exception {
 
@@ -133,24 +143,6 @@ class DelegatingHandlerMapping implements HandlerMapping, Iterable<HandlerMappin
 			return result;
 		}
 
-		public @Nullable RequestMatchResult match(String pattern) {
-
-			return MatchableHandlerMapping.class.isInstance(mapping) //
-					? ((MatchableHandlerMapping) mapping).match(request, pattern) //
-					: null;
-		}
-
-		public HandlerSelectionResult(HttpServletRequest request, @Nullable HandlerMapping mapping,
-				@Nullable HandlerExecutionChain result, @Nullable Exception ignoredException) {
-
-			Assert.notNull(request, "HttpServletRequest must not be null");
-
-			this.request = request;
-			this.mapping = mapping;
-			this.result = result;
-			this.ignoredException = ignoredException;
-		}
-
 		@Override
 		public boolean equals(@Nullable Object o) {
 
@@ -181,4 +173,5 @@ class DelegatingHandlerMapping implements HandlerMapping, Iterable<HandlerMappin
 					+ result + ", ignoredException=" + ignoredException + ")";
 		}
 	}
+
 }
