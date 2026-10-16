@@ -42,7 +42,9 @@ import org.springframework.data.rest.webmvc.json.patch.TestPropertyPathContext;
 import org.springframework.data.rest.webmvc.support.BackendIdHandlerMethodArgumentResolver;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -55,6 +57,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * Unit tests for {@link PersistentEntityResourceHandlerMethodArgumentResolver}.
  *
  * @author Oliver Gierke
+ * @author Babalola Opeyemi Daniel
  */
 class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
 
@@ -121,6 +124,23 @@ class PersistentEntityResourceHandlerMethodArgumentResolverUnitTests {
 			assertThat(it.getContent()).isInstanceOfSatisfying(Foo.class, foo -> {
 				assertThat(foo.name).isEqualTo("someName");
 			});
+		});
+	}
+
+	@Test // GH-1194
+	@SuppressWarnings("unchecked")
+	void rejectsRequestBodyIfConverterReturnsIncompatibleType() throws Exception {
+
+		PersistentEntityResourceHandlerMethodArgumentResolver argumentResolver = new PersistentEntityResourceHandlerMethodArgumentResolver(
+				Arrays.<HttpMessageConverter<?>> asList(converter), rootResourceResolver, backendIdResolver, reader,
+				PluginRegistry.empty(), FACTORY);
+
+		HttpServletRequest request = new MockHttpServletRequest("POST", "/foo");
+
+		doReturn(CollectionModel.empty()).when(converter).read(Mockito.any(Class.class), Mockito.any(HttpInputMessage.class));
+
+		assertThatExceptionOfType(HttpMessageNotReadableException.class).isThrownBy(() -> {
+			argumentResolver.resolveArgument(null, null, new ServletWebRequest(request), null);
 		});
 	}
 
