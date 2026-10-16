@@ -29,6 +29,7 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
+import org.springframework.data.rest.core.annotation.HandleBeforeLinkSave;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.data.rest.core.domain.Person;
 import org.springframework.data.rest.core.event.AnnotatedEventHandlerInvoker.EventHandlerMethod;
@@ -42,6 +43,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Oliver Gierke
  * @author Fabian Trampusch
  * @author Joseph Valerio
+ * @author Steve Rutherford
  */
 class AnnotatedEventHandlerInvokerUnitTests {
 
@@ -108,6 +110,35 @@ class AnnotatedEventHandlerInvokerUnitTests {
 
 		assertThat(firstHandler.callCount).isEqualTo(1);
 		assertThat(secondHandler.callCount).isEqualTo(1);
+	}
+
+	@Test // GH-2172
+	void invokesOnlyMatchingLinkedEntityTypeHandlerForLinkSaveEvent() {
+
+		MultiLinkedEntityHandler handler = new MultiLinkedEntityHandler();
+
+		AnnotatedEventHandlerInvoker invoker = new AnnotatedEventHandlerInvoker();
+		invoker.postProcessAfterInitialization(handler, "handler");
+
+		Task task = new Task();
+		TaskStatus taskStatus = new TaskStatus();
+		TaskCategory taskCategory = new TaskCategory();
+
+		// Fire a link-save event with a TaskStatus linked object
+		assertThatNoException().isThrownBy(
+				() -> invoker.onApplicationEvent(new BeforeLinkSaveEvent(task, taskStatus)));
+
+		assertThat(handler.statusHandlerCalled).isTrue();
+		assertThat(handler.categoryHandlerCalled).isFalse();
+
+		// Reset and fire a link-save event with a TaskCategory linked object
+		handler.statusHandlerCalled = false;
+
+		assertThatNoException().isThrownBy(
+				() -> invoker.onApplicationEvent(new BeforeLinkSaveEvent(task, taskCategory)));
+
+		assertThat(handler.statusHandlerCalled).isFalse();
+		assertThat(handler.categoryHandlerCalled).isTrue();
 	}
 
 	@Test // DATAREST-1075
@@ -217,6 +248,31 @@ class AnnotatedEventHandlerInvokerUnitTests {
 
 		@HandleAfterCreate
 		void doAfterCreate(Payload bar) {}
+	}
+
+	// GH-2172
+
+	static class Task {}
+
+	static class TaskStatus {}
+
+	static class TaskCategory {}
+
+	@RepositoryEventHandler
+	static class MultiLinkedEntityHandler {
+
+		boolean statusHandlerCalled = false;
+		boolean categoryHandlerCalled = false;
+
+		@HandleBeforeLinkSave
+		void handleStatusLinkSave(Task task, TaskStatus taskStatus) {
+			statusHandlerCalled = true;
+		}
+
+		@HandleBeforeLinkSave
+		void handleCategoryLinkSave(Task task, TaskCategory taskCategory) {
+			categoryHandlerCalled = true;
+		}
 	}
 
 	static class Payload {}
