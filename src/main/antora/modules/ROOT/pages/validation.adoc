@@ -5,7 +5,120 @@ There are two ways to register a `Validator` instance in Spring Data REST: wire 
 
 In order to tell Spring Data REST you want a particular `Validator` assigned to a particular event, prefix the bean name with the event in question. For example, to validate instances of the `Person` class before new ones are saved into the repository, you would declare an instance of a `Validator<Person>` in your `ApplicationContext` with a bean name of `beforeCreatePersonValidator`. Since the `beforeCreate` prefix matches a known Spring Data REST event, that validator is wired to the correct event.
 
+[[validation.events]]
+== Validation Events and Object State
+
+Validators are invoked as part of the Spring Data REST event lifecycle. Understanding _when_ each validator fires and _what object_ it receives is essential for writing correct validation logic.
+
+The following table shows the event prefix used for bean name wiring, the HTTP operation that triggers it, and the state of the object passed to the validator:
+
+[cols="2,2,4", options="header"]
+|===
+| Event Prefix | Triggered By | Object Passed to Validator
+
+| `beforeCreate`
+| `POST` on collection resource
+| New, unsaved domain object (deserialized from request body)
+
+| `afterCreate`
+| `POST` on collection resource
+| Saved domain object (as returned by repository `save(…)`)
+
+| `beforeSave`
+| `PUT` or `PATCH` on item resource
+| Merged domain object (existing entity with request changes applied); see note below about `PATCH`
+
+| `afterSave`
+| `PUT` or `PATCH` on item resource
+| Saved domain object (as returned by repository `save(…)`)
+
+| `beforeLinkSave`
+| `PUT` or `POST` on association resource
+| Parent entity (before save)
+
+| `afterLinkSave`
+| `PUT` or `POST` on association resource
+| Saved parent entity
+
+| `beforeDelete`
+| `DELETE` on item resource
+| Domain object to be deleted (loaded from repository)
+
+| `afterDelete`
+| `DELETE` on item resource
+| Domain object that was deleted
+|===
+
+[[validation.events.patch]]
+=== Validation and `PATCH` Requests
+
+For `PATCH` requests, the `beforeSave` validator receives the **already-merged domain object** — that is, the existing entity loaded from the repository with the patch already applied to it in memory. The validator does **not** receive the raw partial input from the request body.
+
+This means:
+
+* You can safely validate the full state of the entity, including fields that were not part of the patch.
+* You do not need to handle the case of missing or `null` fields that simply were not included in the partial update.
+
+For example, if a `Person` entity has `firstName` and `lastName` fields, and a `PATCH` request only updates `firstName`, the `beforeSave` validator will receive a `Person` object with both `firstName` (updated) and `lastName` (unchanged from the persisted value).
+
+====
+[source,java]
+----
+public class BeforeSavePersonValidator implements Validator {
+
+  @Override
+  public boolean supports(Class<?> clazz) {
+    return Person.class.equals(clazz);
+  }
+
+  @Override
+  public void validate(Object target, Errors errors) {
+    Person person = (Person) target;
+
+    // Safe to validate the full entity state for both PUT and PATCH requests.
+    // For PATCH, this object already has the patch applied on top of the
+    // existing persisted entity — it is not a partial/incomplete object.
+    if (!StringUtils.hasText(person.getFirstName())) {
+      errors.rejectValue("firstName", "firstName.empty");
+    }
+    if (!StringUtils.hasText(person.getLastName())) {
+      errors.rejectValue("lastName", "lastName.empty");
+    }
+  }
+}
+----
+====
+
 [[validation.assigning-validators]]
+== Assigning Validators by Bean Name
+
+To use the bean name prefix approach, declare a `Validator` bean whose name starts with the event prefix followed by the domain type name. Spring Data REST automatically wires it to the correct event.
+
+For example, to validate `Person` instances before they are created:
+
+====
+[source,java]
+----
+@Component("beforeCreatePersonValidator")
+public class BeforeCreatePersonValidator implements Validator {
+  // ...
+}
+----
+====
+
+And to validate before saving (applies to both `PUT` and `PATCH`):
+
+====
+[source,java]
+----
+@Component("beforeSavePersonValidator")
+public class BeforeSavePersonValidator implements Validator {
+  // ...
+}
+----
+====
+
+[[validation.assigning-validators.manual]]
 == Assigning Validators Manually
 
 If you would rather not use the bean name prefix approach, you need to register an instance of your validator with the bean whose job it is to invoke validators after the correct event. In your configuration that implements `RepositoryRestConfigurer`, override the `configureValidatingRepositoryEventListener` method and call `addValidator` on the `ValidatingRepositoryEventListener`, passing the event on which you want this validator to be triggered and an instance of the validator. The following example shows how to do so:
@@ -19,3 +132,5 @@ void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListene
 }
 ----
 ====
+
+For more details on the event lifecycle and the object state at each stage, see xref:events.adoc[Events].
