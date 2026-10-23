@@ -73,6 +73,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
  * @author Mathias Düsterhöft
  * @author Ken Dombeck
  * @author Thomas Mrozinski
+ * @author Steve Rutherford
  */
 @ExtendWith(MockitoExtension.class)
 class DomainObjectReaderUnitTests {
@@ -204,6 +205,42 @@ class DomainObjectReaderUnitTests {
 
 		assertThat(result.lastname).isEqualTo("Matthews");
 		assertThat(result.firstname).isNull();
+		assertThat(result.id).isEqualTo(1L);
+		assertThat(result.version).isEqualTo(1L);
+	}
+
+	@Test // GH-1689
+	void appliesVersionFromClientForPatch() throws Exception {
+
+		VersionedType existing = new VersionedType();
+		existing.id = 1L;
+		existing.version = 1L;
+		existing.firstname = "Dave";
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = (ObjectNode) mapper.readTree("{ \"version\" : 2, \"lastname\" : \"Matthews\" }");
+
+		VersionedType result = reader.doMerge(node, existing, mapper);
+
+		assertThat(result.lastname).isEqualTo("Matthews");
+		assertThat(result.id).isEqualTo(1L);
+		assertThat(result.version).isEqualTo(2L);
+	}
+
+	@Test // GH-1689
+	void doesNotAllowMutatingVersionViaPutBody() throws Exception {
+
+		VersionedType existing = new VersionedType();
+		existing.id = 1L;
+		existing.version = 1L;
+		existing.firstname = "Dave";
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode node = (ObjectNode) mapper.readTree("{ \"version\" : 9999, \"lastname\" : \"Matthews\" }");
+
+		VersionedType result = reader.readPut(node, existing, mapper);
+
+		assertThat(result.lastname).isEqualTo("Matthews");
 		assertThat(result.id).isEqualTo(1L);
 		assertThat(result.version).isEqualTo(1L);
 	}
