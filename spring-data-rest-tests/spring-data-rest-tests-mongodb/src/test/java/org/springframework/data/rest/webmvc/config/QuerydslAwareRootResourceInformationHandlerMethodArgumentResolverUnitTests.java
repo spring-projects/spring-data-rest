@@ -64,6 +64,7 @@ import com.querydsl.core.types.Predicate;
  * Unit tests for {@link QuerydslAwareRootResourceInformationHandlerMethodArgumentResolver}.
  *
  * @author Oliver Gierke
+ * @author Lovro Vrlec
  */
 @ExtendWith(MockitoExtension.class)
 class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUnitTests {
@@ -178,6 +179,105 @@ class QuerydslAwareRootResourceInformationHandlerMethodArgumentResolverUnitTests
 		MultiValueMap<String, String> forwarded = captor.getValue();
 		assertThat(forwarded).doesNotContainKey("renamed");
 		assertThat(forwarded.get("aliased")).containsExactly("value");
+	}
+
+	@Test // GH-2579
+	void forwardsNestedPropertyPathsToQuerydsl() {
+
+		Object repository = mock(QuerydslUserRepository.class);
+		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(repository));
+
+		Map<String, String[]> parameters = Map.of("address.street", new String[] { "value" });
+
+		ArgumentCaptor<MultiValueMap<String, String>> captor = ArgumentCaptor.captor();
+		when(builder.getPredicate(any(), captor.capture(), any())).thenReturn(mock(Predicate.class));
+
+		resolver.postProcess(parameter, invoker, User.class, parameters);
+
+		// Neither User.address nor Address.street is hidden from serialization, so the nested path has to reach Querydsl,
+		// which resolves dotted paths itself. Dropping it would silently turn a filtered lookup into an unfiltered one.
+		assertThat(captor.getValue().get("address.street")).containsExactly("value");
+	}
+
+	@Test // GH-2579
+	void doesNotExposeJsonIgnoredPropertiesNestedInAssociations() {
+
+		Object repository = mock(QuerydslUserRepository.class);
+		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(repository));
+
+		Map<String, String[]> parameters = Map.of("manager.ignored", new String[] { "candidate-value" });
+
+		ArgumentCaptor<MultiValueMap<String, String>> captor = ArgumentCaptor.captor();
+		when(builder.getPredicate(any(), captor.capture(), any())).thenReturn(mock(Predicate.class));
+
+		resolver.postProcess(parameter, invoker, User.class, parameters);
+
+		// User.manager is visible, but User.manager.ignored is @JsonIgnore-annotated: the guarantee established for
+		// top-level properties has to hold for every segment of a nested path as well.
+		assertThat(captor.getValue()).doesNotContainKey("manager.ignored");
+	}
+
+	@Test // GH-2579
+	void translatesJacksonRenamedPropertyNestedInAssociation() {
+
+		Object repository = mock(QuerydslUserRepository.class);
+		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(repository));
+
+		// Address.aliased is exposed as "renamed" via @JsonProperty("renamed"). The translation applied to top-level
+		// properties has to be applied to every segment: the public alias reaches Querydsl under the domain property
+		// name, the bare Java field name is not accepted.
+		Map<String, String[]> parameters = Map.of(
+				"address.renamed", new String[] { "value" },
+				"address.aliased", new String[] { "ignored" });
+
+		ArgumentCaptor<MultiValueMap<String, String>> captor = ArgumentCaptor.captor();
+		when(builder.getPredicate(any(), captor.capture(), any())).thenReturn(mock(Predicate.class));
+
+		resolver.postProcess(parameter, invoker, User.class, parameters);
+
+		MultiValueMap<String, String> forwarded = captor.getValue();
+		assertThat(forwarded).doesNotContainKey("address.renamed");
+		assertThat(forwarded.get("address.aliased")).containsExactly("value");
+	}
+
+	@Test // GH-2579
+	void rejectsNestedPathsBeneathTypesWithoutJacksonPropertyMapping() {
+
+		Object repository = mock(QuerydslUserRepository.class);
+		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(repository));
+
+		Map<String, String[]> parameters = Map.of("firstname.length", new String[] { "value" });
+
+		ArgumentCaptor<MultiValueMap<String, String>> captor = ArgumentCaptor.captor();
+		when(builder.getPredicate(any(), captor.capture(), any())).thenReturn(mock(Predicate.class));
+
+		resolver.postProcess(parameter, invoker, User.class, parameters);
+
+		// User.firstname is a String, i.e. not a persistent entity, so there are no MappedJacksonProperties to establish
+		// the visibility of a segment beneath it. The whole parameter is rejected rather than forwarded unchecked.
+		assertThat(captor.getValue()).isEmpty();
+	}
+
+	@Test // GH-2579
+	void dropsParameterNamesWithBlankSegments() {
+
+		Object repository = mock(QuerydslUserRepository.class);
+		when(repositories.getRepositoryFor(User.class)).thenReturn(Optional.of(repository));
+
+		Map<String, String[]> parameters = Map.of(
+				"", new String[] { "value" },
+				".street", new String[] { "value" },
+				"address..street", new String[] { "value" },
+				"address.", new String[] { "value" });
+
+		ArgumentCaptor<MultiValueMap<String, String>> captor = ArgumentCaptor.captor();
+		when(builder.getPredicate(any(), captor.capture(), any())).thenReturn(mock(Predicate.class));
+
+		resolver.postProcess(parameter, invoker, User.class, parameters);
+
+		// A blank segment cannot refer to a property. Being client-controlled input, such parameters are dropped like
+		// any other unknown key instead of being rejected with an exception.
+		assertThat(captor.getValue()).isEmpty();
 	}
 
 	interface QuerydslUserRepository extends QuerydslPredicateExecutor<User> {}
