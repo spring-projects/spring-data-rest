@@ -101,6 +101,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
  * @author Oliver Gierke
  * @author Greg Turnquist
  * @author Alex Leigh
+ * @author Steve Rutherford
  * @since 5.0
  */
 public class PersistentEntityJacksonModule extends SimpleModule {
@@ -467,7 +468,8 @@ public class PersistentEntityJacksonModule extends SimpleModule {
 						continue;
 					}
 
-					if (!associationLinks.isLinkableAssociation(persistentProperty)) {
+					if (!associationLinks.isUriResolvableAssociation(persistentProperty)
+							&& !associationLinks.isLinkableAssociation(persistentProperty)) {
 						continue;
 					}
 
