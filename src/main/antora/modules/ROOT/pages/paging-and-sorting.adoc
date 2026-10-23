@@ -133,7 +133,7 @@ This feature lets you map optional buttons on the screen to these hypermedia con
 
 Spring Data REST recognizes sorting parameters that use the repository sorting support.
 
-To have your results sorted on a particular property, add a `sort` URL parameter with the name of the property on which you want to sort the results. You can control the direction of the sort by appending a comma (`,`) to the the property name plus either `asc` or `desc`. The following would use the `findByNameStartsWith` query method defined on the `PersonRepository` for all `Person` entities with names starting with the letter "`K`" and add sort data that orders the results on the `name` property in descending order:
+To have your results sorted on a particular property, add a `sort` URL parameter with the name of the property on which you want to sort the results. You can control the direction of the sort by appending a comma (`,`) to the property name plus either `asc` or `desc`. The following would use the `findByNameStartsWith` query method defined on the `PersonRepository` for all `Person` entities with names starting with the letter "`K`" and add sort data that orders the results on the `name` property in descending order:
 
 ====
 ----
