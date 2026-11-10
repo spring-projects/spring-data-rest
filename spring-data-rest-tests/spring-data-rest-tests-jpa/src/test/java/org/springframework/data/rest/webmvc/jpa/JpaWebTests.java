@@ -74,6 +74,7 @@ import com.jayway.jsonpath.ReadContext;
  * @author Mark Paluch
  * @author Ľubomír Varga
  * @author Dario Seidl
+ * @author Steve Rutherford
  */
 @Transactional
 @ContextConfiguration(classes = JpaRepositoryConfig.class, initializers = JpaWebTests.JpaContextInitializer.class)
@@ -96,6 +97,7 @@ public class JpaWebTests extends CommonWebTests {
 			ctx.registerBean(AuthorsController.class);
 			ctx.registerBean(BooksHtmlController.class);
 			ctx.registerBean(OrdersJsonController.class);
+			ctx.registerBean(PersonSummaryController.class);
 			ctx.registerBean(RepositoryLinkAffordanceAdder.class);
 		}
 	}
@@ -752,6 +754,22 @@ public class JpaWebTests extends CommonWebTests {
 		mvc.perform(get("/authors/42"));
 
 		assertThat(observationContext.getPathPattern()).isEqualTo("/authors/{id}");
+	}
+
+	@Test // DATAREST-891
+	void honorsJsonViewOnRepositoryRestControllerMethod() throws Exception {
+
+		// The summary endpoint uses @JsonView(PersonViews.Summary.class), which only includes
+		// firstName and lastName. Fields like 'gender', 'created', 'siblings', and 'father'
+		// must be absent from the response because they are not annotated with @JsonView(Summary).
+		mockMvc.perform(get("/people/summary").accept(MediaType.APPLICATION_JSON)) //
+				.andExpect(status().isOk()) //
+				.andExpect(jsonPath("$[0].firstName").exists()) //
+				.andExpect(jsonPath("$[0].lastName").exists()) //
+				.andExpect(jsonPath("$[0].gender").doesNotExist()) //
+				.andExpect(jsonPath("$[0].created").doesNotExist()) //
+				.andExpect(jsonPath("$[0].siblings").doesNotExist()) //
+				.andExpect(jsonPath("$[0].father").doesNotExist());
 	}
 
 	private List<Link> preparePersonResources(Person primary, Person... persons) throws Exception {
