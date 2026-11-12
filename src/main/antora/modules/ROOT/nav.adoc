@@ -15,6 +15,7 @@
 * xref:validation.adoc[]
 * xref:events.adoc[]
 * xref:integration.adoc[]
+* xref:testing.adoc[]
 * xref:metadata.adoc[]
 * xref:security.adoc[]
 * xref:tools.adoc[]
