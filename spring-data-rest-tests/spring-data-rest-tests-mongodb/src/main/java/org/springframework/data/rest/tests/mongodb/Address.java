@@ -24,4 +24,5 @@ public class Address {
 
 	public String street;
 	public @JsonProperty(required = true) String zipCode;
+	public @JsonProperty("renamed") String aliased;
 }
