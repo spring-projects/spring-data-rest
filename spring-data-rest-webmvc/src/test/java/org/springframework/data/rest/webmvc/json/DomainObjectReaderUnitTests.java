@@ -50,6 +50,7 @@ import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.keyvalue.core.mapping.context.KeyValueMappingContext;
+import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -73,6 +74,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
  * @author Mathias Düsterhöft
  * @author Ken Dombeck
  * @author Thomas Mrozinski
+ * @author Takeshi Ogawa
  */
 @ExtendWith(MockitoExtension.class)
 class DomainObjectReaderUnitTests {
@@ -110,6 +112,8 @@ class DomainObjectReaderUnitTests {
 		mappingContext.getPersistentEntity(BugModel.class);
 		mappingContext.getPersistentEntity(ArrayListHolder.class);
 		mappingContext.getPersistentEntity(MapWrapper.class);
+		mappingContext.getPersistentEntity(Playlist.class);
+		mappingContext.getPersistentEntity(Track.class);
 		mappingContext.afterPropertiesSet();
 
 		this.entities = new PersistentEntities(Collections.singleton(mappingContext));
@@ -839,6 +843,87 @@ class DomainObjectReaderUnitTests {
 		assertThat(result.items.get(2).some).isEqualTo("yetAnotherValue");
 	}
 
+	@Test // GH-2596
+	void patchReplacesReferenceOfEntityNestedInArray() throws Exception {
+
+		Tag first = new Tag();
+		Tag second = new Tag();
+		Playlist playlist = new Playlist(new Track("old label", first));
+		ObjectMapper mapper = mapperResolving(first, second);
+
+		ObjectNode node = (ObjectNode) mapper.readTree(
+				String.format("{ \"tracks\" : [ { \"label\" : \"new label\", \"tag\" : \"%s\" } ] }", second.id));
+
+		Playlist result = readerWithLinkableAssociations().doMerge(node, playlist, mapper);
+
+		assertThat(result.tracks).hasSize(1);
+		assertThat(result.tracks.get(0).label).isEqualTo("new label");
+		assertThat(result.tracks.get(0).tag).isSameAs(second);
+	}
+
+	@Test // GH-2596
+	void patchClearsReferenceOfEntityNestedInArray() throws Exception {
+
+		Tag first = new Tag();
+		Playlist playlist = new Playlist(new Track("old label", first));
+		ObjectMapper mapper = mapperResolving(first);
+
+		ObjectNode node = (ObjectNode) mapper.readTree("{ \"tracks\" : [ { \"label\" : \"new label\", \"tag\" : null } ] }");
+
+		Playlist result = readerWithLinkableAssociations().doMerge(node, playlist, mapper);
+
+		assertThat(result.tracks).hasSize(1);
+		assertThat(result.tracks.get(0).label).isEqualTo("new label");
+		assertThat(result.tracks.get(0).tag).isNull();
+	}
+
+	@Test // GH-2596
+	void patchResolvesReferenceOfEntityAppendedToArray() throws Exception {
+
+		Tag first = new Tag();
+		Tag second = new Tag();
+		Playlist playlist = new Playlist(new Track("first label", first));
+		ObjectMapper mapper = mapperResolving(first, second);
+
+		ObjectNode node = (ObjectNode) mapper.readTree(String.format(
+				"{ \"tracks\" : [ { \"label\" : \"first label\", \"tag\" : \"%s\" }, { \"label\" : \"second label\", \"tag\" : \"%s\" } ] }",
+				first.id, second.id));
+
+		Playlist result = readerWithLinkableAssociations().doMerge(node, playlist, mapper);
+
+		assertThat(result.tracks).hasSize(2);
+		assertThat(result.tracks.get(0).tag).isSameAs(first);
+		assertThat(result.tracks.get(1).label).isEqualTo("second label");
+		assertThat(result.tracks.get(1).tag).isSameAs(second);
+	}
+
+	/**
+	 * Returns a {@link DomainObjectReader} considering every association linkable. The {@link Association} overload of
+	 * {@link Associations#isLinkableAssociation(Association)} keeps its real implementation delegating to the inverse
+	 * property.
+	 */
+	private DomainObjectReader readerWithLinkableAssociations() {
+
+		Associations associations = mock(Associations.class, CALLS_REAL_METHODS);
+		doAnswer(invocation -> invocation.<PersistentProperty<?>> getArgument(0).isAssociation()).when(associations)
+				.isLinkableAssociation(any(PersistentProperty.class));
+
+		return new DomainObjectReader(entities, associations);
+	}
+
+	private static ObjectMapper mapperResolving(Tag... tags) {
+
+		Map<UUID, Tag> tagsById = new HashMap<>();
+
+		for (Tag tag : tags) {
+			tagsById.put(tag.id, tag);
+		}
+
+		SimpleModule module = new SimpleModule().addDeserializer(Tag.class, new SelectValueByIdSerializer<Tag>(tagsById));
+
+		return JsonMapper.builder().addModule(module).build();
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> T as(Object source, Class<T> type) {
 
@@ -1116,6 +1201,35 @@ class DomainObjectReaderUnitTests {
 	static class Tag {
 		@Id UUID id = UUID.randomUUID();
 		String name;
+	}
+
+	// GH-2596
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Playlist {
+
+		@Id UUID id = UUID.randomUUID();
+		List<Track> tracks = new ArrayList<Track>();
+
+		Playlist() {}
+
+		Playlist(Track... tracks) {
+			this.tracks.addAll(Arrays.asList(tracks));
+		}
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
+	static class Track {
+
+		String label;
+		@Reference Tag tag;
+
+		Track() {}
+
+		Track(String label, Tag tag) {
+			this.label = label;
+			this.tag = tag;
+		}
 	}
 
 	static class SelectValueByIdSerializer<T> extends ValueDeserializer<T> {
