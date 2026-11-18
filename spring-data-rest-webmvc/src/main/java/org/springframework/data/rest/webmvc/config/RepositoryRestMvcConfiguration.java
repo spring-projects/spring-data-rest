@@ -146,6 +146,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
+import org.springframework.web.servlet.mvc.method.annotation.JsonViewResponseBodyAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import org.springframework.web.util.pattern.PathPatternParser;
@@ -163,6 +164,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Will Fleury
+ * @author Steve Rutherford
  */
 @Configuration(proxyBeanMethods = false)
 @EnableHypermediaSupport(type = { HypermediaType.HAL, HypermediaType.HAL_FORMS })
@@ -658,6 +660,7 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 		List<ResponseBodyAdvice<?>> advices = new ArrayList<>();
 		advices.add(new HalFormsAdaptingResponseBodyAdvice<>());
+		advices.add(new JsonViewResponseBodyAdvice());
 
 		if (repositoryRestConfiguration.getMetadataConfiguration().alpsEnabled()) {
 			advices.addAll(Arrays.asList(alpsJsonHttpMessageConverter));
