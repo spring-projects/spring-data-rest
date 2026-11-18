@@ -55,6 +55,7 @@ class SpelPathUnitTests {
 		context.getPersistentEntity(MapWrapper.class);
 		context.getPersistentEntity(Todo.class);
 		context.getPersistentEntity(Person.class);
+		context.getPersistentEntity(Library.class);
 
 		PersistentEntities entities = new PersistentEntities(Arrays.asList(context));
 		BindContextFactory factory = new PersistentEntitiesBindContextFactory(entities,
@@ -220,6 +221,29 @@ class SpelPathUnitTests {
 		assertThat(path.getExpressionString()).isEqualTo("renamed");
 	}
 
+	@Test // #2401
+	void getsLeafTypeForAppendToCollectionBelowIndexedCollectionElement() {
+
+		WritingOperations path = SpelPath.untyped("/catalog/books/0/reviews/-") //
+				.bindForWrite(Library.class, context);
+
+		assertThat(path.getExpressionString()).isEqualTo("catalog.books[0].reviews$[true]");
+		assertThat(path.getLeafType()).isEqualTo(Review.class);
+	}
+
+	@Test // #2401
+	void appendsToCollectionBelowIndexedCollectionElement() {
+
+		Library library = new Library();
+		library.catalog.books.add(new Book());
+
+		Review review = new Review();
+		AddOperation.of("/catalog/books/0/reviews/-", review) //
+				.perform(library, Library.class, context);
+
+		assertThat(library.catalog.books.get(0).reviews).containsExactly(review);
+	}
+
 	@Test // #2233
 	void bindsDatesProperly() {
 
@@ -303,6 +327,60 @@ class SpelPathUnitTests {
 
 		public void setPeopleByInt(Map<Integer, Person> peopleByInt) {
 			this.peopleByInt = peopleByInt;
+		}
+	}
+
+	// #2401
+
+	static class Library {
+
+		Catalog catalog = new Catalog();
+
+		public Catalog getCatalog() {
+			return this.catalog;
+		}
+
+		public void setCatalog(Catalog catalog) {
+			this.catalog = catalog;
+		}
+	}
+
+	static class Catalog {
+
+		List<Book> books = new ArrayList<>();
+
+		public List<Book> getBooks() {
+			return this.books;
+		}
+
+		public void setBooks(List<Book> books) {
+			this.books = books;
+		}
+	}
+
+	static class Book {
+
+		List<Review> reviews = new ArrayList<>();
+
+		public List<Review> getReviews() {
+			return this.reviews;
+		}
+
+		public void setReviews(List<Review> reviews) {
+			this.reviews = reviews;
+		}
+	}
+
+	static class Review {
+
+		String text;
+
+		public String getText() {
+			return this.text;
+		}
+
+		public void setText(String text) {
+			this.text = text;
 		}
 	}
 }
