@@ -163,6 +163,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Will Fleury
+ * @author Steve Rutherford
  */
 @Configuration(proxyBeanMethods = false)
 @EnableHypermediaSupport(type = { HypermediaType.HAL, HypermediaType.HAL_FORMS })
@@ -872,9 +873,10 @@ public class RepositoryRestMvcConfiguration extends HateoasAwareSpringDataWebCon
 
 	@Bean
 	public SelfLinkProvider selfLinkProvider(PersistentEntities persistentEntities, RepositoryEntityLinks entityLinks,
-			@Qualifier("mvcConversionService") ObjectProvider<ConversionService> conversionService) {
+			@Qualifier("mvcConversionService") ObjectProvider<ConversionService> conversionService,
+			Repositories repositories) {
 		return new DefaultSelfLinkProvider(persistentEntities, entityLinks, getEntityLookups(),
-				conversionService.getIfUnique(() -> defaultConversionService));
+				conversionService.getIfUnique(() -> defaultConversionService), repositories);
 	}
 
 	@Bean
