@@ -1,0 +1,129 @@
+[[testing]]
+= Testing Spring Data REST Applications
+
+Spring Data REST exposes repository resources through hypermedia-driven representations. These representations contain domain data as well as links and, for collection resources, embedded entities.
+
+Spring Boot's `TestRestTemplate` can be used to test a Spring Data REST application through HTTP requests to a running application. When a test does not need to exercise an actual HTTP server, Spring's `MockMvc` is an alternative.
+
+== Testing with TestRestTemplate
+
+`TestRestTemplate` is useful for integration tests that start the application on a random port. The following example assumes that the application exposes a `Person` repository at `/people`:
+
+[source,java]
+----
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class PersonRepositoryIntegrationTests {
+
+    @Autowired
+    TestRestTemplate restTemplate;
+}
+----
+
+=== Sending Complex Request Bodies
+
+You can pass a domain object directly as the request body. `TestRestTemplate` uses the configured HTTP message converters to serialize the object.
+
+For example, given a `Person` domain type:
+
+[source,java]
+----
+Person person = new Person("Frodo", "Baggins");
+
+ResponseEntity<String> response = restTemplate.postForEntity(
+        "/people",
+        person,
+        String.class);
+
+assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+assertThat(response.getHeaders().getLocation()).isNotNull();
+----
+
+Spring Data REST returns a hypermedia representation for the created resource. The response can contain links and other metadata in addition to the domain properties. Consequently, the response should not be treated as a plain JSON serialization of the domain object.
+
+=== Reading HAL Responses into Representation Models
+
+When a test needs to deserialize a HAL response into a typed representation, the client needs the Spring HATEOAS hypermedia message converters.
+
+Enable HAL support in the test configuration:
+
+[source,java]
+----
+@Configuration
+@EnableHypermediaSupport(type = HypermediaType.HAL)
+class HypermediaTestConfiguration {
+}
+----
+
+Use `HypermediaRestTemplateConfigurer` to register the hypermedia message converters with the `RestTemplate` used by `TestRestTemplate`:
+
+[source,java]
+----
+@Autowired
+TestRestTemplate restTemplate;
+
+@Autowired
+HypermediaRestTemplateConfigurer hypermediaRestTemplateConfigurer;
+
+@BeforeEach
+void configureRestTemplate() {
+    hypermediaRestTemplateConfigurer.registerHypermediaTypes(
+            restTemplate.getRestTemplate());
+}
+----
+
+A single repository resource can then be read as an `EntityModel`:
+
+[source,java]
+----
+ResponseEntity<EntityModel<Person>> response = restTemplate.exchange(
+        "/people/{id}",
+        HttpMethod.GET,
+        null,
+        new ParameterizedTypeReference<EntityModel<Person>>() {},
+        id);
+
+EntityModel<Person> personResource = response.getBody();
+
+assertThat(personResource).isNotNull();
+assertThat(personResource.getContent().getFirstName()).isEqualTo("Frodo");
+assertThat(personResource.getLink("self")).isPresent();
+----
+
+`EntityModel` represents a domain object together with its hypermedia links. This allows a test to access both the domain content and the links exposed by the resource.
+
+For a repository collection resource, use `CollectionModel`:
+
+[source,java]
+----
+ResponseEntity<CollectionModel<EntityModel<Person>>> response =
+        restTemplate.exchange(
+                "/people",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<CollectionModel<EntityModel<Person>>>() {});
+
+CollectionModel<EntityModel<Person>> people = response.getBody();
+
+assertThat(people).isNotNull();
+assertThat(people.getContent()).isNotEmpty();
+----
+
+`CollectionModel` represents a collection of representation models and can also expose links. The embedded relation and available links depend on the repository resource and the application's configuration.
+
+== Alternatives to TestRestTemplate
+
+`TestRestTemplate` is appropriate when an integration test should exercise the application through a running HTTP server. If starting a server is unnecessary, Spring's `MockMvc` can test the Spring MVC request-processing infrastructure without opening a network connection.
+
+For example, `MockMvc` can be used to verify the status, content type, and hypermedia links of a repository resource. It is also used extensively in the Spring Data REST test suite.
+
+Choose the testing approach based on what the test needs to exercise:
+
+* Use `TestRestTemplate` for integration tests that send HTTP requests to a running application.
+* Use `MockMvc` when you want to test MVC request handling without starting an HTTP server.
+
+For more information, see the Spring Framework documentation for
+https://docs.spring.io/spring-framework/reference/testing/mockmvc.html[MockMvc],
+the Spring Boot documentation for
+https://docs.spring.io/spring-boot/reference/testing/test-utilities.html#testing.test-utilities.test-rest-template[TestRestTemplate],
+and the Spring HATEOAS documentation for
+https://docs.spring.io/spring-hateoas/docs/current/reference/html/[Spring HATEOAS].
