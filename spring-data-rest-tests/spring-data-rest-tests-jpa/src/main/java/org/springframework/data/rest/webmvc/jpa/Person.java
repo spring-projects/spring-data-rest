@@ -33,11 +33,13 @@ import org.springframework.data.rest.core.annotation.Description;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
 
 /**
  * An entity that represents a person.
  *
  * @author Jon Brisbin
+ * @author Steve Rutherford
  */
 @Entity
 @JsonIgnoreProperties({ "height", "weight" })
@@ -46,9 +48,11 @@ public class Person {
 	@Id @GeneratedValue private Long id;
 
 	@Description("A person's first name") //
+	@JsonView(PersonViews.Summary.class)
 	private String firstName;
 
 	@Description("A person's last name") //
+	@JsonView(PersonViews.Summary.class)
 	private String lastName;
 
 	@Description("A person's siblings") //
